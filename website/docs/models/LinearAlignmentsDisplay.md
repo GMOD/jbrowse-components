@@ -301,6 +301,20 @@ type groupMaxHeightOverrides = ObservableMap<string, number>
 groupMaxHeightOverrides: observable.map<string, number>()
 ```
 
+#### volatile: fitHeightToDisplay
+
+"Fit to display height" mode: an autorun keeps `featureHeight` sized so all
+uncollapsed groups' reads fill the display without scrolling (reads thin as
+needed). Volatile — a view preference like scrollTop; picking any explicit
+feature-height preset turns it back off.
+
+```ts
+// type signature
+type fitHeightToDisplay = false
+// code
+fitHeightToDisplay: false
+```
+
 #### volatile: hoverCoverageBand
 
 Screen-px coverage band of the section currently under a coverage/indicator
@@ -540,6 +554,17 @@ worker) so colorTagMap stays a main-thread tier-2 setting — see readTagColors.
 type laidOutByGroup = LaidOutByGroup
 ```
 
+#### getter: groupLayoutContext
+
+The layout mechanics (grouping, sort, soft-clip, colors) shared by the viewport
+fit pass and any ad-hoc layout — e.g. `fittedFeatureHeight`, which lays every
+group out uncapped to count rows. Kept apart from the fit policy (row caps),
+which varies per call.
+
+```ts
+type groupLayoutContext = { order: GroupId[]; rawByGroup: Map<string, Map<number, PileupDataResult>>; isChainMode: boolean; sortedBy: SortedBy | undefined; ... 4 more ...; colorTagMap: Record<...>; }
+```
+
 #### getter: groupOrder
 
 Group keys + labels in stacking order; a single entry (key '') when ungrouped.
@@ -672,6 +697,7 @@ type renderSections = {
   topOffset: number
   coverageTop: number
   coverageHeight: number
+  sashimiBandTop: number
   pileupHeight: number
 }[]
 ```
@@ -761,6 +787,19 @@ pileup each move.
 
 ```ts
 type highlightBoxes = HighlightBox[]
+```
+
+#### getter: fittedFeatureHeight
+
+The read height that makes every uncollapsed group's reads fill the display
+without scrolling. Row count is fixed by read overlaps, so we lay the groups out
+uncapped (a fixed maxHeight-row cap, independent of the current featureHeight —
+so the fit autorun that writes featureHeight can't feed back into this) and
+divide the pileup space by it. 0 when there's nothing to fit (no data / no
+room), signalling "leave as-is".
+
+```ts
+type fittedFeatureHeight = number
 ```
 
 </details>
@@ -1264,7 +1303,7 @@ type chainIdsForRead = (rpcData: PileupDataResult, index: number) => string[]
 Track menu items
 
 ```ts
-type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; })[]
+type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 </details>
@@ -1389,8 +1428,35 @@ seeding from the displayed height only on the first frame. When the override
 already runs past the real content (displayed height < override), clamp back to
 one row of headroom so reversing the drag responds immediately.
 
+A fully-shown group (no hidden reads) has nothing to grow into, so a downward
+drag never banks pixels past its content: with no existing override it's a clean
+no-op (no spurious "fit to view" affordance), and with an override it pins at
+the content height. Shrinking, or growing a group that still hides reads,
+adjusts the override as usual.
+
 ```ts
 type resizeGroupHeight = (key: string, dy: number) => void
+```
+
+#### action: setFitHeightToDisplay
+
+Enter/leave "fit to display height" mode. Entering drops per-group height
+overrides so the fit is uniform; the afterAttach autorun then keeps
+`featureHeight` sized to fit as the display/data change.
+
+```ts
+type setFitHeightToDisplay = (fit: boolean) => void
+```
+
+#### action: applyFittedHeight
+
+Write the fitted read height into the feature-size slots. Bypasses
+`setFeatureHeight` (which would exit fit mode) — this IS the mode maintaining
+itself. `fittedFeatureHeight` is featureHeight-independent, so writing these
+slots can't re-trigger the driving autorun.
+
+```ts
+type applyFittedHeight = (height: number) => void
 ```
 
 #### action: setShowBezierConnections

@@ -34,18 +34,6 @@ max-zoomed-out level, and is more noticeable near the plot edge.
   middle genome should color-match between the peach–grape and grape–cacao
   ribbons). Separate design task, still open.
 
-## more subtle search highlight
 
-## per group (plugins/alignments group by) vertical drag resize not working well
 
-## per group yscalebar weird in plugins/alignments
 
-## move set max layout height out of set feature height
-
-## make menu item divider for 'Use default "Compact" for alignments track'
-
-## improve quickstart_desktop
-
-## no resize handle on non-first group
-
-## make option for 'fit to display height' for plugins/alignments and plugins/canvas?

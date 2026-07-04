@@ -87,6 +87,22 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      heightMode: {
+        type: 'stringEnum',
+        model: types.enumeration('heightMode', ['inherit', 'fit', 'fixed']),
+        description:
+          'How read height is chosen. `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing`; `fit` sizes reads so every uncollapsed group fills the display without scrolling',
+        // `inherit` is the CSS-style sentinel default (the un-pinned state);
+        // `promotedBase` ('fixed') is what it resolves to when nothing is
+        // promoted. Being a sentinel lets a track pin `fixed` back over a
+        // session-wide `fit` default. See promotableDefaults.ts.
+        defaultValue: 'inherit',
+        promotedBase: 'fixed',
+        promotable: true,
+      },
+      /**
+       * #slot
+       */
       readConnectionsLineWidth: {
         type: 'number',
         defaultValue: 1,

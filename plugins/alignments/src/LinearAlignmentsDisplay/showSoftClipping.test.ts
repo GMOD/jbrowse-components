@@ -258,15 +258,18 @@ describe('alignments showSoftClipping session default', () => {
   })
 })
 
-// Compactness is just the featureHeight + featureSpacing promotable slots moved
-// together behind one menu item. Each slot resolves independently through
+// Compactness is the featureHeight + featureSpacing + heightMode promotable
+// slots moved together behind one menu item. Each resolves independently through
 // getConfResolved (same rule as showSoftClipping): a slot at its schema default
 // is un-pinned and follows the session-wide default; any other value pins it.
+// heightMode='fixed' equals its promotedBase, so it never shows up as a
+// sessionDefaultChanges diff — it only gates isCompactnessDefault.
 const setCompact = (session: {
   setDisplayTypeDefault: (t: string, s: string, v: unknown) => void
 }) => {
   session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight', 3)
   session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'featureSpacing', 0)
+  session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode', 'fixed')
 }
 
 describe('alignments compactness session default', () => {
@@ -428,6 +431,73 @@ describe('alignments compactness session default', () => {
       { path: ['featureSpacing'], from: 1, to: 0 },
       { path: ['showSoftClipping'], from: false, to: true },
     ])
+  })
+})
+
+// Fit-to-display-height is the `heightMode` sentinel promotable slot
+// ('inherit' | 'fit' | 'fixed', promotedBase 'fixed'). It rides the same
+// "make default" grouping as featureHeight/featureSpacing so promoting a fit
+// track persists fit — not a frozen pixel size. Being a sentinel lets a track
+// pin 'fixed' back over a session-wide 'fit' default, which a plain boolean
+// could not (false would collapse to the default and re-inherit fit).
+describe('alignments fit-to-display-height session default', () => {
+  it('is off by default with no config and no session default', () => {
+    const { display } = createDisplay()
+    expect(display.fitHeightToDisplay).toBe(false)
+  })
+
+  it('setFitHeightToDisplay(true) enters fit mode', () => {
+    const { display } = createDisplay()
+    display.setFitHeightToDisplay(true)
+    expect(display.fitHeightToDisplay).toBe(true)
+  })
+
+  it('follows a session-wide fit default when the track is not pinned', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode', 'fit')
+    expect(display.fitHeightToDisplay).toBe(true)
+  })
+
+  it('promotes the current fit mode to the session default', () => {
+    const { session, display } = createDisplay()
+    display.setFitHeightToDisplay(true)
+    expect(display.isCompactnessDefault).toBe(false)
+
+    display.setCompactnessDefault(true)
+    expect(
+      session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
+    ).toBe('fit')
+    expect(display.isCompactnessDefault).toBe(true)
+  })
+
+  it('picking a preset pins fixed and escapes even a promoted fit default', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode', 'fit')
+    expect(display.fitHeightToDisplay).toBe(true)
+
+    display.setCompactness('compact')
+    // the sentinel win: 'fixed' pins over the 'fit' session default
+    expect(display.fitHeightToDisplay).toBe(false)
+    expect(display.featureHeight).toBe(3)
+  })
+
+  it('setFeatureHeight escapes fit mode', () => {
+    const { display } = createDisplay()
+    display.setFitHeightToDisplay(true)
+    expect(display.fitHeightToDisplay).toBe(true)
+
+    display.setFeatureHeight(20)
+    expect(display.fitHeightToDisplay).toBe(false)
+  })
+
+  it('ignores a malformed (non-enum) session default', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'heightMode',
+      'wobble',
+    )
+    expect(display.fitHeightToDisplay).toBe(false)
   })
 })
 
