@@ -690,11 +690,11 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        // colorBy is a promotable slot with an inherit sentinel: an un-pinned
-        // track follows the session-wide color default (e.g. "color every
-        // alignments track by methylation"), while any explicit scheme —
-        // including `normal` — pins this track. getConfResolved walks the
-        // cascade and never returns the sentinel.
+        // colorBy is a plain promotable slot: an un-pinned track (colorBy at its
+        // `normal` default) follows the session-wide color default (e.g. "color
+        // every alignments track by methylation"); any other scheme pins this
+        // track, and picking "Normal" un-pins it. getConfResolved walks the
+        // cascade.
         get colorBy(): ColorBy {
           return getConfResolved<ColorBy>(self, 'colorBy')
         },

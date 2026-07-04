@@ -269,7 +269,11 @@ const setCompact = (session: {
 }) => {
   session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight', 3)
   session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'featureSpacing', 0)
-  session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode', 'fixed')
+  session.setDisplayTypeDefault(
+    'LinearAlignmentsDisplay',
+    'heightMode',
+    'fixed',
+  )
 }
 
 describe('alignments compactness session default', () => {
@@ -454,7 +458,11 @@ describe('alignments fit-to-display-height session default', () => {
 
   it('follows a session-wide fit default when the track is not pinned', () => {
     const { session, display } = createDisplay()
-    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode', 'fit')
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'heightMode',
+      'fit',
+    )
     expect(display.fitHeightToDisplay).toBe(true)
   })
 
@@ -472,7 +480,11 @@ describe('alignments fit-to-display-height session default', () => {
 
   it('picking a preset pins fixed and escapes even a promoted fit default', () => {
     const { session, display } = createDisplay()
-    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode', 'fit')
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'heightMode',
+      'fit',
+    )
     expect(display.fitHeightToDisplay).toBe(true)
 
     display.setCompactness('compact')
@@ -563,11 +575,10 @@ describe('alignments fit-to-display-height split', () => {
   })
 })
 
-// colorBy is a frozen (object-valued) promotable slot with an inherit sentinel:
-// `{ type: 'inherit' }` is the un-pinned default that resolves to `promotedBase`
-// (`{ type: 'normal' }`). Being a sentinel — not a real value — lets a track pin
-// `normal` back over a methylation session default, which a plain slot could
-// not. Exercises the structural (not identity) comparison in promotableDefaults.
+// colorBy is a plain (object-valued) promotable slot: `{ type: 'normal' }` is
+// both the base default and the un-pinned signal, so a track at normal follows a
+// session-wide color default and picking any other scheme pins it. Exercises the
+// structural (not identity) comparison in promotableDefaults.
 describe('alignments colorBy session default', () => {
   const methylation = { type: 'methylation' }
 
@@ -591,16 +602,19 @@ describe('alignments colorBy session default', () => {
     ])
   })
 
-  it('lets a track pin normal back over a methylation session default', () => {
+  it('a track at normal follows the default (normal is the un-pin signal)', () => {
     const { session, display } = createDisplay({ colorBy: { type: 'normal' } })
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
       'colorBy',
       methylation,
     )
-    // the sentinel win: normal is a real, pinnable value distinct from inherit
-    expect(display.colorBy).toEqual({ type: 'normal' })
-    expect(display.sessionDefaultChanges()).toEqual([])
+    // plain slot: normal equals the default, so the track reads as un-pinned and
+    // follows the session-wide default rather than forcing normal
+    expect(display.colorBy).toEqual(methylation)
+    expect(display.sessionDefaultChanges()).toEqual([
+      { path: ['colorBy'], from: { type: 'normal' }, to: methylation },
+    ])
   })
 
   it('an explicit per-track scheme wins over the session default', () => {

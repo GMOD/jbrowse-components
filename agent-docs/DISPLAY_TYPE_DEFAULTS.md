@@ -20,7 +20,7 @@ read one section, read [The cascade](#the-cascade).
 | Badge hooks mixin | `plugins/linear-genome-view/src/BaseLinearDisplay/models/PromotableDefaultsMixin.tsx` |
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
 | Adopter: `displayMode` (sentinel) | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts` |
-| Adopter: `showSoftClipping` / `featureHeight` / `featureSpacing` (plain) | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
+| Adopter: `showSoftClipping` / `featureHeight` / `featureSpacing` / `colorBy` (plain) | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
 
 Tests: `displayMode.test.ts`, `showSoftClipping.test.ts` (both under their
 adopter), `OverrideBadge.test.tsx`, `sessionModelFactory.test.ts` (store
@@ -46,11 +46,13 @@ Two things make this cheap:
   default doesn't rewrite every track's config — un-pinned tracks just resolve
   differently on their next read.
 
-**Primitives only.** `pinned` is `own !== def.defaultValue` (strict compare) —
-correct for string/number/boolean, but an object/array slot is always
-reference-unequal to its default and reads as *permanently pinned* (session
-default never applies). Give `resolveSlot` a value-equality path before marking a
-collection slot `promotable`.
+**Objects compare structurally.** `pinned` uses `sameValue(own, defaultValue)`,
+which is identity for primitives and a `JSON.stringify` compare for
+objects/arrays — a naive `!==` would read every object slot as *permanently
+pinned* (a fresh MST-reconstructed value is never `===` its stored default), so
+the session default would never apply. `colorBy` (a `frozen` `{ type: ... }`
+slot) is promotable on the strength of this path; a new object/array slot needs
+nothing extra.
 
 ### Plain vs. sentinel slots
 
