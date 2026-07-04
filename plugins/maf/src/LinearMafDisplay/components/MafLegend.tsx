@@ -14,8 +14,11 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 3,
     pointerEvents: 'none',
     display: 'flex',
-    flexWrap: 'wrap',
-    gap: 4,
+    // stack entries vertically so each swatch+label sits on its own line
+    // (reviewer: color boxes were all crammed onto one row)
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 2,
     maxWidth: '45%',
     padding: '2px 4px',
     borderRadius: 3,
