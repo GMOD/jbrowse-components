@@ -1288,6 +1288,9 @@ export default function stateModelFactory(
             topOffset: sec.pileupTop,
             coverageTop: sec.coverageTop,
             coverageHeight: sec.coverageHeight,
+            // Bottom of this section's arc band (== top of its sashimi band), so
+            // the arc-resize handle can anchor per group like coverage/pileup.
+            sashimiBandTop: sec.sashimiBandTop,
             pileupHeight: sec.pileupHeight,
           }))
         },

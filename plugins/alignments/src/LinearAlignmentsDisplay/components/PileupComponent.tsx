@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { Fragment, useId } from 'react'
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
@@ -263,11 +263,11 @@ const CoverageResizeHandle = observer(function CoverageResizeHandle({
   )
 })
 
-// Arc + sashimi band resize handles. The heights are display-global, so a
-// single handle (at the first section's band bottom) resizes every section's
-// band. Ungrouped keeps them sticky; grouped scrolls them with the first
-// section and hides them once that band scrolls off-screen. The first section
-// starts at content-y 0, so its band bottoms equal `belowCoverageBands`.
+// Arc + sashimi band resize handles, one per group. The heights are
+// display-global, so every handle resizes all sections' bands together; each
+// still gets an affordance at its own band bottom (arc band ends at the sashimi
+// band top; the sashimi band ends at the pileup top), scrolling with its
+// section and culled off-screen. Ungrouped is the single sticky section.
 const ConnectionBandResizeHandles = observer(
   function ConnectionBandResizeHandles({
     model,
@@ -275,37 +275,44 @@ const ConnectionBandResizeHandles = observer(
     model: LinearAlignmentsDisplayModel
   }) {
     const { belowCoverageBands: bands, height, scrollModel: scroll } = model
-    const arcHandleTop = bandScreenTop(
-      bands.sashimiBandTop - YSCALEBAR_LABEL_OFFSET,
-      scroll,
-    )
-    const sashimiHandleTop = bandScreenTop(
-      bands.bottom - YSCALEBAR_LABEL_OFFSET,
-      scroll,
-    )
     return (
       <>
-        {bands.hasArcsBand ? (
-          <PileupResizeHandle
-            top={arcHandleTop}
-            canvasHeight={height}
-            onDrag={dy => {
-              model.setReadConnectionsHeight(model.readConnectionsHeight + dy)
-            }}
-            title="Drag to resize arcs area"
-          />
-        ) : null}
+        {model.renderSections.map(section => {
+          const key = section.groupKey || 'ungrouped'
+          return (
+            <Fragment key={key}>
+              {bands.hasArcsBand ? (
+                <PileupResizeHandle
+                  top={bandScreenTop(
+                    section.sashimiBandTop - YSCALEBAR_LABEL_OFFSET,
+                    scroll,
+                  )}
+                  canvasHeight={height}
+                  onDrag={dy => {
+                    model.setReadConnectionsHeight(
+                      model.readConnectionsHeight + dy,
+                    )
+                  }}
+                  title="Drag to resize arcs area"
+                />
+              ) : null}
 
-        {bands.hasSashimiBand ? (
-          <PileupResizeHandle
-            top={sashimiHandleTop}
-            canvasHeight={height}
-            onDrag={dy => {
-              model.setSashimiArcsHeight(model.sashimiArcsHeight + dy)
-            }}
-            title="Drag to resize sashimi arcs area"
-          />
-        ) : null}
+              {bands.hasSashimiBand ? (
+                <PileupResizeHandle
+                  top={bandScreenTop(
+                    section.topOffset - YSCALEBAR_LABEL_OFFSET,
+                    scroll,
+                  )}
+                  canvasHeight={height}
+                  onDrag={dy => {
+                    model.setSashimiArcsHeight(model.sashimiArcsHeight + dy)
+                  }}
+                  title="Drag to resize sashimi arcs area"
+                />
+              ) : null}
+            </Fragment>
+          )
+        })}
       </>
     )
   },
