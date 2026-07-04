@@ -59,10 +59,17 @@ export function buildFeatureAdmission({
     hiddenFeatureIds && hiddenFeatureIds.length > 0
       ? new Set(hiddenFeatureIds)
       : undefined
-  return (feature: Feature) =>
-    (soloSet === undefined || soloSet.has(feature.id())) &&
-    !hiddenSet?.has(feature.id()) &&
-    filterChain.passes(feature) &&
-    (geneLikeTypes === undefined ||
-      geneLikeTypes.has(featureType(feature).toLowerCase()))
+  // Gates ordered cheapest-first so the expensive jexl filterChain only runs on
+  // features the membership/type gates already admit — matters at whole-genome
+  // showOnlyGenes zoom, where most features are dropped by type.
+  return (feature: Feature) => {
+    const id = feature.id()
+    return (
+      (soloSet === undefined || soloSet.has(id)) &&
+      !hiddenSet?.has(id) &&
+      (geneLikeTypes === undefined ||
+        geneLikeTypes.has(featureType(feature).toLowerCase())) &&
+      filterChain.passes(feature)
+    )
+  }
 }
