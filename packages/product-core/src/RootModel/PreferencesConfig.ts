@@ -35,15 +35,5 @@ export function PreferencesConfigSchemaFactory() {
       type: 'boolean',
       defaultValue: false,
     },
-    /**
-     * #slot configuration.preferences.viewMargins
-     * when true, views are inset with transparent side margins that act as
-     * reliable mouse-wheel targets for vertical page scrolling (views otherwise
-     * consume vertical wheel over their whole width)
-     */
-    viewMargins: {
-      type: 'boolean',
-      defaultValue: false,
-    },
   })
 }
