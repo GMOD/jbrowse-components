@@ -12,7 +12,9 @@ import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
     width: '100%',
-    overflow: 'hidden',
+    // clip (not hidden) so sticky descendant headers keep working
+    // xref https://stackoverflow.com/questions/43909940/why-does-overflowhidden-prevent-positionsticky-from-working
+    overflow: 'clip',
     background: theme.palette.secondary.main,
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
