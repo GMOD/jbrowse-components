@@ -21,7 +21,9 @@ function getMatureProteinChildren(feature: Feature): Feature[] {
 }
 
 export function hasMatureProteinChildren(feature: Feature) {
-  return getMatureProteinChildren(feature).length > 0
+  return getSubfeatures(feature).some(sub =>
+    MATURE_PROTEIN_TYPES.has(featureType(sub)),
+  )
 }
 
 export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {

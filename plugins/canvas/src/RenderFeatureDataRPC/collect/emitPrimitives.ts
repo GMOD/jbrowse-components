@@ -188,10 +188,14 @@ export function emitStrandArrow(
   }
 }
 
-// Top-level glyphs (no parent) get a strand arrow so they show direction like
-// every other glyph; nested ones inherit it from their container.
+// A glyph whose feature has no parent in the data tree gets a strand arrow so it
+// shows direction; a feature nested under a parent (a gene's CDS/leaf child)
+// does not — its container carries the direction. Keys off the feature's own
+// parent linkage, not layout position, so a top-level layout whose feature still
+// links to a parent is correctly treated as nested.
 export function emitTopLevelStrandArrow(
   layout: FeatureLayout,
+  baseTopPx: number,
   flatbushIdx: number,
   ctx: RenderContext,
   collector: Collector,
@@ -200,7 +204,7 @@ export function emitTopLevelStrandArrow(
   if (!feature.parent?.()) {
     emitStrandArrow(
       feature,
-      0,
+      baseTopPx,
       layout.height,
       colorToUint32(strokeColor(feature, ctx)),
       flatbushIdx,

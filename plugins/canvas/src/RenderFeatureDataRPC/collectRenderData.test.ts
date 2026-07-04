@@ -460,6 +460,156 @@ describe('collectRenderData intron chevrons', () => {
   })
 })
 
+// gene → two mRNA transcripts, each with two CDS exons. The gene routes to
+// Subfeatures; each transcript to ProcessedTranscript stacked at its own y. This
+// pins the emit behavior of the stacked-transcript path: exon rects and intron
+// lines shifted to each transcript's offset, one strand arrow per transcript
+// (transcripts self-emit arrows regardless of nesting), and a subfeatureInfo per
+// transcript parented to the gene.
+function geneWithTwoTranscripts() {
+  function transcript(id: string, base: number, topPx: number) {
+    const cds1 = mockFeature({
+      type: 'CDS',
+      id: `${id}-cds1`,
+      start: base,
+      end: base + 10,
+    })
+    const cds2 = mockFeature({
+      type: 'CDS',
+      id: `${id}-cds2`,
+      start: base + 30,
+      end: base + 40,
+    })
+    const mRNA = mockFeature({
+      type: 'mRNA',
+      id,
+      start: base,
+      end: base + 40,
+      subfeatures: [cds1, cds2],
+    })
+    return {
+      feature: mRNA,
+      glyphType: 'ProcessedTranscript' as const,
+      y: topPx,
+      height: 10,
+      totalLayoutHeight: 10,
+      children: [
+        { ...boxLayout(cds1), y: 0 },
+        { ...boxLayout(cds2), y: 0 },
+      ],
+    }
+  }
+  const tx1 = transcript('tx1', 100, 0)
+  const tx2 = transcript('tx2', 100, 15)
+  const gene = mockFeature({
+    type: 'gene',
+    id: 'g1',
+    start: 100,
+    end: 140,
+    subfeatures: [tx1.feature, tx2.feature],
+  })
+  return {
+    feature: gene,
+    glyphType: 'Subfeatures' as const,
+    y: 0,
+    height: 25,
+    totalLayoutHeight: 25,
+    children: [tx1, tx2],
+  }
+}
+
+describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
+  it('emits exons, introns, and one arrow per transcript at its stacked offset', () => {
+    const layout = geneWithTwoTranscripts()
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      config,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
+
+    // four exon rects (two per transcript)
+    expect(result.rectPositions.length).toBe(4 * 2)
+    // one intron line per transcript, at each transcript's mid-height offset
+    expect([...result.lineYs]).toEqual([5, 20])
+    // one strand arrow per transcript, offset to its row center
+    expect([...result.arrowYs]).toEqual([5, 20])
+    expect(result.arrowXs.length).toBe(2)
+    // each transcript registered as a subfeature parented to the gene
+    expect(result.subfeatureInfos.map(s => s.featureId)).toEqual(['tx1', 'tx2'])
+    expect(
+      result.subfeatureInfos.every(s => s.parentFeatureId === 'g1'),
+    ).toBe(true)
+    expect(result.subfeatureInfos.map(s => s.topPx)).toEqual([0, 15])
+  })
+
+  it('registers a bare leaf child of a stacked gene as a hoverable subfeature', () => {
+    // gene with a transcript (makes it Subfeatures) plus a bare feature with no
+    // subfeatures (a Box child). The leaf must become its own subfeatureInfo
+    // parented to the gene, not just a rect with hover falling back to the gene.
+    const cds = mockFeature({ type: 'CDS', id: 'c1', start: 100, end: 140 })
+    const mRNA = mockFeature({
+      type: 'mRNA',
+      id: 'tx1',
+      start: 100,
+      end: 140,
+      subfeatures: [cds],
+    })
+    const leaf = mockFeature({
+      type: 'regulatory_region',
+      id: 'reg1',
+      start: 150,
+      end: 170,
+    })
+    const gene = mockFeature({
+      type: 'gene',
+      id: 'g1',
+      start: 100,
+      end: 170,
+      subfeatures: [mRNA, leaf],
+    })
+    const layout: FeatureLayout = {
+      feature: gene,
+      glyphType: 'Subfeatures',
+      y: 0,
+      height: 25,
+      totalLayoutHeight: 25,
+      children: [
+        {
+          feature: mRNA,
+          glyphType: 'ProcessedTranscript',
+          y: 0,
+          height: 10,
+          totalLayoutHeight: 10,
+          children: [{ ...boxLayout(cds), y: 0 }],
+        },
+        { ...boxLayout(leaf), y: 15 },
+      ],
+    }
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      config,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
+
+    const leafInfo = result.subfeatureInfos.find(s => s.featureId === 'reg1')
+    expect(leafInfo).toMatchObject({
+      parentFeatureId: 'g1',
+      type: 'regulatory_region',
+      topPx: 15,
+    })
+  })
+})
+
 describe('collectRenderData color-slot robustness', () => {
   // A per-feature color jexl that throws (references an unregistered function)
   // must not fail the whole track render — it degrades to a visible magenta

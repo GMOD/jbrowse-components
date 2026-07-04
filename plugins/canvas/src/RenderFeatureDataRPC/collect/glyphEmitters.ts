@@ -30,15 +30,8 @@ import {
 import { aminoAcidsByFeature, aminoAcidsInRange } from './peptideMapping.ts'
 
 import type { Collector, RenderContext } from './renderContext.ts'
-import type { FeatureLayout, GlyphType } from '../types.ts'
+import type { FeatureLayout } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-function isContainerLayout(layout: FeatureLayout) {
-  return (
-    layout.glyphType === 'ProcessedTranscript' ||
-    layout.glyphType === 'Segments'
-  )
-}
 
 function emitExonRects(
   transcript: FeatureLayout,
@@ -147,52 +140,6 @@ function processTranscriptLayout(
     flatbushIdx,
     collector.arrows,
   )
-}
-
-function processSubfeaturesLayout(
-  layout: FeatureLayout,
-  flatbushIdx: number,
-  ctx: RenderContext,
-  collector: Collector,
-) {
-  const { feature } = layout
-  for (const childLayout of layout.children) {
-    if (isContainerLayout(childLayout)) {
-      processTranscriptLayout(
-        childLayout,
-        childLayout.y,
-        feature,
-        flatbushIdx,
-        ctx,
-        collector,
-      )
-    } else if (childLayout.glyphType === 'MatureProteinRegion') {
-      // A polyprotein CDS nested under a container (gene → CDS → mature
-      // regions); emit its stacked cleavage-product rows at the child's offset
-      // rather than collapsing it to a single flat box. The container feature is
-      // the top-level (root) feature for subfeature hit resolution, but the CDS
-      // itself (childLayout.feature) is passed separately so its own product
-      // name and reading frame are used, not the enclosing gene's.
-      processMatureProteinLayout(
-        childLayout,
-        feature,
-        childLayout.y,
-        flatbushIdx,
-        ctx,
-        collector,
-        childLayout.feature,
-      )
-    } else {
-      pushBoxRect(
-        childLayout.feature,
-        childLayout.y,
-        childLayout.height,
-        flatbushIdx,
-        ctx,
-        collector.rects,
-      )
-    }
-  }
 }
 
 // Register a subfeature as both a hoverable/selectable hit-test entry and (when
@@ -343,7 +290,7 @@ function processMatureProteinLayout(
       collector,
     )
   }
-  emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
+  emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
 }
 
 // Intact transposon (repeat_region): subparts on a single row, joined by one
@@ -355,6 +302,7 @@ function processMatureProteinLayout(
 function processRepeatRegionLayout(
   layout: FeatureLayout,
   feature: Feature,
+  baseTopPx: number,
   flatbushIdx: number,
   ctx: RenderContext,
   collector: Collector,
@@ -363,7 +311,7 @@ function processRepeatRegionLayout(
   collector.lines.push({
     start: feature.get('start'),
     end: feature.get('end'),
-    y: layout.height / 2,
+    y: baseTopPx + layout.height / 2,
     height: layout.height,
     color: strokeUint,
     direction: 0,
@@ -383,11 +331,11 @@ function processRepeatRegionLayout(
     const isBody = childType.endsWith('_retrotransposon')
     const [topPx, heightPx] = isBody
       ? centerShrink(
-          childLayout.y,
+          baseTopPx + childLayout.y,
           childLayout.height,
           REPEAT_BODY_HEIGHT_FRACTION,
         )
-      : [childLayout.y, childLayout.height]
+      : [baseTopPx + childLayout.y, childLayout.height]
     const color = REPEAT_COLOR_MAP[childType]
 
     pushBoxRect(
@@ -417,7 +365,7 @@ function processRepeatRegionLayout(
     )
   }
 
-  emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
+  emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
 }
 
 // CRISPR guide RNA (CrisprGuideAdapter): the whole feature box is the
@@ -428,6 +376,7 @@ function processRepeatRegionLayout(
 // as a hoverable subfeature.
 function processCrisprGuideLayout(
   layout: FeatureLayout,
+  baseTopPx: number,
   flatbushIdx: number,
   ctx: RenderContext,
   collector: Collector,
@@ -435,14 +384,14 @@ function processCrisprGuideLayout(
   const { feature, height } = layout
   const strand = feature.get('strand') ?? 0
 
-  pushBoxRect(feature, 0, height, flatbushIdx, ctx, collector.rects)
+  pushBoxRect(feature, baseTopPx, height, flatbushIdx, ctx, collector.rects)
 
   const pam = getSubfeatures(feature).find(f => featureType(f) === 'PAM')
   if (pam) {
     collector.rects.push({
       start: pam.get('start'),
       end: pam.get('end'),
-      y: 0,
+      y: baseTopPx,
       height,
       color: CRISPR_PAM_COLOR,
       strand,
@@ -454,7 +403,7 @@ function processCrisprGuideLayout(
         feature: pam,
         parentFeatureId: feature.id(),
         type: 'PAM',
-        topPx: 0,
+        topPx: baseTopPx,
         heightPx: height,
         displayLabel: 'PAM',
       },
@@ -468,7 +417,7 @@ function processCrisprGuideLayout(
     collector.rects.push({
       start: cutSite,
       end: cutSite,
-      y: 0,
+      y: baseTopPx,
       height,
       color: CRISPR_CUT_COLOR,
       strand,
@@ -477,69 +426,152 @@ function processCrisprGuideLayout(
     })
   }
 
-  emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
+  emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
 }
 
-function processDefaultLayout(
+// A plain leaf feature. As the top-level glyph it fades on collapse and shows a
+// strand arrow; as a stacked child of a gene (a bare feature beside the gene's
+// transcripts) it is a plain box registered as an individually hoverable/
+// selectable subfeature — mirroring the transcript and mature-protein branches
+// rather than leaving hover to fall back to the whole-gene entry.
+function emitBox(
   layout: FeatureLayout,
+  baseTopPx: number,
+  parentFeature: Feature,
+  isRoot: boolean,
   flatbushIdx: number,
   ctx: RenderContext,
   collector: Collector,
 ) {
+  const { feature, height } = layout
   pushBoxRect(
-    layout.feature,
-    0,
-    layout.height,
+    feature,
+    baseTopPx,
+    height,
     flatbushIdx,
     ctx,
     collector.rects,
     undefined,
-    true,
+    isRoot,
   )
-  emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
+  if (isRoot) {
+    emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
+  } else {
+    registerSubfeature(
+      {
+        feature,
+        parentFeatureId: parentFeature.id(),
+        type: featureType(feature),
+        topPx: baseTopPx,
+        heightPx: height,
+        displayLabel:
+          readFeatureName(ctx.config, feature, ctx.jexl) ??
+          getFeatureName(feature),
+      },
+      ctx,
+      collector,
+    )
+  }
 }
 
-// Top-level emit dispatch keyed by the glyphType the layout pass (glyphs/,
-// selected by findGlyph) tagged each feature with. A Record (rather than a
-// switch) makes the GlyphType union exhaustive: adding a glyph type without a
-// handler here is a compile error. Each handler always emits at topPx 0; the
-// nested offsets are handled by the recursive calls inside the processors.
-type GlyphEmit = (
+// One recursive dispatch over the tagged glyph tree, replacing the former split
+// between a top-level Record and a separate hand-written child switch. Each
+// glyph emits its own primitives at `baseTopPx`; `Subfeatures` recurses into its
+// stacked children, shifting the offset and attributing them to itself as their
+// `parentFeature`. `isRoot` marks the top-level feature (only its box fades on
+// collapse and skips subfeature registration). Strand-arrow suppression for
+// nested features keys off the feature's own parent linkage inside
+// emitTopLevelStrandArrow, independent of layout position.
+function emitGlyph(
   layout: FeatureLayout,
-  feature: Feature,
-  flatbushIdx: number,
+  args: {
+    baseTopPx: number
+    flatbushIdx: number
+    isRoot: boolean
+    parentFeature: Feature
+  },
   ctx: RenderContext,
   collector: Collector,
-) => void
-
-const emitTranscript: GlyphEmit = (
-  layout,
-  feature,
-  flatbushIdx,
-  ctx,
-  collector,
-) => {
-  processTranscriptLayout(layout, 0, feature, flatbushIdx, ctx, collector)
-}
-
-const GLYPH_EMITTERS: Record<GlyphType, GlyphEmit> = {
-  Box: (layout, _feature, flatbushIdx, ctx, collector) => {
-    processDefaultLayout(layout, flatbushIdx, ctx, collector)
-  },
-  ProcessedTranscript: emitTranscript,
-  Segments: emitTranscript,
-  Subfeatures: (layout, _feature, flatbushIdx, ctx, collector) => {
-    processSubfeaturesLayout(layout, flatbushIdx, ctx, collector)
-  },
-  MatureProteinRegion: (layout, feature, flatbushIdx, ctx, collector) => {
-    processMatureProteinLayout(layout, feature, 0, flatbushIdx, ctx, collector)
-  },
-  RepeatRegion: (layout, feature, flatbushIdx, ctx, collector) => {
-    processRepeatRegionLayout(layout, feature, flatbushIdx, ctx, collector)
-  },
-  CrisprGuide: (layout, _feature, flatbushIdx, ctx, collector) => {
-    processCrisprGuideLayout(layout, flatbushIdx, ctx, collector)
-  },
+) {
+  const { baseTopPx, flatbushIdx, isRoot, parentFeature } = args
+  const { feature } = layout
+  switch (layout.glyphType) {
+    case 'Subfeatures': {
+      for (const child of layout.children) {
+        emitGlyph(
+          child,
+          {
+            baseTopPx: baseTopPx + child.y,
+            flatbushIdx,
+            isRoot: false,
+            parentFeature: feature,
+          },
+          ctx,
+          collector,
+        )
+      }
+      break
+    }
+    case 'ProcessedTranscript':
+    case 'Segments': {
+      processTranscriptLayout(
+        layout,
+        baseTopPx,
+        parentFeature,
+        flatbushIdx,
+        ctx,
+        collector,
+      )
+      break
+    }
+    // parentFeature is both the peptide-translation key and the subfeature
+    // attribution root (the enclosing gene when nested, else the CDS itself);
+    // `feature` is the CDS owning the mature-region children, for the label.
+    case 'MatureProteinRegion': {
+      processMatureProteinLayout(
+        layout,
+        parentFeature,
+        baseTopPx,
+        flatbushIdx,
+        ctx,
+        collector,
+        feature,
+      )
+      break
+    }
+    case 'RepeatRegion': {
+      processRepeatRegionLayout(
+        layout,
+        feature,
+        baseTopPx,
+        flatbushIdx,
+        ctx,
+        collector,
+      )
+      break
+    }
+    case 'CrisprGuide': {
+      processCrisprGuideLayout(layout, baseTopPx, flatbushIdx, ctx, collector)
+      break
+    }
+    case 'Box': {
+      emitBox(
+        layout,
+        baseTopPx,
+        parentFeature,
+        isRoot,
+        flatbushIdx,
+        ctx,
+        collector,
+      )
+      break
+    }
+    default: {
+      // exhaustiveness: a new GlyphType without a case here is a compile error
+      const _exhaustive: never = layout.glyphType
+      return _exhaustive
+    }
+  }
 }
 
 export function processFeatureRecord(
@@ -583,10 +615,15 @@ export function processFeatureRecord(
     tooltip: featureTooltip(feature, ctx),
     name,
     strand: strand !== 0 ? strand : undefined,
-    // Box is the only glyph that emits a density-fade rect (processDefaultLayout).
+    // Box is the only glyph that emits a density-fade rect (see emitBox, isRoot).
     densityFade: layout.glyphType === 'Box',
   })
   const flatbushIdx = collector.flatbushItems.length - 1
 
-  GLYPH_EMITTERS[layout.glyphType](layout, feature, flatbushIdx, ctx, collector)
+  emitGlyph(
+    layout,
+    { baseTopPx: 0, flatbushIdx, isRoot: true, parentFeature: feature },
+    ctx,
+    collector,
+  )
 }

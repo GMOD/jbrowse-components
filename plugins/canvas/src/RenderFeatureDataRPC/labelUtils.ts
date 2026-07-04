@@ -73,6 +73,17 @@ export function readFeatureLabels(
 // path reserves height (top-level and overlay labels float without reserving);
 // the name is the feature's own name/id, never a config-jexl slot, so this pass
 // stays jexl-free.
+//
+// KNOWN LIMITATION (compact/superCompact): this reserves a raw LABEL_FONT_SIZE
+// in the worker's normal-mode units, which the main thread then scales by
+// HEIGHT_MULTIPLIERS along with all other geometry. But the label is actually
+// drawn at labelFontSize() = LABEL_FONT_SIZE × LABEL_FONT_MULTIPLIERS, which is
+// deliberately gentler than HEIGHT_MULTIPLIERS. So in compact/superCompact the
+// reserved slot (×0.6 / ×0.3) is smaller than the drawn label (×0.85 / ×0.7)
+// and `below` labels overlap the next row. Correct in normal mode (both ×1). A
+// real fix means reserving this row on the main thread (where labelFontPx and
+// the mode are known) rather than baking it into worker geometry — the worker
+// is intentionally mode-agnostic so compact toggles never trigger a re-fetch.
 export function applyLabelDimensions(
   layout: FeatureLayout,
   args: {
