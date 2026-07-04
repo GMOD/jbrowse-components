@@ -13,15 +13,29 @@ import {
   FormGroup,
   MenuItem,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   dialogContent: {
-    width: '40em',
+    width: '34em',
     display: 'flex',
     flexDirection: 'column',
+    gap: 12,
+  },
+  row: {
+    display: 'flex',
+    gap: 12,
+    '& > *': {
+      flex: 1,
+    },
+  },
+  toggleRow: {
+    display: 'flex',
+    alignItems: 'center',
     gap: 12,
   },
 })
@@ -97,6 +111,10 @@ const SequenceSearchDialog = observer(function SequenceSearchDialog({
     !bothStrandsOff &&
     (mode === 'pattern' ? !!value && !patternError : crisprValid)
 
+  const presetSummary = ENZYME_PRESETS[enzyme]
+    ? `PAM ${pam} · ${guideLength} bp guide · cut ${cutOffset} bp from PAM`
+    : 'Set a custom PAM and geometry below'
+
   function applyPreset(name: string) {
     setEnzyme(name)
     const preset = ENZYME_PRESETS[name]
@@ -161,58 +179,43 @@ const SequenceSearchDialog = observer(function SequenceSearchDialog({
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Sequence search">
       <DialogContent className={classes.dialogContent}>
-        <TextField
-          select
-          label="Search for"
+        <ToggleButtonGroup
+          exclusive
+          fullWidth
+          size="small"
           value={mode}
-          onChange={event => {
-            setMode(event.target.value === 'crispr' ? 'crispr' : 'pattern')
+          onChange={(_event, value) => {
+            if (value) {
+              setMode(value === 'crispr' ? 'crispr' : 'pattern')
+            }
           }}
         >
-          <MenuItem value="pattern">Sequence pattern</MenuItem>
-          <MenuItem value="crispr">CRISPR guide RNAs</MenuItem>
-        </TextField>
+          <ToggleButton value="pattern">Sequence pattern</ToggleButton>
+          <ToggleButton value="crispr">CRISPR guide RNAs</ToggleButton>
+        </ToggleButtonGroup>
 
         {mode === 'pattern' ? (
-          <>
-            <Typography>
-              Supply a sequence to search for. A track will be created with the
-              resulting matches once submitted. You can also supply regex style
-              expressions e.g. AACT(C|T).
-            </Typography>
-            <TextField
-              value={value}
-              onChange={e => {
-                setValue(e.target.value)
-              }}
-              label="Sequence search pattern"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={caseInsensitive}
-                  onChange={event => {
-                    setCaseInsensitive(event.target.checked)
-                  }}
-                />
-              }
-              label="Case insensitive"
-            />
-            {patternError ? (
-              <Typography color="error">{`${patternError}`}</Typography>
-            ) : null}
-          </>
+          <TextField
+            size="small"
+            value={value}
+            onChange={e => {
+              setValue(e.target.value)
+            }}
+            label="Sequence pattern"
+            placeholder="e.g. AACT(C|T)"
+            error={!!patternError}
+            helperText={
+              patternError ? `${patternError}` : 'Plain sequence or a regex'
+            }
+          />
         ) : (
           <>
-            <Typography>
-              Scan the reference for CRISPR guide RNAs. A track is created
-              showing each protospacer, its PAM, and the predicted cut site.
-              Pick an enzyme preset or set a custom PAM.
-            </Typography>
             <TextField
               select
+              size="small"
               label="Enzyme"
               value={enzyme}
+              helperText={presetSummary}
               onChange={event => {
                 applyPreset(event.target.value)
               }}
@@ -223,74 +226,103 @@ const SequenceSearchDialog = observer(function SequenceSearchDialog({
                 </MenuItem>
               ))}
             </TextField>
-            <TextField
-              label="PAM (IUPAC)"
-              value={pam}
-              onChange={event => {
-                setEnzyme('Custom')
-                setPam(event.target.value.toUpperCase())
-              }}
-              helperText="e.g. NGG for SpCas9, TTTV for Cas12a"
-            />
-            <TextField
-              select
-              label="PAM location"
-              value={pamLocation}
-              onChange={event => {
-                setEnzyme('Custom')
-                setPamLocation(event.target.value)
-              }}
-            >
-              <MenuItem value="3prime">3′ of protospacer (Cas9)</MenuItem>
-              <MenuItem value="5prime">5′ of protospacer (Cas12a)</MenuItem>
-            </TextField>
-            <TextField
-              label="Guide length (bp)"
-              value={guideLengthStr}
-              error={!(Number.isFinite(guideLength) && guideLength > 0)}
-              onChange={event => {
-                setEnzyme('Custom')
-                setGuideLengthStr(event.target.value)
-              }}
-            />
-            <TextField
-              label="Cut offset from PAM (bp)"
-              value={cutOffsetStr}
-              error={!Number.isFinite(cutOffset)}
-              onChange={event => {
-                setEnzyme('Custom')
-                setCutOffsetStr(event.target.value)
-              }}
-            />
+            {enzyme === 'Custom' ? (
+              <>
+                <TextField
+                  size="small"
+                  label="PAM (IUPAC)"
+                  value={pam}
+                  onChange={event => {
+                    setPam(event.target.value.toUpperCase())
+                  }}
+                />
+                <div className={classes.row}>
+                  <TextField
+                    size="small"
+                    label="Guide length (bp)"
+                    value={guideLengthStr}
+                    error={!(Number.isFinite(guideLength) && guideLength > 0)}
+                    onChange={event => {
+                      setGuideLengthStr(event.target.value)
+                    }}
+                  />
+                  <TextField
+                    size="small"
+                    label="Cut offset (bp)"
+                    value={cutOffsetStr}
+                    error={!Number.isFinite(cutOffset)}
+                    onChange={event => {
+                      setCutOffsetStr(event.target.value)
+                    }}
+                  />
+                </div>
+                <div className={classes.toggleRow}>
+                  <Typography variant="body2" color="textSecondary">
+                    PAM location
+                  </Typography>
+                  <ToggleButtonGroup
+                    exclusive
+                    size="small"
+                    value={pamLocation}
+                    onChange={(_event, value) => {
+                      if (value) {
+                        setPamLocation(value)
+                      }
+                    }}
+                  >
+                    <ToggleButton value="3prime">3′ (Cas9)</ToggleButton>
+                    <ToggleButton value="5prime">5′ (Cas12a)</ToggleButton>
+                  </ToggleButtonGroup>
+                </div>
+              </>
+            ) : null}
           </>
         )}
 
-        <FormGroup>
+        <FormGroup row>
           <FormControlLabel
             control={
               <Checkbox
+                size="small"
                 checked={searchForward}
                 onChange={event => {
                   setSearchForward(event.target.checked)
                 }}
               />
             }
-            label="Search forward strand"
+            label="Forward strand"
           />
           <FormControlLabel
             control={
               <Checkbox
+                size="small"
                 checked={searchReverse}
                 onChange={event => {
                   setSearchReverse(event.target.checked)
                 }}
               />
             }
-            label="Search reverse strand"
+            label="Reverse strand"
           />
+          {mode === 'pattern' ? (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  size="small"
+                  checked={caseInsensitive}
+                  onChange={event => {
+                    setCaseInsensitive(event.target.checked)
+                  }}
+                />
+              }
+              label="Case insensitive"
+            />
+          ) : null}
         </FormGroup>
         {bothStrandsOff ? (
-          <Typography color="error">Select at least one strand</Typography>
+          <Typography color="error" variant="body2">
+            Select at least one strand
+          </Typography>
         ) : null}
       </DialogContent>
       <DialogActions>
