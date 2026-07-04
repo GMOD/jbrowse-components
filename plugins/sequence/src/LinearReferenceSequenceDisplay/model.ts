@@ -8,6 +8,7 @@ import {
   isSessionWithAddTracks,
   makeTrackId,
 } from '@jbrowse/core/util'
+import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import {
   getRpcSessionId,
   getTrackAssemblyNames,
@@ -27,9 +28,11 @@ import { observable } from 'mobx'
 
 import { buildTextColors } from './components/drawSequence.ts'
 import { buildColorPalette } from './components/sequenceGeometry.ts'
+import { hoverDetailForRow, rowLayout } from './components/sequenceHover.ts'
 
 import type { Canvas2DSequenceRenderer } from './components/Canvas2DSequenceRenderer.ts'
 import type { DrawSequenceState } from './components/drawSequence.ts'
+import type { SequenceHover } from './components/sequenceHover.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type {
@@ -375,6 +378,44 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       * Resolve the genomic position, reference base, and codon/amino-acid under
+       * a cursor at track-relative pixel `(offsetX, offsetY)`. Drives the hover
+       * tooltip; returns undefined when zoomed out, off a fetched region, or
+       * between rows.
+       */
+      hoverAt(offsetX: number, offsetY: number): SequenceHover | undefined {
+        const view = getContainingView(self) as LGV
+        const bp = self.zoomedOut ? undefined : view.pxToBp(offsetX)
+        if (bp && !bp.oob) {
+          const data = self.sequenceData.get(bp.index)
+          const idx = data ? bp.coord0 - data.start : -1
+          if (data && idx >= 0 && idx < data.seq.length) {
+            const row = rowLayout({
+              showForward: self.showForward,
+              showReverse: self.effectiveShowReverse,
+              showTranslation: self.effectiveShowTranslation,
+              reversed: !!bp.reversed,
+            })[Math.floor(offsetY / self.rowHeight)]
+            return {
+              refName: bp.refName,
+              coord: bp.coord,
+              detail: row
+                ? hoverDetailForRow(
+                    row,
+                    data.seq,
+                    data.start,
+                    bp.coord0,
+                    !!bp.reversed,
+                    getGeneticCode(data.geneticCodeId).codonTable,
+                  )
+                : undefined,
+            }
+          }
+        }
+        return undefined
+      },
       async renderSvg(opts?: ExportSvgDisplayOptions) {
         const { renderSvg } = await import('./renderSvg.tsx')
         return renderSvg(self, opts)
