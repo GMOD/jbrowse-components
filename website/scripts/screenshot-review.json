@@ -469,10 +469,10 @@
   },
   "feature_detail_sequence": {
     "name": "feature_detail_sequence",
-    "status": "good",
-    "note": "Resolved: swapped volvox EDEN for the human SELENOP gene on config_demo hg38 + ncbi_refseq_109_hg38_latest (geneGlyphMode longestCoding for a single MANE transcript). Genomic w/ full introns +/- shows the region color-coded (upstream/downstream red, UTR blue, CDS yellow, intron white). Protein view split into new feature_detail_protein spec.",
-    "reviewedAt": "2026-06-25T16:48:04.000Z",
-    "hash": "7e8e59286d86d052f92b179caa75dcb78ced274d"
+    "status": "bad",
+    "note": "use the partial introns for this",
+    "reviewedAt": "2026-07-04T12:18:33.071Z",
+    "hash": "12d7e54e3f987781aa3df7351d670b00d4e389ca"
   },
   "hic_track": {
     "name": "hic_track",
@@ -1163,10 +1163,10 @@
   },
   "sv_cgiab/cnv_log2ratio_genome": {
     "name": "sv_cgiab/cnv_log2ratio_genome",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-03T13:05:02.729Z",
-    "hash": "01a3e7878483370cb00f2bffe15ce49cc67a4834"
+    "status": "bad",
+    "note": "why is baf only taking on values between 0 and 0.5? i thought it should be between 0 and 1. also, it is using indexcov for the coverage but i think this is not well normalized to the 'baseline depth'. is there any way to do that",
+    "reviewedAt": "2026-07-04T12:24:25.812Z",
+    "hash": "862db4c8b3527ca545f09688bfa66c54944cb511"
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
@@ -1177,10 +1177,10 @@
   },
   "sv_cgiab/driver_chr17_loh": {
     "name": "sv_cgiab/driver_chr17_loh",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-03T12:57:48.589Z",
-    "hash": "c06bb1ab4df06d47be6ab6c3f55e347136d49994"
+    "status": "bad",
+    "note": "it is too hard to see anything going on in this figure. this should likely contain the multiwiggle for normal vs tumor coverage raw values. need to use higher resolution also, many of the cnv here are small",
+    "reviewedAt": "2026-07-04T12:25:25.364Z",
+    "hash": "731b13c2614f1c849c8ce2770409bf146057aff8"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
@@ -1199,9 +1199,9 @@
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-03T12:57:48.589Z",
-    "hash": "fe25e0f8629ca50752ecbd487ea408a57a58fcf2"
+    "note": "hard to see what is going on here ",
+    "reviewedAt": "2026-07-04T12:25:47.688Z",
+    "hash": "550a929300cfc43c7469bca8e8ef873e03c21c58"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",

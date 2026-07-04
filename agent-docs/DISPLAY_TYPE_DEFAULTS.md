@@ -46,6 +46,12 @@ Two things make this cheap:
   default doesn't rewrite every track's config — un-pinned tracks just resolve
   differently on their next read.
 
+**Primitives only.** `pinned` is `own !== def.defaultValue` (strict compare) —
+correct for string/number/boolean, but an object/array slot is always
+reference-unequal to its default and reads as *permanently pinned* (session
+default never applies). Give `resolveSlot` a value-equality path before marking a
+collection slot `promotable`.
+
 ### Plain vs. sentinel slots
 
 The only real design choice per slot: **is the default value itself pinnable?**
@@ -62,14 +68,11 @@ The only real design choice per slot: **is the default value itself pinnable?**
   value — `promotedBase` included — is pinnable**, so a track *can* hold
   `displayMode: 'normal'` over a `compact` session default.
 
-The plain flavor's limitation is **kept on purpose** for booleans/numbers, not an
-oversight: the "bad direction" doesn't happen in practice. Soft-clipping-on-by-
-default is rare, and nobody pins a number to *exactly its default* to override a
-session default. Only `displayMode` earned the sentinel, because its default
-(`normal`) is a value users genuinely want to pin. **Don't reflexively add
-sentinels to boolean/number promotable slots** — decide whether the reverse-pin
-case is real first. A boolean that needs it would become tri-state
-(true/false/inherit) and need an explicit inherit affordance in the UI.
+The plain limitation is intentional: the reverse pin doesn't happen in practice
+(nobody sets soft-clipping-on as a default, or pins a number to *exactly* its
+default). Only `displayMode` earned a sentinel, because `normal` is a value users
+genuinely pin. Don't add sentinels reflexively — a boolean that needed one would
+go tri-state (true/false/inherit) and need an inherit control in the UI.
 
 ## The resolver
 
@@ -169,11 +172,9 @@ degrades to "no promoted defaults", never throws.
 
 ## Historical note
 
-An earlier design (this file's prior contents, and the stale block in
-`OTHER_IDEAS.md`) layered admin/user type-default configs via extra
+An earlier design layered admin/user type-default configs via extra
 `mergeTrackConfig` passes in the `SessionTracks.ts` `tracks` getter, with a
-4-part identity/memo key to keep the hydration cache warm. **Superseded** by the
-promotable-slot read-time resolve above: no tracks-getter merge, no admin config
-slot, no cache-key surgery — a slot opts in and the display resolves it on read.
-Kept the "user choice wins / display-type granularity" decisions; dropped the
-machinery.
+4-part memo key to keep the hydration cache warm (also the stale block in
+`OTHER_IDEAS.md`). **Superseded**: a `promotable` slot resolves on read — no
+tracks-getter merge, no admin config slot, no cache-key surgery. Kept the "user
+choice wins / display-type granularity" decisions; dropped the machinery.

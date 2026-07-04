@@ -208,7 +208,7 @@ function scanFilePaths(path: string): Problem[] {
       const ref = match[0].replace(/[./]+$/, '')
       // Only hold a path to account when its package anchor really exists —
       // otherwise it's a placeholder/example path, not a live repo reference.
-      if (repoPathExists(anchorOf(ref)!) && !repoPathExists(ref)) {
+      if (repoPathExists(anchorOf(ref)) && !repoPathExists(ref)) {
         problems.push({
           file: path,
           line: i + 1,
