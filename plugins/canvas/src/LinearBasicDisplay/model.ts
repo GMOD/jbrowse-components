@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   areSlotsAtSessionDefault,
   getConf,
+  getSlotInheritedValue,
   isSlotPinned,
   readConfObject,
   setSlotsSessionDefault,
@@ -110,11 +111,17 @@ export default function stateModelFactory(
         return areSlotsAtSessionDefault(self, ['displayMode'])
       },
 
-      // true when this track pins an explicit height (a non-default value)
-      // rather than inheriting; gates the "Follow default height" reset item so
-      // it only appears when there's a pin to undo.
+      // true when this track pins an explicit mode rather than inheriting the
+      // session default; drives which "Set feature height" radio is checked
+      // (the pinned mode vs the top "Default" entry).
       get isDisplayModePinned() {
         return isSlotPinned(self, 'displayMode')
+      },
+
+      // the mode an un-pinned track would follow (session default, else base);
+      // labels the "Default (X)" radio entry even while this track is pinned.
+      get inheritedDisplayMode(): DisplayMode {
+        return getSlotInheritedValue<DisplayMode>(self, 'displayMode')
       },
 
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
@@ -269,36 +276,37 @@ export default function stateModelFactory(
             {
               icon: HeightIcon,
               label: 'Set feature height',
+              // One radio group. The top "Default" entry follows the session
+              // default (un-pins); each explicit mode pins the track. Below it,
+              // one checkbox promotes the current mode as the session default.
               subMenu: [
-                ...radioSubMenu(
-                  'Set feature height',
-                  self.displayMode,
-                  displayModeOptions,
-                  value => {
-                    self.setDisplayMode(value)
+                {
+                  label: `Default (${displayModeLabel(self.inheritedDisplayMode)})`,
+                  type: 'radio' as const,
+                  checked: !self.isDisplayModePinned,
+                  onClick: () => {
+                    self.resetDisplayMode()
                   },
-                ).subMenu,
+                },
+                ...displayModeOptions.map(option => ({
+                  label: option.label,
+                  type: 'radio' as const,
+                  checked:
+                    self.isDisplayModePinned &&
+                    self.displayMode === option.value,
+                  onClick: () => {
+                    self.setDisplayMode(option.value)
+                  },
+                })),
                 { type: 'divider' as const },
                 {
-                  label: `Use "${displayModeLabel(self.displayMode)}" by default for all tracks like this`,
+                  label: `Use "${displayModeLabel(self.displayMode)}" as the default for feature tracks`,
                   type: 'checkbox' as const,
                   checked: self.isDisplayModeDefault,
                   onClick: () => {
                     self.setDisplayModeDefault(!self.isDisplayModeDefault)
                   },
                 },
-                // only offered when a pin exists to undo, so un-pinned tracks
-                // don't carry a redundant reset
-                ...(self.isDisplayModePinned
-                  ? [
-                      {
-                        label: 'Follow default height',
-                        onClick: () => {
-                          self.resetDisplayMode()
-                        },
-                      },
-                    ]
-                  : []),
               ],
             },
           ]

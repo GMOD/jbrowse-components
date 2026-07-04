@@ -41,6 +41,18 @@ interface FeatureHeightModel {
   setCompactnessDefault: (promote: boolean) => void
 }
 
+// Names the height the track currently shows — a preset label when it matches
+// one, else "custom height". Lets the "make default" checkbox say what it will
+// promote instead of the ambiguous "current height".
+function currentCompactnessLabel(model: FeatureHeightModel) {
+  const preset = Object.values(COMPACTNESS_PRESETS).find(
+    p =>
+      model.featureHeight === p.featureHeight &&
+      model.featureSpacing === p.featureSpacing,
+  )
+  return preset ? `"${preset.label}"` : 'the custom height'
+}
+
 export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
   return {
     label: 'Set feature height...',
@@ -71,7 +83,7 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
         },
       },
       {
-        label: 'Use current height by default on all alignments tracks',
+        label: `Use ${currentCompactnessLabel(model)} as the default for alignments tracks`,
         type: 'checkbox' as const,
         checked: model.isCompactnessDefault,
         onClick: () => {

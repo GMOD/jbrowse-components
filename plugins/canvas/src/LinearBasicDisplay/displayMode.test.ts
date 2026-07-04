@@ -231,6 +231,22 @@ describe('canvas display displayMode resolution', () => {
     expect(pinned.isDisplayModePinned).toBe(true)
   })
 
+  it('inheritedDisplayMode is what the "Default" menu entry would follow', () => {
+    // labels the "Default (X)" radio: the session default even while the track
+    // pins something else, and the base mode when nothing is promoted.
+    const { session, display } = createDisplay('normal')
+    expect(display.inheritedDisplayMode).toBe('normal') // base, nothing promoted
+
+    session.setDisplayTypeDefault(
+      'LinearBasicDisplay',
+      'displayMode',
+      'superCompact',
+    )
+    display.setDisplayMode('compact') // pin compact over the superCompact default
+    expect(display.displayMode).toBe('compact')
+    expect(display.inheritedDisplayMode).toBe('superCompact') // what un-pin follows
+  })
+
   it('ignores a session default that is not a valid display mode', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
