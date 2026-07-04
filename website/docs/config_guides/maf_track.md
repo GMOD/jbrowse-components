@@ -206,7 +206,7 @@ With all ~470 species drawn at once, the per-row identity heatmap turns the
 whole phylogeny into a conservation picture: coding exons light up as conserved
 bands top-to-bottom while the introns stay divergent.
 
-<Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus with all ~470 species drawn as thin rows and the per-row identity heatmap pinned on (red = divergent, blue = conserved). The coding exons read as conserved blue columns across the entire phylogeny while the introns stay red — genome-scale conservation at a glance."/>
+<Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus. Fit-to-display-height mode squeezes all ~470 species into a 600px-tall display, so every row goes near-1px and the whole alignment reads as a texture with the guide tree (dendrogram) down the left. The per-row identity heatmap colors each base by whether it matches the reference row — blue where conserved, red where divergent (see the top-right legend). Conserved coding columns run blue top-to-bottom across the entire phylogeny, while gaps and less-conserved regions break up as red/white streaks."/>
 
 To read a region in detail, narrow the hundreds of species to a focused set. The
 track menu's **Edit row arrangement** dialog (or clicking an internal node of

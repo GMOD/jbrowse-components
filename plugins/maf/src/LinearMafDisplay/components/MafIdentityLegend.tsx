@@ -30,8 +30,10 @@ const MafIdentityLegend = observer(function MafIdentityLegend({
   return (
     <MafLegend
       entries={[
-        { label: 'Divergent', color: rgb(0) },
-        { label: 'Conserved', color: rgb(1) },
+        // header (no swatch) names the metric so the ramp isn't ambiguous
+        { label: 'Per-base identity to reference' },
+        { label: 'Conserved (base matches)', color: rgb(1) },
+        { label: 'Divergent (base differs)', color: rgb(0) },
       ]}
     />
   )

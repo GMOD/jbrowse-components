@@ -82,14 +82,17 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
 
   const guideLength = Number(guideLengthStr)
   const cutOffset = Number(cutOffsetStr)
+  // both are bp counts used for fixed-length string slicing, so a fractional
+  // value would silently truncate and skew the placement
+  const guideLengthValid = Number.isInteger(guideLength) && guideLength > 0
+  const cutOffsetValid = Number.isInteger(cutOffset)
   // each PAM position must be a single IUPAC code (one base); other characters
   // would leak into the match regex and break the fixed-length placement
   const pamValid = /^[ACGTRYSWKMBDHVN]+$/.test(pam)
   const canSubmit =
     pamValid &&
-    Number.isFinite(guideLength) &&
-    guideLength > 0 &&
-    Number.isFinite(cutOffset) &&
+    guideLengthValid &&
+    cutOffsetValid &&
     (searchForward || searchReverse)
 
   const presetSummary = ENZYME_PRESETS[enzyme]
@@ -110,7 +113,10 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
   function handleSubmit() {
     addReferenceScanTrack(model, {
       trackId: `crispr_guides_${Date.now()}`,
-      name: `CRISPR guides ${pam}`,
+      name:
+        enzyme === 'Custom'
+          ? `CRISPR guides ${pam}`
+          : `CRISPR guides ${enzyme} (${pam})`,
       adapter: {
         type: 'CrisprGuideAdapter',
         pam,
@@ -161,7 +167,7 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
                 size="small"
                 label="Guide length (bp)"
                 value={guideLengthStr}
-                error={!(Number.isFinite(guideLength) && guideLength > 0)}
+                error={!guideLengthValid}
                 onChange={event => {
                   setGuideLengthStr(event.target.value)
                 }}
@@ -170,7 +176,7 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
                 size="small"
                 label="Cut offset (bp)"
                 value={cutOffsetStr}
-                error={!Number.isFinite(cutOffset)}
+                error={!cutOffsetValid}
                 onChange={event => {
                   setCutOffsetStr(event.target.value)
                 }}

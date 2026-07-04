@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { AssemblySelector, Dialog } from '@jbrowse/core/ui'
+import { Dialog } from '@jbrowse/core/ui'
 import { isElectron } from '@jbrowse/core/util'
 import {
   Button,
@@ -11,8 +11,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { BlatChallengeError } from './blatQuery.ts'
-import { desktopBlatFetch, openBlatChallenge } from './desktopBlat.ts'
+import UcscQueryFields from './UcscQueryFields.tsx'
 import {
   DEFAULT_ISPCR_URL,
   DEFAULT_MAX_PRODUCT_SIZE,
@@ -21,7 +20,7 @@ import {
   parseIsPcrResponse,
   runIsPcr,
 } from './ispcrQuery.ts'
-import { addResultTrack, resolveUcscDb } from './ucscShared.ts'
+import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -36,87 +35,49 @@ const IsPcrDialog = observer(function IsPcrDialog({
   session: AbstractSessionModel
   handleClose: () => void
 }) {
-  const { assemblyNames } = session
-  const [assembly, setAssembly] = useState(assemblyNames[0] ?? '')
-  const [db, setDb] = useState(() =>
-    resolveUcscDb(session, assemblyNames[0] ?? ''),
-  )
-  const [urlBase, setUrlBase] = useState(DEFAULT_ISPCR_URL)
-  const [apiKey, setApiKey] = useState('')
+  const query = useUcscQuery({
+    session,
+    handleClose,
+    defaultUrl: DEFAULT_ISPCR_URL,
+  })
+  const { db, urlBase, apiKey, loading, challenged, error } = query
   const [forwardPrimer, setForwardPrimer] = useState('')
   const [reversePrimer, setReversePrimer] = useState('')
   const [maxProductSize, setMaxProductSize] = useState(DEFAULT_MAX_PRODUCT_SIZE)
-  const [loading, setLoading] = useState(false)
-  const [challenged, setChallenged] = useState(false)
-  const [error, setError] = useState<unknown>()
 
   const fwd = cleanPrimer(forwardPrimer)
   const rev = cleanPrimer(reversePrimer)
   const tooShort =
     fwd.length < MINIMUM_PRIMER_LENGTH || rev.length < MINIMUM_PRIMER_LENGTH
 
-  async function fetchFeatures() {
-    if (isElectron) {
-      const { ok, status, text } = await desktopBlatFetch({
-        url: urlBase,
-        body: buildIsPcrBody({
-          db,
-          forwardPrimer: fwd,
-          reversePrimer: rev,
-          maxProductSize,
-          apiKey,
-        }),
-      })
-      if (!ok) {
-        throw new Error(`hgPcr request failed (${status})`)
-      }
-      return parseIsPcrResponse(text)
-    }
-    return runIsPcr({
-      db,
-      forwardPrimer: fwd,
-      reversePrimer: rev,
-      urlBase,
-      maxProductSize,
-      apiKey,
-    })
-  }
-
   async function handleSubmit() {
-    setLoading(true)
-    setError(undefined)
-    setChallenged(false)
-    try {
-      const features = await fetchFeatures()
-      if (!features.length) {
-        throw new Error('No PCR products found')
-      }
-      addResultTrack({
-        session,
-        assembly,
-        features,
-        trackIdPrefix: 'ispcr',
-        trackName: `In-silico PCR ${new Date().toLocaleTimeString()}`,
-      })
-      handleClose()
-    } catch (e) {
-      console.error(e)
-      if (e instanceof BlatChallengeError) {
-        setChallenged(true)
-      }
-      setError(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleSolveChallenge() {
-    const solved = await openBlatChallenge(urlBase)
-    if (solved) {
-      await handleSubmit()
-    } else {
-      session.notify('CAPTCHA window closed before it was solved', 'warning')
-    }
+    await query.runQuery({
+      fetchFeatures: () =>
+        runUcscFetch({
+          urlBase,
+          buildBody: () =>
+            buildIsPcrBody({
+              db,
+              forwardPrimer: fwd,
+              reversePrimer: rev,
+              maxProductSize,
+              apiKey,
+            }),
+          parse: parseIsPcrResponse,
+          runDirect: () =>
+            runIsPcr({
+              db,
+              forwardPrimer: fwd,
+              reversePrimer: rev,
+              urlBase,
+              maxProductSize,
+              apiKey,
+            }),
+        }),
+      trackIdPrefix: 'ispcr',
+      trackName: `In-silico PCR ${new Date().toLocaleTimeString()}`,
+      emptyMessage: 'No PCR products found',
+    })
   }
 
   return (
@@ -134,37 +95,10 @@ const IsPcrDialog = observer(function IsPcrDialog({
           Enter a forward and reverse primer to find their PCR products against
           the UCSC in-silico PCR server. Products are added as a new track.
         </Typography>
-        <AssemblySelector
+        <UcscQueryFields
           session={session}
-          selected={assembly}
-          onChange={arg => {
-            setAssembly(arg)
-            setDb(resolveUcscDb(session, arg))
-          }}
-        />
-        <TextField
-          label="UCSC database"
-          value={db}
-          onChange={event => {
-            setDb(event.target.value)
-          }}
-          helperText="UCSC genome db id to query against (e.g. hg38)"
-        />
-        <TextField
-          label="In-silico PCR server URL"
-          value={urlBase}
-          onChange={event => {
-            setUrlBase(event.target.value)
-          }}
-          helperText="Point at a mirror or self-hosted proxy if the default is unavailable"
-        />
-        <TextField
-          label="UCSC apiKey (optional)"
-          value={apiKey}
-          onChange={event => {
-            setApiKey(event.target.value)
-          }}
-          helperText="Bypasses the UCSC CAPTCHA. Generate one at a UCSC Genome Browser account → Hub Development → API key. Not needed when the server URL is a proxy that injects a key."
+          query={query}
+          urlLabel="In-silico PCR server URL"
         />
         <TextField
           label="Forward primer"
@@ -222,7 +156,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
           <Button
             variant="outlined"
             disabled={loading}
-            onClick={() => void handleSolveChallenge()}
+            onClick={() => void query.solveChallenge(() => void handleSubmit())}
           >
             Solve CAPTCHA
           </Button>

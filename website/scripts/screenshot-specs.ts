@@ -3432,7 +3432,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 500 },
       // clicking the current selection text opens the Tracks dropdown; pick the
       // stvar VCF (substring match) so File Type switches to VCF
-      { type: 'click', text: 'somatic-CNV' },
+      { type: 'click', text: 'somatic CNV calls' },
       { type: 'waitForText', text: 'somatic-stvar' },
       { type: 'click', text: 'somatic-stvar' },
       { type: 'delay', ms: 1000 },
@@ -3595,17 +3595,47 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/deletion_sv_inspector_search',
     url: cgiabUrl({
+      sessionTracks: [
+        // hg38 NCBI RefSeq genes (chr-named, CSI-indexed) so the LGV below the
+        // inspector shows CUZD1's gene model over the deletion (reviewer)
+        {
+          type: 'FeatureTrack',
+          trackId: 'hg38_ncbiRefSeq_ucsc',
+          name: 'NCBI RefSeq genes (hg38)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            gffGzLocation: {
+              uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi',
+                locationType: 'UriLocation',
+              },
+              indexType: 'CSI',
+            },
+          },
+        },
+      ],
       views: [
         {
           type: 'SvInspectorView',
           assembly: 'GRCh38_GIABv3',
+          // shorter inspector so the LGV below gets more room (reviewer: not so
+          // tall)
+          height: 420,
           uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.4-20250714/GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf.gz',
         },
         {
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr10:122,823,828-122,852,611',
-          tracks: ['GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf'],
+          tracks: [
+            'hg38_ncbiRefSeq_ucsc',
+            'GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf',
+          ],
         },
       ],
     }),
@@ -4112,6 +4142,10 @@ export const specs: ScreenshotSpec[] = [
           // loads (vs the whole ±60kb overview) while still showing CDKN2A and
           // flanking single-copy-loss context
           loc: 'chr9:21,930,000-21,990,000',
+          // offset track labels onto their own line so the long track names
+          // (fine-scale coverage / PacBio HiFi reads) don't overlap the data
+          // (reviewer)
+          trackLabels: 'offset',
           tracks: [
             {
               // genes compact so the RefSeq isoforms collapse to a thin band
@@ -7010,13 +7044,15 @@ export const specs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'hg38.multiz470way',
-          // fit-to-display-height: all ~470 rows packed into a compact track —
-          // rows go sub-pixel but the conserved/divergent banding still reads as
-          // a texture, and the whole figure is far less overwhelming than a
-          // full-screen wall. The top-right legend names the red/blue ramp.
+          // fit-to-display-height: the `height` config slot pins the whole
+          // display to 600px while rowHeight stays at its default 0 (fit mode),
+          // so all ~470 rows squeeze into 600px at ~1px each. Rows go sub-pixel
+          // but the conserved/divergent banding still reads as a texture, and
+          // the whole phylogeny is visible at once instead of scrolling off.
+          // The top-right legend names the red/blue ramp.
           displaySnapshot: {
             type: 'LinearMafDisplay',
-            heightOverride: 560,
+            height: 600,
             rowIdentityMode: 'heatmap',
             rowIdentityAutoZoom: false,
           },
@@ -7026,7 +7062,9 @@ export const specs: ScreenshotSpec[] = [
     readyText: '6,53',
     readyTimeout: 120000,
     viewportWidth: 1100,
-    viewportHeight: 680,
+    // tall enough that the whole 600px fit-to-height display + the view header
+    // sit inside the frame with no scroll-off
+    viewportHeight: 800,
     // all ~470 species over remote UCSC data — long settle so the heatmap is
     // fully painted and the loading indicator has cleared before capture
     settleMs: 35000,

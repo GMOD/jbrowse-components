@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { AssemblySelector, Dialog } from '@jbrowse/core/ui'
+import { Dialog } from '@jbrowse/core/ui'
 import { isElectron } from '@jbrowse/core/util'
 import {
   Button,
@@ -11,8 +11,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import UcscQueryFields from './UcscQueryFields.tsx'
 import {
-  BlatChallengeError,
   DEFAULT_BLAT_URL,
   MAXIMUM_BLAT_LENGTH,
   MINIMUM_BLAT_LENGTH,
@@ -20,8 +20,7 @@ import {
   parseBlatResponse,
   runBlat,
 } from './blatQuery.ts'
-import { desktopBlatFetch, openBlatChallenge } from './desktopBlat.ts'
-import { addResultTrack, resolveUcscDb } from './ucscShared.ts'
+import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -40,74 +39,27 @@ const BlatDialog = observer(function BlatDialog({
   session: AbstractSessionModel
   handleClose: () => void
 }) {
-  const { assemblyNames } = session
-  const [assembly, setAssembly] = useState(assemblyNames[0] ?? '')
-  const [db, setDb] = useState(() =>
-    resolveUcscDb(session, assemblyNames[0] ?? ''),
-  )
-  const [urlBase, setUrlBase] = useState(DEFAULT_BLAT_URL)
-  const [apiKey, setApiKey] = useState('')
+  const query = useUcscQuery({ session, handleClose, defaultUrl: DEFAULT_BLAT_URL })
+  const { db, urlBase, apiKey, loading, challenged, error } = query
   const [seq, setSeq] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [challenged, setChallenged] = useState(false)
-  const [error, setError] = useState<unknown>()
 
   const cleanSeq = stripFasta(seq)
   const tooShort = cleanSeq.length < MINIMUM_BLAT_LENGTH
   const tooLong = cleanSeq.length > MAXIMUM_BLAT_LENGTH
 
-  // desktop routes through the main process to bypass renderer CORS (so a
-  // direct hgBlat call with the user's apiKey works without a proxy); web uses
-  // a direct fetch, which needs the server URL to be a CORS-enabled proxy
-  async function fetchFeatures() {
-    if (isElectron) {
-      const { ok, status, text } = await desktopBlatFetch({
-        url: urlBase,
-        body: buildBlatBody({ db, seq: cleanSeq, apiKey }),
-      })
-      if (!ok) {
-        throw new Error(`BLAT request failed (${status})`)
-      }
-      return parseBlatResponse(text)
-    }
-    return runBlat({ db, seq: cleanSeq, urlBase, apiKey })
-  }
-
   async function handleSubmit() {
-    setLoading(true)
-    setError(undefined)
-    setChallenged(false)
-    try {
-      const features = await fetchFeatures()
-      if (!features.length) {
-        throw new Error('No BLAT hits found')
-      }
-      addResultTrack({
-        session,
-        assembly,
-        features,
-        trackIdPrefix: 'blat',
-        trackName: `BLAT ${new Date().toLocaleTimeString()}`,
-      })
-      handleClose()
-    } catch (e) {
-      console.error(e)
-      if (e instanceof BlatChallengeError) {
-        setChallenged(true)
-      }
-      setError(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleSolveChallenge() {
-    const solved = await openBlatChallenge(urlBase)
-    if (solved) {
-      await handleSubmit()
-    } else {
-      session.notify('CAPTCHA window closed before it was solved', 'warning')
-    }
+    await query.runQuery({
+      fetchFeatures: () =>
+        runUcscFetch({
+          urlBase,
+          buildBody: () => buildBlatBody({ db, seq: cleanSeq, apiKey }),
+          parse: parseBlatResponse,
+          runDirect: () => runBlat({ db, seq: cleanSeq, urlBase, apiKey }),
+        }),
+      trackIdPrefix: 'blat',
+      trackName: `BLAT ${new Date().toLocaleTimeString()}`,
+      emptyMessage: 'No BLAT hits found',
+    })
   }
 
   return (
@@ -125,37 +77,10 @@ const BlatDialog = observer(function BlatDialog({
           Paste a DNA sequence to search against the UCSC BLAT server. Results
           are added as a new track. Searches are limited to 25kb.
         </Typography>
-        <AssemblySelector
+        <UcscQueryFields
           session={session}
-          selected={assembly}
-          onChange={arg => {
-            setAssembly(arg)
-            setDb(resolveUcscDb(session, arg))
-          }}
-        />
-        <TextField
-          label="UCSC database"
-          value={db}
-          onChange={event => {
-            setDb(event.target.value)
-          }}
-          helperText="UCSC genome db id BLAT queries against (e.g. hg38)"
-        />
-        <TextField
-          label="BLAT server URL"
-          value={urlBase}
-          onChange={event => {
-            setUrlBase(event.target.value)
-          }}
-          helperText="Point at a mirror or self-hosted proxy if the default is unavailable"
-        />
-        <TextField
-          label="UCSC apiKey (optional)"
-          value={apiKey}
-          onChange={event => {
-            setApiKey(event.target.value)
-          }}
-          helperText="Bypasses the UCSC CAPTCHA. Generate one at a UCSC Genome Browser account → Hub Development → API key. Not needed when the server URL is a proxy that injects a key."
+          query={query}
+          urlLabel="BLAT server URL"
         />
         <TextField
           label="Sequence"
@@ -169,6 +94,11 @@ const BlatDialog = observer(function BlatDialog({
           placeholder="Paste DNA sequence or FASTA"
           slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
         />
+        {tooShort && cleanSeq ? (
+          <Typography color="error">
+            {`Sequence must be at least ${MINIMUM_BLAT_LENGTH} bp`}
+          </Typography>
+        ) : null}
         {tooLong ? (
           <Typography color="error">
             {`Sequence is ${cleanSeq.length.toLocaleString()} bp; UCSC BLAT is limited to ${MAXIMUM_BLAT_LENGTH.toLocaleString()} bp`}
@@ -196,7 +126,7 @@ const BlatDialog = observer(function BlatDialog({
           <Button
             variant="outlined"
             disabled={loading}
-            onClick={() => void handleSolveChallenge()}
+            onClick={() => void query.solveChallenge(() => void handleSubmit())}
           >
             Solve CAPTCHA
           </Button>

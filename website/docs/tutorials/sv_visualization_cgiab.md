@@ -464,7 +464,7 @@ For small to medium SVs, the linear genome view is usually all you need. Use the
 — for example, `SV_85`, a heterozygous deletion that affects two exons of the
 CUZD1 gene.
 
-<Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The table's SVTYPE column reports the call as a DEL, and clicking the row's location link opens the region in the linear genome view below, where the same call is drawn as the <DEL> ALT allele on the variant." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
+<Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The table's SVTYPE column reports the call as a DEL, and clicking the row's location link opens the region in the linear genome view below, where the same call is drawn as the <DEL> ALT allele on the variant, above the NCBI RefSeq gene track showing the affected CUZD1 exons." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
 Opening the gene annotations and the tumor PacBio HiFi reads, switching the
 reads to **compact** mode, and applying **Sort by base pair** with the deletion
@@ -539,7 +539,7 @@ Plotted with the default line/area rendering, this resolves the deletion's
 boundaries almost exactly: depth drops from ~65x to precisely 0 right at
 `chr9:21,952,497-21,972,343`, matching the benchmark call almost to the base.
 
-<Figure caption="CDKN2A on chr9: NCBI RefSeq genes (top), true per-base tumor coverage (second), the whole-genome log2 ratio for scale/context (third), and the benchmark CNV calls (bottom). The benchmark SV_75 call is a focal homozygous deletion (copy number 0); per-base coverage drops from ~65x to precisely 0 across the deletion's exact boundaries, while the 500bp-binned log2 ratio shows the same drop with less precision. This homozygous-vs-heterozygous distinction tells a complete two-hit suppressor knockout from a single allelic loss." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+<Figure caption="The CDKN2A deletion on chr9, top to bottom: NCBI RefSeq genes (compact display), the per-base coverage BigWig, the PacBio HiFi read pileup, and the benchmark CNV calls. The deletion reads as coverage dropping to 0 and a gap in the pileup right at the deletion's edges. The pileup has 'View as pairs / link supplementary alignments' on, so each read and its split (supplementary) segments are chained onto one row; the salmon reads are those split long-read alignments spanning the deletion breakpoints (they are colored by strand — salmon forward, purple reverse). The bottom track is the benchmark CNV call, whose feature label reads the copy-number columns from the BED." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 #### chr17: loss-with-LOH vs copy-neutral LOH
 

@@ -178,9 +178,9 @@
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
     "status": "good",
-    "note": "boxed the SV_20 grid row (chr3:139,976,414, the chr3<->chr13 CHROMOPLEXY translocation that translocation_breakpoint_split drills into) instead of the chord itself: confirmed via React-fiber feature lookup that the matching chord is data-testid chord-vcf-19, but its 1px stroke has no reliable on-screen anchor for hover/box (geometry does not map cleanly through the circular view screen transform); the grid row carries the same identity in readable text and is the dependable anchor. Added a hover action (text match) first since the row is mounted in the DataGrid virtualization buffer but scrolled out of the visible viewport; Puppeteer auto-scrolls on hover.",
-    "reviewedAt": "2026-07-02T02:59:45.866Z",
-    "hash": "9ca151fdb39fcfe2223a31bf236ad15e78fcd775"
+    "note": "",
+    "reviewedAt": "2026-07-04T20:41:32.173Z",
+    "hash": "1001d0afd4a0239f2f2008080f51e61d2097d6da"
   },
   "sv_cgiab/cnv_show_all_regions": {
     "name": "sv_cgiab/cnv_show_all_regions",
@@ -596,17 +596,17 @@
   },
   "trio-matrix-phased": {
     "name": "trio-matrix-phased",
-    "status": "bad",
-    "note": "this captured a loading state (jbrowse-web global loading)",
-    "reviewedAt": "2026-07-04T20:04:47.009Z",
-    "hash": "96792e848b76445e16122124ba4c0af845f0ac17"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-04T20:41:29.264Z",
+    "hash": "a2e1161435c6e1b7318130604c0bc3878acf1b9f"
   },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
-    "status": "bad",
-    "note": "this did not capture phased mode",
-    "reviewedAt": "2026-07-04T20:04:59.554Z",
-    "hash": "f00544720258d3a9caa1e548b888f335431b5135"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-04T20:41:28.573Z",
+    "hash": "ee1d5c7225f9efed36d691374ac71151283d6e78"
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
@@ -872,10 +872,10 @@
   },
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
-    "status": "bad",
-    "note": "this captured a temporary loading state for both the linear genome view and the sv inspector view itself",
-    "reviewedAt": "2026-07-04T20:04:25.478Z",
-    "hash": "2e6b4d4483871820190f2ff49291c51916acd450"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-04T20:58:05.423Z",
+    "hash": "81b44668cfb14146433c27409a162d9de6f91132"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
@@ -1079,10 +1079,10 @@
   },
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
-    "status": "bad",
-    "note": "this captured a mobx-state-tree error",
-    "reviewedAt": "2026-07-04T20:04:34.243Z",
-    "hash": "c06f4594872c0bf6f22c330785cb9ec558add18e"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-04T20:41:40.018Z",
+    "hash": "aced031db5c5be0667f7ef2b9def6b846368040b"
   },
   "feature_detail_protein": {
     "name": "feature_detail_protein",
@@ -1121,10 +1121,10 @@
   },
   "maf_470way": {
     "name": "maf_470way",
-    "status": "bad",
-    "note": "unclear what \"divergent\" vs \"conserved\" indicates. this just isn't a very clear image of what is going on. display even denser display with fit to display height with small e.g. 600px tall display height, even if it makes very small row heights.",
-    "reviewedAt": "2026-07-04T17:56:45.304Z",
-    "hash": "0ac4aec89c687b1a9c65647738ac263dc516a794"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-04T20:58:05.422Z",
+    "hash": "c363890cb08cac49894cb9b0caa384a08881fc41"
   },
   "maf_470way_codon": {
     "name": "maf_470way_codon",
@@ -1164,9 +1164,9 @@
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
     "status": "good",
-    "note": "might want to show with alignments track reads in 'compact' mode",
-    "reviewedAt": "2026-07-04T19:59:06.482Z",
-    "hash": "868a6dfe35aee2c68d93a0a3b660164493032b76"
+    "note": "",
+    "reviewedAt": "2026-07-04T20:58:05.423Z",
+    "hash": "3e23d02091529a924d15d59d0d5ecd103f8bdd43"
   },
   "sv_cgiab/driver_chr17_loh": {
     "name": "sv_cgiab/driver_chr17_loh",

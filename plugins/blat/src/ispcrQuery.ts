@@ -37,10 +37,12 @@ export function parseIsPcrResponse(text: string): SimpleFeatureSerialized[] {
     const size = Number(sizeStr)
 
     // the primer at the low-coordinate end is the forward primer on a plus
-    // product and the reverse primer on a minus product
-    const startPrimer = strand === 1 ? fwd! : rev!
-    const endPrimer = strand === 1 ? rev! : fwd!
-    const uniqueId = `ispcr-${refName}-${start}-${end}`
+    // product and the reverse primer on a minus product; label each footprint by
+    // the primer that actually sits there so it stays correct on both strands
+    const startIsFwd = strand === 1
+    const startPrimer = startIsFwd ? fwd! : rev!
+    const endPrimer = startIsFwd ? rev! : fwd!
+    const uniqueId = `ispcr-${refName}-${start}-${end}-${strand}`
 
     features.push({
       uniqueId,
@@ -54,7 +56,8 @@ export function parseIsPcrResponse(text: string): SimpleFeatureSerialized[] {
       reversePrimer: rev,
       subfeatures: [
         {
-          uniqueId: `${uniqueId}-fwd`,
+          uniqueId: `${uniqueId}-${startIsFwd ? 'fwd' : 'rev'}`,
+          name: startIsFwd ? 'forward primer' : 'reverse primer',
           refName: refName!,
           start,
           end: start + startPrimer.length,
@@ -62,7 +65,8 @@ export function parseIsPcrResponse(text: string): SimpleFeatureSerialized[] {
           type: 'primer',
         },
         {
-          uniqueId: `${uniqueId}-rev`,
+          uniqueId: `${uniqueId}-${startIsFwd ? 'rev' : 'fwd'}`,
+          name: startIsFwd ? 'reverse primer' : 'forward primer',
           refName: refName!,
           start: end - endPrimer.length,
           end,

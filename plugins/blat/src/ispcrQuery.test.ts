@@ -43,6 +43,22 @@ test('parses a minus-strand amplicon', () => {
   expect(f!.end).toBe(250)
 })
 
+test('labels primer footprints by the primer that sits there on a minus product', () => {
+  // on a minus-strand product the reverse primer footprint is at the low
+  // coordinate and the forward primer at the high coordinate
+  const [low, high] = parseIsPcrResponse(response)[1]!.subfeatures!
+  expect(low!).toMatchObject({
+    uniqueId: 'ispcr-chr17-99-250--1-rev',
+    start: 99,
+    name: 'reverse primer',
+  })
+  expect(high!).toMatchObject({
+    uniqueId: 'ispcr-chr17-99-250--1-fwd',
+    end: 250,
+    name: 'forward primer',
+  })
+})
+
 test('throws BlatChallengeError on a Cloudflare turnstile page', () => {
   expect(() =>
     parseIsPcrResponse('<html><div class="cf-turnstile"></div></html>'),
