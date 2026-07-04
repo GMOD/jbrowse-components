@@ -4,20 +4,10 @@ title: BaseTrackModel
 sidebar_label: Track -> BaseTrackModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseTrackModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts).
 
 ## Overview
 
@@ -25,25 +15,8 @@ these MST models only exist for tracks that are _shown_. they should contain
 only UI state for the track, and have a reference to a track configuration. note
 that multiple displayed tracks could use the same configuration.
 
-<details open>
-<summary>BaseTrackModel - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                           |
-| ------------------------------------------ | --------------------------------------------------- |
-| [`id`](#property-id)                       | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| [`type`](#property-type)                   | `ISimpleType<string>`                               |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                         |
-| [`minimized`](#property-minimized)         | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`pinned`](#property-pinned)               | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`displays`](#property-displays)           | `IArrayType<IAnyType>`                              |
-
-</details>
-
 <details>
-<summary>BaseTrackModel - Properties (all signatures)</summary>
+<summary>BaseTrackModel - Properties</summary>
 
 #### property: id
 
@@ -131,23 +104,10 @@ list
 type saveTrackDataMenuItem = MenuItem
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature     |
-| ------------------------------------------------ | ------------- |
-| [`trackId`](#getter-trackid)                     | `string`      |
-| [`name`](#getter-name)                           | `string`      |
-| [`textSearchAdapter`](#getter-textsearchadapter) | `any`         |
-| [`adapterConfig`](#getter-adapterconfig)         | `any`         |
-| [`viewMenuActions`](#getter-viewmenuactions)     | `MenuItem[]`  |
-| [`canConfigure`](#getter-canconfigure)           | `boolean`     |
-| [`adapterType`](#getter-adaptertype)             | `AdapterType` |
-
 </details>
 
 <details>
-<summary>BaseTrackModel - Getters (all signatures)</summary>
+<summary>BaseTrackModel - Getters (other undocumented members)</summary>
 
 #### getter: trackId
 
@@ -193,21 +153,8 @@ type adapterType = AdapterType
 
 </details>
 
-<details open>
-<summary>BaseTrackModel - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                             | Signature                                |
-| ------------------------------------------------------------------ | ---------------------------------------- |
-| [`saveTrackFileFormatOptions`](#method-savetrackfileformatoptions) | `() => Record<string, FileTypeExporter>` |
-| [`trackMenuItems`](#method-trackmenuitems)                         | `() => MenuItem[]`                       |
-
-</details>
-
 <details>
-<summary>BaseTrackModel - Methods (all signatures)</summary>
+<summary>BaseTrackModel - Methods</summary>
 
 #### method: saveTrackFileFormatOptions
 
@@ -250,19 +197,10 @@ Structural comparison settles once the content stops changing.
 type afterAttach = () => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                                                     |
-| ------------------------------------------ | ----------------------------------------------------------------------------- |
-| [`setPinned`](#action-setpinned)           | `(flag: boolean) => void`                                                     |
-| [`setMinimized`](#action-setminimized)     | `(flag: boolean) => void`                                                     |
-| [`replaceDisplay`](#action-replacedisplay) | `(oldDisplayId: string, newDisplayId: string, initialSnapshot?: any) => void` |
-
 </details>
 
 <details>
-<summary>BaseTrackModel - Actions (all signatures)</summary>
+<summary>BaseTrackModel - Actions (other undocumented members)</summary>
 
 #### action: setPinned
 

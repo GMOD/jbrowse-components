@@ -4,18 +4,9 @@ title: BedGraphTabixAdapter
 sidebar_label: Adapter -> BedGraphTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphTabixAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BedGraphTabixAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphTabixAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -42,8 +33,10 @@ used to load bgzip-compressed, tabix-indexed bedGraph signal files
 
 ### Used in
 
-This adapter supplies data to the [QuantitativeTrack](../quantitativetrack)
-track type.
+Supplies data to the [QuantitativeTrack](../quantitativetrack) track, rendered
+by:
+
+- [LinearWiggleDisplay](../linearwiggledisplay)
 
 ### BedGraphTabixAdapter - Pre-processor / simplified config
 
@@ -61,56 +54,22 @@ preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
 
 #### slot: bedGraphGzLocation
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.bedgraph',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` · **Default:** `'TBI'`
-
-```js
-{
-  model: types.enumeration('IndexType', ['TBI', 'CSI']),
-  type: 'stringEnum',
-  defaultValue: 'TBI',
-}
-```
+**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: index.location
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.bedgraph.gz.tbi',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.bedgraph.gz.tbi', locationType: 'UriLocation' }`
 
 #### slot: columnNames
 
 List of column names
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  description: 'List of column names',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>

@@ -4,18 +4,10 @@ title: LGVSyntenyDisplay
 sidebar_label: Display -> LGVSyntenyDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/configSchemaF.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LGVSyntenyDisplay.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`linear-comparative-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/configSchemaF.ts).
 
 ## Example usage
 
@@ -48,6 +40,20 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### LGVSyntenyDisplay - Compatible adapters
+
+Data adapters that can supply the [SyntenyTrack](../syntenytrack):
+
+- [AllVsAllPAFAdapter](../allvsallpafadapter)
+- [ChainAdapter](../chainadapter)
+- [DeltaAdapter](../deltaadapter)
+- [MCScanAnchorsAdapter](../mcscananchorsadapter)
+- [MCScanBlocksAdapter](../mcscanblocksadapter)
+- [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- [MashMapAdapter](../mashmapadapter)
+- [PAFAdapter](../pafadapter)
+- [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
+
 ### LGVSyntenyDisplay - State model
 
 This config's runtime API is documented on its
@@ -61,16 +67,7 @@ This config's runtime API is documented on its
 Synteny reads are strand-colored by default (vs the base alignments display's
 `normal`); overrides the inherited `colorBy` slot's default.
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  defaultValue: { type: 'strand' },
-  description: 'Color scheme for synteny reads',
-  advanced: true,
-}
-```
+**Type:** `frozen` · **Default:** `{ type: 'strand' }` · _advanced_
 
 #### slot: showCoverage
 
@@ -78,14 +75,6 @@ Synteny reads hide the coverage histogram by default; overrides the inherited
 base alignments display's `showCoverage` default of `true`.
 
 **Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'Draw the coverage histogram band',
-}
-```
 
 </details>
 
@@ -103,31 +92,13 @@ this page is self-contained.
 
 Height of each feature (read) in pixels
 
-**Type:** `number` · **Default:** `7`
-
-```js
-{
-  type: 'number',
-  defaultValue: 7,
-  description: 'Height of each feature (read) in pixels',
-  promotable: true,
-}
-```
+**Type:** `number` · **Default:** `7` · _promotable_
 
 #### slot: featureSpacing
 
 Spacing between features in pixels
 
-**Type:** `number` · **Default:** `1`
-
-```js
-{
-  type: 'number',
-  defaultValue: 1,
-  description: 'Spacing between features in pixels',
-  promotable: true,
-}
-```
+**Type:** `number` · **Default:** `1` · _promotable_
 
 #### slot: readConnectionsLineWidth
 
@@ -135,66 +106,42 @@ Line width for read-connection arcs/lines in pixels
 
 **Type:** `number` · **Default:** `1`
 
-```js
-{
-  type: 'number',
-  defaultValue: 1,
-  description: 'Line width for read-connection arcs/lines in pixels',
-}
-```
-
 #### slot: showSashimiLabels
 
 Draw the supporting-read count on each sashimi arc
 
 **Type:** `boolean` · **Default:** `false`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'Draw the supporting-read count on each sashimi arc',
-}
-```
-
 #### slot: maxHeight
 
 Maximum pixel height of the pileup layout; reads beyond this are not stacked
 (coverage still reflects true depth)
 
-**Type:** `number` · **Default:** `6000`
-
-```js
-{
-  type: 'number',
-  defaultValue: 6000,
-  description:
-    'Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth)',
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `6000` · _advanced_
 
 #### slot: height
 
 **Type:** `number` · **Default:** `250`
 
-```js
-{
-  type: 'number',
-  defaultValue: 250,
-}
-```
-
 #### slot: colorBy
 
 Color scheme for reads
 
-**Type:** `frozen`
+**Type:** `frozen` · **Default:** `{ type: 'inherit' }` · _advanced, promotable_
 
 ```js
 {
   type: 'frozen',
-  defaultValue: { type: 'normal' },
+
+
+
+
+
+
+
+  defaultValue: { type: 'inherit' },
+  promotedBase: { type: 'normal' },
+  promotable: true,
   description: 'Color scheme for reads',
   advanced: true,
 }
@@ -205,125 +152,50 @@ Color scheme for reads
 default filter flags is exclude 1540 read unmapped (0x4) read fails
 platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  defaultValue: defaultFilterFlags,
-  description: 'Filter settings for reads',
-  advanced: true,
-}
-```
+**Type:** `frozen` · **Default:** `defaultFilterFlags` · _advanced_
 
 #### slot: groupBy
 
 In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by
 strand (null = ungrouped)
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  defaultValue: null,
-  description:
-    'In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand (null = ungrouped)',
-  advanced: true,
-}
-```
+**Type:** `frozen` · **Default:** `null` · _advanced_
 
 #### slot: autoscale
 
 Coverage autoscale type
 
-**Type:** `stringEnum` · **Default:** `'local'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('Coverage autoscale type', [
-    'local',
-    'localsd',
-  ]),
-  defaultValue: 'local',
-  description: 'Coverage autoscale type',
-}
-```
+**Type:** `stringEnum` (one of `local`, `localsd`) · **Default:** `'local'`
 
 #### slot: minScore
 
 Minimum coverage depth bound
 
-**Type:** `number`
-
-```js
-{
-  type: 'number',
-  defaultValue: Number.MIN_VALUE,
-  description: 'Minimum coverage depth bound',
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `Number.MIN_VALUE` · _advanced_
 
 #### slot: maxScore
 
 Maximum coverage depth bound
 
-**Type:** `number`
-
-```js
-{
-  type: 'number',
-  defaultValue: Number.MAX_VALUE,
-  description: 'Maximum coverage depth bound',
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `Number.MAX_VALUE` · _advanced_
 
 #### slot: scaleType
 
 Coverage scale type (linear or log)
 
-**Type:** `stringEnum` · **Default:** `'linear'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('Coverage scale type', ['linear', 'log']),
-  defaultValue: 'linear',
-  description: 'Coverage scale type (linear or log)',
-}
-```
+**Type:** `stringEnum` (one of `linear`, `log`) · **Default:** `'linear'`
 
 #### slot: numStdDev
 
 Number of standard deviations for localsd autoscale
 
-**Type:** `number` · **Default:** `3`
-
-```js
-{
-  type: 'number',
-  defaultValue: 3,
-  description: 'Number of standard deviations for localsd autoscale',
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `3` · _advanced_
 
 #### slot: mismatchAlpha
 
 Fade mismatches by base quality
 
 **Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'Fade mismatches by base quality',
-}
-```
 
 #### slot: showLowFreqMismatches
 
@@ -332,76 +204,31 @@ track
 
 **Type:** `boolean` · **Default:** `false`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description:
-    'Show low-frequency mismatches (below the SNP-calling threshold) in the coverage track',
-}
-```
-
 #### slot: showLegend
 
 Show the color-scheme legend overlay
 
 **Type:** `boolean` · **Default:** `false`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'Show the color-scheme legend overlay',
-}
-```
-
 #### slot: sortedBy
 
 Sort reads at a genomic position, e.g. by base, strand, or a tag (null =
 unsorted)
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  defaultValue: null,
-  description:
-    'Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted)',
-  advanced: true,
-}
-```
+**Type:** `frozen` · **Default:** `null` · _advanced_
 
 #### slot: showOutline
 
 null = auto: outline is drawn only in chain/linked-read modes. Set true/false to
 force it on or off regardless of mode.
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  defaultValue: null,
-  description: 'Draw an outline around each read (null = auto by mode)',
-  advanced: true,
-}
-```
+**Type:** `frozen` · **Default:** `null` · _advanced_
 
 #### slot: linkedReads
 
 Linked-read (barcode-chain) layout mode
 
-**Type:** `stringEnum` · **Default:** `'off'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('LinkedReadsMode', ['off', 'normal']),
-  defaultValue: 'off',
-  description: 'Linked-read (barcode-chain) layout mode',
-}
-```
+**Type:** `stringEnum` (one of `off`, `normal`) · **Default:** `'off'`
 
 #### slot: showBezierConnections
 
@@ -409,27 +236,11 @@ Draw paired-read connection curves over the pileup
 
 **Type:** `boolean` · **Default:** `false`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'Draw paired-read connection curves over the pileup',
-}
-```
-
 #### slot: showCoverage
 
 Draw the coverage histogram band
 
 **Type:** `boolean` · **Default:** `true`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Draw the coverage histogram band',
-}
-```
 
 #### slot: showPileup
 
@@ -437,27 +248,11 @@ Draw the stacked-read pileup band
 
 **Type:** `boolean` · **Default:** `true`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Draw the stacked-read pileup band',
-}
-```
-
 #### slot: coverageHeight
 
 Height of the coverage band in pixels
 
 **Type:** `number` · **Default:** `45`
-
-```js
-{
-  type: 'number',
-  defaultValue: 45,
-  description: 'Height of the coverage band in pixels',
-}
-```
 
 #### slot: showMismatches
 
@@ -465,27 +260,11 @@ Draw per-base mismatches on reads
 
 **Type:** `boolean` · **Default:** `true`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Draw per-base mismatches on reads',
-}
-```
-
 #### slot: showInterbaseIndicators
 
 Draw interbase insertion/deletion indicators
 
 **Type:** `boolean` · **Default:** `true`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Draw interbase insertion/deletion indicators',
-}
-```
 
 #### slot: drawSingletons
 
@@ -493,27 +272,11 @@ Draw reads whose mate is unmapped
 
 **Type:** `boolean` · **Default:** `true`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Draw reads whose mate is unmapped',
-}
-```
-
 #### slot: drawProperPairs
 
 Draw properly-paired reads
 
 **Type:** `boolean` · **Default:** `true`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Draw properly-paired reads',
-}
-```
 
 #### slot: flipStrandLongReadChains
 
@@ -521,28 +284,11 @@ Flip strand coloring for reverse long-read chains
 
 **Type:** `boolean` · **Default:** `true`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Flip strand coloring for reverse long-read chains',
-}
-```
-
 #### slot: colorSupplementaryChains
 
 Paint paired supplementary chains a flat supplementary color
 
 **Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description:
-    'Paint paired supplementary chains a flat supplementary color',
-}
-```
 
 #### slot: drawInter
 
@@ -550,66 +296,24 @@ Draw inter-chromosomal read-connection arcs
 
 **Type:** `boolean` · **Default:** `true`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Draw inter-chromosomal read-connection arcs',
-}
-```
-
 #### slot: drawLongRange
 
 Draw long-range read-connection arcs
 
 **Type:** `boolean` · **Default:** `true`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Draw long-range read-connection arcs',
-}
-```
-
 #### slot: arcColorByType
 
 How to color read-connection arcs
 
-**Type:** `stringEnum` · **Default:** `'insertSizeAndOrientation'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('ArcColorByType', [
-    'insertSizeAndOrientation',
-    'insertSize',
-    'orientation',
-  ]),
-  defaultValue: 'insertSizeAndOrientation',
-  description: 'How to color read-connection arcs',
-}
-```
+**Type:** `stringEnum` (one of `insertSizeAndOrientation`, `insertSize`,
+`orientation`) · **Default:** `'insertSizeAndOrientation'`
 
 #### slot: readConnections
 
 Read-connection rendering mode (mate pairs + split reads)
 
-**Type:** `stringEnum` · **Default:** `'off'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('ReadConnectionsMode', [
-    'off',
-    'arc',
-    'samplot',
-  ]),
-  defaultValue: 'off',
-  description:
-    'Read-connection rendering mode (mate pairs + split reads)',
-}
-```
+**Type:** `stringEnum` (one of `off`, `arc`, `samplot`) · **Default:** `'off'`
 
 #### slot: readConnectionsDown
 
@@ -617,42 +321,17 @@ Draw read connections below the coverage band
 
 **Type:** `boolean` · **Default:** `false`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'Draw read connections below the coverage band',
-}
-```
-
 #### slot: showSashimiArcs
 
 Draw sashimi (splice-junction) arcs
 
 **Type:** `boolean` · **Default:** `true`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Draw sashimi (splice-junction) arcs',
-}
-```
-
 #### slot: sashimiArcsMode
 
 Sashimi junction-arc placement
 
-**Type:** `stringEnum` · **Default:** `'up'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('SashimiArcsMode', ['up', 'down', 'auto']),
-  defaultValue: 'up',
-  description: 'Sashimi junction-arc placement',
-}
-```
+**Type:** `stringEnum` (one of `up`, `down`, `auto`) · **Default:** `'up'`
 
 #### slot: minSashimiScore
 
@@ -660,28 +339,11 @@ Hide sashimi arcs with fewer than this many supporting reads
 
 **Type:** `number` · **Default:** `0`
 
-```js
-{
-  type: 'number',
-  defaultValue: 0,
-  description:
-    'Hide sashimi arcs with fewer than this many supporting reads',
-}
-```
-
 #### slot: sashimiArcsHeight
 
 Height of the sashimi-arc band in pixels
 
 **Type:** `number` · **Default:** `40`
-
-```js
-{
-  type: 'number',
-  defaultValue: 40,
-  description: 'Height of the sashimi-arc band in pixels',
-}
-```
 
 #### slot: readConnectionsHeight
 
@@ -689,28 +351,11 @@ Height of the read-connection band in pixels
 
 **Type:** `number` · **Default:** `40`
 
-```js
-{
-  type: 'number',
-  defaultValue: 40,
-  description: 'Height of the read-connection band in pixels',
-}
-```
-
 #### slot: showSoftClipping
 
 Draw soft-clipped read portions
 
-**Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'Draw soft-clipped read portions',
-  promotable: true,
-}
-```
+**Type:** `boolean` · **Default:** `false` · _promotable_
 
 </details>
 
@@ -724,48 +369,20 @@ Draw soft-clipped read portions
 maximum features per pixel before showing a "too many features" message, used if
 byte size estimates are not available
 
-**Type:** `number` · **Default:** `1`
-
-```js
-{
-  type: 'number',
-  description:
-    'maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available',
-  defaultValue: 1,
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `1` · _advanced_
 
 #### slot: fetchSizeLimit
 
 maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
-**Type:** `number` · **Default:** `1_000_000`
-
-```js
-{
-  type: 'number',
-  defaultValue: 1_000_000,
-  description:
-    "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `1_000_000` · _advanced_
 
 #### slot: height
 
 default height for the track
 
 **Type:** `number` · **Default:** `100`
-
-```js
-{
-  type: 'number',
-  defaultValue: 100,
-  description: 'default height for the track',
-}
-```
 
 #### slot: mouseover
 
@@ -788,23 +405,10 @@ text to display when the cursor hovers over a feature
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  description:
-    'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 
 ### LGVSyntenyDisplay - Derives from
 
 - [LinearAlignmentsDisplay](../linearalignmentsdisplay)
-
-```js
-baseConfiguration: linearAlignmentsDisplayConfigSchemaFactory(pluginManager)
-```

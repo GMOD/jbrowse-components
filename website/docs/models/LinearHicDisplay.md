@@ -4,20 +4,10 @@ title: LinearHicDisplay
 sidebar_label: Display -> LinearHicDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearHicDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`hic` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/model.ts).
 
 ## Example usage
 
@@ -178,21 +168,8 @@ and docs.
 **Actions:**
 [setLastDrawnViewport](../staleviewportrescalemixin#action-setlastdrawnviewport)
 
-<details open>
-<summary>LinearHicDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                         |
-| ------------------------------------------ | --------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"LinearHicDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`       |
-
-</details>
-
 <details>
-<summary>LinearHicDisplay - Properties (all signatures)</summary>
+<summary>LinearHicDisplay - Properties</summary>
 
 #### property: type
 
@@ -214,22 +191,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
-<summary>LinearHicDisplay - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                         | Signature               |
-| -------------------------------------------------------------- | ----------------------- |
-| [`rpcData`](#volatile-rpcdata)                                 | `HicDataResult \| null` |
-| [`availableNormalizations`](#volatile-availablenormalizations) | `string[] \| undefined` |
-| [`availableResolutions`](#volatile-availableresolutions)       | `number[] \| undefined` |
-
-</details>
-
 <details>
-<summary>LinearHicDisplay - Volatiles (all signatures)</summary>
+<summary>LinearHicDisplay - Volatiles</summary>
 
 #### volatile: rpcData
 
@@ -334,25 +297,10 @@ and SVG export. See `computeRenderTransform` for the math.
 type renderTransform = RenderTransform
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                     | Signature                           |
-| ---------------------------------------------------------- | ----------------------------------- |
-| [`resolutionBias`](#getter-resolutionbias)                 | `number`                            |
-| [`useLogScale`](#getter-uselogscale)                       | `boolean`                           |
-| [`useColorPercentile`](#getter-usecolorpercentile)         | `boolean`                           |
-| [`showResolutionControls`](#getter-showresolutioncontrols) | `boolean`                           |
-| [`fitToHeight`](#getter-fittoheight)                       | `boolean`                           |
-| [`colorScheme`](#getter-colorscheme)                       | `"fall" \| "juicebox" \| "viridis"` |
-| [`showLegend`](#getter-showlegend)                         | `boolean`                           |
-| [`colorMaxScore`](#getter-colormaxscore)                   | `number`                            |
-| [`yScalar`](#getter-yscalar)                               | `number`                            |
-
 </details>
 
 <details>
-<summary>LinearHicDisplay - Getters (all signatures)</summary>
+<summary>LinearHicDisplay - Getters (other undocumented members)</summary>
 
 #### getter: resolutionBias
 
@@ -464,19 +412,10 @@ legend will be drawn so the export framework can omit space.
 type svgLegendWidth = () => number
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                               |
-| ------------------------------------------ | ------------------------------------------------------- |
-| [`rpcProps`](#method-rpcprops)             | `() => { normalization: string; }`                      |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => MenuItem[]`                                      |
-| [`renderSvg`](#method-rendersvg)           | `(opts: ExportSvgDisplayOptions) => Promise<ReactNode>` |
-
 </details>
 
 <details>
-<summary>LinearHicDisplay - Methods (all signatures)</summary>
+<summary>LinearHicDisplay - Methods (other undocumented members)</summary>
 
 #### method: rpcProps
 
@@ -559,24 +498,10 @@ autorun, which also re-fires on `reload()` (it tracks `reloadCounter`).
 type performHicFetch = () => Promise<void>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                           | Signature                                                      |
-| ---------------------------------------------------------------- | -------------------------------------------------------------- |
-| [`setRpcData`](#action-setrpcdata)                               | `(data: HicDataResult \| null) => void`                        |
-| [`setUseLogScale`](#action-setuselogscale)                       | `(f: boolean) => void`                                         |
-| [`setUseColorPercentile`](#action-setusecolorpercentile)         | `(f: boolean) => void`                                         |
-| [`setShowResolutionControls`](#action-setshowresolutioncontrols) | `(f: boolean) => void`                                         |
-| [`setColorScheme`](#action-setcolorscheme)                       | `(f?: "fall" \| "juicebox" \| "viridis" \| undefined) => void` |
-| [`setFitToHeight`](#action-setfittoheight)                       | `(arg: boolean) => void`                                       |
-| [`setShowLegend`](#action-setshowlegend)                         | `(arg: boolean) => void`                                       |
-| [`setAvailableResolutions`](#action-setavailableresolutions)     | `(f: number[]) => void`                                        |
-
 </details>
 
 <details>
-<summary>LinearHicDisplay - Actions (all signatures)</summary>
+<summary>LinearHicDisplay - Actions (other undocumented members)</summary>
 
 #### action: setRpcData
 

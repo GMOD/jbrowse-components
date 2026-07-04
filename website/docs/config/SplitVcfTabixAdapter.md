@@ -4,18 +4,10 @@ title: SplitVcfTabixAdapter
 sidebar_label: Adapter -> SplitVcfTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/SplitVcfTabixAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/SplitVcfTabixAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `variants`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/SplitVcfTabixAdapter/configSchema.ts).
 
 ## Overview
 
@@ -26,39 +18,17 @@ reference the markdown files in our repo of the checked out git tag
 
 object like `{chr1:{uri:'url to file'}}`
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  defaultValue: {},
-}
-```
+**Type:** `frozen` · **Default:** `{}`
 
 #### slot: indexLocationMap
 
 object like `{chr1:{uri:'url to index'}}`
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  defaultValue: {},
-}
-```
+**Type:** `frozen` · **Default:** `{}`
 
 #### slot: indexType
 
-**Type:** `stringEnum` · **Default:** `'TBI'`
-
-```js
-{
-  model: types.enumeration('IndexType', ['TBI', 'CSI']),
-  type: 'stringEnum',
-  defaultValue: 'TBI',
-}
-```
+**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: samplesTsvLocation
 

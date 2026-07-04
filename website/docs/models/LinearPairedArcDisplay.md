@@ -4,20 +4,10 @@ title: LinearPairedArcDisplay
 sidebar_label: Display -> LinearPairedArcDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearPairedArcDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearPairedArcDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`arc` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearPairedArcDisplay/model.ts).
 
 ## Example usage
 
@@ -126,21 +116,8 @@ and docs.
 [reload](../regiontoolargemixin#action-reload),
 [forceLoad](../regiontoolargemixin#action-forceload)
 
-<details open>
-<summary>LinearPairedArcDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                               |
-| ------------------------------------------ | --------------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"LinearPairedArcDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`             |
-
-</details>
-
 <details>
-<summary>LinearPairedArcDisplay - Properties (all signatures)</summary>
+<summary>LinearPairedArcDisplay - Properties</summary>
 
 #### property: type
 
@@ -162,22 +139,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
-<summary>LinearPairedArcDisplay - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                     | Signature                |
-| ---------------------------------------------------------- | ------------------------ |
-| [`features`](#volatile-features)                           | `Feature[] \| undefined` |
-| [`loadedRegionSignature`](#volatile-loadedregionsignature) | `string \| undefined`    |
-| [`loading`](#volatile-loading)                             | `false`                  |
-
-</details>
-
 <details>
-<summary>LinearPairedArcDisplay - Volatiles (all signatures)</summary>
+<summary>LinearPairedArcDisplay - Volatiles</summary>
 
 #### volatile: features
 
@@ -283,20 +246,10 @@ which would leave the display stuck on error.
 type reload = () => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                                                             |
-| ---------------------------------------- | --------------------------------------------------------------------- |
-| [`selectFeature`](#action-selectfeature) | `(feature: Feature) => void`                                          |
-| [`setLoading`](#action-setloading)       | `(flag: boolean) => void`                                             |
-| [`setFeatures`](#action-setfeatures)     | `(f: Feature[], signature: string) => void`                           |
-| [`renderSvg`](#action-rendersvg)         | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactNode>` |
-
 </details>
 
 <details>
-<summary>LinearPairedArcDisplay - Actions (all signatures)</summary>
+<summary>LinearPairedArcDisplay - Actions (other undocumented members)</summary>
 
 #### action: selectFeature
 

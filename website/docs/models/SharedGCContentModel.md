@@ -4,20 +4,10 @@ title: SharedGCContentModel
 sidebar_label: Display -> SharedGCContentModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/shared.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SharedGCContentModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`gccontent` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/shared.ts).
 
 ## Overview
 
@@ -231,22 +221,8 @@ and docs.
 [setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
 [isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
 
-<details open>
-<summary>SharedGCContentModel - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                               | Signature |
-| ------------------------------------ | --------- |
-| [`windowSize`](#getter-windowsize)   | `any`     |
-| [`windowDelta`](#getter-windowdelta) | `any`     |
-| [`gcMode`](#getter-gcmode)           | `any`     |
-
-</details>
-
 <details>
-<summary>SharedGCContentModel - Getters (all signatures)</summary>
+<summary>SharedGCContentModel - Getters</summary>
 
 #### getter: windowSize
 
@@ -268,20 +244,8 @@ type gcMode = any
 
 </details>
 
-<details open>
-<summary>SharedGCContentModel - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                                                                                                                    |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]` |
-
-</details>
-
 <details>
-<summary>SharedGCContentModel - Methods (all signatures)</summary>
+<summary>SharedGCContentModel - Methods</summary>
 
 #### method: trackMenuItems
 
@@ -291,21 +255,8 @@ type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | Chec
 
 </details>
 
-<details open>
-<summary>SharedGCContentModel - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                                                              |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [`setGCContentParams`](#action-setgccontentparams) | `({ windowSize, windowDelta, }: { windowSize: number; windowDelta: number; }) => void` |
-| [`setGCMode`](#action-setgcmode)                   | `(mode: "content" \| "skew") => void`                                                  |
-
-</details>
-
 <details>
-<summary>SharedGCContentModel - Actions (all signatures)</summary>
+<summary>SharedGCContentModel - Actions</summary>
 
 #### action: setGCContentParams
 

@@ -4,20 +4,10 @@ title: BaseSessionModel
 sidebar_label: Session -> BaseSessionModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/BaseSession.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseSessionModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/BaseSession.ts).
 
 ## Overview
 
@@ -57,19 +47,10 @@ type focusedViewId = IMaybe<ISimpleType<string>>
 focusedViewId: types.maybe(types.string)
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                       | Signature                                          |
-| ---------------------------- | -------------------------------------------------- |
-| [`id`](#property-id)         | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| [`name`](#property-name)     | `ISimpleType<string>`                              |
-| [`margin`](#property-margin) | `IOptionalIType<ISimpleType<number>, [undefined]>` |
-
 </details>
 
 <details>
-<summary>BaseSessionModel - Properties (all signatures)</summary>
+<summary>BaseSessionModel - Properties (other undocumented members)</summary>
 
 #### property: id
 
@@ -142,17 +123,10 @@ type preferencesOverrides = Record<string, unknown>
 preferencesOverrides: {} as Record<string, unknown>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature                                          |
-| -------------------------------------------- | -------------------------------------------------- |
-| [`queueOfDialogs`](#volatile-queueofdialogs) | `[DialogComponentType, Record<string, unknown>][]` |
-
 </details>
 
 <details>
-<summary>BaseSessionModel - Volatiles (all signatures)</summary>
+<summary>BaseSessionModel - Volatiles (other undocumented members)</summary>
 
 #### volatile: queueOfDialogs
 
@@ -185,25 +159,10 @@ session snapshot); every wheel-zoom view reads this single value.
 type scrollZoom = boolean
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature                                                                                                                                                                                          |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`root`](#getter-root)                           | `TypeOrStateTreeNodeToStateTreeNode<ROOT_MODEL_TYPE>`                                                                                                                                              |
-| [`jbrowse`](#getter-jbrowse)                     | `any`                                                                                                                                                                                              |
-| [`rpcManager`](#getter-rpcmanager)               | `RpcManager`                                                                                                                                                                                       |
-| [`configuration`](#getter-configuration)         | `Instance<JB_CONFIG_SCHEMA>`                                                                                                                                                                       |
-| [`adminMode`](#getter-adminmode)                 | `boolean`                                                                                                                                                                                          |
-| [`textSearchManager`](#getter-textsearchmanager) | `TextSearchManager`                                                                                                                                                                                |
-| [`assemblies`](#getter-assemblies)               | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]` |
-| [`DialogComponent`](#getter-dialogcomponent)     | `DialogComponentType`                                                                                                                                                                              |
-| [`DialogProps`](#getter-dialogprops)             | `Record<string, unknown>`                                                                                                                                                                          |
-
 </details>
 
 <details>
-<summary>BaseSessionModel - Getters (all signatures)</summary>
+<summary>BaseSessionModel - Getters (other undocumented members)</summary>
 
 #### getter: root
 
@@ -336,21 +295,10 @@ type setDisplayTypeDefault = (
 ) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                              |
-| -------------------------------------------------- | -------------------------------------- |
-| [`setHovered`](#action-sethovered)                 | `(thing: unknown) => void`             |
-| [`setName`](#action-setname)                       | `(str: string) => void`                |
-| [`setFocusedViewId`](#action-setfocusedviewid)     | `(viewId: string) => void`             |
-| [`removeActiveDialog`](#action-removeactivedialog) | `() => void`                           |
-| [`queueDialog`](#action-queuedialog)               | `(doneCallback: DoneCallback) => void` |
-
 </details>
 
 <details>
-<summary>BaseSessionModel - Actions (all signatures)</summary>
+<summary>BaseSessionModel - Actions (other undocumented members)</summary>
 
 #### action: setHovered
 

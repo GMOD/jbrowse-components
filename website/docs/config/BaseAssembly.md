@@ -4,18 +4,9 @@ title: BaseAssembly
 sidebar_label: Assembly Management -> BaseAssembly
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assemblyConfigSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BaseAssembly.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assemblyConfigSchema.ts).
 
 ## Example usage
 
@@ -111,15 +102,7 @@ the "displayName" config slot instead
 
 aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38"
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-  description: 'Other possible names for the assembly',
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: sequence
 
@@ -135,16 +118,7 @@ pluginManager.getTrackType('ReferenceSequenceTrack').configSchema
 Define custom colors for each reference sequence. Will cycle through this list
 if there are not enough colors for every sequence.
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-  description:
-    'Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence.',
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: geneticCodes
 
@@ -155,16 +129,7 @@ reference sequence track's translation rows; unlisted refNames use the standard
 code (1). CDS-level translation reads the GFF `transl_table` attribute directly
 and ignores this.
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  defaultValue: {},
-  description:
-    'Map of reference sequence name to NCBI genetic-code (translation table) id for sequences not using the standard code, e.g. { "chrM": 2 }',
-}
-```
+**Type:** `frozen` · **Default:** `{}`
 
 **Example:**
 
@@ -184,16 +149,8 @@ useful when a config generator emits a sidecar rather than inlining per
 assembly. Entries in the inline `geneticCodes` slot take precedence over the
 file.
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: { uri: '', locationType: 'UriLocation' },
-  description:
-    'Optional TSV file of refName<TAB>geneticCodeId, an alternative to inlining the geneticCodes map',
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '', locationType: 'UriLocation' }`
 
 **Example:**
 
@@ -230,14 +187,5 @@ A human readable display name for the assembly e.g. "Homo sapiens (hg38)" while
 the assembly name may just be "hg38"
 
 **Type:** `string` · **Default:** `''`
-
-```js
-{
-  type: 'string',
-  defaultValue: '',
-  description:
-    'A human readable display name for the assembly e.g. "Homo sapiens (hg38)" while the assembly name may just be "hg38"',
-}
-```
 
 </details>

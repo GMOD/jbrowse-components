@@ -4,20 +4,10 @@ title: AssemblyManager
 sidebar_label: Assembly Management -> AssemblyManager
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assemblyManager.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/AssemblyManager.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assemblyManager.ts).
 
 ## Overview
 
@@ -50,19 +40,10 @@ session.temporaryAssemblies
 type assemblyList = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature                                                                                                                                                                                                                                                          |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`assemblyNameMap`](#getter-assemblynamemap)     | `Record<string, ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<...> \| undefined; ... 7 more ...; allRefNamesWithLowerCase: Set<...> \| undefined; } & ... 12 more ... & IStateTreeNode<...>>` |
-| [`assemblyNamesList`](#getter-assemblynameslist) | `any[]`                                                                                                                                                                                                                                                            |
-| [`rpcManager`](#getter-rpcmanager)               | `RpcManager`                                                                                                                                                                                                                                                       |
-
 </details>
 
 <details>
-<summary>AssemblyManager - Getters (all signatures)</summary>
+<summary>AssemblyManager - Getters (other undocumented members)</summary>
 
 #### getter: assemblyNameMap
 
@@ -96,21 +77,10 @@ with regions loaded
 type waitForAssembly = (assemblyName: string) => Promise<(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { ...; } & ... 12 more ... & IStateTreeNode<...>) | undefined>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                         | Signature                                                                                                                                                                                                                                         |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`getCanonicalAssemblyName`](#method-getcanonicalassemblyname) | `(asmName: string) => string`                                                                                                                                                                                                                     |
-| [`getDisplayName`](#method-getdisplayname)                     | `(asmName: string) => string`                                                                                                                                                                                                                     |
-| [`get`](#method-get)                                           | `(asmName: string) => (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; ... 8 more ...; allRefNamesWithLowerCase: Set<...> \| undefined; } & ... 12 more ... & IStateTreeNode<...>) \| undefined` |
-| [`getRefNameMapForAdapter`](#method-getrefnamemapforadapter)   | `(adapterConf: AdapterConf, assemblyName: string \| undefined, opts: AssemblyBaseOpts) => Promise<RefNameAliases>`                                                                                                                                |
-| [`isValidRefName`](#method-isvalidrefname)                     | `(refName: string, assemblyName: string) => boolean`                                                                                                                                                                                              |
-
 </details>
 
 <details>
-<summary>AssemblyManager - Methods (all signatures)</summary>
+<summary>AssemblyManager - Methods (other undocumented members)</summary>
 
 #### method: getCanonicalAssemblyName
 

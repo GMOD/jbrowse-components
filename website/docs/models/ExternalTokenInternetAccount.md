@@ -4,20 +4,10 @@ title: ExternalTokenInternetAccount
 sidebar_label: Internet Account -> ExternalTokenInternetAccount
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/ExternalTokenModel/model.tsx)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/ExternalTokenInternetAccount.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`authentication` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/ExternalTokenModel/model.tsx).
 
 ## Overview
 
@@ -30,21 +20,8 @@ HEAD request.
 The configuration slots for this model are documented on its
 [config schema page](../../config/externaltokeninternetaccount).
 
-<details open>
-<summary>ExternalTokenInternetAccount - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                                                                                                                                                                                      |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`conf`](#getter-conf)                         | `ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>` |
-| [`validateWithHEAD`](#getter-validatewithhead) | `boolean`                                                                                                                                                                                      |
-
-</details>
-
 <details>
-<summary>ExternalTokenInternetAccount - Getters (all signatures)</summary>
+<summary>ExternalTokenInternetAccount - Getters</summary>
 
 #### getter: conf
 
@@ -60,21 +37,8 @@ type validateWithHEAD = boolean
 
 </details>
 
-<details open>
-<summary>ExternalTokenInternetAccount - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                                                                    |
-| ---------------------------------------------- | ---------------------------------------------------------------------------- |
-| [`getTokenFromUser`](#action-gettokenfromuser) | `(resolve: (token: string) => void, reject: (error: Error) => void) => void` |
-| [`validateToken`](#action-validatetoken)       | `(token: string, location: UriLocation) => Promise<string>`                  |
-
-</details>
-
 <details>
-<summary>ExternalTokenInternetAccount - Actions (all signatures)</summary>
+<summary>ExternalTokenInternetAccount - Actions</summary>
 
 #### action: getTokenFromUser
 

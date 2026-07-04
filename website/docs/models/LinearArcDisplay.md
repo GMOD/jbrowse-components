@@ -4,20 +4,10 @@ title: LinearArcDisplay
 sidebar_label: Display -> LinearArcDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearArcDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearArcDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`arc` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearArcDisplay/model.ts).
 
 ## Example usage
 
@@ -129,21 +119,8 @@ and docs.
 [reload](../regiontoolargemixin#action-reload),
 [forceLoad](../regiontoolargemixin#action-forceload)
 
-<details open>
-<summary>LinearArcDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                         |
-| ------------------------------------------ | --------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"LinearArcDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`       |
-
-</details>
-
 <details>
-<summary>LinearArcDisplay - Properties (all signatures)</summary>
+<summary>LinearArcDisplay - Properties</summary>
 
 #### property: type
 
@@ -165,22 +142,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
-<summary>LinearArcDisplay - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                     | Signature                |
-| ---------------------------------------------------------- | ------------------------ |
-| [`features`](#volatile-features)                           | `Feature[] \| undefined` |
-| [`loadedRegionSignature`](#volatile-loadedregionsignature) | `string \| undefined`    |
-| [`loading`](#volatile-loading)                             | `false`                  |
-
-</details>
-
 <details>
-<summary>LinearArcDisplay - Volatiles (all signatures)</summary>
+<summary>LinearArcDisplay - Volatiles</summary>
 
 #### volatile: features
 
@@ -266,17 +229,10 @@ returns the id of the globally-selected feature, used to highlight it
 type selectedFeatureId = string | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                               | Signature |
-| ------------------------------------ | --------- |
-| [`displayMode`](#getter-displaymode) | `any`     |
-
 </details>
 
 <details>
-<summary>LinearArcDisplay - Getters (all signatures)</summary>
+<summary>LinearArcDisplay - Getters (other undocumented members)</summary>
 
 #### getter: displayMode
 
@@ -286,20 +242,8 @@ type displayMode = any
 
 </details>
 
-<details open>
-<summary>LinearArcDisplay - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                                                                                                                    |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]` |
-
-</details>
-
 <details>
-<summary>LinearArcDisplay - Methods (all signatures)</summary>
+<summary>LinearArcDisplay - Methods</summary>
 
 #### method: trackMenuItems
 
@@ -322,21 +266,10 @@ which would leave the display stuck on error.
 type reload = () => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                                             |
-| ------------------------------------------ | --------------------------------------------------------------------- |
-| [`selectFeature`](#action-selectfeature)   | `(feature: Feature) => void`                                          |
-| [`setLoading`](#action-setloading)         | `(flag: boolean) => void`                                             |
-| [`setFeatures`](#action-setfeatures)       | `(f: Feature[], signature: string) => void`                           |
-| [`setDisplayMode`](#action-setdisplaymode) | `(flag: string) => void`                                              |
-| [`renderSvg`](#action-rendersvg)           | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactNode>` |
-
 </details>
 
 <details>
-<summary>LinearArcDisplay - Actions (all signatures)</summary>
+<summary>LinearArcDisplay - Actions (other undocumented members)</summary>
 
 #### action: selectFeature
 

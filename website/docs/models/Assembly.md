@@ -4,37 +4,15 @@ title: Assembly
 sidebar_label: Assembly Management -> Assembly
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assembly.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/Assembly.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assembly.ts).
 
 ## Overview
 
-<details open>
-<summary>Assembly - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                          |
-| ------------------------------------------ | ---------------------------------- |
-| [`configuration`](#property-configuration) | `IMaybe<IReferenceType<IAnyType>>` |
-
-</details>
-
 <details>
-<summary>Assembly - Properties (all signatures)</summary>
+<summary>Assembly - Properties</summary>
 
 #### property: configuration
 
@@ -98,22 +76,10 @@ type allRefNamesWithLowerCase = Set<string> | undefined
 allRefNamesWithLowerCase: undefined as Set<string> | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                                   |
-| ---------------------------------------------- | ------------------------------------------- |
-| [`error`](#volatile-error)                     | `unknown`                                   |
-| [`loadingP`](#volatile-loadingp)               | `Promise<void> \| undefined`                |
-| [`adapterLoads`](#volatile-adapterloads)       | `QuickLRU<string, Promise<RefNameAliases>>` |
-| [`volatileRegions`](#volatile-volatileregions) | `BasicRegion[] \| undefined`                |
-| [`refNameAliases`](#volatile-refnamealiases)   | `RefNameAliases \| undefined`               |
-| [`cytobands`](#volatile-cytobands)             | `Feature[] \| undefined`                    |
-
 </details>
 
 <details>
-<summary>Assembly - Volatiles (all signatures)</summary>
+<summary>Assembly - Volatiles (other undocumented members)</summary>
 
 #### volatile: error
 
@@ -196,25 +162,10 @@ overview scalebars/rulers)
 type refNameToIndex = Map<string, number> | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                    |
-| ---------------------------------------- | ---------------------------- |
-| [`name`](#getter-name)                   | `string`                     |
-| [`aliases`](#getter-aliases)             | `string[]`                   |
-| [`displayName`](#getter-displayname)     | `string`                     |
-| [`refNameColors`](#getter-refnamecolors) | `string[]`                   |
-| [`allAliases`](#getter-allaliases)       | `string[]`                   |
-| [`initialized`](#getter-initialized)     | `boolean`                    |
-| [`regions`](#getter-regions)             | `BasicRegion[] \| undefined` |
-| [`rpcManager`](#getter-rpcmanager)       | `RpcManager`                 |
-| [`refNames`](#getter-refnames)           | `string[] \| undefined`      |
-
 </details>
 
 <details>
-<summary>Assembly - Getters (all signatures)</summary>
+<summary>Assembly - Getters (other undocumented members)</summary>
 
 #### getter: name
 
@@ -326,20 +277,10 @@ type getRefNameMapForAdapter = (
 ) => Promise<RefNameAliases>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature                                  |
-| -------------------------------------------- | ------------------------------------------ |
-| [`getConf`](#method-getconf)                 | `(arg: string) => any`                     |
-| [`hasName`](#method-hasname)                 | `(name: string) => boolean`                |
-| [`getRefNameColor`](#method-getrefnamecolor) | `(refName: string) => string \| undefined` |
-| [`isValidRefName`](#method-isvalidrefname)   | `(refName: string) => boolean`             |
-
 </details>
 
 <details>
-<summary>Assembly - Methods (all signatures)</summary>
+<summary>Assembly - Methods (other undocumented members)</summary>
 
 #### method: getConf
 
@@ -392,20 +333,10 @@ type setLoaded = ({
 }) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                               | Signature                                  |
-| ------------------------------------ | ------------------------------------------ |
-| [`setError`](#action-seterror)       | `(e: unknown) => void`                     |
-| [`setLoadingP`](#action-setloadingp) | `(p?: Promise<void> \| undefined) => void` |
-| [`loadPre`](#action-loadpre)         | `() => Promise<void>`                      |
-| [`load`](#action-load)               | `() => Promise<void>`                      |
-
 </details>
 
 <details>
-<summary>Assembly - Actions (all signatures)</summary>
+<summary>Assembly - Actions (other undocumented members)</summary>
 
 #### action: setError
 

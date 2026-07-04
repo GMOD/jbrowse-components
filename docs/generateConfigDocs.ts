@@ -176,10 +176,50 @@ function configCategory(name: string, explicit?: string): string {
 // "Display types" links: which Displays declare `trackType: 'ThisTrack'`
 // (see DisplayTrackLink in util.ts), the config-doc index to turn a Display
 // name into a page, and which Displays also have a documented state model.
+// displayToTrackType/adaptersByTrack additionally link a display or track to the
+// data adapters that feed it (see compatibleAdaptersSection).
 interface DisplayLinkContext {
   displayTypesByTrack: Map<string, string[]>
+  displayToTrackType: Map<string, string>
+  adaptersByTrack: Map<string, string[]>
   byName: Map<string, ConfigWithHeader>
   modelNames: Set<string>
+}
+
+// The track type a config is associated with: a Track config is its own track
+// type; a Display resolves through its DisplayType registration. Used to find
+// the adapters that supply it.
+function relatedTrackType(name: string, links: DisplayLinkContext) {
+  return links.adaptersByTrack.has(name) || links.displayTypesByTrack.has(name)
+    ? name
+    : links.displayToTrackType.get(name)
+}
+
+// The data adapters that feed a track/display, each declared via an adapter's
+// `#trackType` tag. Gives e.g. LinearAlignmentsDisplay -> BamAdapter,
+// CramAdapter, and AlignmentsTrack -> the same — so a reader configuring the
+// display or track sees which data formats it accepts.
+function compatibleAdaptersSection(name: string, links: DisplayLinkContext) {
+  const trackType = relatedTrackType(name, links)
+  const track = trackType ? links.byName.get(trackType) : undefined
+  const lines = (trackType ? (links.adaptersByTrack.get(trackType) ?? []) : [])
+    .map(adapterName => links.byName.get(adapterName))
+    .filter((a): a is ConfigWithHeader => Boolean(a))
+    .map(a => `- [${a.header.name}](../${a.header.id})`)
+  // on a Track's own page the track type is this page, so don't self-link
+  const trackLabel =
+    name === trackType
+      ? 'this track'
+      : track
+        ? `the [${trackType}](../${track.header.id})`
+        : `the ${trackType ?? 'track'}`
+  return lines.length
+    ? section(
+        `### ${name} - Compatible adapters`,
+        `Data adapters that can supply ${trackLabel}:`,
+        lines.join('\n'),
+      )
+    : ''
 }
 
 // Reverse-links a Track config to the Display types that attach to it.
@@ -283,17 +323,27 @@ function wrapAdapterExample(content: string, trackType = 'FeatureTrack') {
 }
 
 // An adapter declares the track type its example is wrapped in via #trackType
-// (see wrapAdapterExample). Surface that as a link so an adapter page points at
-// the track that consumes it — the data was already parsed, just unused here.
+// (see wrapAdapterExample). Surface the full chain the adapter's data flows
+// through: the track that consumes it, then the display types that render that
+// track — closing the loop with each display's "Compatible adapters" section.
 function usedInSection(
   trackType: string | undefined,
   links: DisplayLinkContext,
 ) {
   const track = trackType ? links.byName.get(trackType) : undefined
+  const displayLines = (
+    trackType ? (links.displayTypesByTrack.get(trackType) ?? []) : []
+  )
+    .map(name => links.byName.get(name))
+    .filter((d): d is ConfigWithHeader => Boolean(d))
+    .map(d => `- [${d.header.name}](../${d.header.id})`)
   return track
     ? section(
         '### Used in',
-        `This adapter supplies data to the [${track.header.name}](../${track.header.id}) track type.`,
+        displayLines.length
+          ? `Supplies data to the [${track.header.name}](../${track.header.id}) track, rendered by:`
+          : `Supplies data to the [${track.header.name}](../${track.header.id}) track.`,
+        displayLines.join('\n'),
       )
     : ''
 }
@@ -330,6 +380,7 @@ function renderConfig(
   const directBase = bases[0]
   const sections = section(
     displayTypesSection(header.name, links),
+    compatibleAdaptersSection(header.name, links),
     usedInSection(header.trackType, links),
     stateModelSection(header.name, header.id, links),
     preProcess &&
@@ -347,12 +398,13 @@ function renderConfig(
       collapsible(`${header.name} - Slots`, ...slots.map(s => slotBlock(s))),
     inheritedSlotsSection(bases),
     derives &&
+      // when the base resolves to a page, the link says it all; only fall back
+      // to the raw `baseConfiguration:` code when it couldn't be resolved
       section(
         `### ${header.name} - Derives from`,
         directBase
           ? `- [${directBase.header.name}](../${directBase.header.id})`
-          : derives.docs,
-        codeBlock(derives.code),
+          : section(derives.docs, codeBlock(derives.code)),
       ),
   )
 
@@ -377,14 +429,8 @@ function renderConfig(
     id: header.id,
     title: header.name,
     sidebarLabel: `${category} -> ${header.name}`,
-    notes: `Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag`,
+    notes: `Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts.`,
     sourcePath: filename,
-    githubDocPath: `website/docs/config/${header.name}.md`,
     body: section(exSection, docsSection),
   })
 }
@@ -404,12 +450,21 @@ interface SlotMeta {
   type?: string
   description?: string
   defaultValue?: string
+  enumValues?: string[]
+  advanced?: boolean
+  promotable?: boolean
+  // true when the slot carries something the label line can't summarize (a
+  // non-inline default, a non-enumeration `model`, an unrecognized key), so the
+  // full source code block is kept below rather than dropped as redundant.
+  keepCode?: boolean
 }
 
 // A slot's value is an object literal (`{ type, description, defaultValue, ... }`).
 // Surface its fields as prose/labels rather than leaving a reader to parse them
-// out of the dumped code: the in-object `description` becomes the slot's prose
-// when no JSDoc was written, and type/default render as a compact label line.
+// out of a dumped code block: the in-object `description` becomes the slot's
+// prose when no JSDoc was written, and type/default/enum/flags render as a
+// compact label line. The code block is dropped whenever the label line fully
+// captures the slot (see keepCode), which is the common case.
 function parseSlotMeta(value: string): SlotMeta {
   const sf = ts.createSourceFile(
     'slot.ts',
@@ -423,39 +478,101 @@ function parseSlotMeta(value: string): SlotMeta {
   if (init && ts.isObjectLiteralExpression(init)) {
     for (const p of init.properties) {
       if (ts.isPropertyAssignment(p) && ts.isIdentifier(p.name)) {
-        if (p.name.text === 'type' && ts.isStringLiteralLike(p.initializer)) {
-          meta.type = p.initializer.text
-        } else if (
-          p.name.text === 'description' &&
-          ts.isStringLiteralLike(p.initializer)
-        ) {
-          meta.description = p.initializer.text
-        } else if (p.name.text === 'defaultValue') {
-          meta.defaultValue = renderScalarDefault(p.initializer)
-        }
+        applySlotProperty(meta, p.name.text, p.initializer)
+      } else {
+        meta.keepCode = true
       }
     }
+  } else {
+    meta.keepCode = true
   }
   return meta
 }
 
-// Only scalar defaults render inline; objects/arrays/callbacks stay in the code
-// block below where their shape is legible.
-function renderScalarDefault(node: ts.Expression): string | undefined {
-  return ts.isStringLiteralLike(node)
-    ? `'${node.text}'`
-    : ts.isNumericLiteral(node) ||
-        node.kind === ts.SyntaxKind.TrueKeyword ||
-        node.kind === ts.SyntaxKind.FalseKeyword ||
-        (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand))
-      ? node.getText()
-      : undefined
+function applySlotProperty(meta: SlotMeta, key: string, node: ts.Expression) {
+  if (key === 'type' && ts.isStringLiteralLike(node)) {
+    meta.type = node.text
+  } else if (key === 'description' && ts.isStringLiteralLike(node)) {
+    meta.description = node.text
+  } else if (key === 'defaultValue') {
+    const inline = renderInlineDefault(node)
+    if (inline === undefined) {
+      meta.keepCode = true
+    } else {
+      meta.defaultValue = inline
+    }
+  } else if (key === 'model') {
+    const values = enumerationValues(node)
+    if (values) {
+      meta.enumValues = values
+    } else {
+      meta.keepCode = true
+    }
+  } else if (
+    (key === 'advanced' || key === 'promotable') &&
+    node.kind === ts.SyntaxKind.TrueKeyword
+  ) {
+    meta[key] = true
+  } else {
+    // an unrecognized key (contextVariable, a non-true flag, ...) can't be
+    // summarized on the label line, so keep the source visible
+    meta.keepCode = true
+  }
+}
+
+// The values of a `types.enumeration('Name', ['a', 'b'])` model, so a stringEnum
+// slot's choices show on the label line instead of only in the code block.
+function enumerationValues(node: ts.Expression): string[] | undefined {
+  const arr = ts.isCallExpression(node)
+    ? node.arguments.find(ts.isArrayLiteralExpression)
+    : undefined
+  const values = arr?.elements.filter(ts.isStringLiteralLike).map(e => e.text)
+  return values?.length === arr?.elements.length && values?.length
+    ? values
+    : undefined
+}
+
+// A default rendered compactly enough to sit on the label line: scalars,
+// identifier/property references (defaultFilterFlags, Number.MIN_VALUE, null),
+// and short object/array literals. Anything longer returns undefined so its
+// shape stays legible in the code block instead.
+const MAX_INLINE_DEFAULT = 72
+function renderInlineDefault(node: ts.Expression): string | undefined {
+  const isScalar =
+    ts.isNumericLiteral(node) ||
+    node.kind === ts.SyntaxKind.TrueKeyword ||
+    node.kind === ts.SyntaxKind.FalseKeyword ||
+    node.kind === ts.SyntaxKind.NullKeyword ||
+    ts.isIdentifier(node) ||
+    ts.isPropertyAccessExpression(node) ||
+    (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand))
+  if (ts.isStringLiteralLike(node)) {
+    return `'${node.text}'`
+  }
+  if (isScalar) {
+    return node.getText()
+  }
+  if (ts.isObjectLiteralExpression(node) || ts.isArrayLiteralExpression(node)) {
+    const oneLine = node
+      .getText()
+      .replace(/\s+/g, ' ')
+      .replace(/,(\s*[}\]])/g, '$1')
+    return oneLine.length <= MAX_INLINE_DEFAULT ? oneLine : undefined
+  }
+  return undefined
 }
 
 function slotMetaLine(meta: SlotMeta): string {
+  const enums = meta.enumValues
+    ? ` (one of ${meta.enumValues.map(v => `\`${v}\``).join(', ')})`
+    : ''
+  const flags = [meta.advanced && 'advanced', meta.promotable && 'promotable']
+    .filter(Boolean)
+    .join(', ')
   return [
-    meta.type && `**Type:** \`${meta.type}\``,
+    meta.type && `**Type:** \`${meta.type}\`${enums}`,
     meta.defaultValue !== undefined && `**Default:** \`${meta.defaultValue}\``,
+    flags && `_${flags}_`,
   ]
     .filter(Boolean)
     .join(' · ')
@@ -468,7 +585,7 @@ function slotBlock({ name, docs, examples, code }: Item) {
     `#### slot: ${name}`,
     docs || meta.description,
     slotMetaLine(meta),
-    codeBlock(value),
+    meta.keepCode && codeBlock(value),
     exampleSection(examples, '**Example:**'),
   )
 }
@@ -508,9 +625,23 @@ function warnAdaptersMissingTrackType(configs: ConfigWithHeader[]) {
   }
 }
 
+// Group every documented adapter by the track type it declares via #trackType,
+// so a track/display page can list the adapters that supply it.
+function adaptersByTrackType(configs: ConfigWithHeader[]) {
+  const map = new Map<string, string[]>()
+  for (const config of configs) {
+    const trackType = config.header.trackType
+    if (trackType) {
+      map.set(trackType, [...(map.get(trackType) ?? []), config.header.name])
+    }
+  }
+  return map
+}
+
 export async function writeConfigDocs(
   byFile: Record<string, Config>,
   displayTypesByTrack: Map<string, string[]>,
+  displayToTrackType: Map<string, string>,
   modelNames: Set<string>,
 ) {
   const dir = 'website/docs/config'
@@ -519,7 +650,13 @@ export async function writeConfigDocs(
   const byDeclId = mapByKey(withHeader, c => c.header.declId)
   const byName = mapByKey(withHeader, c => c.header.name)
   const index: ConfigIndex = { byDeclId, byName }
-  const links: DisplayLinkContext = { displayTypesByTrack, byName, modelNames }
+  const links: DisplayLinkContext = {
+    displayTypesByTrack,
+    displayToTrackType,
+    adaptersByTrack: adaptersByTrackType(withHeader),
+    byName,
+    modelNames,
+  }
   warnUnresolvedBases(withHeader, index)
   warnAdaptersMissingTrackType(withHeader)
   for (const cfg of withHeader) {

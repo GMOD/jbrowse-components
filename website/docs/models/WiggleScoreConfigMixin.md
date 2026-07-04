@@ -4,20 +4,10 @@ title: WiggleScoreConfigMixin
 sidebar_label: Mixin -> WiggleScoreConfigMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleScoreConfigMixin.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/WiggleScoreConfigMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`wiggle` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleScoreConfigMixin.ts).
 
 ## Overview
 
@@ -26,21 +16,8 @@ include rpcDataMap or autoscale domain computation — those live in
 WiggleCommonMixin, which composes this. Displays that own their own rpcDataMap
 type (e.g. LinearManhattanDisplay) should compose this instead.
 
-<details open>
-<summary>WiggleScoreConfigMixin - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                           |
-| ------------------------------------------------------ | --------------------------------------------------- |
-| [`resolution`](#property-resolution)                   | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
-| [`displayCrossHatches`](#property-displaycrosshatches) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-
-</details>
-
 <details>
-<summary>WiggleScoreConfigMixin - Properties (all signatures)</summary>
+<summary>WiggleScoreConfigMixin - Properties</summary>
 
 #### property: resolution
 
@@ -62,20 +39,8 @@ displayCrossHatches: types.stripDefault(types.boolean, false)
 
 </details>
 
-<details open>
-<summary>WiggleScoreConfigMixin - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature             |
-| ------------------------------------------ | --------------------- |
-| [`loadedBpPerPx`](#volatile-loadedbpperpx) | `number \| undefined` |
-
-</details>
-
 <details>
-<summary>WiggleScoreConfigMixin - Volatiles (all signatures)</summary>
+<summary>WiggleScoreConfigMixin - Volatiles</summary>
 
 #### volatile: loadedBpPerPx
 
@@ -88,34 +53,8 @@ loadedBpPerPx: undefined as number | undefined
 
 </details>
 
-<details open>
-<summary>WiggleScoreConfigMixin - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature             |
-| ---------------------------------------------------- | --------------------- |
-| [`scalebarOverlapLeft`](#getter-scalebaroverlapleft) | `number`              |
-| [`posColor`](#getter-poscolor)                       | `string`              |
-| [`negColor`](#getter-negcolor)                       | `string`              |
-| [`bicolorPivot`](#getter-bicolorpivot)               | `number`              |
-| [`scaleType`](#getter-scaletype)                     | `string`              |
-| [`autoscaleType`](#getter-autoscaletype)             | `string`              |
-| [`numStdDev`](#getter-numstddev)                     | `number`              |
-| [`scatterPointSize`](#getter-scatterpointsize)       | `number`              |
-| [`summaryScoreMode`](#getter-summaryscoremode)       | `string`              |
-| [`renderingType`](#getter-renderingtype)             | `string`              |
-| [`minScore`](#getter-minscore)                       | `number`              |
-| [`maxScore`](#getter-maxscore)                       | `number`              |
-| [`minScoreBound`](#getter-minscorebound)             | `number \| undefined` |
-| [`maxScoreBound`](#getter-maxscorebound)             | `number \| undefined` |
-| [`hasResolution`](#getter-hasresolution)             | `boolean`             |
-
-</details>
-
 <details>
-<summary>WiggleScoreConfigMixin - Getters (all signatures)</summary>
+<summary>WiggleScoreConfigMixin - Getters</summary>
 
 #### getter: scalebarOverlapLeft
 
@@ -220,26 +159,10 @@ Strict zoom equality: see adr-008.
 type isCacheValid = (_displayedRegionIndex: number) => boolean
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature                                |
-| ---------------------------------------------------- | ---------------------------------------- |
-| [`toggleCrossHatches`](#action-togglecrosshatches)   | `() => void`                             |
-| [`setResolution`](#action-setresolution)             | `(res: number) => void`                  |
-| [`setLoadedBpPerPx`](#action-setloadedbpperpx)       | `(bpPerPx: number \| undefined) => void` |
-| [`setScaleType`](#action-setscaletype)               | `(scaleType: string) => void`            |
-| [`setMinScore`](#action-setminscore)                 | `(val?: number \| undefined) => void`    |
-| [`setMaxScore`](#action-setmaxscore)                 | `(val?: number \| undefined) => void`    |
-| [`setRenderingType`](#action-setrenderingtype)       | `(type: string) => void`                 |
-| [`setSummaryScoreMode`](#action-setsummaryscoremode) | `(val: string) => void`                  |
-| [`setScatterPointSize`](#action-setscatterpointsize) | `(val?: number \| undefined) => void`    |
-| [`setAutoscale`](#action-setautoscale)               | `(val?: string \| undefined) => void`    |
-
 </details>
 
 <details>
-<summary>WiggleScoreConfigMixin - Actions (all signatures)</summary>
+<summary>WiggleScoreConfigMixin - Actions (other undocumented members)</summary>
 
 #### action: toggleCrossHatches
 

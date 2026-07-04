@@ -4,18 +4,9 @@ title: GWASAdapter
 sidebar_label: Adapter -> GWASAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/GWASAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASAdapter/configSchema.ts).
 
 ## Overview
 
@@ -30,15 +21,7 @@ the box
 
 BED column to read as the Manhattan plot score
 
-**Type:** `string`
-
-```js
-{
-  type: 'string',
-  description: 'BED column to read as the Manhattan plot score',
-  defaultValue: DEFAULT_SCORE_COLUMN,
-}
-```
+**Type:** `string` · **Default:** `DEFAULT_SCORE_COLUMN`
 
 #### slot: scoreTransform
 
@@ -47,20 +30,8 @@ transform applied to `scoreColumn` to produce the Manhattan -log10(p) value:
 (column is a raw p-value), or `negLog10FromLn` (column is a natural-log p-value,
 e.g. Pan-UKBB Hail `ln P`)
 
-**Type:** `stringEnum` · **Default:** `'none'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('GwasScoreTransform', [
-    'none',
-    'negLog10',
-    'negLog10FromLn',
-  ]),
-  description: 'transform applied to the score column',
-  defaultValue: 'none',
-}
-```
+**Type:** `stringEnum` (one of `none`, `negLog10`, `negLog10FromLn`) ·
+**Default:** `'none'`
 
 </details>
 
@@ -76,57 +47,23 @@ this page is self-contained.
 
 #### slot: bedGzLocation
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.bed.gz',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` · **Default:** `'TBI'`
-
-```js
-{
-  model: types.enumeration('IndexType', ['TBI', 'CSI']),
-  type: 'stringEnum',
-  defaultValue: 'TBI',
-}
-```
+**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: index.location
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.bed.gz.tbi',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.bed.gz.tbi', locationType: 'UriLocation' }`
 
 #### slot: columnNames
 
 List of column names
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  description: 'List of column names',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: scoreColumn
 
@@ -134,27 +71,11 @@ The column to use as a "score" attribute
 
 **Type:** `string` · **Default:** `''`
 
-```js
-{
-  type: 'string',
-  description: 'The column to use as a "score" attribute',
-  defaultValue: '',
-}
-```
-
 #### slot: autoSql
 
 The autoSql definition for the data fields in the file
 
 **Type:** `string` · **Default:** `''`
-
-```js
-{
-  type: 'string',
-  description: 'The autoSql definition for the data fields in the file',
-  defaultValue: '',
-}
-```
 
 #### slot: disableGeneHeuristic
 
@@ -164,21 +85,8 @@ structures. Useful for files that have BED12-like structure but are not genes
 
 **Type:** `boolean` · **Default:** `false`
 
-```js
-{
-  type: 'boolean',
-  description:
-    'Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications)',
-  defaultValue: false,
-}
-```
-
 </details>
 
 ### GWASAdapter - Derives from
 
 - [BedTabixAdapter](../bedtabixadapter)
-
-```js
-baseConfiguration: bedTabixConfigSchema
-```

@@ -11,7 +11,6 @@ import {
   section,
   stripComposedBlock,
   stripPropertyName,
-  tableCellSignature,
 } from './util.ts'
 
 describe('parseTaggedComment', () => {
@@ -134,9 +133,23 @@ describe('section / overviewSection', () => {
     expect(section('a', '', false, 0, undefined, 'b')).toBe('a\n\nb')
   })
 
-  test('overviewSection adds a heading only when there is content', () => {
-    expect(overviewSection('body')).toBe('## Overview\n\nbody')
+  test('overviewSection is empty when there is no content', () => {
     expect(overviewSection('', false)).toBe('')
+  })
+
+  test('overviewSection adds the heading only when the body has sections', () => {
+    expect(overviewSection('prose', '## Slots\n\n...')).toBe(
+      '## Overview\n\nprose\n\n## Slots\n\n...',
+    )
+    expect(overviewSection('prose', '<details>\n<summary>x</summary>')).toBe(
+      '## Overview\n\nprose\n\n<details>\n<summary>x</summary>',
+    )
+  })
+
+  test('overviewSection emits bare prose when there are no sub-sections', () => {
+    expect(overviewSection('just a one-line description')).toBe(
+      'just a one-line description',
+    )
   })
 
   test('collapsible wraps content with blank lines so inner markdown renders', () => {
@@ -151,16 +164,6 @@ describe('section / overviewSection', () => {
       '<details>\n<summary>Title</summary>\n\nbody\n\n</details>',
     )
     expect(collapsibleClosed('Title', '', false)).toBe('')
-  })
-})
-
-describe('tableCellSignature', () => {
-  test('flattens whitespace and escapes union-type pipes so it survives a table cell', () => {
-    expect(
-      tableCellSignature(
-        '(val: boolean,\n  reason?: string | undefined) => void',
-      ),
-    ).toBe('(val: boolean, reason?: string \\| undefined) => void')
   })
 })
 

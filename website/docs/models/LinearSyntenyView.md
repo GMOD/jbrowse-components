@@ -4,20 +4,10 @@ title: LinearSyntenyView
 sidebar_label: View -> LinearSyntenyView
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearSyntenyView.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`linear-comparative-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyView/model.ts).
 
 ## Example usage
 
@@ -218,22 +208,10 @@ type init = IType<
 init: types.frozen<LinearSyntenyViewInit | undefined>()
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                           |
-| ------------------------------------------------------ | --------------------------------------------------- |
-| [`type`](#property-type)                               | `ISimpleType<"LinearSyntenyView">`                  |
-| [`cigarMode`](#property-cigarmode)                     | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| [`drawCurves`](#property-drawcurves)                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`drawLocationMarkers`](#property-drawlocationmarkers) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`alpha`](#property-alpha)                             | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
-| [`colorBy`](#property-colorby)                         | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-
 </details>
 
 <details>
-<summary>LinearSyntenyView - Properties (all signatures)</summary>
+<summary>LinearSyntenyView - Properties (other undocumented members)</summary>
 
 #### property: type
 
@@ -334,17 +312,10 @@ type diagonalizeStopToken = StopToken | undefined
 diagonalizeStopToken: undefined as StopToken | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                           | Signature                                  |
-| -------------------------------------------------------------------------------- | ------------------------------------------ |
-| [`importFormSyntenyTrackSelections`](#volatile-importformsyntenytrackselections) | `IObservableArray<ImportFormSyntenyTrack>` |
-
 </details>
 
 <details>
-<summary>LinearSyntenyView - Volatiles (all signatures)</summary>
+<summary>LinearSyntenyView - Volatiles (other undocumented members)</summary>
 
 #### volatile: importFormSyntenyTrackSelections
 
@@ -407,19 +378,10 @@ Whether to show the import form
 type showImportForm = boolean
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature |
-| ------------------------------------------------------ | --------- |
-| [`hasSomethingToShow`](#getter-hassomethingtoshow)     | `boolean` |
-| [`drawCIGAR`](#getter-drawcigar)                       | `boolean` |
-| [`drawCIGARMatchesOnly`](#getter-drawcigarmatchesonly) | `boolean` |
-
 </details>
 
 <details>
-<summary>LinearSyntenyView - Getters (all signatures)</summary>
+<summary>LinearSyntenyView - Getters (other undocumented members)</summary>
 
 #### getter: hasSomethingToShow
 
@@ -453,18 +415,10 @@ overwhelming
 type headerMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 5 more ... | { ...; })[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                                                                                                                                    |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`showMenuItems`](#method-showmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]` |
-| [`menuItems`](#method-menuitems)         | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]` |
-
 </details>
 
 <details>
-<summary>LinearSyntenyView - Methods (all signatures)</summary>
+<summary>LinearSyntenyView - Methods (other undocumented members)</summary>
 
 #### method: showMenuItems
 
@@ -492,36 +446,10 @@ revealing the (undiagonalized) view.
 type cancelAutoDiagonalize = () => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                 | Signature                                             |
-| ---------------------------------------------------------------------- | ----------------------------------------------------- |
-| [`importFormRemoveRow`](#action-importformremoverow)                   | `(idx: number) => void`                               |
-| [`clearImportFormSyntenyTracks`](#action-clearimportformsyntenytracks) | `() => void`                                          |
-| [`setImportFormSyntenyTrack`](#action-setimportformsyntenytrack)       | `(arg: number, val: ImportFormSyntenyTrack) => void`  |
-| [`setDrawCurves`](#action-setdrawcurves)                               | `(arg: boolean) => void`                              |
-| [`setCigarMode`](#action-setcigarmode)                                 | `(arg: "off" \| "matches" \| "full") => void`         |
-| [`setDrawLocationMarkers`](#action-setdrawlocationmarkers)             | `(arg: boolean) => void`                              |
-| [`setOverdrawPx`](#action-setoverdrawpx)                               | `(arg: number) => void`                               |
-| [`setAlpha`](#action-setalpha)                                         | `(arg: number) => void`                               |
-| [`setMinAlignmentLength`](#action-setminalignmentlength)               | `(arg: number) => void`                               |
-| [`setLodMode`](#action-setlodmode)                                     | `(arg: "auto" \| "fine" \| "coarse") => void`         |
-| [`setColorBy`](#action-setcolorby)                                     | `(arg: SyntenyColorBy) => void`                       |
-| [`setShowColorLegend`](#action-setshowcolorlegend)                     | `(arg: boolean) => void`                              |
-| [`setOpacityByIdentity`](#action-setopacitybyidentity)                 | `(arg: boolean) => void`                              |
-| [`setFadeThinAlignments`](#action-setfadethinalignments)               | `(arg: boolean) => void`                              |
-| [`showAllRegions`](#action-showallregions)                             | `() => void`                                          |
-| [`setInit`](#action-setinit)                                           | `(init?: LinearSyntenyViewInit \| undefined) => void` |
-| [`setAwaitingAutoDiagonalize`](#action-setawaitingautodiagonalize)     | `(arg: boolean) => void`                              |
-| [`setDiagonalizeStatus`](#action-setdiagonalizestatus)                 | `(arg?: RpcStatus \| undefined) => void`              |
-| [`setDiagonalizeStopToken`](#action-setdiagonalizestoptoken)           | `(arg?: StopToken \| undefined) => void`              |
-| [`exportSvg`](#action-exportsvg)                                       | `(opts: ExportSvgOptions) => Promise<void>`           |
-
 </details>
 
 <details>
-<summary>LinearSyntenyView - Actions (all signatures)</summary>
+<summary>LinearSyntenyView - Actions (other undocumented members)</summary>
 
 #### action: importFormRemoveRow
 

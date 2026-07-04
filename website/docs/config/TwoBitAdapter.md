@@ -4,18 +4,10 @@ title: TwoBitAdapter
 sidebar_label: Adapter -> TwoBitAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/TwoBitAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/TwoBitAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `sequence`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/TwoBitAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -39,8 +31,11 @@ _See the **Slots** section below for all available configuration fields._
 
 ### Used in
 
-This adapter supplies data to the
-[ReferenceSequenceTrack](../referencesequencetrack) track type.
+Supplies data to the [ReferenceSequenceTrack](../referencesequencetrack) track,
+rendered by:
+
+- [LinearGCContentDisplay](../lineargccontentdisplay)
+- [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 
 ### TwoBitAdapter - Pre-processor / simplified config
 
@@ -62,35 +57,15 @@ names and sizes):
 
 #### slot: twoBitLocation
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.2bit',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.2bit', locationType: 'UriLocation' }`
 
 #### slot: chromSizesLocation
 
 An optional chrom.sizes file can be supplied to speed up loading since parsing
 the twobit file can take time
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/default.chrom.sizes',
-    locationType: 'UriLocation',
-  },
-  description:
-    'An optional chrom.sizes file can be supplied to speed up loading since parsing the twobit file can take time',
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/default.chrom.sizes', locationType: 'UriLocation' }`
 
 </details>

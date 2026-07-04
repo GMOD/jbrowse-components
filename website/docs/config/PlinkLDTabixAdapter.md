@@ -4,18 +4,10 @@ title: PlinkLDTabixAdapter
 sidebar_label: Adapter -> PlinkLDTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/PlinkLDAdapter/configSchemaTabix.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/PlinkLDTabixAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `variants`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/PlinkLDAdapter/configSchemaTabix.ts).
 
 ## Overview
 
@@ -45,42 +37,16 @@ Preprocessor to allow minimal config:
 
 Location of the bgzipped PLINK LD file (.ld.gz)
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/plink.ld.gz',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/plink.ld.gz', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` · **Default:** `'TBI'`
-
-```js
-{
-  model: types.enumeration('IndexType', ['TBI', 'CSI']),
-  type: 'stringEnum',
-  defaultValue: 'TBI',
-}
-```
+**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: index.location
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/plink.ld.gz.tbi',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/plink.ld.gz.tbi', locationType: 'UriLocation' }`
 
 </details>

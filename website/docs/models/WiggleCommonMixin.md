@@ -4,20 +4,10 @@ title: WiggleCommonMixin
 sidebar_label: Mixin -> WiggleCommonMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleCommonMixin.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/WiggleCommonMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`wiggle` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleCommonMixin.ts).
 
 ## Overview
 
@@ -68,20 +58,8 @@ and docs.
 [setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
 [isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
 
-<details open>
-<summary>WiggleCommonMixin - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                               | Signature                                 |
-| ------------------------------------ | ----------------------------------------- |
-| [`rpcDataMap`](#volatile-rpcdatamap) | `ObservableMap<number, WiggleDataResult>` |
-
-</details>
-
 <details>
-<summary>WiggleCommonMixin - Volatiles (all signatures)</summary>
+<summary>WiggleCommonMixin - Volatiles</summary>
 
 #### volatile: rpcDataMap
 
@@ -107,18 +85,10 @@ an ambiguous flat baseline at score 0.
 type hasNoData = boolean
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature                       |
-| ------------------------------------------------ | ------------------------------- |
-| [`visibleScoreRange`](#getter-visiblescorerange) | `[number, number] \| undefined` |
-| [`domain`](#getter-domain)                       | `[number, number] \| undefined` |
-
 </details>
 
 <details>
-<summary>WiggleCommonMixin - Getters (all signatures)</summary>
+<summary>WiggleCommonMixin - Getters (other undocumented members)</summary>
 
 #### getter: visibleScoreRange
 
@@ -134,20 +104,8 @@ type domain = [number, number] | undefined
 
 </details>
 
-<details open>
-<summary>WiggleCommonMixin - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                         | Signature    |
-| -------------------------------------------------------------- | ------------ |
-| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void` |
-
-</details>
-
 <details>
-<summary>WiggleCommonMixin - Actions (all signatures)</summary>
+<summary>WiggleCommonMixin - Actions</summary>
 
 #### action: clearDisplaySpecificData
 

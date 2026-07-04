@@ -4,20 +4,10 @@ title: MultiSampleVariantBaseModel
 sidebar_label: Display -> MultiSampleVariantBaseModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/shared/MultiSampleVariantBaseModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/MultiSampleVariantBaseModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`variants` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/shared/MultiSampleVariantBaseModel.ts).
 
 ## Example usage
 
@@ -196,24 +186,8 @@ and docs.
 [setTreeCanvasRef](../treesidebarmixin#action-settreecanvasref),
 [setMouseoverCanvasRef](../treesidebarmixin#action-setmouseovercanvasref)
 
-<details open>
-<summary>MultiSampleVariantBaseModel - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature                                                              |
-| -------------------------------------------- | ---------------------------------------------------------------------- |
-| [`type`](#property-type)                     | `ISimpleType<string>`                                                  |
-| [`configuration`](#property-configuration)   | `ITypeUnion<any, any, any>`                                            |
-| [`rowHeight`](#property-rowheight)           | `IOptionalIType<ISimpleType<number>, [undefined]>`                     |
-| [`jexlFilters`](#property-jexlfilters)       | `IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>` |
-| [`lineZoneHeight`](#property-linezoneheight) | `IOptionalIType<ISimpleType<number>, [undefined]>`                     |
-
-</details>
-
 <details>
-<summary>MultiSampleVariantBaseModel - Properties (all signatures)</summary>
+<summary>MultiSampleVariantBaseModel - Properties</summary>
 
 #### property: type
 
@@ -296,23 +270,10 @@ type cellData = CellDataResult | undefined
 cellData: undefined as CellDataResult | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature                                                                      |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------ |
-| [`showLegend`](#volatile-showlegend)                 | `true`                                                                         |
-| [`contextMenuFeature`](#volatile-contextmenufeature) | `Feature \| undefined`                                                         |
-| [`sourcesVolatile`](#volatile-sourcesvolatile)       | `Source[] \| undefined`                                                        |
-| [`hoveredGenotype`](#volatile-hoveredgenotype)       | `(Record<string, unknown> & { genotype: string; name: string; }) \| undefined` |
-| [`loadedBpPerPx`](#volatile-loadedbpperpx)           | `number \| undefined`                                                          |
-| [`reloadCount`](#volatile-reloadcount)               | `number`                                                                       |
-| [`pendingClusterTree`](#volatile-pendingclustertree) | `string \| undefined`                                                          |
-
 </details>
 
 <details>
-<summary>MultiSampleVariantBaseModel - Volatiles (all signatures)</summary>
+<summary>MultiSampleVariantBaseModel - Volatiles (other undocumented members)</summary>
 
 #### volatile: showLegend
 
@@ -559,35 +520,10 @@ the viewport floor. Zero when the rows fit.
 type scrollableHeight = number
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                                                                                                                                                                                                                                                                    |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`hasPhased`](#getter-hasphased)                       | `boolean`                                                                                                                                                                                                                                                                                    |
-| [`sampleInfo`](#getter-sampleinfo)                     | `Record<string, SampleInfo> \| undefined`                                                                                                                                                                                                                                                    |
-| [`featureWidgetType`](#getter-featurewidgettype)       | `{ type: string; id: string; }`                                                                                                                                                                                                                                                              |
-| [`fetchSizeLimit`](#getter-fetchsizelimit)             | `number`                                                                                                                                                                                                                                                                                     |
-| [`showSidebarLabels`](#getter-showsidebarlabels)       | `boolean`                                                                                                                                                                                                                                                                                    |
-| [`showTree`](#getter-showtree)                         | `boolean`                                                                                                                                                                                                                                                                                    |
-| [`showBranchLength`](#getter-showbranchlength)         | `boolean`                                                                                                                                                                                                                                                                                    |
-| [`referenceDrawingMode`](#getter-referencedrawingmode) | `string`                                                                                                                                                                                                                                                                                     |
-| [`sourcesWithoutLayout`](#getter-sourceswithoutlayout) | `ProcessedSource[] \| undefined`                                                                                                                                                                                                                                                             |
-| [`sourcesBase`](#getter-sourcesbase)                   | `ProcessedSource[] \| undefined`                                                                                                                                                                                                                                                             |
-| [`sourceMap`](#getter-sourcemap)                       | `{ [k: string]: Source; } \| undefined`                                                                                                                                                                                                                                                      |
-| [`nrow`](#getter-nrow)                                 | `number`                                                                                                                                                                                                                                                                                     |
-| [`autoRowHeight`](#getter-autorowheight)               | `number`                                                                                                                                                                                                                                                                                     |
-| [`hierarchy`](#getter-hierarchy)                       | `PositionedHierarchyNode<NewickNode> \| undefined`                                                                                                                                                                                                                                           |
-| [`spatialIndex`](#getter-spatialindex)                 | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined`                                                                                                                                                                                                                           |
-| [`hoveredTooltipSource`](#getter-hoveredtooltipsource) | `{ [x: string]: unknown; genotype: string; name: string; baseUri?: string \| undefined; label?: string \| undefined; labelColor?: string \| undefined; sampleName?: string \| undefined; color?: string \| undefined; group?: string \| undefined; HP?: number \| undefined; } \| undefined` |
-| [`canDisplayLabels`](#getter-candisplaylabels)         | `boolean`                                                                                                                                                                                                                                                                                    |
-| [`totalHeight`](#getter-totalheight)                   | `number`                                                                                                                                                                                                                                                                                     |
-| [`featuresReady`](#getter-featuresready)               | `boolean`                                                                                                                                                                                                                                                                                    |
-
 </details>
 
 <details>
-<summary>MultiSampleVariantBaseModel - Getters (all signatures)</summary>
+<summary>MultiSampleVariantBaseModel - Getters (other undocumented members)</summary>
 
 #### getter: hasPhased
 
@@ -746,20 +682,10 @@ labels. Dismissed sections are filtered out.
 type legendSections = () => LegendSection[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                                                                                                                                                                                                          |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`rpcProps`](#method-rpcprops)                 | `() => { sources: ProcessedSource[] \| undefined; minorAlleleFrequencyFilter: number; filters: SerializableFilterChain \| undefined; renderingMode: string; referenceDrawingMode: string; featureColor: string; }` |
-| [`showSubmenuItems`](#method-showsubmenuitems) | `() => MenuItem[]`                                                                                                                                                                                                 |
-| [`trackMenuItems`](#method-trackmenuitems)     | `() => MenuItem[]`                                                                                                                                                                                                 |
-| [`contextMenuItems`](#method-contextmenuitems) | `() => MenuItem[]`                                                                                                                                                                                                 |
-
 </details>
 
 <details>
-<summary>MultiSampleVariantBaseModel - Methods (all signatures)</summary>
+<summary>MultiSampleVariantBaseModel - Methods (other undocumented members)</summary>
 
 #### method: rpcProps
 
@@ -854,40 +780,10 @@ worker.
 type setFeatureColor = (arg: string) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                     | Signature                                                                                      |
-| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [`setCellData`](#action-setcelldata)                                       | `(data: CellDataResult \| undefined) => void`                                                  |
-| [`setContextMenuFeature`](#action-setcontextmenufeature)                   | `(feature?: Feature \| undefined) => void`                                                     |
-| [`setLoadedBpPerPx`](#action-setloadedbpperpx)                             | `(bpPerPx: number \| undefined) => void`                                                       |
-| [`fetchMetadataDescriptions`](#action-fetchmetadatadescriptions)           | `() => Promise<unknown>`                                                                       |
-| [`setJexlFilters`](#action-setjexlfilters)                                 | `(f?: string[] \| undefined) => void`                                                          |
-| [`setShowLegend`](#action-setshowlegend)                                   | `(s: boolean) => void`                                                                         |
-| [`selectFeature`](#action-selectfeature)                                   | `(feature: Feature) => void`                                                                   |
-| [`setRowHeight`](#action-setrowheight)                                     | `(arg: number) => void`                                                                        |
-| [`setHoveredGenotype`](#action-sethoveredgenotype)                         | `(arg?: (Record<string, unknown> & { genotype: string; name: string; }) \| undefined) => void` |
-| [`setSources`](#action-setsources)                                         | `(sources: Source[]) => void`                                                                  |
-| [`setMafFilter`](#action-setmaffilter)                                     | `(arg: number) => void`                                                                        |
-| [`setShowSidebarLabels`](#action-setshowsidebarlabels)                     | `(arg: boolean) => void`                                                                       |
-| [`setShowTree`](#action-setshowtree)                                       | `(arg: boolean) => void`                                                                       |
-| [`setShowBranchLength`](#action-setshowbranchlength)                       | `(arg: boolean) => void`                                                                       |
-| [`setLayoutAndPendingClusterTree`](#action-setlayoutandpendingclustertree) | `(layout: Source[], tree: string) => void`                                                     |
-| [`setPhasedMode`](#action-setphasedmode)                                   | `(arg: string) => void`                                                                        |
-| [`setReferenceDrawingMode`](#action-setreferencedrawingmode)               | `(arg: string) => void`                                                                        |
-| [`sortByGenotype`](#action-sortbygenotype)                                 | `(featureId: string) => void`                                                                  |
-| [`setScrollTop`](#action-setscrolltop)                                     | `(scrollTop: number) => void`                                                                  |
-| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata)             | `() => void`                                                                                   |
-| [`isCacheValid`](#action-iscachevalid)                                     | `(_displayedRegionIndex: number) => boolean`                                                   |
-| [`getByteEstimateConfig`](#action-getbyteestimateconfig)                   | `() => ByteEstimateConfig \| null`                                                             |
-| [`fetchNeeded`](#action-fetchneeded)                                       | `(_needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>`              |
-| [`reload`](#action-reload)                                                 | `() => void`                                                                                   |
-
 </details>
 
 <details>
-<summary>MultiSampleVariantBaseModel - Actions (all signatures)</summary>
+<summary>MultiSampleVariantBaseModel - Actions (other undocumented members)</summary>
 
 #### action: setCellData
 

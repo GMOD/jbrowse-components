@@ -4,18 +4,10 @@ title: ChordVariantDisplay
 sidebar_label: Display -> ChordVariantDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/ChordVariantDisplay.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `circular-view`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/configSchema.ts).
 
 ## Example usage
 
@@ -46,6 +38,15 @@ controls how far the chords bow toward the center:
 _See the **Slots** section below for all available configuration fields._
 
 ## Overview
+
+### ChordVariantDisplay - Compatible adapters
+
+Data adapters that can supply the [VariantTrack](../varianttrack):
+
+- [BedpeAdapter](../bedpeadapter)
+- [StarFusionAdapter](../starfusionadapter)
+- [VcfAdapter](../vcfadapter)
+- [VcfTabixAdapter](../vcftabixadapter)
 
 ### ChordVariantDisplay - State model
 

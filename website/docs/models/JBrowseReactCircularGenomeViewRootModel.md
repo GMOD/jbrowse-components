@@ -4,40 +4,14 @@ title: JBrowseReactCircularGenomeViewRootModel
 sidebar_label: Root -> JBrowseReactCircularGenomeViewRootModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/src/createModel/createModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/JBrowseReactCircularGenomeViewRootModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/src/createModel/createModel.ts).
 
 ## Overview
 
-<details open>
-<summary>JBrowseReactCircularGenomeViewRootModel - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature                                                                                                                                                                                                                                                                                                                            |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`config`](#property-config)                     | `IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; advanced: true; }; workerCount: { type: string; description: string; defaultValue: number; advanced: true; }; }, ConfigurationSchemaOptions<...>>; ... 4 more ...`   |
-| [`session`](#property-session)                   | `IModelType<_OverrideProps<Omit<Omit<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalIType<ISimpleType<number>, [...]>; focusedViewId: IMaybe<...>; }, never>, { ...; }>, { ...; }>, Omit<...>>, never>, never>, { ...; ...`   |
-| [`assemblyManager`](#property-assemblymanager)   | `IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> \| undefined; adapterLoads: QuickLRU<...>; ... 6 more ...; allRefNamesWithLowerCase: Set<...> \| undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotC...` |
-| [`internetAccounts`](#property-internetaccounts) | `IArrayType<IAnyType>`                                                                                                                                                                                                                                                                                                               |
-
-</details>
-
 <details>
-<summary>JBrowseReactCircularGenomeViewRootModel - Properties (all signatures)</summary>
+<summary>JBrowseReactCircularGenomeViewRootModel - Properties</summary>
 
 #### property: config
 
@@ -79,24 +53,8 @@ internetAccounts: types.array(
 
 </details>
 
-<details open>
-<summary>JBrowseReactCircularGenomeViewRootModel - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature           |
-| -------------------------------------------------- | ------------------- |
-| [`error`](#volatile-error)                         | `unknown`           |
-| [`adminMode`](#volatile-adminmode)                 | `false`             |
-| [`version`](#volatile-version)                     | `string`            |
-| [`rpcManager`](#volatile-rpcmanager)               | `RpcManager`        |
-| [`textSearchManager`](#volatile-textsearchmanager) | `TextSearchManager` |
-
-</details>
-
 <details>
-<summary>JBrowseReactCircularGenomeViewRootModel - Volatiles (all signatures)</summary>
+<summary>JBrowseReactCircularGenomeViewRootModel - Volatiles</summary>
 
 #### volatile: error
 
@@ -147,21 +105,8 @@ textSearchManager: new TextSearchManager(pluginManager)
 
 </details>
 
-<details open>
-<summary>JBrowseReactCircularGenomeViewRootModel - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                                                                                                                                                                                                                                                                                                                          |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`jbrowse`](#getter-jbrowse)             | `ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; advanced: true; }; workerCount: { type: string; description: string; defaultValue: number; advanced: true; }; }, ConfigurationSchemaOptions<...>>;...` |
-| [`pluginManager`](#getter-pluginmanager) | `PluginManager`                                                                                                                                                                                                                                                                                                                    |
-
-</details>
-
 <details>
-<summary>JBrowseReactCircularGenomeViewRootModel - Getters (all signatures)</summary>
+<summary>JBrowseReactCircularGenomeViewRootModel - Getters</summary>
 
 #### getter: jbrowse
 
@@ -177,24 +122,8 @@ type pluginManager = PluginManager
 
 </details>
 
-<details open>
-<summary>JBrowseReactCircularGenomeViewRootModel - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                     | Signature                                                                                                                                                                                                                                                                                                                          |
-| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`setSession`](#action-setsession)                                         | `(sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<Omit<Omit<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalIType<ISimpleType<number>, [...]>; focusedViewId: IMaybe<...>; }, never>, { ...; }>, { ....` |
-| [`renameCurrentSession`](#action-renamecurrentsession)                     | `(sessionName: string) => void`                                                                                                                                                                                                                                                                                                    |
-| [`setError`](#action-seterror)                                             | `(error: unknown) => void`                                                                                                                                                                                                                                                                                                         |
-| [`addInternetAccount`](#action-addinternetaccount)                         | `(internetAccount: any) => void`                                                                                                                                                                                                                                                                                                   |
-| [`findAppropriateInternetAccount`](#action-findappropriateinternetaccount) | `(location: UriLocation) => any`                                                                                                                                                                                                                                                                                                   |
-
-</details>
-
 <details>
-<summary>JBrowseReactCircularGenomeViewRootModel - Actions (all signatures)</summary>
+<summary>JBrowseReactCircularGenomeViewRootModel - Actions</summary>
 
 #### action: setSession
 

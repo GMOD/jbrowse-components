@@ -4,20 +4,10 @@ title: LinearMultiRowFeatureDisplay
 sidebar_label: Display -> LinearMultiRowFeatureDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearMultiRowFeatureDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`canvas` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts).
 
 ## Overview
 
@@ -191,21 +181,8 @@ and docs.
 [setTreeCanvasRef](../treesidebarmixin#action-settreecanvasref),
 [setMouseoverCanvasRef](../treesidebarmixin#action-setmouseovercanvasref)
 
-<details open>
-<summary>LinearMultiRowFeatureDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                     |
-| ------------------------------------------ | --------------------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"LinearMultiRowFeatureDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                   |
-
-</details>
-
 <details>
-<summary>LinearMultiRowFeatureDisplay - Properties (all signatures)</summary>
+<summary>LinearMultiRowFeatureDisplay - Properties</summary>
 
 #### property: type
 
@@ -242,18 +219,10 @@ type hoveredFeature = HoveredFeature | undefined
 hoveredFeature: undefined as HoveredFeature | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                          |
-| ------------------------------------------ | -------------------------------------------------- |
-| [`rpcDataMap`](#volatile-rpcdatamap)       | `ObservableMap<number, MultiRowGetFeaturesResult>` |
-| [`prefersOffset`](#volatile-prefersoffset) | `true`                                             |
-
 </details>
 
 <details>
-<summary>LinearMultiRowFeatureDisplay - Volatiles (all signatures)</summary>
+<summary>LinearMultiRowFeatureDisplay - Volatiles (other undocumented members)</summary>
 
 #### volatile: rpcDataMap
 
@@ -427,22 +396,10 @@ Render state passed to the GPU/Canvas2D backend each frame.
 type renderState = MultiRowRenderState | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                                                          |
-| ---------------------------------------------- | ------------------------------------------------------------------ |
-| [`showTree`](#getter-showtree)                 | `boolean`                                                          |
-| [`showBranchLength`](#getter-showbranchlength) | `boolean`                                                          |
-| [`partitionField`](#getter-partitionfield)     | `string`                                                           |
-| [`rowProportion`](#getter-rowproportion)       | `number`                                                           |
-| [`rowIndexByValue`](#getter-rowindexbyvalue)   | `Map<string, number>`                                              |
-| [`spatialIndex`](#getter-spatialindex)         | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined` |
-
 </details>
 
 <details>
-<summary>LinearMultiRowFeatureDisplay - Getters (all signatures)</summary>
+<summary>LinearMultiRowFeatureDisplay - Getters (other undocumented members)</summary>
 
 #### getter: showTree
 
@@ -506,17 +463,10 @@ off-row, out-of-bounds, or over a gap.
 type featureAt = (mouseX: number, mouseY: number) => MultiRowHit | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature          |
-| ------------------------------------------ | ------------------ |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => MenuItem[]` |
-
 </details>
 
 <details>
-<summary>LinearMultiRowFeatureDisplay - Methods (all signatures)</summary>
+<summary>LinearMultiRowFeatureDisplay - Methods (other undocumented members)</summary>
 
 #### method: trackMenuItems
 
@@ -570,25 +520,10 @@ derive from it.
 type setFitToHeight = () => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                         | Signature                                                                        |
-| -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| [`setRowHeight`](#action-setrowheight)                         | `(n: number) => void`                                                            |
-| [`setShowTree`](#action-setshowtree)                           | `(f: boolean) => void`                                                           |
-| [`setShowBranchLength`](#action-setshowbranchlength)           | `(f: boolean) => void`                                                           |
-| [`setHoveredFeature`](#action-sethoveredfeature)               | `(arg?: HoveredFeature \| undefined) => void`                                    |
-| [`setRpcData`](#action-setrpcdata)                             | `(regionIndex: number, data: MultiRowGetFeaturesResult) => void`                 |
-| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void`                                                                     |
-| [`startRenderingBackend`](#action-startrenderingbackend)       | `(backend: MultiRowRenderingBackend) => void`                                    |
-| [`fetchNeeded`](#action-fetchneeded)                           | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>` |
-| [`renderSvg`](#action-rendersvg)                               | `(opts: ExportSvgDisplayOptions) => Promise<ReactNode>`                          |
-
 </details>
 
 <details>
-<summary>LinearMultiRowFeatureDisplay - Actions (all signatures)</summary>
+<summary>LinearMultiRowFeatureDisplay - Actions (other undocumented members)</summary>
 
 #### action: setRowHeight
 

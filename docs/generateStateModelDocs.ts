@@ -16,7 +16,6 @@ import {
   section,
   stripComposedBlock,
   suffixCategory,
-  tableCellSignature,
   typeAliasBlock,
   typeAndCodeBlock,
   assertSingleHeader,
@@ -25,7 +24,7 @@ import {
 } from './util.ts'
 import { writeFormatted } from './format.ts'
 
-import type { ComposedRef, Example, ExtractedNode } from './util.ts'
+import type { ComposedRef, Example, ExtractedNode, TagType } from './util.ts'
 
 interface Member {
   name: string
@@ -35,6 +34,62 @@ interface Member {
   code: string
   signature: string
 }
+type MemberKey = 'properties' | 'volatiles' | 'getters' | 'methods' | 'actions'
+
+// The five MST member kinds in render order. Each row ties together the tag that
+// routes a member here (also the `#### <tag>: <name>` heading + anchor slug), the
+// StateModel bucket it lands in, its plural section label, and how its body
+// renders. This one table drives accumulation, the per-model member sections, and
+// the inherited-member index, so the five-fold parallelism has a single source.
+const MEMBER_KINDS: {
+  key: MemberKey
+  tag: TagType
+  label: string
+  renderBody: (m: Member) => string
+}[] = [
+  {
+    key: 'properties',
+    tag: 'property',
+    label: 'Properties',
+    renderBody: m => typeAndCodeBlock(m.name, m.signature, m.code),
+  },
+  {
+    key: 'volatiles',
+    tag: 'volatile',
+    label: 'Volatiles',
+    renderBody: m => typeAndCodeBlock(m.name, m.signature, m.code),
+  },
+  {
+    key: 'getters',
+    tag: 'getter',
+    label: 'Getters',
+    renderBody: m => typeAliasBlock(m.name, m.signature),
+  },
+  {
+    key: 'methods',
+    tag: 'method',
+    label: 'Methods',
+    renderBody: m => typeAliasBlock(m.name, m.signature),
+  },
+  {
+    key: 'actions',
+    tag: 'action',
+    label: 'Actions',
+    renderBody: m => typeAliasBlock(m.name, m.signature),
+  },
+]
+type MemberKind = (typeof MEMBER_KINDS)[number]
+
+function emptyMembers(): Record<MemberKey, Member[]> {
+  return {
+    properties: [],
+    volatiles: [],
+    getters: [],
+    methods: [],
+    actions: [],
+  }
+}
+
 interface ModelHeader {
   name: string
   id: string
@@ -52,11 +107,7 @@ interface ModelHeader {
 }
 export interface StateModel {
   header?: ModelHeader
-  properties: Member[]
-  volatiles: Member[]
-  getters: Member[]
-  methods: Member[]
-  actions: Member[]
+  members: Record<MemberKey, Member[]>
   filename: string
 }
 type ModelWithHeader = StateModel & { header: ModelHeader }
@@ -72,14 +123,7 @@ export function accumulateModel(
   obj: ExtractedNode,
 ) {
   const fn = obj.filename
-  byFile[fn] ??= {
-    properties: [],
-    volatiles: [],
-    getters: [],
-    methods: [],
-    actions: [],
-    filename: repoRelative(fn),
-  }
+  byFile[fn] ??= { members: emptyMembers(), filename: repoRelative(fn) }
   const file = byFile[fn]
   const member = parseNode(obj)
 
@@ -99,16 +143,11 @@ export function accumulateModel(
       composedOf: obj.composedOf ?? [],
       category: member.category,
     }
-  } else if (obj.type === 'property') {
-    file.properties.push(member)
-  } else if (obj.type === 'volatile') {
-    file.volatiles.push(member)
-  } else if (obj.type === 'getter') {
-    file.getters.push(member)
-  } else if (obj.type === 'method') {
-    file.methods.push(member)
-  } else if (obj.type === 'action') {
-    file.actions.push(member)
+  } else {
+    const def = MEMBER_KINDS.find(k => k.tag === obj.type)
+    if (def) {
+      file.members[def.key].push(member)
+    }
   }
 }
 
@@ -167,24 +206,18 @@ function stateModelCategory(name: string, explicit?: string): string {
     : suffixCategory(name, explicit, MODEL_CATEGORIES)
 }
 
-// Singular heading kind a plural section label maps to: "Getters" -> "getter",
-// "Properties" -> "property". Shared by the member-section headings and the
-// inherited-member anchor links so the slug used in both never drifts.
-function memberKind(label: string) {
-  return label.toLowerCase().replace(/ies$/, 'y').replace(/s$/, '')
-}
-
 // One inherited-member line, e.g.
 // "**Getters:** [width](../baseviewmodel#getter-width), ...". Each name links
-// straight to its `#### <kind>: <name>` heading on the model that defines it; the
+// straight to its `#### <tag>: <name>` heading on the model that defines it; the
 // anchor mirrors the github-slugger id Astro derives for that heading
-// (`<kind>-<name lowercased>`), so the link lands on the member — modern browsers
+// (`<tag>-<name lowercased>`), so the link lands on the member — modern browsers
 // auto-expand the enclosing collapsed <details> on fragment navigation.
-function memberLine(modelId: string, label: string, members: Member[]) {
-  const kind = memberKind(label)
+function memberLine(modelId: string, def: MemberKind, members: Member[]) {
   return members.length
-    ? `**${label}:** ${members
-        .map(m => `[${m.name}](../${modelId}#${kind}-${m.name.toLowerCase()})`)
+    ? `**${def.label}:** ${members
+        .map(
+          m => `[${m.name}](../${modelId}#${def.tag}-${m.name.toLowerCase()})`,
+        )
         .join(', ')}`
     : ''
 }
@@ -194,14 +227,9 @@ function memberLine(modelId: string, label: string, members: Member[]) {
 // to traverse the whole inheritance chain to learn what is available.
 function inheritedSection(ancestors: ModelWithHeader[]) {
   const blocks = ancestors.flatMap(model => {
-    const id = model.header.id
-    const lines = [
-      memberLine(id, 'Properties', model.properties),
-      memberLine(id, 'Volatiles', model.volatiles),
-      memberLine(id, 'Getters', model.getters),
-      memberLine(id, 'Methods', model.methods),
-      memberLine(id, 'Actions', model.actions),
-    ].filter(Boolean)
+    const lines = MEMBER_KINDS.map(k =>
+      memberLine(model.header.id, k, model.members[k.key]),
+    ).filter(Boolean)
     return lines.length
       ? [
           section(
@@ -235,33 +263,14 @@ function configLinkSection(name: string, id: string, configNames: Set<string>) {
 }
 
 function renderModel(
-  {
-    header,
-    properties,
-    volatiles,
-    getters,
-    methods,
-    actions,
-    filename,
-  }: ModelWithHeader,
+  model: ModelWithHeader,
   ancestors: ModelWithHeader[],
   configNames: Set<string>,
 ): string {
+  const { header, filename } = model
   const sections = section(
-    memberSection(header.name, 'Properties', properties, p =>
-      typeAndCodeBlock(p.name, p.signature, p.code),
-    ),
-    memberSection(header.name, 'Volatiles', volatiles, v =>
-      typeAndCodeBlock(v.name, v.signature, v.code),
-    ),
-    memberSection(header.name, 'Getters', getters, g =>
-      typeAliasBlock(g.name, g.signature),
-    ),
-    memberSection(header.name, 'Methods', methods, m =>
-      typeAliasBlock(m.name, m.signature),
-    ),
-    memberSection(header.name, 'Actions', actions, a =>
-      typeAliasBlock(a.name, a.signature),
+    ...MEMBER_KINDS.map(k =>
+      memberSection(header.name, k, model.members[k.key]),
     ),
   )
 
@@ -278,15 +287,8 @@ function renderModel(
     id: header.id,
     title: header.name,
     sidebarLabel: `${category} -> ${header.name}`,
-    notes: `Note: this document is automatically generated from @jbrowse/mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag`,
+    notes: `Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts.`,
     sourcePath: filename,
-    githubDocPath: `website/docs/models/${header.name}.md`,
     body: section(exSection, docsSection),
   })
 }
@@ -300,62 +302,40 @@ function isDocumented(m: Member) {
 }
 
 // One full member entry: heading, prose, code/type block, and any #example.
-function memberEntry(
-  kind: string,
-  m: Member,
-  renderBody: (m: Member) => string,
-) {
+function memberEntry(def: MemberKind, m: Member) {
   return section(
-    `#### ${kind}: ${m.name}`,
+    `#### ${def.tag}: ${m.name}`,
     m.docs,
-    renderBody(m),
+    def.renderBody(m),
     exampleSection(m.examples, '**Example:**'),
   )
 }
 
-// Compact, scannable index of the undocumented plumbing members: one row each,
-// name linking down to the full signature in the folded sibling block (anchor
-// mirrors the github-slugger id Astro derives for `#### <kind>: <name>`).
-function plumbingTable(kind: string, members: Member[]) {
-  return members.length
-    ? section(
-        '**Other members** (undocumented — signatures only, expand below for full detail):',
-        [
-          '| Member | Signature |',
-          '| --- | --- |',
-          ...members.map(
-            m =>
-              `| [\`${m.name}\`](#${kind}-${m.name.toLowerCase()}) | \`${tableCellSignature(m.signature)}\` |`,
-          ),
-        ].join('\n'),
-      )
-    : ''
-}
-
-function memberSection(
-  modelName: string,
-  label: string,
-  members: Member[],
-  renderBody: (m: Member) => string,
-) {
-  const kind = memberKind(label)
+// Documented members render in full in an open block; undocumented "plumbing"
+// members (bare setters, internal accessors) render once each in a folded-closed
+// block — their `#### <tag>: <name>` headings are the anchor targets other
+// pages' "Inherited members" links point at, and fragment navigation
+// auto-expands the block. No separate signature table: it only duplicated the
+// signatures already shown here.
+function memberSection(modelName: string, def: MemberKind, members: Member[]) {
   if (!members.length) {
     return ''
   }
   const documented = members.filter(isDocumented)
   const plumbing = members.filter(m => !isDocumented(m))
   return section(
-    collapsible(
-      `${modelName} - ${label}`,
-      ...documented.map(m => memberEntry(kind, m, renderBody)),
-      plumbingTable(kind, plumbing),
-    ),
-    // Full detail for the plumbing lives here, folded away; the table above
-    // links into it and fragment navigation auto-expands the block.
+    documented.length
+      ? collapsible(
+          `${modelName} - ${def.label}`,
+          ...documented.map(m => memberEntry(def, m)),
+        )
+      : '',
     plumbing.length
       ? collapsibleClosed(
-          `${modelName} - ${label} (all signatures)`,
-          ...plumbing.map(m => memberEntry(kind, m, renderBody)),
+          documented.length
+            ? `${modelName} - ${def.label} (other undocumented members)`
+            : `${modelName} - ${def.label}`,
+          ...plumbing.map(m => memberEntry(def, m)),
         )
       : '',
   )

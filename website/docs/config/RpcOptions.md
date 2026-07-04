@@ -4,18 +4,9 @@ title: RpcOptions
 sidebar_label: Root -> RpcOptions
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/rpc/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/RpcOptions.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/rpc/configSchema.ts).
 
 ## Overview
 
@@ -28,33 +19,13 @@ which RPC backend to use by default. Empty means "use the host application's
 default" (web/desktop default to the web worker driver, embedded/headless to the
 main thread). A per-track or per-call `rpcDriverName` still overrides this.
 
-**Type:** `string` · **Default:** `''`
-
-```js
-{
-  type: 'string',
-  description:
-    'the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend',
-  defaultValue: '',
-  advanced: true,
-}
-```
+**Type:** `string` · **Default:** `''` · _advanced_
 
 #### slot: workerCount
 
 number of web workers to spawn for the web worker RPC driver. 0 lets JBrowse
 pick based on hardware concurrency.
 
-**Type:** `number` · **Default:** `0`
-
-```js
-{
-  type: 'number',
-  description:
-    'The number of workers to use. If 0 (the default) JBrowse will decide how many workers to use.',
-  defaultValue: 0,
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `0` · _advanced_
 
 </details>

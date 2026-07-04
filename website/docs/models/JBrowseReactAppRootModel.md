@@ -4,20 +4,9 @@ title: JBrowseReactAppRootModel
 sidebar_label: Root -> JBrowseReactAppRootModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/src/rootModel/rootModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/JBrowseReactAppRootModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-app/src/rootModel/rootModel.ts).
 
 ## Overview
 
@@ -72,22 +61,8 @@ and docs.
 [appendToSubMenu](../rootappmenumixin#action-appendtosubmenu),
 [insertInSubMenu](../rootappmenumixin#action-insertinsubmenu)
 
-<details open>
-<summary>JBrowseReactAppRootModel - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature    |
-| -------------------------------------------- | ------------ |
-| [`version`](#volatile-version)               | `string`     |
-| [`pluginsUpdated`](#volatile-pluginsupdated) | `false`      |
-| [`rpcManager`](#volatile-rpcmanager)         | `RpcManager` |
-
-</details>
-
 <details>
-<summary>JBrowseReactAppRootModel - Volatiles (all signatures)</summary>
+<summary>JBrowseReactAppRootModel - Volatiles</summary>
 
 #### volatile: version
 
@@ -124,20 +99,8 @@ rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
 
 </details>
 
-<details open>
-<summary>JBrowseReactAppRootModel - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                   | Signature      |
-| ------------------------ | -------------- |
-| [`menus`](#method-menus) | `() => Menu[]` |
-
-</details>
-
 <details>
-<summary>JBrowseReactAppRootModel - Methods (all signatures)</summary>
+<summary>JBrowseReactAppRootModel - Methods</summary>
 
 #### method: menus
 
@@ -147,20 +110,8 @@ type menus = () => Menu[]
 
 </details>
 
-<details open>
-<summary>JBrowseReactAppRootModel - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature    |
-| ------------------------------------------------ | ------------ |
-| [`setPluginsUpdated`](#action-setpluginsupdated) | `() => void` |
-
-</details>
-
 <details>
-<summary>JBrowseReactAppRootModel - Actions (all signatures)</summary>
+<summary>JBrowseReactAppRootModel - Actions</summary>
 
 #### action: setPluginsUpdated
 

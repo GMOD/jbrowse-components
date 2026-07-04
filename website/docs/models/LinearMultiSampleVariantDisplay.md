@@ -4,20 +4,10 @@ title: LinearMultiSampleVariantDisplay
 sidebar_label: Display -> LinearMultiSampleVariantDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearMultiSampleVariantDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`variants` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/model.ts).
 
 ## Overview
 
@@ -281,20 +271,8 @@ and docs.
 [setTreeCanvasRef](../treesidebarmixin#action-settreecanvasref),
 [setMouseoverCanvasRef](../treesidebarmixin#action-setmouseovercanvasref)
 
-<details open>
-<summary>LinearMultiSampleVariantDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                   | Signature                                        |
-| ------------------------ | ------------------------------------------------ |
-| [`type`](#property-type) | `ISimpleType<"LinearMultiSampleVariantDisplay">` |
-
-</details>
-
 <details>
-<summary>LinearMultiSampleVariantDisplay - Properties (all signatures)</summary>
+<summary>LinearMultiSampleVariantDisplay - Properties</summary>
 
 #### property: type
 
@@ -307,24 +285,8 @@ type: types.literal('LinearMultiSampleVariantDisplay')
 
 </details>
 
-<details open>
-<summary>LinearMultiSampleVariantDisplay - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                                                                                                                                                                            |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`visibleRegions`](#getter-visibleregions)     | `{ refName: string; start: number; end: number; assemblyName: string; reversed: boolean \| undefined; displayedRegionIndex: number; screenStartPx: number; screenEndPx: number; }[]` |
-| [`renderState`](#getter-renderstate)           | `{ canvasWidth: number; canvasHeight: number; rowHeight: number; scrollTop: number; } \| undefined`                                                                                  |
-| [`prefersOffset`](#getter-prefersoffset)       | `boolean`                                                                                                                                                                            |
-| [`perRegionCellMap`](#getter-perregioncellmap) | `Map<number, VariantUploadData>`                                                                                                                                                     |
-| [`flatbushIndices`](#getter-flatbushindices)   | `Map<number, Flatbush>`                                                                                                                                                              |
-
-</details>
-
 <details>
-<summary>LinearMultiSampleVariantDisplay - Getters (all signatures)</summary>
+<summary>LinearMultiSampleVariantDisplay - Getters</summary>
 
 #### getter: visibleRegions
 
@@ -374,21 +336,8 @@ type flatbushIndices = Map<number, Flatbush>
 
 </details>
 
-<details open>
-<summary>LinearMultiSampleVariantDisplay - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                                                                                                                                                    |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`renderSvg`](#method-rendersvg)               | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
-| [`showSubmenuItems`](#method-showsubmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]`                 |
-
-</details>
-
 <details>
-<summary>LinearMultiSampleVariantDisplay - Methods (all signatures)</summary>
+<summary>LinearMultiSampleVariantDisplay - Methods</summary>
 
 #### method: renderSvg
 
@@ -404,20 +353,8 @@ type showSubmenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | Ch
 
 </details>
 
-<details open>
-<summary>LinearMultiSampleVariantDisplay - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                   | Signature                                    |
-| -------------------------------------------------------- | -------------------------------------------- |
-| [`startRenderingBackend`](#action-startrenderingbackend) | `(backend: VariantRenderingBackend) => void` |
-
-</details>
-
 <details>
-<summary>LinearMultiSampleVariantDisplay - Actions (all signatures)</summary>
+<summary>LinearMultiSampleVariantDisplay - Actions</summary>
 
 #### action: startRenderingBackend
 

@@ -4,37 +4,15 @@ title: RootAppMenuMixin
 sidebar_label: Mixin -> RootAppMenuMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/RootMenu/index.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/RootAppMenuMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/RootMenu/index.ts).
 
 ## Overview
 
-<details open>
-<summary>RootAppMenuMixin - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature      |
-| ---------------------------------------------------- | -------------- |
-| [`mutableMenuActions`](#volatile-mutablemenuactions) | `MenuAction[]` |
-
-</details>
-
 <details>
-<summary>RootAppMenuMixin - Volatiles (all signatures)</summary>
+<summary>RootAppMenuMixin - Volatiles</summary>
 
 #### volatile: mutableMenuActions
 
@@ -106,17 +84,10 @@ type insertInSubMenu = (
 ) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                         | Signature                    |
-| ------------------------------ | ---------------------------- |
-| [`setMenus`](#action-setmenus) | `(newMenus: Menu[]) => void` |
-
 </details>
 
 <details>
-<summary>RootAppMenuMixin - Actions (all signatures)</summary>
+<summary>RootAppMenuMixin - Actions (other undocumented members)</summary>
 
 #### action: setMenus
 

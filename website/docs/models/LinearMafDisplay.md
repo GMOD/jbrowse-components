@@ -4,20 +4,10 @@ title: LinearMafDisplay
 sidebar_label: Display -> LinearMafDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/stateModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearMafDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`maf` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/stateModel.ts).
 
 ## Example usage
 
@@ -207,21 +197,8 @@ and docs.
 [setTreeCanvasRef](../treesidebarmixin#action-settreecanvasref),
 [setMouseoverCanvasRef](../treesidebarmixin#action-setmouseovercanvasref)
 
-<details open>
-<summary>LinearMafDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                         |
-| ------------------------------------------ | --------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"LinearMafDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`       |
-
-</details>
-
 <details>
-<summary>LinearMafDisplay - Properties (all signatures)</summary>
+<summary>LinearMafDisplay - Properties</summary>
 
 #### property: type
 
@@ -314,19 +291,10 @@ type resizing = false
 resizing: false
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                              |
-| -------------------------------------------------- | -------------------------------------- |
-| [`rpcDataMap`](#volatile-rpcdatamap)               | `ObservableMap<number, MafRegionData>` |
-| [`prefersOffset`](#volatile-prefersoffset)         | `true`                                 |
-| [`resizeSettleTimer`](#volatile-resizesettletimer) | `Timeout \| undefined`                 |
-
 </details>
 
 <details>
-<summary>LinearMafDisplay - Volatiles (all signatures)</summary>
+<summary>LinearMafDisplay - Volatiles (other undocumented members)</summary>
 
 #### volatile: rpcDataMap
 
@@ -802,36 +770,10 @@ Get highlight regions from connected MSA views
 type msaHighlights = MsaHighlight[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature                                                          |
-| ---------------------------------------------------- | ------------------------------------------------------------------ |
-| [`rowHeight`](#getter-rowheight)                     | `number`                                                           |
-| [`rowProportion`](#getter-rowproportion)             | `number`                                                           |
-| [`showAllLetters`](#getter-showallletters)           | `boolean`                                                          |
-| [`mismatchRendering`](#getter-mismatchrendering)     | `boolean`                                                          |
-| [`showAsUpperCase`](#getter-showasuppercase)         | `boolean`                                                          |
-| [`showTree`](#getter-showtree)                       | `boolean`                                                          |
-| [`showBranchLength`](#getter-showbranchlength)       | `boolean`                                                          |
-| [`showCoverage`](#getter-showcoverage)               | `boolean`                                                          |
-| [`showAlignments`](#getter-showalignments)           | `boolean`                                                          |
-| [`coverageHeight`](#getter-coverageheight)           | `number`                                                           |
-| [`showConservation`](#getter-showconservation)       | `boolean`                                                          |
-| [`conservationHeight`](#getter-conservationheight)   | `number`                                                           |
-| [`conservationMode`](#getter-conservationmode)       | `"base" \| "codon"`                                                |
-| [`rowIdentityMode`](#getter-rowidentitymode)         | `"none" \| "xyplot" \| "heatmap"`                                  |
-| [`rowIdentityAutoZoom`](#getter-rowidentityautozoom) | `boolean`                                                          |
-| [`showAnnotations`](#getter-showannotations)         | `boolean`                                                          |
-| [`showTranslation`](#getter-showtranslation)         | `boolean`                                                          |
-| [`colorByChromosome`](#getter-colorbychromosome)     | `boolean`                                                          |
-| [`showInversions`](#getter-showinversions)           | `boolean`                                                          |
-| [`spatialIndex`](#getter-spatialindex)               | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined` |
-
 </details>
 
 <details>
-<summary>LinearMafDisplay - Getters (all signatures)</summary>
+<summary>LinearMafDisplay - Getters (other undocumented members)</summary>
 
 #### getter: rowHeight
 
@@ -1060,17 +1002,10 @@ type codonHoverInfo = (
 ) => CodonHit | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature          |
-| ------------------------------------------ | ------------------ |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => MenuItem[]` |
-
 </details>
 
 <details>
-<summary>LinearMafDisplay - Methods (all signatures)</summary>
+<summary>LinearMafDisplay - Methods (other undocumented members)</summary>
 
 #### method: trackMenuItems
 
@@ -1166,44 +1101,10 @@ type getByteEstimateConfig = () => {
 } | null
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                         | Signature                                                                                                                                            |
-| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`setRowHeight`](#action-setrowheight)                         | `(n: number) => void`                                                                                                                                |
-| [`setResizing`](#action-setresizing)                           | `(arg: boolean) => void`                                                                                                                             |
-| [`setRowProportion`](#action-setrowproportion)                 | `(n: number) => void`                                                                                                                                |
-| [`setShowAllLetters`](#action-setshowallletters)               | `(f: boolean) => void`                                                                                                                               |
-| [`setMismatchRendering`](#action-setmismatchrendering)         | `(f: boolean) => void`                                                                                                                               |
-| [`setShowAsUpperCase`](#action-setshowasuppercase)             | `(arg: boolean) => void`                                                                                                                             |
-| [`setShowTree`](#action-setshowtree)                           | `(arg: boolean) => void`                                                                                                                             |
-| [`setShowBranchLength`](#action-setshowbranchlength)           | `(arg: boolean) => void`                                                                                                                             |
-| [`setShowCoverage`](#action-setshowcoverage)                   | `(arg: boolean) => void`                                                                                                                             |
-| [`setShowAlignments`](#action-setshowalignments)               | `(arg: boolean) => void`                                                                                                                             |
-| [`setCoverageHeight`](#action-setcoverageheight)               | `(arg: number) => void`                                                                                                                              |
-| [`setShowConservation`](#action-setshowconservation)           | `(arg: boolean) => void`                                                                                                                             |
-| [`setConservationMode`](#action-setconservationmode)           | `(arg: "base" \| "codon") => void`                                                                                                                   |
-| [`setRowIdentityMode`](#action-setrowidentitymode)             | `(arg: "none" \| "xyplot" \| "heatmap") => void`                                                                                                     |
-| [`setRowIdentityAutoZoom`](#action-setrowidentityautozoom)     | `(arg: boolean) => void`                                                                                                                             |
-| [`setShowAnnotations`](#action-setshowannotations)             | `(arg: boolean) => void`                                                                                                                             |
-| [`setShowTranslation`](#action-setshowtranslation)             | `(arg: boolean) => void`                                                                                                                             |
-| [`setColorByChromosome`](#action-setcolorbychromosome)         | `(arg: boolean) => void`                                                                                                                             |
-| [`setShowInversions`](#action-setshowinversions)               | `(arg: boolean) => void`                                                                                                                             |
-| [`setConservationHeight`](#action-setconservationheight)       | `(arg: number) => void`                                                                                                                              |
-| [`setRpcData`](#action-setrpcdata)                             | `(regionIndex: number, data: MafRegionData) => void`                                                                                                 |
-| [`setSummaryData`](#action-setsummarydata)                     | `(regionIndex: number, records: MafSummaryRecord[]) => void`                                                                                         |
-| [`setFramesData`](#action-setframesdata)                       | `(regionIndex: number, records: MafFrameRecord[]) => void`                                                                                           |
-| [`clearAlignmentData`](#action-clearalignmentdata)             | `() => void`                                                                                                                                         |
-| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void`                                                                                                                                         |
-| [`startRenderingBackend`](#action-startrenderingbackend)       | `(backend: MafRenderingBackend) => void`                                                                                                             |
-| [`fetchNeeded`](#action-fetchneeded)                           | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>`                                                                     |
-| [`renderSvg`](#action-rendersvg)                               | `(opts: ExportSvgDisplayOptions) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| AwaitedReactNode>` |
-
 </details>
 
 <details>
-<summary>LinearMafDisplay - Actions (all signatures)</summary>
+<summary>LinearMafDisplay - Actions (other undocumented members)</summary>
 
 #### action: setRowHeight
 

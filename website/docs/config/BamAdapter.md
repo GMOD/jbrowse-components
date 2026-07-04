@@ -4,18 +4,10 @@ title: BamAdapter
 sidebar_label: Adapter -> BamAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/BamAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BamAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `alignments`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/BamAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -46,8 +38,9 @@ automatically supplies it from the enclosing assembly's sequence track.
 
 ### Used in
 
-This adapter supplies data to the [AlignmentsTrack](../alignmentstrack) track
-type.
+Supplies data to the [AlignmentsTrack](../alignmentstrack) track, rendered by:
+
+- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 
 ### BamAdapter - Pre-processor / simplified config
 
@@ -65,59 +58,23 @@ preprocessor to allow minimal config, assumes yourfile.bam.bai:
 
 #### slot: bamLocation
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.bam',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.bam', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` · **Default:** `'BAI'`
-
-```js
-{
-  model: types.enumeration('IndexType', ['BAI', 'CSI']),
-  type: 'stringEnum',
-  defaultValue: 'BAI',
-}
-```
+**Type:** `stringEnum` (one of `BAI`, `CSI`) · **Default:** `'BAI'`
 
 #### slot: index.location
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.bam.bai',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.bam.bai', locationType: 'UriLocation' }`
 
 #### slot: fetchSizeLimit
 
 size to fetch in bytes over which to display a warning to the user that too much
 data will be fetched
 
-**Type:** `number` · **Default:** `5_000_000`
-
-```js
-{
-  type: 'number',
-  description:
-    'size to fetch in bytes over which to display a warning to the user that too much data will be fetched',
-  defaultValue: 5_000_000,
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `5_000_000` · _advanced_
 
 </details>

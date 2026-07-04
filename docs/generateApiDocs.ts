@@ -94,10 +94,9 @@ id: ${id}
 title: ${group}
 ---
 
-Note: this document is automatically generated from exported functions marked
-with an \`#api\` JSDoc tag in our source code. See [Plugin dependencies and
-re-exports](/docs/developer_guides/imports_and_reexports) for how to import
-these from a plugin.
+Auto-generated from exported functions tagged \`#api\` in the source. See
+[imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
+import these from a plugin.
 
 ${section(...sorted.map(exp => renderExport(exp, '##')))}
 `

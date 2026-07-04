@@ -4,20 +4,10 @@ title: LinearWiggleDisplay
 sidebar_label: Display -> LinearWiggleDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearWiggleDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`wiggle` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/model.ts).
 
 ## Example usage
 
@@ -230,21 +220,8 @@ and docs.
 [setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
 [isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
 
-<details open>
-<summary>LinearWiggleDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                            |
-| ------------------------------------------ | ------------------------------------ |
-| [`type`](#property-type)                   | `ISimpleType<"LinearWiggleDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`          |
-
-</details>
-
 <details>
-<summary>LinearWiggleDisplay - Properties (all signatures)</summary>
+<summary>LinearWiggleDisplay - Properties</summary>
 
 #### property: type
 
@@ -266,20 +243,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
-<summary>LinearWiggleDisplay - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                              |
-| -------------------------------------------------- | -------------------------------------- |
-| [`featureUnderMouse`](#volatile-featureundermouse) | `WiggleFeatureUnderMouse \| undefined` |
-
-</details>
-
 <details>
-<summary>LinearWiggleDisplay - Volatiles (all signatures)</summary>
+<summary>LinearWiggleDisplay - Volatiles</summary>
 
 #### volatile: featureUnderMouse
 
@@ -292,25 +257,8 @@ featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined
 
 </details>
 
-<details open>
-<summary>LinearWiggleDisplay - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                       | Signature                                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| [`DisplayMessageComponent`](#getter-displaymessagecomponent) | `LazyExoticComponent<({ model, }: { model: WiggleDisplayModel; }) => Element>` |
-| [`color`](#getter-color)                                     | `string`                                                                       |
-| [`useBicolor`](#getter-usebicolor)                           | `boolean`                                                                      |
-| [`isDensityMode`](#getter-isdensitymode)                     | `boolean`                                                                      |
-| [`ticks`](#getter-ticks)                                     | `YScaleTicks \| undefined`                                                     |
-| [`renderState`](#getter-renderstate)                         | `WiggleGPURenderState \| undefined`                                            |
-
-</details>
-
 <details>
-<summary>LinearWiggleDisplay - Getters (all signatures)</summary>
+<summary>LinearWiggleDisplay - Getters</summary>
 
 #### getter: DisplayMessageComponent
 
@@ -376,18 +324,10 @@ type gpuProps = () => {
 }
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                                                                                                                    |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`rpcProps`](#method-rpcprops)             | `() => { useBicolor: boolean; bicolorPivot: number; resolution: number; }`                                                                   |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]` |
-
 </details>
 
 <details>
-<summary>LinearWiggleDisplay - Methods (all signatures)</summary>
+<summary>LinearWiggleDisplay - Methods (other undocumented members)</summary>
 
 #### method: rpcProps
 
@@ -407,29 +347,8 @@ type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | Chec
 
 </details>
 
-<details open>
-<summary>LinearWiggleDisplay - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                   | Signature                                                                                                                                                    |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`setRpcData`](#action-setrpcdata)                       | `(displayedRegionIndex: number, data: WiggleDataResult) => void`                                                                                             |
-| [`setUseBicolor`](#action-setusebicolor)                 | `(val?: boolean \| undefined) => void`                                                                                                                       |
-| [`setColor`](#action-setcolor)                           | `(color?: string \| undefined) => void`                                                                                                                      |
-| [`setPosColor`](#action-setposcolor)                     | `(color?: string \| undefined) => void`                                                                                                                      |
-| [`setNegColor`](#action-setnegcolor)                     | `(color?: string \| undefined) => void`                                                                                                                      |
-| [`setFeatureUnderMouse`](#action-setfeatureundermouse)   | `(feat?: WiggleFeatureUnderMouse \| undefined) => void`                                                                                                      |
-| [`selectFeature`](#action-selectfeature)                 | `(feat: WiggleFeatureUnderMouse) => void`                                                                                                                    |
-| [`fetchNeeded`](#action-fetchneeded)                     | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void> \| undefined`                                                                |
-| [`renderSvg`](#action-rendersvg)                         | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
-| [`startRenderingBackend`](#action-startrenderingbackend) | `(backend: WiggleRenderingBackend) => void`                                                                                                                  |
-
-</details>
-
 <details>
-<summary>LinearWiggleDisplay - Actions (all signatures)</summary>
+<summary>LinearWiggleDisplay - Actions</summary>
 
 #### action: setRpcData
 

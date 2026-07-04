@@ -4,20 +4,9 @@ title: SessionLoader
 sidebar_label: General -> SessionLoader
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/SessionLoader.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SessionLoader.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/SessionLoader.ts).
 
 ## Overview
 
@@ -56,31 +45,10 @@ type sessionSource = IType<
 sessionSource: types.frozen<SessionSource | undefined>(undefined)
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature                                                                |
-| ------------------------------------------------ | ------------------------------------------------------------------------ |
-| [`configPath`](#property-configpath)             | `IMaybe<ISimpleType<string>>`                                            |
-| [`sessionQuery`](#property-sessionquery)         | `IMaybe<ISimpleType<string>>`                                            |
-| [`password`](#property-password)                 | `IMaybe<ISimpleType<string>>`                                            |
-| [`adminKey`](#property-adminkey)                 | `IMaybe<ISimpleType<string>>`                                            |
-| [`loc`](#property-loc)                           | `IMaybe<ISimpleType<string>>`                                            |
-| [`sessionTracks`](#property-sessiontracks)       | `IMaybe<ISimpleType<string>>`                                            |
-| [`assembly`](#property-assembly)                 | `IMaybe<ISimpleType<string>>`                                            |
-| [`tracks`](#property-tracks)                     | `IMaybe<ISimpleType<string>>`                                            |
-| [`tracklist`](#property-tracklist)               | `IMaybe<ISimpleType<boolean>>`                                           |
-| [`highlight`](#property-highlight)               | `IMaybe<ISimpleType<string>>`                                            |
-| [`nav`](#property-nav)                           | `IMaybe<ISimpleType<boolean>>`                                           |
-| [`sessionName`](#property-sessionname)           | `IMaybe<ISimpleType<string>>`                                            |
-| [`initialTimestamp`](#property-initialtimestamp) | `ISimpleType<number>`                                                    |
-| [`hubURL`](#property-huburl)                     | `IMaybe<IArrayType<ISimpleType<string>>>`                                |
-| [`configSnapshot`](#property-configsnapshot)     | `IType<Snap \| null \| undefined, Snap \| undefined, Snap \| undefined>` |
-
 </details>
 
 <details>
-<summary>SessionLoader - Properties (all signatures)</summary>
+<summary>SessionLoader - Properties (other undocumented members)</summary>
 
 #### property: configPath
 
@@ -239,23 +207,10 @@ type initializeStarted = false
 initializeStarted: false
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                   | Signature   |
-| -------------------------------------------------------- | ----------- |
-| [`sessionTriaged`](#volatile-sessiontriaged)             | `undefined` |
-| [`runtimePlugins`](#volatile-runtimeplugins)             | `undefined` |
-| [`sessionPlugins`](#volatile-sessionplugins)             | `undefined` |
-| [`configError`](#volatile-configerror)                   | `undefined` |
-| [`pluginManager`](#volatile-pluginmanager)               | `undefined` |
-| [`pluginManagerError`](#volatile-pluginmanagererror)     | `undefined` |
-| [`buildAutorunDisposer`](#volatile-buildautorundisposer) | `undefined` |
-
 </details>
 
 <details>
-<summary>SessionLoader - Volatiles (all signatures)</summary>
+<summary>SessionLoader - Volatiles (other undocumented members)</summary>
 
 #### volatile: sessionTriaged
 
@@ -362,23 +317,10 @@ type defaultSessionViewInit =
   | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature                   |
-| ---------------------------------------------------- | --------------------------- |
-| [`isHubSession`](#getter-ishubsession)               | `boolean`                   |
-| [`isJb1StyleSession`](#getter-isjb1stylesession)     | `boolean`                   |
-| [`pluginsLoaded`](#getter-pluginsloaded)             | `boolean`                   |
-| [`isSessionLoaded`](#getter-issessionloaded)         | `boolean`                   |
-| [`sessionTracksParsed`](#getter-sessiontracksparsed) | `Record<string, unknown>[]` |
-| [`resolvedConfigPath`](#getter-resolvedconfigpath)   | `string`                    |
-| [`ready`](#getter-ready)                             | `boolean`                   |
-
 </details>
 
 <details>
-<summary>SessionLoader - Getters (all signatures)</summary>
+<summary>SessionLoader - Getters (other undocumented members)</summary>
 
 #### getter: isHubSession
 
@@ -556,30 +498,10 @@ Detaches the React host: stops the build autorun and disposes the rootModel.
 type deactivate = () => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                       | Signature                                                                                                                                     |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`setConfigError`](#action-setconfigerror)                   | `(error: unknown) => void`                                                                                                                    |
-| [`setRuntimePlugins`](#action-setruntimeplugins)             | `(plugins: PluginRecord[]) => void`                                                                                                           |
-| [`setSessionPlugins`](#action-setsessionplugins)             | `(plugins: PluginRecord[]) => void`                                                                                                           |
-| [`setSessionTriaged`](#action-setsessiontriaged)             | `(args?: SessionTriagedInfo \| undefined) => void`                                                                                            |
-| [`loadSession`](#action-loadsession)                         | `(snap: { sessionPlugins?: PluginDefinition[] \| undefined; id: string; }, userAcceptedConfirmation?: boolean \| undefined) => Promise<void>` |
-| [`fetchConfig`](#action-fetchconfig)                         | `() => Promise<void>`                                                                                                                         |
-| [`fetchSharedSession`](#action-fetchsharedsession)           | `() => Promise<void>`                                                                                                                         |
-| [`decodeEncodedUrlSession`](#action-decodeencodedurlsession) | `() => Promise<void>`                                                                                                                         |
-| [`decodeJsonUrlSession`](#action-decodejsonurlsession)       | `() => Promise<void>`                                                                                                                         |
-| [`decodeSessionSpec`](#action-decodesessionspec)             | `() => void`                                                                                                                                  |
-| [`decodeJb1StyleSession`](#action-decodejb1stylesession)     | `() => void`                                                                                                                                  |
-| [`decodeHubSpec`](#action-decodehubspec)                     | `() => void`                                                                                                                                  |
-| [`loadSessionByType`](#action-loadsessionbytype)             | `() => Promise<void>`                                                                                                                         |
-| [`loadConfig`](#action-loadconfig)                           | `() => Promise<void>`                                                                                                                         |
-
 </details>
 
 <details>
-<summary>SessionLoader - Actions (all signatures)</summary>
+<summary>SessionLoader - Actions (other undocumented members)</summary>
 
 #### action: setConfigError
 

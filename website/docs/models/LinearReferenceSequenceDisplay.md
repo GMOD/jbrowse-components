@@ -4,20 +4,10 @@ title: LinearReferenceSequenceDisplay
 sidebar_label: Display -> LinearReferenceSequenceDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearReferenceSequenceDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`sequence` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts).
 
 ## Example usage
 
@@ -185,21 +175,8 @@ and docs.
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
 
-<details open>
-<summary>LinearReferenceSequenceDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                       |
-| ------------------------------------------ | ----------------------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"LinearReferenceSequenceDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                     |
-
-</details>
-
 <details>
-<summary>LinearReferenceSequenceDisplay - Properties (all signatures)</summary>
+<summary>LinearReferenceSequenceDisplay - Properties</summary>
 
 #### property: type
 
@@ -221,20 +198,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
-<summary>LinearReferenceSequenceDisplay - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                                   |
-| ---------------------------------------- | ------------------------------------------- |
-| [`sequenceData`](#volatile-sequencedata) | `ObservableMap<number, SequenceRegionData>` |
-
-</details>
-
 <details>
-<summary>LinearReferenceSequenceDisplay - Volatiles (all signatures)</summary>
+<summary>LinearReferenceSequenceDisplay - Volatiles</summary>
 
 #### volatile: sequenceData
 
@@ -340,23 +305,10 @@ loading-overlay visibility derives from this overridden getter.
 type displayPhase = DisplayPhase
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature |
-| -------------------------------------------- | --------- |
-| [`showForward`](#getter-showforward)         | `boolean` |
-| [`showReverse`](#getter-showreverse)         | `boolean` |
-| [`showTranslation`](#getter-showtranslation) | `boolean` |
-| [`sequenceType`](#getter-sequencetype)       | `any`     |
-| [`numRows`](#getter-numrows)                 | `number`  |
-| [`sequenceHeight`](#getter-sequenceheight)   | `number`  |
-| [`rowHeight`](#getter-rowheight)             | `number`  |
-
 </details>
 
 <details>
-<summary>LinearReferenceSequenceDisplay - Getters (all signatures)</summary>
+<summary>LinearReferenceSequenceDisplay - Getters (other undocumented members)</summary>
 
 #### getter: showForward
 
@@ -402,21 +354,8 @@ type rowHeight = number
 
 </details>
 
-<details open>
-<summary>LinearReferenceSequenceDisplay - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                                                                                                                                             |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`renderSvg`](#method-rendersvg)           | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<Element>`                                                                                                   |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => ({ label: string; type: string; checked: boolean; onClick: () => void; } \| { label: string; onClick: () => void; type?: undefined; checked?: undefined; })[]` |
-
-</details>
-
 <details>
-<summary>LinearReferenceSequenceDisplay - Methods (all signatures)</summary>
+<summary>LinearReferenceSequenceDisplay - Methods</summary>
 
 #### method: renderSvg
 
@@ -464,22 +403,10 @@ created. Streams each fetched region into the backend and draws every frame from
 type startRenderingBackend = (backend: Canvas2DSequenceRenderer) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                         | Signature                                                                        |
-| -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| [`setSequenceRegion`](#action-setsequenceregion)               | `(idx: number, data: SequenceRegionData) => void`                                |
-| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void`                                                                     |
-| [`toggleShowForward`](#action-toggleshowforward)               | `() => void`                                                                     |
-| [`toggleShowReverse`](#action-toggleshowreverse)               | `() => void`                                                                     |
-| [`toggleShowTranslation`](#action-toggleshowtranslation)       | `() => void`                                                                     |
-| [`fetchNeeded`](#action-fetchneeded)                           | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>` |
-
 </details>
 
 <details>
-<summary>LinearReferenceSequenceDisplay - Actions (all signatures)</summary>
+<summary>LinearReferenceSequenceDisplay - Actions (other undocumented members)</summary>
 
 #### action: setSequenceRegion
 

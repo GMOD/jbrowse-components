@@ -4,18 +4,10 @@ title: AlignmentsTrack
 sidebar_label: Track -> AlignmentsTrack
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/AlignmentsTrack/configSchemaF.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/AlignmentsTrack.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `alignments`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/AlignmentsTrack/configSchemaF.ts).
 
 ## Example usage
 
@@ -68,6 +60,14 @@ on its display type(s):
 - [LinearAlignmentsDisplay](../linearalignmentsdisplay)
   ([state model](../../models/linearalignmentsdisplay))
 
+### AlignmentsTrack - Compatible adapters
+
+Data adapters that can supply this track:
+
+- [BamAdapter](../bamadapter)
+- [CramAdapter](../cramadapter)
+- [HtsgetBamAdapter](../htsgetbamadapter)
+
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
@@ -84,28 +84,11 @@ descriptive name of the track, falls back to the trackId when unset
 
 **Type:** `string` · **Default:** `''`
 
-```js
-{
-  description:
-    'descriptive name of the track, falls back to the trackId when unset',
-  type: 'string',
-  defaultValue: '',
-}
-```
-
 #### slot: assemblyNames
 
 name of the assembly (or assemblies) track belongs to
 
-**Type:** `stringArray`
-
-```js
-{
-  description: 'name of the assembly (or assemblies) track belongs to',
-  type: 'stringArray',
-  defaultValue: ['assemblyName'],
-}
-```
+**Type:** `stringArray` · **Default:** `['assemblyName']`
 
 #### slot: description
 
@@ -113,58 +96,24 @@ a description of the track
 
 **Type:** `string` · **Default:** `''`
 
-```js
-{
-  description: 'a description of the track',
-  type: 'string',
-  defaultValue: '',
-}
-```
-
 #### slot: category
 
 the category and sub-categories of a track
 
-**Type:** `stringArray`
-
-```js
-{
-  description: 'the category and sub-categories of a track',
-  type: 'stringArray',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: metadata
 
 anything to add about this track
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  description: 'anything to add about this track',
-  defaultValue: {},
-}
-```
+**Type:** `frozen` · **Default:** `{}`
 
 #### slot: rpcDriverName
 
 RPC driver to use for this track. Leave empty to use the display-level or global
 default.
 
-**Type:** `string` · **Default:** `''`
-
-```js
-{
-  type: 'string',
-  description:
-    'RPC driver to use for this track. Leave empty to use the display-level or global default.',
-  defaultValue: '',
-  advanced: true,
-}
-```
+**Type:** `string` · **Default:** `''` · _advanced_
 
 #### slot: adapter
 
@@ -176,30 +125,13 @@ pluginManager.pluggableConfigSchemaType('adapter')
 
 list of which feature attributes to index for text searching
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  description:
-    'list of which feature attributes to index for text searching',
-  defaultValue: ['Name', 'ID'],
-}
-```
+**Type:** `stringArray` · **Default:** `['Name', 'ID']`
 
 #### slot: textSearching.indexingFeatureTypesToExclude
 
 list of feature types to exclude in text search index
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  description: 'list of feature types to exclude in text search index',
-  defaultValue: ['CDS', 'exon'],
-}
-```
+**Type:** `stringArray` · **Default:** `['CDS', 'exon']`
 
 #### slot: textSearching.textSearchAdapter
 
@@ -229,7 +161,7 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 adds extra fields to the feature details
 
-**Type:** `frozen`
+**Type:** `frozen` · **Default:** `{}`
 
 ```js
 {
@@ -244,7 +176,7 @@ adds extra fields to the feature details
 
 adds extra fields to the subfeatures of a feature
 
-**Type:** `frozen`
+**Type:** `frozen` · **Default:** `{}`
 
 ```js
 {
@@ -262,34 +194,17 @@ you may not want to format the exon/cds subfeatures, so limited to 2
 
 **Type:** `number` · **Default:** `2`
 
-```js
-{
-  type: 'number',
-  defaultValue: 2,
-  description:
-    'depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g. you may not want to format the exon/cds subfeatures, so limited to 2',
-}
-```
-
 #### slot: formatDetails.maxDepth
 
 Maximum depth to render subfeatures
 
 **Type:** `number` · **Default:** `99999`
 
-```js
-{
-  type: 'number',
-  defaultValue: 99999,
-  description: 'Maximum depth to render subfeatures',
-}
-```
-
 #### slot: formatAbout.config
 
 formats configuration object in about dialog
 
-**Type:** `frozen`
+**Type:** `frozen` · **Default:** `{}`
 
 ```js
 {
@@ -304,19 +219,8 @@ formats configuration object in about dialog
 
 **Type:** `boolean` · **Default:** `false`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-}
-```
-
 </details>
 
 ### AlignmentsTrack - Derives from
 
 - [BaseTrack](../basetrack)
-
-```js
-baseConfiguration: createBaseTrackConfig(pluginManager)
-```

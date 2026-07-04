@@ -1,6 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
+import { rewriteMarkerBlock, runMarkerScript } from './util.ts'
+
 // Render a completeness index of every extension point into the hand-written
 // extension_points guide, sourced from the actual registration/fire sites so the
 // listing can never silently omit a point (the guide's per-point prose stays
@@ -85,66 +87,20 @@ function renderTable(points: ExtensionPoint[]) {
   ].join('\n')
 }
 
-const MARKER = 'EXTENSION_POINTS_INDEX'
-function start() {
-  return `<!-- ${MARKER} START -->`
-}
-function end() {
-  return `<!-- ${MARKER} END -->`
-}
-
-function listDocs(dir: string): string[] {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) {
-      return listDocs(full)
-    }
-    return e.name.endsWith('.md') ? [full] : []
-  })
-}
-
-// Mirror generateColorDocs.normalize: compare table content, not the whitespace
-// prettier adds when padding markdown table columns.
-function normalize(s: string) {
-  return s.replaceAll(/[ \t]+/g, ' ').replaceAll(/-+/g, '-')
-}
-
 // In `check` mode, report which docs have a stale index instead of rewriting —
 // used by CI to fail when an extension point was added but the docs were not
 // regenerated.
 export function writeExtensionPointDocs({ check = false } = {}) {
-  const points = collectExtensionPoints()
-  const stale: string[] = []
-  for (const file of listDocs('website/docs')) {
-    const original = fs.readFileSync(file, 'utf8')
-    if (original.includes(start())) {
-      const block = `${start()}\n\n${renderTable(points)}\n\n${end()}`
-      const re = new RegExp(`${start()}[\\s\\S]*?${end()}`)
-      const updated = original.replace(re, block)
-      if (check) {
-        if (normalize(updated) !== normalize(original)) {
-          stale.push(file)
-        }
-      } else if (updated !== original) {
-        fs.writeFileSync(file, updated)
-      }
-    }
-  }
-  return stale
+  return rewriteMarkerBlock(
+    'EXTENSION_POINTS_INDEX',
+    renderTable(collectExtensionPoints()),
+    { check },
+  )
 }
 
 // Run as a script: `node docs/generateExtensionPointDocs.ts [--check]`. The guard
 // keeps this inert when imported by generate.ts (argv[1] is generate.ts there),
 // so the table isn't generated twice in one `pnpm gendocs`.
 if (process.argv[1]?.endsWith('generateExtensionPointDocs.ts')) {
-  const stale = writeExtensionPointDocs({
-    check: process.argv.includes('--check'),
-  })
-  if (stale.length) {
-    console.error(
-      `Extension point index is out of date — run \`pnpm autogen\`:\n${stale.map(f => `  ${f}`).join('\n')}`,
-    )
-    process.exit(1)
-  }
-  console.log('Extension point index is up to date')
+  runMarkerScript('Extension point index', writeExtensionPointDocs)
 }

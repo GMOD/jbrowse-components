@@ -4,18 +4,9 @@ title: Gff3Adapter
 sidebar_label: Adapter -> Gff3Adapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3Adapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/Gff3Adapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `gff3` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3Adapter/configSchema.ts).
 
 ## Example usage
 
@@ -41,7 +32,12 @@ the Gff3TabixAdapter for large files.
 
 ### Used in
 
-This adapter supplies data to the [FeatureTrack](../featuretrack) track type.
+Supplies data to the [FeatureTrack](../featuretrack) track, rendered by:
+
+- [LinearArcDisplay](../lineararcdisplay)
+- [LinearBasicDisplay](../linearbasicdisplay)
+- [LinearBasicDisplay](../linearbasicdisplay)
+- [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 
 ### Gff3Adapter - Pre-processor / simplified config
 
@@ -59,16 +55,7 @@ preprocessor to allow minimal config:
 
 #### slot: gffLocation
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.gff',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.gff', locationType: 'UriLocation' }`
 
 </details>

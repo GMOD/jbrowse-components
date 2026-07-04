@@ -4,18 +4,10 @@ title: LinearMultiSampleVariantMatrixDisplay
 sidebar_label: Display -> LinearMultiSampleVariantMatrixDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearMultiSampleVariantMatrixDisplay.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `variants`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/configSchema.ts).
 
 ## Example usage
 
@@ -102,6 +94,15 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### LinearMultiSampleVariantMatrixDisplay - Compatible adapters
+
+Data adapters that can supply the [VariantTrack](../varianttrack):
+
+- [BedpeAdapter](../bedpeadapter)
+- [StarFusionAdapter](../starfusionadapter)
+- [VcfAdapter](../vcfadapter)
+- [VcfTabixAdapter](../vcftabixadapter)
+
 ### LinearMultiSampleVariantMatrixDisplay - State model
 
 This config's runtime API is documented on its
@@ -113,13 +114,6 @@ This config's runtime API is documented on its
 #### slot: height
 
 **Type:** `number` · **Default:** `250`
-
-```js
-{
-  type: 'number',
-  defaultValue: 250,
-}
-```
 
 </details>
 
@@ -142,28 +136,11 @@ referenceDrawingMode the first time a config is loaded.
 
 **Type:** `boolean` · **Default:** `false`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description:
-    'Starting value for drawing reference alleles. When false, the row background is filled solid grey and only ALT alleles are painted on top (makes overlapping variants easier to see); when true, reference alleles are drawn normally. Seeds referenceDrawingMode the first time a config is loaded.',
-}
-```
-
 #### slot: showSidebarLabels
 
 Show the per-sample row labels in the sidebar
 
 **Type:** `boolean` · **Default:** `true`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Show the per-sample row labels in the sidebar',
-}
-```
 
 #### slot: showTree
 
@@ -171,44 +148,19 @@ Show the sample clustering tree in the sidebar
 
 **Type:** `boolean` · **Default:** `true`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Show the sample clustering tree in the sidebar',
-}
-```
-
 #### slot: showBranchLength
 
 Draw the clustering tree with branch lengths
 
 **Type:** `boolean` · **Default:** `false`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'Draw the clustering tree with branch lengths',
-}
-```
-
 #### slot: renderingMode
 
 'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws
 one row per haplotype
 
-**Type:** `stringEnum` · **Default:** `'alleleCount'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('RenderingMode', ['alleleCount', 'phased']),
-  defaultValue: 'alleleCount',
-  description:
-    "'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws one row per haplotype",
-}
-```
+**Type:** `stringEnum` (one of `alleleCount`, `phased`) · **Default:**
+`'alleleCount'`
 
 #### slot: featureColor
 
@@ -222,28 +174,11 @@ standard `color` slot.
 
 **Type:** `string` · **Default:** `''`
 
-```js
-{
-  type: 'string',
-  defaultValue: '',
-}
-```
-
 #### slot: minorAlleleFrequencyFilter
 
 Hide variants whose minor allele frequency is below this threshold
 
-**Type:** `number` · **Default:** `0`
-
-```js
-{
-  type: 'number',
-  defaultValue: 0,
-  advanced: true,
-  description:
-    'Hide variants whose minor allele frequency is below this threshold',
-}
-```
+**Type:** `number` · **Default:** `0` · _advanced_
 
 #### slot: colorBy
 
@@ -253,15 +188,6 @@ no grouping
 
 **Type:** `string` · **Default:** `''`
 
-```js
-{
-  type: 'string',
-  defaultValue: '',
-  description:
-    "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping",
-}
-```
-
 #### slot: referenceDrawingMode
 
 A 'draw'/'skip' toggle for reference alleles, settable independent of
@@ -270,17 +196,7 @@ derivation at read time — preProcessSnapshot below seeds this from
 showReferenceAlleles once, the first time a config lacking it is hydrated, so
 from then on this slot alone is the single source of truth.
 
-**Type:** `stringEnum` · **Default:** `'skip'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('ReferenceDrawingMode', ['draw', 'skip']),
-  defaultValue: 'skip',
-  description:
-    "'draw' paints reference alleles; 'skip' fills the background solid grey and draws only ALT alleles",
-}
-```
+**Type:** `stringEnum` (one of `draw`, `skip`) · **Default:** `'skip'`
 
 </details>
 
@@ -294,48 +210,20 @@ from then on this slot alone is the single source of truth.
 maximum features per pixel before showing a "too many features" message, used if
 byte size estimates are not available
 
-**Type:** `number` · **Default:** `1`
-
-```js
-{
-  type: 'number',
-  description:
-    'maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available',
-  defaultValue: 1,
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `1` · _advanced_
 
 #### slot: fetchSizeLimit
 
 maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
-**Type:** `number` · **Default:** `1_000_000`
-
-```js
-{
-  type: 'number',
-  defaultValue: 1_000_000,
-  description:
-    "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `1_000_000` · _advanced_
 
 #### slot: height
 
 default height for the track
 
 **Type:** `number` · **Default:** `100`
-
-```js
-{
-  type: 'number',
-  defaultValue: 100,
-  description: 'default height for the track',
-}
-```
 
 #### slot: mouseover
 
@@ -358,23 +246,10 @@ text to display when the cursor hovers over a feature
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  description:
-    'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 
 ### LinearMultiSampleVariantMatrixDisplay - Derives from
 
 - [SharedVariantDisplay](../sharedvariantdisplay)
-
-```js
-baseConfiguration: sharedVariantConfigFactory()
-```

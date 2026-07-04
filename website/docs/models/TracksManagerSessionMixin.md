@@ -4,20 +4,10 @@ title: TracksManagerSessionMixin
 sidebar_label: Mixin -> TracksManagerSessionMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Tracks.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/TracksManagerSessionMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Tracks.ts).
 
 ## Overview
 
@@ -110,17 +100,10 @@ Recomputes only when dependencies change.
 type tracksById = Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                     | Signature                                                                                                                                                                                          |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`tracks`](#getter-tracks) | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]` |
-
 </details>
 
 <details>
-<summary>TracksManagerSessionMixin - Getters (all signatures)</summary>
+<summary>TracksManagerSessionMixin - Getters (other undocumented members)</summary>
 
 #### getter: tracks
 
@@ -146,18 +129,10 @@ type updateTrackConfiguration = (trackConf: {
 }) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature                                                                                                                                                                                                          |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`addTrackConf`](#action-addtrackconf)       | `(trackConf: AnyConfiguration) => any`                                                                                                                                                                             |
-| [`deleteTrackConf`](#action-deletetrackconf) | `(trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any` |
-
 </details>
 
 <details>
-<summary>TracksManagerSessionMixin - Actions (all signatures)</summary>
+<summary>TracksManagerSessionMixin - Actions (other undocumented members)</summary>
 
 #### action: addTrackConf
 

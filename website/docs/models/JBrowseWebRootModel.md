@@ -4,20 +4,9 @@ title: JBrowseWebRootModel
 sidebar_label: Root -> JBrowseWebRootModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/rootModel/rootModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/JBrowseWebRootModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-web/src/rootModel/rootModel.ts).
 
 ## Overview
 
@@ -76,20 +65,8 @@ and docs.
 [appendToSubMenu](../rootappmenumixin#action-appendtosubmenu),
 [insertInSubMenu](../rootappmenumixin#action-insertinsubmenu)
 
-<details open>
-<summary>JBrowseWebRootModel - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                               | Signature                     |
-| ------------------------------------ | ----------------------------- |
-| [`configPath`](#property-configpath) | `IMaybe<ISimpleType<string>>` |
-
-</details>
-
 <details>
-<summary>JBrowseWebRootModel - Properties (all signatures)</summary>
+<summary>JBrowseWebRootModel - Properties</summary>
 
 #### property: configPath
 
@@ -102,27 +79,8 @@ configPath: types.maybe(types.string)
 
 </details>
 
-<details open>
-<summary>JBrowseWebRootModel - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                 | Signature                                                                                       |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| [`adminMode`](#volatile-adminmode)                                     | `boolean`                                                                                       |
-| [`sessionDB`](#volatile-sessiondb)                                     | `IDBPDatabase<SessionDB> \| undefined`                                                          |
-| [`version`](#volatile-version)                                         | `string`                                                                                        |
-| [`gitCommit`](#volatile-gitcommit)                                     | `string`                                                                                        |
-| [`pluginsUpdated`](#volatile-pluginsupdated)                           | `false`                                                                                         |
-| [`rpcManager`](#volatile-rpcmanager)                                   | `RpcManager`                                                                                    |
-| [`savedSessionMetadata`](#volatile-savedsessionmetadata)               | `SessionMetadata[] \| undefined`                                                                |
-| [`reloadPluginManagerCallback`](#volatile-reloadpluginmanagercallback) | `(_configSnapshot: Record<string, unknown>, _sessionSnapshot: Record<string, unknown>) => void` |
-
-</details>
-
 <details>
-<summary>JBrowseWebRootModel - Volatiles (all signatures)</summary>
+<summary>JBrowseWebRootModel - Volatiles</summary>
 
 #### volatile: adminMode
 
@@ -209,20 +167,8 @@ reloadPluginManagerCallback: (
 
 </details>
 
-<details open>
-<summary>JBrowseWebRootModel - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                   | Signature      |
-| ------------------------ | -------------- |
-| [`menus`](#method-menus) | `() => Menu[]` |
-
-</details>
-
 <details>
-<summary>JBrowseWebRootModel - Methods (all signatures)</summary>
+<summary>JBrowseWebRootModel - Methods</summary>
 
 #### method: menus
 
@@ -232,28 +178,8 @@ type menus = () => Menu[]
 
 </details>
 
-<details open>
-<summary>JBrowseWebRootModel - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                     | Signature                                                                                                         |
-| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| [`setSavedSessionMetadata`](#action-setsavedsessionmetadata)               | `(sessions: SessionMetadata[]) => void`                                                                           |
-| [`fetchSessionMetadata`](#action-fetchsessionmetadata)                     | `() => Promise<void>`                                                                                             |
-| [`setSessionDB`](#action-setsessiondb)                                     | `(sessionDB: IDBPDatabase<SessionDB>) => void`                                                                    |
-| [`setPluginsUpdated`](#action-setpluginsupdated)                           | `() => void`                                                                                                      |
-| [`setReloadPluginManagerCallback`](#action-setreloadpluginmanagercallback) | `(callback: (configSnapshot: Record<string, unknown>, sessionSnapshot: Record<string, unknown>) => void) => void` |
-| [`activateSession`](#action-activatesession)                               | `(id: string) => Promise<void>`                                                                                   |
-| [`setSavedSessionFavorite`](#action-setsavedsessionfavorite)               | `(id: string, favorite: boolean) => Promise<void>`                                                                |
-| [`deleteSavedSession`](#action-deletesavedsession)                         | `(id: string) => Promise<void>`                                                                                   |
-| [`renameSavedSession`](#action-renamesavedsession)                         | `(id: string, name: string) => Promise<void>`                                                                     |
-
-</details>
-
 <details>
-<summary>JBrowseWebRootModel - Actions (all signatures)</summary>
+<summary>JBrowseWebRootModel - Actions</summary>
 
 #### action: setSavedSessionMetadata
 

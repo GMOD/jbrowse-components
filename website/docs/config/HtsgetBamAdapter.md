@@ -4,18 +4,10 @@ title: HtsgetBamAdapter
 sidebar_label: Adapter -> HtsgetBamAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/HtsgetBamAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/HtsgetBamAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `alignments`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/HtsgetBamAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -42,8 +34,9 @@ library
 
 ### Used in
 
-This adapter supplies data to the [AlignmentsTrack](../alignmentstrack) track
-type.
+Supplies data to the [AlignmentsTrack](../alignmentstrack) track, rendered by:
+
+- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 
 <details open>
 <summary>HtsgetBamAdapter - Slots</summary>
@@ -54,26 +47,10 @@ the base URL to fetch from
 
 **Type:** `string` · **Default:** `''`
 
-```js
-{
-  type: 'string',
-  description: 'the base URL to fetch from',
-  defaultValue: '',
-}
-```
-
 #### slot: htsgetTrackId
 
 the trackId, which is appended to the base URL
 
 **Type:** `string` · **Default:** `''`
-
-```js
-{
-  type: 'string',
-  description: 'the trackId, which is appended to the base URL',
-  defaultValue: '',
-}
-```
 
 </details>

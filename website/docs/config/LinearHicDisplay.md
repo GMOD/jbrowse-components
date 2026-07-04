@@ -4,18 +4,9 @@ title: LinearHicDisplay
 sidebar_label: Display -> LinearHicDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearHicDisplay.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/configSchema.ts).
 
 ## Example usage
 
@@ -53,6 +44,12 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### LinearHicDisplay - Compatible adapters
+
+Data adapters that can supply the [HicTrack](../hictrack):
+
+- [HicAdapter](../hicadapter)
+
 ### LinearHicDisplay - State model
 
 This config's runtime API is documented on its
@@ -67,46 +64,18 @@ default height for the Hi-C track
 
 **Type:** `number` · **Default:** `300`
 
-```js
-{
-  type: 'number',
-  defaultValue: 300,
-  description: 'default height for the Hi-C track',
-}
-```
-
 #### slot: colorScheme
 
 color ramp used to render contact intensity
 
-**Type:** `stringEnum` · **Default:** `'juicebox'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('HicColorScheme', [
-    'fall',
-    'juicebox',
-    'viridis',
-  ]),
-  defaultValue: 'juicebox',
-  description: 'color ramp used to render contact intensity',
-}
-```
+**Type:** `stringEnum` (one of `fall`, `juicebox`, `viridis`) · **Default:**
+`'juicebox'`
 
 #### slot: showLegend
 
 show the color scale legend
 
 **Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'show the color scale legend',
-}
-```
 
 #### slot: resolutionBias
 
@@ -116,27 +85,11 @@ absolute binsize) keeps the intent valid across zoom.
 
 **Type:** `number` · **Default:** `0`
 
-```js
-{
-  type: 'number',
-  defaultValue: 0,
-  description: 'offset from the auto-picked resolution binsize',
-}
-```
-
 #### slot: useLogScale
 
 map contact counts to color on a log2 scale
 
 **Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'map contact counts to color on a log2 scale',
-}
-```
 
 #### slot: useColorPercentile
 
@@ -145,27 +98,11 @@ counts, so off-diagonal contacts read more strongly.
 
 **Type:** `boolean` · **Default:** `false`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'saturate color at the 95th percentile of counts',
-}
-```
-
 #### slot: showResolutionControls
 
 show the on-canvas resolution stepper overlay
 
 **Type:** `boolean` · **Default:** `true`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'show the on-canvas resolution stepper overlay',
-}
-```
 
 #### slot: selectedNormalization
 
@@ -175,29 +112,12 @@ model's `activeNormalization` getter.
 
 **Type:** `string` · **Default:** `'KR'`
 
-```js
-{
-  type: 'string',
-  defaultValue: 'KR',
-  description: 'preferred matrix normalization scheme',
-}
-```
-
 #### slot: fitToHeight
 
 squash the triangle vertically to fit the display height instead of drawing
 square bins
 
 **Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description:
-    'squash the triangle vertically to fit the display height instead of drawing square bins',
-}
-```
 
 </details>
 
@@ -216,48 +136,20 @@ this page is self-contained.
 maximum features per pixel before showing a "too many features" message, used if
 byte size estimates are not available
 
-**Type:** `number` · **Default:** `1`
-
-```js
-{
-  type: 'number',
-  description:
-    'maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available',
-  defaultValue: 1,
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `1` · _advanced_
 
 #### slot: fetchSizeLimit
 
 maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
-**Type:** `number` · **Default:** `1_000_000`
-
-```js
-{
-  type: 'number',
-  defaultValue: 1_000_000,
-  description:
-    "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `1_000_000` · _advanced_
 
 #### slot: height
 
 default height for the track
 
 **Type:** `number` · **Default:** `100`
-
-```js
-{
-  type: 'number',
-  defaultValue: 100,
-  description: 'default height for the track',
-}
-```
 
 #### slot: mouseover
 
@@ -280,23 +172,10 @@ text to display when the cursor hovers over a feature
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  description:
-    'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 
 ### LinearHicDisplay - Derives from
 
 - [BaseLinearDisplay](../baselineardisplay)
-
-```js
-baseConfiguration: baseLinearDisplayConfigSchema
-```

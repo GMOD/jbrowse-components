@@ -4,18 +4,10 @@ title: DotplotDisplay
 sidebar_label: Display -> DotplotDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/DotplotDisplay.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `dotplot-view`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/configSchema.ts).
 
 ## Example usage
 
@@ -45,6 +37,20 @@ The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`
 ```
 
 ## Overview
+
+### DotplotDisplay - Compatible adapters
+
+Data adapters that can supply the [SyntenyTrack](../syntenytrack):
+
+- [AllVsAllPAFAdapter](../allvsallpafadapter)
+- [ChainAdapter](../chainadapter)
+- [DeltaAdapter](../deltaadapter)
+- [MCScanAnchorsAdapter](../mcscananchorsadapter)
+- [MCScanBlocksAdapter](../mcscanblocksadapter)
+- [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- [MashMapAdapter](../mashmapadapter)
+- [PAFAdapter](../pafadapter)
+- [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
 
 ### DotplotDisplay - State model
 

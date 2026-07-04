@@ -4,20 +4,10 @@ title: RenderLifecycleMixin
 sidebar_label: Mixin -> RenderLifecycleMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/render-core/src/RenderLifecycleMixin.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/RenderLifecycleMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/render-core/src/RenderLifecycleMixin.ts).
 
 ## Overview
 
@@ -139,20 +129,10 @@ type attachRenderingBackend = <B>(
 ) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature    |
-| ------------------------------------------------------ | ------------ |
-| [`markCanvasDrawn`](#action-markcanvasdrawn)           | `() => void` |
-| [`resetCanvasDrawn`](#action-resetcanvasdrawn)         | `() => void` |
-| [`stopRenderingBackend`](#action-stoprenderingbackend) | `() => void` |
-| [`renderNow`](#action-rendernow)                       | `() => void` |
-
 </details>
 
 <details>
-<summary>RenderLifecycleMixin - Actions (all signatures)</summary>
+<summary>RenderLifecycleMixin - Actions (other undocumented members)</summary>
 
 #### action: markCanvasDrawn
 

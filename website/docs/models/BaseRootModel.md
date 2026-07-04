@@ -4,20 +4,10 @@ title: BaseRootModel
 sidebar_label: Root -> BaseRootModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/BaseRootModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseRootModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/BaseRootModel.ts).
 
 ## Overview
 
@@ -49,18 +39,10 @@ type session = IMaybe<IAnyType>
 session: types.maybe(sessionModelType)
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                                                                                                                                                                                                                                                                                                                            |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`sessionPath`](#property-sessionpath)         | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                                                                                   |
-| [`assemblyManager`](#property-assemblymanager) | `IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> \| undefined; adapterLoads: QuickLRU<...>; ... 6 more ...; allRefNamesWithLowerCase: Set<...> \| undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotC...` |
-
 </details>
 
 <details>
-<summary>BaseRootModel - Properties (all signatures)</summary>
+<summary>BaseRootModel - Properties (other undocumented members)</summary>
 
 #### property: sessionPath
 
@@ -85,24 +67,8 @@ assemblyManager: types.optional(
 
 </details>
 
-<details open>
-<summary>BaseRootModel - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature           |
-| -------------------------------------------------- | ------------------- |
-| [`rpcManager`](#volatile-rpcmanager)               | `RpcManager`        |
-| [`adminMode`](#volatile-adminmode)                 | `false`             |
-| [`error`](#volatile-error)                         | `unknown`           |
-| [`textSearchManager`](#volatile-textsearchmanager) | `TextSearchManager` |
-| [`pluginManager`](#volatile-pluginmanager)         | `PluginManager`     |
-
-</details>
-
 <details>
-<summary>BaseRootModel - Volatiles (all signatures)</summary>
+<summary>BaseRootModel - Volatiles</summary>
 
 #### volatile: rpcManager
 
@@ -167,20 +133,10 @@ restored.
 type setSession = (sessionSnapshot?: any) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                   |
-| ------------------------------------------------------ | --------------------------- |
-| [`setError`](#action-seterror)                         | `(error: unknown) => void`  |
-| [`setDefaultSession`](#action-setdefaultsession)       | `() => void`                |
-| [`setSessionPath`](#action-setsessionpath)             | `(path: string) => void`    |
-| [`renameCurrentSession`](#action-renamecurrentsession) | `(newName: string) => void` |
-
 </details>
 
 <details>
-<summary>BaseRootModel - Actions (all signatures)</summary>
+<summary>BaseRootModel - Actions (other undocumented members)</summary>
 
 #### action: setError
 

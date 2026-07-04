@@ -4,20 +4,10 @@ title: SpreadsheetView
 sidebar_label: View -> SpreadsheetView
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetViewModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SpreadsheetView.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`spreadsheet-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetViewModel.ts).
 
 ## Example usage
 
@@ -75,23 +65,10 @@ type init = IType<
 init: types.frozen<SpreadsheetViewInit | undefined>()
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                           | Signature                                                                                                                                                                                                                                                                                                                             |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`type`](#property-type)                                         | `ISimpleType<"SpreadsheetView">`                                                                                                                                                                                                                                                                                                      |
-| [`offsetPx`](#property-offsetpx)                                 | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                    |
-| [`height`](#property-height)                                     | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                    |
-| [`hideVerticalResizeHandle`](#property-hideverticalresizehandle) | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                                                                                   |
-| [`hideFilterControls`](#property-hidefiltercontrols)             | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                                                                                   |
-| [`importWizard`](#property-importwizard)                         | `IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"VCF" \| "BED" \| "BEDPE" \| "STAR-Fusion">, [undefined]>; selectedAssemblyName: IMaybe<ISimpleType<string>>; cachedFileLocation: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>`                                     |
-| [`spreadsheet`](#property-spreadsheet)                           | `IMaybe<IModelType<{ rowSet: IType<RowSet \| undefined, RowSet \| undefined, RowSet \| undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; svTypeFilter: IMaybe<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomi...` |
-
 </details>
 
 <details>
-<summary>SpreadsheetView - Properties (all signatures)</summary>
+<summary>SpreadsheetView - Properties (other undocumented members)</summary>
 
 #### property: type
 
@@ -163,20 +140,8 @@ spreadsheet: types.maybe(Spreadsheet())
 
 </details>
 
-<details open>
-<summary>SpreadsheetView - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                     | Signature |
-| -------------------------- | --------- |
-| [`width`](#volatile-width) | `number`  |
-
-</details>
-
 <details>
-<summary>SpreadsheetView - Volatiles (all signatures)</summary>
+<summary>SpreadsheetView - Volatiles</summary>
 
 #### volatile: width
 
@@ -189,20 +154,8 @@ width: 400
 
 </details>
 
-<details open>
-<summary>SpreadsheetView - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                         | Signature |
-| ------------------------------ | --------- |
-| [`assembly`](#getter-assembly) | `any`     |
-
-</details>
-
 <details>
-<summary>SpreadsheetView - Getters (all signatures)</summary>
+<summary>SpreadsheetView - Getters</summary>
 
 #### getter: assembly
 
@@ -212,20 +165,8 @@ type assembly = any
 
 </details>
 
-<details open>
-<summary>SpreadsheetView - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                           | Signature                                                                                                                       |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| [`menuItems`](#method-menuitems) | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]` |
-
-</details>
-
 <details>
-<summary>SpreadsheetView - Methods (all signatures)</summary>
+<summary>SpreadsheetView - Methods</summary>
 
 #### method: menuItems
 
@@ -244,7 +185,11 @@ type menuItems = () => {
 
 #### action: displaySpreadsheet
 
-load a new spreadsheet and set our mode to display it
+load a new spreadsheet and set our mode to display it. When the incoming data
+has the same columns as what's shown (i.e. a session-cached URI being re-fetched
+on reload), carry over the user's column-visibility and SV-type filter — a fresh
+parse only supplies columns/rowSet, so a plain replace would reset them. The
+column match keeps this from leaking view state across different files.
 
 ```ts
 type displaySpreadsheet = (spreadsheet?: ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; svTypeFilter: IMaybe<...>; }>> | undefined) =>...
@@ -270,21 +215,10 @@ at the file and load it
 type applyInit = (init: SpreadsheetViewInit) => Promise<void>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                 | Signature                                           |
-| -------------------------------------- | --------------------------------------------------- |
-| [`setWidth`](#action-setwidth)         | `(newWidth: number) => number`                      |
-| [`setHeight`](#action-setheight)       | `(newHeight: number) => number`                     |
-| [`resizeHeight`](#action-resizeheight) | `(distance: number) => number`                      |
-| [`resizeWidth`](#action-resizewidth)   | `(distance: number) => number`                      |
-| [`setInit`](#action-setinit)           | `(init?: SpreadsheetViewInit \| undefined) => void` |
-
 </details>
 
 <details>
-<summary>SpreadsheetView - Actions (all signatures)</summary>
+<summary>SpreadsheetView - Actions (other undocumented members)</summary>
 
 #### action: setWidth
 

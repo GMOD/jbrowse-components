@@ -4,20 +4,10 @@ title: LinearGenomeView
 sidebar_label: View -> LinearGenomeView
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearGenomeView.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`linear-genome-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LinearGenomeView/model.ts).
 
 ## Example usage
 
@@ -293,21 +283,10 @@ type init = IType<
 init: types.frozen<InitState | undefined>()
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature                                           |
-| ---------------------------------------------------- | --------------------------------------------------- |
-| [`id`](#property-id)                                 | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| [`hideHeader`](#property-hideheader)                 | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`hideHeaderOverview`](#property-hideheaderoverview) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`hideNoTracksActive`](#property-hidenotracksactive) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`trackSelectorType`](#property-trackselectortype)   | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-
 </details>
 
 <details>
-<summary>LinearGenomeView - Properties (all signatures)</summary>
+<summary>LinearGenomeView - Properties (other undocumented members)</summary>
 
 #### property: id
 
@@ -373,29 +352,10 @@ type volatileGuides = VolatileGuide[]
 volatileGuides: [] as VolatileGuide[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                 | Signature                        |
-| ---------------------------------------------------------------------- | -------------------------------- |
-| [`volatileWidth`](#volatile-volatilewidth)                             | `number \| undefined`            |
-| [`minimumBlockWidth`](#volatile-minimumblockwidth)                     | `number`                         |
-| [`draggingTrackId`](#volatile-draggingtrackid)                         | `string \| undefined`            |
-| [`lastTrackDragY`](#volatile-lasttrackdragy)                           | `number \| undefined`            |
-| [`volatileError`](#volatile-volatileerror)                             | `unknown`                        |
-| [`trackRefs`](#volatile-trackrefs)                                     | `Record<string, HTMLDivElement>` |
-| [`coarseDynamicBlocks`](#volatile-coarsedynamicblocks)                 | `ContentBlock[]`                 |
-| [`coarseTotalBp`](#volatile-coarsetotalbp)                             | `number`                         |
-| [`coarseBpPerPx`](#volatile-coarsebpperpx)                             | `number`                         |
-| [`leftOffset`](#volatile-leftoffset)                                   | `BpOffset \| undefined`          |
-| [`rightOffset`](#volatile-rightoffset)                                 | `BpOffset \| undefined`          |
-| [`isScalebarRefNameMenuOpen`](#volatile-isscalebarrefnamemenuopen)     | `false`                          |
-| [`scalebarRefNameClickPending`](#volatile-scalebarrefnameclickpending) | `false`                          |
-
 </details>
 
 <details>
-<summary>LinearGenomeView - Volatiles (all signatures)</summary>
+<summary>LinearGenomeView - Volatiles (other undocumented members)</summary>
 
 #### volatile: volatileWidth
 
@@ -750,54 +710,10 @@ same as visibleLocStrings, but only updated every 500ms
 type coarseVisibleLocStrings = string
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                   | Signature                   |
-| ------------------------------------------------------------------------ | --------------------------- |
-| [`pinnedTracks`](#getter-pinnedtracks)                                   | `any[]`                     |
-| [`unpinnedTracks`](#getter-unpinnedtracks)                               | `any[]`                     |
-| [`width`](#getter-width)                                                 | `number`                    |
-| [`assemblyNames`](#getter-assemblynames)                                 | `string[]`                  |
-| [`assemblyDisplayNames`](#getter-assemblydisplaynames)                   | `string[]`                  |
-| [`rubberbandTop`](#getter-rubberbandtop)                                 | `number`                    |
-| [`pinnedTracksTop`](#getter-pinnedtrackstop)                             | `number`                    |
-| [`assembliesNotFound`](#getter-assembliesnotfound)                       | `string \| undefined`       |
-| [`assemblyErrors`](#getter-assemblyerrors)                               | `string`                    |
-| [`assembliesInitialized`](#getter-assembliesinitialized)                 | `boolean`                   |
-| [`initialized`](#getter-initialized)                                     | `boolean`                   |
-| [`hasDisplayedRegions`](#getter-hasdisplayedregions)                     | `boolean`                   |
-| [`loadingMessage`](#getter-loadingmessage)                               | `"Loading" \| undefined`    |
-| [`hasSomethingToShow`](#getter-hassomethingtoshow)                       | `boolean`                   |
-| [`scalebarHeight`](#getter-scalebarheight)                               | `number`                    |
-| [`headerHeight`](#getter-headerheight)                                   | `number`                    |
-| [`trackHeights`](#getter-trackheights)                                   | `number`                    |
-| [`trackHeightsWithResizeHandles`](#getter-trackheightswithresizehandles) | `number`                    |
-| [`height`](#getter-height)                                               | `number`                    |
-| [`totalBp`](#getter-totalbp)                                             | `number`                    |
-| [`maxBpPerPx`](#getter-maxbpperpx)                                       | `number`                    |
-| [`minBpPerPx`](#getter-minbpperpx)                                       | `number`                    |
-| [`error`](#getter-error)                                                 | `unknown`                   |
-| [`maxOffset`](#getter-maxoffset)                                         | `number`                    |
-| [`minOffset`](#getter-minoffset)                                         | `number`                    |
-| [`displayedRegionsTotalPx`](#getter-displayedregionstotalpx)             | `number`                    |
-| [`trackMap`](#getter-trackmap)                                           | `Map<any, any>`             |
-| [`trackTypeActions`](#getter-tracktypeactions)                           | `Map<string, MenuItem[]>`   |
-| [`canShowCytobands`](#getter-canshowcytobands)                           | `boolean`                   |
-| [`showCytobands`](#getter-showcytobands)                                 | `boolean`                   |
-| [`anyCytobandsExist`](#getter-anycytobandsexist)                         | `boolean`                   |
-| [`isTrackSelectorOpen`](#getter-istrackselectoropen)                     | `boolean`                   |
-| [`visibleBp`](#getter-visiblebp)                                         | `number`                    |
-| [`coarseTotalBpDisplayStr`](#getter-coarsetotalbpdisplaystr)             | `string`                    |
-| [`effectiveBpPerPx`](#getter-effectivebpperpx)                           | `number`                    |
-| [`effectiveTotalBp`](#getter-effectivetotalbp)                           | `number`                    |
-| [`effectiveTotalBpDisplayStr`](#getter-effectivetotalbpdisplaystr)       | `string`                    |
-| [`centerLineInfo`](#getter-centerlineinfo)                               | `PxToBpResult \| undefined` |
-
 </details>
 
 <details>
-<summary>LinearGenomeView - Getters (all signatures)</summary>
+<summary>LinearGenomeView - Getters (other undocumented members)</summary>
 
 #### getter: pinnedTracks
 
@@ -1142,26 +1058,10 @@ Core-extendPluggableElement to add their own items
 type highlightMenuItems = (_highlight: HighlightType) => MenuItem[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                         | Signature                                                                                                                                                                           |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`scalebarDisplayPrefix`](#method-scalebardisplayprefix)       | `() => string`                                                                                                                                                                      |
-| [`MiniControlsComponent`](#method-minicontrolscomponent)       | `() => FC<any>`                                                                                                                                                                     |
-| [`HeaderComponent`](#method-headercomponent)                   | `() => FC<any>`                                                                                                                                                                     |
-| [`renderProps`](#method-renderprops)                           | `() => { bpPerPx: number; colorByCDS: boolean; }`                                                                                                                                   |
-| [`searchScope`](#method-searchscope)                           | `(assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>; }`                         |
-| [`getTrack`](#method-gettrack)                                 | `(id: string) => any`                                                                                                                                                               |
-| [`rubberBandMenuItems`](#method-rubberbandmenuitems)           | `() => MenuItem[]`                                                                                                                                                                  |
-| [`bpToPx`](#method-bptopx)                                     | `({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number \| undefined; }) => { index: number; offsetPx: number; } \| undefined` |
-| [`pxToBp`](#method-pxtobp)                                     | `(px: number) => PxToBpResult`                                                                                                                                                      |
-| [`rubberbandClickMenuItems`](#method-rubberbandclickmenuitems) | `(clickOffset: BpOffset) => MenuItem[]`                                                                                                                                             |
-
 </details>
 
 <details>
-<summary>LinearGenomeView - Methods (all signatures)</summary>
+<summary>LinearGenomeView - Methods (other undocumented members)</summary>
 
 #### method: scalebarDisplayPrefix
 
@@ -1373,60 +1273,10 @@ type navToLocation = (
 ) => Promise<void>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                     | Signature                                                                                        |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [`setShowTrackOutlines`](#action-setshowtrackoutlines)                     | `(arg: boolean) => void`                                                                         |
-| [`setScrollZoom`](#action-setscrollzoom)                                   | `(flag: boolean) => void`                                                                        |
-| [`setColorByCDS`](#action-setcolorbycds)                                   | `(flag: boolean) => void`                                                                        |
-| [`setShowCytobands`](#action-setshowcytobands)                             | `(flag: boolean) => void`                                                                        |
-| [`setWidth`](#action-setwidth)                                             | `(newWidth: number) => void`                                                                     |
-| [`setError`](#action-seterror)                                             | `(error: unknown) => void`                                                                       |
-| [`setIsScalebarRefNameMenuOpen`](#action-setisscalebarrefnamemenuopen)     | `(isOpen: boolean) => void`                                                                      |
-| [`setScalebarRefNameClickPending`](#action-setscalebarrefnameclickpending) | `(pending: boolean) => void`                                                                     |
-| [`setHideHeader`](#action-sethideheader)                                   | `(b: boolean) => void`                                                                           |
-| [`setHideHeaderOverview`](#action-sethideheaderoverview)                   | `(b: boolean) => void`                                                                           |
-| [`setScalebarOnly`](#action-setscalebaronly)                               | `(b: boolean) => void`                                                                           |
-| [`setHideNoTracksActive`](#action-sethidenotracksactive)                   | `(b: boolean) => void`                                                                           |
-| [`setShowGridlines`](#action-setshowgridlines)                             | `(b: boolean) => void`                                                                           |
-| [`addToHighlights`](#action-addtohighlights)                               | `(highlight: HighlightType) => void`                                                             |
-| [`setHighlight`](#action-sethighlight)                                     | `(highlight?: HighlightType[] \| undefined) => void`                                             |
-| [`removeHighlight`](#action-removehighlight)                               | `(highlight: HighlightType) => void`                                                             |
-| [`updateHighlight`](#action-updatehighlight)                               | `(old: HighlightType, updates: Partial<HighlightType>) => void`                                  |
-| [`setHighlightsVisible`](#action-sethighlightsvisible)                     | `(arg: boolean) => void`                                                                         |
-| [`setLabelsVisible`](#action-setlabelsvisible)                             | `(arg: boolean) => void`                                                                         |
-| [`scrollTo`](#action-scrollto)                                             | `(offsetPx: number) => number`                                                                   |
-| [`zoomTo`](#action-zoomto)                                                 | `(bpPerPx: number, offset?: any) => number`                                                      |
-| [`setSearchResults`](#action-setsearchresults)                             | `(searchResults: BaseResult[], searchQuery: string, assemblyName?: string \| undefined) => void` |
-| [`setNewView`](#action-setnewview)                                         | `(bpPerPx: number, offsetPx: number) => void`                                                    |
-| [`horizontallyFlip`](#action-horizontallyflip)                             | `() => void`                                                                                     |
-| [`showTrack`](#action-showtrack)                                           | `(trackId: string, initialSnapshot?: any, displayInitialSnapshot?: any) => any`                  |
-| [`hideTrack`](#action-hidetrack)                                           | `(trackId: string) => boolean`                                                                   |
-| [`moveTrackDown`](#action-movetrackdown)                                   | `(id: string) => void`                                                                           |
-| [`moveTrackUp`](#action-movetrackup)                                       | `(id: string) => void`                                                                           |
-| [`moveTrackToTop`](#action-movetracktotop)                                 | `(id: string) => void`                                                                           |
-| [`moveTrackToBottom`](#action-movetracktobottom)                           | `(id: string) => void`                                                                           |
-| [`moveTrack`](#action-movetrack)                                           | `(movingId: string, targetId: string) => void`                                                   |
-| [`toggleTrack`](#action-toggletrack)                                       | `(trackId: string) => boolean`                                                                   |
-| [`setTrackLabels`](#action-settracklabels)                                 | `(setting: "offset" \| "hidden" \| "overlapping") => void`                                       |
-| [`setShowCenterLine`](#action-setshowcenterline)                           | `(b: boolean) => void`                                                                           |
-| [`setDisplayedRegions`](#action-setdisplayedregions)                       | `(regions: Region[]) => void`                                                                    |
-| [`activateTrackSelector`](#action-activatetrackselector)                   | `() => Widget`                                                                                   |
-| [`toggleTrackSelector`](#action-toggletrackselector)                       | `() => Widget`                                                                                   |
-| [`horizontalScroll`](#action-horizontalscroll)                             | `(distance: number) => number`                                                                   |
-| [`showAllRegions`](#action-showallregions)                                 | `() => void`                                                                                     |
-| [`showAllRegionsInAssembly`](#action-showallregionsinassembly)             | `(assemblyName?: string \| undefined) => void`                                                   |
-| [`setDraggingTrackId`](#action-setdraggingtrackid)                         | `(idx?: string \| undefined) => void`                                                            |
-| [`setLastTrackDragY`](#action-setlasttrackdragy)                           | `(y: number) => void`                                                                            |
-| [`setInit`](#action-setinit)                                               | `(arg?: InitState \| undefined) => void`                                                         |
-| [`setCoarseDynamicBlocks`](#action-setcoarsedynamicblocks)                 | `(blocks: BlockSet, bpPerPx: number) => void`                                                    |
-
 </details>
 
 <details>
-<summary>LinearGenomeView - Actions (all signatures)</summary>
+<summary>LinearGenomeView - Actions (other undocumented members)</summary>
 
 #### action: setShowTrackOutlines
 

@@ -4,20 +4,9 @@ title: JobsManager
 sidebar_label: General -> JobsManager
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/indexJobsModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/JobsManager.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/indexJobsModel.ts).
 
 ## Overview
 
@@ -50,20 +39,10 @@ type aborted = false
 aborted: false
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                         |
-| ------------------------------------------ | --------------------------------- |
-| [`running`](#volatile-running)             | `false`                           |
-| [`statusMessage`](#volatile-statusmessage) | `string`                          |
-| [`jobName`](#volatile-jobname)             | `string`                          |
-| [`jobsQueue`](#volatile-jobsqueue)         | `IObservableArray<TextJobsEntry>` |
-
 </details>
 
 <details>
-<summary>JobsManager - Volatiles (all signatures)</summary>
+<summary>JobsManager - Volatiles (other undocumented members)</summary>
 
 #### volatile: running
 
@@ -103,23 +82,8 @@ jobsQueue: observable.array<TextJobsEntry>([])
 
 </details>
 
-<details open>
-<summary>JobsManager - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                               | Signature                            |
-| -------------------------------------------------------------------- | ------------------------------------ |
-| [`rpcManager`](#getter-rpcmanager)                                   | `RpcManager`                         |
-| [`tracks`](#getter-tracks)                                           | `Track[]`                            |
-| [`session`](#getter-session)                                         | `SessionWithDrawerWidgets`           |
-| [`aggregateTextSearchAdapters`](#getter-aggregatetextsearchadapters) | `{ textSearchAdapterId: string; }[]` |
-
-</details>
-
 <details>
-<summary>JobsManager - Getters (all signatures)</summary>
+<summary>JobsManager - Getters</summary>
 
 #### getter: rpcManager
 
@@ -147,20 +111,8 @@ type aggregateTextSearchAdapters = { textSearchAdapterId: string }[]
 
 </details>
 
-<details open>
-<summary>JobsManager - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                                                                                                                                                                                                                                                                                                          |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`getJobStatusWidget`](#method-getjobstatuswidget) | `() => ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<"JobsListWidget">; jobs: IArrayType<IModelType<{ name: ISimpleType<string>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>; finished: IArrayType<...>; queued: IArrayType<...>; aborted: IArrayType<...>; }>...` |
-
-</details>
-
 <details>
-<summary>JobsManager - Methods (all signatures)</summary>
+<summary>JobsManager - Methods</summary>
 
 #### method: getJobStatusWidget
 
@@ -182,29 +134,10 @@ runIndexingJob's catch
 type abortJob = () => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                             | Signature                                                                                                                                                                        |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`setRunning`](#action-setrunning)                                 | `(running: boolean) => void`                                                                                                                                                     |
-| [`setJobName`](#action-setjobname)                                 | `(name: string) => void`                                                                                                                                                         |
-| [`setStopToken`](#action-setstoptoken)                             | `(token?: StopToken \| undefined) => void`                                                                                                                                       |
-| [`reportStatus`](#action-reportstatus)                             | `(arg: string) => void`                                                                                                                                                          |
-| [`setWidgetStatus`](#action-setwidgetstatus)                       | `() => void`                                                                                                                                                                     |
-| [`setStatusMessage`](#action-setstatusmessage)                     | `(arg: string) => void`                                                                                                                                                          |
-| [`queueJob`](#action-queuejob)                                     | `(props: TextJobsEntry) => void`                                                                                                                                                 |
-| [`dequeueJob`](#action-dequeuejob)                                 | `() => TextJobsEntry \| undefined`                                                                                                                                               |
-| [`clear`](#action-clear)                                           | `() => void`                                                                                                                                                                     |
-| [`runIndexingJob`](#action-runindexingjob)                         | `(entry: TextJobsEntry) => Promise<void>`                                                                                                                                        |
-| [`runJob`](#action-runjob)                                         | `() => Promise<void>`                                                                                                                                                            |
-| [`addTrackTextSearchConf`](#action-addtracktextsearchconf)         | `({ trackId, assemblies, attributes, exclude, outLocation, }: { trackId: string; assemblies: string[]; attributes: string[]; exclude: string[]; outLocation: string; }) => void` |
-| [`addAggregateTextSearchConf`](#action-addaggregatetextsearchconf) | `({ trackIds, assemblyName, outLocation, }: { trackIds: string[]; assemblyName: string; outLocation: string; }) => void`                                                         |
-
 </details>
 
 <details>
-<summary>JobsManager - Actions (all signatures)</summary>
+<summary>JobsManager - Actions (other undocumented members)</summary>
 
 #### action: setRunning
 

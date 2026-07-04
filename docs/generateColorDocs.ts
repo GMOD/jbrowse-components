@@ -1,9 +1,14 @@
 import fs from 'fs'
-import path from 'path'
 
 import * as ts from 'typescript'
 
-import { jsDocText } from './util.ts'
+import {
+  jsDocText,
+  listDocs,
+  normalizeMarkerWhitespace,
+  parsePipeTags,
+  runMarkerScript,
+} from './util.ts'
 
 // Render small color-swatch tables into the hand-written guides, sourced from
 // the actual color constants so the docs can never drift from the code (the
@@ -49,18 +54,9 @@ function parseFile(file: string) {
 // in both the pair-orientation and insert-size legends) carries one tag per
 // group, so it documents itself in each table.
 function parseColorTags(comment: string | undefined, where: string) {
-  const tags: { group: string; label: string; description: string }[] = []
-  for (const m of (comment ?? '').matchAll(/#color\s+([^\n]*)/g)) {
-    const parts = m[1].split('|').map(s => s.trim())
-    const [group, label] = parts
-    // join the remainder back so a description may itself contain a `|`
-    const description = parts.slice(2).join(' | ')
-    if (!group || !label) {
-      throw new Error(`${where}: malformed #color tag "${m[0].trim()}"`)
-    }
-    tags.push({ group, label, description })
-  }
-  return tags
+  return parsePipeTags(comment, 'color', where).map(
+    ([group, label, description]) => ({ group, label, description }),
+  )
 }
 
 // Collect tagged colors grouped by their `#color` group, preserving source
@@ -135,25 +131,6 @@ function end(group: string) {
   return `<!-- COLOR_TABLE ${group} END -->`
 }
 
-function listDocs(dir: string): string[] {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) {
-      return listDocs(full)
-    }
-    return e.name.endsWith('.md') ? [full] : []
-  })
-}
-
-// Collapse the whitespace prettier adds when it pads markdown table columns, so
-// the freshness check compares the table's *content* and not its formatting
-// (the committed tables are prettier-padded; the generator emits them compact).
-// Regions outside the markers are byte-identical between current and
-// regenerated, so normalizing them is a no-op for the comparison.
-function normalize(s: string) {
-  return s.replaceAll(/[ \t]+/g, ' ').replaceAll(/-+/g, '-')
-}
-
 // In `check` mode, report which docs have a stale table instead of rewriting —
 // used by CI to fail when a color changed but the docs were not regenerated.
 export function writeColorDocs({ check = false } = {}) {
@@ -175,10 +152,13 @@ export function writeColorDocs({ check = false } = {}) {
       }
       const block = `${start(group)}\n\n${renderTable(rows)}\n\n${end(group)}`
       const re = new RegExp(`${start(group)}[\\s\\S]*?${end(group)}`)
-      updated = updated.replace(re, block)
+      updated = updated.replace(re, () => block)
     }
     if (check) {
-      if (normalize(updated) !== normalize(original)) {
+      if (
+        normalizeMarkerWhitespace(updated) !==
+        normalizeMarkerWhitespace(original)
+      ) {
         stale.push(file)
       }
     } else if (updated !== original) {
@@ -192,12 +172,5 @@ export function writeColorDocs({ check = false } = {}) {
 // this inert when the module is imported by generate.ts (argv[1] is generate.ts
 // there), so the tables aren't generated twice in one `pnpm gendocs`.
 if (process.argv[1]?.endsWith('generateColorDocs.ts')) {
-  const stale = writeColorDocs({ check: process.argv.includes('--check') })
-  if (stale.length) {
-    console.error(
-      `Color tables are out of date — run \`pnpm autogen\`:\n${stale.map(f => `  ${f}`).join('\n')}`,
-    )
-    process.exit(1)
-  }
-  console.log('Color tables are up to date')
+  runMarkerScript('Color tables', writeColorDocs)
 }

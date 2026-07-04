@@ -4,18 +4,10 @@ title: VcfTabixAdapter
 sidebar_label: Adapter -> VcfTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VcfTabixAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/VcfTabixAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `variants`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VcfTabixAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -43,7 +35,13 @@ used to load bgzip-compressed, tabix-indexed VCF files
 
 ### Used in
 
-This adapter supplies data to the [VariantTrack](../varianttrack) track type.
+Supplies data to the [VariantTrack](../varianttrack) track, rendered by:
+
+- [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- [ChordVariantDisplay](../chordvariantdisplay)
+- [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- [LinearVariantDisplay](../linearvariantdisplay)
 
 ### VcfTabixAdapter - Pre-processor / simplified config
 
@@ -61,43 +59,17 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
 
 #### slot: vcfGzLocation
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.vcf.gz',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.vcf.gz', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` · **Default:** `'TBI'`
-
-```js
-{
-  model: types.enumeration('IndexType', ['TBI', 'CSI']),
-  type: 'stringEnum',
-  defaultValue: 'TBI',
-}
-```
+**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: index.location
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.vcf.gz.tbi',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.vcf.gz.tbi', locationType: 'UriLocation' }`
 
 #### slot: samplesTsvLocation
 
@@ -120,16 +92,6 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
 size in bytes over which to display a warning to the user that too much data
 will be fetched
 
-**Type:** `number` · **Default:** `1_000_000`
-
-```js
-{
-  type: 'number',
-  description:
-    'size in bytes over which to display a warning to the user that too much data will be fetched',
-  defaultValue: 1_000_000,
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `1_000_000` · _advanced_
 
 </details>

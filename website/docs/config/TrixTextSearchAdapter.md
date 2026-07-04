@@ -4,18 +4,9 @@ title: TrixTextSearchAdapter
 sidebar_label: Adapter -> TrixTextSearchAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/trix/src/TrixTextSearchAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/TrixTextSearchAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `trix` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/trix/src/TrixTextSearchAdapter/configSchema.ts).
 
 ## Overview
 
@@ -42,72 +33,29 @@ top-level field that identifies it (not one of the config slots below).
 
 #### slot: ixFilePath
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: 'out.ix',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: 'out.ix', locationType: 'UriLocation' }`
 
 #### slot: ixxFilePath
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: 'out.ixx',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: 'out.ixx', locationType: 'UriLocation' }`
 
 #### slot: metaFilePath
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: 'meta.json',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: 'meta.json', locationType: 'UriLocation' }`
 
 #### slot: tracks
 
 List of tracks covered by text search adapter
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-  description: 'List of tracks covered by text search adapter',
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: assemblyNames
 
 List of assemblies covered by text search adapter
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-  description: 'List of assemblies covered by text search adapter',
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>

@@ -1,4 +1,6 @@
 import { exec } from 'child_process'
+import fs from 'fs'
+import path from 'path'
 import { promisify } from 'util'
 
 import * as ts from 'typescript'
@@ -931,17 +933,15 @@ export function typeAndCodeBlock(
 }
 
 // The shared skeleton every generated config/model page wears: Docusaurus
-// frontmatter, a "this is auto-generated" preamble, a Links section pointing at
-// the source and the GitHub-hosted doc, then the page body. The config and
-// model generators differ only in `notes`, `sourcePath`, and `githubDocPath`, so
-// the skeleton lives here to stay single-sourced.
+// frontmatter, a one-line auto-generated preamble that folds in the source-code
+// link, then the page body. The config and model generators differ only in
+// `notes` and `sourcePath`, so the skeleton lives here to stay single-sourced.
 export function docPage({
   id,
   title,
   sidebarLabel,
   notes,
   sourcePath,
-  githubDocPath,
   body,
 }: {
   id: string
@@ -949,25 +949,37 @@ export function docPage({
   sidebarLabel: string
   notes: string
   sourcePath: string
-  githubDocPath: string
   body: string
 }) {
+  const intro = [
+    notes,
+    provenance(sourcePath),
+    `[View source](https://github.com/GMOD/jbrowse-components/blob/main/${sourcePath}).`,
+  ]
+    .filter(Boolean)
+    .join(' ')
   return `---
 id: ${id}
 title: ${title}
 sidebar_label: ${sidebarLabel}
 ---
 
-${notes}
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/${sourcePath})
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/${githubDocPath})
+${intro}
 
 ${body}
 `
+}
+
+// Where a documented element comes from, derived from its source path: which
+// plugin provides it (the actionable fact — that plugin must be present), or
+// that it is built into JBrowse core. Empty for anything else (e.g. products).
+function provenance(sourcePath: string): string {
+  const [workspace, name] = sourcePath.split('/')
+  return workspace === 'plugins' && name
+    ? `Provided by the \`${name}\` plugin.`
+    : workspace === 'packages' && name
+      ? 'Built into JBrowse core.'
+      : ''
 }
 
 // Fail hard when a second, differently-named #config/#stateModel tag turns up in
@@ -1104,10 +1116,14 @@ export function section(...parts: (string | false | 0 | undefined)[]) {
 }
 
 // Wraps content in an `## Overview` section. Returns empty string when all
-// parts are falsy, so no stray heading appears on sparse pages.
+// parts are falsy, so no stray heading appears. On a sparse page whose whole
+// overview is a single prose paragraph (no sub-headings or `<details>`
+// sections), the `## Overview` heading outweighs its content, so the prose is
+// emitted bare.
 export function overviewSection(...parts: (string | false | 0 | undefined)[]) {
   const body = section(...parts)
-  return body ? `## Overview\n\n${body}` : ''
+  const hasSections = /(^|\n)(#{2,6} |<details)/.test(body)
+  return body ? (hasSections ? `## Overview\n\n${body}` : body) : ''
 }
 
 // Wrap content in an expanded-by-default `<details>` block (collapsible via the
@@ -1146,12 +1162,6 @@ function detailsBlock(
   return body
     ? `<details${open ? ' open' : ''}>\n<summary>${summary}</summary>\n\n${body}\n\n</details>`
     : ''
-}
-
-// Flatten a possibly-multiline type signature to one line and escape the pipes
-// in union types so it survives inside a markdown table cell.
-export function tableCellSignature(signature: string) {
-  return signature.replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|')
 }
 
 // Renders authored #example blocks under a consistent heading. Empty when none
@@ -1212,6 +1222,105 @@ export function stripComposedBlock(docs: string) {
     }
   }
   return out.join('\n').trim()
+}
+
+// Parse every `#<tag> <a> | <b> | <rest...>` occurrence in a comment into
+// [a, b, rest] tuples, in source order. `a` and `b` are the tag's two required
+// leading fields (e.g. a color's group+label, a jexl function's category+
+// example); `rest` re-joins any trailing pipe-separated text so a description or
+// result may itself contain a `|`. A tag missing either leading field throws,
+// naming `where`. Shared by the `#color` and `#jexlFunction` generators.
+export function parsePipeTags(
+  comment: string | undefined,
+  tag: string,
+  where: string,
+): [string, string, string][] {
+  const re = new RegExp(`#${tag}\\s+([^\\n]*)`, 'g')
+  const out: [string, string, string][] = []
+  for (const m of (comment ?? '').matchAll(re)) {
+    const parts = m[1].split('|').map(s => s.trim())
+    const [a, b] = parts
+    if (!a || !b) {
+      throw new Error(`${where}: malformed #${tag} tag "${m[0].trim()}"`)
+    }
+    out.push([a, b, parts.slice(2).join(' | ')])
+  }
+  return out
+}
+
+// Recursively list every .md doc under a directory. Shared by the marker-block
+// generators (color/jexl/extension-point) that rewrite tagged regions embedded
+// in the hand-written guides.
+export function listDocs(dir: string): string[] {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
+    const full = path.join(dir, e.name)
+    return e.isDirectory()
+      ? listDocs(full)
+      : e.name.endsWith('.md')
+        ? [full]
+        : []
+  })
+}
+
+// Collapse the whitespace prettier adds when it pads markdown table columns, so
+// a freshness (--check) comparison sees the block's *content* and not its
+// formatting (committed tables are prettier-padded; the generators emit them
+// compact). Regions outside the markers are byte-identical between current and
+// regenerated, so normalizing them is a no-op for the comparison.
+export function normalizeMarkerWhitespace(s: string) {
+  return s.replaceAll(/[ \t]+/g, ' ').replaceAll(/-+/g, '-')
+}
+
+// Rewrite the region between a single `<!-- MARKER START -->`/`<!-- MARKER END -->`
+// pair in every doc that contains it, returning the docs whose block content
+// changed (used by --check to flag stale generated blocks without rewriting). A
+// function replacer keeps any `$`-sequence in the rendered block literal. Shared
+// by the single-marker generators (jexl catalog, extension-point index); the
+// color tables use a per-group variant of the same idea.
+export function rewriteMarkerBlock(
+  marker: string,
+  block: string,
+  { check = false } = {},
+): string[] {
+  const startMarker = `<!-- ${marker} START -->`
+  const endMarker = `<!-- ${marker} END -->`
+  const re = new RegExp(`${startMarker}[\\s\\S]*?${endMarker}`)
+  const full = `${startMarker}\n\n${block}\n\n${endMarker}`
+  const stale: string[] = []
+  for (const file of listDocs('website/docs')) {
+    const original = fs.readFileSync(file, 'utf8')
+    if (original.includes(startMarker)) {
+      const updated = original.replace(re, () => full)
+      if (check) {
+        if (
+          normalizeMarkerWhitespace(updated) !==
+          normalizeMarkerWhitespace(original)
+        ) {
+          stale.push(file)
+        }
+      } else if (updated !== original) {
+        fs.writeFileSync(file, updated)
+      }
+    }
+  }
+  return stale
+}
+
+// CLI entry shared by the marker-block generators (color/jexl/extension-point).
+// Runs the writer; in --check mode a stale-docs list exits non-zero so CI fails.
+// Each caller still guards on argv[1] so importing from generate.ts stays inert.
+export function runMarkerScript(
+  label: string,
+  write: (opts: { check: boolean }) => string[],
+) {
+  const stale = write({ check: process.argv.includes('--check') })
+  if (stale.length) {
+    console.error(
+      `${label} out of date — run \`pnpm autogen\`:\n${stale.map(f => `  ${f}`).join('\n')}`,
+    )
+    process.exit(1)
+  }
+  console.log(`${label} up to date`)
 }
 
 export async function getAllFiles() {

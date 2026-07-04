@@ -4,20 +4,10 @@ title: OAuthInternetAccount
 sidebar_label: Internet Account -> OAuthInternetAccount
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/OAuthModel/model.tsx)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/OAuthInternetAccount.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`authentication` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/OAuthModel/model.tsx).
 
 ## Overview
 
@@ -26,21 +16,8 @@ reference the markdown files in our repo of the checked out git tag
 The configuration slots for this model are documented on its
 [config schema page](../../config/oauthinternetaccount).
 
-<details open>
-<summary>OAuthInternetAccount - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                             |
-| ------------------------------------------ | ------------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"OAuthInternetAccount">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`           |
-
-</details>
-
 <details>
-<summary>OAuthInternetAccount - Properties (all signatures)</summary>
+<summary>OAuthInternetAccount - Properties</summary>
 
 #### property: type
 
@@ -86,24 +63,10 @@ Can override or extend if dynamic state is needed.
 type state = string
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature           |
-| ---------------------------------------------- | ------------------- |
-| [`codeVerifierPKCE`](#getter-codeverifierpkce) | `string`            |
-| [`authEndpoint`](#getter-authendpoint)         | `string`            |
-| [`tokenEndpoint`](#getter-tokenendpoint)       | `string`            |
-| [`needsPKCE`](#getter-needspkce)               | `boolean`           |
-| [`clientId`](#getter-clientid)                 | `string`            |
-| [`scopes`](#getter-scopes)                     | `string`            |
-| [`responseType`](#getter-responsetype)         | `"code" \| "token"` |
-| [`refreshTokenKey`](#getter-refreshtokenkey)   | `string`            |
-
 </details>
 
 <details>
-<summary>OAuthInternetAccount - Getters (all signatures)</summary>
+<summary>OAuthInternetAccount - Getters (other undocumented members)</summary>
 
 #### getter: codeVerifierPKCE
 
@@ -155,20 +118,8 @@ type refreshTokenKey = string
 
 </details>
 
-<details open>
-<summary>OAuthInternetAccount - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature              |
-| ------------------------------------------------------ | ---------------------- |
-| [`retrieveRefreshToken`](#method-retrieverefreshtoken) | `() => string \| null` |
-
-</details>
-
 <details>
-<summary>OAuthInternetAccount - Methods (all signatures)</summary>
+<summary>OAuthInternetAccount - Methods</summary>
 
 #### method: retrieveRefreshToken
 
@@ -191,23 +142,10 @@ for the redirect message.
 type getTokenViaAuthFlow = () => Promise<string>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                               | Signature                                                                                                        |
-| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| [`storeRefreshToken`](#action-storerefreshtoken)                                     | `(refreshToken: string) => void`                                                                                 |
-| [`removeRefreshToken`](#action-removerefreshtoken)                                   | `() => void`                                                                                                     |
-| [`exchangeAuthorizationForAccessToken`](#action-exchangeauthorizationforaccesstoken) | `(code: string, redirectUri: string) => Promise<string>`                                                         |
-| [`exchangeRefreshForAccessToken`](#action-exchangerefreshforaccesstoken)             | `(refreshToken: string) => Promise<string>`                                                                      |
-| [`getTokenFromUser`](#action-gettokenfromuser)                                       | `(resolve: (token: string) => void, reject: (error: Error) => void) => Promise<void>`                            |
-| [`validateToken`](#action-validatetoken)                                             | `(token: string, location: UriLocation) => Promise<string>`                                                      |
-| [`getFetcher`](#action-getfetcher)                                                   | `(loc?: UriLocation \| undefined) => (input: RequestInfo, init?: RequestInit \| undefined) => Promise<Response>` |
-
 </details>
 
 <details>
-<summary>OAuthInternetAccount - Actions (all signatures)</summary>
+<summary>OAuthInternetAccount - Actions (other undocumented members)</summary>
 
 #### action: storeRefreshToken
 

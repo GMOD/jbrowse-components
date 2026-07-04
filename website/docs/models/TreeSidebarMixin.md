@@ -4,20 +4,10 @@ title: TreeSidebarMixin
 sidebar_label: Mixin -> TreeSidebarMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/TreeSidebarMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts).
 
 ## Overview
 
@@ -25,23 +15,8 @@ Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
 tree, sidebar width and subtree filter, plus the hover/canvas volatile state
 used while drawing the tree.
 
-<details open>
-<summary>TreeSidebarMixin - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                                              |
-| ------------------------------------------ | ---------------------------------------------------------------------- |
-| [`layout`](#property-layout)               | `IOptionalIType<IType<S[], S[], S[]>, [undefined]>`                    |
-| [`clusterTree`](#property-clustertree)     | `IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>`             |
-| [`treeAreaWidth`](#property-treeareawidth) | `IOptionalIType<ISimpleType<number>, [undefined]>`                     |
-| [`subtreeFilter`](#property-subtreefilter) | `IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>` |
-
-</details>
-
 <details>
-<summary>TreeSidebarMixin - Properties (all signatures)</summary>
+<summary>TreeSidebarMixin - Properties</summary>
 
 #### property: layout
 
@@ -87,22 +62,8 @@ subtreeFilter: types.stripDefault(
 
 </details>
 
-<details open>
-<summary>TreeSidebarMixin - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                      |
-| ---------------------------------------------- | ------------------------------ |
-| [`hoveredTreeNode`](#volatile-hoveredtreenode) | `HoveredTreeNode \| undefined` |
-| [`treeCanvas`](#volatile-treecanvas)           | `HTMLCanvasElement \| null`    |
-| [`mouseoverCanvas`](#volatile-mouseovercanvas) | `HTMLCanvasElement \| null`    |
-
-</details>
-
 <details>
-<summary>TreeSidebarMixin - Volatiles (all signatures)</summary>
+<summary>TreeSidebarMixin - Volatiles</summary>
 
 #### volatile: hoveredTreeNode
 
@@ -133,22 +94,8 @@ mouseoverCanvas: null as HTMLCanvasElement | null
 
 </details>
 
-<details open>
-<summary>TreeSidebarMixin - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                |
-| ------------------------------------------------------ | ---------------------------------------- |
-| [`parsedTree`](#getter-parsedtree)                     | `HierarchyNode<NewickNode> \| undefined` |
-| [`root`](#getter-root)                                 | `HierarchyNode<NewickNode> \| undefined` |
-| [`treeHasBranchLengths`](#getter-treehasbranchlengths) | `boolean`                                |
-
-</details>
-
 <details>
-<summary>TreeSidebarMixin - Getters (all signatures)</summary>
+<summary>TreeSidebarMixin - Getters</summary>
 
 #### getter: parsedTree
 
@@ -170,20 +117,8 @@ type treeHasBranchLengths = boolean
 
 </details>
 
-<details open>
-<summary>TreeSidebarMixin - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                |
-| ---------------------------------------- | ------------------------ |
-| [`willClearTree`](#method-willcleartree) | `(next: S[]) => boolean` |
-
-</details>
-
 <details>
-<summary>TreeSidebarMixin - Methods (all signatures)</summary>
+<summary>TreeSidebarMixin - Methods</summary>
 
 #### method: willClearTree
 
@@ -193,28 +128,8 @@ type willClearTree = (next: S[]) => boolean
 
 </details>
 
-<details open>
-<summary>TreeSidebarMixin - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                       | Signature                                           |
-| ------------------------------------------------------------ | --------------------------------------------------- |
-| [`setLayout`](#action-setlayout)                             | `(layout: S[]) => void`                             |
-| [`clearLayout`](#action-clearlayout)                         | `() => void`                                        |
-| [`setClusterTree`](#action-setclustertree)                   | `(tree?: string \| undefined) => void`              |
-| [`setLayoutAndClusterTree`](#action-setlayoutandclustertree) | `(layout: S[], tree?: string \| undefined) => void` |
-| [`setTreeAreaWidth`](#action-settreeareawidth)               | `(width: number) => void`                           |
-| [`setSubtreeFilter`](#action-setsubtreefilter)               | `(names?: string[] \| undefined) => void`           |
-| [`setHoveredTreeNode`](#action-sethoveredtreenode)           | `(node?: HoveredTreeNode \| undefined) => void`     |
-| [`setTreeCanvasRef`](#action-settreecanvasref)               | `(ref: HTMLCanvasElement \| null) => void`          |
-| [`setMouseoverCanvasRef`](#action-setmouseovercanvasref)     | `(ref: HTMLCanvasElement \| null) => void`          |
-
-</details>
-
 <details>
-<summary>TreeSidebarMixin - Actions (all signatures)</summary>
+<summary>TreeSidebarMixin - Actions</summary>
 
 #### action: setLayout
 

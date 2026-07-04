@@ -4,20 +4,10 @@ title: LGVSyntenyDisplay
 sidebar_label: Display -> LGVSyntenyDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LGVSyntenyDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`linear-comparative-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts).
 
 ## Example usage
 
@@ -124,6 +114,7 @@ and docs.
 [TooltipComponent](../linearalignmentsdisplay#getter-tooltipcomponent),
 [visibleModificationTypes](../linearalignmentsdisplay#getter-visiblemodificationtypes),
 [colorBy](../linearalignmentsdisplay#getter-colorby),
+[isColorByDefault](../linearalignmentsdisplay#getter-iscolorbydefault),
 [filterBy](../linearalignmentsdisplay#getter-filterby),
 [featureHeight](../linearalignmentsdisplay#getter-featureheight),
 [featureSpacing](../linearalignmentsdisplay#getter-featurespacing),
@@ -208,12 +199,13 @@ and docs.
 [clearSelection](../linearalignmentsdisplay#action-clearselection),
 [setSelectedChainIds](../linearalignmentsdisplay#action-setselectedchainids),
 [setColorScheme](../linearalignmentsdisplay#action-setcolorscheme),
+[setColorByDefault](../linearalignmentsdisplay#action-setcolorbydefault),
 [updateColorTagMap](../linearalignmentsdisplay#action-updatecolortagmap),
 [setFilterBy](../linearalignmentsdisplay#action-setfilterby),
 [setShowOutline](../linearalignmentsdisplay#action-setshowoutline),
 [toggleSoftClipping](../linearalignmentsdisplay#action-togglesoftclipping),
-[toggleShowSoftClippingDefault](../linearalignmentsdisplay#action-toggleshowsoftclippingdefault),
-[toggleCompactnessDefault](../linearalignmentsdisplay#action-togglecompactnessdefault),
+[setShowSoftClippingDefault](../linearalignmentsdisplay#action-setshowsoftclippingdefault),
+[setCompactnessDefault](../linearalignmentsdisplay#action-setcompactnessdefault),
 [toggleMismatchAlpha](../linearalignmentsdisplay#action-togglemismatchalpha),
 [toggleShowLowFreqMismatches](../linearalignmentsdisplay#action-toggleshowlowfreqmismatches),
 [setSortedBy](../linearalignmentsdisplay#action-setsortedby),
@@ -409,21 +401,8 @@ and docs.
 **Actions:**
 [clearSessionDefaults](../promotabledefaultsmixin#action-clearsessiondefaults)
 
-<details open>
-<summary>LGVSyntenyDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                          |
-| ------------------------------------------ | ---------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"LGVSyntenyDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`        |
-
-</details>
-
 <details>
-<summary>LGVSyntenyDisplay - Properties (all signatures)</summary>
+<summary>LGVSyntenyDisplay - Properties</summary>
 
 #### property: type
 
@@ -459,21 +438,8 @@ type featureWidgetType = { type: string; id: string }
 
 </details>
 
-<details open>
-<summary>LGVSyntenyDisplay - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                                                                                                                                                                                      |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`contextMenuItems`](#method-contextmenuitems) | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; } \| { label: string; onClick: () => void; icon?: undefined; })[]` |
-| [`trackMenuItems`](#method-trackmenuitems)     | `() => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } \| { ...; } \| { ...; })[]`                     |
-
-</details>
-
 <details>
-<summary>LGVSyntenyDisplay - Methods (all signatures)</summary>
+<summary>LGVSyntenyDisplay - Methods</summary>
 
 #### method: contextMenuItems
 

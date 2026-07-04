@@ -4,20 +4,10 @@ title: DropboxOAuthInternetAccount
 sidebar_label: Internet Account -> DropboxOAuthInternetAccount
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/model.tsx)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/DropboxOAuthInternetAccount.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`authentication` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/model.tsx).
 
 ## Overview
 
@@ -60,21 +50,8 @@ and docs.
 [validateToken](../oauthinternetaccount#action-validatetoken),
 [getFetcher](../oauthinternetaccount#action-getfetcher)
 
-<details open>
-<summary>DropboxOAuthInternetAccount - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                    |
-| ------------------------------------------ | -------------------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"DropboxOAuthInternetAccount">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                  |
-
-</details>
-
 <details>
-<summary>DropboxOAuthInternetAccount - Properties (all signatures)</summary>
+<summary>DropboxOAuthInternetAccount - Properties</summary>
 
 #### property: type
 
@@ -107,17 +84,10 @@ The FileSelector icon for Dropbox
 type toggleContents = Element
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature |
-| ---------------------------------------- | --------- |
-| [`selectorLabel`](#getter-selectorlabel) | `string`  |
-
 </details>
 
 <details>
-<summary>DropboxOAuthInternetAccount - Getters (all signatures)</summary>
+<summary>DropboxOAuthInternetAccount - Getters (other undocumented members)</summary>
 
 #### getter: selectorLabel
 
@@ -127,20 +97,8 @@ type selectorLabel = string
 
 </details>
 
-<details open>
-<summary>DropboxOAuthInternetAccount - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                             | Signature                                                                                                             |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| [`getFetcher`](#method-getfetcher) | `(location?: UriLocation \| undefined) => (input: RequestInfo, init?: RequestInit \| undefined) => Promise<Response>` |
-
-</details>
-
 <details>
-<summary>DropboxOAuthInternetAccount - Methods (all signatures)</summary>
+<summary>DropboxOAuthInternetAccount - Methods</summary>
 
 #### method: getFetcher
 
@@ -152,20 +110,8 @@ type getFetcher = (
 
 </details>
 
-<details open>
-<summary>DropboxOAuthInternetAccount - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                                                   |
-| ---------------------------------------- | ----------------------------------------------------------- |
-| [`validateToken`](#action-validatetoken) | `(token: string, location: UriLocation) => Promise<string>` |
-
-</details>
-
 <details>
-<summary>DropboxOAuthInternetAccount - Actions (all signatures)</summary>
+<summary>DropboxOAuthInternetAccount - Actions</summary>
 
 #### action: validateToken
 

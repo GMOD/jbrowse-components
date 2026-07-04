@@ -4,20 +4,10 @@ title: LinearManhattanDisplay
 sidebar_label: Display -> LinearManhattanDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearManhattanDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`gwas` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts).
 
 ## Overview
 
@@ -225,18 +215,10 @@ type indexSnpPinned = IOptionalIType<ISimpleType<boolean>, [undefined]>
 indexSnpPinned: types.stripDefault(types.boolean, false)
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                               |
-| ------------------------------------------ | --------------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"LinearManhattanDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`             |
-
 </details>
 
 <details>
-<summary>LinearManhattanDisplay - Properties (all signatures)</summary>
+<summary>LinearManhattanDisplay - Properties (other undocumented members)</summary>
 
 #### property: type
 
@@ -258,23 +240,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
-<summary>LinearManhattanDisplay - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                   |
-| -------------------------------------------------- | ------------------------------------------- |
-| [`rpcDataMap`](#volatile-rpcdatamap)               | `ObservableMap<number, ManhattanRpcResult>` |
-| [`flatbushes`](#volatile-flatbushes)               | `ObservableMap<number, Flatbush>`           |
-| [`featureUnderMouse`](#volatile-featureundermouse) | `ManhattanHit \| undefined`                 |
-| [`showLdLegend`](#volatile-showldlegend)           | `true`                                      |
-
-</details>
-
 <details>
-<summary>LinearManhattanDisplay - Volatiles (all signatures)</summary>
+<summary>LinearManhattanDisplay - Volatiles</summary>
 
 #### volatile: rpcDataMap
 
@@ -316,6 +283,15 @@ showLdLegend: true
 
 <details open>
 <summary>LinearManhattanDisplay - Getters</summary>
+
+#### getter: view
+
+the containing LGV, typed once here so downstream getters don't repeat the
+`getContainingView` cast
+
+```ts
+type view = ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>
+```
 
 #### getter: color
 
@@ -411,18 +387,10 @@ analysis, so "found in no loaded region" means missing.
 type indexSnpMissing = boolean
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                       | Signature                                                                                                         |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| [`DisplayMessageComponent`](#getter-displaymessagecomponent) | `LazyExoticComponent<({ model, }: { model: ManhattanDisplayModel; }) => Element>`                                 |
-| [`TooltipComponent`](#getter-tooltipcomponent)               | `({ model, clientMouseCoord, }: { model: TooltipModel; clientMouseCoord: [number, number]; }) => Element \| null` |
-
 </details>
 
 <details>
-<summary>LinearManhattanDisplay - Getters (all signatures)</summary>
+<summary>LinearManhattanDisplay - Getters (other undocumented members)</summary>
 
 #### getter: DisplayMessageComponent
 
@@ -539,23 +507,10 @@ identity encode — RPC result is the upload payload
 type startRenderingBackend = (backend: ManhattanRenderingBackend) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                         | Signature                                                                                                                                                    |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`setRpcData`](#action-setrpcdata)                             | `(idx: number, data: ManhattanRpcResult) => void`                                                                                                            |
-| [`setFeatureUnderMouse`](#action-setfeatureundermouse)         | `(hit: ManhattanHit \| undefined) => void`                                                                                                                   |
-| [`setShowLdLegend`](#action-setshowldlegend)                   | `(val: boolean) => void`                                                                                                                                     |
-| [`setColorBy`](#action-setcolorby)                             | `(mode: "normal" \| "ld") => void`                                                                                                                           |
-| [`setIndexSnp`](#action-setindexsnp)                           | `(snp?: string \| undefined) => void`                                                                                                                        |
-| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void`                                                                                                                                                 |
-| [`renderSvg`](#action-rendersvg)                               | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
-
 </details>
 
 <details>
-<summary>LinearManhattanDisplay - Actions (all signatures)</summary>
+<summary>LinearManhattanDisplay - Actions (other undocumented members)</summary>
 
 #### action: setRpcData
 

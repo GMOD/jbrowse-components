@@ -4,37 +4,15 @@ title: ThemeManagerSessionMixin
 sidebar_label: Mixin -> ThemeManagerSessionMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Themes.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/ThemeManagerSessionMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Themes.ts).
 
 ## Overview
 
-<details open>
-<summary>ThemeManagerSessionMixin - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature |
-| ------------------------------------------------ | --------- |
-| [`sessionThemeName`](#volatile-sessionthemename) | `string`  |
-
-</details>
-
 <details>
-<summary>ThemeManagerSessionMixin - Volatiles (all signatures)</summary>
+<summary>ThemeManagerSessionMixin - Volatiles</summary>
 
 #### volatile: sessionThemeName
 
@@ -47,22 +25,8 @@ sessionThemeName: localStorageGetItem('themeName') ?? 'default'
 
 </details>
 
-<details open>
-<summary>ThemeManagerSessionMixin - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                 | Signature               |
-| -------------------------------------- | ----------------------- |
-| [`themeName`](#getter-themename)       | `string`                |
-| [`themeOptions`](#getter-themeoptions) | `SerializableThemeArgs` |
-| [`theme`](#getter-theme)               | `Theme`                 |
-
-</details>
-
 <details>
-<summary>ThemeManagerSessionMixin - Getters (all signatures)</summary>
+<summary>ThemeManagerSessionMixin - Getters</summary>
 
 #### getter: themeName
 
@@ -101,17 +65,10 @@ type getActiveThemeOptions = (
 ) => ThemeOptions & { name?: string | undefined }
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                           | Signature        |
-| -------------------------------- | ---------------- |
-| [`allThemes`](#method-allthemes) | `() => ThemeMap` |
-
 </details>
 
 <details>
-<summary>ThemeManagerSessionMixin - Methods (all signatures)</summary>
+<summary>ThemeManagerSessionMixin - Methods (other undocumented members)</summary>
 
 #### method: allThemes
 
@@ -121,20 +78,8 @@ type allThemes = () => ThemeMap
 
 </details>
 
-<details open>
-<summary>ThemeManagerSessionMixin - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                 | Signature                |
-| -------------------------------------- | ------------------------ |
-| [`setThemeName`](#action-setthemename) | `(name: string) => void` |
-
-</details>
-
 <details>
-<summary>ThemeManagerSessionMixin - Actions (all signatures)</summary>
+<summary>ThemeManagerSessionMixin - Actions</summary>
 
 #### action: setThemeName
 

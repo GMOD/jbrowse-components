@@ -4,41 +4,18 @@ title: AssembliesMixin
 sidebar_label: Mixin -> AssembliesMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/Assemblies/AssembliesMixin.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/AssembliesMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/Assemblies/AssembliesMixin.ts).
 
 ## Overview
 
 Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 `temporaryAssemblies` (used for ad-hoc read-vs-ref style assemblies).
 
-<details open>
-<summary>AssembliesMixin - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                                                                                                                                                                                                                                                                                                          |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`sessionAssemblies`](#property-sessionassemblies)     | `IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>, ...` |
-| [`temporaryAssemblies`](#property-temporaryassemblies) | `IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>, ...` |
-
-</details>
-
 <details>
-<summary>AssembliesMixin - Properties (all signatures)</summary>
+<summary>AssembliesMixin - Properties</summary>
 
 #### property: sessionAssemblies
 
@@ -99,21 +76,10 @@ used for read vs ref type assemblies.
 type addTemporaryAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                       | Signature                                                                                                                                                                                                                  |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`addSessionAssembly`](#action-addsessionassembly)           | `(conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>` |
-| [`addAssembly`](#action-addassembly)                         | `(conf: AnyConfiguration) => void`                                                                                                                                                                                         |
-| [`removeAssembly`](#action-removeassembly)                   | `(name: string) => void`                                                                                                                                                                                                   |
-| [`removeSessionAssembly`](#action-removesessionassembly)     | `(assemblyName: string) => void`                                                                                                                                                                                           |
-| [`removeTemporaryAssembly`](#action-removetemporaryassembly) | `(name: string) => void`                                                                                                                                                                                                   |
-
 </details>
 
 <details>
-<summary>AssembliesMixin - Actions (all signatures)</summary>
+<summary>AssembliesMixin - Actions (other undocumented members)</summary>
 
 #### action: addSessionAssembly
 

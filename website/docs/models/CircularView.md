@@ -4,20 +4,10 @@ title: CircularView
 sidebar_label: View -> CircularView
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/CircularView.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`circular-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/model.ts).
 
 ## Example usage
 
@@ -84,30 +74,10 @@ type init = IType<
 init: types.frozen<CircularViewInit | undefined>()
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                           | Signature                                                          |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------ |
-| [`type`](#property-type)                                         | `ISimpleType<"CircularView">`                                      |
-| [`bpPerPx`](#property-bpperpx)                                   | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
-| [`tracks`](#property-tracks)                                     | `IArrayType<IAnyType>`                                             |
-| [`hideVerticalResizeHandle`](#property-hideverticalresizehandle) | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                |
-| [`hideTrackSelectorButton`](#property-hidetrackselectorbutton)   | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                |
-| [`disableImportForm`](#property-disableimportform)               | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                |
-| [`height`](#property-height)                                     | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
-| [`displayedRegions`](#property-displayedregions)                 | `IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>` |
-| [`minimumRadiusPx`](#property-minimumradiuspx)                   | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
-| [`spacingPx`](#property-spacingpx)                               | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
-| [`paddingPx`](#property-paddingpx)                               | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
-| [`minVisibleWidth`](#property-minvisiblewidth)                   | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
-| [`minimumBlockWidth`](#property-minimumblockwidth)               | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
-| [`trackSelectorType`](#property-trackselectortype)               | `IOptionalIType<ISimpleType<string>, [undefined]>`                 |
-
 </details>
 
 <details>
-<summary>CircularView - Properties (all signatures)</summary>
+<summary>CircularView - Properties (other undocumented members)</summary>
 
 #### property: type
 
@@ -243,23 +213,8 @@ trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 
 </details>
 
-<details open>
-<summary>CircularView - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature             |
-| ------------------------------------------ | --------------------- |
-| [`volatileWidth`](#volatile-volatilewidth) | `number \| undefined` |
-| [`volatileError`](#volatile-volatileerror) | `unknown`             |
-| [`panX`](#volatile-panx)                   | `number`              |
-| [`panY`](#volatile-pany)                   | `number`              |
-
-</details>
-
 <details>
-<summary>CircularView - Volatiles (all signatures)</summary>
+<summary>CircularView - Volatiles</summary>
 
 #### volatile: volatileWidth
 
@@ -344,34 +299,10 @@ enabled, or when there's an error)
 type showImportForm = boolean
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                             |
-| -------------------------------------------------- | ----------------------------------------------------- |
-| [`width`](#getter-width)                           | `number`                                              |
-| [`visibleSection`](#getter-visiblesection)         | `{ rho: [number, number]; theta: [number, number]; }` |
-| [`circumferencePx`](#getter-circumferencepx)       | `number`                                              |
-| [`radiusPx`](#getter-radiuspx)                     | `number`                                              |
-| [`bpPerRadian`](#getter-bpperradian)               | `number`                                              |
-| [`centerXY`](#getter-centerxy)                     | `[number, number]`                                    |
-| [`totalBp`](#getter-totalbp)                       | `number`                                              |
-| [`maximumRadiusPx`](#getter-maximumradiuspx)       | `number`                                              |
-| [`maxBpPerPx`](#getter-maxbpperpx)                 | `number`                                              |
-| [`minBpPerPx`](#getter-minbpperpx)                 | `number`                                              |
-| [`atMaxBpPerPx`](#getter-atmaxbpperpx)             | `boolean`                                             |
-| [`atMinBpPerPx`](#getter-atminbpperpx)             | `boolean`                                             |
-| [`assemblyNames`](#getter-assemblynames)           | `string[]`                                            |
-| [`initialized`](#getter-initialized)               | `boolean`                                             |
-| [`assemblyErrors`](#getter-assemblyerrors)         | `string`                                              |
-| [`error`](#getter-error)                           | `unknown`                                             |
-| [`hasSomethingToShow`](#getter-hassomethingtoshow) | `boolean`                                             |
-| [`staticSlices`](#getter-staticslices)             | `Slice[]`                                             |
-
 </details>
 
 <details>
-<summary>CircularView - Getters (all signatures)</summary>
+<summary>CircularView - Getters (other undocumented members)</summary>
 
 #### getter: width
 
@@ -524,36 +455,10 @@ creates an svg export and save using FileSaver
 type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                 | Signature                                                                |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| [`fitToWindow`](#action-fittowindow)                                   | `() => void`                                                             |
-| [`setWidth`](#action-setwidth)                                         | `(newWidth: number) => number`                                           |
-| [`setHeight`](#action-setheight)                                       | `(newHeight: number) => number`                                          |
-| [`rotateClockwiseButton`](#action-rotateclockwisebutton)               | `() => void`                                                             |
-| [`rotateCounterClockwiseButton`](#action-rotatecounterclockwisebutton) | `() => void`                                                             |
-| [`rotate`](#action-rotate)                                             | `(delta: number) => void`                                                |
-| [`zoomInButton`](#action-zoominbutton)                                 | `() => void`                                                             |
-| [`zoomOutButton`](#action-zoomoutbutton)                               | `() => void`                                                             |
-| [`setBpPerPx`](#action-setbpperpx)                                     | `(newVal: number) => void`                                               |
-| [`setDisplayedRegions`](#action-setdisplayedregions)                   | `(regions: Region[]) => void`                                            |
-| [`activateTrackSelector`](#action-activatetrackselector)               | `() => Widget \| undefined`                                              |
-| [`toggleTrack`](#action-toggletrack)                                   | `(trackId: string) => boolean`                                           |
-| [`setError`](#action-seterror)                                         | `(error: unknown) => void`                                               |
-| [`setInit`](#action-setinit)                                           | `(init?: CircularViewInit \| undefined) => void`                         |
-| [`showTrack`](#action-showtrack)                                       | `(trackId: string, initialSnapshot?: any) => any`                        |
-| [`addTrackConf`](#action-addtrackconf)                                 | `(configuration: Record<string, unknown>, initialSnapshot?: any) => any` |
-| [`hideTrack`](#action-hidetrack)                                       | `(trackId: string) => boolean`                                           |
-| [`openExportDialog`](#action-openexportdialog)                         | `() => void`                                                             |
-| [`resizeHeight`](#action-resizeheight)                                 | `(distance: number) => number`                                           |
-| [`resizeWidth`](#action-resizewidth)                                   | `(distance: number) => number`                                           |
-
 </details>
 
 <details>
-<summary>CircularView - Actions (all signatures)</summary>
+<summary>CircularView - Actions (other undocumented members)</summary>
 
 #### action: fitToWindow
 

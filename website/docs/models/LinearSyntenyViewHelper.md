@@ -4,20 +4,10 @@ title: LinearSyntenyViewHelper
 sidebar_label: General -> LinearSyntenyViewHelper
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyViewHelper/stateModelFactory.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearSyntenyViewHelper.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`linear-comparative-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyViewHelper/stateModelFactory.ts).
 
 ## Overview
 
@@ -44,24 +34,8 @@ and docs.
 [setRenderError](../renderlifecyclemixin#action-setrendererror),
 [attachRenderingBackend](../renderlifecyclemixin#action-attachrenderingbackend)
 
-<details open>
-<summary>LinearSyntenyViewHelper - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                       | Signature                                          |
-| ---------------------------- | -------------------------------------------------- |
-| [`id`](#property-id)         | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| [`type`](#property-type)     | `string`                                           |
-| [`tracks`](#property-tracks) | `IArrayType<IAnyType>`                             |
-| [`height`](#property-height) | `IOptionalIType<ISimpleType<number>, [undefined]>` |
-| [`level`](#property-level)   | `ISimpleType<number>`                              |
-
-</details>
-
 <details>
-<summary>LinearSyntenyViewHelper - Properties (all signatures)</summary>
+<summary>LinearSyntenyViewHelper - Properties</summary>
 
 #### property: id
 
@@ -168,19 +142,10 @@ Reverse lookup key → display, used to dispatch pick results.
 type displaysByKey = Map<number, ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>> & ... 9 more ... & IStateTreeNode<...>>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature        |
-| ---------------------------------------- | ---------------- |
-| [`parentView`](#getter-parentview)       | `ParentViewDuck` |
-| [`assemblyNames`](#getter-assemblynames) | `string[]`       |
-| [`numFeats`](#getter-numfeats)           | `number`         |
-
 </details>
 
 <details>
-<summary>LinearSyntenyViewHelper - Getters (all signatures)</summary>
+<summary>LinearSyntenyViewHelper - Getters (other undocumented members)</summary>
 
 #### getter: parentView
 
@@ -202,24 +167,8 @@ type numFeats = number
 
 </details>
 
-<details open>
-<summary>LinearSyntenyViewHelper - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                   | Signature                                         |
-| -------------------------------------------------------- | ------------------------------------------------- |
-| [`setHeight`](#action-setheight)                         | `(n: number) => void`                             |
-| [`showTrack`](#action-showtrack)                         | `(trackId: string, initialSnapshot?: any) => any` |
-| [`hideTrack`](#action-hidetrack)                         | `(trackId: string) => boolean`                    |
-| [`toggleTrack`](#action-toggletrack)                     | `(trackId: string) => void`                       |
-| [`startRenderingBackend`](#action-startrenderingbackend) | `(backend: SyntenyRenderingBackend) => void`      |
-
-</details>
-
 <details>
-<summary>LinearSyntenyViewHelper - Actions (all signatures)</summary>
+<summary>LinearSyntenyViewHelper - Actions</summary>
 
 #### action: setHeight
 

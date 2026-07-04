@@ -4,20 +4,10 @@ title: LinearMultiSampleVariantMatrixDisplay
 sidebar_label: Display -> LinearMultiSampleVariantMatrixDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearMultiSampleVariantMatrixDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`variants` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/model.ts).
 
 ## Overview
 
@@ -281,21 +271,8 @@ and docs.
 [setTreeCanvasRef](../treesidebarmixin#action-settreecanvasref),
 [setMouseoverCanvasRef](../treesidebarmixin#action-setmouseovercanvasref)
 
-<details open>
-<summary>LinearMultiSampleVariantMatrixDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature                                              |
-| -------------------------------------------- | ------------------------------------------------------ |
-| [`type`](#property-type)                     | `ISimpleType<"LinearMultiSampleVariantMatrixDisplay">` |
-| [`lineZoneHeight`](#property-linezoneheight) | `IOptionalIType<ISimpleType<number>, [undefined]>`     |
-
-</details>
-
 <details>
-<summary>LinearMultiSampleVariantMatrixDisplay - Properties (all signatures)</summary>
+<summary>LinearMultiSampleVariantMatrixDisplay - Properties</summary>
 
 #### property: type
 
@@ -320,6 +297,18 @@ lineZoneHeight: types.stripDefault(types.number, 20)
 <details open>
 <summary>LinearMultiSampleVariantMatrixDisplay - Getters</summary>
 
+#### getter: flipped
+
+True when every visible region is reversed (the view is horizontally flipped).
+The matrix lays columns out by genomic-ascending feature index, but a flipped
+view runs the ruler right-to-left, so columns are mirrored to `numFeatures-1-i`
+to keep them and the genome connector lines from crossing. Mixed
+forward/reversed regions don't flip.
+
+```ts
+type flipped = boolean
+```
+
 #### getter: renderState
 
 Per-frame render state for the GPU backend — the autorun reads this every time
@@ -333,22 +322,15 @@ type renderState =
       canvasHeight: number
       rowHeight: number
       scrollTop: number
+      flipped: boolean
     }
   | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature |
-| ---------------------------------------- | --------- |
-| [`blockType`](#getter-blocktype)         | `string`  |
-| [`prefersOffset`](#getter-prefersoffset) | `boolean` |
-
 </details>
 
 <details>
-<summary>LinearMultiSampleVariantMatrixDisplay - Getters (all signatures)</summary>
+<summary>LinearMultiSampleVariantMatrixDisplay - Getters (other undocumented members)</summary>
 
 #### getter: blockType
 
@@ -364,20 +346,8 @@ type prefersOffset = boolean
 
 </details>
 
-<details open>
-<summary>LinearMultiSampleVariantMatrixDisplay - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                           | Signature                                                                                                                                                    |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`renderSvg`](#method-rendersvg) | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
-
-</details>
-
 <details>
-<summary>LinearMultiSampleVariantMatrixDisplay - Methods (all signatures)</summary>
+<summary>LinearMultiSampleVariantMatrixDisplay - Methods</summary>
 
 #### method: renderSvg
 
@@ -387,21 +357,8 @@ type renderSvg = (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactEl
 
 </details>
 
-<details open>
-<summary>LinearMultiSampleVariantMatrixDisplay - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                   | Signature                                          |
-| -------------------------------------------------------- | -------------------------------------------------- |
-| [`setLineZoneHeight`](#action-setlinezoneheight)         | `(n: number) => number`                            |
-| [`startRenderingBackend`](#action-startrenderingbackend) | `(backend: VariantMatrixRenderingBackend) => void` |
-
-</details>
-
 <details>
-<summary>LinearMultiSampleVariantMatrixDisplay - Actions (all signatures)</summary>
+<summary>LinearMultiSampleVariantMatrixDisplay - Actions</summary>
 
 #### action: setLineZoneHeight
 

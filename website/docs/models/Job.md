@@ -4,37 +4,15 @@ title: Job
 sidebar_label: Widget -> Job
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/jobs-management/src/JobsListWidget/jobModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/Job.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`jobs-management` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/jobs-management/src/JobsListWidget/jobModel.ts).
 
 ## Overview
 
-<details open>
-<summary>Job - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                   | Signature             |
-| ------------------------ | --------------------- |
-| [`name`](#property-name) | `ISimpleType<string>` |
-
-</details>
-
 <details>
-<summary>Job - Properties (all signatures)</summary>
+<summary>Job - Properties</summary>
 
 #### property: name
 
@@ -47,21 +25,8 @@ name: types.string
 
 </details>
 
-<details open>
-<summary>Job - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature             |
-| ------------------------------------------ | --------------------- |
-| [`statusMessage`](#volatile-statusmessage) | `string \| undefined` |
-| [`progressPct`](#volatile-progresspct)     | `number`              |
-
-</details>
-
 <details>
-<summary>Job - Volatiles (all signatures)</summary>
+<summary>Job - Volatiles</summary>
 
 #### volatile: statusMessage
 
@@ -83,22 +48,8 @@ progressPct: 0
 
 </details>
 
-<details open>
-<summary>Job - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature                                 |
-| ------------------------------------------------ | ----------------------------------------- |
-| [`setCancelCallback`](#action-setcancelcallback) | `(cancelCallback: () => void) => void`    |
-| [`setStatusMessage`](#action-setstatusmessage)   | `(message?: string \| undefined) => void` |
-| [`setProgressPct`](#action-setprogresspct)       | `(pct: number) => void`                   |
-
-</details>
-
 <details>
-<summary>Job - Actions (all signatures)</summary>
+<summary>Job - Actions</summary>
 
 #### action: setCancelCallback
 

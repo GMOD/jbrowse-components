@@ -4,18 +4,10 @@ title: LinearBasicDisplay
 sidebar_label: Display -> LinearBasicDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearBasicDisplay.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `canvas`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/configSchema.ts).
 
 ## Example usage
 
@@ -82,6 +74,18 @@ Color by an attribute with a jexl expression:
 }
 ```
 
+### LinearBasicDisplay - Compatible adapters
+
+Data adapters that can supply the [FeatureTrack](../featuretrack):
+
+- [BedAdapter](../bedadapter)
+- [BedTabixAdapter](../bedtabixadapter)
+- [BigBedAdapter](../bigbedadapter)
+- [Gff3Adapter](../gff3adapter)
+- [Gff3TabixAdapter](../gff3tabixadapter)
+- [GtfAdapter](../gtfadapter)
+- [GtfTabixAdapter](../gtftabixadapter)
+
 ### LinearBasicDisplay - State model
 
 This config's runtime API is documented on its
@@ -99,16 +103,6 @@ feature text downloads fast; the feature-density gate remains the backstop for
 genuinely over-dense views. Kept here on the feature leaf so the heavier
 alignment/variant displays keep their own tighter inherited limit.
 
-**Type:** `number` · **Default:** `5_000_000`
-
-```js
-{
-  type: 'number',
-  defaultValue: 5_000_000,
-  description:
-    'maximum data to attempt to download for a given feature track',
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `5_000_000` · _advanced_
 
 </details>

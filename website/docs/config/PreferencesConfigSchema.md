@@ -4,18 +4,9 @@ title: PreferencesConfigSchema
 sidebar_label: Root -> PreferencesConfigSchema
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/PreferencesConfig.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/PreferencesConfigSchema.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/PreferencesConfig.ts).
 
 ## Overview
 
@@ -33,19 +24,8 @@ controls feature-layout animations: 'enabled' always animates (the default),
 'system' respects the OS prefers-reduced-motion setting, 'disabled' never
 animates
 
-**Type:** `stringEnum` · **Default:** `'enabled'`
-
-```js
-{
-  model: types.enumeration('AnimationMode', [
-    'system',
-    'enabled',
-    'disabled',
-  ]),
-  type: 'stringEnum',
-  defaultValue: 'enabled',
-}
-```
+**Type:** `stringEnum` (one of `system`, `enabled`, `disabled`) · **Default:**
+`'enabled'`
 
 #### slot: configuration.preferences.scrollZoom
 
@@ -53,12 +33,5 @@ when true, scrolling the mouse wheel over a track zooms in and out without
 holding Ctrl. Applies globally to all wheel-zoom views.
 
 **Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-}
-```
 
 </details>

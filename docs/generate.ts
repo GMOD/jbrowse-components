@@ -38,8 +38,10 @@ async function main() {
 
   // Reverse index: a Track config's "Display types" section looks up displays
   // by the track's own name, the only end of this link a Track's source code
-  // doesn't itself carry.
+  // doesn't itself carry. displayToTrackType is the forward direction, so a
+  // display page can find the adapters that feed its track type.
   const displayTypesByTrack = new Map<string, string[]>()
+  const displayToTrackType = new Map<string, string>()
   for (const { displayName, trackType } of displayLinks) {
     const displayNames = displayTypesByTrack.get(trackType)
     if (displayNames) {
@@ -47,6 +49,7 @@ async function main() {
     } else {
       displayTypesByTrack.set(trackType, [displayName])
     }
+    displayToTrackType.set(displayName, trackType)
   }
   const modelNames = new Set(
     Object.values(models)
@@ -59,7 +62,12 @@ async function main() {
       .filter((name): name is string => Boolean(name)),
   )
 
-  await writeConfigDocs(configs, displayTypesByTrack, modelNames)
+  await writeConfigDocs(
+    configs,
+    displayTypesByTrack,
+    displayToTrackType,
+    modelNames,
+  )
   await writeModelDocs(models, configNames)
   await writeApiDocs(api)
   await writeApiReadmes(api)

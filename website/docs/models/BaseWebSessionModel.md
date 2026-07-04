@@ -4,20 +4,10 @@ title: BaseWebSessionModel
 sidebar_label: Session -> BaseWebSessionModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/web-core/src/BaseWebSession/index.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseWebSessionModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/web-core/src/BaseWebSession/index.ts).
 
 ## Overview
 
@@ -212,7 +202,8 @@ and docs.
 ### Available via [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
 
 **Properties:**
-[connectionInstances](../connectionmanagementsessionmixin#property-connectioninstances)
+[connectionInstances](../connectionmanagementsessionmixin#property-connectioninstances),
+[connectionTrackConfigs](../connectionmanagementsessionmixin#property-connectiontrackconfigs)
 
 **Getters:**
 [connections](../connectionmanagementsessionmixin#getter-connections)
@@ -223,7 +214,11 @@ and docs.
 [breakConnection](../connectionmanagementsessionmixin#action-breakconnection),
 [deleteConnection](../connectionmanagementsessionmixin#action-deleteconnection),
 [addConnectionConf](../connectionmanagementsessionmixin#action-addconnectionconf),
-[clearConnections](../connectionmanagementsessionmixin#action-clearconnections)
+[clearConnections](../connectionmanagementsessionmixin#action-clearconnections),
+[captureConnectionTrack](../connectionmanagementsessionmixin#action-captureconnectiontrack),
+[updateConnectionTrackConfig](../connectionmanagementsessionmixin#action-updateconnectiontrackconfig),
+[pruneConnectionTrackConfig](../connectionmanagementsessionmixin#action-pruneconnectiontrackconfig),
+[hydrateConnection](../connectionmanagementsessionmixin#action-hydrateconnection)
 
 ### Available via [DockviewLayoutMixin](../dockviewlayoutmixin)
 
@@ -258,20 +253,8 @@ and docs.
 [getTrackListMenuItems](../trackmenuitemssessionmixin#method-gettracklistmenuitems),
 [getTrackActionMenuItems](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)
 
-<details open>
-<summary>BaseWebSessionModel - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature                                                                                                                             |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| [`sessionPlugins`](#property-sessionplugins) | `IArrayType<IType<PluginDefinition & { name: string; }, PluginDefinition & { name: string; }, PluginDefinition & { name: string; }>>` |
-
-</details>
-
 <details>
-<summary>BaseWebSessionModel - Properties (all signatures)</summary>
+<summary>BaseWebSessionModel - Properties</summary>
 
 #### property: sessionPlugins
 
@@ -290,21 +273,8 @@ sessionPlugins: types.array(types.frozen<PluginDefinition & { name: string }>())
 
 </details>
 
-<details open>
-<summary>BaseWebSessionModel - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                   | Signature  |
-| -------------------------------------------------------- | ---------- |
-| [`sessionThemeName`](#volatile-sessionthemename)         | `string`   |
-| [`pendingFileHandleIds`](#volatile-pendingfilehandleids) | `string[]` |
-
-</details>
-
 <details>
-<summary>BaseWebSessionModel - Volatiles (all signatures)</summary>
+<summary>BaseWebSessionModel - Volatiles</summary>
 
 #### volatile: sessionThemeName
 
@@ -337,19 +307,10 @@ list of config connections and session connections
 type connections = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature              |
-| ------------------------------------------------ | ---------------------- |
-| [`root`](#getter-root)                           | `AbstractWebRootModel` |
-| [`shareURL`](#getter-shareurl)                   | `any`                  |
-| [`textSearchManager`](#getter-textsearchmanager) | `TextSearchManager`    |
-
 </details>
 
 <details>
-<summary>BaseWebSessionModel - Getters (all signatures)</summary>
+<summary>BaseWebSessionModel - Getters (other undocumented members)</summary>
 
 #### getter: root
 
@@ -417,22 +378,10 @@ when the user lacks rights to persist them.
 type editTrackConfiguration = (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                       | Signature                                                                                                                                                                                                                                                                                                                          |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`addAssemblyConf`](#action-addassemblyconf)                 | `(conf: AnyConfiguration) => void`                                                                                                                                                                                                                                                                                                 |
-| [`addSessionPlugin`](#action-addsessionplugin)               | `(plugin: PluginDefinition & { name: string; }) => void`                                                                                                                                                                                                                                                                           |
-| [`removeSessionPlugin`](#action-removesessionplugin)         | `(pluginDefinition: PluginDefinition) => void`                                                                                                                                                                                                                                                                                     |
-| [`setDefaultSession`](#action-setdefaultsession)             | `() => void`                                                                                                                                                                                                                                                                                                                       |
-| [`setSession`](#action-setsession)                           | `(sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{}, never>, _OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalI...` |
-| [`setPendingFileHandleIds`](#action-setpendingfilehandleids) | `(ids: string[]) => void`                                                                                                                                                                                                                                                                                                          |
-
 </details>
 
 <details>
-<summary>BaseWebSessionModel - Actions (all signatures)</summary>
+<summary>BaseWebSessionModel - Actions (other undocumented members)</summary>
 
 #### action: addAssemblyConf
 

@@ -4,20 +4,10 @@ title: SpreadsheetImportWizard
 sidebar_label: View -> SpreadsheetImportWizard
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/ImportWizard.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SpreadsheetImportWizard.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`spreadsheet-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/ImportWizard.ts).
 
 ## Overview
 
@@ -39,18 +29,10 @@ type cachedFileLocation = IType<
 cachedFileLocation: types.frozen<FileLocation | undefined>()
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                   | Signature                                                                              |
-| -------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [`fileType`](#property-filetype)                         | `IOptionalIType<ISimpleType<"VCF" \| "BED" \| "BEDPE" \| "STAR-Fusion">, [undefined]>` |
-| [`selectedAssemblyName`](#property-selectedassemblyname) | `IMaybe<ISimpleType<string>>`                                                          |
-
 </details>
 
 <details>
-<summary>SpreadsheetImportWizard - Properties (all signatures)</summary>
+<summary>SpreadsheetImportWizard - Properties (other undocumented members)</summary>
 
 #### property: fileType
 
@@ -75,22 +57,8 @@ selectedAssemblyName: types.maybe(types.string)
 
 </details>
 
-<details open>
-<summary>SpreadsheetImportWizard - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                               | Signature                   |
-| ------------------------------------ | --------------------------- |
-| [`fileSource`](#volatile-filesource) | `FileLocation \| undefined` |
-| [`error`](#volatile-error)           | `unknown`                   |
-| [`loading`](#volatile-loading)       | `false`                     |
-
-</details>
-
 <details>
-<summary>SpreadsheetImportWizard - Volatiles (all signatures)</summary>
+<summary>SpreadsheetImportWizard - Volatiles</summary>
 
 #### volatile: fileSource
 
@@ -121,21 +89,8 @@ loading: false
 
 </details>
 
-<details open>
-<summary>SpreadsheetImportWizard - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature             |
-| ---------------------------------------- | --------------------- |
-| [`isReadyToOpen`](#getter-isreadytoopen) | `boolean`             |
-| [`fileName`](#getter-filename)           | `string \| undefined` |
-
-</details>
-
 <details>
-<summary>SpreadsheetImportWizard - Getters (all signatures)</summary>
+<summary>SpreadsheetImportWizard - Getters</summary>
 
 #### getter: isReadyToOpen
 
@@ -151,20 +106,8 @@ type fileName = string | undefined
 
 </details>
 
-<details open>
-<summary>SpreadsheetImportWizard - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature                                                                                                                                                                                                                                                                                                                    |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`tracksForAssembly`](#method-tracksforassembly) | `(selectedAssembly: string) => { track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; label: string; type: "VCF" \| ... 2 more ... \| "STAR-Fusion"; loc: FileLocation; }[]` |
-
-</details>
-
 <details>
-<summary>SpreadsheetImportWizard - Methods (all signatures)</summary>
+<summary>SpreadsheetImportWizard - Methods</summary>
 
 #### method: tracksForAssembly
 
@@ -196,22 +139,10 @@ no reach into the parent)
 type import = (assemblyName: string) => Promise<ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { ...; }[], { ...; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; svTypeFilter: IMaybe<...>; }>> | undefined>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                       | Signature                                        |
-| ------------------------------------------------------------ | ------------------------------------------------ |
-| [`setSelectedAssemblyName`](#action-setselectedassemblyname) | `(s: string) => void`                            |
-| [`setFileSource`](#action-setfilesource)                     | `(newSource: FileLocation \| undefined) => void` |
-| [`setFileType`](#action-setfiletype)                         | `(typeName: string) => void`                     |
-| [`setError`](#action-seterror)                               | `(error: unknown) => void`                       |
-| [`setLoading`](#action-setloading)                           | `(arg: boolean) => void`                         |
-| [`setCachedFileHandle`](#action-setcachedfilehandle)         | `(arg: FileLocation) => void`                    |
-
 </details>
 
 <details>
-<summary>SpreadsheetImportWizard - Actions (all signatures)</summary>
+<summary>SpreadsheetImportWizard - Actions (other undocumented members)</summary>
 
 #### action: setSelectedAssemblyName
 

@@ -4,39 +4,15 @@ title: BaseInternetAccountModel
 sidebar_label: Internet Account -> BaseInternetAccountModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/InternetAccountModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseInternetAccountModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/InternetAccountModel.ts).
 
 ## Overview
 
-<details open>
-<summary>BaseInternetAccountModel - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                          |
-| ------------------------------------------ | -------------------------------------------------- |
-| [`id`](#property-id)                       | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| [`type`](#property-type)                   | `ISimpleType<string>`                              |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                        |
-
-</details>
-
 <details>
-<summary>BaseInternetAccountModel - Properties (all signatures)</summary>
+<summary>BaseInternetAccountModel - Properties</summary>
 
 #### property: id
 
@@ -104,22 +80,10 @@ The key used to store this internetAccount's token in sessionStorage
 type tokenKey = string
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature  |
-| ------------------------------------------------ | ---------- |
-| [`name`](#getter-name)                           | `string`   |
-| [`description`](#getter-description)             | `string`   |
-| [`internetAccountId`](#getter-internetaccountid) | `string`   |
-| [`authHeader`](#getter-authheader)               | `string`   |
-| [`tokenType`](#getter-tokentype)                 | `string`   |
-| [`domains`](#getter-domains)                     | `string[]` |
-
 </details>
 
 <details>
-<summary>BaseInternetAccountModel - Getters (all signatures)</summary>
+<summary>BaseInternetAccountModel - Getters (other undocumented members)</summary>
 
 #### getter: name
 
@@ -241,20 +205,10 @@ Gets a filehandle that uses a fetch that adds auth headers
 type openLocation = (location: UriLocation) => RemoteFileWithRangeCache
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature                                                                                                                                                                                                       |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`storeToken`](#action-storetoken)                   | `(token: string) => void`                                                                                                                                                                                       |
-| [`removeToken`](#action-removetoken)                 | `() => void`                                                                                                                                                                                                    |
-| [`retrieveToken`](#action-retrievetoken)             | `() => string \| null`                                                                                                                                                                                          |
-| [`addAuthHeaderToInit`](#action-addauthheadertoinit) | `(init?: RequestInit \| undefined, token?: string \| undefined) => { headers: Headers; body?: BodyInit \| null \| undefined; cache?: RequestCache \| undefined; ... 10 more ...; window?: null \| undefined; }` |
-
 </details>
 
 <details>
-<summary>BaseInternetAccountModel - Actions (all signatures)</summary>
+<summary>BaseInternetAccountModel - Actions (other undocumented members)</summary>
 
 #### action: storeToken
 

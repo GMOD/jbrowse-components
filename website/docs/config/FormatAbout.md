@@ -4,18 +4,9 @@ title: FormatAbout
 sidebar_label: Root -> FormatAbout
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/FormatAbout.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/FormatAbout.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/FormatAbout.ts).
 
 ## Overview
 
@@ -28,7 +19,7 @@ generally exists on the config.json or root config as configuration.formatAbout
 
 formats configuration object in about dialog
 
-**Type:** `frozen`
+**Type:** `frozen` · **Default:** `{}`
 
 ```js
 {
@@ -42,12 +33,5 @@ formats configuration object in about dialog
 #### slot: configuration.formatAbout.hideUris
 
 **Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-}
-```
 
 </details>

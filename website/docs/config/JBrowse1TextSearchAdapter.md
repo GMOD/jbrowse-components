@@ -4,18 +4,10 @@ title: JBrowse1TextSearchAdapter
 sidebar_label: Adapter -> JBrowse1TextSearchAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/JBrowse1TextSearchAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`legacy-jbrowse` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts).
 
 ## Overview
 
@@ -33,42 +25,19 @@ top-level field that identifies it (not one of the config slots below).
 
 the location of the JBrowse1 names index data directory
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: { uri: '/volvox/names', locationType: 'UriLocation' },
-  description: 'the location of the JBrowse1 names index data directory',
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/volvox/names', locationType: 'UriLocation' }`
 
 #### slot: tracks
 
 List of tracks covered by text search adapter
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-  description: 'List of tracks covered by text search adapter',
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: assemblyNames
 
 List of assemblies covered by text search adapter
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-  description: 'List of assemblies covered by text search adapter',
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>

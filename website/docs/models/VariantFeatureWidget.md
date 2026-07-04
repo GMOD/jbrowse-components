@@ -4,20 +4,10 @@ title: VariantFeatureWidget
 sidebar_label: Widget -> VariantFeatureWidget
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VariantFeatureWidget/stateModelFactory.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/VariantFeatureWidget.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`variants` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VariantFeatureWidget/stateModelFactory.ts).
 
 ## Overview
 
@@ -51,21 +41,8 @@ and docs.
 [setExtra](../basefeaturewidget#action-setextra),
 [setError](../basefeaturewidget#action-seterror)
 
-<details open>
-<summary>VariantFeatureWidget - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                             |
-| ---------------------------------------- | ------------------------------------- |
-| [`type`](#property-type)                 | `ISimpleType<"VariantFeatureWidget">` |
-| [`descriptions`](#property-descriptions) | `IType<any, any, any>`                |
-
-</details>
-
 <details>
-<summary>VariantFeatureWidget - Properties (all signatures)</summary>
+<summary>VariantFeatureWidget - Properties</summary>
 
 #### property: type
 

@@ -4,20 +4,10 @@ title: LinearComparativeView
 sidebar_label: View -> LinearComparativeView
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeView/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearComparativeView.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`linear-comparative-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearComparativeView/model.ts).
 
 ## Overview
 
@@ -87,21 +77,10 @@ viewTrackConfigs: types.stripDefault(
 )
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature                                           |
-| ---------------------------------------------------- | --------------------------------------------------- |
-| [`id`](#property-id)                                 | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| [`trackSelectorType`](#property-trackselectortype)   | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| [`showIntraviewLinks`](#property-showintraviewlinks) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`linkViews`](#property-linkviews)                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`levels`](#property-levels)                         | `IArrayType<IAnyModelType>`                         |
-
 </details>
 
 <details>
-<summary>LinearComparativeView - Properties (all signatures)</summary>
+<summary>LinearComparativeView - Properties (other undocumented members)</summary>
 
 #### property: id
 
@@ -150,20 +129,8 @@ levels: types.array(LinearSyntenyViewHelper)
 
 </details>
 
-<details open>
-<summary>LinearComparativeView - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                     | Signature             |
-| -------------------------- | --------------------- |
-| [`width`](#volatile-width) | `number \| undefined` |
-
-</details>
-
 <details>
-<summary>LinearComparativeView - Volatiles (all signatures)</summary>
+<summary>LinearComparativeView - Volatiles</summary>
 
 #### volatile: width
 
@@ -188,18 +155,10 @@ toggling it in any view applies everywhere
 type scrollZoom = boolean
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature  |
-| ---------------------------------------- | ---------- |
-| [`initialized`](#getter-initialized)     | `boolean`  |
-| [`assemblyNames`](#getter-assemblynames) | `string[]` |
-
 </details>
 
 <details>
-<summary>LinearComparativeView - Getters (all signatures)</summary>
+<summary>LinearComparativeView - Getters (other undocumented members)</summary>
 
 #### getter: initialized
 
@@ -236,19 +195,10 @@ view-specific toggle options
 type showMenuItems = () => MenuItem[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature                                         |
-| ---------------------------------------------------- | ------------------------------------------------- |
-| [`isViewCompact`](#method-isviewcompact)             | `(idx: number) => boolean`                        |
-| [`menuItems`](#method-menuitems)                     | `() => MenuItem[]`                                |
-| [`rubberBandMenuItems`](#method-rubberbandmenuitems) | `() => { label: string; onClick: () => void; }[]` |
-
 </details>
 
 <details>
-<summary>LinearComparativeView - Methods (all signatures)</summary>
+<summary>LinearComparativeView - Methods (other undocumented members)</summary>
 
 #### method: isViewCompact
 
@@ -326,30 +276,10 @@ type appendRow = ({
 }) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                   | Signature                                                                                                                                                                                                                                    |
-| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`setWidth`](#action-setwidth)                           | `(newWidth: number) => void`                                                                                                                                                                                                                 |
-| [`setViews`](#action-setviews)                           | `(views: ModelCreationType<ExtractCFromProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<...>, [...]>; }, { ...; }>>>[]) => void` |
-| [`setLinkViews`](#action-setlinkviews)                   | `(arg: boolean) => void`                                                                                                                                                                                                                     |
-| [`setScrollZoom`](#action-setscrollzoom)                 | `(arg: boolean) => void`                                                                                                                                                                                                                     |
-| [`activateTrackSelector`](#action-activatetrackselector) | `(level: number) => Widget`                                                                                                                                                                                                                  |
-| [`toggleTrack`](#action-toggletrack)                     | `(trackId: string, level?: any) => void`                                                                                                                                                                                                     |
-| [`showTrack`](#action-showtrack)                         | `(trackId: string, level?: any, initialSnapshot?: any) => void`                                                                                                                                                                              |
-| [`hideTrack`](#action-hidetrack)                         | `(trackId: string, level?: any) => void`                                                                                                                                                                                                     |
-| [`squareView`](#action-squareview)                       | `() => void`                                                                                                                                                                                                                                 |
-| [`clearView`](#action-clearview)                         | `() => void`                                                                                                                                                                                                                                 |
-| [`toggleCompactView`](#action-togglecompactview)         | `(idx: number) => void`                                                                                                                                                                                                                      |
-| [`compactAllViews`](#action-compactallviews)             | `() => void`                                                                                                                                                                                                                                 |
-| [`expandAllViews`](#action-expandallviews)               | `() => void`                                                                                                                                                                                                                                 |
-| [`autoScaleLevelHeights`](#action-autoscalelevelheights) | `() => void`                                                                                                                                                                                                                                 |
-
 </details>
 
 <details>
-<summary>LinearComparativeView - Actions (all signatures)</summary>
+<summary>LinearComparativeView - Actions (other undocumented members)</summary>
 
 #### action: setWidth
 

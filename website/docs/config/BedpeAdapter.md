@@ -4,18 +4,9 @@ title: BedpeAdapter
 sidebar_label: Adapter -> BedpeAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedpeAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BedpeAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedpeAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -40,7 +31,13 @@ intended for SVs in a single assembly
 
 ### Used in
 
-This adapter supplies data to the [VariantTrack](../varianttrack) track type.
+Supplies data to the [VariantTrack](../varianttrack) track, rendered by:
+
+- [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- [ChordVariantDisplay](../chordvariantdisplay)
+- [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- [LinearVariantDisplay](../linearvariantdisplay)
 
 ### BedpeAdapter - Pre-processor / simplified config
 
@@ -60,32 +57,13 @@ preprocessor to allow minimal config:
 
 can be plaintext or gzipped, not indexed so loaded into memory on startup
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  description:
-    'can be plaintext or gzipped, not indexed so loaded into memory on startup',
-  defaultValue: {
-    uri: '/path/to/my.bedpe.gz',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.bedpe.gz', locationType: 'UriLocation' }`
 
 #### slot: columnNames
 
 List of column names
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  description: 'List of column names',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>

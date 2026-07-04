@@ -4,18 +4,10 @@ title: CramAdapter
 sidebar_label: Adapter -> CramAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/CramAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/CramAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `alignments`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/CramAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -45,8 +37,9 @@ automatically supplies it from the enclosing assembly's sequence track.
 
 ### Used in
 
-This adapter supplies data to the [AlignmentsTrack](../alignmentstrack) track
-type.
+Supplies data to the [AlignmentsTrack](../alignmentstrack) track, rendered by:
+
+- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 
 ### CramAdapter - Pre-processor / simplified config
 
@@ -67,44 +60,16 @@ preprocessor to allow minimal config, assumes yourfile.cram.crai:
 size in bytes over which to display a warning to the user that too much data
 will be fetched
 
-**Type:** `number` · **Default:** `3_000_000`
-
-```js
-{
-  type: 'number',
-  description:
-    'size in bytes over which to display a warning to the user that too much data will be fetched',
-  defaultValue: 3_000_000,
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `3_000_000` · _advanced_
 
 #### slot: cramLocation
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.cram',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.cram', locationType: 'UriLocation' }`
 
 #### slot: craiLocation
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.cram.crai',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.cram.crai', locationType: 'UriLocation' }`
 
 </details>

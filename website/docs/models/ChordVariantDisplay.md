@@ -4,20 +4,10 @@ title: ChordVariantDisplay
 sidebar_label: Display -> ChordVariantDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/stateModelFactory.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/ChordVariantDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`circular-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/stateModelFactory.ts).
 
 ## Example usage
 
@@ -87,22 +77,8 @@ and docs.
 [setRpcDriverName](../basedisplay#action-setrpcdrivername),
 [reload](../basedisplay#action-reload)
 
-<details open>
-<summary>ChordVariantDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                          |
-| -------------------------------------------------- | -------------------------------------------------- |
-| [`type`](#property-type)                           | `ISimpleType<"ChordVariantDisplay">`               |
-| [`bezierRadiusRatio`](#property-bezierradiusratio) | `IOptionalIType<ISimpleType<number>, [undefined]>` |
-| [`configuration`](#property-configuration)         | `ITypeUnion<any, any, any>`                        |
-
-</details>
-
 <details>
-<summary>ChordVariantDisplay - Properties (all signatures)</summary>
+<summary>ChordVariantDisplay - Properties</summary>
 
 #### property: type
 
@@ -133,21 +109,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
-<summary>ChordVariantDisplay - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                               | Signature                             |
-| ------------------------------------ | ------------------------------------- |
-| [`features`](#volatile-features)     | `Feature[] \| undefined`              |
-| [`refNameMap`](#volatile-refnamemap) | `Record<string, string> \| undefined` |
-
-</details>
-
 <details>
-<summary>ChordVariantDisplay - Volatiles (all signatures)</summary>
+<summary>ChordVariantDisplay - Volatiles</summary>
 
 #### volatile: features
 
@@ -169,22 +132,8 @@ refNameMap: undefined as Record<string, string> | undefined
 
 </details>
 
-<details open>
-<summary>ChordVariantDisplay - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature               |
-| ------------------------------------------------ | ----------------------- |
-| [`ready`](#getter-ready)                         | `boolean`               |
-| [`blocksForRefs`](#getter-blocksforrefs)         | `Record<string, Block>` |
-| [`selectedFeatureId`](#getter-selectedfeatureid) | `string \| undefined`   |
-
-</details>
-
 <details>
-<summary>ChordVariantDisplay - Getters (all signatures)</summary>
+<summary>ChordVariantDisplay - Getters</summary>
 
 #### getter: ready
 
@@ -206,20 +155,8 @@ type selectedFeatureId = string | undefined
 
 </details>
 
-<details open>
-<summary>ChordVariantDisplay - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                           | Signature                                                                                        |
-| -------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [`renderSvg`](#method-rendersvg) | `(_opts: ExportSvgOptions & { theme?: ThemeOptions \| undefined; }) => Promise<Element \| null>` |
-
-</details>
-
 <details>
-<summary>ChordVariantDisplay - Methods (all signatures)</summary>
+<summary>ChordVariantDisplay - Methods</summary>
 
 #### method: renderSvg
 
@@ -231,22 +168,8 @@ type renderSvg = (
 
 </details>
 
-<details open>
-<summary>ChordVariantDisplay - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                                      |
-| ---------------------------------------- | ---------------------------------------------- |
-| [`onChordClick`](#action-onchordclick)   | `(feature: Feature) => void`                   |
-| [`setFeatures`](#action-setfeatures)     | `(features: Feature[] \| undefined) => void`   |
-| [`setRefNameMap`](#action-setrefnamemap) | `(refNameMap: Record<string, string>) => void` |
-
-</details>
-
 <details>
-<summary>ChordVariantDisplay - Actions (all signatures)</summary>
+<summary>ChordVariantDisplay - Actions</summary>
 
 #### action: onChordClick
 

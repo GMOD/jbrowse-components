@@ -4,20 +4,10 @@ title: GoogleDriveOAuthInternetAccount
 sidebar_label: Internet Account -> GoogleDriveOAuthInternetAccount
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/model.tsx)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/GoogleDriveOAuthInternetAccount.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`authentication` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/model.tsx).
 
 ## Overview
 
@@ -60,21 +50,8 @@ and docs.
 [validateToken](../oauthinternetaccount#action-validatetoken),
 [getFetcher](../oauthinternetaccount#action-getfetcher)
 
-<details open>
-<summary>GoogleDriveOAuthInternetAccount - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                        |
-| ------------------------------------------ | ------------------------------------------------ |
-| [`type`](#property-type)                   | `ISimpleType<"GoogleDriveOAuthInternetAccount">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                      |
-
-</details>
-
 <details>
-<summary>GoogleDriveOAuthInternetAccount - Properties (all signatures)</summary>
+<summary>GoogleDriveOAuthInternetAccount - Properties</summary>
 
 #### property: type
 
@@ -107,17 +84,10 @@ The FileSelector icon for Google drive
 type toggleContents = Element
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature |
-| ---------------------------------------- | --------- |
-| [`selectorLabel`](#getter-selectorlabel) | `string`  |
-
 </details>
 
 <details>
-<summary>GoogleDriveOAuthInternetAccount - Getters (all signatures)</summary>
+<summary>GoogleDriveOAuthInternetAccount - Getters (other undocumented members)</summary>
 
 #### getter: selectorLabel
 
@@ -127,21 +97,8 @@ type selectorLabel = string
 
 </details>
 
-<details open>
-<summary>GoogleDriveOAuthInternetAccount - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                 | Signature                                                                                                                         |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| [`getFetcher`](#method-getfetcher)     | `(location?: UriLocation \| undefined) => (input: RequestInfo, init?: RequestInitWithMetadata \| undefined) => Promise<Response>` |
-| [`openLocation`](#method-openlocation) | `(location: UriLocation) => GoogleDriveFile`                                                                                      |
-
-</details>
-
 <details>
-<summary>GoogleDriveOAuthInternetAccount - Methods (all signatures)</summary>
+<summary>GoogleDriveOAuthInternetAccount - Methods</summary>
 
 #### method: getFetcher
 
@@ -162,20 +119,8 @@ type openLocation = (location: UriLocation) => GoogleDriveFile
 
 </details>
 
-<details open>
-<summary>GoogleDriveOAuthInternetAccount - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                                                   |
-| ---------------------------------------- | ----------------------------------------------------------- |
-| [`validateToken`](#action-validatetoken) | `(token: string, location: UriLocation) => Promise<string>` |
-
-</details>
-
 <details>
-<summary>GoogleDriveOAuthInternetAccount - Actions (all signatures)</summary>
+<summary>GoogleDriveOAuthInternetAccount - Actions</summary>
 
 #### action: validateToken
 

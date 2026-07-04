@@ -4,18 +4,9 @@ title: BigMafAdapter
 sidebar_label: Adapter -> BigMafAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BigMafAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BigMafAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BigMafAdapter/configSchema.ts).
 
 ## Overview
 
@@ -28,62 +19,26 @@ used to configure BigMaf adapter
 
 string[] or {id:string,label:string,color?:string}[]
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  description: 'string[] or {id:string,label:string,color?:string}[]',
-  defaultValue: [],
-}
-```
+**Type:** `frozen` · **Default:** `[]`
 
 #### slot: bigBedLocation
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.bb',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.bb', locationType: 'UriLocation' }`
 
 #### slot: nhLocation
 
 newick tree
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  description: 'newick tree',
-  defaultValue: {
-    uri: '/path/to/my.nh',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.nh', locationType: 'UriLocation' }`
 
 #### slot: summaryAdapter
 
 optional swappable sub-adapter (e.g. a BigBedAdapter over UCSC bigMafSummary.bb)
 used for cheap zoom-out rendering; null disables it
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  description:
-    'optional swappable sub-adapter (e.g. a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it',
-  defaultValue: null,
-}
-```
+**Type:** `frozen` · **Default:** `null`
 
 #### slot: annotationAdapter
 
@@ -91,15 +46,6 @@ optional sub-adapter (typically a BigBedAdapter over a UCSC
 multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the
 gene-structure overlay and codon view; null disables it
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  description:
-    'optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it',
-  defaultValue: null,
-}
-```
+**Type:** `frozen` · **Default:** `null`
 
 </details>

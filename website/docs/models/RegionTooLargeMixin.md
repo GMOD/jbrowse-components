@@ -4,20 +4,10 @@ title: RegionTooLargeMixin
 sidebar_label: Mixin -> RegionTooLargeMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/shared/RegionTooLargeMixin.tsx)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/RegionTooLargeMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`linear-genome-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/shared/RegionTooLargeMixin.tsx).
 
 ## Overview
 
@@ -47,22 +37,8 @@ userByteSizeLimit: types.maybe(types.number)
 
 </details>
 
-<details open>
-<summary>RegionTooLargeMixin - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                             | Signature                          |
-| ------------------------------------------------------------------ | ---------------------------------- |
-| [`regionTooLargeState`](#volatile-regiontoolargestate)             | `false`                            |
-| [`regionTooLargeReasonState`](#volatile-regiontoolargereasonstate) | `string`                           |
-| [`featureDensityStats`](#volatile-featuredensitystats)             | `FeatureDensityStats \| undefined` |
-
-</details>
-
 <details>
-<summary>RegionTooLargeMixin - Volatiles (all signatures)</summary>
+<summary>RegionTooLargeMixin - Volatiles</summary>
 
 #### volatile: regionTooLargeState
 
@@ -93,21 +69,8 @@ featureDensityStats: undefined as FeatureDensityStats | undefined
 
 </details>
 
-<details open>
-<summary>RegionTooLargeMixin - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature |
-| ------------------------------------------------------ | --------- |
-| [`regionTooLarge`](#getter-regiontoolarge)             | `boolean` |
-| [`regionTooLargeReason`](#getter-regiontoolargereason) | `string`  |
-
-</details>
-
 <details>
-<summary>RegionTooLargeMixin - Getters (all signatures)</summary>
+<summary>RegionTooLargeMixin - Getters</summary>
 
 #### getter: regionTooLarge
 
@@ -163,19 +126,10 @@ display models override reload() to do the actual refetch.
 type forceLoad = () => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                     | Signature                                              |
-| ---------------------------------------------------------- | ------------------------------------------------------ |
-| [`setRegionTooLarge`](#action-setregiontoolarge)           | `(val: boolean, reason?: string \| undefined) => void` |
-| [`setFeatureDensityStats`](#action-setfeaturedensitystats) | `(stats?: FeatureDensityStats \| undefined) => void`   |
-| [`reload`](#action-reload)                                 | `() => void`                                           |
-
 </details>
 
 <details>
-<summary>RegionTooLargeMixin - Actions (all signatures)</summary>
+<summary>RegionTooLargeMixin - Actions (other undocumented members)</summary>
 
 #### action: setRegionTooLarge
 

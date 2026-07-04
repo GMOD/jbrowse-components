@@ -4,39 +4,15 @@ title: BaseDisplay
 sidebar_label: Display -> BaseDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx).
 
 ## Overview
 
-<details open>
-<summary>BaseDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                          |
-| ------------------------------------------ | -------------------------------------------------- |
-| [`id`](#property-id)                       | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| [`type`](#property-type)                   | `ISimpleType<string>`                              |
-| [`rpcDriverName`](#property-rpcdrivername) | `IMaybe<ISimpleType<string>>`                      |
-
-</details>
-
 <details>
-<summary>BaseDisplay - Properties (all signatures)</summary>
+<summary>BaseDisplay - Properties</summary>
 
 #### property: id
 
@@ -83,18 +59,10 @@ type statusProgress = number | undefined
 statusProgress: undefined as number | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature             |
-| ------------------------------------------ | --------------------- |
-| [`error`](#volatile-error)                 | `unknown`             |
-| [`statusMessage`](#volatile-statusmessage) | `string \| undefined` |
-
 </details>
 
 <details>
-<summary>BaseDisplay - Volatiles (all signatures)</summary>
+<summary>BaseDisplay - Volatiles (other undocumented members)</summary>
 
 #### volatile: error
 
@@ -160,21 +128,10 @@ component
 type DisplayMessageComponent = FC<any> | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                                                                                                                                                                                                                                                                                     |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`parentTrack`](#getter-parenttrack)               | `AbstractTrackModel`                                                                                                                                                                                                                                                                                          |
-| [`RenderingComponent`](#getter-renderingcomponent) | `FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; onHorizontalScroll?: (() => void) \| undefined; blockState?: Record<...> \| undefined; }>` |
-| [`DisplayBlurb`](#getter-displayblurb)             | `FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; }> \| null`                                                                                |
-| [`adapterConfig`](#getter-adapterconfig)           | `any`                                                                                                                                                                                                                                                                                                         |
-| [`viewMenuActions`](#getter-viewmenuactions)       | `MenuItem[]`                                                                                                                                                                                                                                                                                                  |
-
 </details>
 
 <details>
-<summary>BaseDisplay - Getters (all signatures)</summary>
+<summary>BaseDisplay - Getters (other undocumented members)</summary>
 
 #### getter: parentTrack
 
@@ -230,18 +187,10 @@ callbacks
 type renderingProps = () => { displayModel: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                     | Signature          |
-| ---------------------------------------------------------- | ------------------ |
-| [`trackMenuItems`](#method-trackmenuitems)                 | `() => MenuItem[]` |
-| [`regionCannotBeRendered`](#method-regioncannotberendered) | `() => null`       |
-
 </details>
 
 <details>
-<summary>BaseDisplay - Methods (all signatures)</summary>
+<summary>BaseDisplay - Methods (other undocumented members)</summary>
 
 #### method: trackMenuItems
 
@@ -268,19 +217,10 @@ base display reload does nothing, see specialized displays for details
 type reload = () => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                                   |
-| ---------------------------------------------- | ------------------------------------------- |
-| [`setStatusMessage`](#action-setstatusmessage) | `(status?: RpcStatus \| undefined) => void` |
-| [`setError`](#action-seterror)                 | `(error?: unknown) => void`                 |
-| [`setRpcDriverName`](#action-setrpcdrivername) | `(rpcDriverName: string) => void`           |
-
 </details>
 
 <details>
-<summary>BaseDisplay - Actions (all signatures)</summary>
+<summary>BaseDisplay - Actions (other undocumented members)</summary>
 
 #### action: setStatusMessage
 

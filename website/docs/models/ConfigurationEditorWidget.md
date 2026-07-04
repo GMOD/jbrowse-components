@@ -4,41 +4,18 @@ title: ConfigurationEditorWidget
 sidebar_label: Widget -> ConfigurationEditorWidget
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/ConfigurationEditorWidget/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/ConfigurationEditorWidget.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`config` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/ConfigurationEditorWidget/model.ts).
 
 ## Overview
 
 Widget for editing a config model's slots in a form: holds the target
 configuration and debounce-saves edits back to the session.
 
-<details open>
-<summary>ConfigurationEditorWidget - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                   | Signature                                          |
-| ------------------------ | -------------------------------------------------- |
-| [`id`](#property-id)     | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| [`type`](#property-type) | `ISimpleType<"ConfigurationEditorWidget">`         |
-
-</details>
-
 <details>
-<summary>ConfigurationEditorWidget - Properties (all signatures)</summary>
+<summary>ConfigurationEditorWidget - Properties</summary>
 
 #### property: id
 
@@ -60,21 +37,8 @@ type: types.literal('ConfigurationEditorWidget')
 
 </details>
 
-<details open>
-<summary>ConfigurationEditorWidget - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                                                                                                                                                                                     |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`target`](#volatile-target)                       | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) \| undefined` |
-| [`expandedDisplayId`](#volatile-expandeddisplayid) | `string \| undefined`                                                                                                                                                                                         |
-
-</details>
-
 <details>
-<summary>ConfigurationEditorWidget - Volatiles (all signatures)</summary>
+<summary>ConfigurationEditorWidget - Volatiles</summary>
 
 #### volatile: target
 
@@ -96,21 +60,8 @@ expandedDisplayId: undefined as string | undefined
 
 </details>
 
-<details open>
-<summary>ConfigurationEditorWidget - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                                                                                                                                                                                                          |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`setTarget`](#action-settarget)                       | `(newTarget: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) \| undefined) => void` |
-| [`setExpandedDisplayId`](#action-setexpandeddisplayid) | `(displayId: string \| undefined) => void`                                                                                                                                                                                         |
-
-</details>
-
 <details>
-<summary>ConfigurationEditorWidget - Actions (all signatures)</summary>
+<summary>ConfigurationEditorWidget - Actions</summary>
 
 #### action: setTarget
 

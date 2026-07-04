@@ -4,18 +4,10 @@ title: MCScanBlocksAdapter
 sidebar_label: Adapter -> MCScanBlocksAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/MCScanBlocksAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`comparative-adapters` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -24,7 +16,7 @@ reference the markdown files in our repo of the checked out git tag
   type: 'SyntenyTrack',
   trackId: 'my_track',
   name: 'My track',
-  assemblyNames: ['grape', 'peach'],
+  assemblyNames: ['grape', 'peach', 'cacao'],
   adapter: {
     type: 'MCScanBlocksAdapter',
     mcscanBlocksLocation: { uri: 'grape.blocks' },
@@ -34,7 +26,7 @@ reference the markdown files in our repo of the checked out git tag
       { uri: 'peach.bed' },
       { uri: 'cacao.bed' },
     ],
-    assemblyNames: ['grape', 'peach'],
+    assemblyNames: ['grape', 'peach', 'cacao'],
   },
 }
 ```
@@ -48,73 +40,49 @@ tab-delimited table where column 0 is a reference gene and each further column
 is that gene's ortholog in another genome (`.` = no ortholog), produced by
 `jcvi.compara.synteny mcscan` + `jcvi.formats.base join`.
 
-A `.blocks` file describes N genomes at once, but a synteny track draws one
-pair, so the same file backs the N-1 tracks of a multi-way view: each track sets
-`assemblyNames` to the pair it renders and the adapter derives that pair's gene
-links from the two matching columns. When neither column is the reference the
-link is transitive (both orthologous to the same reference gene) rather than a
-direct alignment.
+A `.blocks` file describes N genomes at once, so one track backs every band of a
+multi-way view: list all the genomes in `assemblyNames` and the synteny view
+tells the adapter which pair each band draws, deriving that pair's gene links
+from the two matching columns. When neither column is the reference the link is
+transitive (both orthologous to the same reference gene) rather than a direct
+alignment. Listing just two assemblies pins the track to that pair.
 
 ### Used in
 
-This adapter supplies data to the [SyntenyTrack](../syntenytrack) track type.
+Supplies data to the [SyntenyTrack](../syntenytrack) track, rendered by:
+
+- [DotplotDisplay](../dotplotdisplay)
+- [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- [LinearSyntenyDisplay](../linearsyntenydisplay)
 
 <details open>
 <summary>MCScanBlocksAdapter - Slots</summary>
 
 #### slot: mcscanBlocksLocation
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/mcscan.blocks',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/mcscan.blocks', locationType: 'UriLocation' }`
 
 #### slot: blockAssemblies
 
 one assembly name per column of the blocks file, in column order (column 0 is
 the reference)
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: bedLocations
 
 one BED fileLocation per column of the blocks file, parallel to blockAssemblies,
 resolving that column's gene ids to coordinates
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  defaultValue: [],
-}
-```
+**Type:** `frozen` · **Default:** `[]`
 
 #### slot: assemblyNames
 
-the pair of assemblies this track renders; both must appear in blockAssemblies
+the assemblies this track can render; list all of blockAssemblies to let one
+track back every band of a multi-way view (the view picks each band's pair), or
+just two to pin it to a single pair. Every entry must appear in blockAssemblies
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>

@@ -4,20 +4,10 @@ title: LinearBasicDisplay
 sidebar_label: Display -> LinearBasicDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearBasicDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`canvas` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/model.ts).
 
 ## Example usage
 
@@ -100,6 +90,7 @@ and docs.
 [maxHeight](../linearcanvasbasedisplay#getter-maxheight),
 [autoHeight](../linearcanvasbasedisplay#getter-autoheight),
 [displayMode](../linearcanvasbasedisplay#getter-displaymode),
+[labelFontSize](../linearcanvasbasedisplay#getter-labelfontsize),
 [showLabelsMode](../linearcanvasbasedisplay#getter-showlabelsmode),
 [showLabels](../linearcanvasbasedisplay#getter-showlabels),
 [showDescriptions](../linearcanvasbasedisplay#getter-showdescriptions),
@@ -116,10 +107,10 @@ and docs.
 [regionKeys](../linearcanvasbasedisplay#getter-regionkeys),
 [reversedRegions](../linearcanvasbasedisplay#getter-reversedregions),
 [pinnedFeatureIdSet](../linearcanvasbasedisplay#getter-pinnedfeatureidset),
+[resolvedHighlights](../linearcanvasbasedisplay#getter-resolvedhighlights),
 [highlightedFeatureIdSet](../linearcanvasbasedisplay#getter-highlightedfeatureidset),
 [layoutPinnedFeatureIdSet](../linearcanvasbasedisplay#getter-layoutpinnedfeatureidset),
 [soloFeatureIdSet](../linearcanvasbasedisplay#getter-solofeatureidset),
-[hiddenFeatureIdSet](../linearcanvasbasedisplay#getter-hiddenfeatureidset),
 [featureWidgetType](../linearcanvasbasedisplay#getter-featurewidgettype),
 [estimatedVisibleBytes](../linearcanvasbasedisplay#getter-estimatedvisiblebytes),
 [densityTooLarge](../linearcanvasbasedisplay#getter-densitytoolarge),
@@ -338,20 +329,8 @@ and docs.
 **Actions:**
 [clearSessionDefaults](../promotabledefaultsmixin#action-clearsessiondefaults)
 
-<details open>
-<summary>LinearBasicDisplay - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                       | Signature |
-| ---------------------------------------------------------------------------- | --------- |
-| [`isoformCollapseNoticeDismissed`](#volatile-isoformcollapsenoticedismissed) | `false`   |
-
-</details>
-
 <details>
-<summary>LinearBasicDisplay - Volatiles (all signatures)</summary>
+<summary>LinearBasicDisplay - Volatiles</summary>
 
 #### volatile: isoformCollapseNoticeDismissed
 
@@ -364,27 +343,8 @@ isoformCollapseNoticeDismissed: false
 
 </details>
 
-<details open>
-<summary>LinearBasicDisplay - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                             | Signature                            |
-| ------------------------------------------------------------------ | ------------------------------------ |
-| [`subfeatureLabels`](#getter-subfeaturelabels)                     | `any`                                |
-| [`geneGlyphMode`](#getter-geneglyphmode)                           | `any`                                |
-| [`displayDirectionalChevrons`](#getter-displaydirectionalchevrons) | `any`                                |
-| [`isDisplayModeDefault`](#getter-isdisplaymodedefault)             | `boolean`                            |
-| [`isDisplayModePinned`](#getter-isdisplaymodepinned)               | `boolean`                            |
-| [`effectiveGeneGlyphMode`](#getter-effectivegeneglyphmode)         | `"auto" \| "all" \| "longestCoding"` |
-| [`showIsoformCollapseNotice`](#getter-showisoformcollapsenotice)   | `boolean`                            |
-| [`isGeneLike`](#getter-isgenelike)                                 | `boolean`                            |
-
-</details>
-
 <details>
-<summary>LinearBasicDisplay - Getters (all signatures)</summary>
+<summary>LinearBasicDisplay - Getters</summary>
 
 #### getter: subfeatureLabels
 
@@ -416,6 +376,12 @@ type isDisplayModeDefault = boolean
 type isDisplayModePinned = boolean
 ```
 
+#### getter: inheritedDisplayMode
+
+```ts
+type inheritedDisplayMode = DisplayMode
+```
+
 #### getter: effectiveGeneGlyphMode
 
 ```ts
@@ -436,23 +402,8 @@ type isGeneLike = boolean
 
 </details>
 
-<details open>
-<summary>LinearBasicDisplay - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                                                                                                                                                                                                                                                                                |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: { geneGlyphMode: "auto" \| "all" \| "longestCoding"; subfeatureLabels: "none" \| "overlay" \| "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; ... 5 more ...; theme: SerializableThemeArgs \| undefined; }` |
-| [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                                                                           |
-| [`trackMenuItems`](#method-trackmenuitems)             | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]`                                                                                                                                                             |
-| [`contextMenuItems`](#method-contextmenuitems)         | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; })[]`                                                                                                                                       |
-
-</details>
-
 <details>
-<summary>LinearBasicDisplay - Methods (all signatures)</summary>
+<summary>LinearBasicDisplay - Methods</summary>
 
 #### method: rpcProps
 
@@ -491,28 +442,8 @@ type contextMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIc
 
 </details>
 
-<details open>
-<summary>LinearBasicDisplay - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                   | Signature                                                   |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| [`setSubfeatureLabels`](#action-setsubfeaturelabels)                     | `(value: "none" \| "overlay" \| "below") => void`           |
-| [`setGeneGlyphMode`](#action-setgeneglyphmode)                           | `(value: "auto" \| "all" \| "longestCoding") => void`       |
-| [`setDisplayMode`](#action-setdisplaymode)                               | `(value: DisplayMode) => void`                              |
-| [`resetDisplayMode`](#action-resetdisplaymode)                           | `() => void`                                                |
-| [`setCompactness`](#action-setcompactness)                               | `(level: "normal" \| "compact" \| "super-compact") => void` |
-| [`toggleDisplayModeDefault`](#action-toggledisplaymodedefault)           | `() => void`                                                |
-| [`setShowOnlyGenes`](#action-setshowonlygenes)                           | `(value: boolean) => void`                                  |
-| [`setDisplayDirectionalChevrons`](#action-setdisplaydirectionalchevrons) | `(value: boolean) => void`                                  |
-| [`dismissIsoformCollapseNotice`](#action-dismissisoformcollapsenotice)   | `() => void`                                                |
-
-</details>
-
 <details>
-<summary>LinearBasicDisplay - Actions (all signatures)</summary>
+<summary>LinearBasicDisplay - Actions</summary>
 
 #### action: setSubfeatureLabels
 
@@ -544,10 +475,10 @@ type resetDisplayMode = () => void
 type setCompactness = (level: 'normal' | 'compact' | 'super-compact') => void
 ```
 
-#### action: toggleDisplayModeDefault
+#### action: setDisplayModeDefault
 
 ```ts
-type toggleDisplayModeDefault = () => void
+type setDisplayModeDefault = (promote: boolean) => void
 ```
 
 #### action: setShowOnlyGenes

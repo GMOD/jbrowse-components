@@ -4,20 +4,9 @@ title: JBrowseReactCircularGenomeViewSessionModel
 sidebar_label: Session -> JBrowseReactCircularGenomeViewSessionModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/src/createModel/createSessionModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/JBrowseReactCircularGenomeViewSessionModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/src/createModel/createSessionModel.ts).
 
 ## Overview
 
@@ -104,7 +93,8 @@ and docs.
 ### Available via [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
 
 **Properties:**
-[connectionInstances](../connectionmanagementsessionmixin#property-connectioninstances)
+[connectionInstances](../connectionmanagementsessionmixin#property-connectioninstances),
+[connectionTrackConfigs](../connectionmanagementsessionmixin#property-connectiontrackconfigs)
 
 **Getters:**
 [connections](../connectionmanagementsessionmixin#getter-connections)
@@ -115,7 +105,11 @@ and docs.
 [breakConnection](../connectionmanagementsessionmixin#action-breakconnection),
 [deleteConnection](../connectionmanagementsessionmixin#action-deleteconnection),
 [addConnectionConf](../connectionmanagementsessionmixin#action-addconnectionconf),
-[clearConnections](../connectionmanagementsessionmixin#action-clearconnections)
+[clearConnections](../connectionmanagementsessionmixin#action-clearconnections),
+[captureConnectionTrack](../connectionmanagementsessionmixin#action-captureconnectiontrack),
+[updateConnectionTrackConfig](../connectionmanagementsessionmixin#action-updateconnectiontrackconfig),
+[pruneConnectionTrackConfig](../connectionmanagementsessionmixin#action-pruneconnectiontrackconfig),
+[hydrateConnection](../connectionmanagementsessionmixin#action-hydrateconnection)
 
 ### Available via [TracksManagerSessionMixin](../tracksmanagersessionmixin)
 
@@ -142,20 +136,8 @@ and docs.
 [getTrackListMenuItems](../trackmenusessionmixin#method-gettracklistmenuitems),
 [getTrackActionMenuItems](../trackmenusessionmixin#method-gettrackactionmenuitems)
 
-<details open>
-<summary>JBrowseReactCircularGenomeViewSessionModel - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                   | Signature       |
-| ------------------------ | --------------- |
-| [`view`](#property-view) | `IAnyModelType` |
-
-</details>
-
 <details>
-<summary>JBrowseReactCircularGenomeViewSessionModel - Properties (all signatures)</summary>
+<summary>JBrowseReactCircularGenomeViewSessionModel - Properties</summary>
 
 #### property: view
 
@@ -168,26 +150,8 @@ view: pluginManager.getViewType('CircularView').stateModel
 
 </details>
 
-<details open>
-<summary>JBrowseReactCircularGenomeViewSessionModel - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature |
-| -------------------------------------------- | --------- |
-| [`version`](#getter-version)                 | `any`     |
-| [`assemblies`](#getter-assemblies)           | `any[]`   |
-| [`assemblyNames`](#getter-assemblynames)     | `any[]`   |
-| [`connections`](#getter-connections)         | `any`     |
-| [`assemblyManager`](#getter-assemblymanager) | `any`     |
-| [`views`](#getter-views)                     | `any[]`   |
-| [`theme`](#getter-theme)                     | `Theme`   |
-
-</details>
-
 <details>
-<summary>JBrowseReactCircularGenomeViewSessionModel - Getters (all signatures)</summary>
+<summary>JBrowseReactCircularGenomeViewSessionModel - Getters</summary>
 
 #### getter: version
 
@@ -233,20 +197,8 @@ type theme = Theme
 
 </details>
 
-<details open>
-<summary>JBrowseReactCircularGenomeViewSessionModel - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                               | Signature               |
-| ------------------------------------ | ----------------------- |
-| [`renderProps`](#method-renderprops) | `() => { theme: any; }` |
-
-</details>
-
 <details>
-<summary>JBrowseReactCircularGenomeViewSessionModel - Methods (all signatures)</summary>
+<summary>JBrowseReactCircularGenomeViewSessionModel - Methods</summary>
 
 #### method: renderProps
 

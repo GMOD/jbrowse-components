@@ -4,20 +4,10 @@ title: LinearVariantDisplay
 sidebar_label: Display -> LinearVariantDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearVariantDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`variants` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/model.ts).
 
 ## Example usage
 
@@ -94,6 +84,7 @@ and docs.
 [maxHeight](../linearcanvasbasedisplay#getter-maxheight),
 [autoHeight](../linearcanvasbasedisplay#getter-autoheight),
 [displayMode](../linearcanvasbasedisplay#getter-displaymode),
+[labelFontSize](../linearcanvasbasedisplay#getter-labelfontsize),
 [showLabelsMode](../linearcanvasbasedisplay#getter-showlabelsmode),
 [showLabels](../linearcanvasbasedisplay#getter-showlabels),
 [showDescriptions](../linearcanvasbasedisplay#getter-showdescriptions),
@@ -110,10 +101,10 @@ and docs.
 [regionKeys](../linearcanvasbasedisplay#getter-regionkeys),
 [reversedRegions](../linearcanvasbasedisplay#getter-reversedregions),
 [pinnedFeatureIdSet](../linearcanvasbasedisplay#getter-pinnedfeatureidset),
+[resolvedHighlights](../linearcanvasbasedisplay#getter-resolvedhighlights),
 [highlightedFeatureIdSet](../linearcanvasbasedisplay#getter-highlightedfeatureidset),
 [layoutPinnedFeatureIdSet](../linearcanvasbasedisplay#getter-layoutpinnedfeatureidset),
 [soloFeatureIdSet](../linearcanvasbasedisplay#getter-solofeatureidset),
-[hiddenFeatureIdSet](../linearcanvasbasedisplay#getter-hiddenfeatureidset),
 [featureWidgetType](../linearcanvasbasedisplay#getter-featurewidgettype),
 [estimatedVisibleBytes](../linearcanvasbasedisplay#getter-estimatedvisiblebytes),
 [densityTooLarge](../linearcanvasbasedisplay#getter-densitytoolarge),
@@ -332,20 +323,8 @@ and docs.
 **Actions:**
 [clearSessionDefaults](../promotabledefaultsmixin#action-clearsessiondefaults)
 
-<details open>
-<summary>LinearVariantDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                   | Signature                             |
-| ------------------------ | ------------------------------------- |
-| [`type`](#property-type) | `ISimpleType<"LinearVariantDisplay">` |
-
-</details>
-
 <details>
-<summary>LinearVariantDisplay - Properties (all signatures)</summary>
+<summary>LinearVariantDisplay - Properties</summary>
 
 #### property: type
 
@@ -358,20 +337,8 @@ type: types.literal('LinearVariantDisplay')
 
 </details>
 
-<details open>
-<summary>LinearVariantDisplay - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                     | Signature |
-| ---------------------------------------------------------- | --------- |
-| [`impactLegendDismissed`](#volatile-impactlegenddismissed) | `false`   |
-
-</details>
-
 <details>
-<summary>LinearVariantDisplay - Volatiles (all signatures)</summary>
+<summary>LinearVariantDisplay - Volatiles</summary>
 
 #### volatile: impactLegendDismissed
 
@@ -384,23 +351,8 @@ impactLegendDismissed: false
 
 </details>
 
-<details open>
-<summary>LinearVariantDisplay - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                           | Signature                       |
-| ---------------------------------------------------------------- | ------------------------------- |
-| [`featureWidgetType`](#getter-featurewidgettype)                 | `{ type: string; id: string; }` |
-| [`colorsByConsequenceImpact`](#getter-colorsbyconsequenceimpact) | `boolean`                       |
-| [`impactLegendItems`](#getter-impactlegenditems)                 | `LegendItem[]`                  |
-| [`showImpactLegend`](#getter-showimpactlegend)                   | `boolean`                       |
-
-</details>
-
 <details>
-<summary>LinearVariantDisplay - Getters (all signatures)</summary>
+<summary>LinearVariantDisplay - Getters</summary>
 
 #### getter: featureWidgetType
 
@@ -428,20 +380,8 @@ type showImpactLegend = boolean
 
 </details>
 
-<details open>
-<summary>LinearVariantDisplay - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature                                                                          |
-| ---------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [`colorBySubMenuItems`](#method-colorbysubmenuitems) | `() => { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]` |
-
-</details>
-
 <details>
-<summary>LinearVariantDisplay - Methods (all signatures)</summary>
+<summary>LinearVariantDisplay - Methods</summary>
 
 #### method: colorBySubMenuItems
 
@@ -456,20 +396,8 @@ type colorBySubMenuItems = () => {
 
 </details>
 
-<details open>
-<summary>LinearVariantDisplay - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                         | Signature                |
-| -------------------------------------------------------------- | ------------------------ |
-| [`setImpactLegendDismissed`](#action-setimpactlegenddismissed) | `(arg: boolean) => void` |
-
-</details>
-
 <details>
-<summary>LinearVariantDisplay - Actions (all signatures)</summary>
+<summary>LinearVariantDisplay - Actions</summary>
 
 #### action: setImpactLegendDismissed
 

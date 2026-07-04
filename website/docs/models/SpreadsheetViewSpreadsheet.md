@@ -4,20 +4,10 @@ title: SpreadsheetViewSpreadsheet
 sidebar_label: View -> SpreadsheetViewSpreadsheet
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetModel.tsx)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SpreadsheetViewSpreadsheet.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`spreadsheet-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetModel.tsx).
 
 ## Overview
 
@@ -36,20 +26,10 @@ type svTypeFilter = IMaybe<ISimpleType<string>>
 svTypeFilter: types.maybe(types.string)
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature                                                                                                       |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| [`rowSet`](#property-rowset)                 | `IType<RowSet \| undefined, RowSet \| undefined, RowSet \| undefined>`                                          |
-| [`columns`](#property-columns)               | `IType<{ name: string; }[], { name: string; }[], { name: string; }[]>`                                          |
-| [`assemblyName`](#property-assemblyname)     | `IMaybe<ISimpleType<string>>`                                                                                   |
-| [`visibleColumns`](#property-visiblecolumns) | `IOptionalIType<IType<Record<string, boolean>, Record<string, boolean>, Record<string, boolean>>, [undefined]>` |
-
 </details>
 
 <details>
-<summary>SpreadsheetViewSpreadsheet - Properties (all signatures)</summary>
+<summary>SpreadsheetViewSpreadsheet - Properties (other undocumented members)</summary>
 
 #### property: rowSet
 
@@ -96,20 +76,8 @@ visibleColumns: types.optional(types.frozen<Record<string, boolean>>(), {})
 
 </details>
 
-<details open>
-<summary>SpreadsheetViewSpreadsheet - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                         | Signature                              |
-| ---------------------------------------------- | -------------------------------------- |
-| [`visibleRowFlags`](#volatile-visiblerowflags) | `Record<number, boolean> \| undefined` |
-
-</details>
-
 <details>
-<summary>SpreadsheetViewSpreadsheet - Volatiles (all signatures)</summary>
+<summary>SpreadsheetViewSpreadsheet - Volatiles</summary>
 
 #### volatile: visibleRowFlags
 
@@ -143,20 +111,10 @@ dropdown options
 type svTypeOptions = string[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature                                                                                                                                                                                                                                                                                                         |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`rows`](#getter-rows)                       | `GridRow[] \| undefined`                                                                                                                                                                                                                                                                                          |
-| [`initialized`](#getter-initialized)         | `boolean`                                                                                                                                                                                                                                                                                                         |
-| [`dataGridColumns`](#getter-datagridcolumns) | `({ field: string; width: number; type: "number" \| undefined; } \| { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => Element \| "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } \| { ...; })[] \| undefined` |
-| [`visibleRows`](#getter-visiblerows)         | `GridRow[] \| undefined`                                                                                                                                                                                                                                                                                          |
-
 </details>
 
 <details>
-<summary>SpreadsheetViewSpreadsheet - Getters (all signatures)</summary>
+<summary>SpreadsheetViewSpreadsheet - Getters (other undocumented members)</summary>
 
 #### getter: rows
 
@@ -184,22 +142,8 @@ type visibleRows = GridRow[] | undefined
 
 </details>
 
-<details open>
-<summary>SpreadsheetViewSpreadsheet - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature                                              |
-| ------------------------------------------------ | ------------------------------------------------------ |
-| [`setVisibleRows`](#action-setvisiblerows)       | `(arg?: Record<number, boolean> \| undefined) => void` |
-| [`setSvTypeFilter`](#action-setsvtypefilter)     | `(arg?: string \| undefined) => void`                  |
-| [`setVisibleColumns`](#action-setvisiblecolumns) | `(arg: Record<string, boolean>) => void`               |
-
-</details>
-
 <details>
-<summary>SpreadsheetViewSpreadsheet - Actions (all signatures)</summary>
+<summary>SpreadsheetViewSpreadsheet - Actions</summary>
 
 #### action: setVisibleRows
 

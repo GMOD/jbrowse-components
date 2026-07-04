@@ -4,20 +4,9 @@ title: JBrowseDesktopRootModel
 sidebar_label: Root -> JBrowseDesktopRootModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/rootModel/rootModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/JBrowseDesktopRootModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/rootModel/rootModel.ts).
 
 ## Overview
 
@@ -76,20 +65,8 @@ and docs.
 [appendToSubMenu](../rootappmenumixin#action-appendtosubmenu),
 [insertInSubMenu](../rootappmenumixin#action-insertinsubmenu)
 
-<details open>
-<summary>JBrowseDesktopRootModel - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                 | Signature                                                                                                                                                                                                                                                                |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`jobsManager`](#property-jobsmanager) | `IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; jobName: string; stopToken: StopToken \| undefined; aborted: boolean; jobsQueue: IObservableArray<TextJobsEntry>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>` |
-
-</details>
-
 <details>
-<summary>JBrowseDesktopRootModel - Properties (all signatures)</summary>
+<summary>JBrowseDesktopRootModel - Properties</summary>
 
 #### property: jobsManager
 
@@ -102,24 +79,8 @@ jobsManager: types.optional(JobsManager, {})
 
 </details>
 
-<details open>
-<summary>JBrowseDesktopRootModel - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                 | Signature                          |
-| ---------------------------------------------------------------------- | ---------------------------------- |
-| [`version`](#volatile-version)                                         | `string`                           |
-| [`adminMode`](#volatile-adminmode)                                     | `true`                             |
-| [`rpcManager`](#volatile-rpcmanager)                                   | `RpcManager`                       |
-| [`openNewSessionCallback`](#volatile-opennewsessioncallback)           | `(_path: string) => Promise<void>` |
-| [`returnToStartScreenCallback`](#volatile-returntostartscreencallback) | `() => void`                       |
-
-</details>
-
 <details>
-<summary>JBrowseDesktopRootModel - Volatiles (all signatures)</summary>
+<summary>JBrowseDesktopRootModel - Volatiles</summary>
 
 #### volatile: version
 
@@ -175,20 +136,8 @@ returnToStartScreenCallback: () => {
 
 </details>
 
-<details open>
-<summary>JBrowseDesktopRootModel - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                   | Signature      |
-| ------------------------ | -------------- |
-| [`menus`](#method-menus) | `() => Menu[]` |
-
-</details>
-
 <details>
-<summary>JBrowseDesktopRootModel - Methods (all signatures)</summary>
+<summary>JBrowseDesktopRootModel - Methods</summary>
 
 #### method: menus
 
@@ -220,18 +169,10 @@ session path).
 type setPluginsUpdated = () => Promise<void>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                           | Signature                                      |
-| ---------------------------------------------------------------- | ---------------------------------------------- |
-| [`setOpenNewSessionCallback`](#action-setopennewsessioncallback) | `(cb: (arg: string) => Promise<void>) => void` |
-| [`saveSession`](#action-savesession)                             | `(val: unknown) => Promise<void>`              |
-
 </details>
 
 <details>
-<summary>JBrowseDesktopRootModel - Actions (all signatures)</summary>
+<summary>JBrowseDesktopRootModel - Actions (other undocumented members)</summary>
 
 #### action: setOpenNewSessionCallback
 

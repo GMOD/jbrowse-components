@@ -4,20 +4,10 @@ title: DotplotDisplay
 sidebar_label: Display -> DotplotDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/DotplotDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`dotplot-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx).
 
 ## Overview
 
@@ -75,20 +65,10 @@ type colorBy = IOptionalIType<ISimpleType<string>, [undefined]>
 colorBy: types.optional(types.string, 'default')
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature                                          |
-| ---------------------------------------------------- | -------------------------------------------------- |
-| [`type`](#property-type)                             | `ISimpleType<"DotplotDisplay">`                    |
-| [`configuration`](#property-configuration)           | `ITypeUnion<any, any, any>`                        |
-| [`alpha`](#property-alpha)                           | `IOptionalIType<ISimpleType<number>, [undefined]>` |
-| [`minAlignmentLength`](#property-minalignmentlength) | `IOptionalIType<ISimpleType<number>, [undefined]>` |
-
 </details>
 
 <details>
-<summary>DotplotDisplay - Properties (all signatures)</summary>
+<summary>DotplotDisplay - Properties (other undocumented members)</summary>
 
 #### property: type
 
@@ -155,19 +135,10 @@ type geometry = DotplotGeometryData | undefined
 geometry: undefined as DotplotGeometryData | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                |
-| -------------------------------------------------- | ---------------------------------------- |
-| [`fetchStopToken`](#volatile-fetchstoptoken)       | `StopToken \| undefined`                 |
-| [`fetchWarnings`](#volatile-fetchwarnings)         | `{ message: string; effect: string; }[]` |
-| [`assembliesSwapped`](#volatile-assembliesswapped) | `false`                                  |
-
 </details>
 
 <details>
-<summary>DotplotDisplay - Volatiles (all signatures)</summary>
+<summary>DotplotDisplay - Volatiles (other undocumented members)</summary>
 
 #### volatile: fetchStopToken
 
@@ -209,18 +180,10 @@ Per-render fetch warnings, plus the load-time reversed-assembly hint.
 type warnings = { message: string; effect: string }[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                 | Signature |
-| -------------------------------------- | --------- |
-| [`isLoading`](#getter-isloading)       | `boolean` |
-| [`isRefetching`](#getter-isrefetching) | `boolean` |
-
 </details>
 
 <details>
-<summary>DotplotDisplay - Getters (all signatures)</summary>
+<summary>DotplotDisplay - Getters (other undocumented members)</summary>
 
 #### getter: isLoading
 
@@ -236,20 +199,8 @@ type isRefetching = boolean
 
 </details>
 
-<details open>
-<summary>DotplotDisplay - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                           | Signature                                                                                                                                                                    |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`renderSvg`](#method-rendersvg) | `(opts: ExportSvgOptions & { theme?: ThemeOptions \| undefined; }) => Promise<string \| number \| bigint \| boolean \| Iterable<ReactNode> \| Element \| null \| undefined>` |
-
-</details>
-
 <details>
-<summary>DotplotDisplay - Methods (all signatures)</summary>
+<summary>DotplotDisplay - Methods</summary>
 
 #### method: renderSvg
 
@@ -270,28 +221,8 @@ type renderSvg = (
 
 </details>
 
-<details open>
-<summary>DotplotDisplay - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                   | Signature                                             |
-| -------------------------------------------------------- | ----------------------------------------------------- |
-| [`setLoading`](#action-setloading)                       | `(stopToken: StopToken) => void`                      |
-| [`setRpcData`](#action-setrpcdata)                       | `(data: DotplotRpcData) => void`                      |
-| [`setWarnings`](#action-setwarnings)                     | `(w: { message: string; effect: string; }[]) => void` |
-| [`setAssembliesSwapped`](#action-setassembliesswapped)   | `(arg: boolean) => void`                              |
-| [`setGeometry`](#action-setgeometry)                     | `(data: DotplotGeometryData \| undefined) => void`    |
-| [`setError`](#action-seterror)                           | `(error: unknown) => void`                            |
-| [`setAlpha`](#action-setalpha)                           | `(value: number) => void`                             |
-| [`setMinAlignmentLength`](#action-setminalignmentlength) | `(value: number) => void`                             |
-| [`setColorBy`](#action-setcolorby)                       | `(value: SyntenyColorBy) => void`                     |
-
-</details>
-
 <details>
-<summary>DotplotDisplay - Actions (all signatures)</summary>
+<summary>DotplotDisplay - Actions</summary>
 
 #### action: setLoading
 

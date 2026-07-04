@@ -4,20 +4,10 @@ title: LinearSyntenyDisplay
 sidebar_label: Display -> LinearSyntenyDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearSyntenyDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`linear-comparative-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts).
 
 ## Example usage
 
@@ -93,21 +83,8 @@ and docs.
 [setRpcDriverName](../basedisplay#action-setrpcdrivername),
 [reload](../basedisplay#action-reload)
 
-<details open>
-<summary>LinearSyntenyDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                             |
-| ------------------------------------------ | ------------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"LinearSyntenyDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`           |
-
-</details>
-
 <details>
-<summary>LinearSyntenyDisplay - Properties (all signatures)</summary>
+<summary>LinearSyntenyDisplay - Properties</summary>
 
 #### property: type
 
@@ -145,22 +122,10 @@ type instanceData = SyntenyGeometry | undefined
 instanceData: undefined as SyntenyGeometry | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                         |
-| -------------------------------------------------- | --------------------------------- |
-| [`featureData`](#volatile-featuredata)             | `SyntenyFeatureData \| undefined` |
-| [`hoveredFeatureIdx`](#volatile-hoveredfeatureidx) | `number`                          |
-| [`clickedFeatureIdx`](#volatile-clickedfeatureidx) | `number`                          |
-| [`contextMenuAnchor`](#volatile-contextmenuanchor) | `ClickCoord \| undefined`         |
-| [`fetching`](#volatile-fetching)                   | `false`                           |
-| [`assembliesSwapped`](#volatile-assembliesswapped) | `false`                           |
-
 </details>
 
 <details>
-<summary>LinearSyntenyDisplay - Volatiles (all signatures)</summary>
+<summary>LinearSyntenyDisplay - Volatiles (other undocumented members)</summary>
 
 #### volatile: featureData
 
@@ -337,23 +302,10 @@ type renderParams =
   | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                                                                                                                                                                                                                                                                         |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`parentHelper`](#getter-parenthelper)   | `{ height: number; level: number; }`                                                                                                                                                                                                                                              |
-| [`level`](#getter-level)                 | `number`                                                                                                                                                                                                                                                                          |
-| [`height`](#getter-height)               | `number`                                                                                                                                                                                                                                                                          |
-| [`adapterConfig`](#getter-adapterconfig) | `any`                                                                                                                                                                                                                                                                             |
-| [`numFeats`](#getter-numfeats)           | `number`                                                                                                                                                                                                                                                                          |
-| [`view`](#getter-view)                   | `ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & ... 17 more ... & IStateTreeNode<...>` |
-| [`tooltipText`](#getter-tooltiptext)     | `string`                                                                                                                                                                                                                                                                          |
-
 </details>
 
 <details>
-<summary>LinearSyntenyDisplay - Getters (all signatures)</summary>
+<summary>LinearSyntenyDisplay - Getters (other undocumented members)</summary>
 
 #### getter: parentHelper
 
@@ -399,20 +351,8 @@ type tooltipText = string
 
 </details>
 
-<details open>
-<summary>LinearSyntenyDisplay - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                             | Signature                                 |
-| ---------------------------------- | ----------------------------------------- |
-| [`getFeature`](#method-getfeature) | `(index: number) => FeatPos \| undefined` |
-
-</details>
-
 <details>
-<summary>LinearSyntenyDisplay - Methods (all signatures)</summary>
+<summary>LinearSyntenyDisplay - Methods</summary>
 
 #### method: getFeature
 
@@ -437,22 +377,10 @@ type setRpcData = (
 ) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                      |
-| ------------------------------------------------------ | ------------------------------ |
-| [`setFetching`](#action-setfetching)                   | `(arg: boolean) => void`       |
-| [`setAssembliesSwapped`](#action-setassembliesswapped) | `(arg: boolean) => void`       |
-| [`setHoveredFeatureIdx`](#action-sethoveredfeatureidx) | `(idx: number) => void`        |
-| [`setClickedFeatureIdx`](#action-setclickedfeatureidx) | `(idx: number) => void`        |
-| [`openContextMenu`](#action-opencontextmenu)           | `(anchor: ClickCoord) => void` |
-| [`closeContextMenu`](#action-closecontextmenu)         | `() => void`                   |
-
 </details>
 
 <details>
-<summary>LinearSyntenyDisplay - Actions (all signatures)</summary>
+<summary>LinearSyntenyDisplay - Actions (other undocumented members)</summary>
 
 #### action: setFetching
 

@@ -4,18 +4,10 @@ title: ReferenceSequenceTrack
 sidebar_label: Track -> ReferenceSequenceTrack
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/ReferenceSequenceTrack/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/ReferenceSequenceTrack.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `sequence`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/ReferenceSequenceTrack/configSchema.ts).
 
 ## Example usage
 
@@ -49,6 +41,16 @@ on its display type(s):
 - [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
   ([state model](../../models/linearreferencesequencedisplay))
 
+### ReferenceSequenceTrack - Compatible adapters
+
+Data adapters that can supply this track:
+
+- [BgzipFastaAdapter](../bgzipfastaadapter)
+- [ChromSizesAdapter](../chromsizesadapter)
+- [IndexedFastaAdapter](../indexedfastaadapter)
+- [TwoBitAdapter](../twobitadapter)
+- [UnindexedFastaAdapter](../unindexedfastaadapter)
+
 ### ReferenceSequenceTrack - Identifier
 
 Every ReferenceSequenceTrack has a unique `trackId`, a required top-level field
@@ -79,28 +81,11 @@ optional track name, otherwise uses the "Reference sequence (assemblyName)"
 
 **Type:** `string` · **Default:** `''`
 
-```js
-{
-  type: 'string',
-  description:
-    'optional track name, otherwise uses the "Reference sequence (assemblyName)"',
-  defaultValue: '',
-}
-```
-
 #### slot: sequenceType
 
 either dna or pep
 
 **Type:** `string` · **Default:** `'dna'`
-
-```js
-{
-  type: 'string',
-  description: 'either dna or pep',
-  defaultValue: 'dna',
-}
-```
 
 #### slot: description
 
@@ -108,33 +93,17 @@ a description of the track
 
 **Type:** `string` · **Default:** `''`
 
-```js
-{
-  description: 'a description of the track',
-  type: 'string',
-  defaultValue: '',
-}
-```
-
 #### slot: metadata
 
 anything to add about this track
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  description: 'anything to add about this track',
-  defaultValue: {},
-}
-```
+**Type:** `frozen` · **Default:** `{}`
 
 #### slot: formatAbout.config
 
 formats configuration in about dialog
 
-**Type:** `frozen`
+**Type:** `frozen` · **Default:** `{}`
 
 ```js
 {
@@ -148,12 +117,5 @@ formats configuration in about dialog
 #### slot: formatAbout.hideUris
 
 **Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-}
-```
 
 </details>

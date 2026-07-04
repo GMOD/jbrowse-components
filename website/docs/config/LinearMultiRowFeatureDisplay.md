@@ -4,18 +4,10 @@ title: LinearMultiRowFeatureDisplay
 sidebar_label: Display -> LinearMultiRowFeatureDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearMultiRowFeatureDisplay.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `canvas`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/configSchema.ts).
 
 ## Example usage
 
@@ -75,6 +67,18 @@ so configure it with an explicit `displays` entry (rather than the
 `displayDefaults` shorthand, whose `color` would also reach the default
 `LinearBasicDisplay`).
 
+### LinearMultiRowFeatureDisplay - Compatible adapters
+
+Data adapters that can supply the [FeatureTrack](../featuretrack):
+
+- [BedAdapter](../bedadapter)
+- [BedTabixAdapter](../bedtabixadapter)
+- [BigBedAdapter](../bigbedadapter)
+- [Gff3Adapter](../gff3adapter)
+- [Gff3TabixAdapter](../gff3tabixadapter)
+- [GtfAdapter](../gtfadapter)
+- [GtfTabixAdapter](../gtftabixadapter)
+
 ### LinearMultiRowFeatureDisplay - State model
 
 This config's runtime API is documented on its
@@ -90,21 +94,13 @@ name). Features sharing a value stack into the same row.
 
 **Type:** `string` · **Default:** `'name'`
 
-```js
-{
-  type: 'string',
-  defaultValue: 'name',
-  description: 'feature attribute that assigns each feature to a row',
-}
-```
-
 #### slot: color
 
 Per-block fill (a CSS color, or a `jexl:` expression for per-feature coloring,
 e.g. `jexl:get(feature,'itemRgb')`). Left at its default, each row instead gets
 a distinct color from a categorical palette.
 
-**Type:** `color`
+**Type:** `color` · **Default:** `MULTIROW_DEFAULT_COLOR`
 
 ```js
 {
@@ -122,16 +118,7 @@ Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`.
 When a feature's partition value has an entry here it overrides the `color`
 slot, so whole rows can be colored without a per-feature color column.
 
-**Type:** `frozen`
-
-```js
-{
-  type: 'frozen',
-  defaultValue: {},
-  description:
-    'map of partition value to color; overrides the color slot for matching features',
-}
-```
+**Type:** `frozen` · **Default:** `{}`
 
 #### slot: rowOrder
 
@@ -139,15 +126,7 @@ Optional explicit row order. Rows listed here come first in this order; any
 remaining partition values are appended in sorted order. Empty = fully auto
 (sorted).
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-  description: 'optional explicit row order (by partition value)',
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: rowHeight
 
@@ -157,30 +136,12 @@ growing the track — a dense, fully-visible painting.
 
 **Type:** `number` · **Default:** `0`
 
-```js
-{
-  type: 'number',
-  defaultValue: 0,
-  description:
-    'fixed row height in px; 0 (default) auto-fits all rows to the display height',
-}
-```
-
 #### slot: rowProportion
 
 Fraction of the row height each block fills (1 = full, leaving no gap between
 rows).
 
-**Type:** `number` · **Default:** `0.9`
-
-```js
-{
-  type: 'number',
-  defaultValue: 0.9,
-  description: 'fraction of the row height each block fills',
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `0.9` · _advanced_
 
 #### slot: showTree
 
@@ -188,27 +149,11 @@ show the cluster tree sidebar
 
 **Type:** `boolean` · **Default:** `true`
 
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'show the cluster tree sidebar',
-}
-```
-
 #### slot: showBranchLength
 
 Position tree nodes by cluster merge height (dendrogram) vs. evenly by topology
 (cladogram).
 
 **Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description: 'position tree nodes by branch length (dendrogram)',
-}
-```
 
 </details>

@@ -4,20 +4,10 @@ title: MultiLinearWiggleDisplay
 sidebar_label: Display -> MultiLinearWiggleDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/MultiLinearWiggleDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`wiggle` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts).
 
 ## Overview
 
@@ -235,21 +225,8 @@ and docs.
 [setTreeCanvasRef](../treesidebarmixin#action-settreecanvasref),
 [setMouseoverCanvasRef](../treesidebarmixin#action-setmouseovercanvasref)
 
-<details open>
-<summary>MultiLinearWiggleDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                 |
-| ------------------------------------------ | ----------------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"MultiLinearWiggleDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`               |
-
-</details>
-
 <details>
-<summary>MultiLinearWiggleDisplay - Properties (all signatures)</summary>
+<summary>MultiLinearWiggleDisplay - Properties</summary>
 
 #### property: type
 
@@ -271,21 +248,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
-<summary>MultiLinearWiggleDisplay - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                              |
-| -------------------------------------------------- | -------------------------------------- |
-| [`sourcesVolatile`](#volatile-sourcesvolatile)     | `SourceInfo[]`                         |
-| [`featureUnderMouse`](#volatile-featureundermouse) | `WiggleFeatureUnderMouse \| undefined` |
-
-</details>
-
 <details>
-<summary>MultiLinearWiggleDisplay - Volatiles (all signatures)</summary>
+<summary>MultiLinearWiggleDisplay - Volatiles</summary>
 
 #### volatile: sourcesVolatile
 
@@ -319,32 +283,10 @@ aren't hidden behind an overlapping label.
 type prefersOffset = boolean
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                 | Signature                                                                           |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| [`DisplayMessageComponent`](#getter-displaymessagecomponent)           | `LazyExoticComponent<({ model, }: { model: MultiWiggleDisplayModel; }) => Element>` |
-| [`isDensityMode`](#getter-isdensitymode)                               | `boolean`                                                                           |
-| [`isOverlay`](#getter-isoverlay)                                       | `boolean`                                                                           |
-| [`sourcesWithoutLayout`](#getter-sourceswithoutlayout)                 | `Source[]`                                                                          |
-| [`editableSources`](#getter-editablesources)                           | `Source[]`                                                                          |
-| [`sources`](#getter-sources)                                           | `Source[]`                                                                          |
-| [`numSources`](#getter-numsources)                                     | `number`                                                                            |
-| [`rowHeight`](#getter-rowheight)                                       | `number`                                                                            |
-| [`rowHeightTooSmallForScalebar`](#getter-rowheighttoosmallforscalebar) | `boolean`                                                                           |
-| [`ticks`](#getter-ticks)                                               | `YScaleTicks \| undefined`                                                          |
-| [`renderState`](#getter-renderstate)                                   | `WiggleGPURenderState \| undefined`                                                 |
-| [`showTree`](#getter-showtree)                                         | `any`                                                                               |
-| [`showBranchLength`](#getter-showbranchlength)                         | `any`                                                                               |
-| [`showRowSeparators`](#getter-showrowseparators)                       | `any`                                                                               |
-| [`hierarchy`](#getter-hierarchy)                                       | `PositionedHierarchyNode<NewickNode> \| undefined`                                  |
-| [`spatialIndex`](#getter-spatialindex)                                 | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined`                  |
-
 </details>
 
 <details>
-<summary>MultiLinearWiggleDisplay - Getters (all signatures)</summary>
+<summary>MultiLinearWiggleDisplay - Getters (other undocumented members)</summary>
 
 #### getter: DisplayMessageComponent
 
@@ -447,22 +389,8 @@ type spatialIndex =
 
 </details>
 
-<details open>
-<summary>MultiLinearWiggleDisplay - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                                                                                                                                |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`rpcProps`](#method-rpcprops)             | `() => { bicolorPivot: number; resolution: number; }`                                                                                                    |
-| [`gpuProps`](#method-gpuprops)             | `() => { sources: Source[]; posColor: string; negColor: string; summaryScoreMode: string; renderingType: string; isDensityMode: boolean; }`              |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; } \| { ...; })[]` |
-
-</details>
-
 <details>
-<summary>MultiLinearWiggleDisplay - Methods (all signatures)</summary>
+<summary>MultiLinearWiggleDisplay - Methods</summary>
 
 #### method: rpcProps
 
@@ -491,29 +419,8 @@ type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | Chec
 
 </details>
 
-<details open>
-<summary>MultiLinearWiggleDisplay - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                         | Signature                                                                                                                                                    |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void`                                                                                                                                                 |
-| [`setRpcData`](#action-setrpcdata)                             | `(displayedRegionIndex: number, data: WiggleDataResult) => void`                                                                                             |
-| [`startRenderingBackend`](#action-startrenderingbackend)       | `(backend: WiggleRenderingBackend) => void`                                                                                                                  |
-| [`setShowTree`](#action-setshowtree)                           | `(arg: boolean) => void`                                                                                                                                     |
-| [`setShowBranchLength`](#action-setshowbranchlength)           | `(arg: boolean) => void`                                                                                                                                     |
-| [`setShowRowSeparators`](#action-setshowrowseparators)         | `(arg: boolean) => void`                                                                                                                                     |
-| [`setFeatureUnderMouse`](#action-setfeatureundermouse)         | `(feat?: WiggleFeatureUnderMouse \| undefined) => void`                                                                                                      |
-| [`selectFeature`](#action-selectfeature)                       | `(feat: WiggleFeatureUnderMouse) => void`                                                                                                                    |
-| [`fetchNeeded`](#action-fetchneeded)                           | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void> \| undefined`                                                                |
-| [`renderSvg`](#action-rendersvg)                               | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
-
-</details>
-
 <details>
-<summary>MultiLinearWiggleDisplay - Actions (all signatures)</summary>
+<summary>MultiLinearWiggleDisplay - Actions</summary>
 
 #### action: clearDisplaySpecificData
 

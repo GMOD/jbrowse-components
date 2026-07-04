@@ -4,41 +4,15 @@ title: DrawerWidgetSessionMixin
 sidebar_label: Mixin -> DrawerWidgetSessionMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/DrawerWidgets.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/DrawerWidgetSessionMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/DrawerWidgets.ts).
 
 ## Overview
 
-<details open>
-<summary>DrawerWidgetSessionMixin - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature                                                                 |
-| -------------------------------------------- | ------------------------------------------------------------------------- |
-| [`drawerPosition`](#property-drawerposition) | `IOptionalIType<ISimpleType<string>, [undefined]>`                        |
-| [`drawerWidth`](#property-drawerwidth)       | `IOptionalIType<ISimpleType<number>, [undefined]>`                        |
-| [`widgets`](#property-widgets)               | `IOptionalIType<IMapType<IAnyType>, [undefined]>`                         |
-| [`activeWidgets`](#property-activewidgets)   | `IOptionalIType<IMapType<IMaybe<IReferenceType<IAnyType>>>, [undefined]>` |
-| [`minimized`](#property-minimized)           | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                       |
-
-</details>
-
 <details>
-<summary>DrawerWidgetSessionMixin - Properties (all signatures)</summary>
+<summary>DrawerWidgetSessionMixin - Properties</summary>
 
 #### property: drawerPosition
 
@@ -99,20 +73,8 @@ minimized: types.stripDefault(types.boolean, false)
 
 </details>
 
-<details open>
-<summary>DrawerWidgetSessionMixin - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature |
-| ---------------------------------------- | --------- |
-| [`visibleWidget`](#getter-visiblewidget) | `any`     |
-
-</details>
-
 <details>
-<summary>DrawerWidgetSessionMixin - Getters (all signatures)</summary>
+<summary>DrawerWidgetSessionMixin - Getters</summary>
 
 #### getter: visibleWidget
 
@@ -134,25 +96,10 @@ task to be configuring it
 type editConfiguration = (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }, opts?: { ...; } | undefined) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                                                   |
-| ------------------------------------------------------ | --------------------------------------------------------------------------- |
-| [`setDrawerPosition`](#action-setdrawerposition)       | `(arg: string) => void`                                                     |
-| [`updateDrawerWidth`](#action-updatedrawerwidth)       | `(drawerWidth: number) => number`                                           |
-| [`resizeDrawer`](#action-resizedrawer)                 | `(distance: number) => number`                                              |
-| [`addWidget`](#action-addwidget)                       | `(typeName: string, id: string, initialState?: any, conf?: unknown) => any` |
-| [`showWidget`](#action-showwidget)                     | `(widget: any) => void`                                                     |
-| [`hideWidget`](#action-hidewidget)                     | `(widget: any) => void`                                                     |
-| [`minimizeWidgetDrawer`](#action-minimizewidgetdrawer) | `() => void`                                                                |
-| [`showWidgetDrawer`](#action-showwidgetdrawer)         | `() => void`                                                                |
-| [`hideAllWidgets`](#action-hideallwidgets)             | `() => void`                                                                |
-
 </details>
 
 <details>
-<summary>DrawerWidgetSessionMixin - Actions (all signatures)</summary>
+<summary>DrawerWidgetSessionMixin - Actions (other undocumented members)</summary>
 
 #### action: setDrawerPosition
 

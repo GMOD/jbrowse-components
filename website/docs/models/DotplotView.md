@@ -4,20 +4,10 @@ title: DotplotView
 sidebar_label: View -> DotplotView
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/DotplotView.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`dotplot-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/model.ts).
 
 ## Example usage
 
@@ -191,25 +181,10 @@ type showColorLegend = IOptionalIType<ISimpleType<boolean>, [undefined]>
 showColorLegend: types.stripDefault(types.boolean, true)
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                                                                                                                                                                                                                                                                                                          |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`id`](#property-id)                               | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                                                                                 |
-| [`type`](#property-type)                           | `ISimpleType<"DotplotView">`                                                                                                                                                                                                                                                                                                       |
-| [`height`](#property-height)                       | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
-| [`trackSelectorType`](#property-trackselectortype) | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                                                                                 |
-| [`assemblyNames`](#property-assemblynames)         | `IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>`                                                                                                                                                                                                                                                                     |
-| [`drawCigar`](#property-drawcigar)                 | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                                                                                |
-| [`hview`](#property-hview)                         | `IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, _NotCustomized>, ...` |
-| [`vview`](#property-vview)                         | `IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, _NotCustomized>, ...` |
-| [`tracks`](#property-tracks)                       | `IArrayType<IAnyType>`                                                                                                                                                                                                                                                                                                             |
-
 </details>
 
 <details>
-<summary>DotplotView - Properties (all signatures)</summary>
+<summary>DotplotView - Properties (other undocumented members)</summary>
 
 #### property: id
 
@@ -352,21 +327,10 @@ type diagonalizeStopToken = StopToken | undefined
 diagonalizeStopToken: undefined as StopToken | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                           | Signature                                  |
-| -------------------------------------------------------------------------------- | ------------------------------------------ |
-| [`volatileWidth`](#volatile-volatilewidth)                                       | `number \| undefined`                      |
-| [`volatileError`](#volatile-volatileerror)                                       | `unknown`                                  |
-| [`borderX`](#volatile-borderx)                                                   | `number`                                   |
-| [`borderY`](#volatile-bordery)                                                   | `number`                                   |
-| [`importFormSyntenyTrackSelections`](#volatile-importformsyntenytrackselections) | `IObservableArray<ImportFormSyntenyTrack>` |
-
 </details>
 
 <details>
-<summary>DotplotView - Volatiles (all signatures)</summary>
+<summary>DotplotView - Volatiles (other undocumented members)</summary>
 
 #### volatile: volatileWidth
 
@@ -499,31 +463,10 @@ type dotplotRenderState =
   | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                   | Signature                                                                                                                                                                                                                                                                                        |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`width`](#getter-width)                                 | `number`                                                                                                                                                                                                                                                                                         |
-| [`assemblyErrors`](#getter-assemblyerrors)               | `string`                                                                                                                                                                                                                                                                                         |
-| [`assembliesInitialized`](#getter-assembliesinitialized) | `boolean`                                                                                                                                                                                                                                                                                        |
-| [`initialized`](#getter-initialized)                     | `boolean`                                                                                                                                                                                                                                                                                        |
-| [`hticks`](#getter-hticks)                               | `Tick[]`                                                                                                                                                                                                                                                                                         |
-| [`vticks`](#getter-vticks)                               | `Tick[]`                                                                                                                                                                                                                                                                                         |
-| [`hTickPositions`](#getter-htickpositions)               | `PositionedTick[]`                                                                                                                                                                                                                                                                               |
-| [`vTickPositions`](#getter-vtickpositions)               | `PositionedTick[]`                                                                                                                                                                                                                                                                               |
-| [`hasSomethingToShow`](#getter-hassomethingtoshow)       | `boolean`                                                                                                                                                                                                                                                                                        |
-| [`viewWidth`](#getter-viewwidth)                         | `number`                                                                                                                                                                                                                                                                                         |
-| [`viewHeight`](#getter-viewheight)                       | `number`                                                                                                                                                                                                                                                                                         |
-| [`hblockLabelKeysToHide`](#getter-hblocklabelkeystohide) | `Set<string>`                                                                                                                                                                                                                                                                                    |
-| [`vblockLabelKeysToHide`](#getter-vblocklabelkeystohide) | `Set<string>`                                                                                                                                                                                                                                                                                    |
-| [`views`](#getter-views)                                 | `(ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }> & ... 10 more ... & IStateTreeNode<...>)[]` |
-| [`error`](#getter-error)                                 | `unknown`                                                                                                                                                                                                                                                                                        |
-
 </details>
 
 <details>
-<summary>DotplotView - Getters (all signatures)</summary>
+<summary>DotplotView - Getters (other undocumented members)</summary>
 
 #### getter: width
 
@@ -650,18 +593,10 @@ type getVHighlightCoords = (region: {
 }) => { top: number; height: number } | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                               | Signature                                                                                                                                                                      |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`renderProps`](#method-renderprops) | `() => { drawCigar: boolean; }`                                                                                                                                                |
-| [`menuItems`](#method-menuitems)     | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; } \| { ...; })[]` |
-
 </details>
 
 <details>
-<summary>DotplotView - Methods (all signatures)</summary>
+<summary>DotplotView - Methods (other undocumented members)</summary>
 
 #### method: renderProps
 
@@ -739,50 +674,10 @@ creates an svg export and save using FileSaver
 type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                             | Signature                                                           |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| [`setImportFormSyntenyTrack`](#action-setimportformsyntenytrack)   | `(arg: number, val: ImportFormSyntenyTrack) => void`                |
-| [`startRenderingBackend`](#action-startrenderingbackend)           | `(backend: DotplotRenderingBackend) => void`                        |
-| [`setCursorMode`](#action-setcursormode)                           | `(mode: CursorMode) => void`                                        |
-| [`setDrawCigar`](#action-setdrawcigar)                             | `(flag: boolean) => void`                                           |
-| [`setLodMode`](#action-setlodmode)                                 | `(value: "auto" \| "fine" \| "coarse") => void`                     |
-| [`setLockAspectRatio`](#action-setlockaspectratio)                 | `(flag: boolean) => void`                                           |
-| [`setLineWidth`](#action-setlinewidth)                             | `(value: number) => void`                                           |
-| [`addToHighlights`](#action-addtohighlights)                       | `(highlight: HighlightType) => void`                                |
-| [`setHighlight`](#action-sethighlight)                             | `(highlight?: HighlightType[] \| undefined) => void`                |
-| [`removeHighlight`](#action-removehighlight)                       | `(highlight: HighlightType) => void`                                |
-| [`setHighlightsVisible`](#action-sethighlightsvisible)             | `(arg: boolean) => void`                                            |
-| [`setShowColorLegend`](#action-setshowcolorlegend)                 | `(arg: boolean) => void`                                            |
-| [`setBorderX`](#action-setborderx)                                 | `(n: number) => void`                                               |
-| [`setBorderY`](#action-setbordery)                                 | `(n: number) => void`                                               |
-| [`setWidth`](#action-setwidth)                                     | `(newWidth: number) => number`                                      |
-| [`setHeight`](#action-setheight)                                   | `(newHeight: number) => number`                                     |
-| [`setError`](#action-seterror)                                     | `(e: unknown) => void`                                              |
-| [`setInit`](#action-setinit)                                       | `(init?: DotplotViewInit \| undefined) => void`                     |
-| [`setAwaitingAutoDiagonalize`](#action-setawaitingautodiagonalize) | `(arg: boolean) => void`                                            |
-| [`setDiagonalizeStatus`](#action-setdiagonalizestatus)             | `(arg?: RpcStatus \| undefined) => void`                            |
-| [`setDiagonalizeStopToken`](#action-setdiagonalizestoptoken)       | `(arg?: StopToken \| undefined) => void`                            |
-| [`zoomOut`](#action-zoomout)                                       | `() => void`                                                        |
-| [`zoomIn`](#action-zoomin)                                         | `() => void`                                                        |
-| [`activateTrackSelector`](#action-activatetrackselector)           | `() => Widget`                                                      |
-| [`showTrack`](#action-showtrack)                                   | `(trackId: string, initialSnapshot?: any) => any`                   |
-| [`hideTrack`](#action-hidetrack)                                   | `(trackId: string) => boolean`                                      |
-| [`toggleTrack`](#action-toggletrack)                               | `(trackId: string) => void`                                         |
-| [`setAssemblyNames`](#action-setassemblynames)                     | `(target: string, query: string) => void`                           |
-| [`getCoords`](#action-getcoords)                                   | `(mousedown: Coord, mouseup: Coord) => PxToBpResult[] \| undefined` |
-| [`showAllRegions`](#action-showallregions)                         | `() => void`                                                        |
-| [`initializeDisplayedRegions`](#action-initializedisplayedregions) | `() => void`                                                        |
-| [`applySquare`](#action-applysquare)                               | `(ratio: number) => void`                                           |
-| [`squareView`](#action-squareview)                                 | `() => void`                                                        |
-| [`squareViewProportional`](#action-squareviewproportional)         | `() => void`                                                        |
-
 </details>
 
 <details>
-<summary>DotplotView - Actions (all signatures)</summary>
+<summary>DotplotView - Actions (other undocumented members)</summary>
 
 #### action: setImportFormSyntenyTrack
 

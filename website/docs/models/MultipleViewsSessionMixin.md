@@ -4,20 +4,10 @@ title: MultipleViewsSessionMixin
 sidebar_label: Mixin -> MultipleViewsSessionMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/MultipleViews.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/MultipleViewsSessionMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/MultipleViews.ts).
 
 ## Overview
 
@@ -117,18 +107,10 @@ useWorkspaces: types.optional(types.boolean, () =>
 )
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                           |
-| -------------------------------------------------- | --------------------------------------------------- |
-| [`views`](#property-views)                         | `IArrayType<IAnyType>`                              |
-| [`stickyViewHeaders`](#property-stickyviewheaders) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-
 </details>
 
 <details>
-<summary>MultipleViewsSessionMixin - Properties (all signatures)</summary>
+<summary>MultipleViewsSessionMixin - Properties (other undocumented members)</summary>
 
 #### property: views
 
@@ -152,27 +134,8 @@ stickyViewHeaders: types.optional(types.boolean, () =>
 
 </details>
 
-<details open>
-<summary>MultipleViewsSessionMixin - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                       |
-| ------------------------------------------------------ | ----------------------------------------------- |
-| [`moveViewDown`](#action-moveviewdown)                 | `(id: string) => void`                          |
-| [`moveViewUp`](#action-moveviewup)                     | `(id: string) => void`                          |
-| [`moveViewToTop`](#action-moveviewtotop)               | `(id: string) => void`                          |
-| [`moveViewToBottom`](#action-moveviewtobottom)         | `(id: string) => void`                          |
-| [`addView`](#action-addview)                           | `(typeName: string, initialState?: any) => any` |
-| [`removeView`](#action-removeview)                     | `(view: IBaseViewModel) => void`                |
-| [`setStickyViewHeaders`](#action-setstickyviewheaders) | `(sticky: boolean) => void`                     |
-| [`setUseWorkspaces`](#action-setuseworkspaces)         | `(useWorkspaces: boolean) => void`              |
-
-</details>
-
 <details>
-<summary>MultipleViewsSessionMixin - Actions (all signatures)</summary>
+<summary>MultipleViewsSessionMixin - Actions</summary>
 
 #### action: moveViewDown
 

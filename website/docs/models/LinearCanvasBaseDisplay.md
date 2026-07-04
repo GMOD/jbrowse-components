@@ -4,20 +4,10 @@ title: LinearCanvasBaseDisplay
 sidebar_label: Display -> LinearCanvasBaseDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearCanvasBaseDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`canvas` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseModel.ts).
 
 ## Overview
 
@@ -197,6 +187,14 @@ hold the topmost rows in their bp range across zoom re-packs (see packRef in
 layout.ts). stripDefault so a display with nothing pinned omits the empty array
 from its snapshot.
 
+Persisted by uniqueId, which resolves back to the same feature after a plain
+reload of the same remote file: every adapter id is `adp-<configHash>` (idMaker
+over the config) plus a file byte offset (tabix/BigBed) or a deterministic
+full-file parse index (plain GFF3/BED/VCF). Caveat: NOT robust to editing a file
+read by a plain (non-tabix) adapter (the indices shift), nor to local blob files
+(their handleId changes each session — but a blob can't reload its data across
+refresh anyway). Same basis for solo/hiddenFeatureIds.
+
 ```ts
 // type signature
 type pinnedFeatureIds = IOptionalIType<
@@ -262,9 +260,10 @@ hiddenFeatureIds: types.stripDefault(types.array(types.string), [])
 
 Declarative feature highlights, typically seeded by a text search (highlight the
 gene you searched for). Each entry pins a feature by its span+name signature
-rather than its uniqueId — trix never serializes the uniqueId and it isn't
-stable anyway — and is resolved against rendered features on the main thread.
-stripDefault so a display with no highlights omits the empty array from its
+rather than its uniqueId — a search result carries no uniqueId to persist
+(unlike solo/hidden/pinned, which come from a click on a rendered feature and so
+DO have a reload-stable id) — and is resolved against rendered features on the
+main thread. stripDefault so a display with no highlights omits it from
 snapshot.
 
 ```ts
@@ -277,21 +276,10 @@ featureHighlights: types.stripDefault(
           )
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                     |
-| ------------------------------------------ | ----------------------------- |
-| [`refName`](#property-refname)             | `ISimpleType<string>`         |
-| [`start`](#property-start)                 | `ISimpleType<number>`         |
-| [`end`](#property-end)                     | `ISimpleType<number>`         |
-| [`name`](#property-name)                   | `IMaybe<ISimpleType<string>>` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`   |
-
 </details>
 
 <details>
-<summary>LinearCanvasBaseDisplay - Properties (all signatures)</summary>
+<summary>LinearCanvasBaseDisplay - Properties (other undocumented members)</summary>
 
 #### property: refName
 
@@ -340,34 +328,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
-<summary>LinearCanvasBaseDisplay - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                             | Signature                                                                                                      |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| [`rpcDataMap`](#volatile-rpcdatamap)                               | `ObservableMap<number, LoadedFeatureData>`                                                                     |
-| [`densityStatsPerRegion`](#volatile-densitystatsperregion)         | `ObservableMap<number, RegionDensityStats>`                                                                    |
-| [`featureIdUnderMouse`](#volatile-featureidundermouse)             | `string \| null`                                                                                               |
-| [`subfeatureIdUnderMouse`](#volatile-subfeatureidundermouse)       | `string \| null`                                                                                               |
-| [`hoveredRegionIndex`](#volatile-hoveredregionindex)               | `number \| undefined`                                                                                          |
-| [`mouseoverExtraInformation`](#volatile-mouseoverextrainformation) | `string \| undefined`                                                                                          |
-| [`contextMenuInfo`](#volatile-contextmenuinfo)                     | `{ item: FlatbushItem; displayedRegionIndex: number; clientX: number; clientY: number; } \| undefined`         |
-| [`userFeatureDensityLimit`](#volatile-userfeaturedensitylimit)     | `number \| undefined`                                                                                          |
-| [`byteEstimateVisibleBp`](#volatile-byteestimatevisiblebp)         | `number \| undefined`                                                                                          |
-| [`heightBeforeExpand`](#volatile-heightbeforeexpand)               | `number \| undefined`                                                                                          |
-| [`incrementalLayout`](#volatile-incrementallayout)                 | `(rpcDataMap: ReadonlyMap<number, FeatureDataResult>, inputs: LayoutInputs) => Map<number, FeatureDataResult>` |
-| [`morphFromTops`](#volatile-morphfromtops)                         | `Map<string, number> \| undefined`                                                                             |
-| [`morphProgress`](#volatile-morphprogress)                         | `number`                                                                                                       |
-| [`morphStartMs`](#volatile-morphstartms)                           | `number`                                                                                                       |
-| [`morphFromMaxY`](#volatile-morphfrommaxy)                         | `number`                                                                                                       |
-
-</details>
-
 <details>
-<summary>LinearCanvasBaseDisplay - Volatiles (all signatures)</summary>
+<summary>LinearCanvasBaseDisplay - Volatiles</summary>
 
 #### volatile: rpcDataMap
 
@@ -550,62 +512,10 @@ permanently stuck banner.
 type estimatedVisibleBytes = number | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                             | Signature                                                         |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| [`visibleFeatureDensityPerPx`](#getter-visiblefeaturedensityperpx) | `number`                                                          |
-| [`renderState`](#getter-renderstate)                               | `{ scrollY: number; canvasWidth: number; canvasHeight: number; }` |
-| [`DisplayMessageComponent`](#getter-displaymessagecomponent)       | `LazyExoticComponent<({ model }: Props) => Element>`              |
-| [`maxHeight`](#getter-maxheight)                                   | `any`                                                             |
-| [`autoHeight`](#getter-autoheight)                                 | `any`                                                             |
-| [`displayMode`](#getter-displaymode)                               | `DisplayMode`                                                     |
-| [`showLabelsMode`](#getter-showlabelsmode)                         | `any`                                                             |
-| [`showLabels`](#getter-showlabels)                                 | `boolean`                                                         |
-| [`showDescriptions`](#getter-showdescriptions)                     | `any`                                                             |
-| [`showOutline`](#getter-showoutline)                               | `boolean`                                                         |
-| [`featureColor`](#getter-featurecolor)                             | `any`                                                             |
-| [`utrColor`](#getter-utrcolor)                                     | `any`                                                             |
-| [`colorByMode`](#getter-colorbymode)                               | `"strand" \| "attribute" \| "solid"`                              |
-| [`colorByAttribute`](#getter-colorbyattribute)                     | `string`                                                          |
-| [`effectiveShowDescriptions`](#getter-effectiveshowdescriptions)   | `any`                                                             |
-| [`selectedFeatureId`](#getter-selectedfeatureid)                   | `string \| undefined`                                             |
-| [`maxFeatureDensity`](#getter-maxfeaturedensity)                   | `any`                                                             |
-| [`colorByCDS`](#getter-colorbycds)                                 | `boolean`                                                         |
-| [`sequenceAdapter`](#getter-sequenceadapter)                       | `any`                                                             |
-| [`regionKeys`](#getter-regionkeys)                                 | `Map<number, string>`                                             |
-| [`reversedRegions`](#getter-reversedregions)                       | `Set<number>`                                                     |
-| [`pinnedFeatureIdSet`](#getter-pinnedfeatureidset)                 | `ReadonlySet<string>`                                             |
-| [`highlightedFeatureIdSet`](#getter-highlightedfeatureidset)       | `ReadonlySet<string>`                                             |
-| [`layoutPinnedFeatureIdSet`](#getter-layoutpinnedfeatureidset)     | `ReadonlySet<string>`                                             |
-| [`soloFeatureIdSet`](#getter-solofeatureidset)                     | `ReadonlySet<string>`                                             |
-| [`hiddenFeatureIdSet`](#getter-hiddenfeatureidset)                 | `ReadonlySet<string>`                                             |
-| [`featureWidgetType`](#getter-featurewidgettype)                   | `{ type: string; id: string; }`                                   |
-| [`densityTooLarge`](#getter-densitytoolarge)                       | `boolean`                                                         |
-| [`tooLargeStatus`](#getter-toolargestatus)                         | `RegionTooLargeStatus`                                            |
-| [`regionTooLarge`](#getter-regiontoolarge)                         | `boolean`                                                         |
-| [`regionTooLargeReason`](#getter-regiontoolargereason)             | `string`                                                          |
-| [`laidOutDataMap`](#getter-laidoutdatamap)                         | `Map<number, FeatureDataResult>`                                  |
-| [`renderDataMap`](#getter-renderdatamap)                           | `Map<number, FeatureDataResult>`                                  |
-| [`maxY`](#getter-maxy)                                             | `number`                                                          |
-| [`hasOverflow`](#getter-hasoverflow)                               | `boolean`                                                         |
-| [`contentHeight`](#getter-contentheight)                           | `number`                                                          |
-| [`scrollableHeight`](#getter-scrollableheight)                     | `number`                                                          |
-| [`fitHeight`](#getter-fitheight)                                   | `number`                                                          |
-| [`canExpand`](#getter-canexpand)                                   | `boolean`                                                         |
-| [`featureIdIndex`](#getter-featureidindex)                         | `Map<string, FlatbushItem>`                                       |
-| [`subfeatureIdIndex`](#getter-subfeatureidindex)                   | `Map<string, SubfeatureInfo>`                                     |
-| [`hoveredFeature`](#getter-hoveredfeature)                         | `FlatbushItem \| null`                                            |
-| [`hoveredSubfeature`](#getter-hoveredsubfeature)                   | `SubfeatureInfo \| null`                                          |
-| [`featureItemMap`](#getter-featureitemmap)                         | `Map<string, FeatureItemEntry>`                                   |
-| [`highlightedFeatureIds`](#getter-highlightedfeatureids)           | `string[]`                                                        |
-| [`flatbushIndexes`](#getter-flatbushindexes)                       | `Map<number, FlatbushRegionIndexes>`                              |
-
 </details>
 
 <details>
-<summary>LinearCanvasBaseDisplay - Getters (all signatures)</summary>
+<summary>LinearCanvasBaseDisplay - Getters (other undocumented members)</summary>
 
 #### getter: visibleFeatureDensityPerPx
 
@@ -647,6 +557,12 @@ type autoHeight = any
 
 ```ts
 type displayMode = DisplayMode
+```
+
+#### getter: labelFontSize
+
+```ts
+type labelFontSize = number
 ```
 
 #### getter: showLabelsMode
@@ -745,6 +661,12 @@ type reversedRegions = Set<number>
 type pinnedFeatureIdSet = ReadonlySet<string>
 ```
 
+#### getter: resolvedHighlights
+
+```ts
+type resolvedHighlights = { box: ReadonlySet<string>; pin: ReadonlySet<string> }
+```
+
 #### getter: highlightedFeatureIdSet
 
 ```ts
@@ -761,12 +683,6 @@ type layoutPinnedFeatureIdSet = ReadonlySet<string>
 
 ```ts
 type soloFeatureIdSet = ReadonlySet<string>
-```
-
-#### getter: hiddenFeatureIdSet
-
-```ts
-type hiddenFeatureIdSet = ReadonlySet<string>
 ```
 
 #### getter: featureWidgetType
@@ -939,24 +855,10 @@ type colorMenuItems = () => {
 }[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                                                                                                                                                                                                                                                                                     |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`observedMaxDensity`](#method-observedmaxdensity)     | `(bpPerPx: number) => number`                                                                                                                                                                                                                                                                                 |
-| [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; soloFeatureIds: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<...>>) \| undefined; hiddenFeatureIds: (IMSTArray<...> & IStateTreeNode<...>) \| undefined; theme: SerializableThemeArgs \| undefined; }` |
-| [`getFeatureById`](#method-getfeaturebyid)             | `(featureId: string) => FlatbushItem \| undefined`                                                                                                                                                                                                                                                            |
-| [`searchFeatureByID`](#method-searchfeaturebyid)       | `(id: string) => readonly [number, number, number, number] \| undefined`                                                                                                                                                                                                                                      |
-| [`renderSvg`](#method-rendersvg)                       | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                                                                                                                  |
-| [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                                                                                |
-| [`contextMenuItems`](#method-contextmenuitems)         | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; })[]`                                                                                                                                            |
-| [`trackMenuItems`](#method-trackmenuitems)             | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { ...; } \| { ...; })[]`                                                                                     |
-
 </details>
 
 <details>
-<summary>LinearCanvasBaseDisplay - Methods (all signatures)</summary>
+<summary>LinearCanvasBaseDisplay - Methods (other undocumented members)</summary>
 
 #### method: observedMaxDensity
 
@@ -1046,67 +948,18 @@ type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
 
 A manual drag-resize means the user wants a fixed height; turn off auto-fit
 first, otherwise the CanvasAutoHeight autorun snaps the height back on the next
-layout change and the drag appears to do nothing.
+layout change and the drag appears to do nothing. Also drop any expand-to-fit
+marker — once the user sets a height by hand, restoring to the pre-expand height
+is stale (same reasoning as setAutoHeight).
 
 ```ts
 type resizeHeight = (distance: number) => number
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                               | Signature                                                                                                                       |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| [`beginYMorph`](#action-beginymorph)                                 | `(fromTops: Map<string, number>, fromMaxY: number) => void`                                                                     |
-| [`setMorphProgress`](#action-setmorphprogress)                       | `(t: number) => void`                                                                                                           |
-| [`endYMorph`](#action-endymorph)                                     | `() => void`                                                                                                                    |
-| [`expandToFit`](#action-expandtofit)                                 | `() => void`                                                                                                                    |
-| [`collapseFromExpand`](#action-collapsefromexpand)                   | `() => void`                                                                                                                    |
-| [`clearHeightBeforeExpand`](#action-clearheightbeforeexpand)         | `() => void`                                                                                                                    |
-| [`setRpcData`](#action-setrpcdata)                                   | `(displayedRegionIndex: number, data: FeatureDataResult, loadedBpPerPx: number, region: Region) => void`                        |
-| [`setDensityStats`](#action-setdensitystats)                         | `(displayedRegionIndex: number, stats: RegionDensityStats) => void`                                                             |
-| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata)       | `() => void`                                                                                                                    |
-| [`pruneRpcDataMapToVisible`](#action-prunerpcdatamaptovisible)       | `(visibleDisplayedRegionIndices: Set<number>) => void`                                                                          |
-| [`startRenderingBackend`](#action-startrenderingbackend)             | `(backend: CanvasFeatureRenderingBackend) => void`                                                                              |
-| [`setFeatureDensityStatsLimit`](#action-setfeaturedensitystatslimit) | `(stats?: { bytes?: number \| undefined; fetchSizeLimit?: number \| undefined; } \| undefined) => void`                         |
-| [`setHover`](#action-sethover)                                       | `(featureId: string \| null, subfeatureId: string \| null, tooltip: string \| undefined, displayedRegionIndex: number) => void` |
-| [`clearHover`](#action-clearhover)                                   | `() => void`                                                                                                                    |
-| [`closeContextMenu`](#action-closecontextmenu)                       | `() => void`                                                                                                                    |
-| [`togglePinnedFeature`](#action-togglepinnedfeature)                 | `(featureId: string) => void`                                                                                                   |
-| [`toggleSoloFeature`](#action-togglesolofeature)                     | `(featureId: string) => void`                                                                                                   |
-| [`clearSolo`](#action-clearsolo)                                     | `() => void`                                                                                                                    |
-| [`hideFeature`](#action-hidefeature)                                 | `(featureId: string) => void`                                                                                                   |
-| [`showAllHidden`](#action-showallhidden)                             | `() => void`                                                                                                                    |
-| [`setFeatureHighlights`](#action-setfeaturehighlights)               | `(highlights: FeatureHighlight[]) => void`                                                                                      |
-| [`clearFeatureHighlights`](#action-clearfeaturehighlights)           | `() => void`                                                                                                                    |
-| [`applySolo`](#action-applysolo)                                     | `() => void`                                                                                                                    |
-| [`soloFeature`](#action-solofeature)                                 | `(featureId: string) => void`                                                                                                   |
-| [`clearAllFeatureFilters`](#action-clearallfeaturefilters)           | `() => void`                                                                                                                    |
-| [`selectFeature`](#action-selectfeature)                             | `(feature: Feature) => void`                                                                                                    |
-| [`clearSelection`](#action-clearselection)                           | `() => void`                                                                                                                    |
-| [`setShowLabels`](#action-setshowlabels)                             | `(value: "auto" \| "off" \| "on") => void`                                                                                      |
-| [`setAutoHeight`](#action-setautoheight)                             | `(value: boolean) => void`                                                                                                      |
-| [`setShowDescriptions`](#action-setshowdescriptions)                 | `(value: boolean) => void`                                                                                                      |
-| [`setShowOutline`](#action-setshowoutline)                           | `(value: boolean) => void`                                                                                                      |
-| [`setFeatureColor`](#action-setfeaturecolor)                         | `(color?: string \| undefined) => void`                                                                                         |
-| [`setUtrColor`](#action-setutrcolor)                                 | `(color?: string \| undefined) => void`                                                                                         |
-| [`showContextMenuForFeature`](#action-showcontextmenuforfeature)     | `(featureInfo: FlatbushItem, displayedRegionIndex: number, clientX: number, clientY: number) => void`                           |
-| [`openSetColorDialog`](#action-opensetcolordialog)                   | `(showUtrColor?: any) => void`                                                                                                  |
-| [`openColorByAttributeDialog`](#action-opencolorbyattributedialog)   | `() => void`                                                                                                                    |
-| [`openFilterDialog`](#action-openfilterdialog)                       | `() => void`                                                                                                                    |
-| [`fetchFullFeature`](#action-fetchfullfeature)                       | `(featureId: string, displayedRegionIndex: number) => Promise<SimpleFeature \| undefined>`                                      |
-| [`isCacheValid`](#action-iscachevalid)                               | `(displayedRegionIndex: number) => boolean`                                                                                     |
-| [`byteSizeLimit`](#action-bytesizelimit)                             | `() => number \| undefined`                                                                                                     |
-| [`selectFeatureById`](#action-selectfeaturebyid)                     | `(featureId: string, subfeatureInfo: SubfeatureInfo \| undefined, displayedRegionIndex: number) => void`                        |
-| [`reload`](#action-reload)                                           | `() => Promise<void>`                                                                                                           |
-| [`fetchNeeded`](#action-fetchneeded)                                 | `(needed: { region: Region; displayedRegionIndex: number; }[]) => void`                                                         |
-| [`clearStaleDensityState`](#action-clearstaledensitystate)           | `() => void`                                                                                                                    |
-| [`afterAttach`](#action-afterattach)                                 | `() => void`                                                                                                                    |
-
 </details>
 
 <details>
-<summary>LinearCanvasBaseDisplay - Actions (all signatures)</summary>
+<summary>LinearCanvasBaseDisplay - Actions (other undocumented members)</summary>
 
 #### action: beginYMorph
 

@@ -4,20 +4,10 @@ title: SharedLDModel
 sidebar_label: Display -> SharedLDModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/shared.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SharedLDModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`variants` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/shared.ts).
 
 ## Overview
 
@@ -150,20 +140,8 @@ and docs.
 **Actions:**
 [setLastDrawnViewport](../staleviewportrescalemixin#action-setlastdrawnviewport)
 
-<details open>
-<summary>SharedLDModel - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                   |
-| ------------------------------------------ | --------------------------- |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>` |
-
-</details>
-
 <details>
-<summary>SharedLDModel - Properties (all signatures)</summary>
+<summary>SharedLDModel - Properties</summary>
 
 #### property: configuration
 
@@ -192,17 +170,10 @@ type focalSnpLocus = string | undefined
 focalSnpLocus: undefined as string | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                         | Signature              |
-| ------------------------------ | ---------------------- |
-| [`rpcData`](#volatile-rpcdata) | `LDDataResult \| null` |
-
 </details>
 
 <details>
-<summary>SharedLDModel - Volatiles (all signatures)</summary>
+<summary>SharedLDModel - Volatiles (other undocumented members)</summary>
 
 #### volatile: rpcData
 
@@ -295,38 +266,10 @@ type renderState =
   | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                             | Signature                                                                      |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| [`prefersOffset`](#getter-prefersoffset)                           | `boolean`                                                                      |
-| [`minorAlleleFrequencyFilter`](#getter-minorallelefrequencyfilter) | `any`                                                                          |
-| [`lengthCutoffFilter`](#getter-lengthcutofffilter)                 | `any`                                                                          |
-| [`lineZoneHeight`](#getter-linezoneheight)                         | `any`                                                                          |
-| [`ldMetric`](#getter-ldmetric)                                     | `any`                                                                          |
-| [`showLegend`](#getter-showlegend)                                 | `any`                                                                          |
-| [`showLDTriangle`](#getter-showldtriangle)                         | `any`                                                                          |
-| [`showRecombination`](#getter-showrecombination)                   | `any`                                                                          |
-| [`recombinationZoneHeight`](#getter-recombinationzoneheight)       | `any`                                                                          |
-| [`fitToHeight`](#getter-fittoheight)                               | `any`                                                                          |
-| [`hweFilterThreshold`](#getter-hwefilterthreshold)                 | `any`                                                                          |
-| [`callRateFilter`](#getter-callratefilter)                         | `any`                                                                          |
-| [`showVerticalGuides`](#getter-showverticalguides)                 | `any`                                                                          |
-| [`showLabels`](#getter-showlabels)                                 | `any`                                                                          |
-| [`tickHeight`](#getter-tickheight)                                 | `any`                                                                          |
-| [`useGenomicPositions`](#getter-usegenomicpositions)               | `any`                                                                          |
-| [`signedLD`](#getter-signedld)                                     | `any`                                                                          |
-| [`jexlFilters`](#getter-jexlfilters)                               | `string[]`                                                                     |
-| [`cellWidth`](#getter-cellwidth)                                   | `number`                                                                       |
-| [`filterStats`](#getter-filterstats)                               | `FilterStats \| undefined`                                                     |
-| [`recombination`](#getter-recombination)                           | `{ values: Float32Array<ArrayBufferLike>; positions: number[]; } \| undefined` |
-| [`isPrecomputedLD`](#getter-isprecomputedld)                       | `boolean`                                                                      |
-
 </details>
 
 <details>
-<summary>SharedLDModel - Getters (all signatures)</summary>
+<summary>SharedLDModel - Getters (other undocumented members)</summary>
 
 #### getter: prefersOffset
 
@@ -477,22 +420,10 @@ inverse transforms paired on the model.
 type hitTest = (mouseX: number, mouseY: number) => LDFlatbushItem | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature                                                                                                                                                                                          |
-| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`rpcProps`](#method-rpcprops)               | `() => { ldMetric: any; minorAlleleFrequencyFilter: any; lengthCutoffFilter: any; hweFilterThreshold: any; callRateFilter: any; jexlFilters: string[]; signedLD: any; useGenomicPositions: any; }` |
-| [`filterMenuItems`](#method-filtermenuitems) | `() => { label: string; onClick: () => void; }[]`                                                                                                                                                  |
-| [`legendItems`](#method-legenditems)         | `() => LegendItem[]`                                                                                                                                                                               |
-| [`svgLegendWidth`](#method-svglegendwidth)   | `() => number`                                                                                                                                                                                     |
-| [`trackMenuItems`](#method-trackmenuitems)   | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; } \| { ...; } \| { ...; })[]`                               |
-| [`renderSvg`](#method-rendersvg)             | `(opts: ExportSvgDisplayOptions) => Promise<ReactNode>`                                                                                                                                            |
-
 </details>
 
 <details>
-<summary>SharedLDModel - Methods (all signatures)</summary>
+<summary>SharedLDModel - Methods (other undocumented members)</summary>
 
 #### method: rpcProps
 
@@ -562,35 +493,10 @@ Re-fetches LD matrix for the current viewport. Both the autorun (in
 type performLDFetch = () => Promise<void>
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                             | Signature                                  |
-| ------------------------------------------------------------------ | ------------------------------------------ |
-| [`setRpcData`](#action-setrpcdata)                                 | `(data: LDDataResult \| null) => void`     |
-| [`setFocalSnp`](#action-setfocalsnp)                               | `(snp: LDSnp \| undefined) => void`        |
-| [`setLineZoneHeight`](#action-setlinezoneheight)                   | `(n: number) => void`                      |
-| [`setMafFilter`](#action-setmaffilter)                             | `(arg: number) => void`                    |
-| [`setLengthCutoffFilter`](#action-setlengthcutofffilter)           | `(arg: number) => void`                    |
-| [`setLDMetric`](#action-setldmetric)                               | `(metric: LDMetric) => void`               |
-| [`setShowLegend`](#action-setshowlegend)                           | `(show: boolean) => void`                  |
-| [`setShowLDTriangle`](#action-setshowldtriangle)                   | `(show: boolean) => void`                  |
-| [`setShowRecombination`](#action-setshowrecombination)             | `(show: boolean) => void`                  |
-| [`setRecombinationZoneHeight`](#action-setrecombinationzoneheight) | `(n: number) => void`                      |
-| [`setFitToHeight`](#action-setfittoheight)                         | `(value: boolean) => void`                 |
-| [`setHweFilter`](#action-sethwefilter)                             | `(threshold: number) => void`              |
-| [`setCallRateFilter`](#action-setcallratefilter)                   | `(threshold: number) => void`              |
-| [`setShowVerticalGuides`](#action-setshowverticalguides)           | `(show: boolean) => void`                  |
-| [`setShowLabels`](#action-setshowlabels)                           | `(show: boolean) => void`                  |
-| [`setTickHeight`](#action-settickheight)                           | `(height: number) => void`                 |
-| [`setUseGenomicPositions`](#action-setusegenomicpositions)         | `(value: boolean) => void`                 |
-| [`setSignedLD`](#action-setsignedld)                               | `(value: boolean) => void`                 |
-| [`setJexlFilters`](#action-setjexlfilters)                         | `(filters: string[] \| undefined) => void` |
-
 </details>
 
 <details>
-<summary>SharedLDModel - Actions (all signatures)</summary>
+<summary>SharedLDModel - Actions (other undocumented members)</summary>
 
 #### action: setRpcData
 

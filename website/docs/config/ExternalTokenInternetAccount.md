@@ -4,18 +4,10 @@ title: ExternalTokenInternetAccount
 sidebar_label: Internet Account -> ExternalTokenInternetAccount
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/ExternalTokenModel/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/ExternalTokenInternetAccount.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`authentication` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/ExternalTokenModel/configSchema.ts).
 
 ## Overview
 
@@ -32,14 +24,6 @@ This config's runtime API is documented on its
 validate the token with a HEAD request before using it
 
 **Type:** `boolean` · **Default:** `true`
-
-```js
-{
-  description: 'validate the token with a HEAD request before using it',
-  type: 'boolean',
-  defaultValue: true,
-}
-```
 
 </details>
 
@@ -59,27 +43,11 @@ descriptive name of the internet account
 
 **Type:** `string` · **Default:** `''`
 
-```js
-{
-  description: 'descriptive name of the internet account',
-  type: 'string',
-  defaultValue: '',
-}
-```
-
 #### slot: description
 
 a description of the internet account
 
 **Type:** `string` · **Default:** `''`
-
-```js
-{
-  description: 'a description of the internet account',
-  type: 'string',
-  defaultValue: '',
-}
-```
 
 #### slot: authHeader
 
@@ -87,49 +55,20 @@ request header for credentials
 
 **Type:** `string` · **Default:** `'Authorization'`
 
-```js
-{
-  description: 'request header for credentials',
-  type: 'string',
-  defaultValue: 'Authorization',
-}
-```
-
 #### slot: tokenType
 
 a custom name for a token to include in the header
 
 **Type:** `string` · **Default:** `''`
 
-```js
-{
-  description: 'a custom name for a token to include in the header',
-  type: 'string',
-  defaultValue: '',
-}
-```
-
 #### slot: domains
 
 array of valid domains the url can contain to use this account
 
-**Type:** `stringArray`
-
-```js
-{
-  description:
-    'array of valid domains the url can contain to use this account',
-  type: 'stringArray',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 
 ### ExternalTokenInternetAccount - Derives from
 
 - [BaseInternetAccount](../baseinternetaccount)
-
-```js
-baseConfiguration: BaseInternetAccountConfig
-```

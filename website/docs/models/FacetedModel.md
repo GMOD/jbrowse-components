@@ -4,20 +4,10 @@ title: FacetedModel
 sidebar_label: Widget -> FacetedModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/FacetedSelector/facetedModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/FacetedModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`data-management` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/FacetedSelector/facetedModel.ts).
 
 ## Overview
 
@@ -39,20 +29,10 @@ type hiddenColumns = IOptionalIType<
 hiddenColumns: types.optional(types.array(types.string), [])
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                 | Signature                                           |
-| -------------------------------------- | --------------------------------------------------- |
-| [`filterText`](#property-filtertext)   | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
-| [`showSparse`](#property-showsparse)   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`showFilters`](#property-showfilters) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`panelWidth`](#property-panelwidth)   | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
-
 </details>
 
 <details>
-<summary>FacetedModel - Properties (all signatures)</summary>
+<summary>FacetedModel - Properties (other undocumented members)</summary>
 
 #### property: filterText
 
@@ -112,22 +92,10 @@ type sortField = string
 sortField: ''
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                                                                                                                                                                          |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`assemblyNames`](#volatile-assemblynames)             | `string[]`                                                                                                                                                                                         |
-| [`useShoppingCart`](#volatile-useshoppingcart)         | `false`                                                                                                                                                                                            |
-| [`filters`](#volatile-filters)                         | `ObservableMap<string, string[]>`                                                                                                                                                                  |
-| [`sortAscending`](#volatile-sortascending)             | `true`                                                                                                                                                                                             |
-| [`trackConfigurations`](#volatile-trackconfigurations) | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]` |
-| [`session`](#volatile-session)                         | `AbstractSessionModel \| undefined`                                                                                                                                                                |
-
 </details>
 
 <details>
-<summary>FacetedModel - Volatiles (all signatures)</summary>
+<summary>FacetedModel - Volatiles (other undocumented members)</summary>
 
 #### volatile: assemblyNames
 
@@ -260,19 +228,10 @@ Faceted rows in display order: filteredRows sorted by the active sort field
 type sortedRows = { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                 | Signature                                                                                                                                                                                                                                                                                 |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`metadataKeys`](#getter-metadatakeys) | `string[]`                                                                                                                                                                                                                                                                                |
-| [`fields`](#getter-fields)             | `string[]`                                                                                                                                                                                                                                                                                |
-| [`filteredRows`](#getter-filteredrows) | `{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]` |
-
 </details>
 
 <details>
-<summary>FacetedModel - Getters (all signatures)</summary>
+<summary>FacetedModel - Getters (other undocumented members)</summary>
 
 #### getter: metadataKeys
 
@@ -294,29 +253,8 @@ type filteredRows = { readonly id: string; readonly conf: ModelInstanceTypeProps
 
 </details>
 
-<details open>
-<summary>FacetedModel - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                     | Signature                                                                                                                                                                                                                                                                    |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`setTrackConfigurations`](#action-settrackconfigurations) | `(tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[], session: AbstractSessionModel, assemblyNames: string[]) => void` |
-| [`setFilter`](#action-setfilter)                           | `(key: string, value: string[]) => void`                                                                                                                                                                                                                                     |
-| [`clearFilters`](#action-clearfilters)                     | `() => void`                                                                                                                                                                                                                                                                 |
-| [`setSort`](#action-setsort)                               | `(field: string, ascending: boolean) => void`                                                                                                                                                                                                                                |
-| [`setPanelWidth`](#action-setpanelwidth)                   | `(width: number) => void`                                                                                                                                                                                                                                                    |
-| [`setUseShoppingCart`](#action-setuseshoppingcart)         | `(f: boolean) => void`                                                                                                                                                                                                                                                       |
-| [`setFilterText`](#action-setfiltertext)                   | `(str: string) => void`                                                                                                                                                                                                                                                      |
-| [`setShowSparse`](#action-setshowsparse)                   | `(f: boolean) => void`                                                                                                                                                                                                                                                       |
-| [`setShowFilters`](#action-setshowfilters)                 | `(f: boolean) => void`                                                                                                                                                                                                                                                       |
-| [`setColumnVisible`](#action-setcolumnvisible)             | `(field: string, visible: boolean) => void`                                                                                                                                                                                                                                  |
-
-</details>
-
 <details>
-<summary>FacetedModel - Actions (all signatures)</summary>
+<summary>FacetedModel - Actions</summary>
 
 #### action: setTrackConfigurations
 

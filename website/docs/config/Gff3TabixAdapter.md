@@ -4,18 +4,9 @@ title: Gff3TabixAdapter
 sidebar_label: Adapter -> Gff3TabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3TabixAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/Gff3TabixAdapter.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `gff3` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/Gff3TabixAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -43,7 +34,12 @@ used to load bgzip-compressed, tabix-indexed GFF3 files
 
 ### Used in
 
-This adapter supplies data to the [FeatureTrack](../featuretrack) track type.
+Supplies data to the [FeatureTrack](../featuretrack) track, rendered by:
+
+- [LinearArcDisplay](../lineararcdisplay)
+- [LinearBasicDisplay](../linearbasicdisplay)
+- [LinearBasicDisplay](../linearbasicdisplay)
+- [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 
 ### Gff3TabixAdapter - Pre-processor / simplified config
 
@@ -63,43 +59,17 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi
 
 #### slot: gffGzLocation
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.gff.gz',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.gff.gz', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` · **Default:** `'TBI'`
-
-```js
-{
-  model: types.enumeration('IndexType', ['TBI', 'CSI']),
-  type: 'stringEnum',
-  defaultValue: 'TBI',
-}
-```
+**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: index.indexType
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: '/path/to/my.gff.gz.tbi',
-    locationType: 'UriLocation',
-  },
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: '/path/to/my.gff.gz.tbi', locationType: 'UriLocation' }`
 
 #### slot: dontRedispatch
 
@@ -107,13 +77,6 @@ the Gff3TabixAdapter has to "redispatch" if it fetches a region and features it
 finds inside that region extend outside the region we requested. you can disable
 this for certain feature types to avoid fetching e.g. the entire chromosome
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: ['chromosome', 'region', 'contig'],
-}
-```
+**Type:** `stringArray` · **Default:** `['chromosome', 'region', 'contig']`
 
 </details>

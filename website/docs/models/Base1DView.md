@@ -4,44 +4,18 @@ title: Base1DView
 sidebar_label: View -> Base1DView
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/Base1DViewModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/Base1DView.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/Base1DViewModel.ts).
 
 ## Overview
 
 used in non-lgv view representations of a 1d view e.g. the two axes of the
 dotplot use this
 
-<details open>
-<summary>Base1DView - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                                          |
-| -------------------------------------------------- | ------------------------------------------------------------------ |
-| [`id`](#property-id)                               | `IOptionalIType<ISimpleType<string>, [undefined]>`                 |
-| [`displayedRegions`](#property-displayedregions)   | `IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>` |
-| [`bpPerPx`](#property-bpperpx)                     | `number`                                                           |
-| [`offsetPx`](#property-offsetpx)                   | `number`                                                           |
-| [`minimumBlockWidth`](#property-minimumblockwidth) | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
-
-</details>
-
 <details>
-<summary>Base1DView - Properties (all signatures)</summary>
+<summary>Base1DView - Properties</summary>
 
 #### property: id
 
@@ -93,21 +67,8 @@ minimumBlockWidth: types.stripDefault(types.number, 0)
 
 </details>
 
-<details open>
-<summary>Base1DView - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                |
-| ------------------------------------------ | ------------------------ |
-| [`features`](#volatile-features)           | `Feature[] \| undefined` |
-| [`volatileWidth`](#volatile-volatilewidth) | `number`                 |
-
-</details>
-
 <details>
-<summary>Base1DView - Volatiles (all signatures)</summary>
+<summary>Base1DView - Volatiles</summary>
 
 #### volatile: features
 
@@ -129,28 +90,8 @@ volatileWidth: 0
 
 </details>
 
-<details open>
-<summary>Base1DView - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                       | Signature  |
-| ------------------------------------------------------------ | ---------- |
-| [`width`](#getter-width)                                     | `number`   |
-| [`assemblyNames`](#getter-assemblynames)                     | `string[]` |
-| [`displayedRegionsTotalPx`](#getter-displayedregionstotalpx) | `number`   |
-| [`maxOffset`](#getter-maxoffset)                             | `number`   |
-| [`minOffset`](#getter-minoffset)                             | `number`   |
-| [`totalBp`](#getter-totalbp)                                 | `number`   |
-| [`dynamicBlocks`](#getter-dynamicblocks)                     | `BlockSet` |
-| [`staticBlocks`](#getter-staticblocks)                       | `BlockSet` |
-| [`currBp`](#getter-currbp)                                   | `number`   |
-
-</details>
-
 <details>
-<summary>Base1DView - Getters (all signatures)</summary>
+<summary>Base1DView - Getters</summary>
 
 #### getter: width
 
@@ -208,21 +149,8 @@ type currBp = number
 
 </details>
 
-<details open>
-<summary>Base1DView - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                     | Signature                                                                                                                                             |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`pxToBp`](#method-pxtobp) | `(px: number) => PxToBpResult`                                                                                                                        |
-| [`bpToPx`](#method-bptopx) | `({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number \| undefined; }) => number \| undefined` |
-
-</details>
-
 <details>
-<summary>Base1DView - Methods (all signatures)</summary>
+<summary>Base1DView - Methods</summary>
 
 #### method: pxToBp
 
@@ -275,25 +203,10 @@ the displayed region in the linear genome view
 type moveTo = (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                               | Signature                                                                             |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [`setDisplayedRegions`](#action-setdisplayedregions) | `(regions: Region[]) => void`                                                         |
-| [`setBpPerPx`](#action-setbpperpx)                   | `(val: number) => void`                                                               |
-| [`setVolatileWidth`](#action-setvolatilewidth)       | `(width: number) => void`                                                             |
-| [`setFeatures`](#action-setfeatures)                 | `(features: Feature[]) => void`                                                       |
-| [`zoomOut`](#action-zoomout)                         | `() => void`                                                                          |
-| [`zoomIn`](#action-zoomin)                           | `() => void`                                                                          |
-| [`zoomTo`](#action-zoomto)                           | `(bpPerPx: number, offset?: any) => number`                                           |
-| [`scrollTo`](#action-scrollto)                       | `(offsetPx: number) => number`                                                        |
-| [`centerAt`](#action-centerat)                       | `(coord: number, refName: string \| undefined, displayedRegionIndex: number) => void` |
-
 </details>
 
 <details>
-<summary>Base1DView - Actions (all signatures)</summary>
+<summary>Base1DView - Actions (other undocumented members)</summary>
 
 #### action: setDisplayedRegions
 

@@ -4,18 +4,10 @@ title: LinearCanvasBaseDisplay
 sidebar_label: Display -> LinearCanvasBaseDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearCanvasBaseDisplay.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `canvas`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts).
 
 ## Overview
 
@@ -33,31 +25,13 @@ This config's runtime API is documented on its
 
 Maximum height of the display in pixels
 
-**Type:** `number` · **Default:** `1200`
-
-```js
-{
-  type: 'number',
-  defaultValue: 1200,
-  description: 'Maximum height of the display in pixels',
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `1200` · _advanced_
 
 #### slot: autoHeight
 
 Automatically resize the track height to fit all features
 
 **Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  description:
-    'Automatically resize the track height to fit all features',
-}
-```
 
 #### slot: showLabels
 
@@ -81,31 +55,13 @@ shows, "off" always hides
 In "auto" showLabels mode, hide labels when visible feature density
 (features/pixel) exceeds this value
 
-**Type:** `number`
-
-```js
-{
-  type: 'number',
-  defaultValue: MAX_LABEL_FEATURE_DENSITY,
-  description:
-    'In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value',
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `MAX_LABEL_FEATURE_DENSITY` · _advanced_
 
 #### slot: showDescriptions
 
 Show feature descriptions
 
 **Type:** `boolean` · **Default:** `true`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-  description: 'Show feature descriptions',
-}
-```
 
 #### slot: color
 
@@ -129,7 +85,7 @@ per-feature coloring)
 color of the connecting/intron lines between feature segments (defaults to the
 theme text color)
 
-**Type:** `color`
+**Type:** `color` · **Default:** `THEME_DERIVED_COLOR`
 
 ```js
 {
@@ -162,14 +118,6 @@ outline color for features (empty string = no outline)
 
 **Type:** `color` · **Default:** `''`
 
-```js
-{
-  type: 'color',
-  description: 'outline color for features (empty string = no outline)',
-  defaultValue: '',
-}
-```
-
 #### slot: featureHeight
 
 height in pixels of the main body of each feature
@@ -192,7 +140,8 @@ for this display type, falling back to `normal`;
 `normal`/`compact`/`superCompact` each pin an explicit height (including pinning
 `normal` over a compact session default)
 
-**Type:** `stringEnum` · **Default:** `'inherit'`
+**Type:** `stringEnum` (one of `inherit`, `normal`, `compact`, `superCompact`) ·
+**Default:** `'inherit'` · _promotable_
 
 ```js
 {
@@ -235,35 +184,14 @@ transcripts, "longestCoding" shows only the longest coding transcript
 
 subfeature label display mode
 
-**Type:** `stringEnum` · **Default:** `'none'`
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('subfeatureLabels', [
-    'none',
-    'below',
-    'overlay',
-  ]),
-  description: 'subfeature label display mode',
-  defaultValue: 'none',
-}
-```
+**Type:** `stringEnum` (one of `none`, `below`, `overlay`) · **Default:**
+`'none'`
 
 #### slot: displayDirectionalChevrons
 
 Display directional chevrons on intron lines to indicate strand direction
 
 **Type:** `boolean` · **Default:** `true`
-
-```js
-{
-  type: 'boolean',
-  description:
-    'Display directional chevrons on intron lines to indicate strand direction',
-  defaultValue: true,
-}
-```
 
 #### slot: transcriptTypes
 
@@ -293,14 +221,7 @@ Display directional chevrons on intron lines to indicate strand direction
 
 #### slot: containerTypes
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: ['proteoform_orf'],
-}
-```
+**Type:** `stringArray` · **Default:** `['proteoform_orf']`
 
 #### slot: subParts
 
@@ -308,29 +229,12 @@ subparts for a glyph
 
 **Type:** `string` · **Default:** `'CDS,UTR,five_prime_UTR,three_prime_UTR'`
 
-```js
-{
-  type: 'string',
-  description: 'subparts for a glyph',
-  defaultValue: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
-}
-```
-
 #### slot: impliedUTRs
 
 imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit
 UTR subfeatures
 
 **Type:** `boolean` · **Default:** `true`
-
-```js
-{
-  type: 'boolean',
-  description:
-    'imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures',
-  defaultValue: true,
-}
-```
 
 #### slot: labels
 
@@ -368,48 +272,20 @@ this page is self-contained.
 maximum features per pixel before showing a "too many features" message, used if
 byte size estimates are not available
 
-**Type:** `number` · **Default:** `1`
-
-```js
-{
-  type: 'number',
-  description:
-    'maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available',
-  defaultValue: 1,
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `1` · _advanced_
 
 #### slot: fetchSizeLimit
 
 maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
-**Type:** `number` · **Default:** `1_000_000`
-
-```js
-{
-  type: 'number',
-  defaultValue: 1_000_000,
-  description:
-    "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
-  advanced: true,
-}
-```
+**Type:** `number` · **Default:** `1_000_000` · _advanced_
 
 #### slot: height
 
 default height for the track
 
 **Type:** `number` · **Default:** `100`
-
-```js
-{
-  type: 'number',
-  defaultValue: 100,
-  description: 'default height for the track',
-}
-```
 
 #### slot: mouseover
 
@@ -432,23 +308,10 @@ text to display when the cursor hovers over a feature
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  description:
-    'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 
 ### LinearCanvasBaseDisplay - Derives from
 
 - [BaseLinearDisplay](../baselineardisplay)
-
-```js
-baseConfiguration: baseLinearDisplayConfigSchema
-```

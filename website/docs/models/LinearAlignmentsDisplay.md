@@ -4,20 +4,10 @@ title: LinearAlignmentsDisplay
 sidebar_label: Display -> LinearAlignmentsDisplay
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/LinearAlignmentsDisplay.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`alignments` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.ts).
 
 ## Example usage
 
@@ -232,21 +222,8 @@ and docs.
 **Actions:**
 [clearSessionDefaults](../promotabledefaultsmixin#action-clearsessiondefaults)
 
-<details open>
-<summary>LinearAlignmentsDisplay - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                     | Signature                                |
-| ------------------------------------------ | ---------------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"LinearAlignmentsDisplay">` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`              |
-
-</details>
-
 <details>
-<summary>LinearAlignmentsDisplay - Properties (all signatures)</summary>
+<summary>LinearAlignmentsDisplay - Properties</summary>
 
 #### property: type
 
@@ -340,30 +317,10 @@ hoverCoverageBand: undefined as
   { topOffset: number; coverageHeight: number } | undefined
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                             | Signature                                          |
-| ------------------------------------------------------------------ | -------------------------------------------------- |
-| [`featureIdUnderMouse`](#volatile-featureidundermouse)             | `string \| undefined`                              |
-| [`mouseoverExtraInformation`](#volatile-mouseoverextrainformation) | `TooltipPayload \| undefined`                      |
-| [`contextMenuFeature`](#volatile-contextmenufeature)               | `Feature \| undefined`                             |
-| [`contextMenuCoord`](#volatile-contextmenucoord)                   | `[number, number] \| undefined`                    |
-| [`contextMenuCigarHit`](#volatile-contextmenucigarhit)             | `CigarHitResult \| undefined`                      |
-| [`contextMenuIndicatorHit`](#volatile-contextmenuindicatorhit)     | `IndicatorHitResult \| undefined`                  |
-| [`contextMenuRefName`](#volatile-contextmenurefname)               | `string \| undefined`                              |
-| [`rpcDataMap`](#volatile-rpcdatamap)                               | `ObservableMap<number, GroupedAlignmentsResult>`   |
-| [`highlightedChainIds`](#volatile-highlightedchainids)             | `string[]`                                         |
-| [`selectedChainIds`](#volatile-selectedchainids)                   | `string[]`                                         |
-| [`colorTagMap`](#volatile-colortagmap)                             | `Record<string, string>`                           |
-| [`visibleModifications`](#volatile-visiblemodifications)           | `ObservableMap<string, ModificationTypeWithColor>` |
-| [`modificationsReady`](#volatile-modificationsready)               | `false`                                            |
-| [`overCigarItem`](#volatile-overcigaritem)                         | `false`                                            |
-
 </details>
 
 <details>
-<summary>LinearAlignmentsDisplay - Volatiles (all signatures)</summary>
+<summary>LinearAlignmentsDisplay - Volatiles (other undocumented members)</summary>
 
 #### volatile: featureIdUnderMouse
 
@@ -806,85 +763,10 @@ pileup each move.
 type highlightBoxes = HighlightBox[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                           | Signature                                                                                                                                                                                                                                                                                                           |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`linkedReads`](#getter-linkedreads)                             | `LinkedReadsMode`                                                                                                                                                                                                                                                                                                   |
-| [`showBezierConnections`](#getter-showbezierconnections)         | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`showCoverage`](#getter-showcoverage)                           | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`showPileup`](#getter-showpileup)                               | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`coverageHeight`](#getter-coverageheight)                       | `number`                                                                                                                                                                                                                                                                                                            |
-| [`showMismatches`](#getter-showmismatches)                       | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`showInterbaseIndicators`](#getter-showinterbaseindicators)     | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`drawSingletons`](#getter-drawsingletons)                       | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`drawProperPairs`](#getter-drawproperpairs)                     | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`flipStrandLongReadChains`](#getter-flipstrandlongreadchains)   | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`colorSupplementaryChains`](#getter-colorsupplementarychains)   | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`drawInter`](#getter-drawinter)                                 | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`drawLongRange`](#getter-drawlongrange)                         | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`arcColorByType`](#getter-arccolorbytype)                       | `ArcColorByType`                                                                                                                                                                                                                                                                                                    |
-| [`readConnections`](#getter-readconnections)                     | `ReadConnectionsMode`                                                                                                                                                                                                                                                                                               |
-| [`readConnectionsDown`](#getter-readconnectionsdown)             | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`showSashimiArcs`](#getter-showsashimiarcs)                     | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`sashimiArcsMode`](#getter-sashimiarcsmode)                     | `SashimiArcsMode`                                                                                                                                                                                                                                                                                                   |
-| [`minSashimiScore`](#getter-minsashimiscore)                     | `number`                                                                                                                                                                                                                                                                                                            |
-| [`sashimiArcsHeight`](#getter-sashimiarcsheight)                 | `number`                                                                                                                                                                                                                                                                                                            |
-| [`readConnectionsHeight`](#getter-readconnectionsheight)         | `number`                                                                                                                                                                                                                                                                                                            |
-| [`showSoftClipping`](#getter-showsoftclipping)                   | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`isShowSoftClippingDefault`](#getter-isshowsoftclippingdefault) | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`isChainMode`](#getter-ischainmode)                             | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`scaleType`](#getter-scaletype)                                 | `any`                                                                                                                                                                                                                                                                                                               |
-| [`autoscaleType`](#getter-autoscaletype)                         | `any`                                                                                                                                                                                                                                                                                                               |
-| [`minScore`](#getter-minscore)                                   | `any`                                                                                                                                                                                                                                                                                                               |
-| [`maxScore`](#getter-maxscore)                                   | `any`                                                                                                                                                                                                                                                                                                               |
-| [`minScoreBound`](#getter-minscorebound)                         | `any`                                                                                                                                                                                                                                                                                                               |
-| [`maxScoreBound`](#getter-maxscorebound)                         | `any`                                                                                                                                                                                                                                                                                                               |
-| [`numStdDev`](#getter-numstddev)                                 | `any`                                                                                                                                                                                                                                                                                                               |
-| [`featureWidgetType`](#getter-featurewidgettype)                 | `{ type: string; id: string; }`                                                                                                                                                                                                                                                                                     |
-| [`selectedFeatureId`](#getter-selectedfeatureid)                 | `string \| undefined`                                                                                                                                                                                                                                                                                               |
-| [`TooltipComponent`](#getter-tooltipcomponent)                   | `LazyExoticComponent<({ model, clientMouseCoord, offsetMouseCoord, }: { model: { mouseoverExtraInformation: TooltipPayload \| undefined; hoverCoverageBand: { topOffset: number; coverageHeight: number; } \| undefined; }; offsetMouseCoord?: Coord \| undefined; clientMouseCoord: Coord; }) => Element \| null>` |
-| [`visibleModificationTypes`](#getter-visiblemodificationtypes)   | `string[]`                                                                                                                                                                                                                                                                                                          |
-| [`colorBy`](#getter-colorby)                                     | `ColorBy`                                                                                                                                                                                                                                                                                                           |
-| [`filterBy`](#getter-filterby)                                   | `FilterBy`                                                                                                                                                                                                                                                                                                          |
-| [`featureHeight`](#getter-featureheight)                         | `number`                                                                                                                                                                                                                                                                                                            |
-| [`featureSpacing`](#getter-featurespacing)                       | `number`                                                                                                                                                                                                                                                                                                            |
-| [`isCompactnessDefault`](#getter-iscompactnessdefault)           | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`maxHeight`](#getter-maxheight)                                 | `any`                                                                                                                                                                                                                                                                                                               |
-| [`chainIdMap`](#getter-chainidmap)                               | `Map<string, string[]>`                                                                                                                                                                                                                                                                                             |
-| [`mismatchAlpha`](#getter-mismatchalpha)                         | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`showLowFreqMismatches`](#getter-showlowfreqmismatches)         | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`showLegend`](#getter-showlegend)                               | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`sortedBy`](#getter-sortedby)                                   | `SortedBy \| undefined`                                                                                                                                                                                                                                                                                             |
-| [`coverageIsLog`](#getter-coverageislog)                         | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`coverageStats`](#getter-coveragestats)                         | `ScoreStats \| undefined`                                                                                                                                                                                                                                                                                           |
-| [`coverageDomain`](#getter-coveragedomain)                       | `[number, number] \| undefined`                                                                                                                                                                                                                                                                                     |
-| [`coverageTicks`](#getter-coverageticks)                         | `YScaleTicks \| undefined`                                                                                                                                                                                                                                                                                          |
-| [`colorPalette`](#getter-colorpalette)                           | `ColorPalette`                                                                                                                                                                                                                                                                                                      |
-| [`modificationThreshold`](#getter-modificationthreshold)         | `number`                                                                                                                                                                                                                                                                                                            |
-| [`colorSchemeIndex`](#getter-colorschemeindex)                   | `number`                                                                                                                                                                                                                                                                                                            |
-| [`showModifications`](#getter-showmodifications)                 | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`showPerBaseQuality`](#getter-showperbasequality)               | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`showPerBaseLetter`](#getter-showperbaseletter)                 | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`totalPileupHeight`](#getter-totalpileupheight)                 | `number`                                                                                                                                                                                                                                                                                                            |
-| [`readIdIndexMap`](#getter-readidindexmap)                       | `Map<string, { displayedRegionIndex: number; groupKey: string; idx: number; }>`                                                                                                                                                                                                                                     |
-| [`readConnectionsLineWidth`](#getter-readconnectionslinewidth)   | `any`                                                                                                                                                                                                                                                                                                               |
-| [`coverageDisplayHeight`](#getter-coveragedisplayheight)         | `number`                                                                                                                                                                                                                                                                                                            |
-| [`scalebarOverlapLeft`](#getter-scalebaroverlapleft)             | `number`                                                                                                                                                                                                                                                                                                            |
-| [`showOutline`](#getter-showoutline)                             | `any`                                                                                                                                                                                                                                                                                                               |
-| [`visibleLabels`](#getter-visiblelabels)                         | `VisibleLabel[]`                                                                                                                                                                                                                                                                                                    |
-| [`scrollableHeight`](#getter-scrollableheight)                   | `number`                                                                                                                                                                                                                                                                                                            |
-| [`sortTag`](#getter-sorttag)                                     | `string \| undefined`                                                                                                                                                                                                                                                                                               |
-| [`renderState`](#getter-renderstate)                             | `{ scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number \| undefined; ... 25 more ...; arcsYDomainBp: number \| undefined; } \| undefined`                                       |
-| [`arcsYDomainBp`](#getter-arcsydomainbp)                         | `number \| undefined`                                                                                                                                                                                                                                                                                               |
-| [`insertSizeTicks`](#getter-insertsizeticks)                     | `YScaleTicks \| undefined`                                                                                                                                                                                                                                                                                          |
-| [`featureUnderMouse`](#getter-featureundermouse)                 | `SimpleFeature \| undefined`                                                                                                                                                                                                                                                                                        |
-
 </details>
 
 <details>
-<summary>LinearAlignmentsDisplay - Getters (all signatures)</summary>
+<summary>LinearAlignmentsDisplay - Getters (other undocumented members)</summary>
 
 #### getter: linkedReads
 
@@ -1114,6 +996,12 @@ type visibleModificationTypes = string[]
 
 ```ts
 type colorBy = ColorBy
+```
+
+#### getter: isColorByDefault
+
+```ts
+type isColorByDefault = boolean
 ```
 
 #### getter: filterBy
@@ -1379,22 +1267,10 @@ Track menu items
 type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; })[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                                                                                                                                                                                                  |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`legendItems`](#method-legenditems)                   | `() => LegendItem[]`                                                                                                                                                                                                       |
-| [`findFeatureInRpcData`](#method-findfeatureinrpcdata) | `(featureId: string) => { displayedRegionIndex: number; idx: number; rpcData: PileupDataResult; start: number; end: number; } \| undefined`                                                                                |
-| [`searchFeatureByID`](#method-searchfeaturebyid)       | `(featureId: string) => [number, number, number, number] \| undefined`                                                                                                                                                     |
-| [`getFeatureInfoById`](#method-getfeatureinfobyid)     | `(featureId: string) => { id: string; name: string; start: number; end: number; flags: number; mapq: number; strand: number; refName: string; } \| undefined`                                                              |
-| [`rpcProps`](#method-rpcprops)                         | `() => { filterBy: FilterBy; colorBy: ColorBy; sortTag: string \| undefined; groupBy: GroupBy \| undefined; showSoftClipping: boolean; drawSingletons: boolean; drawProperPairs: boolean; linkedReads: LinkedReadsMode; }` |
-| [`contextMenuItems`](#method-contextmenuitems)         | `() => MenuItem[]`                                                                                                                                                                                                         |
-
 </details>
 
 <details>
-<summary>LinearAlignmentsDisplay - Methods (all signatures)</summary>
+<summary>LinearAlignmentsDisplay - Methods (other undocumented members)</summary>
 
 #### method: legendItems
 
@@ -1527,89 +1403,10 @@ refetches.
 type setShowBezierConnections = (flag: boolean) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                                   | Signature                                                                                                                                                                                                                         |
-| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`clearMouseoverState`](#action-clearmouseoverstate)                     | `() => void`                                                                                                                                                                                                                      |
-| [`setError`](#action-seterror)                                           | `(error?: unknown) => void`                                                                                                                                                                                                       |
-| [`setRegionTooLarge`](#action-setregiontoolarge)                         | `(val: boolean, reason?: string \| undefined) => void`                                                                                                                                                                            |
-| [`setRpcData`](#action-setrpcdata)                                       | `(displayedRegionIndex: number, data: GroupedAlignmentsResult \| null) => void`                                                                                                                                                   |
-| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata)           | `() => void`                                                                                                                                                                                                                      |
-| [`setOverCigarItem`](#action-setovercigaritem)                           | `(flag: boolean) => void`                                                                                                                                                                                                         |
-| [`setScrollTop`](#action-setscrolltop)                                   | `(scrollTop: number) => void`                                                                                                                                                                                                     |
-| [`setHighlightedChainIds`](#action-sethighlightedchainids)               | `(ids: string[]) => void`                                                                                                                                                                                                         |
-| [`clearHighlights`](#action-clearhighlights)                             | `() => void`                                                                                                                                                                                                                      |
-| [`clearSelection`](#action-clearselection)                               | `() => void`                                                                                                                                                                                                                      |
-| [`setSelectedChainIds`](#action-setselectedchainids)                     | `(ids: string[]) => void`                                                                                                                                                                                                         |
-| [`setColorScheme`](#action-setcolorscheme)                               | `(colorBy: ColorBy) => void`                                                                                                                                                                                                      |
-| [`updateColorTagMap`](#action-updatecolortagmap)                         | `(uniqueTag: string[]) => void`                                                                                                                                                                                                   |
-| [`setFilterBy`](#action-setfilterby)                                     | `(filterBy: FilterBy) => void`                                                                                                                                                                                                    |
-| [`setShowOutline`](#action-setshowoutline)                               | `(show: boolean \| undefined) => void`                                                                                                                                                                                            |
-| [`toggleSoftClipping`](#action-togglesoftclipping)                       | `() => void`                                                                                                                                                                                                                      |
-| [`toggleShowSoftClippingDefault`](#action-toggleshowsoftclippingdefault) | `() => void`                                                                                                                                                                                                                      |
-| [`toggleCompactnessDefault`](#action-togglecompactnessdefault)           | `() => void`                                                                                                                                                                                                                      |
-| [`toggleMismatchAlpha`](#action-togglemismatchalpha)                     | `() => void`                                                                                                                                                                                                                      |
-| [`toggleShowLowFreqMismatches`](#action-toggleshowlowfreqmismatches)     | `() => void`                                                                                                                                                                                                                      |
-| [`setSortedBy`](#action-setsortedby)                                     | `(type: string, tag?: string \| undefined) => void`                                                                                                                                                                               |
-| [`setSortedByAtPosition`](#action-setsortedbyatposition)                 | `(type: string, pos: number, refName: string) => void`                                                                                                                                                                            |
-| [`clearSortedBy`](#action-clearsortedby)                                 | `() => void`                                                                                                                                                                                                                      |
-| [`setScaleType`](#action-setscaletype)                                   | `(val: string) => void`                                                                                                                                                                                                           |
-| [`setAutoscale`](#action-setautoscale)                                   | `(val?: string \| undefined) => void`                                                                                                                                                                                             |
-| [`setMinScore`](#action-setminscore)                                     | `(val?: number \| undefined) => void`                                                                                                                                                                                             |
-| [`setMaxScore`](#action-setmaxscore)                                     | `(val?: number \| undefined) => void`                                                                                                                                                                                             |
-| [`setFeatureHeight`](#action-setfeatureheight)                           | `(height?: number \| undefined) => void`                                                                                                                                                                                          |
-| [`setFeatureSpacing`](#action-setfeaturespacing)                         | `(spacing?: number \| undefined) => void`                                                                                                                                                                                         |
-| [`setMaxHeight`](#action-setmaxheight)                                   | `(height?: number \| undefined) => void`                                                                                                                                                                                          |
-| [`setCompactness`](#action-setcompactness)                               | `(level: "normal" \| "compact" \| "super-compact") => void`                                                                                                                                                                       |
-| [`setShowSashimiArcs`](#action-setshowsashimiarcs)                       | `(show: boolean) => void`                                                                                                                                                                                                         |
-| [`setReadConnections`](#action-setreadconnections)                       | `(mode: ReadConnectionsMode) => void`                                                                                                                                                                                             |
-| [`setReadConnectionsDown`](#action-setreadconnectionsdown)               | `(down: boolean) => void`                                                                                                                                                                                                         |
-| [`setShowCoverage`](#action-setshowcoverage)                             | `(show: boolean) => void`                                                                                                                                                                                                         |
-| [`setShowPileup`](#action-setshowpileup)                                 | `(show: boolean) => void`                                                                                                                                                                                                         |
-| [`setCoverageHeight`](#action-setcoverageheight)                         | `(height: number) => void`                                                                                                                                                                                                        |
-| [`setReadConnectionsHeight`](#action-setreadconnectionsheight)           | `(height: number) => void`                                                                                                                                                                                                        |
-| [`setSashimiArcsHeight`](#action-setsashimiarcsheight)                   | `(height: number) => void`                                                                                                                                                                                                        |
-| [`setMinSashimiScore`](#action-setminsashimiscore)                       | `(score: number) => void`                                                                                                                                                                                                         |
-| [`setSashimiArcsMode`](#action-setsashimiarcsmode)                       | `(mode: SashimiArcsMode) => void`                                                                                                                                                                                                 |
-| [`setShowSashimiLabels`](#action-setshowsashimilabels)                   | `(show: boolean) => void`                                                                                                                                                                                                         |
-| [`setReadConnectionsLineWidth`](#action-setreadconnectionslinewidth)     | `(width: number) => void`                                                                                                                                                                                                         |
-| [`setDrawInter`](#action-setdrawinter)                                   | `(draw: boolean) => void`                                                                                                                                                                                                         |
-| [`setDrawLongRange`](#action-setdrawlongrange)                           | `(draw: boolean) => void`                                                                                                                                                                                                         |
-| [`setColorByType`](#action-setcolorbytype)                               | `(type: ArcColorByType) => void`                                                                                                                                                                                                  |
-| [`setShowMismatches`](#action-setshowmismatches)                         | `(show: boolean) => void`                                                                                                                                                                                                         |
-| [`setShowLegend`](#action-setshowlegend)                                 | `(show: boolean \| undefined) => void`                                                                                                                                                                                            |
-| [`setDrawSingletons`](#action-setdrawsingletons)                         | `(flag: boolean) => void`                                                                                                                                                                                                         |
-| [`setDrawProperPairs`](#action-setdrawproperpairs)                       | `(flag: boolean) => void`                                                                                                                                                                                                         |
-| [`setShowInterbaseIndicators`](#action-setshowinterbaseindicators)       | `(show: boolean) => void`                                                                                                                                                                                                         |
-| [`setFlipStrandLongReadChains`](#action-setflipstrandlongreadchains)     | `(flag: boolean) => void`                                                                                                                                                                                                         |
-| [`setColorSupplementaryChains`](#action-setcolorsupplementarychains)     | `(flag: boolean) => void`                                                                                                                                                                                                         |
-| [`setLinkedReads`](#action-setlinkedreads)                               | `(mode: LinkedReadsMode) => void`                                                                                                                                                                                                 |
-| [`updateVisibleModifications`](#action-updatevisiblemodifications)       | `(uniqueModifications: string[]) => void`                                                                                                                                                                                         |
-| [`setModificationsReady`](#action-setmodificationsready)                 | `(flag: boolean) => void`                                                                                                                                                                                                         |
-| [`setFeatureIdUnderMouse`](#action-setfeatureidundermouse)               | `(feature?: string \| undefined) => void`                                                                                                                                                                                         |
-| [`setMouseoverExtraInformation`](#action-setmouseoverextrainformation)   | `(extra?: TooltipPayload \| undefined) => void`                                                                                                                                                                                   |
-| [`setHoverState`](#action-sethoverstate)                                 | `(state: { overCigarItem: boolean; featureIdUnderMouse: string \| undefined; mouseoverExtraInformation: TooltipPayload \| undefined; hoverCoverageBand?: { topOffset: number; coverageHeight: number; } \| undefined; }) => void` |
-| [`setContextMenuFeature`](#action-setcontextmenufeature)                 | `(feature?: Feature \| undefined) => void`                                                                                                                                                                                        |
-| [`setContextMenuCoord`](#action-setcontextmenucoord)                     | `(coord?: [number, number] \| undefined) => void`                                                                                                                                                                                 |
-| [`setContextMenuCigarHit`](#action-setcontextmenucigarhit)               | `(hit?: CigarHitResult \| undefined) => void`                                                                                                                                                                                     |
-| [`setContextMenuIndicatorHit`](#action-setcontextmenuindicatorhit)       | `(hit?: IndicatorHitResult \| undefined) => void`                                                                                                                                                                                 |
-| [`clearContextMenu`](#action-clearcontextmenu)                           | `() => void`                                                                                                                                                                                                                      |
-| [`setContextMenuRefName`](#action-setcontextmenurefname)                 | `(refName?: string \| undefined) => void`                                                                                                                                                                                         |
-| [`setContextMenuRpcData`](#action-setcontextmenurpcdata)                 | `(data?: PileupDataResult \| undefined) => void`                                                                                                                                                                                  |
-| [`selectFeature`](#action-selectfeature)                                 | `(feature: Feature) => void`                                                                                                                                                                                                      |
-| [`startRenderingBackend`](#action-startrenderingbackend)                 | `(backend: AlignmentsRenderingBackend) => void`                                                                                                                                                                                   |
-| [`selectFeatureById`](#action-selectfeaturebyid)                         | `(featureId: string) => Promise<void>`                                                                                                                                                                                            |
-| [`setContextMenuFeatureById`](#action-setcontextmenufeaturebyid)         | `(featureId: string) => Promise<void>`                                                                                                                                                                                            |
-| [`getByteEstimateConfig`](#action-getbyteestimateconfig)                 | `() => { adapterConfig: any; fetchSizeLimit: any; userByteSizeLimit: number \| undefined; visibleBp: number; }`                                                                                                                   |
-| [`fetchNeeded`](#action-fetchneeded)                                     | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>`                                                                                                                                                  |
-| [`renderSvg`](#action-rendersvg)                                         | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                                      |
-
 </details>
 
 <details>
-<summary>LinearAlignmentsDisplay - Actions (all signatures)</summary>
+<summary>LinearAlignmentsDisplay - Actions (other undocumented members)</summary>
 
 #### action: clearMouseoverState
 
@@ -1686,6 +1483,12 @@ type setSelectedChainIds = (ids: string[]) => void
 type setColorScheme = (colorBy: ColorBy) => void
 ```
 
+#### action: setColorByDefault
+
+```ts
+type setColorByDefault = (promote: boolean) => void
+```
+
 #### action: updateColorTagMap
 
 ```ts
@@ -1710,16 +1513,16 @@ type setShowOutline = (show: boolean | undefined) => void
 type toggleSoftClipping = () => void
 ```
 
-#### action: toggleShowSoftClippingDefault
+#### action: setShowSoftClippingDefault
 
 ```ts
-type toggleShowSoftClippingDefault = () => void
+type setShowSoftClippingDefault = (promote: boolean) => void
 ```
 
-#### action: toggleCompactnessDefault
+#### action: setCompactnessDefault
 
 ```ts
-type toggleCompactnessDefault = () => void
+type setCompactnessDefault = (promote: boolean) => void
 ```
 
 #### action: toggleMismatchAlpha
