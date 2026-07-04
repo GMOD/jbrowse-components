@@ -103,10 +103,36 @@ test('duplicate grouping splits on the duplicate flag', () => {
   expect(keys(groups).sort()).toEqual(['duplicate', 'nonduplicate'])
 })
 
+test('mate-assembly grouping splits synteny features by mate assembly', () => {
+  const features = [
+    feat('a', { mate: { assemblyName: 'peach' } }),
+    feat('b', { mate: { assemblyName: 'cacao' } }),
+    feat('c', { mate: { assemblyName: 'cacao' } }),
+  ]
+  const groups = partitionFeatures(features, { type: 'mateAssembly' })
+  expect(keys(groups)).toEqual(['cacao', 'peach'])
+  expect(groups[0]!.label).toBe('cacao')
+  expect(groups[0]!.features.map(f => f.id())).toEqual(['b', 'c'])
+  expect(groups[1]!.features.map(f => f.id())).toEqual(['a'])
+})
+
+test('mate-assembly grouping pins features with no mate assembly last', () => {
+  const features = [
+    feat('a', { mate: { assemblyName: 'peach' } }),
+    feat('b', {}),
+    feat('c', { mate: {} }),
+  ]
+  const groups = partitionFeatures(features, { type: 'mateAssembly' })
+  expect(keys(groups)).toEqual(['peach', ''])
+  expect(groups[1]!.label).toBe('No mate assembly')
+  expect(groups[1]!.features.map(f => f.id())).toEqual(['b', 'c'])
+})
+
 test('isChainGroupableType allows only chain-consistent dimensions', () => {
   expect(isChainGroupableType('tag')).toBe(true)
   expect(isChainGroupableType('firstOfPairStrand')).toBe(true)
   expect(isChainGroupableType('pairOrientation')).toBe(true)
+  expect(isChainGroupableType('mateAssembly')).toBe(true)
   expect(isChainGroupableType('strand')).toBe(false)
   expect(isChainGroupableType('supplementary')).toBe(false)
   expect(isChainGroupableType('mapq')).toBe(false)

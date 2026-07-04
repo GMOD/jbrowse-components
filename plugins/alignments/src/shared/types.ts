@@ -111,6 +111,7 @@ export type GroupByType =
   | 'supplementary'
   | 'duplicate'
   | 'mapq'
+  | 'mateAssembly'
 
 export interface GroupBy {
   type: GroupByType

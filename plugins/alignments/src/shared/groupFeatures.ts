@@ -84,6 +84,20 @@ function duplicateKey(feature: Feature): GroupKey {
     : { key: 'nonduplicate', label: 'Non-duplicate' }
 }
 
+// Synteny features (PAF/all-vs-all) carry a `mate` referencing the other side's
+// assembly. Its `assemblyName` is the loaded assembly if listed, else the bare
+// PanSN sample prefix (sample/haplotype, not necessarily a species). Grouping by
+// it puts each mate sample in its own section — the point of an all-vs-all track
+// in a plain LGV, where one assembly draws against every other sample. A missing
+// mate assembly collapses into the "" group.
+function mateAssemblyKey(feature: Feature): GroupKey {
+  const mate = feature.get('mate') as { assemblyName?: string } | undefined
+  const assemblyName = mate?.assemblyName
+  return assemblyName
+    ? { key: assemblyName, label: assemblyName }
+    : { key: '', label: 'No mate assembly' }
+}
+
 // MAPQ bucketed into decades. SAM uses 255 for "unavailable", bucketed on its
 // own so it never blends with a real high-confidence bin.
 function mapqKey(feature: Feature): GroupKey {
@@ -198,6 +212,10 @@ export interface GroupByDimension {
   // per-region worker calls. Per-read dimensions split chains and are excluded
   // from chain (linked-reads) mode.
   chainConsistent: boolean
+  // True for dimensions that don't apply to ordinary alignment reads and so are
+  // not offered in the general Group-by dialog; a display that supports them
+  // (e.g. LGVSyntenyDisplay's "Group by species") surfaces them itself.
+  hidden?: boolean
   // The group-key generator for this dimension. Co-located with the metadata so
   // each dimension is defined in exactly one place — `groupKeyFor` just looks it
   // up. `groupBy` is passed for tag grouping, which needs `groupBy.tag`.
@@ -251,6 +269,13 @@ export const GROUP_BY_DIMENSIONS: Record<GroupByType, GroupByDimension> = {
     label: 'MAPQ (binned)',
     chainConsistent: false,
     key: mapqKey,
+  },
+  mateAssembly: {
+    type: 'mateAssembly',
+    label: 'Mate assembly',
+    chainConsistent: true,
+    hidden: true,
+    key: mateAssemblyKey,
   },
 }
 

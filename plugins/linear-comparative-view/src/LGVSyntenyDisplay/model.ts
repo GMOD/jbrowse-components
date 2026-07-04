@@ -15,6 +15,7 @@ import {
 } from '@jbrowse/plugin-alignments'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { findVisibleBlockForFeature } from './components/util.ts'
 
@@ -94,6 +95,17 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
          */
         contextMenuItems() {
           const feature = self.contextMenuFeature
+          // one-vs-all can pair the feature with a sample that isn't a loaded
+          // assembly; a synteny view can only be launched against a loaded one
+          const mate = feature?.get('mate') as
+            | { assemblyName?: string }
+            | undefined
+          const mateAssembly = mate?.assemblyName
+          const canLaunchSynteny =
+            mateAssembly !== undefined &&
+            getSession(self).assemblyManager.assemblyNamesList.includes(
+              mateAssembly,
+            )
           return feature
             ? [
                 {
@@ -103,24 +115,31 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                     self.selectFeature(feature)
                   },
                 },
-                {
-                  label: 'Launch synteny view for this position',
-                  onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      LaunchSyntenyViewDialog,
+                ...(canLaunchSynteny
+                  ? [
                       {
-                        visibleRegion: findVisibleBlockForFeature(
-                          getContainingView(self) as LinearGenomeViewModel,
-                          feature,
-                        ),
-                        trackId: getConf(getContainingTrack(self), 'trackId'),
-                        handleClose,
-                        session: getSession(self),
-                        feature,
+                        label: 'Launch synteny view for this position',
+                        onClick: () => {
+                          getSession(self).queueDialog(handleClose => [
+                            LaunchSyntenyViewDialog,
+                            {
+                              visibleRegion: findVisibleBlockForFeature(
+                                getContainingView(self) as LinearGenomeViewModel,
+                                feature,
+                              ),
+                              trackId: getConf(
+                                getContainingTrack(self),
+                                'trackId',
+                              ),
+                              handleClose,
+                              session: getSession(self),
+                              feature,
+                            },
+                          ])
+                        },
                       },
-                    ])
-                  },
-                },
+                    ]
+                  : []),
                 {
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
@@ -145,6 +164,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
          * #method
          */
         trackMenuItems() {
+          const groupedByMate = self.groupBy?.type === 'mateAssembly'
           return [
             getFeatureHeightMenuItem(self),
             getColorByMenuItem(self, {
@@ -155,6 +175,17 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               ],
             }),
             getFiltersMenuItem(self),
+            {
+              label: 'Group by mate sample',
+              type: 'checkbox' as const,
+              checked: groupedByMate,
+              icon: WorkspacesIcon,
+              onClick: () => {
+                self.setGroupBy(
+                  groupedByMate ? undefined : { type: 'mateAssembly' },
+                )
+              },
+            },
           ]
         },
       }))
