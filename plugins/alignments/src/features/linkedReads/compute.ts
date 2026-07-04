@@ -19,6 +19,32 @@ export const LINKED_READ_COLOR_PAIR_LL = 4
 export const LINKED_READ_COLOR_SPLIT_NORMAL = 5
 export const LINKED_READ_COLOR_SPLIT_INV = 6
 
+// Human-readable connection classification for the bezier-arc hover tooltip.
+// Pair-orientation wording matches CATEGORY_LEGEND (the read-fill legend) so the
+// same LR/RL/RR/LL nomenclature IGV uses reads consistently across the swatch
+// and the arc. Split labels are interpretive because a split-read strand flip is
+// an unambiguous inversion junction (unlike library-dependent pair orientation);
+// split inversion and RR pairs deliberately share the inversion blue (see
+// linkedReadColorPalette) — the dashed stroke says which evidence produced it.
+export function connectionLabel(colorType: number) {
+  switch (colorType) {
+    case LINKED_READ_COLOR_SPLIT_INV:
+      return 'Split-read inversion'
+    case LINKED_READ_COLOR_SPLIT_NORMAL:
+      return 'Split read (deletion)'
+    case LINKED_READ_COLOR_PAIR_RR:
+      return 'RR - Both mates reverse strand'
+    case LINKED_READ_COLOR_PAIR_RL:
+      return 'RL - Mates point outward'
+    case LINKED_READ_COLOR_PAIR_LL:
+      return 'LL - Both mates forward strand'
+    case LINKED_READ_COLOR_PAIR_LR:
+      return 'LR - Normal pair orientation'
+    default:
+      return 'Read pair'
+  }
+}
+
 export interface ReadEntry {
   displayedRegionIndex: number
   readIdx: number

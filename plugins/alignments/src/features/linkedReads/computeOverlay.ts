@@ -3,7 +3,7 @@ import {
   bezierConnectorPath,
 } from '@jbrowse/core/util'
 
-import { iterLinkedPairs } from './compute.ts'
+import { connectionLabel, iterLinkedPairs } from './compute.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 
@@ -17,11 +17,24 @@ function arcIsVisible(sy1: number, sy2: number, viewportBottom: number) {
   return Math.min(sy1, sy2) < viewportBottom && Math.max(sy1, sy2) > 0
 }
 
+// Two orthogonal channels encode a connector: hue = biological signature
+// (inversion, deletion, …) and stroke style = evidence source. Solid = mate
+// pair, dashed = split-read junction. So a split-read inversion and an RR pair
+// deliberately share the inversion blue but read apart at a glance — the dash
+// says the arc concerns a split supplementary segment, not the mate pair.
+const SPLIT_READ_DASH = '5 3'
+
 export interface PileupArc {
   d: string
   stroke: string
   id1: string
   id2: string
+  // SVG dash pattern, or undefined for a solid stroke. Computed here (not in the
+  // renderers) so the on-screen overlay and SVG export can't drift, matching how
+  // `d`/`stroke` are single-sourced.
+  strokeDasharray: string | undefined
+  // Connection classification for the hover tooltip.
+  label: string
 }
 
 // Enumerate the linked pairs of a laid-out region map: the scroll- and
@@ -122,6 +135,8 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     result.push({
       d,
       stroke,
+      strokeDasharray: c.hasPaired ? undefined : SPLIT_READ_DASH,
+      label: connectionLabel(c.colorType),
       id1: e1.data.readIds[e1.readIdx]!,
       id2: e2.data.readIds[e2.readIdx]!,
     })

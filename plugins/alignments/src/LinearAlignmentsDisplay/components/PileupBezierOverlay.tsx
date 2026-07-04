@@ -10,6 +10,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 function arcTooltip(
   model: LinearAlignmentsDisplayModel,
+  label: string,
   id1: string,
   id2: string,
 ) {
@@ -22,7 +23,7 @@ function arcTooltip(
       )
     }
   }
-  return parts.length > 0 ? parts.join(' → ') : undefined
+  return parts.length > 0 ? `${label}: ${parts.join(' → ')}` : label
 }
 
 const PileupBezierOverlay = observer(function PileupBezierOverlay({
@@ -69,10 +70,11 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
             stroke={arc.stroke}
             strokeWidth={isSelected ? 5 : 1}
             strokeOpacity={0.8}
+            strokeDasharray={arc.strokeDasharray}
             fill="none"
             style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
             onMouseEnter={() => {
-              const tooltip = arcTooltip(model, arc.id1, arc.id2)
+              const tooltip = arcTooltip(model, arc.label, arc.id1, arc.id2)
               if (tooltip) {
                 model.setMouseoverExtraInformation(tooltip)
               }

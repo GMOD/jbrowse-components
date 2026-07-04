@@ -10,6 +10,8 @@ import {
   computePileupBezierArcs,
   enumerateBezierPairs,
 } from './computeOverlay.ts'
+import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -21,6 +23,7 @@ function makeData(opts: {
   positions: number[][]
   ys: number[]
   orientations?: number[]
+  ids?: string[]
 }): PileupDataResult {
   const n = opts.names.length
   const readPositions = new Uint32Array(n * 2)
@@ -30,7 +33,7 @@ function makeData(opts: {
   }
   return {
     readNames: opts.names,
-    readIds: opts.names.map((_, i) => `id${i}`),
+    readIds: opts.ids ?? opts.names.map((_, i) => `id${i}`),
     readFlags: new Uint16Array(opts.flags),
     readStrands: new Int8Array(opts.strands),
     readPositions,
@@ -159,6 +162,97 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
     expect(arcs[0]!.d).not.toMatch(/NaN/)
+  })
+})
+
+describe('computePileupBezierArcs — evidence channel (dash) vs signature (hue)', () => {
+  // Stroke style is the evidence source: dashed = split-read junction, solid =
+  // mate pair. Hue is the biological signature. So a split-read inversion and an
+  // RR pair share the inversion blue yet read apart — the dash says the arc
+  // concerns a split segment, not the mate pair.
+  const rr = rgb255(linkedReadColorPalette[LINKED_READ_COLOR_PAIR_RR]!)
+
+  it('split inversion: dashed, inversion blue, labeled', () => {
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, -1],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      ys: [0, 1],
+    })
+    const arcs = computePileupBezierArcs({
+      ...baseOpts,
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.strokeDasharray).toBeDefined()
+    expect(arcs[0]!.stroke).toBe(rr) // same blue as an RR pair
+    expect(arcs[0]!.label).toBe('Split-read inversion')
+  })
+
+  it('split deletion is also dashed — dash marks split evidence, not inversion', () => {
+    // Cross-region same-strand split read (a deletion). It reaches the overlay
+    // as a straight fallback; it must still be dashed because it's split-derived.
+    const r1 = makeData({
+      names: ['r'],
+      ids: ['primary'],
+      flags: [0],
+      strands: [1],
+      positions: [[100, 200]],
+      ys: [0],
+    })
+    const r2 = makeData({
+      names: ['r'],
+      ids: ['supp'],
+      flags: [SAM_FLAG_SUPPLEMENTARY],
+      strands: [1],
+      positions: [[300, 400]],
+      ys: [1],
+    })
+    const arcs = computePileupBezierArcs({
+      ...baseOpts,
+      displayedRegions: [
+        { refName: 'chr1' },
+        { refName: 'chr2' },
+      ],
+      pairs: enumerateBezierPairs(
+        new Map([
+          [0, r1],
+          [1, r2],
+        ]),
+      ),
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.strokeDasharray).toBeDefined()
+    expect(arcs[0]!.label).toBe('Split read (deletion)')
+  })
+
+  it('RR pair: solid, same inversion blue', () => {
+    const data = makeData({
+      names: ['p', 'p'],
+      flags: [
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ],
+      strands: [1, 1],
+      orientations: [LINKED_READ_COLOR_PAIR_RR, LINKED_READ_COLOR_PAIR_RR],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      ys: [0, 1],
+    })
+    const arcs = computePileupBezierArcs({
+      ...baseOpts,
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.strokeDasharray).toBeUndefined()
+    expect(arcs[0]!.stroke).toBe(rr)
+    expect(arcs[0]!.label).toBe('RR - Both mates reverse strand')
   })
 })
 

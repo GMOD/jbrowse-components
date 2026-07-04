@@ -24,6 +24,7 @@ const PileupBezierArcsSvg = observer(function PileupBezierArcsSvg({
           stroke={arc.stroke}
           strokeWidth={1.5}
           strokeOpacity={0.8}
+          strokeDasharray={arc.strokeDasharray}
           fill="none"
         />
       ))}
