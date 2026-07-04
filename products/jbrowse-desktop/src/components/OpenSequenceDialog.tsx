@@ -5,8 +5,9 @@ import AddGenomePane from '@jbrowse/core/ui/AddGenomePane'
 import {
   buildAssemblyConf,
   clearFormFields,
-  formHasSequence,
+  getAssemblyName,
   initialFormState,
+  isFormReady,
 } from '@jbrowse/core/util/assemblyConfigUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent } from '@mui/material'
@@ -41,7 +42,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState('')
 
-  const formReady = !!form.assemblyName && formHasSequence(form)
+  const formReady = isFormReady(form)
   const totalToOpen = assemblyConfs.length + (formReady ? 1 : 0)
 
   async function indexFasta(
@@ -60,20 +61,14 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   }
 
   async function stageCurrentAssembly() {
-    if (!form.assemblyName) {
+    const name = getAssemblyName(form)
+    if (!name) {
       throw new Error('No assembly name set')
     }
-    if (assemblyConfs.some(conf => conf.name === form.assemblyName)) {
-      throw new Error(`Assembly "${form.assemblyName}" is already staged`)
+    if (assemblyConfs.some(conf => conf.name === name)) {
+      throw new Error(`Assembly "${name}" is already staged`)
     }
-    return [
-      ...assemblyConfs,
-      await buildAssemblyConf(
-        form,
-        indexFasta,
-        `${form.assemblyName}-${Date.now()}`,
-      ),
-    ]
+    return [...assemblyConfs, await buildAssemblyConf(form, indexFasta)]
   }
 
   async function runStaging(action: () => Promise<void>) {
@@ -105,13 +100,19 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     })
   }
 
+  function handleCancel() {
+    if (!loading) {
+      onClose().catch((e: unknown) => {
+        setError(e)
+      })
+    }
+  }
+
   return (
     <Dialog
       open
-      onClose={async () => {
-        if (!loading) {
-          await onClose()
-        }
+      onClose={() => {
+        handleCancel()
       }}
       title="Open a genome"
     >
@@ -144,9 +145,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
         <Button
           variant="contained"
           onClick={() => {
-            onClose().catch((e: unknown) => {
-              setError(e)
-            })
+            handleCancel()
           }}
           color="secondary"
           disabled={!!loading}

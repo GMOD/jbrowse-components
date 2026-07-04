@@ -221,6 +221,20 @@ export function formHasSequence(form: FormState) {
     : !isBlank(form.fastaLocation)
 }
 
+// The name the assembly is saved under. Trimmed because surrounding whitespace
+// is never intentional and would otherwise create near-duplicate assemblies
+// ("hg38" vs "hg38 ") that a caller's duplicate check can't catch.
+export function getAssemblyName(form: FormState) {
+  return form.assemblyName.trim()
+}
+
+// Whether the form can be submitted/staged: a primary sequence file is chosen
+// and a (non-whitespace) name is set. Shared so every add-assembly surface gates
+// its submit button the same way.
+export function isFormReady(form: FormState) {
+  return formHasSequence(form) && !!getAssemblyName(form)
+}
+
 export function getFilename(location: FileLocation) {
   if ('uri' in location) {
     return location.uri.split('/').pop() ?? ''
@@ -361,24 +375,25 @@ export function applyClassifiedFiles(
 // Build a full assembly config from the form. A plain FASTA has no index, so
 // the caller supplies a resolveFastaAdapter callback (desktop runs an
 // out-of-process samtools faidx to make an IndexedFastaAdapter; web keeps an
-// UnindexedFastaAdapter) used only for the needsFastaIndex case.
+// UnindexedFastaAdapter) used only for the needsFastaIndex case. The name is
+// trimmed and reused for a unique-per-open sequence trackId.
 export async function buildAssemblyConf(
   form: FormState,
   resolveFastaAdapter: (
     fastaLocation: FileLocation,
   ) => Promise<AssemblyAdapter> | AssemblyAdapter,
-  trackId: string,
 ): Promise<AssemblyConf> {
+  const name = getAssemblyName(form)
   const result = getAdapterConfig(form)
   const adapter =
     result.kind === 'needsFastaIndex'
       ? await resolveFastaAdapter(result.fastaLocation)
       : result.adapter
   return {
-    ...getBaseAssemblyConfig(form),
+    ...getBaseAssemblyConfig({ ...form, assemblyName: name }),
     sequence: {
       type: 'ReferenceSequenceTrack',
-      trackId,
+      trackId: `${name}-${Date.now()}`,
       adapter,
     },
   }

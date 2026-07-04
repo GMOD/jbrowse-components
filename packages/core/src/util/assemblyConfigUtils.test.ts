@@ -2,17 +2,20 @@ import {
   applyClassifiedFiles,
   applyPrimaryFile,
   applyTwoBitFile,
+  buildAssemblyConf,
   classifyAssemblyFiles,
   classifyFilename,
   clearFormFields,
   detectAdapterType,
   formHasSequence,
   getAdapterConfig,
+  getAssemblyName,
   getAssemblyNameFromFilename,
   getBaseAssemblyConfig,
   getFilename,
   initialFormState,
   isBlank,
+  isFormReady,
   urlTextToLocations,
 } from './assemblyConfigUtils.ts'
 
@@ -565,5 +568,103 @@ describe('getBaseAssemblyConfig', () => {
     expect(getBaseAssemblyConfig(initialFormState())).not.toHaveProperty(
       'cytobands',
     )
+  })
+})
+
+describe('getAssemblyName', () => {
+  test('trims surrounding whitespace', () => {
+    expect(
+      getAssemblyName({ ...initialFormState(), assemblyName: '  hg38  ' }),
+    ).toBe('hg38')
+  })
+
+  test('empty for a whitespace-only name', () => {
+    expect(
+      getAssemblyName({ ...initialFormState(), assemblyName: '   ' }),
+    ).toBe('')
+  })
+})
+
+describe('isFormReady', () => {
+  test('false for a fresh form', () => {
+    expect(isFormReady(initialFormState())).toBe(false)
+  })
+
+  test('false when a sequence is set but the name is whitespace-only', () => {
+    expect(
+      isFormReady({
+        ...initialFormState(),
+        fastaLocation: fasta,
+        assemblyName: '   ',
+      }),
+    ).toBe(false)
+  })
+
+  test('true once both a sequence and a real name are set', () => {
+    expect(
+      isFormReady({
+        ...initialFormState(),
+        fastaLocation: fasta,
+        assemblyName: 'hg38',
+      }),
+    ).toBe(true)
+  })
+})
+
+describe('buildAssemblyConf', () => {
+  const resolveFastaAdapter = (fastaLocation: FileLocation) => ({
+    type: 'UnindexedFastaAdapter' as const,
+    fastaLocation,
+  })
+
+  test('trims the saved name and derives the trackId from it', async () => {
+    const conf = await buildAssemblyConf(
+      {
+        ...initialFormState(),
+        adapterSelection: 'IndexedFastaAdapter',
+        fastaLocation: fasta,
+        faiLocation: fai,
+        assemblyName: '  hg38  ',
+      },
+      resolveFastaAdapter,
+    )
+    expect(conf.name).toBe('hg38')
+    expect(conf.sequence.trackId.startsWith('hg38-')).toBe(true)
+    expect(conf.sequence.type).toBe('ReferenceSequenceTrack')
+    expect(conf.sequence.adapter).toEqual({
+      type: 'IndexedFastaAdapter',
+      fastaLocation: fasta,
+      faiLocation: fai,
+    })
+  })
+
+  test('routes a plain FASTA through the injected resolver', async () => {
+    const conf = await buildAssemblyConf(
+      {
+        ...initialFormState(),
+        adapterSelection: 'FastaAdapter',
+        fastaLocation: fasta,
+        assemblyName: 'hg38',
+      },
+      resolveFastaAdapter,
+    )
+    expect(conf.sequence.adapter).toEqual({
+      type: 'UnindexedFastaAdapter',
+      fastaLocation: fasta,
+    })
+  })
+
+  test('propagates a required-file error from getAdapterConfig', async () => {
+    await expect(
+      buildAssemblyConf(
+        {
+          ...initialFormState(),
+          adapterSelection: 'IndexedFastaAdapter',
+          fastaLocation: fasta,
+          assemblyName: 'hg38',
+        },
+        resolveFastaAdapter,
+      ),
+    ).rejects.toThrow('Both FASTA and FAI locations are required')
   })
 })

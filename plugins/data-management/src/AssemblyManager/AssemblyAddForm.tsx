@@ -3,8 +3,8 @@ import { useState } from 'react'
 import AddGenomePane from '@jbrowse/core/ui/AddGenomePane'
 import {
   buildAssemblyConf,
-  formHasSequence,
   initialFormState,
+  isFormReady,
 } from '@jbrowse/core/util/assemblyConfigUtils'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -22,21 +22,17 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
   onClose: () => void
 }) {
   const [form, setForm] = useState(initialFormState)
-  const ready = formHasSequence(form) && !!form.assemblyName.trim()
+  const ready = isFormReady(form)
 
   async function onSubmit() {
     try {
       // web has no samtools faidx, so a plain FASTA stays unindexed
-      const conf = await buildAssemblyConf(
-        form,
-        (fastaLocation: FileLocation) => ({
-          type: 'UnindexedFastaAdapter' as const,
-          fastaLocation,
-        }),
-        `${form.assemblyName}-${performance.now()}`,
-      )
+      const conf = await buildAssemblyConf(form, (fastaLocation: FileLocation) => ({
+        type: 'UnindexedFastaAdapter' as const,
+        fastaLocation,
+      }))
       session.addAssembly?.(conf)
-      session.notify(`Added "${form.assemblyName}"`, 'success')
+      session.notify(`Added "${conf.name}"`, 'success')
       onClose()
     } catch (e) {
       console.error(e)
