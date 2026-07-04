@@ -518,16 +518,6 @@ export default function stateModelFactory(
           groupMaxHeightOverrides: observable.map<string, number>(),
           /**
            * #volatile
-           * "Fit to display height" mode: `featureHeight`/`featureSpacing` resolve
-           * to a size that makes all uncollapsed groups' reads fill the display
-           * without scrolling (reads thin as needed). Volatile — a view preference
-           * like scrollTop; picking any explicit feature-height preset turns it
-           * off. The `height` config slot is never written, so it stays pure user
-           * intent.
-           */
-          fitHeightToDisplay: false,
-          /**
-           * #volatile
            * Cache of the current fitted read height in px, kept in sync by the
            * afterAttach autorun while `fitHeightToDisplay` is on. A volatile (not a
            * getter) because the fit height derives from late layout getters that
@@ -595,6 +585,19 @@ export default function stateModelFactory(
          */
         get showLinkedReadLines() {
           return self.showBezierConnections && self.linkedReads === 'off'
+        },
+
+        /**
+         * #getter
+         * "Fit to display height" mode: reads pack to fill the display without
+         * scrolling. Derived from the promotable `heightMode` sentinel slot so it
+         * flows through the session-default cascade (track value, else
+         * session-wide default, else `fixed`) — same machinery as the numeric
+         * height slots. The `featureHeight`/`height` slots are never written, so
+         * they stay pure user intent.
+         */
+        get fitHeightToDisplay(): boolean {
+          return getConfResolved(self, 'heightMode') === 'fit'
         },
       }))
       // Canonical ScoreScaleModel shape (shared with wiggle/manhattan) so the
@@ -715,30 +718,38 @@ export default function stateModelFactory(
         // featureHeight/featureSpacing are promotable slots: each resolves
         // through getConfResolved (track value, else session-wide default, else
         // schema default). "Compactness" is just these two slots moved together.
-        // In fit-to-height mode they instead resolve to the autorun-cached fit
-        // size (reads pack with no spacing), so every read-height consumer sees
-        // the fitted value without threading a separate getter.
+        // In fit-to-height mode they instead split the autorun-cached fit pitch
+        // (`fittedHeightPx` = pileupSpace/rows) into a read body plus spacing, so
+        // every read-height consumer sees the fitted values without threading a
+        // separate getter. body + spacing always equals the pitch, so the fill
+        // stays exact regardless of the spacing.
         get featureHeight(): number {
           return self.fitHeightToDisplay && self.fittedHeightPx > 0
-            ? self.fittedHeightPx
+            ? self.fittedHeightPx - this.featureSpacing
             : getConfResolved(self, 'featureHeight')
         },
 
         /**
          * #getter
          */
+        // Once the fitted pitch clears 3px there's room to spare a pixel for a
+        // gap between reads (leaving a >2px body); below that reads stay flush so
+        // no pixel is wasted on spacing.
         get featureSpacing(): number {
-          return self.fitHeightToDisplay && self.fittedHeightPx > 0
-            ? 0
-            : getConfResolved(self, 'featureSpacing')
+          if (self.fitHeightToDisplay && self.fittedHeightPx > 0) {
+            return self.fittedHeightPx > 3 ? 1 : 0
+          }
+          return getConfResolved(self, 'featureSpacing')
         },
 
         // true when the current size already equals the session-wide default
-        // (drives the "use current height by default" checkbox)
+        // (drives the "use current height by default" checkbox). heightMode joins
+        // the group so promoting "fit" persists fit-to-display, not just a size.
         get isCompactnessDefault(): boolean {
           return areSlotsAtSessionDefault(self, [
             'featureHeight',
             'featureSpacing',
+            'heightMode',
           ])
         },
 
@@ -2002,7 +2013,7 @@ export default function stateModelFactory(
           setCompactnessDefault(promote: boolean) {
             setSlotsSessionDefault(
               self,
-              ['featureHeight', 'featureSpacing'],
+              ['featureHeight', 'featureSpacing', 'heightMode'],
               promote,
             )
           },
@@ -2218,7 +2229,7 @@ export default function stateModelFactory(
            * #action
            */
           setFeatureHeight(height?: number) {
-            self.fitHeightToDisplay = false
+            self.configuration.setSlot('heightMode', 'fixed')
             self.configuration.setSlot('featureHeight', height)
             self.scrollTop = 0
           },
@@ -2227,7 +2238,7 @@ export default function stateModelFactory(
            * #action
            */
           setFeatureSpacing(spacing?: number) {
-            self.fitHeightToDisplay = false
+            self.configuration.setSlot('heightMode', 'fixed')
             self.configuration.setSlot('featureSpacing', spacing)
             self.scrollTop = 0
           },
@@ -2246,7 +2257,7 @@ export default function stateModelFactory(
            */
           setCompactness(level: CompactnessLevel) {
             const { featureHeight, featureSpacing } = COMPACTNESS_PRESETS[level]
-            self.fitHeightToDisplay = false
+            self.configuration.setSlot('heightMode', 'fixed')
             self.configuration.setSlot('featureHeight', featureHeight)
             self.configuration.setSlot('featureSpacing', featureSpacing)
             self.scrollTop = 0
@@ -2259,7 +2270,7 @@ export default function stateModelFactory(
            * keeps `featureHeight` sized to fit as the display/data change.
            */
           setFitHeightToDisplay(fit: boolean) {
-            self.fitHeightToDisplay = fit
+            self.configuration.setSlot('heightMode', fit ? 'fit' : 'fixed')
             if (fit) {
               self.groupMaxHeightOverrides.clear()
               self.scrollTop = 0
