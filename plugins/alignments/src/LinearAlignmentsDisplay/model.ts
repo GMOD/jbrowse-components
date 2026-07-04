@@ -2275,21 +2275,6 @@ export default function stateModelFactory(
             self.fittedHeightPx = px
           },
 
-          afterAttach() {
-            // Keep the fitted-height cache in sync while in "fit to display
-            // height" mode — re-fits as the display resizes, data loads, or groups
-            // collapse. `fittedFeatureHeight` ignores featureHeight, so caching it
-            // (which the featureHeight getter then reads) can't loop.
-            addDisposer(
-              self,
-              autorun(() => {
-                if (self.fitHeightToDisplay) {
-                  self.setFittedHeightPx(self.fittedFeatureHeight)
-                }
-              }),
-            )
-          },
-
           /**
            * #action
            */
@@ -2815,6 +2800,22 @@ export default function stateModelFactory(
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self as LinearAlignmentsDisplayModel, opts)
+        },
+
+        afterAttach() {
+          // Keep the fitted-height cache in sync while in "fit to display height"
+          // mode — re-fits as the display resizes, data loads, or groups collapse.
+          // `fittedFeatureHeight` ignores featureHeight, so caching it (which the
+          // featureHeight getter then reads) can't loop. In its own trailing
+          // actions block so `self.setFittedHeightPx` (an earlier block) is typed.
+          addDisposer(
+            self,
+            autorun(() => {
+              if (self.fitHeightToDisplay) {
+                self.setFittedHeightPx(self.fittedFeatureHeight)
+              }
+            }),
+          )
         },
       }))
   )
