@@ -34,8 +34,8 @@
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.11.2",
-    "@mui/icons-material": "^9.1.1",
-    "@mui/material": "^9.1.2",
+    "@mui/icons-material": "^9.2.0",
+    "@mui/material": "^9.2.0",
     "mobx-react": "^9.2.2"
   },
   "publishConfig": {

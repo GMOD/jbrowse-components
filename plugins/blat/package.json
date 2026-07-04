@@ -31,8 +31,8 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@mui/icons-material": "^9.1.1",
-    "@mui/material": "^9.1.2",
+    "@mui/icons-material": "^9.2.0",
+    "@mui/material": "^9.2.0",
     "mobx": "^6.16.1",
     "mobx-react": "^9.2.2"
   },

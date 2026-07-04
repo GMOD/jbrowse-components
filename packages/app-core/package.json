@@ -35,8 +35,8 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.11.2",
     "@jbrowse/product-core": "workspace:^",
-    "@mui/icons-material": "^9.1.1",
-    "@mui/material": "^9.1.2",
+    "@mui/icons-material": "^9.2.0",
+    "@mui/material": "^9.2.0",
     "dockview-react": "^7.0.2",
     "mobx": "^6.16.1",
     "mobx-react": "^9.2.2"
