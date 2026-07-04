@@ -62,7 +62,7 @@ genomic position. This lets you read a coding variant straight onto the folded
 protein — for example, to see whether a ClinVar missense variant lands in a
 functional domain or is buried in the core.
 
-<Figure caption="A connected session on human TP53 (UniProt P04637). The genome view (top) shows the NCBI RefSeq gene models and ClinVar variants; the protein view (bottom) shows the AlphaFold structure together with the genome-to-structure sequence alignment and per-residue tracks (pLDDT confidence, domains, helices, hydrophobicity). Hovering a variant in the genome highlights the matching residue on the structure." src="/img/protein/connected.png" />
+<Figure caption="A connected session on human TP53 (UniProt P04637). The genome view (left) shows the NCBI RefSeq gene models and ClinVar variants; the protein view (right) shows the AlphaFold structure together with the genome-to-structure sequence alignment and per-residue tracks (pLDDT confidence, domains, helices, hydrophobicity). Hovering a variant in the genome highlights the matching residue on the structure." src="/img/protein/connected.png" />
 
 The genome-to-protein mapping is derived from the transcript's coding exons, so
 intronic and UTR positions are skipped and each codon maps to a single residue.
