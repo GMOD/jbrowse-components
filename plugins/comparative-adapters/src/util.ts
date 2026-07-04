@@ -107,28 +107,3 @@ export function parsePAFLine(line: string) {
     extra,
   }
 }
-
-export function flipCigar(cigar: string) {
-  const ops: [number, string][] = []
-  let len = 0
-  for (let i = 0, l = cigar.length; i < l; i++) {
-    const c = cigar[i]!
-    if (c >= '0' && c <= '9') {
-      len = len * 10 + (c.charCodeAt(0) - 48)
-    } else {
-      ops.push([len, c])
-      len = 0
-    }
-  }
-  let result = ''
-  for (let i = ops.length - 1; i >= 0; i--) {
-    const [l, op] = ops[i]!
-    result += l
-    result += op === 'D' ? 'I' : op === 'I' ? 'D' : op
-  }
-  return result
-}
-
-export function swapIndelCigar(cigar: string) {
-  return cigar.replaceAll('D', 'K').replaceAll('I', 'D').replaceAll('K', 'I')
-}

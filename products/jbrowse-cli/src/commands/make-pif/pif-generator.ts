@@ -5,12 +5,9 @@ import { Transform } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { createGunzip } from 'node:zlib'
 
-import {
-  csToCigar,
-  flipCigar,
-  splitCigarOnLargeGaps,
-  swapIndelCigar,
-} from './cigar-utils.ts'
+import { csToCigar, flipCigar, swapIndelCigar } from '@jbrowse/cigar-utils'
+
+import { splitCigarOnLargeGaps } from './cigar-utils.ts'
 
 import type { Writable } from 'node:stream'
 

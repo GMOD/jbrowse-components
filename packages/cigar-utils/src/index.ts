@@ -16,6 +16,8 @@ export {
   SEQRET_NUMERIC_DECODER,
 } from './bamSeqDecoder.ts'
 export { forEachMismatchNumeric } from './forEachMismatchNumeric.ts'
+export { flipCigar, swapIndelCigar } from './cigarReorient.ts'
+export { csToCigar } from './csToCigar.ts'
 export {
   DELETION_TYPE,
   HARDCLIP_TYPE,

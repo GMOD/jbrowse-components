@@ -1,8 +1,4 @@
-import { flipCigar, pafIdentity } from './util.ts'
-
-test('flip cigar', () => {
-  expect(flipCigar('3M5D5M5I6M')).toEqual('6M5D5M5I3M')
-})
+import { pafIdentity } from './util.ts'
 
 describe('pafIdentity', () => {
   test('prefers de:f: tag (1 - de)', () => {

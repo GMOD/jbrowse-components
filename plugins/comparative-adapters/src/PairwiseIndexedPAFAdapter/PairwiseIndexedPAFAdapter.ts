@@ -1,11 +1,11 @@
 import { TabixIndexedFile } from '@gmod/tabix'
+import { csToCigar } from '@jbrowse/cigar-utils'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { csToCigar } from '../csUtils.ts'
 import { getAssemblyNamesFromConf, pafIdentity, parsePAFLine } from '../util.ts'
 
 import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'

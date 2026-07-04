@@ -1,23 +1,4 @@
-import {
-  csToCigar,
-  flipCigar,
-  splitCigarOnLargeGaps,
-  swapIndelCigar,
-} from './cigar-utils.ts'
-
-describe('csToCigar', () => {
-  test('short form match/sub/ins/del', () => {
-    expect(csToCigar(':6*ct:4+gtc:3-a')).toBe('6=1X4=3I3=1D')
-  })
-
-  test('long form (=SEQ)', () => {
-    expect(csToCigar('=ACGT*ct=AC')).toBe('4=1X2=')
-  })
-
-  test('splice (~) becomes N', () => {
-    expect(csToCigar(':5~gt10ag:5')).toBe('5=10N5=')
-  })
-})
+import { splitCigarOnLargeGaps } from './cigar-utils.ts'
 
 function call({
   cigar = '100M',
@@ -214,33 +195,5 @@ describe('splitCigarOnLargeGaps', () => {
       qstart: 0,
       qend: 100,
     })
-  })
-})
-
-// These pin the per-perspective CIGAR contract the PIF reader depends on:
-// make-pif writes the t-row CIGAR as-is and the q-row CIGAR swapped (+ strand)
-// or flipped (- strand), so PairwiseIndexedPAFAdapter never re-flips at read
-// time. The reader's plugins/comparative-adapters/src/util.ts holds a separate
-// copy of these two functions; keep both behaviors identical.
-describe('swapIndelCigar', () => {
-  test('swaps D<->I and leaves everything else / order alone', () => {
-    expect(swapIndelCigar('10M2D5M3I')).toBe('10M2I5M3D')
-  })
-  test('no-op when there are no indels', () => {
-    expect(swapIndelCigar('100M')).toBe('100M')
-    expect(swapIndelCigar('50=10X40=')).toBe('50=10X40=')
-  })
-})
-
-describe('flipCigar', () => {
-  test('reverses token order and swaps D<->I', () => {
-    expect(flipCigar('10M2D5M3I')).toBe('3D5M2I10M')
-  })
-  test('leaves M/=/X untouched while reversing', () => {
-    expect(flipCigar('50=10X40M')).toBe('40M10X50=')
-  })
-  test('single token is unchanged except indel swap', () => {
-    expect(flipCigar('100M')).toBe('100M')
-    expect(flipCigar('7D')).toBe('7I')
   })
 })

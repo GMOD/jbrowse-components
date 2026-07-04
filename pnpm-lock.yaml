@@ -1801,6 +1801,9 @@ importers:
 
   products/jbrowse-cli:
     dependencies:
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/text-indexing-core':
         specifier: workspace:^
         version: link:../../packages/text-indexing-core
