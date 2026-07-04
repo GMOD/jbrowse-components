@@ -40,16 +40,23 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
       ) {
-        const { type } = configuration
+        const { type, connectionId } = configuration
         if (!type) {
           throw new Error('connection configuration has no `type` listed')
         }
-        self.connectionInstances.push({
-          ...initialSnapshot,
-          type,
-          configuration,
-        })
-        return self.connectionInstances.at(-1)
+        const existing = self.connectionInstances.find(
+          c => c.connectionId === connectionId,
+        )
+        if (existing) {
+          return existing
+        } else {
+          const length = self.connectionInstances.push({
+            ...initialSnapshot,
+            type,
+            configuration,
+          })
+          return self.connectionInstances[length - 1]
+        }
       },
 
       /**

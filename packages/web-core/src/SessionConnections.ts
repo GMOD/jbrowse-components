@@ -74,16 +74,20 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
          * #action
          */
         deleteConnection(configuration: AnyConfigurationModel) {
-          if (self.adminMode) {
+          // a session connection is removed from sessionConnections regardless
+          // of adminMode (an admin may be viewing a shared/hub session that
+          // carries them); only a config-level connection defers to jbrowse,
+          // which only admins may edit
+          const { connectionId } = configuration
+          const idx = self.sessionConnections.findIndex(
+            c => c.connectionId === connectionId,
+          )
+          if (idx !== -1) {
+            return self.sessionConnections.splice(idx, 1)
+          } else if (self.adminMode) {
             return superDeleteConnection(configuration)
           } else {
-            const { connectionId } = configuration
-            const idx = self.sessionConnections.findIndex(
-              c => c.connectionId === connectionId,
-            )
-            return idx === -1
-              ? undefined
-              : self.sessionConnections.splice(idx, 1)
+            return undefined
           }
         },
       }
