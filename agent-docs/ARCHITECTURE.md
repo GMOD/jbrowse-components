@@ -524,6 +524,45 @@ downstream knows there's no HAL. Reference: `plugins/sequence`'s
 `createRenderingBackend` only when a profile shows Canvas2D can't hold 60fps at
 the display's real feature counts.
 
+### Keeping the two backends in parity
+
+A dual-path display renders the same pixels two ways (`.slang` shader vs a
+Canvas2D draw fn), and SVG export runs the Canvas2D path — so a shader-only tweak
+silently diverges the export. Parity is kept by construction, not vigilance. When
+touching either path, preserve whichever of these the display uses:
+
+- **Constants live in the shader, TS re-exports them.** `//! export-consts:` in a
+  `.slang` emits the value into its `*.generated.ts`; the Canvas2D side imports it
+  (e.g. `sharedRendererConstants.ts` pulls `MIN_RECT_WIDTH_PX`, `CHEVRON_*`,
+  `MIN_DENSITY_ALPHA` from the passes). Never retype a shader constant as a TS
+  literal — import it so the two can't drift.
+- **One draw helper, both consumers.** Marker/glyph geometry and color math that
+  both paths (or the on-screen overlay + SVG export) need lives in one function:
+  `drawMafInsertionMarker`, `appendPointMarker` (wiggle scatter + Manhattan),
+  `mapHicCount`, synteny's `syntenyPickEngine` geometry. Change the shared fn, not
+  one caller.
+- **One registry, exhaustively keyed.** Multi-layer displays list layers/z-order/
+  gating once and map each id to a per-backend mechanism through a
+  `Record<LayerId, …>` in *both* renderers (alignments' `PILEUP_LAYERS` →
+  `GPU_PILEUP_PASS` and a Canvas2D draw-fn map). The exhaustive Record makes a
+  half-added layer a compile error; `coverageParity.test.ts` cross-checks output.
+- **`SYNC:` comments anchor formulas.** Where a value must match across files
+  (synteny's `WIDTH_FADE_FLOOR`, the 0.7-darken / ×5-cap-0.35 hover shade), a
+  `SYNC:`/`mirrors` comment names the counterpart. Grep the tag before editing
+  either side.
+
+**Intentional divergences — do NOT "fix" these into parity.** The two backends
+legitimately differ where GPU rasterization is watertight but Canvas2D
+antialiases each primitive independently. Canvas2D adds a sub-pixel *overdraw* to
+close seams the GPU never produces (`WIGGLE_FUDGE_FACTOR` 0.8px, the
+variant-matrix `f2`), and swaps a thin fill for a 1px centerline stroke
+(synteny sub-pixel ribbons); the shader instead scales coverage alpha
+(variant-matrix `colWidthPx`, synteny `fillCoverage` `widthFade`). These are
+per-backend AA compensation, not drift — a shader has no equivalent to a
+Canvas2D fudge factor, and porting one in over-widens GPU glyphs. Min-width
+floors, by contrast, *are* mirrored (both clamp to the same px) — those keep
+sub-pixel features visible and must stay in step.
+
 ### Shared per-region streamed contract
 
 Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle)
@@ -1395,3 +1434,9 @@ key on a tuple of two displayedRegion indices.
   `rpcProps()` — `SettingsInvalidate` watches `rpcProps()` and calls
   `clearAllRpcData`, which clears the very data `rpcProps()` just read, creating
   an infinite fetch loop.
+- Don't diverge the two render backends. Import shader constants into TS rather
+  than retyping them, put shared glyph geometry/color math in one draw helper,
+  and keep multi-layer order/gating in one exhaustively-keyed registry. And don't
+  go the other way either: a Canvas2D sub-pixel *overdraw* (fudge factor / `f2`)
+  or stroke-vs-fill swap is deliberate AA compensation with no shader equivalent —
+  don't port it into a `.slang`. See "Keeping the two backends in parity".
