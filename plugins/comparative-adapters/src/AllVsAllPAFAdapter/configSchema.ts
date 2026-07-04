@@ -9,11 +9,14 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * mapping step) where every sequence name is PanSN-prefixed with its assembly
  * (`sample#haplotype#contig`). Because such a file contains every pairwise
  * alignment, one file (and one track) backs every synteny band of a multi-way
- * view: list all the assemblies in `assemblyNames` and the same track can be
- * reused for each adjacent pair. The synteny view tells the adapter which pair a
- * given band draws, and the adapter keeps only those records, stripping the
- * PanSN prefix to recover each assembly's own refName. Listing just two
- * assemblies keeps the track pinned to that single pair.
+ * view: the synteny view tells the adapter which pair a given band draws, and
+ * the adapter keeps only those records, stripping the PanSN prefix to recover
+ * each assembly's own refName. In a plain LGV (LGVSyntenyDisplay) there is no
+ * band to isolate, so the track draws its assembly against every OTHER sample
+ * in the file — "one vs all" — including samples not listed in `assemblyNames`
+ * (those mates are labelled by their PanSN prefix). `assemblyNames` therefore
+ * only needs to list the assemblies you actually load into JBrowse and want the
+ * track to appear on.
  *
  * #example
  * ```js
@@ -29,10 +32,11 @@ const AllVsAllPAFAdapter = ConfigurationSchema(
   {
     /**
      * #slot
-     * The assemblies this track can draw. List every assembly in the file to let
-     * one track back all bands of a multi-way view (the view picks each band's
-     * pair), or just two to pin the track to a single pair. Every entry must
-     * resolve to a PanSN sample prefix present in the file.
+     * The assemblies this track appears on and can back synteny bands for — list
+     * the assemblies you load into JBrowse. Each entry must resolve to a PanSN
+     * sample prefix present in the file. In a plain LGV the track still draws its
+     * assembly against every other sample in the file, so mates need not be
+     * listed here (unlisted mates are labelled by their PanSN prefix).
      */
     assemblyNames: {
       type: 'stringArray',

@@ -72,9 +72,18 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     return this.getConf('assemblyNames') as string[]
   }
 
-  // sample prefix (in the PAF) -> JBrowse assembly name, for this track's pair
-  private prefixToAssembly() {
-    const map = this.getConf('assemblyNameToPanSN') as Record<string, string>
+  // JBrowse assembly name -> its PanSN sample prefix in the PAF (identity when
+  // unmapped). Also drives the anchor/target prefix lookups below.
+  private assemblyToPrefix() {
+    return this.getConf('assemblyNameToPanSN') as Record<string, string>
+  }
+
+  // PanSN sample prefix (in the PAF) -> JBrowse assembly name, for the listed
+  // assemblies. Used to give a mate a friendly assembly label; a mate whose
+  // sample is not a listed assembly falls back to the bare prefix (one-vs-all
+  // draws against every sample in the file, listed or not).
+  private assemblyByPrefix() {
+    const map = this.assemblyToPrefix()
     const out: Record<string, string> = {}
     for (const asm of this.getAssemblyNames()) {
       out[map[asm] ?? asm] = asm
@@ -92,29 +101,34 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
   async getRefNames(opts: BaseOptions = {}) {
     const { assemblyName, targetAssemblyName } = opts
     const feats = await this.setup(opts)
-    const prefixToAsm = this.prefixToAssembly()
+    const map = this.assemblyToPrefix()
+    const anchorPrefix =
+      assemblyName === undefined ? undefined : (map[assemblyName] ?? assemblyName)
+    const targetPrefix =
+      targetAssemblyName === undefined
+        ? undefined
+        : (map[targetAssemblyName] ?? targetAssemblyName)
     const set = new Set<string>()
-    // only contigs that actually participate in a cross-assembly pair, mirroring
-    // the getFeatures filter so getRefNames doesn't over-report refs with no
-    // drawable features. When a target is given (multi-way band) scope to that
-    // pair; otherwise (e.g. the assembly-swap check) report across all pairs
+    // Mirror the getFeatures gate so getRefNames doesn't over-report refs with
+    // no drawable features: report the anchor-side contig of every record whose
+    // mate is a DIFFERENT sample (one-vs-all). A supplied targetAssemblyName
+    // (two-row synteny band) narrows this to that single pair.
     for (const feat of feats) {
-      const qAsm = prefixToAsm[panSNSample(feat.qname)]
-      const tAsm = prefixToAsm[panSNSample(feat.tname)]
-      const isPair =
-        qAsm !== undefined &&
-        tAsm !== undefined &&
-        qAsm !== tAsm &&
-        (targetAssemblyName === undefined ||
-          qAsm === targetAssemblyName ||
-          tAsm === targetAssemblyName)
-      if (isPair) {
-        if (qAsm === assemblyName) {
-          set.add(panSNContig(feat.qname))
-        }
-        if (tAsm === assemblyName) {
-          set.add(panSNContig(feat.tname))
-        }
+      const qPrefix = panSNSample(feat.qname)
+      const tPrefix = panSNSample(feat.tname)
+      if (
+        qPrefix === anchorPrefix &&
+        tPrefix !== anchorPrefix &&
+        (targetPrefix === undefined || tPrefix === targetPrefix)
+      ) {
+        set.add(panSNContig(feat.qname))
+      }
+      if (
+        tPrefix === anchorPrefix &&
+        qPrefix !== anchorPrefix &&
+        (targetPrefix === undefined || qPrefix === targetPrefix)
+      ) {
+        set.add(panSNContig(feat.tname))
       }
     }
     return [...set]
@@ -125,39 +139,40 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
       const pafRecords = await this.setup(opts)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
       const { targetAssemblyName } = opts
-      const prefixToAsm = this.prefixToAssembly()
+      const map = this.assemblyToPrefix()
+      const asmByPrefix = this.assemblyByPrefix()
+      const anchorPrefix = map[assemblyName] ?? assemblyName
+      const targetPrefix =
+        targetAssemblyName === undefined
+          ? undefined
+          : (map[targetAssemblyName] ?? targetAssemblyName)
 
       for (let i = 0; i < pafRecords.length; i++) {
         const r = pafRecords[i]!
-        const qAsm = prefixToAsm[panSNSample(r.qname)]
-        const tAsm = prefixToAsm[panSNSample(r.tname)]
+        const qPrefix = panSNSample(r.qname)
+        const tPrefix = panSNSample(r.tname)
 
-        // orient so the side on the queried assembly is the feature, the other
-        // is the mate; flip mirrors PAFAdapter (query side is qname)
-        const flip = qAsm === assemblyName
-        const mateAsm = flip ? tAsm : qAsm
+        // Anchor the queried assembly's side as the feature, the other as the
+        // mate; flip mirrors PAFAdapter (the query/qname side is the anchor).
+        const flip = qPrefix === anchorPrefix
+        const matePrefix = flip ? tPrefix : qPrefix
 
-        // Draw a record on this band only when one side is the queried assembly
-        // and the mate is the band's target. This filters an all-vs-all file
-        // down to the A-vs-B band: when the track lists all N assemblies,
-        // targetAssemblyName (from the other view) picks the pair; a legacy
-        // 2-assembly track leaves it undefined, so the sole other assembly is
-        // used. Matching the mate by ASSEMBLY (not just refName) is essential —
-        // panSNContig strips the prefix below, so A-vs-B and A-vs-C records can
-        // share a contig name and only the assembly tells them apart.
+        // One-vs-all: draw every record touching the queried assembly whose
+        // mate is a DIFFERENT sample, whether or not that sample is a listed
+        // assembly — the mate is labelled by its assembly if listed, else its
+        // bare PanSN prefix. In the two-row synteny view targetAssemblyName
+        // (the other band's assembly) narrows this to that single pair; a plain
+        // LGV leaves it undefined, so the assembly draws against everything in
+        // the file. Same-sample records (paralogy) are left out here.
         const drawsHere =
-          (qAsm === assemblyName || tAsm === assemblyName) &&
-          mateAsm !== undefined &&
-          mateAsm !== assemblyName &&
-          (targetAssemblyName === undefined || mateAsm === targetAssemblyName)
+          (qPrefix === anchorPrefix || tPrefix === anchorPrefix) &&
+          matePrefix !== anchorPrefix &&
+          (targetPrefix === undefined || matePrefix === targetPrefix)
 
         if (drawsHere) {
           const start = flip ? r.qstart : r.tstart
           const end = flip ? r.qend : r.tend
           const refName = panSNContig(flip ? r.qname : r.tname)
-          const mateName = panSNContig(flip ? r.tname : r.qname)
-          const mateStart = flip ? r.tstart : r.qstart
-          const mateEnd = flip ? r.tend : r.qend
           const { extra, strand } = r
           if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
             observer.next(
@@ -171,10 +186,10 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
                 extra,
                 flip,
                 mate: {
-                  start: mateStart,
-                  end: mateEnd,
-                  refName: mateName,
-                  assemblyName: mateAsm,
+                  start: flip ? r.tstart : r.qstart,
+                  end: flip ? r.tend : r.qend,
+                  refName: panSNContig(flip ? r.tname : r.qname),
+                  assemblyName: asmByPrefix[matePrefix] ?? matePrefix,
                 },
               }),
             )
