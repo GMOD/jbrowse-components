@@ -199,6 +199,9 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
     filterBy.tagFilters?.slice(1) ?? [],
   )
   const [readName, setReadName] = useState(filterBy.readName ?? '')
+  // TagTextField is uncontrolled (seeds from defaultValue on mount), so clearing
+  // `tag` state alone leaves its visible text stale. Bump this to remount it.
+  const [resetNonce, setResetNonce] = useState(0)
 
   const handleReset = () => {
     setFlagInclude(defaultFilterFlags.flagInclude)
@@ -207,6 +210,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
     setTagValue('')
     setOtherTagFilters([])
     setReadName('')
+    setResetNonce(nonce => nonce + 1)
   }
 
   const handleSubmit = () => {
@@ -225,44 +229,58 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
 
   return (
     <Dialog open onClose={handleClose} title="Filter options">
-      <DialogContent>
-        <FlagFilterSection
-          flagInclude={flagInclude}
-          flagExclude={flagExclude}
-          setFlagInclude={setFlagInclude}
-          setFlagExclude={setFlagExclude}
-        />
-        <TagFilterSection
-          tag={tag}
-          tagValue={tagValue}
-          setTag={setTag}
-          setTagValue={setTagValue}
-        />
-        <ReadNameFilterSection readName={readName} setReadName={setReadName} />
-      </DialogContent>
-      <DialogActions>
-        <Button color="inherit" onClick={handleReset}>
-          Reset defaults
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          autoFocus
-          type="submit"
-          onClick={handleSubmit}
-        >
-          Submit
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-      </DialogActions>
+      {/* Form wrapper gives Enter-to-submit, like SubmitDialog. Reset/Cancel are
+      MUI-default type="button" so they don't submit; only the primary does. */}
+      <form
+        onSubmit={event => {
+          event.preventDefault()
+          handleSubmit()
+        }}
+      >
+        <DialogContent>
+          <FlagFilterSection
+            flagInclude={flagInclude}
+            flagExclude={flagExclude}
+            setFlagInclude={setFlagInclude}
+            setFlagExclude={setFlagExclude}
+          />
+          <TagFilterSection
+            key={resetNonce}
+            tag={tag}
+            tagValue={tagValue}
+            setTag={setTag}
+            setTagValue={setTagValue}
+          />
+          <ReadNameFilterSection readName={readName} setReadName={setReadName} />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="inherit"
+            onClick={() => {
+              handleReset()
+            }}
+          >
+            Reset defaults
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            autoFocus
+            type="submit"
+          >
+            Submit
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => {
+              handleClose()
+            }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   )
 })
