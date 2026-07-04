@@ -1566,8 +1566,13 @@ export default function stateModelFactory(
          * display without scrolling. Row count is fixed by read overlaps, so we
          * lay the groups out uncapped (a fixed maxHeight-row cap, independent of
          * the current featureHeight — so the fit autorun that writes featureHeight
-         * can't feed back into this) and divide the pileup space by it. 0 when
-         * there's nothing to fit (no data / no room), signalling "leave as-is".
+         * can't feed back into this) and divide the pileup space by it.
+         *
+         * Fractional (not floored): the pileup then fills the display exactly
+         * rather than leaving up to a row of slack at the bottom. Clamped up to a
+         * 1px floor — below 1px the reads can't all fit, so the stack scrolls
+         * instead. 0 when there's nothing to fit (no data / no room), signalling
+         * "leave the configured height as-is".
          */
         get fittedFeatureHeight() {
           const empty = new Map<number, PileupDataResult>()
@@ -1585,7 +1590,7 @@ export default function stateModelFactory(
             self.height -
             Math.max(1, self.groupOrder.length) * self.coverageDisplayHeight
           return rows > 0 && pileupSpace > 0
-            ? Math.max(1, Math.floor(pileupSpace / rows))
+            ? Math.max(1, pileupSpace / rows)
             : 0
         },
 
