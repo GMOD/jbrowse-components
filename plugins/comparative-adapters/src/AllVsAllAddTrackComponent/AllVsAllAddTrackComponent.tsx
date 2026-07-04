@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { Button, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-interface TrackModel {
-  setMixinData: (data: Record<string, unknown>) => void
-}
+import { useSeedTrackMixin } from '../addTrackMixinContribution.ts'
+
+import type { AddTrackComponentModel } from '../addTrackMixinContribution.ts'
 
 // Add-track form for an all-vs-all PAF: the file contains every pairwise
 // alignment, so one track can back every band of a multi-way view. List all the
@@ -17,7 +17,7 @@ interface TrackModel {
 const AllVsAllAddTrackComponent = observer(function AllVsAllAddTrackComponent({
   model,
 }: {
-  model: TrackModel
+  model: AddTrackComponentModel
 }) {
   const session = getSession(model)
   const defaultAsm = session.assemblies[0]?.name ?? ''
@@ -26,16 +26,12 @@ const AllVsAllAddTrackComponent = observer(function AllVsAllAddTrackComponent({
     session.assemblies[1]?.name ?? defaultAsm,
   ])
 
-  useEffect(() => {
-    model.setMixinData({ adapter: { assemblyNames } })
-    return () => {
-      try {
-        model.setMixinData({})
-      } catch {
-        // widget may already be detached during teardown (submit); ignore
-      }
-    }
-  }, [model, assemblyNames])
+  useSeedTrackMixin(model, { adapter: { assemblyNames } })
+
+  function update(next: string[]) {
+    setAssemblyNames(next)
+    model.setMixinData({ adapter: { assemblyNames: next } })
+  }
 
   return (
     <>
@@ -54,9 +50,7 @@ const AllVsAllAddTrackComponent = observer(function AllVsAllAddTrackComponent({
             helperText=""
             selected={assemblyName}
             onChange={asm => {
-              setAssemblyNames(
-                assemblyNames.map((a, i) => (i === idx ? asm : a)),
-              )
+              update(assemblyNames.map((a, i) => (i === idx ? asm : a)))
             }}
             fullWidth
           />
@@ -72,7 +66,7 @@ const AllVsAllAddTrackComponent = observer(function AllVsAllAddTrackComponent({
                 size="small"
                 disabled={assemblyNames.length <= 2}
                 onClick={() => {
-                  setAssemblyNames(assemblyNames.filter((_, i) => i !== idx))
+                  update(assemblyNames.filter((_, i) => i !== idx))
                 }}
               >
                 Remove
@@ -85,7 +79,7 @@ const AllVsAllAddTrackComponent = observer(function AllVsAllAddTrackComponent({
         variant="outlined"
         style={{ marginTop: 10 }}
         onClick={() => {
-          setAssemblyNames([...assemblyNames, defaultAsm])
+          update([...assemblyNames, defaultAsm])
         }}
       >
         Add assembly

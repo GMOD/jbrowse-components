@@ -1,34 +1,33 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-interface TrackModel {
-  setMixinData: (data: Record<string, unknown>) => void
-}
+import { useSeedTrackMixin } from '../addTrackMixinContribution.ts'
+
+import type { AddTrackComponentModel } from '../addTrackMixinContribution.ts'
 
 const ComparativeAddTrackComponent = observer(
-  function ComparativeAddTrackComponent({ model }: { model: TrackModel }) {
+  function ComparativeAddTrackComponent({
+    model,
+  }: {
+    model: AddTrackComponentModel
+  }) {
     const session = getSession(model)
     const defaultAsm = session.assemblies[0]?.name ?? ''
     const [queryAssembly, setQueryAssembly] = useState(defaultAsm)
     const [targetAssembly, setTargetAssembly] = useState(defaultAsm)
 
-    // Seed the adapter's query/target assemblies while this picker is shown
-    // (covering the untouched-defaults case), and clear them on unmount so a
-    // subsequently chosen non-synteny adapter isn't left with stale assembly
-    // fields. These used to be injected for every track in getTrackConfig.
-    useEffect(() => {
-      model.setMixinData({ adapter: { queryAssembly, targetAssembly } })
-      return () => {
-        try {
-          model.setMixinData({})
-        } catch {
-          // widget may already be detached during teardown (submit); ignore
-        }
-      }
-    }, [model, queryAssembly, targetAssembly])
+    useSeedTrackMixin(model, { adapter: { queryAssembly, targetAssembly } })
+
+    function update(query: string, target: string) {
+      setQueryAssembly(query)
+      setTargetAssembly(target)
+      model.setMixinData({
+        adapter: { queryAssembly: query, targetAssembly: target },
+      })
+    }
 
     return (
       <>
@@ -38,7 +37,7 @@ const ComparativeAddTrackComponent = observer(
           helperText=""
           selected={queryAssembly}
           onChange={asm => {
-            setQueryAssembly(asm)
+            update(asm, targetAssembly)
           }}
           fullWidth
         />
@@ -48,7 +47,7 @@ const ComparativeAddTrackComponent = observer(
           helperText=""
           selected={targetAssembly}
           onChange={asm => {
-            setTargetAssembly(asm)
+            update(queryAssembly, asm)
           }}
           fullWidth
         />
