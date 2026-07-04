@@ -310,4 +310,73 @@ describe('Canvas2DVariantRenderer', () => {
       expect(pathOps).toContain('fill')
     })
   })
+
+  // On a reversed (horizontally-flipped) region makeBpMapper mirrors bp→px, so
+  // the same feature lands on the opposite side of the block with its full span
+  // intact. These lock in the min/abs geometry the GPU shader (variant.slang)
+  // mirrors — regressing either path collapses a reversed variant to a sliver.
+  describe('reversed regions', () => {
+    test('rect keeps its full span, mirrored to the opposite edge', () => {
+      const { canvas, fillRectCalls } = createMockCanvas()
+      const renderer = new Canvas2DVariantRenderer(canvas)
+      const regions = new Map([
+        [
+          0,
+          makeRegionData({
+            numCells: 1,
+            cellPositions: [100, 200],
+            cellRowIndices: [0],
+            cellColors: [0xff0000ff],
+            cellShapeTypes: [0],
+          }),
+        ],
+      ])
+
+      renderer.renderBlocks(
+        [makeBlock({ reversed: true })],
+        regions,
+        DEFAULT_STATE,
+      )
+
+      // Forward this cell is x=80,w=80; reversed it mirrors to the right edge
+      // (800 - 200*0.8 = 640) with the same 80px width — not a collapsed sliver.
+      expect(fillRectCalls.length).toBe(1)
+      const [x, y, w, h] = fillRectCalls[0]!
+      expect(x).toBeCloseTo(640)
+      expect(w).toBeCloseTo(80)
+      expect(y).toBe(0)
+      expect(h).toBe(10)
+    })
+
+    test('insertion glyph centers on its mirrored midpoint', () => {
+      const { canvas, pathOps } = createMockCanvas()
+      const renderer = new Canvas2DVariantRenderer(canvas)
+      const regions = new Map([
+        [
+          0,
+          makeRegionData({
+            numCells: 1,
+            cellPositions: [0, 100],
+            cellRowIndices: [0],
+            cellColors: [0xff0000ff],
+            cellShapeTypes: [3],
+          }),
+        ],
+      ])
+
+      renderer.renderBlocks(
+        [makeBlock({ reversed: true })],
+        regions,
+        DEFAULT_STATE,
+      )
+
+      // Forward center is px 40; reversed mirrors it to 760 (800 - 40) with the
+      // 10px-capped triangle base, apex at the same center.
+      const moveOp = pathOps.find(op => op.startsWith('moveTo'))
+      expect(moveOp).toBe('moveTo(755,0)')
+      expect(pathOps).toContain('lineTo(765,0)')
+      expect(pathOps).toContain('lineTo(760,10)')
+      expect(pathOps).toContain('fill')
+    })
+  })
 })

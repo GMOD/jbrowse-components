@@ -142,6 +142,11 @@ function fillFrameUniforms(
   const { region } = frame
   f[U.bpHi] = frame.bpHi
   f[U.bpLo] = frame.bpLo
+  // Keep bpLen POSITIVE for reversed regions — this plugin applies the flip via
+  // the separate `reversed` uniform (flipX in the shaders), NOT by negating the
+  // span length. So bpToClipX stays monotonic and span shaders (mismatch/gap/
+  // overlap/read) need no abs/min/max. If you ever bake reversal into bpLen (as
+  // wiggle/manhattan/variants do), all of those break at once.
   f[U.bpLen] = frame.clippedBpEnd - frame.clippedBpStart
   f[U.hpZero] = 0
   f[U.canvasW] = frame.canvasW
