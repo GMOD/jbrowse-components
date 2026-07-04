@@ -31,6 +31,12 @@ const COLOR_MODES = [
       "Color by the target/mate sequence (the other assembly's refName). The complement of Query coloring — useful when one query maps across several targets.",
   },
   {
+    label: 'Reference',
+    value: 'reference',
+    helpText:
+      "Color every level by the shared reference assembly's chromosome names, so a region keeps one consistent color as it's traced across all levels of a stacked multi-genome view.",
+  },
+  {
     label: 'Identity',
     value: 'identity',
     helpText:
@@ -69,10 +75,17 @@ const ColorBySelector = observer(function ColorBySelector({
 }) {
   const { colorBy, showColorLegend } = model
 
+  // 'reference' coloring only carries meaning across a stack of ≥2 levels;
+  // for a single-level (two-genome) view it degenerates to query/target, so
+  // hide it there to keep the menu focused.
+  const modes = COLOR_MODES.filter(
+    m => m.value !== 'reference' || model.levels.length > 1,
+  )
+
   return (
     <CascadingMenuButton
       menuItems={[
-        ...COLOR_MODES.map(({ label, value, helpText }) => ({
+        ...modes.map(({ label, value, helpText }) => ({
           label: (
             <span
               style={{

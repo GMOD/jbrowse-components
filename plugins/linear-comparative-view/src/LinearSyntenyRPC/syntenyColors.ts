@@ -108,6 +108,11 @@ function createColorFunction(
       return nameColorFunction(d.refNames)
     case 'target':
       return nameColorFunction(d.mateRefNames)
+    // 'reference' is resolved to 'query'/'target' per-level in the display
+    // before it reaches here (see LinearSyntenyDisplay effectiveColorBy); this
+    // arm only guards the type union and colors by query as a safe fallback.
+    case 'reference':
+      return nameColorFunction(d.refNames)
     case 'default':
       return () => DEFAULT_COLOR
   }

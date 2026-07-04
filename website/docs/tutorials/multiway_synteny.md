@@ -126,7 +126,7 @@ direct comparisons, referencing that single track from each band:
 `tracks` is one entry per band: `tracks[0]` connects rows 0–1 (peach–grape) and
 `tracks[1]` connects rows 1–2 (grape–cacao) — both served by the same track.
 
-<Figure caption="Three genomes stacked peach – grape – cacao, with one MCScan .blocks file backing both synteny bands. Ribbons are colored by query chromosome (chromosome painting), so each grape chromosome's orthologs can be traced up into peach and down into cacao." src="/img/multiway_synteny/grape_peach_cacao.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/grape_peach_cacao/config.json" />
+<Figure caption="Three genomes stacked peach – grape – cacao, with one MCScan .blocks file backing both synteny bands. Color by → Reference paints both bands by the shared reference genome (grape, the middle row), so a grape chromosome keeps one consistent color as its orthologs are traced up into peach and down into cacao." src="/img/multiway_synteny/grape_peach_cacao.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/grape_peach_cacao/config.json" />
 
 ## Reference in the middle, and transitive pairs
 

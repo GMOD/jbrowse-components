@@ -225,6 +225,36 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           .flatMap(l => l.linearSyntenyDisplays)
           .some(d => d.featureData?.hasCigar)
       },
+      /**
+       * #getter
+       * The "anchor" assembly for colorBy:'reference': the assembly bordering
+       * the most synteny levels. In a stacked ref-vs-A / ref-vs-B layout each
+       * interior assembly touches two levels and the ends touch one, so the
+       * max-adjacency assembly is the shared reference. Ties resolve to the
+       * topmost. Every level then colors by this assembly's chromosome names,
+       * so a region keeps its color as it's traced across levels.
+       */
+      get anchorAssemblyName() {
+        const asms = self.views.map(v => v.assemblyNames?.[0])
+        const counts = new Map<string, number>()
+        for (let i = 0; i < asms.length - 1; i++) {
+          for (const a of [asms[i], asms[i + 1]]) {
+            if (a) {
+              counts.set(a, (counts.get(a) ?? 0) + 1)
+            }
+          }
+        }
+        let best: string | undefined
+        let bestCount = -1
+        for (const a of asms) {
+          const c = a ? (counts.get(a) ?? 0) : 0
+          if (a && c > bestCount) {
+            bestCount = c
+            best = a
+          }
+        }
+        return best
+      },
     }))
     .views(self => ({
       /**

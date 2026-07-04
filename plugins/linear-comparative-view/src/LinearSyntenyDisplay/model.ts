@@ -308,16 +308,37 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get computedColors() {
         const { instanceData, featureData } = self
-        const { colorBy, opacityByIdentity } = this.view
+        const { opacityByIdentity } = this.view
         if (!instanceData || !featureData) {
           return undefined
         }
         return computeSyntenyColors({
           instanceData,
           featureData,
-          colorBy: colorBy as SyntenyColorBy,
+          colorBy: this.effectiveColorBy,
           opacityByIdentity,
         })
+      },
+      /**
+       * #getter
+       * The view-level colorBy resolved for this specific level. 'reference' is
+       * a stacked-view mode that colors every level by the shared anchor
+       * assembly's chromosome names; each level maps it to 'query' or 'target'
+       * depending on which of its two assemblies is the anchor, so the coloring
+       * stays consistent across levels. Every other mode passes through.
+       */
+      get effectiveColorBy(): SyntenyColorBy {
+        const colorBy = this.view.colorBy as SyntenyColorBy
+        if (colorBy === 'reference') {
+          const { anchorAssemblyName: anchor, views } = this.view
+          // this level draws between views[level] (query) and views[level+1]
+          // (target); color by whichever side is the anchor so every level
+          // keys on the same reference assembly's chromosome names
+          const queryAsm = views[this.level]?.assemblyNames?.[0]
+          const targetAsm = views[this.level + 1]?.assemblyNames?.[0]
+          return targetAsm === anchor && queryAsm !== anchor ? 'target' : 'query'
+        }
+        return colorBy
       },
       /**
        * #getter

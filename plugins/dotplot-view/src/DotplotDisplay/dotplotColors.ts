@@ -108,6 +108,9 @@ export function createDotplotColorFunction(
     case 'strand':
       return strandColorFn(alpha)
     case 'query':
+    // 'reference' is a stacked-view (linear synteny) mode; the two-genome
+    // dotplot has no anchor to key on, so it colors by query like 'query'.
+    case 'reference':
       return nameColorFn(alpha, (d, i) => d.refNames[i]!)
     case 'target':
       return nameColorFn(alpha, (d, i) => d.mateRefNames[i]!)

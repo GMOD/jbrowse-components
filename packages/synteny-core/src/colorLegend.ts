@@ -67,6 +67,7 @@ export const colorByShortLabel: Record<SyntenyColorBy, string> = {
   strand: 'Strand',
   query: 'Query name',
   target: 'Target name',
+  reference: 'Reference name',
   identity: 'Identity',
   identityDiverging: 'Identity (diverging)',
   meanQueryIdentity: 'Mean query identity',
@@ -127,6 +128,7 @@ export function getColorBySwatch(
       }
     case 'query':
     case 'target':
+    case 'reference':
       return undefined
   }
 }
