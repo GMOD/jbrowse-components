@@ -123,8 +123,9 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       sy = clipNextY;
     }
   } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
-    // Point plot: an AA disc centered on the bp midpoint (matches
-    // manhattan.slang). scatterPointSize is the disc diameter.
+    // Point plot: every feature is a point marker centered on the bp midpoint,
+    // never a bar (unlike manhattan.slang, which bars wide bins). scatterPointSize
+    // is the disc diameter; tiny points draw as a crisp square like manhattan.
     float midX = (sx1 + sx2) * 0.5;
     float scoreYPx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
     float centerClipY = 1.0 - scoreYPx * pxToClip;
