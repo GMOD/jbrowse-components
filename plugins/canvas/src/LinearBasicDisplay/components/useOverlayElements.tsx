@@ -36,6 +36,12 @@ interface HighlightModel {
   hoveredSubfeature: SubfeatureInfo | null
   // uniqueIds of features resolved from a declarative search highlight
   highlightedFeatureIds: string[]
+  // the "show only these features" collection and whether it's isolating yet.
+  // While collecting (not applied) each member is boxed so ctrl+click has
+  // visual feedback; once applied the view already shows only these, so the
+  // boxes would be redundant noise.
+  soloFeatureIdSet: ReadonlySet<string>
+  soloApplied: boolean
 }
 
 // Shared gate for both overlay builders: nothing to position until the view is
@@ -191,6 +197,8 @@ export function useHighlightOverlays(
     hoveredSubfeature,
     selectedFeatureId,
     highlightedFeatureIds,
+    soloFeatureIdSet,
+    soloApplied,
     showLabels,
     effectiveShowDescriptions,
   } = model
@@ -327,6 +335,25 @@ export function useHighlightOverlays(
         subfeatureHover ? 0 : computeExtraWidth(entry),
         subfeatureHover ? 0 : HIT_PAD_PX,
         0,
+      )
+    }
+  }
+
+  // Solo collection in progress: dashed box each ctrl+clicked feature so the
+  // "N selected" set is visible on the track, not just as a corner count.
+  // Skipped once applied (the view then shows only these features anyway).
+  if (!soloApplied) {
+    const soloColor = theme.palette.primary.main
+    for (const featureId of soloFeatureIdSet) {
+      addFeatureBox(
+        featureId,
+        {
+          border: `2px dashed ${soloColor}`,
+          borderRadius: 3,
+          backgroundColor: alpha(soloColor, 0.15),
+        },
+        `solo-select-${featureId}`,
+        'feature-solo-select',
       )
     }
   }
