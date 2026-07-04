@@ -122,7 +122,12 @@ export function JBrowseModelF({
        * #action
        */
       deleteConnectionConf(configuration: AnyConfigurationModel) {
-        const elt = self.connections.find(conn => conn.id === configuration.id)
+        // key on connectionId: the connection schema's explicitIdentifier means
+        // `.id` is undefined on every entry, so an id-based find always matched
+        // the first connection and deleted the wrong one
+        const elt = self.connections.find(
+          conn => conn.connectionId === configuration.connectionId,
+        )
         return elt ? self.connections.remove(elt) : false
       },
       /**
@@ -195,7 +200,11 @@ export function JBrowseModelF({
        * #action
        */
       deleteInternetAccountConf(configuration: AnyConfigurationModel) {
-        const elt = self.internetAccounts.find(a => a.id === configuration.id)
+        // key on internetAccountId, not the undefined `.id` (see
+        // deleteConnectionConf) so the correct account is removed
+        const elt = self.internetAccounts.find(
+          a => a.internetAccountId === configuration.internetAccountId,
+        )
         return elt ? self.internetAccounts.remove(elt) : false
       },
     }))

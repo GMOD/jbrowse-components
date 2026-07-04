@@ -63,6 +63,24 @@ describe('JBrowseWebSessionModel', () => {
       expect(session.sessionConnections).toHaveLength(0)
     })
 
+    it('admin deleteConnection removes the requested config connection, not the first', () => {
+      // regression: connection configs use explicitIdentifier connectionId, so
+      // `.id` is undefined; an id-based find in deleteConnectionConf always hit
+      // the first entry and deleted the wrong connection
+      const session = createTestSession({
+        adminMode: true,
+        jbrowseConfig: {
+          connections: [
+            { ...connSnap, connectionId: 'connA', name: 'A' },
+            { ...connSnap, connectionId: 'connB', name: 'B' },
+          ],
+        },
+      })
+      const connB = session.connections.find(c => c.connectionId === 'connB')!
+      session.deleteConnection(connB)
+      expect(session.connections.map(c => c.connectionId)).toEqual(['connA'])
+    })
+
     it('non-admin addConnectionConf dedupes an already-present connection', () => {
       const session = createTestSession({
         sessionSnapshot: { sessionConnections: [connSnap] },
