@@ -501,6 +501,68 @@ describe('alignments fit-to-display-height session default', () => {
   })
 })
 
+// The fit split: while fit is on, featureHeight/featureSpacing don't read the
+// config slots — they carve the autorun-cached fit pitch (`fittedHeightPx` =
+// pileupSpace/rows) into a read body plus spacing. Here we drive `fittedHeightPx`
+// directly (the driving autorun leaves it at 0 with no fetched reads, and
+// nothing it tracks changes when we set it, so the value sticks) to exercise the
+// split the layout/GPU/SVG consumers actually see. The invariant under test is
+// body + spacing === pitch, so the pileup fills the display exactly.
+describe('alignments fit-to-display-height split', () => {
+  it('with nothing to fit, fittedFeatureHeight is 0 and size falls back to config', () => {
+    const { display } = createDisplay()
+    display.setFitHeightToDisplay(true)
+    // no fetched reads -> no rows -> nothing to fit
+    expect(display.fittedFeatureHeight).toBe(0)
+    expect(display.featureHeight).toBe(7)
+    expect(display.featureSpacing).toBe(1)
+  })
+
+  it('spares a 1px gap once the pitch clears 3px, body fills the rest', () => {
+    const { display } = createDisplay()
+    display.setFitHeightToDisplay(true)
+    display.setFittedHeightPx(10)
+    expect(display.featureSpacing).toBe(1)
+    expect(display.featureHeight).toBe(9)
+    // body + spacing reconstructs the pitch exactly
+    expect(display.featureHeight + display.featureSpacing).toBe(10)
+  })
+
+  it('keeps reads flush (no spacing) at a 3px pitch or tighter', () => {
+    const { display } = createDisplay()
+    display.setFitHeightToDisplay(true)
+    display.setFittedHeightPx(3)
+    expect(display.featureSpacing).toBe(0)
+    expect(display.featureHeight).toBe(3)
+
+    display.setFittedHeightPx(2)
+    expect(display.featureSpacing).toBe(0)
+    expect(display.featureHeight).toBe(2)
+  })
+
+  it('splits a fractional pitch without losing the fill (body stays fractional)', () => {
+    const { display } = createDisplay()
+    display.setFitHeightToDisplay(true)
+    display.setFittedHeightPx(3.5)
+    expect(display.featureSpacing).toBe(1)
+    expect(display.featureHeight).toBe(2.5)
+    expect(display.featureHeight + display.featureSpacing).toBe(3.5)
+  })
+
+  it('ignores a stale fit cache once fit is off', () => {
+    const { display } = createDisplay()
+    display.setFitHeightToDisplay(true)
+    display.setFittedHeightPx(10)
+    expect(display.featureHeight).toBe(9)
+
+    // leaving fit doesn't reset the cache, but the getters gate on fit mode so
+    // the config values win again
+    display.setFitHeightToDisplay(false)
+    expect(display.featureHeight).toBe(7)
+    expect(display.featureSpacing).toBe(1)
+  })
+})
+
 // colorBy is a frozen (object-valued) promotable slot with an inherit sentinel:
 // `{ type: 'inherit' }` is the un-pinned default that resolves to `promotedBase`
 // (`{ type: 'normal' }`). Being a sentinel — not a real value — lets a track pin
