@@ -1447,29 +1447,16 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        // Undo snackbar shared by both solo-apply paths — the same reversible
-        // affordance collapse-introns uses.
-        notifySoloApplied(message: string) {
-          getSession(self).notify(message, 'info', {
-            name: 'Undo',
-            onClick: () => {
-              self.clearSolo()
-            },
-          })
-        },
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         */
-        // Apply the collected set (worker starts dropping non-members) and
-        // surface an Undo snackbar.
+        // Isolate to the collected set (worker drops non-members). No transient
+        // snackbar: the persistent SoloSelectionChip is both the confirmation
+        // and the later-undo affordance (its × clears the set at any time), so a
+        // toast that auto-hides would only duplicate it and vanish before the
+        // user finishes exploring.
         applySolo() {
           if (self.soloFeatureIds.length === 0) {
             return
           }
           self.soloApplied = true
-          self.notifySoloApplied('Showing only the selected features')
         },
 
         /**
@@ -1480,7 +1467,6 @@ export default function baseStateModelFactory(
         soloFeature(featureId: string) {
           self.soloFeatureIds.replace([featureId])
           self.soloApplied = true
-          self.notifySoloApplied('Showing only this feature')
         },
 
         /**
