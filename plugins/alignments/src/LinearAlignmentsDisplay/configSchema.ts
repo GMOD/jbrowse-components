@@ -122,7 +122,16 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       colorBy: {
         type: 'frozen',
-        defaultValue: { type: 'normal' },
+        // `{ type: 'inherit' }` is the CSS-style sentinel default (the un-pinned
+        // state); it resolves to `promotedBase` (`{ type: 'normal' }`) when
+        // nothing is promoted. Being a dedicated sentinel lets a track pin
+        // `normal` back over a session-wide color default (e.g. one plain
+        // control track amid methylation-colored siblings). getConfResolved
+        // walks the cascade and never returns the sentinel. See
+        // promotableDefaults.ts.
+        defaultValue: { type: 'inherit' },
+        promotedBase: { type: 'normal' },
+        promotable: true,
         description: 'Color scheme for reads',
         advanced: true,
       },

@@ -16,7 +16,7 @@ interface ReadsModel {
   showSoftClipping: boolean
   toggleSoftClipping: () => void
   isShowSoftClippingDefault: boolean
-  toggleShowSoftClippingDefault: () => void
+  setShowSoftClippingDefault: (promote: boolean) => void
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
   mismatchAlpha: boolean
@@ -54,7 +54,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         'Show soft clipping by default on all alignments tracks',
         model.isShowSoftClippingDefault,
         () => {
-          model.toggleShowSoftClippingDefault()
+          model.setShowSoftClippingDefault(!model.isShowSoftClippingDefault)
         },
       ),
       {

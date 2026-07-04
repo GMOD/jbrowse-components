@@ -5,7 +5,7 @@ import {
   getConf,
   isSlotPinned,
   readConfObject,
-  toggleSlotsSessionDefault,
+  setSlotsSessionDefault,
 } from '@jbrowse/core/configuration'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -185,13 +185,12 @@ export default function stateModelFactory(
         )
       },
 
-      // Promote the current displayMode to the session-wide default for this
-      // display type (persisted via preferences), or clear it when it already
-      // is the default. Every open track at the schema default picks this up
-      // reactively through the displayMode getter; tracks with an explicit
-      // per-track choice keep it.
-      toggleDisplayModeDefault() {
-        toggleSlotsSessionDefault(self, ['displayMode'])
+      // Promote (or clear) the current displayMode as the session-wide default
+      // for this display type (persisted via preferences). Every open track at
+      // the schema default picks this up reactively through the displayMode
+      // getter; tracks with an explicit per-track choice keep it.
+      setDisplayModeDefault(promote: boolean) {
+        setSlotsSessionDefault(self, ['displayMode'], promote)
       },
 
       setShowOnlyGenes(value: boolean) {
@@ -285,7 +284,7 @@ export default function stateModelFactory(
                   type: 'checkbox' as const,
                   checked: self.isDisplayModeDefault,
                   onClick: () => {
-                    self.toggleDisplayModeDefault()
+                    self.setDisplayModeDefault(!self.isDisplayModeDefault)
                   },
                 },
                 // only offered when a pin exists to undo, so un-pinned tracks

@@ -207,12 +207,12 @@ describe('alignments showSoftClipping session default', () => {
     expect(display.showSoftClipping).toBe(false)
   })
 
-  describe('toggleShowSoftClippingDefault', () => {
+  describe('setShowSoftClippingDefault', () => {
     it('promotes the current on value to the session default', () => {
       const { session, display } = createDisplay({ showSoftClipping: true })
       expect(display.isShowSoftClippingDefault).toBe(false)
 
-      display.toggleShowSoftClippingDefault()
+      display.setShowSoftClippingDefault(true)
       expect(
         session.getDisplayTypeDefault(
           'LinearAlignmentsDisplay',
@@ -222,12 +222,12 @@ describe('alignments showSoftClipping session default', () => {
       expect(display.isShowSoftClippingDefault).toBe(true)
     })
 
-    it('clears the session default when it is already the default', () => {
+    it('clears the session default when promote is false', () => {
       const { session, display } = createDisplay({ showSoftClipping: true })
-      display.toggleShowSoftClippingDefault()
+      display.setShowSoftClippingDefault(true)
       expect(display.isShowSoftClippingDefault).toBe(true)
 
-      display.toggleShowSoftClippingDefault()
+      display.setShowSoftClippingDefault(false)
       expect(
         session.getDisplayTypeDefault(
           'LinearAlignmentsDisplay',
@@ -329,7 +329,7 @@ describe('alignments compactness session default', () => {
     expect(display.featureHeight).toBe(7)
   })
 
-  describe('toggleCompactnessDefault', () => {
+  describe('setCompactnessDefault', () => {
     it('promotes the current size to the session default', () => {
       const { session, display } = createDisplay({
         featureHeight: 3,
@@ -337,7 +337,7 @@ describe('alignments compactness session default', () => {
       })
       expect(display.isCompactnessDefault).toBe(false)
 
-      display.toggleCompactnessDefault()
+      display.setCompactnessDefault(true)
       expect(
         session.getDisplayTypeDefault(
           'LinearAlignmentsDisplay',
@@ -358,7 +358,7 @@ describe('alignments compactness session default', () => {
         featureHeight: 5,
         featureSpacing: 2,
       })
-      display.toggleCompactnessDefault()
+      display.setCompactnessDefault(true)
       expect(
         session.getDisplayTypeDefault(
           'LinearAlignmentsDisplay',
@@ -373,15 +373,15 @@ describe('alignments compactness session default', () => {
       ).toBe(2)
     })
 
-    it('clears the session default when it is already the default', () => {
+    it('clears the session default when promote is false', () => {
       const { session, display } = createDisplay({
         featureHeight: 3,
         featureSpacing: 0,
       })
-      display.toggleCompactnessDefault()
+      display.setCompactnessDefault(true)
       expect(display.isCompactnessDefault).toBe(true)
 
-      display.toggleCompactnessDefault()
+      display.setCompactnessDefault(false)
       expect(
         session.getDisplayTypeDefault(
           'LinearAlignmentsDisplay',
@@ -428,5 +428,110 @@ describe('alignments compactness session default', () => {
       { path: ['featureSpacing'], from: 1, to: 0 },
       { path: ['showSoftClipping'], from: false, to: true },
     ])
+  })
+})
+
+// colorBy is a frozen (object-valued) promotable slot with an inherit sentinel:
+// `{ type: 'inherit' }` is the un-pinned default that resolves to `promotedBase`
+// (`{ type: 'normal' }`). Being a sentinel — not a real value — lets a track pin
+// `normal` back over a methylation session default, which a plain slot could
+// not. Exercises the structural (not identity) comparison in promotableDefaults.
+describe('alignments colorBy session default', () => {
+  const methylation = { type: 'methylation' }
+
+  it('resolves to normal by default with no config and no session default', () => {
+    const { display } = createDisplay()
+    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.isColorByDefault).toBe(false)
+  })
+
+  it('follows a session-wide scheme when the track is not pinned', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'colorBy',
+      methylation,
+    )
+    expect(display.colorBy).toEqual(methylation)
+    expect(display.isColorByDefault).toBe(true)
+    expect(display.sessionDefaultChanges()).toEqual([
+      { path: ['colorBy'], from: { type: 'normal' }, to: methylation },
+    ])
+  })
+
+  it('lets a track pin normal back over a methylation session default', () => {
+    const { session, display } = createDisplay({ colorBy: { type: 'normal' } })
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'colorBy',
+      methylation,
+    )
+    // the sentinel win: normal is a real, pinnable value distinct from inherit
+    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.sessionDefaultChanges()).toEqual([])
+  })
+
+  it('an explicit per-track scheme wins over the session default', () => {
+    const { session, display } = createDisplay({ colorBy: { type: 'strand' } })
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'colorBy',
+      methylation,
+    )
+    expect(display.colorBy).toEqual({ type: 'strand' })
+    expect(display.sessionDefaultChanges()).toEqual([])
+  })
+
+  it('reacts to the session default changing after creation', () => {
+    const { session, display } = createDisplay()
+    expect(display.colorBy).toEqual({ type: 'normal' })
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'colorBy',
+      methylation,
+    )
+    expect(display.colorBy).toEqual(methylation)
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'colorBy',
+      undefined,
+    )
+    expect(display.colorBy).toEqual({ type: 'normal' })
+  })
+
+  it('ignores a null or non-object session default', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'colorBy', null)
+    expect(display.colorBy).toEqual({ type: 'normal' })
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'colorBy',
+      'methylation',
+    )
+    expect(display.colorBy).toEqual({ type: 'normal' })
+  })
+
+  describe('setColorByDefault', () => {
+    it('promotes the current scheme to the session default', () => {
+      const { session, display } = createDisplay({ colorBy: methylation })
+      expect(display.isColorByDefault).toBe(false)
+
+      display.setColorByDefault(true)
+      expect(
+        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'colorBy'),
+      ).toEqual(methylation)
+      expect(display.isColorByDefault).toBe(true)
+    })
+
+    it('clears the session default when promote is false', () => {
+      const { session, display } = createDisplay({ colorBy: methylation })
+      display.setColorByDefault(true)
+      expect(display.isColorByDefault).toBe(true)
+
+      display.setColorByDefault(false)
+      expect(
+        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'colorBy'),
+      ).toBeUndefined()
+    })
   })
 })

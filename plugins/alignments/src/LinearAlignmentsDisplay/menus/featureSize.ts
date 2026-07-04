@@ -38,7 +38,7 @@ interface FeatureHeightModel {
   setFeatureHeight: (height?: number) => void
   setFeatureSpacing: (spacing?: number) => void
   setMaxHeight: (height?: number) => void
-  toggleCompactnessDefault: () => void
+  setCompactnessDefault: (promote: boolean) => void
 }
 
 export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
@@ -75,7 +75,7 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
         type: 'checkbox' as const,
         checked: model.isCompactnessDefault,
         onClick: () => {
-          model.toggleCompactnessDefault()
+          model.setCompactnessDefault(!model.isCompactnessDefault)
         },
       },
       {

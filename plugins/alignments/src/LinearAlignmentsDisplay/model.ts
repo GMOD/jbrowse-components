@@ -10,7 +10,7 @@ import {
   areSlotsAtSessionDefault,
   getConf,
   getConfResolved,
-  toggleSlotsSessionDefault,
+  setSlotsSessionDefault,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -661,8 +661,19 @@ export default function stateModelFactory(
         /**
          * #getter
          */
+        // colorBy is a promotable slot with an inherit sentinel: an un-pinned
+        // track follows the session-wide color default (e.g. "color every
+        // alignments track by methylation"), while any explicit scheme —
+        // including `normal` — pins this track. getConfResolved walks the
+        // cascade and never returns the sentinel.
         get colorBy(): ColorBy {
-          return getConf(self, 'colorBy')
+          return getConfResolved<ColorBy>(self, 'colorBy')
+        },
+
+        // true when the current color scheme already equals the session-wide
+        // default (drives the "use as default" checkbox in the Color by menu)
+        get isColorByDefault(): boolean {
+          return areSlotsAtSessionDefault(self, ['colorBy'])
         },
 
         /**
@@ -1834,11 +1845,22 @@ export default function stateModelFactory(
            * #action
            */
           setColorScheme(colorBy: ColorBy) {
-            const current = getConf(self, 'colorBy')
-            if (colorBy.type !== 'tag' || colorBy.tag !== current?.tag) {
+            const current = self.colorBy
+            if (colorBy.type !== 'tag' || colorBy.tag !== current.tag) {
               self.colorTagMap = {}
             }
             self.configuration.setSlot('colorBy', colorBy)
+          },
+
+          /**
+           * #action
+           */
+          // Promote (or clear) the current color scheme as the session-wide
+          // default for this display type. Every alignments track that hasn't
+          // pinned a scheme picks it up through the colorBy getter (a tier-1
+          // change: the un-pinned tracks refetch).
+          setColorByDefault(promote: boolean) {
+            setSlotsSessionDefault(self, ['colorBy'], promote)
           },
 
           /**
@@ -1884,23 +1906,27 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          // Promote the current soft-clipping to the session-wide default for
-          // this display type (persisted via preferences), or clear it when it
-          // already is the default. Every alignments track that hasn't pinned
-          // soft clipping on picks this up through the showSoftClipping getter.
-          toggleShowSoftClippingDefault() {
-            toggleSlotsSessionDefault(self, ['showSoftClipping'])
+          // Promote (or clear) the current soft-clipping as the session-wide
+          // default for this display type (persisted via preferences). Every
+          // alignments track that hasn't pinned soft clipping picks it up
+          // through the showSoftClipping getter.
+          setShowSoftClippingDefault(promote: boolean) {
+            setSlotsSessionDefault(self, ['showSoftClipping'], promote)
           },
 
           /**
            * #action
            */
-          // Promote the current size (any preset or a custom size) to the
-          // session-wide default for this display type, or clear it when it
-          // already is the default. Every alignments track left at the default
-          // size picks this up through the featureHeight/featureSpacing getters.
-          toggleCompactnessDefault() {
-            toggleSlotsSessionDefault(self, ['featureHeight', 'featureSpacing'])
+          // Promote (or clear) the current size (any preset or custom size) as
+          // the session-wide default for this display type. Every alignments
+          // track left at the default size picks it up through the
+          // featureHeight/featureSpacing getters.
+          setCompactnessDefault(promote: boolean) {
+            setSlotsSessionDefault(
+              self,
+              ['featureHeight', 'featureSpacing'],
+              promote,
+            )
           },
 
           /**
@@ -2620,6 +2646,12 @@ export default function stateModelFactory(
                 colorSupplementaryChains: self.colorSupplementaryChains,
                 setColorSupplementaryChains: (flag: boolean) => {
                   self.setColorSupplementaryChains(flag)
+                },
+              },
+              sessionDefault: {
+                isDefault: self.isColorByDefault,
+                setDefault: (promote: boolean) => {
+                  self.setColorByDefault(promote)
                 },
               },
             }),

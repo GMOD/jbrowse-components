@@ -37,6 +37,21 @@ export type PromotableDisplay = IAnyStateTreeNode & {
   configuration: AnyConfigurationModel
 }
 
+/**
+ * Identity for primitives, structural (stringify) for objects/arrays. Mirrors
+ * the fork's `stripDefault` comparison, so "at the slot default / at the
+ * promoted default" agrees with what actually persists to the snapshot — needed
+ * once a promotable slot is `frozen` (object-valued, e.g. alignments `colorBy`),
+ * where a fresh MST-reconstructed value is never `===` the stored default.
+ */
+function sameValue(a: unknown, b: unknown): boolean {
+  return a === b
+    ? true
+    : typeof a === 'object' && a !== null && typeof b === 'object' && b !== null
+      ? JSON.stringify(a) === JSON.stringify(b)
+      : false
+}
+
 // The names of every promotable slot on a display's config schema (includes
 // slots inherited via baseConfiguration — merged into the table at construction).
 function promotableSlots(self: PromotableDisplay): string[] {
@@ -61,13 +76,26 @@ function promotedUsable(def: ConfigSlotDefinition, promoted: unknown): boolean {
   }
   // a sentinel slot's own `defaultValue` (its `'inherit'` member) is never a
   // real value to inherit — only `promotedBase` and the other members are
-  if (promotedBase !== undefined && promoted === defaultValue) {
+  if (promotedBase !== undefined && sameValue(promoted, defaultValue)) {
     return false
   }
-  return type === 'stringEnum' && model
-    ? typeof promoted === 'string' &&
-        getEnumerationValues(model).includes(promoted)
-    : typeof promoted === typeof defaultValue
+  if (type === 'stringEnum' && model) {
+    return (
+      typeof promoted === 'string' &&
+      getEnumerationValues(model).includes(promoted)
+    )
+  }
+  // a frozen/object slot (e.g. alignments `colorBy`): require a non-null object
+  // of matching array-ness — `typeof promoted === typeof defaultValue` admits
+  // `null` (typeof null === 'object') and an array against an object default
+  if (typeof defaultValue === 'object' && defaultValue !== null) {
+    return (
+      typeof promoted === 'object' &&
+      promoted !== null &&
+      Array.isArray(promoted) === Array.isArray(defaultValue)
+    )
+  }
+  return typeof promoted === typeof defaultValue
 }
 
 interface SlotResolution {
@@ -88,7 +116,7 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
   const base = def.promotedBase ?? def.defaultValue
   const own = getConf(self, slot)
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  const pinned = own !== def.defaultValue
+  const pinned = !sameValue(own, def.defaultValue)
   const value = pinned ? own : promotedUsable(def, promoted) ? promoted : base
   return { base, pinned, promoted, value }
 }
@@ -127,27 +155,30 @@ export function areSlotsAtSessionDefault(
 ): boolean {
   return slots.every(slot => {
     const { promoted, value } = resolveSlot(self, slot)
-    return promoted !== undefined && value === promoted
+    return promoted !== undefined && sameValue(value, promoted)
   })
 }
 
 /**
  * #api core/configuration
- * Promote each listed slot's current resolved value to the session-wide default,
- * or clear them when they already are the default (a single toggle for a group
- * of slots, e.g. featureHeight + featureSpacing behind one "make default" item).
+ * Explicit setter for a group of slots' session-wide default: `promote` stores
+ * each slot's current resolved value as the default for this display type;
+ * `!promote` clears it so sibling tracks fall back to their own config. The
+ * caller decides direction — pass `!areSlotsAtSessionDefault(...)` to toggle at
+ * the point of use. Grouping (e.g. featureHeight + featureSpacing) keeps a
+ * multi-slot setting behind one "make default" item.
  */
-export function toggleSlotsSessionDefault(
+export function setSlotsSessionDefault(
   self: PromotableDisplay,
   slots: string[],
+  promote: boolean,
 ): void {
   const session = getSession(self)
-  const clearing = areSlotsAtSessionDefault(self, slots)
   for (const slot of slots) {
     session.setDisplayTypeDefault?.(
       self.type,
       slot,
-      clearing ? undefined : getConfResolved(self, slot),
+      promote ? getConfResolved(self, slot) : undefined,
     )
   }
 }
@@ -163,7 +194,7 @@ export function displaySessionDefaultChanges(
 ): TrackConfigChange[] {
   return promotableSlots(self).flatMap(slot => {
     const { base, pinned, value } = resolveSlot(self, slot)
-    return !pinned && value !== base
+    return !pinned && !sameValue(value, base)
       ? [{ path: [slot], from: base, to: value } as TrackConfigChange]
       : []
   })

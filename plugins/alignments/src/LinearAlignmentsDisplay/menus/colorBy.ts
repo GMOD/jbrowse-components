@@ -56,6 +56,13 @@ interface ColorByMenuOptions {
     colorSupplementaryChains: boolean
     setColorSupplementaryChains: (flag: boolean) => void
   }
+  // "Use this scheme as the session-wide default" — appended only for displays
+  // whose colorBy slot is promotable (alignments; synteny omits it). The setter
+  // is explicit, so the menu toggles at the point of use.
+  sessionDefault?: {
+    isDefault: boolean
+    setDefault: (promote: boolean) => void
+  }
 }
 
 // Derived from the shared COLOR_SCHEMES registry (single source of menu
@@ -316,6 +323,7 @@ export function getColorByMenuItem(
     colorOptions,
     arcColor,
     supplementaryColoring,
+    sessionDefault,
   } = options
 
   const colorRadio = ({ label, type }: ColorOption): MenuItem => ({
@@ -410,6 +418,19 @@ export function getColorByMenuItem(
       ]
     : []
 
+  const sessionDefaultItem: MenuItem[] = sessionDefault
+    ? [
+        DIVIDER,
+        checkboxItem(
+          'Use this color scheme by default on all tracks like this',
+          sessionDefault.isDefault,
+          () => {
+            sessionDefault.setDefault(!sessionDefault.isDefault)
+          },
+        ),
+      ]
+    : []
+
   return {
     label: 'Color by...',
     type: 'subMenu' as const,
@@ -421,6 +442,7 @@ export function getColorByMenuItem(
       ...modItems,
       ...arcColorItem,
       ...supplementaryItem,
+      ...sessionDefaultItem,
     ],
   }
 }

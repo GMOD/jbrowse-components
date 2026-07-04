@@ -19,7 +19,7 @@ import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Boots a real LinearBasicDisplay (canvas) inside an LGV so the `displayMode`
-// resolution getter and the `isDisplayModeDefault`/`toggleDisplayModeDefault`
+// resolution getter and the `isDisplayModeDefault`/`setDisplayModeDefault`
 // promotion actions run against the actual MST model. The test Session backs
 // getDisplayTypeDefault/setDisplayTypeDefault with the same nested-object store
 // BaseSession uses (that store is round-trip-tested separately in
@@ -269,24 +269,24 @@ describe('canvas display displayMode resolution', () => {
     expect(display.displayMode).toBe('normal')
   })
 
-  describe('toggleDisplayModeDefault', () => {
+  describe('setDisplayModeDefault', () => {
     it('promotes the current mode to the session default', () => {
       const { session, display } = createDisplay('compact')
       expect(display.isDisplayModeDefault).toBe(false)
 
-      display.toggleDisplayModeDefault()
+      display.setDisplayModeDefault(true)
       expect(
         session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
       ).toBe('compact')
       expect(display.isDisplayModeDefault).toBe(true)
     })
 
-    it('clears the session default when the mode is already the default', () => {
+    it('clears the session default when promote is false', () => {
       const { session, display } = createDisplay('compact')
-      display.toggleDisplayModeDefault()
+      display.setDisplayModeDefault(true)
       expect(display.isDisplayModeDefault).toBe(true)
 
-      display.toggleDisplayModeDefault()
+      display.setDisplayModeDefault(false)
       expect(
         session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
       ).toBeUndefined()
