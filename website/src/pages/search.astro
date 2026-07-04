@@ -43,7 +43,7 @@ const q = Astro.url.searchParams.get('q') ?? ''
   </div>
 </BaseLayout>
 
-<script define:vars={{ baseUrl }}>
+<script is:inline define:vars={{ baseUrl }}>
   const input = document.getElementById('search-input')
   const countEl = document.getElementById('search-count')
   const resultsList = document.getElementById('search-results')

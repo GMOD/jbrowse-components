@@ -10,6 +10,14 @@ rclone compares by content hash and only uploads changed files. `sync` (not
 `copy`) preserves the delete-stale-files behavior. rclone's `env_auth` reads the
 same AWS credentials the workflow exports.
 
+## Search
+
+Search is powered by pagefind. `pnpm build` runs `pagefind --site dist`, indexing
+the production build directly — production always has a fresh index. For local
+`astro dev`, the search page loads `static/pagefind/`, which is **gitignored** and
+absent on a fresh checkout: run `pnpm index` once (builds + writes the index into
+`static/`) to make the local `/search/` page work.
+
 ## Staging deploys
 
 `SITE_BASE_PATH` overrides the `/jb2` base path (astro.config.mjs), for

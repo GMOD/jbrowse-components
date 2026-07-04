@@ -5,5 +5,5 @@
     "jsxImportSource": "react",
     "noUncheckedIndexedAccess": true
   },
-  "exclude": ["docs/static/pagefind/**"]
+  "exclude": ["dist", "static/pagefind"]
 }
