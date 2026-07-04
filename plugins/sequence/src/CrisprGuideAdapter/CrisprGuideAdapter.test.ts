@@ -56,6 +56,9 @@ test('finds a forward-strand SpCas9 guide with protospacer, PAM, cut site', asyn
   expect(g.get('guideSeq')).toBe('AAATTT')
   expect(g.get('pam')).toBe('TGG')
   expect(g.get('cutSite')).toBe(13)
+  // AAATTT: no G/C, only 3 consecutive T's (not a poly-T terminator)
+  expect(g.get('gcPercent')).toBe(0)
+  expect(g.get('hasPolyT')).toBe(false)
   const pamSub = (g.get('subfeatures')!)[0]!
   expect(pamSub.get('start')).toBe(16)
   expect(pamSub.get('end')).toBe(19)

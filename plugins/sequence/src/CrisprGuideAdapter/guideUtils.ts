@@ -54,6 +54,24 @@ export function reverseComplementIupac(pam: string) {
   return out
 }
 
+// Cheap, honest triage metrics for a protospacer (in guide 5'->3' orientation):
+// GC percent (extreme values hurt on-target efficiency) and a poly-T run, which
+// terminates transcription from pol III (U6/H1) promoters and kills the guide.
+// These are sequence properties, NOT a specificity/off-target score.
+export function guideQuality(guideSeq: string) {
+  const seq = guideSeq.toUpperCase()
+  let gc = 0
+  for (const c of seq) {
+    if (c === 'G' || c === 'C') {
+      gc += 1
+    }
+  }
+  return {
+    gcPercent: seq.length ? Math.round((100 * gc) / seq.length) : 0,
+    hasPolyT: seq.includes('TTTT'),
+  }
+}
+
 export interface GuidePlacement {
   featureStart: number
   featureEnd: number

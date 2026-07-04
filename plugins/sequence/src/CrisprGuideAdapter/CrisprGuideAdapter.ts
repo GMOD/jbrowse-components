@@ -3,6 +3,7 @@ import { SimpleFeature, doesIntersect2, revcom } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import {
+  guideQuality,
   iupacToRegex,
   placeGuide,
   reverseComplementIupac,
@@ -83,6 +84,7 @@ export default class CrisprGuideAdapter extends BaseFeatureDataAdapter<CrisprGui
             const pamPlus = residues.slice(rel(pamStart), rel(pamEnd))
             const guideSeq = strand === 1 ? protoPlus : revcom(protoPlus)
             const pamSeq = strand === 1 ? pamPlus : revcom(pamPlus)
+            const { gcPercent, hasPolyT } = guideQuality(guideSeq)
             const id = `${this.id}-${featureStart}-${strand}`
             observer.next(
               new SimpleFeature({
@@ -96,6 +98,8 @@ export default class CrisprGuideAdapter extends BaseFeatureDataAdapter<CrisprGui
                 guideSeq,
                 pam: pamSeq,
                 cutSite,
+                gcPercent,
+                hasPolyT,
                 subfeatures: [
                   {
                     uniqueId: `${id}-pam`,

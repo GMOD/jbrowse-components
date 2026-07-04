@@ -1,4 +1,5 @@
 import {
+  guideQuality,
   iupacToRegex,
   placeGuide,
   reverseComplementIupac,
@@ -52,6 +53,19 @@ test('SpCas9 minus-strand: revcomp PAM at left, protospacer to the right', () =>
   expect(p.featureEnd).toBe(123)
   // cut sits 3bp into the protospacer from its PAM-proximal (left) end
   expect(p.cutSite).toBe(106)
+})
+
+test('guideQuality computes GC percent and flags poly-T terminators', () => {
+  expect(guideQuality('GGGGCCCCAAAATTTT')).toMatchObject({
+    gcPercent: 50,
+    hasPolyT: true,
+  })
+  expect(guideQuality('ACGTACGTAC')).toMatchObject({
+    gcPercent: 50,
+    hasPolyT: false,
+  })
+  expect(guideQuality('GCGCGC')).toMatchObject({ gcPercent: 100 })
+  expect(guideQuality('')).toMatchObject({ gcPercent: 0, hasPolyT: false })
 })
 
 test('Cas12a plus-strand: PAM 5prime, protospacer to the right', () => {
