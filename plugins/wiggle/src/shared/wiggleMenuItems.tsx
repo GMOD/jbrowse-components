@@ -1,8 +1,10 @@
-import { makePointSizeMenu, makeRadioSubMenu } from '@jbrowse/wiggle-core'
+import {
+  makeRadioSubMenu,
+  makeScatterPointSizeMenuItem,
+} from '@jbrowse/wiggle-core'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
-import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { IconButton, Tooltip, Typography } from '@mui/material'
@@ -49,17 +51,9 @@ export function makePointSizeMenuItems(self: {
     return []
   }
   return [
-    makePointSizeMenu({
+    makeScatterPointSizeMenuItem(self, {
       label: 'Scatter point size',
-      icon: ScatterPlotIcon,
-      getValue: () => self.scatterPointSize,
-      isDefault: self.scatterPointSize === SCATTER_POINT_SIZE_DEFAULT,
-      onChange: n => {
-        self.setScatterPointSize(n)
-      },
-      onReset: () => {
-        self.setScatterPointSize(undefined)
-      },
+      defaultValue: SCATTER_POINT_SIZE_DEFAULT,
     }),
   ]
 }
