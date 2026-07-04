@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Checkbox,
@@ -15,9 +16,30 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { addReferenceScanTrack, useSearchModeStyles } from './searchModes.ts'
+import { addReferenceScanTrack } from './searchModes.ts'
 
 import type { SequenceSearchModeProps } from './searchModes.ts'
+
+const useStyles = makeStyles()({
+  dialogContent: {
+    width: '34em',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+  },
+  row: {
+    display: 'flex',
+    gap: 12,
+    '& > *': {
+      flex: 1,
+    },
+  },
+  toggleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+  },
+})
 
 // PAM 3' of the protospacer for Cas9-type enzymes, 5' for Cas12a; cutOffset is
 // the bp from the PAM-proximal end of the protospacer to the predicted cut.
@@ -44,7 +66,7 @@ const CrisprGuidePanel = observer(function CrisprGuidePanel({
   model,
   handleClose,
 }: SequenceSearchModeProps) {
-  const { classes } = useSearchModeStyles()
+  const { classes } = useStyles()
   const [enzyme, setEnzyme] = useState('SpCas9')
   const [pam, setPam] = useState(ENZYME_PRESETS.SpCas9!.pam)
   const [pamLocation, setPamLocation] = useState(

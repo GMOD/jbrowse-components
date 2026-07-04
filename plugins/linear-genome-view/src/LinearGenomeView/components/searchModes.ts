@@ -1,5 +1,4 @@
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 export interface SequenceSearchModel {
@@ -14,27 +13,6 @@ export interface SequenceSearchModeProps {
   model: SequenceSearchModel
   handleClose: () => void
 }
-
-export const useSearchModeStyles = makeStyles()({
-  dialogContent: {
-    width: '34em',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-  },
-  row: {
-    display: 'flex',
-    gap: 12,
-    '& > *': {
-      flex: 1,
-    },
-  },
-  toggleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-  },
-})
 
 // Creates a FeatureTrack wrapping the assembly's sequence adapter and shows it.
 // `adapter` carries the type + params; the reference sequence subadapter is

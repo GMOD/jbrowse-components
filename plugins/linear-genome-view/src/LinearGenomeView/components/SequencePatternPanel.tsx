@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   Checkbox,
@@ -12,15 +13,24 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { addReferenceScanTrack, useSearchModeStyles } from './searchModes.ts'
+import { addReferenceScanTrack } from './searchModes.ts'
 
 import type { SequenceSearchModeProps } from './searchModes.ts'
+
+const useStyles = makeStyles()({
+  dialogContent: {
+    width: '34em',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+  },
+})
 
 const SequencePatternPanel = observer(function SequencePatternPanel({
   model,
   handleClose,
 }: SequenceSearchModeProps) {
-  const { classes } = useSearchModeStyles()
+  const { classes } = useStyles()
   const [value, setValue] = useState('')
   const [caseInsensitive, setCaseInsensitive] = useState(true)
   const [searchForward, setSearchForward] = useState(true)
