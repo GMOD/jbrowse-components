@@ -47,7 +47,32 @@ Conventions for executors:
 
 ---
 
-## ▶ REMAINING — TIER 1: SAFE, behavior-preserving / test-covered (apply freely)
+### arc SVG chrome dedup (2026-07-04; arc typecheck clean, 8 tests pass)
+- **DEDUP** `shared/renderArcSvg.tsx` — the byte-identical `renderSvg.tsx` chrome
+  (SvgChrome + SvgClipRect + awaitSvgReady) now lives in one generic
+  `renderArcSvg<M>(model, Arcs, opts)`; both displays' `renderSvg.tsx` are thin
+  wrappers passing their own `Arcs`. (Plain function share — fine.)
+- **NOT DONE (deliberately): ReactComponent dedup.** The handoff proposed a
+  `makeArcReactComponent(Arcs)` factory. A component-returning factory is more
+  machinery than the trivial wrapper it removes (each body is just
+  `<BaseDisplayComponent><Arcs/></BaseDisplayComponent>`) and obscures the
+  `lazy(import())` entry point. Left the two explicit `ReactComponent.tsx`
+  wrappers — "explicit even if duplicated" wins here.
+
+### TIER 1 status — everything else VERIFIED COMPLETE (2026-07-04)
+Re-audited the whole TIER 1 list; all applied or intentionally kept:
+circular-view `thetaRangesOverlap` (removed), maf `rowBandGeometry`, alignments
+`getUniqueTags`/filter-flags `defaultFilterFlags`, product-core MultipleViews
+`move` closure, core `colord` clamp / `measureGridWidth` single-pass /
+`sessionSharing` / `getStrokeProps`→`svgColorProps.ts`, sequence
+`deriveFastaLocations`, app-core `FAB_Z_INDEX`, tree-sidebar `TREE_STROKE` +
+`SvgRowLabels` reduce + canvas resize (now via shared `getPreparedCanvas2D`).
+`seqUtils.reverse` kept as an index loop **on purpose** (comment: spread iterator
+too slow for large sequences) — no longer a finding.
+
+---
+
+## ▶ REMAINING — TIER 1: (all applied — see above)
 
 ### Dead code
 - **circular-view** `CircularView/viewportVisibleRegion.ts:39-69` — remove
