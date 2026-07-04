@@ -40,6 +40,14 @@ function getGenomicX(
   return abs - view.offsetPx
 }
 
+// NOTE: not horizontally-flip aware. The SNP-index axis runs left-to-right
+// regardless of view.reversed, so on a flipped view these connector lines cross
+// the genome ruler. Unlike the 1D variant matrix (which mirrors the column
+// index at draw time), fixing LD means mirroring the whole rotated triangle —
+// the shader transform, Canvas2D renderer, hitTest inverse, this anchor,
+// FocalSnpHighlight, Crosshairs, VariantLabels, and SVG export — across both
+// index and genomic positioning modes. All-or-nothing: mirroring only these
+// lines points them at an un-mirrored triangle. Left as a scoped follow-up.
 function getMatrixX(
   idx: number,
   blockWidth: number,
