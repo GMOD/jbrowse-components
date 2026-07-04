@@ -226,6 +226,11 @@ function PileupResizeHandle({
   )
 }
 
+// Coverage-band resize handle at each section's coverage bottom. `coverageHeight`
+// is display-global, so every handle resizes all bands together; grouped mode
+// still gets one affordance per group (each section keeps its own coverage band,
+// including collapsed groups), scrolling with its band. Ungrouped is the single
+// sticky section, reproducing the prior lone handle at `coverageHeight`.
 const CoverageResizeHandle = observer(function CoverageResizeHandle({
   model,
 }: {
@@ -234,15 +239,27 @@ const CoverageResizeHandle = observer(function CoverageResizeHandle({
   if (!model.showCoverage) {
     return null
   }
+  const { height, scrollModel: scroll } = model
   return (
-    <PileupResizeHandle
-      top={model.coverageHeight - YSCALEBAR_LABEL_OFFSET}
-      canvasHeight={model.height}
-      onDrag={dy => {
-        model.setCoverageHeight(model.coverageHeight + dy)
-      }}
-      title="Drag to resize coverage track"
-    />
+    <>
+      {model.renderSections.map(section => {
+        const bottom = bandScreenTop(
+          section.coverageTop + section.coverageHeight,
+          scroll,
+        )
+        return (
+          <PileupResizeHandle
+            key={section.groupKey || 'ungrouped'}
+            top={bottom - YSCALEBAR_LABEL_OFFSET}
+            canvasHeight={height}
+            onDrag={dy => {
+              model.setCoverageHeight(model.coverageHeight + dy)
+            }}
+            title="Drag to resize coverage track"
+          />
+        )
+      })}
+    </>
   )
 })
 
