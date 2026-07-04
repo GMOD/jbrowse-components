@@ -40,8 +40,10 @@ import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { ColorScheme } from './constants.ts'
 import {
   anyRegionTruncated,
+  buildLaidOutByGroup,
   groupMaxY,
   layoutGroupsToViewport,
+  maxRowsFor,
 } from './groupLayout.ts'
 import {
   anyGroupHasSashimi,
@@ -959,28 +961,36 @@ export default function stateModelFactory(
          * main-thread tier-2 setting — see readTagColors.
          */
         get laidOutByGroup() {
-          return layoutGroupsToViewport(
-            {
-              order: this.groupOrder,
-              rawByGroup: this.rawDataByGroup,
-              isChainMode: self.isChainMode,
-              sortedBy: this.sortedBy,
-              showSoftClipping: self.showSoftClipping,
-              regions: self.loadedRegions,
-              showLinkedReadLines: self.showLinkedReadLines,
-              colorBy: this.colorBy,
-              colorTagMap: self.colorTagMap,
-            },
-            {
-              rowHeight: this.featureHeight + this.featureSpacing,
-              height: self.height,
-              maxHeight: this.maxHeight,
-              overhead: belowCoverageBandsGeometry(this.belowCoverageBandsInput)
-                .bottom,
-              collapsedKeys: self.collapsedGroups,
-              heightOverridesPx: self.groupMaxHeightOverrides,
-            },
-          )
+          return layoutGroupsToViewport(this.groupLayoutContext, {
+            rowHeight: this.featureHeight + this.featureSpacing,
+            height: self.height,
+            maxHeight: this.maxHeight,
+            overhead: belowCoverageBandsGeometry(this.belowCoverageBandsInput)
+              .bottom,
+            collapsedKeys: self.collapsedGroups,
+            heightOverridesPx: self.groupMaxHeightOverrides,
+          })
+        },
+
+        /**
+         * #getter
+         * The layout mechanics (grouping, sort, soft-clip, colors) shared by the
+         * viewport fit pass and any ad-hoc layout — e.g. `fitReadsToHeight`, which
+         * lays every group out uncapped to count rows. Kept apart from the fit
+         * policy (row caps), which varies per call.
+         */
+        get groupLayoutContext() {
+          return {
+            order: this.groupOrder,
+            rawByGroup: this.rawDataByGroup,
+            isChainMode: self.isChainMode,
+            sortedBy: this.sortedBy,
+            showSoftClipping: self.showSoftClipping,
+            regions: self.loadedRegions,
+            showLinkedReadLines: self.showLinkedReadLines,
+            colorBy: this.colorBy,
+            colorTagMap: self.colorTagMap,
+          }
         },
 
         /**
@@ -2172,6 +2182,39 @@ export default function stateModelFactory(
             self.configuration.setSlot('featureHeight', featureHeight)
             self.configuration.setSlot('featureSpacing', featureSpacing)
             self.scrollTop = 0
+          },
+
+          /**
+           * #action
+           * Shrink the read height so every read (all groups, uncollapsed) fits
+           * the display without scrolling — the row count is fixed by read
+           * overlaps, so we lay the groups out uncapped, count rows, and divide
+           * the pileup space by that. Reads go as thin as 1px; only past that
+           * (more rows than pixels) does the stack still scroll. Drops per-group
+           * overrides so the fit is uniform, and zeroes spacing to reclaim it.
+           */
+          fitReadsToHeight() {
+            const rowHeight = self.featureHeight + self.featureSpacing
+            const laid = buildLaidOutByGroup(
+              self.groupLayoutContext,
+              maxRowsFor(self.maxHeight, rowHeight),
+            )
+            const empty = new Map<number, PileupDataResult>()
+            const rows = self.groupOrder
+              .filter(g => !self.collapsedGroups.has(g.key))
+              .reduce((sum, { key }) => sum + groupMaxY(laid.get(key) ?? empty), 0)
+            const overhead =
+              Math.max(1, self.groupOrder.length) * self.coverageDisplayHeight
+            const pileupSpace = self.height - overhead
+            if (rows > 0 && pileupSpace > 0) {
+              self.groupMaxHeightOverrides.clear()
+              self.configuration.setSlot('featureSpacing', 0)
+              self.configuration.setSlot(
+                'featureHeight',
+                Math.max(1, Math.floor(pileupSpace / rows)),
+              )
+              self.scrollTop = 0
+            }
           },
 
           /**

@@ -34,6 +34,7 @@ interface FeatureHeightModel {
   setFeatureHeight: (height?: number) => void
   setFeatureSpacing: (spacing?: number) => void
   setCompactnessDefault: (promote: boolean) => void
+  fitReadsToHeight: () => void
 }
 
 // Names the height the track currently shows — a preset label when it matches
@@ -75,6 +76,12 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
               handleClose,
             },
           ])
+        },
+      },
+      {
+        label: 'Fit to display height',
+        onClick: () => {
+          model.fitReadsToHeight()
         },
       },
       { type: 'divider' as const },
