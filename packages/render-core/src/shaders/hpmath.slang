@@ -59,6 +59,22 @@ public float snapPixelCenterY(float yScreen, float scrollY, float canvasHeight) 
   return yPxToClipY(yPx, canvasHeight);
 }
 
+// Center a thin glyph on the *drawn* middle row of the box it annotates, given
+// the box's real center `centerY` and height `heightPx`. The box is rasterized
+// with the rect shader's edge snapping (top = floor(top+0.5), height =
+// floor(h+0.5)); reproducing that here lands the line/chevron exactly on the
+// box's center row for odd pixel heights (superCompact) instead of the ~1px
+// bias plain `snapPixelCenterY(centerY)` gives, and stays consistent (just
+// below the seam) for even heights — where a 1px line can't sit dead-center.
+public float snapBoxCenterY(
+  float centerY, float heightPx, float scrollY, float canvasHeight
+) {
+  float topPx = floor(centerY - heightPx * 0.5 - scrollY + 0.5);
+  float hPx = floor(heightPx + 0.5);
+  float yPx = topPx + floor(hPx * 0.5) + 0.5;
+  return yPxToClipY(yPx, canvasHeight);
+}
+
 // (cumBp - viewBp)/bpPerPx == cumBp/bpPerPx - offsetPx (LGV render position).
 // Used by synteny + dotplot. Same hi/lo precision trick as hpToClipX — see
 // comment there.

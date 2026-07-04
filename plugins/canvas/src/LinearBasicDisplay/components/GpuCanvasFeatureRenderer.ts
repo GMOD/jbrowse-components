@@ -94,6 +94,7 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
         {
           startEnd: data.linePositions,
           y: data.lineYs,
+          height: data.lineHeights,
           direction: data.lineDirections,
           color: data.lineColors,
         },
@@ -108,6 +109,7 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
         {
           x: data.arrowXs,
           y: data.arrowYs,
+          height: data.arrowHeights,
           direction: data.arrowDirections,
           color: data.arrowColors,
         },

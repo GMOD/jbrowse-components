@@ -19,6 +19,8 @@ struct ArrowInstance {
   float y         : ATTR1;
   float direction : ATTR2;
   uint  color     : ATTR3;
+  // Box height this arrow sits on, so it snaps onto the box's drawn center row.
+  float height    : ATTR4;
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
@@ -32,7 +34,7 @@ struct VsOut {
 VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
   float cx = bpToClipX(inst.x, u);
 
-  float cy = snapPixelCenterY(inst.y, u.scrollY, u.canvasHeight);
+  float cy = snapBoxCenterY(inst.y, inst.height, u.scrollY, u.canvasHeight);
 
   float stemLength = STEM_LENGTH_PX / u.canvasWidth * 2.0;
   float stemHalf = STEM_HALF_H_PX / u.canvasHeight * 2.0;

@@ -54,7 +54,8 @@ export function emitIntronLines(
   const feature = transcript.feature
   const start = feature.get('start')
   const end = feature.get('end')
-  const lineY = transcriptTopPx + transcript.height / 2
+  const lineHeight = transcript.height
+  const lineY = transcriptTopPx + lineHeight / 2
   // direction drives chevron rendering; 0 means draw a plain connecting line
   const direction = showChevrons ? (feature.get('strand') ?? 0) : 0
 
@@ -67,6 +68,7 @@ export function emitIntronLines(
         start: prevEnd,
         end: childStart,
         y: lineY,
+        height: lineHeight,
         color: strokeUint,
         direction,
         flatbushIdx,
@@ -81,6 +83,7 @@ export function emitIntronLines(
       start: prevEnd,
       end,
       y: lineY,
+      height: lineHeight,
       color: strokeUint,
       direction,
       flatbushIdx,
@@ -177,6 +180,7 @@ export function emitStrandArrow(
     arrows.push({
       x: strand === 1 ? feature.get('end') : feature.get('start'),
       y: topPx + height / 2,
+      height,
       direction: strand,
       color: strokeUint,
       flatbushIdx,

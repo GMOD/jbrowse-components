@@ -42,6 +42,17 @@ const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 
 type BpToScreen = (bp: number) => number
 
+// JS twin of hpmath.slang's snapBoxCenterY: the crisp (x.5) screen-y of the
+// drawn middle row of a box with real center `centerY` and height `heightPx`,
+// reproducing drawRects' edge snapping so the thin glyphs riding on a box
+// (intron lines, chevrons, strand arrows, continuation markers) land on its
+// center row instead of ~1px off in odd-height modes (superCompact).
+function boxCenterY(centerY: number, heightPx: number, scrollY: number) {
+  const topPx = Math.floor(centerY - heightPx / 2 - scrollY + 0.5)
+  const hPx = Math.floor(heightPx + 0.5)
+  return topPx + Math.floor(hPx / 2) + 0.5
+}
+
 function drawLines(
   ctx: Ctx2D,
   region: RegionRenderData,
@@ -55,7 +66,7 @@ function drawLines(
     const endBp = region.linePositions[i * 2 + 1]!
     const x1 = toX(startBp)
     const x2 = toX(endBp)
-    const y = Math.floor(region.lineYs[i]! - scrollY + 0.5) + 0.5
+    const y = boxCenterY(region.lineYs[i]!, region.lineHeights[i]!, scrollY)
     ctx.strokeStyle = abgrToCssRgba(region.lineColors[i]!)
     ctx.lineWidth = 1
     ctx.beginPath()
@@ -162,7 +173,7 @@ function drawArrows(
   for (let i = 0; i < region.arrowYs.length; i++) {
     const xBp = region.arrowXs[i]!
     const cx = toX(xBp)
-    const y = Math.floor(region.arrowYs[i]! - scrollY + 0.5) + 0.5
+    const y = boxCenterY(region.arrowYs[i]!, region.arrowHeights[i]!, scrollY)
     const rawDir = region.arrowDirections[i]!
     const dir = block.reversed ? -rawDir : rawDir
     ctx.fillStyle = abgrToCssRgba(region.arrowColors[i]!)
@@ -245,10 +256,11 @@ function drawContinuation(
       ctx.strokeStyle =
         lum > 127.5 ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)'
       ctx.lineWidth = 1
-      const cy =
-        Math.floor(
-          region.rectYs[i]! + region.rectHeights[i]! * 0.5 - scrollY + 0.5,
-        ) + 0.5
+      const cy = boxCenterY(
+        region.rectYs[i]! + region.rectHeights[i]! * 0.5,
+        region.rectHeights[i]!,
+        scrollY,
+      )
       const halfH = Math.min(CONT_TRI_HALF_H_PX, region.rectHeights[i]! * 0.4)
       const strand = region.rectStrands[i] ?? 0
       if (offRight) {

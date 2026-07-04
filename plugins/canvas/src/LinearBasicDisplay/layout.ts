@@ -84,8 +84,14 @@ function applyHeightScale(data: FeatureDataResult, multiplier: number) {
   for (let i = 0; i < data.lineYs.length; i++) {
     data.lineYs[i]! *= multiplier
   }
+  for (let i = 0; i < data.lineHeights.length; i++) {
+    data.lineHeights[i]! *= multiplier
+  }
   for (let i = 0; i < data.arrowYs.length; i++) {
     data.arrowYs[i]! *= multiplier
+  }
+  for (let i = 0; i < data.arrowHeights.length; i++) {
+    data.arrowHeights[i]! *= multiplier
   }
   for (const item of data.flatbushItems) {
     item.featureHeightPx *= multiplier
@@ -312,7 +318,9 @@ function cloneMutableFields(raw: FeatureDataResult) {
     rectYs: new Float32Array(raw.rectYs),
     rectHeights: new Float32Array(raw.rectHeights),
     lineYs: new Float32Array(raw.lineYs),
+    lineHeights: new Float32Array(raw.lineHeights),
     arrowYs: new Float32Array(raw.arrowYs),
+    arrowHeights: new Float32Array(raw.arrowHeights),
     flatbushItems: raw.flatbushItems.map(item => ({ ...item })),
     subfeatureInfos: raw.subfeatureInfos.map(info => ({ ...info })),
     floatingLabelsData,

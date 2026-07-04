@@ -107,7 +107,7 @@ VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
   float halfHPx    = min(CONT_TRI_HALF_H_PX, inst.height * 0.4);
   float halfHClip  = halfHPx / u.canvasHeight * 2.0;
 
-  float cy = snapPixelCenterY(inst.y + inst.height * 0.5, u.scrollY, u.canvasHeight);
+  float cy = snapBoxCenterY(inst.y + inst.height * 0.5, inst.height, u.scrollY, u.canvasHeight);
 
   float edgeSide = isRight ? 1.0 : -1.0;
   float edgeX    = edgeSide;

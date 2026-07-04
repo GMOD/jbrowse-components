@@ -17,6 +17,9 @@ export interface LineData {
   start: number
   end: number
   y: number
+  // Height of the box this intron line rides on, so the renderer can snap the
+  // line onto the box's drawn center row (see snapBoxCenterY).
+  height: number
   color: number
   direction: number
   flatbushIdx: number
@@ -25,6 +28,9 @@ export interface LineData {
 export interface ArrowData {
   x: number
   y: number
+  // Height of the box this arrow sits on, so the renderer can snap it onto the
+  // box's drawn center row (see snapBoxCenterY).
+  height: number
   direction: number
   color: number
   flatbushIdx: number
@@ -51,11 +57,13 @@ export function packRenderArrays(
   | 'rectFeatureIndices'
   | 'linePositions'
   | 'lineYs'
+  | 'lineHeights'
   | 'lineColors'
   | 'lineDirections'
   | 'lineFeatureIndices'
   | 'arrowXs'
   | 'arrowYs'
+  | 'arrowHeights'
   | 'arrowDirections'
   | 'arrowColors'
   | 'arrowFeatureIndices'
@@ -91,6 +99,7 @@ export function packRenderArrays(
 
   const linePositions = new Uint32Array(visibleLines.length * 2)
   const lineYs = new Float32Array(visibleLines.length)
+  const lineHeights = new Float32Array(visibleLines.length)
   const lineColors = new Uint32Array(visibleLines.length)
   const lineDirections = new Int8Array(visibleLines.length)
   const lineFeatureIndices = new Uint32Array(visibleLines.length)
@@ -99,6 +108,7 @@ export function packRenderArrays(
     linePositions[i * 2] = line.start
     linePositions[i * 2 + 1] = line.end
     lineYs[i] = line.y
+    lineHeights[i] = line.height
     lineColors[i] = line.color
     lineDirections[i] = line.direction
     lineFeatureIndices[i] = line.flatbushIdx
@@ -106,6 +116,7 @@ export function packRenderArrays(
 
   const arrowXs = new Uint32Array(visibleArrows.length)
   const arrowYs = new Float32Array(visibleArrows.length)
+  const arrowHeights = new Float32Array(visibleArrows.length)
   const arrowDirections = new Int8Array(visibleArrows.length)
   const arrowColors = new Uint32Array(visibleArrows.length)
   const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
@@ -113,6 +124,7 @@ export function packRenderArrays(
   for (const [i, arrow] of visibleArrows.entries()) {
     arrowXs[i] = arrow.x
     arrowYs[i] = arrow.y
+    arrowHeights[i] = arrow.height
     arrowDirections[i] = arrow.direction
     arrowColors[i] = arrow.color
     arrowFeatureIndices[i] = arrow.flatbushIdx
@@ -128,11 +140,13 @@ export function packRenderArrays(
     rectFeatureIndices,
     linePositions,
     lineYs,
+    lineHeights,
     lineColors,
     lineDirections,
     lineFeatureIndices,
     arrowXs,
     arrowYs,
+    arrowHeights,
     arrowDirections,
     arrowColors,
     arrowFeatureIndices,

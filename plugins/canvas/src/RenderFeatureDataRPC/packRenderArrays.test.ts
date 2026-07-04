@@ -15,10 +15,10 @@ function rect(start: number, end: number): RectData {
   }
 }
 function line(start: number, end: number): LineData {
-  return { start, end, y: 0, color: 0, direction: 0, flatbushIdx: 0 }
+  return { start, end, y: 0, height: 10, color: 0, direction: 0, flatbushIdx: 0 }
 }
 function arrow(x: number): ArrowData {
-  return { x, y: 0, direction: 1, color: 0, flatbushIdx: 0 }
+  return { x, y: 0, height: 10, direction: 1, color: 0, flatbushIdx: 0 }
 }
 
 // All three primitive types treat the region as half-open [regionStart, regionEnd).

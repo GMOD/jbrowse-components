@@ -70,7 +70,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float2 splitChevron = float2(splitLine.x, splitLine.y + chevronOffsetBp);
   float cx = hpClipX(splitChevron, u);
 
-  float cy = snapPixelCenterY(inst.y, u.scrollY, u.canvasHeight);
+  float cy = snapBoxCenterY(inst.y, inst.height, u.scrollY, u.canvasHeight);
 
   float halfW = CHEVRON_W_PX / u.canvasWidth;
   float halfH = CHEVRON_H_PX / u.canvasHeight;

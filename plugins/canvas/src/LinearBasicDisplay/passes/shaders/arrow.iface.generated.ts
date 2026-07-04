@@ -58,14 +58,15 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[11] = uniforms.rightIsCanvasEdge
 }
 
-export const INSTANCE_STRIDE_BYTES = 16
-export const INSTANCE_STRIDE_F32 = 4
+export const INSTANCE_STRIDE_BYTES = 20
+export const INSTANCE_STRIDE_F32 = 5
 
 export const FIELD_OFFSET_F32 = {
   x: 0,
   y: 1,
   direction: 2,
   color: 3,
+  height: 4,
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
@@ -73,6 +74,7 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_y', components: 1, type: 'float', offsetBytes: 4, integer: false },
   { name: 'a_direction', components: 1, type: 'float', offsetBytes: 8, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 12, integer: true },
+  { name: 'a_height', components: 1, type: 'float', offsetBytes: 16, integer: false },
 ]
 
 export interface InstanceArrays {
@@ -80,6 +82,7 @@ export interface InstanceArrays {
   y: ArrayLike<number>
   direction: ArrayLike<number>
   color: ArrayLike<number>
+  height: ArrayLike<number>
 }
 
 export function packInstances(
@@ -89,13 +92,14 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { x, y, direction, color } = arrays
+  const { x, y, direction, color, height } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_F32
     u32[o + 0] = x[i]!
     f32[o + 1] = y[i]!
     f32[o + 2] = direction[i]!
     u32[o + 3] = color[i]!
+    f32[o + 4] = height[i]!
   }
   return buf
 }

@@ -100,12 +100,18 @@ export interface FeatureDataResult {
   // Connecting lines (introns) with strand info for dynamic chevron generation
   linePositions: Uint32Array
   lineYs: Float32Array
+  // Box height each line rides on, so the renderer snaps the line onto the
+  // box's drawn center row rather than ~1px off in odd-height modes.
+  lineHeights: Float32Array
   lineColors: Uint32Array
   lineDirections: Int8Array // strand direction: -1, 0, or 1
 
   // Strand arrows (at feature ends)
   arrowXs: Uint32Array
   arrowYs: Float32Array
+  // Box height each arrow sits on, so the renderer snaps it onto the box's
+  // drawn center row rather than ~1px off in odd-height modes.
+  arrowHeights: Float32Array
   arrowDirections: Int8Array
   arrowColors: Uint32Array
 
@@ -153,10 +159,12 @@ export type RegionRenderData = Pick<
   | 'outlineColor'
   | 'linePositions'
   | 'lineYs'
+  | 'lineHeights'
   | 'lineColors'
   | 'lineDirections'
   | 'arrowXs'
   | 'arrowYs'
+  | 'arrowHeights'
   | 'arrowDirections'
   | 'arrowColors'
 >
