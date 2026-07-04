@@ -57,10 +57,17 @@ struct VsOut {
 VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float clipX1 = bpToClipX(inst.startEnd.x, u);
   float clipX2 = bpToClipX(inst.startEnd.y, u);
+  // Reversal is baked into bpRangeX (negated length), so clipX2 < clipX1 on
+  // reversed regions. Order the edges to screen-space left/right before snapping
+  // so a wide variant spans its full extent instead of collapsing to the
+  // min-width sliver on the wrong side — mirrors the Math.min/Math.abs in
+  // Canvas2DVariantRenderer.ts.
+  float loClip = min(clipX1, clipX2);
+  float hiClip = max(clipX1, clipX2);
 
   float pxSize = 2.0 / u.canvasWidth;
-  float cx1 = floor(clipX1 / pxSize + 0.5) * pxSize;
-  float cx2 = max(floor(clipX2 / pxSize + 0.5) * pxSize, cx1 + 2.0 * pxSize);
+  float cx1 = floor(loClip / pxSize + 0.5) * pxSize;
+  float cx2 = max(floor(hiClip / pxSize + 0.5) * pxSize, cx1 + 2.0 * pxSize);
 
   // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
   // during resize); max(...,1) is the minimum quad height to avoid GPU-culled
@@ -84,7 +91,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float xRight = cx2;
   float triBlend = 1.0;
   if (inst.shapeType == 3u) {
-    float spanPx = (clipX2 - clipX1) * u.canvasWidth * 0.5;
+    float spanPx = (hiClip - loClip) * u.canvasWidth * 0.5;
     triBlend = smoothstep(INS_LINE_SPAN_PX, INS_TRI_SPAN_PX, spanPx);
     float cappedSpan = min(spanPx, INS_TRI_SPAN_PX);
     float topWidthPx = lerp(INS_LINE_WIDTH_PX, max(cappedSpan, INS_LINE_WIDTH_PX), triBlend);
