@@ -1,5 +1,6 @@
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
-import { Chip, Tooltip } from '@mui/material'
+
+import StatusChip from './StatusChip.tsx'
 
 // Bottom-right badge for the "show only these features" collection. While the
 // user is collecting (ctrl/cmd+click or the right-click "Add to show-only set"
@@ -21,31 +22,25 @@ export default function SoloSelectionChip({
   }
   const noun = `${count} feature${count > 1 ? 's' : ''}`
   return applied ? (
-    <Tooltip title="Remove the filter to show all features again">
-      <Chip
-        size="small"
-        variant="outlined"
-        icon={<FilterAltIcon />}
-        label={`Showing ${noun}`}
-        onDelete={() => {
-          onClear()
-        }}
-      />
-    </Tooltip>
+    <StatusChip
+      icon={<FilterAltIcon />}
+      label={`Showing ${noun}`}
+      tooltip="Remove the filter to show all features again"
+      onDelete={() => {
+        onClear()
+      }}
+    />
   ) : (
-    <Tooltip title={`Show only these ${noun}`}>
-      <Chip
-        size="small"
-        variant="outlined"
-        icon={<FilterAltIcon />}
-        label={`${count} selected`}
-        onClick={() => {
-          onApply()
-        }}
-        onDelete={() => {
-          onClear()
-        }}
-      />
-    </Tooltip>
+    <StatusChip
+      icon={<FilterAltIcon />}
+      label={`${count} selected`}
+      tooltip={`Show only these ${noun}`}
+      onClick={() => {
+        onApply()
+      }}
+      onDelete={() => {
+        onClear()
+      }}
+    />
   )
 }
