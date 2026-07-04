@@ -36,6 +36,11 @@ export const LD_LEGEND: LdSwatch[] = [
   LD_MISSING_SWATCH,
 ]
 
+// Shared by both legend renderers (SVG export in renderSvg, DOM overlay in
+// LdColorLegend) so the title and swatch size stay in lockstep across them.
+export const LD_LEGEND_TITLE = 'r² to index'
+export const LD_LEGEND_SWATCH_PX = 10
+
 const GREY = cssColorToABGR(LD_MISSING_SWATCH.color)
 const BINS = LD_BIN_DEFS.map(b => [b.min, cssColorToABGR(b.color)] as const)
 

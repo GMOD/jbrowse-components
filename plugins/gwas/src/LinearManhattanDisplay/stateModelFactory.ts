@@ -267,8 +267,13 @@ export function stateModelFactory(
             }
           }
         }
+        // refName from displayedRegions (not visible-only regionRefNames):
+        // rpcDataMap keeps buffered regions that may have scrolled off-screen,
+        // and the top hit can live in one of them — resolving via visible
+        // regions alone would drop it and stall the LD auto-index autorun.
+        const view = getContainingView(self) as LinearGenomeViewModel
         const refName =
-          bestIdx === -1 ? undefined : self.regionRefNames.get(bestIdx)
+          bestIdx === -1 ? undefined : view.displayedRegions[bestIdx]?.refName
         return refName ? `${refName}:${bestPos + 1}` : undefined
       },
       /**

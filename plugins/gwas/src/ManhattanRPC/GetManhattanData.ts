@@ -24,8 +24,12 @@ function indexSnpAsRegion(args: GetManhattanDataArgs): Region | undefined {
   let out: Region | undefined
   if (indexSnp) {
     const colon = indexSnp.lastIndexOf(':')
-    const bp = colon > 0 ? Number(indexSnp.slice(colon + 1)) : Number.NaN
-    if (Number.isFinite(bp)) {
+    const posStr = colon > 0 ? indexSnp.slice(colon + 1) : ''
+    // strict positive integer only, so a trailing-colon id ("chr2:",
+    // Number('')===0), an exponential ("chr2:1e3"), or a whitespace-padded
+    // value don't parse into a bogus {start:-1} region
+    const bp = /^\d+$/.test(posStr) ? Number(posStr) : Number.NaN
+    if (bp >= 1) {
       out = {
         refName: indexSnp.slice(0, colon),
         start: bp - 1,

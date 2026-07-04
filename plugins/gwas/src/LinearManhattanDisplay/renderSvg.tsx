@@ -12,7 +12,7 @@ import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
 
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
-import { LD_LEGEND } from './ldBins.ts'
+import { LD_LEGEND, LD_LEGEND_SWATCH_PX, LD_LEGEND_TITLE } from './ldBins.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -81,7 +81,7 @@ function ManhattanSvgBody({
   ) : null
 
   const ROW_H = 14
-  const SWATCH = 10
+  const SWATCH = LD_LEGEND_SWATCH_PX
   const ldLegendEl =
     model.colorBy === 'ld' && model.showLdLegend ? (
       <g
@@ -98,7 +98,7 @@ function ManhattanSvgBody({
           rx={2}
         />
         <text fontSize={10} fontWeight="bold" y={ROW_H - 4}>
-          r² to index
+          {LD_LEGEND_TITLE}
         </text>
         {LD_LEGEND.map(({ label, color }, i) => (
           <g key={label} transform={`translate(0,${ROW_H + i * ROW_H})`}>

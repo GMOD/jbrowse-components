@@ -1,6 +1,6 @@
 import { bpToScreenPx } from '@jbrowse/render-core/canvas2dUtils'
 
-import { scoreToY } from './manhattanRenderingBackendTypes.ts'
+import { scoreToY, yToScore } from './manhattanRenderingBackendTypes.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -40,8 +40,6 @@ export function findManhattanHit(
   refNames: ReadonlyMap<number, string>,
 ): ManhattanHit | undefined {
   const { domainY, canvasHeight } = state
-  const [domainMin, domainMax] = domainY
-  const range = domainMax - domainMin || 1
 
   let bestDistSq = HIT_RADIUS_PX * HIT_RADIUS_PX
   let best: ManhattanHit | undefined
@@ -69,14 +67,18 @@ export function findManhattanHit(
       continue
     }
 
-    const halfScore = HIT_RADIUS_PX * (range / canvasHeight)
-    const mouseScore = domainMax - (mouseY / canvasHeight) * range
+    // ±HIT_RADIUS_PX in screen y → a score window via yToScore (which decreases
+    // with y, so the lower pixel edge is the min score). Edge-clamped points
+    // (out-of-domain scores pinned to top/bottom) stay catchable by widening to
+    // ±Inf when the mouse is within hit-radius of the canvas edge.
     const candScoreMin =
       mouseY >= canvasHeight - HIT_RADIUS_PX
         ? -Infinity
-        : mouseScore - halfScore
+        : yToScore(mouseY + HIT_RADIUS_PX, domainY, canvasHeight)
     const candScoreMax =
-      mouseY <= HIT_RADIUS_PX ? Infinity : mouseScore + halfScore
+      mouseY <= HIT_RADIUS_PX
+        ? Infinity
+        : yToScore(mouseY - HIT_RADIUS_PX, domainY, canvasHeight)
 
     const { positions, ends, scores, r2s } = data
     const candidates = flatbush.search(

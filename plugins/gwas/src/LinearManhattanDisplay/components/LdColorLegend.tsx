@@ -3,7 +3,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import IconButton from '@mui/material/IconButton'
 import { observer } from 'mobx-react'
 
-import { LD_LEGEND } from '../ldBins.ts'
+import { LD_LEGEND, LD_LEGEND_SWATCH_PX, LD_LEGEND_TITLE } from '../ldBins.ts'
 
 const useStyles = makeStyles()({
   container: {
@@ -30,8 +30,8 @@ const useStyles = makeStyles()({
   },
   swatch: {
     display: 'inline-block',
-    width: 10,
-    height: 10,
+    width: LD_LEGEND_SWATCH_PX,
+    height: LD_LEGEND_SWATCH_PX,
     marginRight: 4,
     border: '1px solid rgba(0,0,0,0.2)',
   },
@@ -50,7 +50,7 @@ const LdColorLegend = observer(function LdColorLegend({
   return (
     <div className={classes.container} style={{ top: offsetTop + 2 }}>
       <div className={classes.header}>
-        <div className={classes.title}>r² to index</div>
+        <div className={classes.title}>{LD_LEGEND_TITLE}</div>
         {onDismiss ? (
           <IconButton
             size="small"

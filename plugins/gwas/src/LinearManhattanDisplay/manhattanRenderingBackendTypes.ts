@@ -30,6 +30,20 @@ export function scoreToY(
   return (1 - norm) * canvasHeight
 }
 
+// Inverse of scoreToY (unclamped): canvas Y (px from top) → score. Kept next to
+// scoreToY so the forward/inverse transforms share the same `|| 1` guard and
+// stay in lockstep — the hover hit-test derives its score query window from
+// this, and any drift would offset the grab target from the drawn point.
+export function yToScore(
+  y: number,
+  domainY: [number, number],
+  canvasHeight: number,
+) {
+  const [domainMin, domainMax] = domainY
+  const range = domainMax - domainMin || 1
+  return domainMax - (y / canvasHeight) * range
+}
+
 // GWAS data is 1:1 points (raw RPC result), not binned via wiggle's
 // SourceRenderData encoder, so Manhattan specializes the shared per-region
 // backend contract directly on `ManhattanRpcResult`.
