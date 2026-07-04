@@ -23,7 +23,12 @@ import {
   measureText,
   openFeatureWidget,
 } from '@jbrowse/core/util'
-import { addDisposer, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
@@ -513,12 +518,23 @@ export default function stateModelFactory(
           groupMaxHeightOverrides: observable.map<string, number>(),
           /**
            * #volatile
-           * "Fit to display height" mode: an autorun keeps `featureHeight` sized
-           * so all uncollapsed groups' reads fill the display without scrolling
-           * (reads thin as needed). Volatile — a view preference like scrollTop;
-           * picking any explicit feature-height preset turns it back off.
+           * "Fit to display height" mode: `featureHeight`/`featureSpacing` resolve
+           * to a size that makes all uncollapsed groups' reads fill the display
+           * without scrolling (reads thin as needed). Volatile — a view preference
+           * like scrollTop; picking any explicit feature-height preset turns it
+           * off. The `height` config slot is never written, so it stays pure user
+           * intent.
            */
           fitHeightToDisplay: false,
+          /**
+           * #volatile
+           * Cache of the current fitted read height in px, kept in sync by the
+           * afterAttach autorun while `fitHeightToDisplay` is on. A volatile (not a
+           * getter) because the fit height derives from late layout getters that
+           * the early `featureHeight` getter can't reference — the autorun bridges
+           * that ordering. 0 until first computed / when nothing fits.
+           */
+          fittedHeightPx: 0,
           /**
            * #volatile
            */
@@ -699,15 +715,22 @@ export default function stateModelFactory(
         // featureHeight/featureSpacing are promotable slots: each resolves
         // through getConfResolved (track value, else session-wide default, else
         // schema default). "Compactness" is just these two slots moved together.
+        // In fit-to-height mode they instead resolve to the autorun-cached fit
+        // size (reads pack with no spacing), so every read-height consumer sees
+        // the fitted value without threading a separate getter.
         get featureHeight(): number {
-          return getConfResolved(self, 'featureHeight')
+          return self.fitHeightToDisplay && self.fittedHeightPx > 0
+            ? self.fittedHeightPx
+            : getConfResolved(self, 'featureHeight')
         },
 
         /**
          * #getter
          */
         get featureSpacing(): number {
-          return getConfResolved(self, 'featureSpacing')
+          return self.fitHeightToDisplay && self.fittedHeightPx > 0
+            ? 0
+            : getConfResolved(self, 'featureSpacing')
         },
 
         // true when the current size already equals the session-wide default
@@ -1554,9 +1577,13 @@ export default function stateModelFactory(
           )
           const rows = self.groupOrder
             .filter(g => !self.collapsedGroups.has(g.key))
-            .reduce((sum, { key }) => sum + groupMaxY(laid.get(key) ?? empty), 0)
+            .reduce(
+              (sum, { key }) => sum + groupMaxY(laid.get(key) ?? empty),
+              0,
+            )
           const pileupSpace =
-            self.height - Math.max(1, self.groupOrder.length) * self.coverageDisplayHeight
+            self.height -
+            Math.max(1, self.groupOrder.length) * self.coverageDisplayHeight
           return rows > 0 && pileupSpace > 0
             ? Math.max(1, Math.floor(pileupSpace / rows))
             : 0
@@ -2230,36 +2257,29 @@ export default function stateModelFactory(
             self.fitHeightToDisplay = fit
             if (fit) {
               self.groupMaxHeightOverrides.clear()
+              self.scrollTop = 0
             }
           },
 
           /**
            * #action
-           * Write the fitted read height into the feature-size slots. Bypasses
-           * `setFeatureHeight` (which would exit fit mode) — this IS the mode
-           * maintaining itself. `fittedFeatureHeight` is featureHeight-independent,
-           * so writing these slots can't re-trigger the driving autorun.
+           * Cache the fitted read height so the `featureHeight`/`featureSpacing`
+           * getters can resolve to it. Written only by the driving autorun.
            */
-          applyFittedHeight(height: number) {
-            self.configuration.setSlot('featureSpacing', 0)
-            self.configuration.setSlot('featureHeight', height)
-            self.scrollTop = 0
+          setFittedHeightPx(px: number) {
+            self.fittedHeightPx = px
           },
 
           afterAttach() {
-            // Keep the fitted read height in sync while in "fit to display
-            // height" mode — re-fits as the display resizes, data loads, or
-            // groups collapse. Reads `fittedFeatureHeight` here (tracked) and
-            // hands it to the write action; that height ignores featureHeight, so
-            // this can't loop.
+            // Keep the fitted-height cache in sync while in "fit to display
+            // height" mode — re-fits as the display resizes, data loads, or groups
+            // collapse. `fittedFeatureHeight` ignores featureHeight, so caching it
+            // (which the featureHeight getter then reads) can't loop.
             addDisposer(
               self,
               autorun(() => {
                 if (self.fitHeightToDisplay) {
-                  const height = self.fittedFeatureHeight
-                  if (height > 0) {
-                    self.applyFittedHeight(height)
-                  }
+                  self.setFittedHeightPx(self.fittedFeatureHeight)
                 }
               }),
             )
