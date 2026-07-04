@@ -161,8 +161,52 @@ Encouragingly the geometry is already generic over an arbitrary view *pair* —
 `views[level+1]` in `LinearSyntenyDisplay/afterAttach.ts` and the `connectedViews` getter). So
 non-adjacent ribbons are a level-model + z-ordering change, not a geometry rewrite — but a
 separate, larger step. The id is the prerequisite, not the whole feature. Start with MCScan
-(already block-structured) for populating the field. See `all-vs-all-paf-multiway-plan.md` and
-`SYNTENY_BLOCK_IMPORT.md`.
+(already block-structured) for populating the field. See "All-vs-all PAF → any-vs-any
+multi-way synteny" below and `SYNTENY_BLOCK_IMPORT.md`.
+
+**All-vs-all PAF → any-vs-any multi-way synteny** (tracks GMOD/jbrowse-components PR
+#4985 "All-vs-all PAF adapter"; planning only, no code). Goal: a single all-vs-all PAF
+(e.g. `minimap2 all.fa all.fa`, PanSN-prefixed refNames from fastix/PGGB) drives an N-row
+LinearSyntenyView where any pair of assemblies compares, without hand-configuring A-vs-B
+and B-vs-C tracks separately. Tractable because the multi-way machinery already exists (N
+views, N-1 levels, per-level displays sharing one adapterConfig, distinct `displayKey` per
+display) and two facts let one all-vs-all track serve every level: RPC associates a
+feature with top/bottom view purely by **refName**
+(`executeSyntenyFeaturesAndPositions.ts:188` checks `v1RefNames`/`v2RefNames` membership,
+not assemblyName), and `getSyntenyTracks.ts:18` returns a track for an adjacent-pair query
+whenever its `assemblyNames` is a **superset** of the pair. PR #4985's stub is still
+fundamentally 2-way (fixed `[query, target]` pair, mate hardcoded to
+`assemblyNames[+flip]`, strips only a hardcoded haplotype prefix) — true any-vs-any needs
+the mate's assembly parsed from the mate endpoint's own PanSN prefix.
+
+The one real design decision is the refName model: PanSN names (`HG002#1#chr1`) are
+globally unique, bare names (`chr1`) collide across assemblies, and since the RPC filters
+on refName, the adapter's `getRefNames` defines the namespace. Resolution: make prefix
+stripping a config slot (`stripAssemblyPrefix`/`prefixSeparator`, default = strip on `#`)
+and add an RPC assemblyName guard unconditionally
+(`feature.assemblyName === topAssembly && mate.assemblyName === bottomAssembly`) as a
+no-op safety net for existing pairwise adapters — bare-refName users get correct results
+with zero extra config, PanSN users flip one flag.
+
+Phasing: **1** — `AllVsAllPAFAdapter` evolving PR #4985: full N-list `assemblyNames`
+(or auto-derived from distinct PanSN prefixes during `setup()`), a `parsePanSN(name, sep)`
+helper replacing the hardcoded flip logic, per-assembly `getRefNames`, and fixing
+`getWeightedMeans` keying (`PAFAdapter/util.ts:68` uses raw `qname-tname`) to parsed
+assembly+refName. **2** — RPC guard: derive top/bottom assembly from view snaps in
+`executeSyntenyFeaturesAndPositions` and add the two-clause check (~5 lines,
+backward-compatible). **3** — MVP via the existing N-row import form, picking the one
+all-vs-all track per pair (already qualifies via the superset match) — no new UI. **4**
+(deferred) — a specialized import form: one all-vs-all track/file → auto-detect
+assemblies → order/select rows → auto-wire all levels, skipping the N-1 manual pickers.
+Later optimization: thread the target assembly into `getFeatures` so the adapter
+pre-filters, instead of the RPC discarding A→C rows while drawing A↔B.
+
+Open items: confirm the PanSN separator/haplotype convention holds across real files;
+decide `assemblyNames` explicit-config vs. auto-detected-from-file (auto is nicer but
+unknown until `setup()`, which the import form must await). This work is also the trigger
+for the `featureId`-as-Float32 16.7M-instance cap noted below — dense all-vs-all
+whole-genome PAF is the likeliest path to hit it, so fold the `uint` fix in here rather
+than doing it speculatively.
 
 **Cue-style read-pair + depth matrix.** [PopicLab/cue](https://github.com/PopicLab/cue)
 builds an image showing read pairs, read depth, and L/R–R/L pairs as a matrix — could
@@ -194,10 +238,10 @@ adjacent indices collide in Float32 and hover/click highlights the wrong
 feature (visual identity only — coords/colors stay correct; `color` already
 goes through the `u32` view). This one is **genome-size-independent** and the
 likeliest to surface first, via dense all-vs-all whole-genome PAF (see
-`all-vs-all-paf-multiway-plan.md`). Fix: flip the `featureId` attribute + both
-uniforms from `float` to `uint` and regen the `.iface` (the interleave buffer
-already has a `u32` view). Fold into the all-vs-all PAF work rather than doing
-it speculatively.
+"All-vs-all PAF → any-vs-any multi-way synteny" above). Fix: flip the
+`featureId` attribute + both uniforms from `float` to `uint` and regen the
+`.iface` (the interleave buffer already has a `u32` view). Fold into the
+all-vs-all PAF work rather than doing it speculatively.
 
 ## Ortholog / multi-genome navigation
 
@@ -466,7 +510,7 @@ zero code** — hand-set displayedRegions to the contig twice with seam padding
 zeroed on pneumobrowse to eyeball the UX before building the decorator. Confirm
 first whether jb2hubs has origin-*spanning features* or just `Is_circular`
 contigs with no crossing genes (if the latter, this is purely a cosmetic origin
-marker). Full design + tables: [CIRCULAR_GENOME_SUPPORT.md](CIRCULAR_GENOME_SUPPORT.md).
+marker).
 
 **Multi-feature files.** Multiple types per row (e.g. chromatin BED with repeat types).
 
@@ -504,6 +548,45 @@ pans/zooms (like `plugins/sequence`).
 **Isoform expansion.** Click a collapsed isoform to expand all for that gene.
 
 **Init/loading feedback.** Distinguish initialized vs loading state in LinearGenomeView.
+
+**Collapsed multi-transcript indicator.** When a gene track collapses to the longest
+coding transcript per gene, users have no cue it happened. Options considered, ranked by
+noise vs discoverability: (1) hover-tooltip-only ("4 transcripts · showing longest
+coding") — invisible until hovered, good companion to anything else but too quiet alone;
+(2) **recommended** — small stack/layers icon next to the track name in the header, shown
+only when collapse is active, tooltip explains + optionally toggles "show all"; one icon
+per track, not per gene, sits with existing track controls; (3) corner badge overlaid on
+the render area — more discoverable, but floats over the data; (4) per-gene stacked-shadow
+glyph — communicates without text but is the noisiest since it repeats per gene.
+
+## Display height system redesign
+
+`TrackHeightMixin` persists `heightOverride` (`types.maybe`, `>= MIN_DISPLAY_HEIGHT`); the
+`height` getter resolves `heightOverride ?? config.height`, and a `preProcessSnapshot`
+migration rewrites a bare `height` (or legacy `heightPreConfig`) in incoming snapshots to
+`heightOverride` — the `<name>Override` convention resolves the prop/getter name
+collision. `LinearMultiRowFeatureDisplay` layers a second knob (`rowHeightOverride`: `0` =
+auto-fit rows to `heightOverride ?? config.height`, `>0` = pinned px/row).
+
+Friction: (1) you can't set `height` natively in a display snapshot — only
+`heightOverride` works, via the back-compat migration; (2) for multi-row,
+`heightOverride` means "total" while `height` means "resolved total," easy to confuse;
+(3) two override knobs (`heightOverride` total vs `rowHeightOverride` per-row) interact
+non-obviously — setting `height` silently no-ops when a non-zero `rowHeight` is pinned;
+(4) the serialized name carries `Override`, which the user would rather it didn't.
+
+Redesign options, not yet implemented: **A** — give one display a native settable
+`height`, smallest blast radius, doesn't help other displays; **B** — refactor
+`TrackHeightMixin` globally to a persisted native `height` seeded from the config default,
+delete the migration, touches every display + needs broad testing, and loses today's
+`heightOverride !== undefined` signal for "user explicitly set a height" vs "using
+config default"; **C** — `types.snapshotProcessor` exposing `height` externally while
+keeping `heightOverride` internally, medium blast radius, only half-satisfies "no
+Override in the name." Whichever is chosen, decide the `height` (total) vs `rowHeight`
+(per-row) precedence for multi-row — simplest model: setting `height` wins as auto-fit.
+Any change here should be reconciled with the `<name>Override` convention in
+`~/.claude/CLAUDE.md`, which would need an explicit exception (or revision) for
+resolved-default values like height.
 
 ## Hi-C
 

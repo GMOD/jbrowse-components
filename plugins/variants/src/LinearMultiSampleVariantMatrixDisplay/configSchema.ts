@@ -23,7 +23,6 @@ import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
  *   displays: [
  *     {
  *       type: 'LinearMultiSampleVariantMatrixDisplay',
- *       displayId: 'cohort-LinearMultiSampleVariantMatrixDisplay',
  *     },
  *   ],
  * }
@@ -49,7 +48,6 @@ import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
  *   displays: [
  *     {
  *       type: 'LinearMultiSampleVariantMatrixDisplay',
- *       displayId: 'cohort-LinearMultiSampleVariantMatrixDisplay',
  *       height: 400,
  *       colorBy: 'population',
  *     },
@@ -74,7 +72,6 @@ import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
  *   displays: [
  *     {
  *       type: 'LinearMultiSampleVariantMatrixDisplay',
- *       displayId: 'cohort-LinearMultiSampleVariantMatrixDisplay',
  *       height: 400,
  *       minorAlleleFrequencyFilter: 0.05,
  *       layout: [

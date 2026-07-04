@@ -37,7 +37,6 @@ non-default display type — see
   displays: [
     {
       type: 'LinearMultiSampleVariantDisplay',
-      displayId: 'cohort-LinearMultiSampleVariantDisplay',
     },
   ],
 }
@@ -65,7 +64,6 @@ config:
   displays: [
     {
       type: 'LinearMultiSampleVariantDisplay',
-      displayId: 'cohort-LinearMultiSampleVariantDisplay',
       height: 800,
       colorBy: 'population',
       showReferenceAlleles: false,
@@ -91,7 +89,6 @@ sidebar coloring) inline instead of from a `samplesTsvLocation`:
   displays: [
     {
       type: 'LinearMultiSampleVariantDisplay',
-      displayId: 'cohort-LinearMultiSampleVariantDisplay',
       height: 400,
       renderingMode: 'phased',
       layout: [

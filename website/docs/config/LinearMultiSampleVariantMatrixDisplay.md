@@ -37,7 +37,6 @@ non-default display type — see
   displays: [
     {
       type: 'LinearMultiSampleVariantMatrixDisplay',
-      displayId: 'cohort-LinearMultiSampleVariantMatrixDisplay',
     },
   ],
 }
@@ -63,7 +62,6 @@ the matrix rows on load (same metadata mechanism as the regular
   displays: [
     {
       type: 'LinearMultiSampleVariantMatrixDisplay',
-      displayId: 'cohort-LinearMultiSampleVariantMatrixDisplay',
       height: 400,
       colorBy: 'population',
     },
@@ -88,7 +86,6 @@ inline instead of from a `samplesTsvLocation`:
   displays: [
     {
       type: 'LinearMultiSampleVariantMatrixDisplay',
-      displayId: 'cohort-LinearMultiSampleVariantMatrixDisplay',
       height: 400,
       minorAlleleFrequencyFilter: 0.05,
       layout: [

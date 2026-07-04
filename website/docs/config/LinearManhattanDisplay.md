@@ -36,7 +36,9 @@ Minimal `GWASTrack` config. See the
 ```
 
 Taller track, LocusZoom-style coloring: `colorBy: 'ld'` colors each point by its
-r² to the index SNP read from `ldAdapter`. The `displayDefaults` object
+r² to the index SNP read from `ldAdapter`. `ldAdapter` is a slot on
+`LinearManhattanDisplay` itself (not `GWASAdapter`), so it belongs in
+`displayDefaults` like any other display slot. The `displayDefaults` object
 shorthand is equivalent to
 `displays: [{ type: 'LinearManhattanDisplay', displayId: '...', ... }]` — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays):

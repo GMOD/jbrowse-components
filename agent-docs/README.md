@@ -16,8 +16,9 @@ Start with `PRD.md`. It is the governing doc for agent work on this branch.
 | **[DISPLAY_TYPE_DEFAULTS.md](DISPLAY_TYPE_DEFAULTS.md)**             | Session-wide per-display-type slot defaults (promotable slots, CSS-cascade resolve) | Adding a "make default for all tracks like this" setting; touching `getConfResolved` / `promotable` slots |
 | **[VIEW_INIT.md](VIEW_INIT.md)**                                     | Declarative `init` launch spec → afterAttach → state machine | Touching view launch, URL params, createViewState |
 | **[TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md)**                 | Browser + unit tests, WebGPU CI                             | Running or writing tests, validating RPC      |
-| **[MIGRATION_AUDIT.md](MIGRATION_AUDIT.md)**                         | Config/session migration patterns + verification method     | Migrating a display or stored snapshot        |
 | **[PERF_INSTRUMENTATION.md](PERF_INSTRUMENTATION.md)**               | Instrumentation patterns for GPU render / scroll jank       | Diagnosing a perf regression                  |
+| **[DISPLAYCHROME.md](DISPLAYCHROME.md)**                             | The shared display status chrome: what it is + adoption map | Touching loading/error/retry UI on a display  |
+| **[GPU_GLOSSARY.md](GPU_GLOSSARY.md)**                               | Plain-language GPU rendering glossary + precise vocabulary   | Writing about GPU internals for a non-specialist audience |
 | **[RFC-001-community-plugin-api.md](RFC-001-community-plugin-api.md)** | Community plugin API proposal                              | Plugin API design                             |
 | **[PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md)**               | Why plugin exports ossify into permanent ABI + fixes (fleshes out RFC-001 §7) | Removing/renaming a plugin export; "why can't we delete this?" |
 | **[architecture-decision-records/](architecture-decision-records/)** | Design decisions                                            | Understanding why something is the way it is  |
