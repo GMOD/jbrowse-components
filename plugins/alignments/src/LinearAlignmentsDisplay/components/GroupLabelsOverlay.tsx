@@ -114,11 +114,14 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   }
                 >
                   {hasOverride ? (
-                    <UnfoldLessIcon className={classes.icon} />
+                    <>
+                      <UnfoldLessIcon className={classes.icon} />
+                      Fit to view
+                    </>
                   ) : (
                     <>
                       <UnfoldMoreIcon className={classes.icon} />
-                      Show all
+                      Show all reads
                     </>
                   )}
                 </button>
