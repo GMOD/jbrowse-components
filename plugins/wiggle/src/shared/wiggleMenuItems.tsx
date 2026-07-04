@@ -1,7 +1,12 @@
 import { makePointSizeMenu, makeRadioSubMenu } from '@jbrowse/wiggle-core'
+import AddIcon from '@mui/icons-material/Add'
+import RemoveIcon from '@mui/icons-material/Remove'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import { IconButton, Tooltip, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -59,6 +64,59 @@ export function makePointSizeMenuItems(self: {
   ]
 }
 
+// Resolution is a multiplier on the number of bins fetched (higher = finer),
+// stepped multiplicatively by 5 with a default of 1. Rendered inline so the
+// user can step finer/coarser repeatedly without reopening the menu each click.
+function formatResolution(n: number) {
+  return n >= 1 ? `${n}×` : `1/${Math.round(1 / n)}×`
+}
+
+const ResolutionStepper = observer(function ResolutionStepper({
+  getValue,
+  onFiner,
+  onCoarser,
+  onReset,
+}: {
+  getValue: () => number
+  onFiner: () => void
+  onCoarser: () => void
+  onReset: () => void
+}) {
+  const value = getValue()
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: 200 }}>
+      <Tooltip title="Coarser resolution">
+        <IconButton size="small" onClick={() => { onCoarser() }}>
+          <RemoveIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Typography
+        variant="caption"
+        color="textSecondary"
+        style={{ flex: 1, textAlign: 'center' }}
+      >
+        {formatResolution(value)}
+      </Typography>
+      <Tooltip title="Finer resolution">
+        <IconButton size="small" onClick={() => { onFiner() }}>
+          <AddIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Reset to default resolution">
+        <span>
+          <IconButton
+            size="small"
+            disabled={value === 1}
+            onClick={() => { onReset() }}
+          >
+            <RestartAltIcon fontSize="small" />
+          </IconButton>
+        </span>
+      </Tooltip>
+    </div>
+  )
+})
+
 interface WithResolution {
   hasResolution: boolean
   resolution: number
@@ -79,23 +137,22 @@ export function makeResolutionAndSummarySubMenus(
       label: 'Resolution',
       subMenu: [
         {
-          label: 'Finer resolution',
-          onClick: () => {
-            self.setResolution(self.resolution * 5)
-          },
-        },
-        {
-          label: 'Coarser resolution',
-          onClick: () => {
-            self.setResolution(self.resolution / 5)
-          },
-        },
-        {
-          label: 'Reset to default resolution',
-          disabled: self.resolution === 1,
-          onClick: () => {
-            self.setResolution(1)
-          },
+          label: 'Resolution stepper',
+          type: 'custom',
+          render: () => (
+            <ResolutionStepper
+              getValue={() => self.resolution}
+              onFiner={() => {
+                self.setResolution(self.resolution * 5)
+              }}
+              onCoarser={() => {
+                self.setResolution(self.resolution / 5)
+              }}
+              onReset={() => {
+                self.setResolution(1)
+              }}
+            />
+          ),
         },
       ],
     },

@@ -4,6 +4,7 @@ import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
 import { checkboxItem, radioItems, radioModeMenuItem } from './menuHelpers.ts'
+import { makeModificationThresholdItem } from './modificationThresholdMenu.tsx'
 import { radioColorOptions } from '../../shared/colorSchemes.ts'
 import { modificationData } from '../../shared/modificationData.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
@@ -14,9 +15,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
-const SetModificationThresholdDialog = lazy(
-  () => import('../dialogs/SetModificationThresholdDialog.tsx'),
-)
 
 interface ColorByModel {
   colorBy: ColorBy
@@ -259,25 +257,19 @@ function buildByTypeItem(model: ModificationsModel): MenuItem {
   // Threshold gates only the by-type radios above (see extractModifications:
   // `prob >= modThreshold`); two-color ignores it (fixed 50% cutoff) and
   // methylation ignores it (most-likely state). So it lives here, not at the
-  // modifications top level where it would imply it affects every mode.
-  const thresholdItem: MenuItem = {
-    label: `Adjust threshold (${modificationThreshold}%)`,
-    helpText:
-      'Hides modification calls below this probability. Applies to the by-type modes above only — Two-color uses a fixed 50% cutoff and "Color by methylation" shows every cytosine, neither affected by this.',
-    onClick: () => {
-      getSession(model).queueDialog(handleClose => [
-        SetModificationThresholdDialog,
-        { model, handleClose },
-      ])
-    },
-  }
-
+  // modifications top level where it would imply it affects every mode. Inline
+  // slider (commits on release — it's a tier-1 refetch) rather than a dialog.
   return {
     label: 'Color by modification type',
     subLabel: 'each modification its own color (5mC, 5hmC, 6mA…)',
     helpText:
       'Pick this to inspect the raw per-call data or non-methylation modifications. Colors each call by its modification type; only positions the caller listed are drawn. Two-color instead shades each listed call red/blue by probability.',
-    subMenu: [...byTypeRadios, ...twoColorRadios, DIVIDER, thresholdItem],
+    subMenu: [
+      ...byTypeRadios,
+      ...twoColorRadios,
+      DIVIDER,
+      makeModificationThresholdItem(model),
+    ],
   }
 }
 
