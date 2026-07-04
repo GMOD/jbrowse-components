@@ -1,6 +1,23 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config FromConfigSequenceAdapter
+ * supplies reference sequence inline in the config; each feature's `seq` holds
+ * the bases for its region
+ *
+ * #example
+ * Used as the adapter of an assembly's `sequence` (a `ReferenceSequenceTrack`):
+ * ```js
+ * {
+ *   type: 'ReferenceSequenceTrack',
+ *   trackId: 'my_refseq',
+ *   adapter: {
+ *     type: 'FromConfigSequenceAdapter',
+ *     features: [
+ *       { uniqueId: 'ctgA', refName: 'ctgA', start: 0, end: 10, seq: 'ATGCATGCAT' },
+ *     ],
+ *   },
+ * }
+ * ```
  */
 
 const sequenceConfigSchema = ConfigurationSchema(

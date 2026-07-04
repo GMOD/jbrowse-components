@@ -100,6 +100,7 @@ Data adapters that can supply the [VariantTrack](../varianttrack):
 
 - [BedpeAdapter](../bedpeadapter)
 - [StarFusionAdapter](../starfusionadapter)
+- [SplitVcfTabixAdapter](../splitvcftabixadapter)
 - [VcfAdapter](../vcfadapter)
 - [VcfTabixAdapter](../vcftabixadapter)
 

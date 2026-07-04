@@ -2,6 +2,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config FromConfigAdapter
+ * supplies features inline in the config instead of reading a file, useful for
+ * small feature sets added via a URL or session spec
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'FromConfigAdapter',
+ *   features: [
+ *     { uniqueId: 'f1', refName: 'ctgA', start: 100, end: 200, name: 'feature1' },
+ *   ],
+ * }
+ * ```
  */
 
 const configSchema = ConfigurationSchema(

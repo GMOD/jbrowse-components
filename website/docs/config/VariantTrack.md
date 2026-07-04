@@ -73,6 +73,7 @@ Data adapters that can supply this track:
 
 - [BedpeAdapter](../bedpeadapter)
 - [StarFusionAdapter](../starfusionadapter)
+- [SplitVcfTabixAdapter](../splitvcftabixadapter)
 - [VcfAdapter](../vcfadapter)
 - [VcfTabixAdapter](../vcftabixadapter)
 

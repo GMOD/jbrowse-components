@@ -9,7 +9,44 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/SplitVcfTabixAdapter/configSchema.ts).
 
+## Example usage
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'SplitVcfTabixAdapter',
+    vcfGzLocationMap: {
+      chr1: { uri: 'chr1.vcf.gz' },
+      chr2: { uri: 'chr2.vcf.gz' },
+    },
+    indexLocationMap: {
+      chr1: { uri: 'chr1.vcf.gz.tbi' },
+      chr2: { uri: 'chr2.vcf.gz.tbi' },
+    },
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+reads a set of per-chromosome VCF files, keyed by refName, instead of a single
+combined VCF (useful for large call sets split by chromosome)
+
+### Used in
+
+Supplies data to the [VariantTrack](../varianttrack) track, rendered by:
+
+- [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- [ChordVariantDisplay](../chordvariantdisplay)
+- [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- [LinearVariantDisplay](../linearvariantdisplay)
 
 <details open>
 <summary>SplitVcfTabixAdapter - Slots</summary>
