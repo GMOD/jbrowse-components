@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 
+import { Buffer } from 'node:buffer'
 import fs from 'node:fs'
 import http from 'node:http'
 import path from 'node:path'
@@ -134,5 +135,53 @@ describe('getLocalOrRemoteStream', () => {
     })
     const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0)
     expect(totalLength).toBeGreaterThan(0)
+  })
+
+  it('handles a web ReadableStream from a foreign realm (Chromium DOM stream regression)', async () => {
+    // A body that quacks like a WHATWG ReadableStream (has getReader) but is
+    // not an instance of node:stream/web's ReadableStream — mirroring
+    // Chromium's DOM ReadableStream in the Electron indexing worker, which made
+    // the old Readable.fromWeb path throw "must be an instance of
+    // ReadableStream. Received an instance of ReadableStream".
+    const payload = Buffer.from('col1\tcol2\nval1\tval2\n')
+    let sent = false
+    const foreignBody = {
+      getReader() {
+        return {
+          read() {
+            const chunk = sent
+              ? { done: true, value: undefined }
+              : { done: false, value: new Uint8Array(payload) }
+            sent = true
+            return Promise.resolve(chunk)
+          },
+        }
+      },
+    }
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = () =>
+      Promise.resolve({
+        ok: true,
+        headers: { get: () => String(payload.length) },
+        body: foreignBody,
+      } as unknown as Response)
+    try {
+      const stream = await getLocalOrRemoteStream({
+        file: 'https://example.com/data.tsv',
+        out: testDataDir,
+        onStart: () => {},
+        onUpdate: () => {},
+      })
+      expect(stream).toBeInstanceOf(Readable)
+      const chunks: Uint8Array[] = []
+      await new Promise<void>((resolve, reject) => {
+        stream.on('data', chunk => chunks.push(chunk as Uint8Array))
+        stream.on('end', resolve)
+        stream.on('error', reject)
+      })
+      expect(Buffer.concat(chunks).toString()).toBe(payload.toString())
+    } finally {
+      globalThis.fetch = originalFetch
+    }
   })
 })

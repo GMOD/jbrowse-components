@@ -66,28 +66,32 @@ autosaves. Click a session name to reopen it (see
 
 ## Opening a genome
 
-Click **Open new genome** to bring up the "Open genome(s)" dialog.
+Click **Open new genome** to bring up the "Open a genome" dialog.
 
-<Figure src="/img/desktop-open-genome.png" caption="The Open genome(s) dialog in Guided mode, with a Format dropdown and file selectors that each toggle between a local File and a URL."/>
+<Figure src="/img/desktop-open-genome.png" caption="The Open a genome dialog. Drop or browse for a sequence file and JBrowse detects the format automatically; a text link switches to loading from URLs instead."/>
 
-It has two modes:
+The dialog is drop-first. Drop your sequence file — a FASTA, bgzip-compressed
+FASTA, or 2bit, along with any `.fai`/`.gzi` index files — onto the drop area, or
+click it to browse. To load from the web instead, click **Open from a URL** and
+paste your file URLs, one per line. JBrowse classifies each file, and once it
+recognizes a sequence it shows a confirmation card with a **Genome name** field
+(e.g. `hg38`).
 
-- **Guided** — pick a **Format**, then choose the matching files. Supported
-  formats:
-  - `FASTA with index (.fa + .fai)`
-  - `Compressed FASTA (.fa.gz + .fai + .gzi)` (bgzip-compressed)
-  - `FASTA (index will be generated)` — a plain FASTA with no index; JBrowse
-    builds one on submit (downloads the whole file first if it's a URL, so this
-    can take a minute)
-  - `2bit file (.2bit)`
-- **Drop / paste files** — drag your sequence file (plus any `.fai`/`.gzi` index
-  files) onto the drop area, or paste file URLs one per line. JBrowse detects
-  the format automatically.
+If a filename doesn't match the conventions JBrowse detects, it offers **Enter
+details manually**, opening a form with a **Format** dropdown:
 
-Set an **Assembly name** (e.g. `hg38`), then click **Open**. Use **Advanced
-options** to set a human-readable display name, refName aliases (e.g. to treat
-`chr1` and `1` as the same contig), or cytoband data. To load several genomes at
-once for comparative views, use **Stage this genome and add another**.
+- `FASTA with index (.fa + .fai)`
+- `Compressed FASTA (.fa.gz + .fai + .gzi)` (bgzip-compressed)
+- `FASTA (automatically indexed)` — a plain FASTA with no index; JBrowse builds
+  one on open (it downloads the whole file first if it's a URL, so this can take
+  a minute)
+- `2bit file (.2bit)`
+
+Click **More options** to set an assembly display name, refName aliases (e.g. to
+treat `chr1` and `1` as the same contig), or cytoband data. To load several
+genomes at once for comparative views, click **Add another genome** to stage the
+current one and start on the next. When you're ready, click **Open** (shown as
+**Open N genomes** once you've staged more than one).
 
 A linear genome view opens on the new assembly, ready for tracks:
 
@@ -141,15 +145,33 @@ a track" form.
 
 :::
 
+### Connecting to a track hub
+
+To pull in a whole set of tracks at once, use **File → Open connection...** and
+point it at a UCSC track hub or a JBrowse hub. The connection's tracks then
+appear in the track selector alongside any you added by hand.
+
+### Making tracks searchable by name
+
+To search a track by gene name or feature ID from the location box, index its
+feature names: open the track's menu (the **⋮** button on the track, or its
+entry in the track selector) and choose **Index track**. Indexing runs as a
+background job; when it finishes, names from that track can be typed straight
+into the search box. This is the in-app equivalent of the CLI `jbrowse
+text-index` command.
+
 ## Saving and reopening sessions
 
 JBrowse desktop autosaves your work continuously, and autosaves show up in
 "Recently opened sessions" on the start screen.
 
-To save a named session to a file, use **File → Save session as...** This writes
-a `.jbrowse` file you can reopen later (or share). Reopen one with **File → Open
-session...**, or with the **Open saved session (.jbrowse) file** button on the
-start screen.
+To save a named session to a file, use **File → Session → Save session as...**
+This writes a `.jbrowse` file you can reopen later (or share). Reopen one with
+**File → Session → Open session...**, or with the **Open saved session
+(.jbrowse) file** button on the start screen.
+
+To hand a session off to someone running JBrowse web, use **File → Session →
+Export session to web...**, which produces a shareable URL.
 
 ### Saving a genome to the quickstart list
 

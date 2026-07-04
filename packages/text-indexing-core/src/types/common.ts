@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import fs from 'node:fs'
 import path from 'node:path'
 import readline from 'node:readline'
@@ -6,7 +7,6 @@ import { fileURLToPath } from 'node:url'
 import { createGunzip } from 'node:zlib'
 
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
-import type { ReadableStream } from 'node:stream/web'
 
 export function isURL(fileName: string) {
   try {
@@ -27,6 +27,23 @@ function convertFileUrlToPath(fileUrl: string): string | undefined {
     // not a valid URL
   }
   return undefined
+}
+
+function webStreamToNodeReadable(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+): Readable {
+  return new Readable({
+    read() {
+      reader
+        .read()
+        .then(({ done, value }) => {
+          this.push(done ? null : Buffer.from(value))
+        })
+        .catch((e: unknown) => {
+          this.destroy(e as Error)
+        })
+    },
+  })
 }
 
 export async function getLocalOrRemoteStream({
@@ -57,10 +74,13 @@ export async function getLocalOrRemoteStream({
       throw new Error(`Failed to fetch ${file}: no response body`)
     }
 
-    // depending on the fetch implementation, body may already be a node
-    // Readable (e.g. node-fetch) or a web ReadableStream (global fetch)
+    // A fetched body is either a node Readable (node-fetch) or a web
+    // ReadableStream (global fetch). Readable.fromWeb rejects a web stream from
+    // a foreign realm — Chromium's DOM ReadableStream in the Electron indexing
+    // worker is not an instance of node:stream/web's — so drive the reader
+    // ourselves, which works for both realms.
     const nodeStream =
-      body instanceof Readable ? body : Readable.fromWeb(body as ReadableStream)
+      body instanceof Readable ? body : webStreamToNodeReadable(body.getReader())
     nodeStream.on('data', chunk => {
       receivedBytes += chunk.length
       onUpdate(receivedBytes)
