@@ -1,10 +1,8 @@
 ---
 import { examples } from '../examples.ts'
 import Shell from '../layouts/Shell.astro'
+import Gallery from '../layouts/Gallery.astro'
 import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
-
-const base = import.meta.env.BASE_URL
-const groups = [...new Set(examples.map(e => e.group))]
 ---
 
 <Shell
@@ -13,75 +11,11 @@ const groups = [...new Set(examples.map(e => e.group))]
   examples={examples}
   mainMaxWidth={mainMaxWidth}
 >
-  <style is:global>
-    .intro {
-      color: var(--muted);
-      margin-top: 0;
-      max-width: 70ch;
-    }
-    .gallery section {
-      margin-top: 32px;
-    }
-    .gallery h2 {
-      border-bottom: 1px solid #eee;
-      padding-bottom: 4px;
-    }
-    .gallery ul {
-      list-style: none;
-      padding: 0;
-      margin: 12px 0;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 12px;
-    }
-    .gallery li a {
-      display: block;
-      height: 100%;
-      padding: 12px 14px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      text-decoration: none;
-      color: inherit;
-    }
-    .gallery li a:hover {
-      border-color: var(--accent);
-      background: #f5f9fd;
-    }
-    .gallery .title {
-      font-weight: 600;
-      color: var(--accent);
-    }
-    .gallery .desc {
-      color: var(--muted);
-      font-size: 0.9em;
-      margin-top: 4px;
-    }
-  </style>
   <h1>JBrowse React App</h1>
   <p class="intro">
     Live examples of the <code>@jbrowse/react-app2</code> React component — the
     full multi-view JBrowse app embedded in a page. Each page renders the
     component and shows its full source. Browse by category in the sidebar.
   </p>
-  <div class="gallery">
-    {
-      groups.map(group => (
-        <section>
-          <h2>{group}</h2>
-          <ul>
-            {examples
-              .filter(e => e.group === group)
-              .map(e => (
-                <li>
-                  <a href={`${base}${e.slug}/`}>
-                    <div class="title">{e.title}</div>
-                    <div class="desc">{e.description}</div>
-                  </a>
-                </li>
-              ))}
-          </ul>
-        </section>
-      ))
-    }
-  </div>
+  <Gallery examples={examples} />
 </Shell>

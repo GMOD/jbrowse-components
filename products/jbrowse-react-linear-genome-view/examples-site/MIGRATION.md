@@ -16,9 +16,19 @@ Structure:
     the shared layout.
 - `src/examples.ts` — single source of truth (slug/name/title/description/group)
   driving the gallery index and each page's metadata.
-- `src/layouts/ExampleLayout.astro` — shared chrome (live demo + `<Code>`
-  source).
-- `src/pages/index.astro` — grouped gallery linking every example.
+- `src/layouts/ExampleLayout.astro` — per-example chrome (live demo + `<Code>`
+  source). Identical across all three sites; per-site deltas (e.g. the app's
+  full-height demo) come from `siteMeta.ts` (`demoFillHeight`).
+- `src/pages/index.astro` — site-specific heading + intro, then the shared
+  `<Gallery>`.
+
+Cross-site shared chrome lives in `products/examples-site-shared/` and is
+symlinked into each site's `src/layouts/`: `Shell.astro` (topbar + sidebar +
+**all** page CSS — chrome, example-page, and gallery rules) and `Gallery.astro`
+(the grouped index grid). These stay prop-only with no relative imports, since
+`astro check`/Vite resolve a symlink's imports from the shared dir, not the
+symlink location. `base` is defined once in `astro.config.mjs` and read from
+there by `scripts/smoke.mjs`.
 
 Previously-known issue — **`with-web-worker`** — is **resolved**. Under Rollup's
 strict ESM the RPC worker graph hit a circular-dependency init-order error

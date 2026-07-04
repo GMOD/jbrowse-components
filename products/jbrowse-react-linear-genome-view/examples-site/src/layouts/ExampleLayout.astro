@@ -1,10 +1,9 @@
 ---
 import { Code } from 'astro:components'
 
-
 import Shell from './Shell.astro'
 import { examples } from '../examples.ts'
-import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
+import { componentLabel, mainMaxWidth, demoFillHeight } from '../siteMeta.ts'
 
 import type { MarkdownInstance } from 'astro'
 
@@ -33,60 +32,11 @@ const Doc = doc?.Content
   examples={examples}
   mainMaxWidth={mainMaxWidth}
 >
-  <style is:global>
-    .lead {
-      font-size: 1.05em;
-      color: var(--muted);
-    }
-    .doc h2 {
-      margin-top: 28px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 4px;
-    }
-    .doc h3 {
-      margin-top: 20px;
-    }
-    .doc code {
-      background: #f4f4f4;
-      padding: 1px 4px;
-      border-radius: 3px;
-      font-size: 0.9em;
-    }
-    .doc pre code {
-      background: none;
-      padding: 0;
-    }
-    .demo {
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      margin-bottom: 16px;
-    }
-    details.source {
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      margin-bottom: 24px;
-    }
-    details.source > summary {
-      cursor: pointer;
-      padding: 8px 12px;
-      font-weight: 600;
-      user-select: none;
-    }
-    details.source[open] > summary {
-      border-bottom: 1px solid var(--border);
-    }
-    details.source pre {
-      padding: 16px;
-      border-radius: 0 0 4px 4px;
-      overflow: auto;
-      margin: 0;
-    }
-  </style>
   <h1>{title}</h1>
   {description && <p class="lead">{description}</p>}
   {Doc && <div class="doc"><Doc /></div>}
   <h2>Live demo</h2>
-  <div class="demo"><slot /></div>
+  <div class:list={['demo', { fill: demoFillHeight }]}><slot /></div>
   <details class="source">
     <summary>View source</summary>
     <Code code={code} lang="tsx" />
