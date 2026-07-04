@@ -5,7 +5,7 @@ import Palette from '@mui/icons-material/Palette'
 
 import { checkboxItem, radioItems, radioModeMenuItem } from './menuHelpers.ts'
 import { makeModificationThresholdItem } from './modificationThresholdMenu.tsx'
-import { radioColorOptions } from '../../shared/colorSchemes.ts'
+import { colorSchemeLabel, radioColorOptions } from '../../shared/colorSchemes.ts'
 import { modificationData } from '../../shared/modificationData.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
 
@@ -56,9 +56,9 @@ interface ColorByMenuOptions {
     colorSupplementaryChains: boolean
     setColorSupplementaryChains: (flag: boolean) => void
   }
-  // "Use this scheme as the session-wide default" — appended only for displays
-  // whose colorBy slot is promotable (alignments; synteny omits it). The setter
-  // is explicit, so the menu toggles at the point of use.
+  // Session-wide default toggle — appended only for displays whose colorBy slot
+  // is promotable (alignments; synteny omits it). The setter is explicit, so the
+  // menu toggles at the point of use.
   sessionDefault?: {
     isDefault: boolean
     setDefault: (promote: boolean) => void
@@ -422,7 +422,7 @@ export function getColorByMenuItem(
     ? [
         DIVIDER,
         checkboxItem(
-          'Use this color scheme by default on all tracks like this',
+          `Make "${colorSchemeLabel(model.colorBy.type)}" the default for all alignments tracks`,
           sessionDefault.isDefault,
           () => {
             sessionDefault.setDefault(!sessionDefault.isDefault)

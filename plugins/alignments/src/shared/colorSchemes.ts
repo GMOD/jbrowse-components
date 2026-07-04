@@ -7,7 +7,8 @@ export type ColorGroup = 'basic' | 'pairedEnd'
 // 'special' — driven by its own dialog/submenu (tag, modifications, methylation,
 // bisulfite) or a legacy alias never shown on its own ('stranded').
 export type ColorSchemeMenu =
-  { kind: 'radio'; label: string; group: ColorGroup } | { kind: 'special' }
+  | { kind: 'radio'; label: string; group: ColorGroup }
+  | { kind: 'special'; label: string }
 
 export interface ColorSchemeDef {
   type: ColorSchemeType
@@ -90,31 +91,41 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   stranded: {
     type: 'stranded',
     shaderScheme: 'firstOfPairStrand',
-    menu: { kind: 'special' },
+    menu: { kind: 'special', label: 'First of pair strand' },
   },
-  tag: { type: 'tag', shaderScheme: 'tag', menu: { kind: 'special' } },
+  tag: {
+    type: 'tag',
+    shaderScheme: 'tag',
+    menu: { kind: 'special', label: 'Tag' },
+  },
   // methylation/bisulfite reuse the modifications shader path with different
   // config (see model getMethBins / bisulfite is reference-based)
   modifications: {
     type: 'modifications',
     shaderScheme: 'modifications',
-    menu: { kind: 'special' },
+    menu: { kind: 'special', label: 'Modification type' },
   },
   methylation: {
     type: 'methylation',
     shaderScheme: 'modifications',
-    menu: { kind: 'special' },
+    menu: { kind: 'special', label: 'Methylation' },
   },
   bisulfite: {
     type: 'bisulfite',
     shaderScheme: 'modifications',
-    menu: { kind: 'special' },
+    menu: { kind: 'special', label: 'Bisulfite' },
   },
 }
 
 export interface ColorOption {
   label: string
   type: ColorSchemeType
+}
+
+// Human label for any scheme, so a menu can name the active scheme instead of
+// pointing at it with a bare "this color scheme".
+export function colorSchemeLabel(type: ColorSchemeType): string {
+  return COLOR_SCHEMES[type].menu.label
 }
 
 // True for the modification family (modifications/methylation/bisulfite) — the
