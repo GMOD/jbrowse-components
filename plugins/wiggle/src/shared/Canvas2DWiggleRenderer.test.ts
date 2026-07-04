@@ -169,7 +169,7 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(ctx.stroke).toHaveBeenCalled()
   })
 
-  test('renderBlocks scatter draws a bar for a wide bin', () => {
+  test('renderBlocks scatter draws a point for a wide bin, not a bar', () => {
     const { canvas, rectCalls, arcCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
@@ -177,7 +177,9 @@ describe('Canvas2DWiggleRenderer', () => {
     })
 
     const renderer = new Canvas2DWiggleRenderer(canvas)
-    // 0..1000bp spans the whole 800px block, far wider than the 2px point
+    // 0..1000bp spans the whole 800px block, far wider than the 2px point, but
+    // scatter always draws a point marker centered on the midpoint (bp 500 →
+    // 400px), never a bar spanning the bin
     const source = makeSource([5], [0], [1000])
 
     renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
@@ -185,11 +187,15 @@ describe('Canvas2DWiggleRenderer', () => {
       renderingType: RENDERING_TYPE_SCATTER,
     })
 
-    // exclude the full-height clip rect; scatter bars have height === pointSize
-    const bars = rectCalls.filter(
+    // a single point-size square, not a wide bar (exclude the full-height clip
+    // rect); default 2px point is below the small-point threshold → crisp square
+    const squares = rectCalls.filter(
       ([, , , h]) => h === defaultState.scatterPointSize,
     )
-    expect(bars.length).toBe(1)
+    expect(squares.length).toBe(1)
+    expect(squares[0]![2]).toBe(defaultState.scatterPointSize)
+    // centered on the bp midpoint: x = cx - radius = 400 - 1
+    expect(squares[0]![0]).toBeCloseTo(399)
     expect(arcCalls.length).toBe(0)
   })
 
@@ -250,11 +256,10 @@ describe('Canvas2DWiggleRenderer', () => {
   test.each([
     ['xyplot', RENDERING_TYPE_XYPLOT],
     ['density', RENDERING_TYPE_DENSITY],
-    ['scatter', RENDERING_TYPE_SCATTER],
   ])(
     'reversed block fills the full mirrored cell (%s)',
     (_name, renderingType) => {
-      const { canvas, fillRectCalls, rectCalls } = createMockCanvas()
+      const { canvas, fillRectCalls } = createMockCanvas()
       Object.defineProperty(window, 'devicePixelRatio', {
         value: 1,
         writable: true,
@@ -269,18 +274,37 @@ describe('Canvas2DWiggleRenderer', () => {
         { ...defaultState, renderingType },
       )
 
-      // scatter draws its wide-bin bar via ctx.rect (filter out the full-height
-      // clip rect); xyplot/density draw via fillRect
-      const calls =
-        renderingType === RENDERING_TYPE_SCATTER
-          ? rectCalls.filter(([, , , h]) => h === defaultState.scatterPointSize)
-          : fillRectCalls
-      expect(calls.length).toBe(1)
-      const [x, , w] = calls[0]!
+      expect(fillRectCalls.length).toBe(1)
+      const [x, , w] = fillRectCalls[0]!
       expect(x).toBeCloseTo(400)
       expect(w).toBeCloseTo(400.8)
     },
   )
+
+  test('reversed block centers a scatter point on the mirrored midpoint', () => {
+    const { canvas, rectCalls } = createMockCanvas()
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
+
+    const renderer = new Canvas2DWiggleRenderer(canvas)
+    // feature 0..500bp reversed: bp 0→800px, bp 500→400px, midpoint → 600px
+    const source = makeSource([5], [0], [500])
+
+    renderer.renderBlocks(
+      [{ ...defaultBlock, reversed: true }],
+      new Map([[0, [source]]]),
+      { ...defaultState, renderingType: RENDERING_TYPE_SCATTER },
+    )
+
+    const squares = rectCalls.filter(
+      ([, , , h]) => h === defaultState.scatterPointSize,
+    )
+    expect(squares.length).toBe(1)
+    // centered on the mirrored midpoint: x = 600 - radius = 599
+    expect(squares[0]![0]).toBeCloseTo(599)
+  })
 
   test('multi-row sources render at correct vertical offsets', () => {
     const { canvas, fillRectCalls } = createMockCanvas()

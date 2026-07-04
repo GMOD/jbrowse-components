@@ -18,12 +18,11 @@ static const int RENDERING_TYPE_SCATTER = 3;
 static const int SCALE_TYPE_LOG = 1;
 
 // Scatter glyph shapes carved by the fragment shader (matches manhattan.slang):
-// point-like features become an AA disc, wide (low-zoom) bins a solid bar.
-// AA_PAD_PX / SMALL_POINT_MAX_DIAMETER and the disc SDF live in the shared
-// pointGlyph module so they stay in lockstep with manhattan.slang.
+// point-like features become an AA disc, tiny points a crisp square.
+// SMALL_POINT_MAX_DIAMETER and the disc SDF live in the shared pointGlyph
+// module so they stay in lockstep with manhattan.slang.
 static const float SHAPE_SOLID = 0.0;
 static const float SHAPE_DISC = 1.0;
-static const float SHAPE_BAR = 2.0;
 
 struct WiggleInstance {
   uint2 startEnd  : ATTR0;

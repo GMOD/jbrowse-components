@@ -12,12 +12,14 @@ const PointSizeSlider = observer(function PointSizeSlider({
   getValue,
   min,
   max,
+  step,
   unit,
   onChange,
 }: {
   getValue: () => number
   min: number
   max: number
+  step: number
   unit: string
   onChange: (n: number) => void
 }) {
@@ -32,7 +34,7 @@ const PointSizeSlider = observer(function PointSizeSlider({
         value={value}
         min={min}
         max={max}
-        step={1}
+        step={step}
         size="small"
         valueLabelDisplay="auto"
         valueLabelFormat={(v: number) => `${v}${unit}`}
@@ -54,6 +56,7 @@ export function makePointSizeMenu(opts: {
   isDefault: boolean
   min?: number
   max?: number
+  step?: number
   unit?: string
   onChange: (n: number) => void
   onReset: () => void
@@ -63,8 +66,9 @@ export function makePointSizeMenu(opts: {
     icon,
     getValue,
     isDefault,
-    min = 1,
+    min = 0.5,
     max = 12,
+    step = 0.5,
     unit = 'px',
     onChange,
     onReset,
@@ -81,6 +85,7 @@ export function makePointSizeMenu(opts: {
             getValue={getValue}
             min={min}
             max={max}
+            step={step}
             unit={unit}
             onChange={onChange}
           />
