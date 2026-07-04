@@ -35,5 +35,7 @@ export function addReferenceScanTrack(
       adapter: { ...args.adapter, sequenceAdapter },
     })
     model.showTrack(args.trackId)
+  } else {
+    session.notify('This session does not support adding tracks', 'warning')
   }
 }

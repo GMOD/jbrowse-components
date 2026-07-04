@@ -7,12 +7,11 @@ import {
   DialogActions,
   DialogContent,
   FormControlLabel,
-  FormGroup,
   TextField,
-  Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import StrandCheckboxes from './StrandCheckboxes.tsx'
 import { addReferenceScanTrack } from './searchModes.ts'
 
 import type { SequenceSearchModeProps } from './searchModes.ts'
@@ -43,8 +42,7 @@ const SequencePatternPanel = observer(function SequencePatternPanel({
     patternError = e
   }
 
-  const bothStrandsOff = !searchForward && !searchReverse
-  const canSubmit = !!value && !patternError && !bothStrandsOff
+  const canSubmit = !!value && !patternError && (searchForward || searchReverse)
 
   function handleSubmit() {
     addReferenceScanTrack(model, {
@@ -77,31 +75,12 @@ const SequencePatternPanel = observer(function SequencePatternPanel({
             patternError ? `${patternError}` : 'Plain sequence or a regex'
           }
         />
-        <FormGroup row>
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={searchForward}
-                onChange={event => {
-                  setSearchForward(event.target.checked)
-                }}
-              />
-            }
-            label="Forward strand"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={searchReverse}
-                onChange={event => {
-                  setSearchReverse(event.target.checked)
-                }}
-              />
-            }
-            label="Reverse strand"
-          />
+        <StrandCheckboxes
+          searchForward={searchForward}
+          searchReverse={searchReverse}
+          setSearchForward={setSearchForward}
+          setSearchReverse={setSearchReverse}
+        >
           <FormControlLabel
             control={
               <Checkbox
@@ -114,12 +93,7 @@ const SequencePatternPanel = observer(function SequencePatternPanel({
             }
             label="Case insensitive"
           />
-        </FormGroup>
-        {bothStrandsOff ? (
-          <Typography color="error" variant="body2">
-            Select at least one strand
-          </Typography>
-        ) : null}
+        </StrandCheckboxes>
       </DialogContent>
       <DialogActions>
         <Button
