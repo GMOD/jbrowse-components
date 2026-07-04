@@ -11,29 +11,25 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import {
-  BlatChallengeError,
-  DEFAULT_BLAT_URL,
-  MAXIMUM_BLAT_LENGTH,
-  MINIMUM_BLAT_LENGTH,
-  buildBlatBody,
-  parseBlatResponse,
-  runBlat,
-} from './blatQuery.ts'
+import { BlatChallengeError } from './blatQuery.ts'
 import { desktopBlatFetch, openBlatChallenge } from './desktopBlat.ts'
+import {
+  DEFAULT_ISPCR_URL,
+  DEFAULT_MAX_PRODUCT_SIZE,
+  MINIMUM_PRIMER_LENGTH,
+  buildIsPcrBody,
+  parseIsPcrResponse,
+  runIsPcr,
+} from './ispcrQuery.ts'
 import { addResultTrack, resolveUcscDb } from './ucscShared.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-function stripFasta(seq: string) {
-  return seq
-    .split('\n')
-    .filter(line => !line.startsWith('>'))
-    .join('')
-    .replaceAll(/\s/g, '')
+function cleanPrimer(seq: string) {
+  return seq.replaceAll(/\s/g, '').toUpperCase()
 }
 
-const BlatDialog = observer(function BlatDialog({
+const IsPcrDialog = observer(function IsPcrDialog({
   session,
   handleClose,
 }: {
@@ -45,32 +41,45 @@ const BlatDialog = observer(function BlatDialog({
   const [db, setDb] = useState(() =>
     resolveUcscDb(session, assemblyNames[0] ?? ''),
   )
-  const [urlBase, setUrlBase] = useState(DEFAULT_BLAT_URL)
+  const [urlBase, setUrlBase] = useState(DEFAULT_ISPCR_URL)
   const [apiKey, setApiKey] = useState('')
-  const [seq, setSeq] = useState('')
+  const [forwardPrimer, setForwardPrimer] = useState('')
+  const [reversePrimer, setReversePrimer] = useState('')
+  const [maxProductSize, setMaxProductSize] = useState(DEFAULT_MAX_PRODUCT_SIZE)
   const [loading, setLoading] = useState(false)
   const [challenged, setChallenged] = useState(false)
   const [error, setError] = useState<unknown>()
 
-  const cleanSeq = stripFasta(seq)
-  const tooShort = cleanSeq.length < MINIMUM_BLAT_LENGTH
-  const tooLong = cleanSeq.length > MAXIMUM_BLAT_LENGTH
+  const fwd = cleanPrimer(forwardPrimer)
+  const rev = cleanPrimer(reversePrimer)
+  const tooShort =
+    fwd.length < MINIMUM_PRIMER_LENGTH || rev.length < MINIMUM_PRIMER_LENGTH
 
-  // desktop routes through the main process to bypass renderer CORS (so a
-  // direct hgBlat call with the user's apiKey works without a proxy); web uses
-  // a direct fetch, which needs the server URL to be a CORS-enabled proxy
   async function fetchFeatures() {
     if (isElectron) {
       const { ok, status, text } = await desktopBlatFetch({
         url: urlBase,
-        body: buildBlatBody({ db, seq: cleanSeq, apiKey }),
+        body: buildIsPcrBody({
+          db,
+          forwardPrimer: fwd,
+          reversePrimer: rev,
+          maxProductSize,
+          apiKey,
+        }),
       })
       if (!ok) {
-        throw new Error(`BLAT request failed (${status})`)
+        throw new Error(`hgPcr request failed (${status})`)
       }
-      return parseBlatResponse(text)
+      return parseIsPcrResponse(text)
     }
-    return runBlat({ db, seq: cleanSeq, urlBase, apiKey })
+    return runIsPcr({
+      db,
+      forwardPrimer: fwd,
+      reversePrimer: rev,
+      urlBase,
+      maxProductSize,
+      apiKey,
+    })
   }
 
   async function handleSubmit() {
@@ -80,14 +89,14 @@ const BlatDialog = observer(function BlatDialog({
     try {
       const features = await fetchFeatures()
       if (!features.length) {
-        throw new Error('No BLAT hits found')
+        throw new Error('No PCR products found')
       }
       addResultTrack({
         session,
         assembly,
         features,
-        trackIdPrefix: 'blat',
-        trackName: `BLAT ${new Date().toLocaleTimeString()}`,
+        trackIdPrefix: 'ispcr',
+        trackName: `In-silico PCR ${new Date().toLocaleTimeString()}`,
       })
       handleClose()
     } catch (e) {
@@ -113,7 +122,7 @@ const BlatDialog = observer(function BlatDialog({
   return (
     <Dialog
       open
-      title="BLAT search (UCSC)"
+      title="In-silico PCR (UCSC)"
       onClose={() => {
         handleClose()
       }}
@@ -122,8 +131,8 @@ const BlatDialog = observer(function BlatDialog({
         style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
       >
         <Typography>
-          Paste a DNA sequence to search against the UCSC BLAT server. Results
-          are added as a new track. Searches are limited to 25kb.
+          Enter a forward and reverse primer to find their PCR products against
+          the UCSC in-silico PCR server. Products are added as a new track.
         </Typography>
         <AssemblySelector
           session={session}
@@ -139,10 +148,10 @@ const BlatDialog = observer(function BlatDialog({
           onChange={event => {
             setDb(event.target.value)
           }}
-          helperText="UCSC genome db id BLAT queries against (e.g. hg38)"
+          helperText="UCSC genome db id to query against (e.g. hg38)"
         />
         <TextField
-          label="BLAT server URL"
+          label="In-silico PCR server URL"
           value={urlBase}
           onChange={event => {
             setUrlBase(event.target.value)
@@ -158,26 +167,43 @@ const BlatDialog = observer(function BlatDialog({
           helperText="Bypasses the UCSC CAPTCHA. Generate one at a UCSC Genome Browser account → Hub Development → API key. Not needed when the server URL is a proxy that injects a key."
         />
         <TextField
-          label="Sequence"
-          value={seq}
+          label="Forward primer"
+          value={forwardPrimer}
           onChange={event => {
-            setSeq(event.target.value)
+            setForwardPrimer(event.target.value)
           }}
-          multiline
-          minRows={5}
-          maxRows={12}
-          placeholder="Paste DNA sequence or FASTA"
+          placeholder="e.g. GTGACGTCGTGACCTAGG"
           slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
         />
-        {tooLong ? (
+        <TextField
+          label="Reverse primer"
+          value={reversePrimer}
+          onChange={event => {
+            setReversePrimer(event.target.value)
+          }}
+          placeholder="e.g. CCTAGGTTGACGTCACGA"
+          slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
+        />
+        <TextField
+          label="Max product size (bp)"
+          type="number"
+          value={maxProductSize}
+          onChange={event => {
+            const n = Number(event.target.value)
+            if (Number.isFinite(n) && n > 0) {
+              setMaxProductSize(n)
+            }
+          }}
+        />
+        {tooShort && (fwd || rev) ? (
           <Typography color="error">
-            {`Sequence is ${cleanSeq.length.toLocaleString()} bp; UCSC BLAT is limited to ${MAXIMUM_BLAT_LENGTH.toLocaleString()} bp`}
+            {`Primers must be at least ${MINIMUM_PRIMER_LENGTH} bp`}
           </Typography>
         ) : null}
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
         {challenged ? (
           <Typography>
-            The UCSC BLAT server requires solving a CAPTCHA. Either paste a UCSC
+            The UCSC server requires solving a CAPTCHA. Either paste a UCSC
             apiKey above to avoid it, or click "Solve CAPTCHA", complete it in
             the window that opens, and the search will retry automatically.
           </Typography>
@@ -202,7 +228,7 @@ const BlatDialog = observer(function BlatDialog({
         ) : null}
         <Button
           variant="contained"
-          disabled={loading || tooShort || tooLong || !db}
+          disabled={loading || tooShort || !db}
           onClick={() => void handleSubmit()}
         >
           {loading ? 'Searching…' : 'Submit'}
@@ -212,4 +238,4 @@ const BlatDialog = observer(function BlatDialog({
   )
 })
 
-export default BlatDialog
+export default IsPcrDialog
