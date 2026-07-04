@@ -529,6 +529,12 @@ export default defineConfig(
           message:
             'Do not mock from the src directory of another package. Use the package public API instead.',
         },
+        {
+          selector:
+            "CallExpression[callee.object.name='Readable'][callee.property.name='fromWeb']",
+          message:
+            "Do not use Readable.fromWeb on a fetch body. In renderer/worker code the global fetch returns Chromium's DOM ReadableStream, a different realm than node:stream/web, and fromWeb's instanceof check throws the misleading 'must be an instance of ReadableStream. Received an instance of ReadableStream'. Drive body.getReader() into a node Readable instead (see packages/text-indexing-core webStreamToNodeReadable).",
+        },
       ],
     },
   },
@@ -548,6 +554,12 @@ export default defineConfig(
             "CallExpression[callee.object.name='jest'][callee.property.name=/^(un)?mock$/] > Literal[value=/^@jbrowse\\/[^/]+\\/src(\\/.+)?$/]",
           message:
             'Do not mock from the src directory of another package. Use the package public API instead.',
+        },
+        {
+          selector:
+            "CallExpression[callee.object.name='Readable'][callee.property.name='fromWeb']",
+          message:
+            "Do not use Readable.fromWeb on a fetch body. In renderer/worker code the global fetch returns Chromium's DOM ReadableStream, a different realm than node:stream/web, and fromWeb's instanceof check throws the misleading 'must be an instance of ReadableStream. Received an instance of ReadableStream'. Drive body.getReader() into a node Readable instead (see packages/text-indexing-core webStreamToNodeReadable).",
         },
         {
           selector: "NewExpression[callee.name='SvgCanvas']",

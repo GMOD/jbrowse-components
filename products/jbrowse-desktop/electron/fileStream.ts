@@ -16,5 +16,10 @@ export async function getFileStream(
   if (!response.body) {
     throw new Error(`No response body for ${location.uri}`)
   }
+  // Safe here: this runs in the Electron main process, where the global fetch
+  // is Node's undici and response.body is genuinely a node:stream/web
+  // ReadableStream. The realm mismatch that bans fromWeb elsewhere only happens
+  // under Chromium's fetch (renderer/worker). See the no-restricted-syntax rule.
+  // eslint-disable-next-line no-restricted-syntax
   return Readable.fromWeb(response.body)
 }
