@@ -102,7 +102,8 @@ snapshot in the config's `defaultSession`. Four rows means three bands, so
             { "assembly": "NCTC86" }
           ],
           "tracks": [["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"]],
-          "drawCurves": true
+          "drawCurves": true,
+          "minAlignmentLength": 10000
         }
       }
     ]
@@ -112,12 +113,14 @@ snapshot in the config's `defaultSession`. Four rows means three bands, so
 
 `tracks` is one entry per band: `tracks[0]` connects rows 0–1, `tracks[1]` rows
 1–2, and `tracks[2]` rows 2–3 — all the same `ecoli_ava` track, which lists
-every assembly in `assemblyNames` so it can back any pair. The one-time load
-settings (row order, tracks, `drawCurves`) go under `init`; see the
-[ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for a fuller
+every assembly in `assemblyNames` so it can back any pair. `minAlignmentLength`
+hides the short minimap2 alignments so the shared backbone reads as clean ribbons
+instead of a dense noise band — raise or lower it to taste. The one-time load
+settings (row order, tracks, `drawCurves`, `minAlignmentLength`) go under `init`;
+see the [ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for a fuller
 walk-through of the `defaultSession` structure.
 
-<Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from a single minimap2 all-vs-all PAF. Every adjacent band is a direct alignment because an all-vs-all file is a complete graph; the ribbons trace the shared chromosomal backbone with strain-specific rearrangements." src="/img/multiway_synteny/ecoli_pangenome.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json" />
+<Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from a single minimap2 all-vs-all PAF, with short alignments filtered out (minAlignmentLength). Every adjacent band is a direct alignment because an all-vs-all file is a complete graph; the ribbons trace the shared chromosomal backbone with strain-specific rearrangements." src="/img/multiway_synteny/ecoli_pangenome.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json" />
 
 Unlike a reference-anchored `.blocks` table, an all-vs-all file is a **complete
 graph** — every adjacent band is a real, direct alignment, so you can stack the

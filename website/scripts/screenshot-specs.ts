@@ -2127,6 +2127,9 @@ export const specs: ScreenshotSpec[] = [
             tracks: [['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava']],
             drawCurves: true,
             colorBy: 'default',
+            // drop short minimap2 alignments so the shared backbone reads as
+            // clean ribbons instead of a dense noise band
+            minAlignmentLength: 10000,
           },
         ],
       },
