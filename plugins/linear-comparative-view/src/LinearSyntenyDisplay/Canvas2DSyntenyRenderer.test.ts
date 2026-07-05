@@ -520,6 +520,69 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(ctx.isPointInPath).not.toHaveBeenCalled()
   })
 
+  test('thin ribbon drawn as a fill (perpW >= 1) is pickable', () => {
+    // 1.5px-wide vertical ribbon: perpFactor 1, perpW 1.5 -> rendered as a
+    // solid fill, so it must also be pickable. Regression: the old horizontal
+    // span < 2 gate made this visible-but-unclickable.
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    ctx.isPointInPath = jest.fn(() => true)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    const c1 = bpHiLo([100])
+    const c2 = bpHiLo([101.5])
+    const c3 = bpHiLo([101.5])
+    const c4 = bpHiLo([100])
+    renderer.uploadGeometry(
+      0,
+      makeInstanceData(1, {
+        bp1Hi: c1.hi,
+        bp1Lo: c1.lo,
+        bp2Hi: c2.hi,
+        bp2Lo: c2.lo,
+        bp3Hi: c3.hi,
+        bp3Lo: c3.lo,
+        bp4Hi: c4.hi,
+        bp4Lo: c4.lo,
+      }),
+    )
+    const state = makeState([[0, makeParams()]])
+    expect(renderer.pick(100.75, 50, state)).toEqual({ key: 0, featureIndex: 0 })
+  })
+
+  test('sub-pixel ribbon drawn as a stroke (perpW < 1) is not pickable', () => {
+    // 0.5px-wide vertical ribbon: perpW 0.5 -> drawn as a 1px centerline, not a
+    // fill, so it's excluded from the pick index (its sliver polygon can't be
+    // reliably hit) and isPointInPath is never consulted.
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    ctx.isPointInPath = jest.fn(() => true)
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    const c1 = bpHiLo([100])
+    const c2 = bpHiLo([100.5])
+    const c3 = bpHiLo([100.5])
+    const c4 = bpHiLo([100])
+    renderer.uploadGeometry(
+      0,
+      makeInstanceData(1, {
+        bp1Hi: c1.hi,
+        bp1Lo: c1.lo,
+        bp2Hi: c2.hi,
+        bp2Lo: c2.lo,
+        bp3Hi: c3.hi,
+        bp3Lo: c3.lo,
+        bp4Hi: c4.hi,
+        bp4Lo: c4.lo,
+      }),
+    )
+    const state = makeState([[0, makeParams()]])
+    expect(renderer.pick(100.25, 50, state)).toBeUndefined()
+    expect(ctx.isPointInPath).not.toHaveBeenCalled()
+  })
+
   test('pick builds curve path for curved features', () => {
     const { canvas, ctx } = createMockCanvas()
     canvas.width = 800

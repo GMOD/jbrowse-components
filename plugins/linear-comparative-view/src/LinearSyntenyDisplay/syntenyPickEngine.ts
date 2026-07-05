@@ -175,6 +175,20 @@ export function projectCorners(
   }
 }
 
+// Ribbon perpendicular (visual) thickness in px. A steep diagonal can span
+// several px horizontally yet be razor-thin perpendicular, so keying on
+// horizontal span alone mis-measures it. Shared by the fill path (fill vs
+// centerline-stroke decision in Canvas2DSyntenyRenderer.drawInstances) and the
+// pick index (below) so "drawn as a solid fill" and "pickable" stay the same
+// boundary. Mirrors perpFactor/halfPerpW in syntenyTypes.slang's fillCoverage.
+export function ribbonPerpWidth(c: ProjectedCorners, height: number) {
+  const xt = (c.sx1 + c.sx2) * 0.5
+  const xb = (c.sx3 + c.sx4) * 0.5
+  const slope = (xb - xt) / Math.max(height, 1)
+  const perpFactor = Math.sqrt(1 + slope * slope)
+  return Math.max(Math.abs(c.sx2 - c.sx1), Math.abs(c.sx4 - c.sx3)) / perpFactor
+}
+
 // Per-edge cull: drop the instance when any single edge lies entirely outside
 // the draw limits. Matches isCulled() in syntenyTypes.slang. An AABB-only
 // check would keep drawing trapezoids that span huge horizontal travel.
@@ -226,9 +240,13 @@ function buildPickIndex(
       flatbush.add(0, 0, -1, -1)
       continue
     }
-    // SYNC: mirrors the halfPerpW≥0.5 clamp in the fill shaders — ribbons
-    // whose both edges are sub-2px wide render as non-pickable lines.
-    if (Math.abs(c.sx2 - c.sx1) < 2 && Math.abs(c.sx4 - c.sx3) < 2) {
+    // SYNC: mirrors the perpW<1 fill/stroke split in
+    // Canvas2DSyntenyRenderer.drawInstances. A ribbon thinner than 1px
+    // perpendicular is drawn as a 1px centerline (or faded on the GPU), not a
+    // solid fill — its silhouette polygon is a sub-pixel sliver that
+    // isPointInPath can't reliably hit, so it's a non-pickable line. Ribbons
+    // drawn as solid fills are exactly the ones that stay pickable.
+    if (ribbonPerpWidth(c, height) < 1) {
       flatbush.add(0, 0, -1, -1)
       continue
     }
