@@ -3,12 +3,11 @@ import { lazy } from 'react'
 import { SAM_FLAG_PAIRED } from '@jbrowse/alignments-core'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
-import { ActionLink } from '@jbrowse/core/ui'
-import { navToLoc } from '@jbrowse/sv-core'
 import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Flags from './Flags.tsx'
+import { NavToLocLink } from './links.tsx'
 import { fieldDescriptions, tags } from './tagInfo.ts'
 import { getStringTag } from './util.ts'
 
@@ -42,13 +41,9 @@ const AlignmentsFeatureDetailsBody = observer(
           omit={['flags', 'next_ref', 'next_pos']}
           formatter={(value, key) =>
             key === 'next_segment_position' ? (
-              <ActionLink
-                onClick={() => {
-                  navToLoc(value as string, model)
-                }}
-              >
+              <NavToLocLink model={model} loc={value as string}>
                 {value as string}
-              </ActionLink>
+              </NavToLocLink>
             ) : (
               <Formatter value={value} />
             )

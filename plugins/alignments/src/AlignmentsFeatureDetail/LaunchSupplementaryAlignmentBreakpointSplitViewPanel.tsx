@@ -1,15 +1,11 @@
-import { ActionLink, ErrorBanner } from '@jbrowse/core/ui'
-import {
-  SimpleFeature,
-  getSession,
-  toLocale,
-  useFetch,
-} from '@jbrowse/core/util'
-import { getAssemblyName, launchBreakpointSplitView } from '@jbrowse/sv-core'
+import { ErrorBanner } from '@jbrowse/core/ui'
+import { SimpleFeature, toLocale, useFetch } from '@jbrowse/core/util'
+import { getAssemblyName } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getSAFeatures } from './getSAFeatures.ts'
+import { LaunchBreakpointSplitViewLink } from './links.tsx'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
@@ -30,7 +26,6 @@ const LaunchBreakpointSplitViewPanel = observer(
     const adjacentPairs = res
       ? res.slice(0, -1).map((f, i) => [f, res[i + 1]!] as const)
       : []
-    const session = getSession(model)
     const assemblyName = getAssemblyName(model.view)
     return error ? (
       <ErrorBanner error={error} />
@@ -42,18 +37,13 @@ const LaunchBreakpointSplitViewPanel = observer(
             <li key={`${f1.uniqueId}-${f2.uniqueId}`}>
               {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
               {f2.refName}:{toLocale(f2.strand === 1 ? f2.start : f2.end)}{' '}
-              <ActionLink
-                onClick={() => {
-                  launchBreakpointSplitView({
-                    session,
-                    view: model.view,
-                    assemblyName,
-                    feature: new SimpleFeature({ ...f1, mate: f2 }),
-                  })
-                }}
+              <LaunchBreakpointSplitViewLink
+                model={model}
+                assemblyName={assemblyName}
+                feature={new SimpleFeature({ ...f1, mate: f2 })}
               >
                 (breakpoint split view)
-              </ActionLink>
+              </LaunchBreakpointSplitViewLink>
             </li>
           ))}
         </ul>

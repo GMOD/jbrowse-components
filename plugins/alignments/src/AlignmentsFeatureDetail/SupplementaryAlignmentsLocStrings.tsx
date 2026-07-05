@@ -1,9 +1,9 @@
 import { getLengthOnRef } from '@jbrowse/alignments-core'
-import { ActionLink } from '@jbrowse/core/ui'
 import { toLocale } from '@jbrowse/core/util'
-import { navToLoc } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { NavToLocLink } from './links.tsx'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 
@@ -39,13 +39,9 @@ const SupplementaryAlignmentsLocStrings = observer(
               const label = `${saRef}:${toLocale(start)}-${toLocale(end)} (${saStrand}) [${toLocale(saLength)}bp]${mapq}${nm}`
               return (
                 <li key={locString}>
-                  <ActionLink
-                    onClick={() => {
-                      navToLoc(locString, model)
-                    }}
-                  >
+                  <NavToLocLink model={model} loc={locString}>
                     {label}
-                  </ActionLink>
+                  </NavToLocLink>
                 </li>
               )
             })}

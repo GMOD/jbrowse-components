@@ -1,14 +1,10 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { ActionLink } from '@jbrowse/core/ui'
-import { getSession, toLocale } from '@jbrowse/core/util'
-import {
-  getAssemblyName,
-  hasBreakpointSplitView,
-  launchBreakpointSplitView,
-} from '@jbrowse/sv-core'
+import { toLocale } from '@jbrowse/core/util'
+import { getAssemblyName, hasBreakpointSplitView } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { LaunchBreakpointSplitViewLink } from './links.tsx'
 import {
   buildPairedEndMateFeature,
   computeMateFields,
@@ -26,7 +22,6 @@ const LinkedPairedAlignments = observer(function LinkedPairedAlignments({
 }) {
   const { uniqueId, refName, start, end, strand, flags, next_ref, next_pos } =
     feature
-  const session = getSession(model)
   const assemblyName = getAssemblyName(model.view)
   const mate = computeMateFields({
     uniqueId,
@@ -41,19 +36,14 @@ const LinkedPairedAlignments = observer(function LinkedPairedAlignments({
   return hasBreakpointSplitView(model) && assemblyName && mate ? (
     <BaseCard title="Paired alignments">
       <Typography>Launch split view</Typography>
-      <ActionLink
-        onClick={() => {
-          launchBreakpointSplitView({
-            session,
-            view: model.view,
-            assemblyName,
-            feature: buildPairedEndMateFeature(mate),
-          })
-        }}
+      <LaunchBreakpointSplitViewLink
+        model={model}
+        assemblyName={assemblyName}
+        feature={buildPairedEndMateFeature(mate)}
       >
         {refName}:{toLocale(start)} -&gt; {mate.nextRef}:{toLocale(mate.nextPos)}{' '}
         (breakpoint split view)
-      </ActionLink>
+      </LaunchBreakpointSplitViewLink>
     </BaseCard>
   ) : null
 })
