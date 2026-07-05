@@ -5,7 +5,7 @@ import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Fe
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { ActionLink } from '@jbrowse/core/ui'
 import { navToLoc } from '@jbrowse/sv-core'
-import { Paper } from '@mui/material'
+import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Flags from './Flags.tsx'
@@ -81,10 +81,12 @@ const AlignmentsFeatureDetails = observer(
     return featureData ? (
       <AlignmentsFeatureDetailsBody feat={featureData} {...props} />
     ) : (
-      <div>
-        No feature loaded, may not be available after page refresh because it
-        was too large for localStorage
-      </div>
+      <Paper sx={{ p: 2 }}>
+        <Typography>
+          No feature loaded. It may not be available after a page refresh
+          because it was too large to persist in localStorage.
+        </Typography>
+      </Paper>
     )
   },
 )
