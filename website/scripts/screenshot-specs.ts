@@ -7769,6 +7769,67 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 560,
   },
 
+  // Extra gallery cards (website/src/lib/gallery.ts): compact local-test-data
+  // views promoted from link-only entries to screenshots. Local data so they
+  // render deterministically in the generator.
+  {
+    mode: 'url',
+    name: 'gallery/human_mito',
+    url: lgvSession('test_data/human_mito/config.json', {
+      assembly: 'human_mito',
+      loc: 'NC_012920.1:1-16,569',
+      colorByCDS: true,
+      tracks: ['ncbi_genes_human_mito'],
+    }),
+    readyText: 'NCBI genes',
+    readyTimeout: 60000,
+    settleMs: 6000,
+    viewportHeight: 420,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/yeast_dotplot',
+    url: sessionSpec('test_data/yeast_synteny/config.json', {
+      views: [
+        {
+          type: 'DotplotView',
+          views: [{ assembly: 'R64' }, { assembly: 'YJM1447' }],
+          tracks: ['dotplot_track'],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readyTimeout: 90000,
+    settleMs: 10000,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/volvox_bedpe_arc',
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-50,000',
+      tracks: ['volvox_bedpe'],
+    }),
+    readyText: 'BEDPE arcs',
+    settleMs: 5000,
+    viewportHeight: 420,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/volvox_circular_sv',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'CircularView',
+          assembly: 'volvox',
+          tracks: ['volvox_sv_test'],
+        },
+      ],
+    }),
+    settleMs: 10000,
+    viewportHeight: 600,
+  },
+
   // products/jbrowse-img/README.md example images, rendered by the jb2export
   // CLI (see CliSpec above). Ported 1:1 from the old
   // render-comparative-examples.sh so the args stay in sync with the README's

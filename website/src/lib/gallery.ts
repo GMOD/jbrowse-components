@@ -66,20 +66,25 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Grape / peach / cacao 3-way synteny (MCScan blocks)',
+        img: 'multiway_synteny/grape_peach_cacao.png',
         session:
           '?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fplant_synteny_demo%2Fconfig2.json&session=share-pARmvLazem&password=ZPOwE',
         description:
-          'A multi-way synteny view stacking three plant genomes, with MCScan synteny blocks connecting each pair.',
+          'Three plant genomes stacked in one linear synteny view, with MCScan synteny blocks connecting each adjacent pair. The axes are auto-diagonalized so ribbons run near-diagonal instead of crossing into a hairball, and are colored by the shared anchor genome.',
       },
       {
         label: 'E. coli 4-strain pangenome (all-vs-all PAF)',
+        img: 'multiway_synteny/ecoli_pangenome.png',
         session: '?config=https://jbrowse.org/demos/ecoli_pangenome/config.json',
         description:
-          'An all-vs-all alignment of four E. coli strains, showing every pairwise relationship in one synteny view.',
+          'An all-vs-all alignment of four E. coli strains shown as a stacked pangenome, where a single all-vs-all PAF track backs every band so each strain can be compared to the others at once.',
       },
       {
         label: 'Yeast dotplot',
+        img: 'gallery/yeast_dotplot.png',
         session: '?config=test_data%2Fyeast_synteny%2Fconfig.json',
+        description:
+          'A whole-genome dotplot of two yeast strains (R64 vs YJM1447), where the near-diagonal line traces conserved collinear sequence and off-diagonal dots mark rearrangements.',
       },
       {
         label: 'hg19 vs hg38 liftover',
@@ -142,13 +147,19 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'BEDPE arc display (volvox SVs)',
+        img: 'gallery/volvox_bedpe_arc.png',
         session:
           '?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":["volvox_bedpe"]}]}',
+        description:
+          'Paired breakend records from a BEDPE file drawn as arcs connecting the two ends of each structural variant along a single linear view.',
       },
       {
         label: 'Circular genome view (volvox SVs as chords)',
+        img: 'gallery/volvox_circular_sv.png',
         session:
           '?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"assembly":"volvox","type":"CircularView","tracks":["volvox_sv_test"]}]}',
+        description:
+          'A whole-genome circular overview where structural-variant breakends are rendered as chords spanning the two loci they join.',
       },
     ],
   },
@@ -202,8 +213,11 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'COLO829 tumor nanopore methylation',
+        img: 'methylation/colo829_cram_and_bedmethyl.png',
         session:
           '?config=test_data%2Fconfig_demo.json&session=share-LffYr8SI5E&password=VmZVl',
+        description:
+          'A CpG island in the COLO829 tumor line: per-base 5mC calls colored on the nanopore reads (top), with an aggregated bedMethyl density track below showing the same methylation signal summarized across all reads.',
       },
       {
         label: 'Arabidopsis methylation (ONT 5mC/5hmC)',
@@ -328,16 +342,25 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Enterovirus D polyprotein (mature peptides)',
+        img: 'gene_track_mature_peptides.png',
         session: '?config=test_data%2Fenterovirus_d%2Fconfig.json',
+        description:
+          'The enterovirus D ORF1 polyprotein cleaved into its mature peptides (VP1, 2A, 3C, …), each drawn as a stacked, individually-hoverable row with its product name labeled on the bar.',
       },
       {
         label: 'Human mitochondrion (vertebrate mito code, transl_except stops)',
+        img: 'gallery/human_mito.png',
         session: '?config=test_data%2Fhuman_mito%2Fconfig.json',
+        description:
+          'The complete human mitochondrial genome with its 37 genes and tRNAs, translated with the vertebrate mitochondrial genetic code (transl_table=2) and polyA-completed stop codons.',
       },
       {
         label: 'GPX1 selenoprotein (UGA→Sec readthrough)',
+        img: 'gene_track_selenocysteine.png',
         session:
           '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"3:49358083-49358183","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_refseq_109_hg38_latest"]}]}',
+        description:
+          'GPX1 has one in-frame UGA recoded as selenocysteine via a downstream SECIS element. With amino-acid lettering on, that codon is drawn as a "U" on an orange background instead of the stop it would otherwise be.',
       },
       {
         label: 'Human PTEN gene (color by CDS frame)',
