@@ -36,7 +36,7 @@ const SupplementaryAlignmentsLocStrings = observer(
               const locString = `${saRef}:${Math.max(1, start - extra)}-${end + extra}`
               const mapq = saMapq ? ` MAPQ:${saMapq}` : ''
               const nm = saNm ? ` NM:${saNm}` : ''
-              const label = `${saRef}:${toLocale(start)}-${toLocale(end)} (${saStrand}) [${saLength}bp]${mapq}${nm}`
+              const label = `${saRef}:${toLocale(start)}-${toLocale(end)} (${saStrand}) [${toLocale(saLength)}bp]${mapq}${nm}`
               return (
                 <li key={locString}>
                   <ActionLink
