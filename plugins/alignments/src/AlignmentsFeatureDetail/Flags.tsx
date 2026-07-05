@@ -11,41 +11,30 @@ const useStyles = makeStyles()({
     paddingBottom: 0,
     cursor: 'default',
   },
-  set: {
-    fontWeight: 'bold',
-  },
 })
 
 export default function AlignmentFlags({ flags }: { flags: number }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   return (
     <BaseCard title="Flags">
       <SimpleField name="Flag" value={flags} />
       <FormGroup>
-        {samFlagLabels.map((name, idx) => {
-          const checked = (flags & (1 << idx)) !== 0
-          return (
-            <Tooltip
-              key={name}
-              title={samFlagDescriptions[idx]}
-              placement="left"
-            >
-              <FormControlLabel
-                classes={{ label: cx(checked && classes.set) }}
-                control={
-                  <Checkbox
-                    className={classes.compact}
-                    checked={checked}
-                    name={name}
-                    disableRipple
-                    readOnly
-                  />
-                }
-                label={name}
-              />
-            </Tooltip>
-          )
-        })}
+        {samFlagLabels.map((name, idx) => (
+          <Tooltip key={name} title={samFlagDescriptions[idx]} placement="left">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  className={classes.compact}
+                  checked={(flags & (1 << idx)) !== 0}
+                  name={name}
+                  disableRipple
+                  readOnly
+                />
+              }
+              label={name}
+            />
+          </Tooltip>
+        ))}
       </FormGroup>
     </BaseCard>
   )
