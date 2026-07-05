@@ -1,5 +1,5 @@
 import { arcYFraction } from './arcYScale.ts'
-import { ARC_SHAPE_FLAT, ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
+import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   type DrawBlock,
@@ -114,7 +114,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     )
     const apexY = pairedArcsDown ? anchorY + arcH : anchorY - arcH
 
-    const isFlat = shape === ARC_SHAPE_FLAT || shape === ARC_SHAPE_FLAT_SPLIT
+    const isFlat = isFlatArcShape(shape)
     ctx.setLineDash(shape === ARC_SHAPE_FLAT_SPLIT ? [3, 3] : [])
     if (isFlat) {
       // Black connector line clamped to a minimum drawn width (centered on the

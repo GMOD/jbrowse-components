@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import { ARC_SHAPE_FLAT, ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
+import { isFlatArcShape } from './compute.ts'
 import * as arcShader from '../../LinearAlignmentsDisplay/shaders/slang/arc.generated.ts'
 import * as arcLineShader from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.generated.ts'
 import * as arcMarkerShader from '../../LinearAlignmentsDisplay/shaders/slang/arcMarker.generated.ts'
@@ -54,16 +54,12 @@ export function packArcLines(data: ArcsUploadData): ArrayBuffer {
   )
 }
 
-function isFlatShape(shape: number) {
-  return shape === ARC_SHAPE_FLAT || shape === ARC_SHAPE_FLAT_SPLIT
-}
-
 // Two endpoint-square markers per flat (samplot) arc — one at each end. Regular
 // curved arcs carry no markers (their endpoints sit on the baseline).
 export function flatArcMarkerCount(data: ArcsUploadData) {
   let n = 0
   for (let i = 0; i < data.numArcs; i++) {
-    if (isFlatShape(data.arcShapeTypes[i]!)) {
+    if (isFlatArcShape(data.arcShapeTypes[i]!)) {
       n += 2
     }
   }
@@ -79,7 +75,7 @@ export function packArcMarkers(
   const yBp = new Uint32Array(count)
   let j = 0
   for (let i = 0; i < data.numArcs; i++) {
-    if (isFlatShape(data.arcShapeTypes[i]!)) {
+    if (isFlatArcShape(data.arcShapeTypes[i]!)) {
       const c = data.arcColorTypes[i]!
       const y = data.arcYBp[i]!
       position[j] = data.arcX1[i]!

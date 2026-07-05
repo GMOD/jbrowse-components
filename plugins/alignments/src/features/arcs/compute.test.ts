@@ -333,6 +333,40 @@ describe('computeArcsFromPileupData', () => {
     expect(result.arcs[0]!.p2.bp).toBe(3000)
   })
 
+  test('lone paired read with a mapped mate AND an SA tag draws both links', () => {
+    // Mate mapped off-screen at chr1:2000 and a supplementary block at
+    // chr1:3001. Both the mate link and the SA split junction must be emitted —
+    // the mate being off-screen must not suppress the within-read junction.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1500]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([500]),
+      readPairOrientations: new Uint8Array([1]),
+      readNames: ['readA'],
+      readNextRefs: ['chr1'],
+      readNextPositions: new Uint32Array([2000]),
+      readSuppAlignments: ['chr1,3001,+,200M,60,0;'],
+    })
+
+    const rpcDataMap = new Map([[0, data]])
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
+    ]
+    const result = computeArcsFromPileupData(rpcDataMap, regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    })
+
+    // Both endpoints leave the read's 3' edge (1500): one reaches the mate
+    // (2000), the other the supplementary block's 5' edge (3000).
+    const p2s = result.arcs.map(a => a.p2.bp).sort((a, b) => a - b)
+    expect(result.arcs.every(a => a.p1.bp === 1500)).toBe(true)
+    expect(p2s).toEqual([2000, 3000])
+  })
+
   test('malformed SA tag entries are skipped, not emitted as NaN arcs', () => {
     // Three semicolon-separated entries: one truncated (3 fields), one with a
     // placeholder CIGAR, one with a non-numeric position. None should produce
