@@ -80,6 +80,9 @@ ArcPoint evalArcPoint(float t, Instance inst, Uniforms u) {
   // Samplot uses a base-2 LOG scale (arcsYLog) so small inserts spread out near
   // the baseline instead of collapsing onto it (matches origin/main's
   // d3.scaleLog().base(2)); arc mode stays linear (yBp is a genomic radius).
+  // Must stay byte-identical to arcYFraction() in arcYScale.ts (the JS/Canvas2D
+  // path) — the golden values in arcYScale.test.ts pin this formula on both
+  // sides; change one and the test flags the other.
   float frac = (u.arcsYLog > 0.5)
     ? log2(max(1.0, float(inst.yBp))) / log2(max(2.0, u.arcsYDomainBp))
     : float(inst.yBp) / u.arcsYDomainBp;

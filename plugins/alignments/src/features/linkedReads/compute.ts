@@ -71,12 +71,17 @@ function pairedColorType(orientNum: number) {
     : LINKED_READ_COLOR_PAIR_UNKNOWN
 }
 
-// Co-linear (same strand) → simple deletion; strand-flip → inversion. Maps the
-// shared splitInversion category to this path's GPU palette indices.
+// Strand-flip → inversion; co-linear same-strand (both strands known) → simple
+// deletion; unknown strand → the default pair color. Maps the shared
+// splitInversion category to this path's GPU palette indices, matching the
+// arc-path unpairedOrientationColor and the read-fill split classifier so an
+// unknown-strand split doesn't claim the deletion color in just this one channel.
 export function splitColorType(s1: number, s2: number) {
-  return splitInversion(s1, s2) === undefined
-    ? LINKED_READ_COLOR_SPLIT_NORMAL
-    : LINKED_READ_COLOR_SPLIT_INV
+  return splitInversion(s1, s2) !== undefined
+    ? LINKED_READ_COLOR_SPLIT_INV
+    : s1 !== 0 && s2 !== 0
+      ? LINKED_READ_COLOR_SPLIT_NORMAL
+      : LINKED_READ_COLOR_PAIR_UNKNOWN
 }
 
 // Group reads across all displayed regions by readName. Used by both the
