@@ -2,41 +2,14 @@ import { useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getStrokeProps, polarToCartesian } from '@jbrowse/core/util'
-import { parseSvAlt } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
+
+import { getEndpoint } from './chordGeometry.ts'
+import { bpToRadians } from '../CircularView/slices.ts'
 
 import type { Block } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-
-function bpToRadians(block: Block, pos: number) {
-  return block.region.elided
-    ? (block.startRadians + block.endRadians) / 2
-    : (pos - block.region.start) / block.bpPerRadian + block.startRadians
-}
-
-function getEndpoint(
-  feature: Feature,
-  blocksForRefs: Record<string, Block>,
-  startBlock: Block,
-) {
-  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
-  const mate = feature.get('mate') as
-    { refName: string; start: number } | undefined
-  const parsed = parseSvAlt(feature, alt)
-  if (parsed) {
-    return {
-      endBlock: blocksForRefs[parsed.mateRefName],
-      // parsed.matePos is VCF 1-based; convert to 0-based like the other
-      // parseSvAlt consumers (sv-core getBreakendCoveringRegions, arc
-      // makeFeaturePair)
-      endPosition: parsed.matePos - 1,
-    }
-  } else if (mate) {
-    return { endBlock: blocksForRefs[mate.refName], endPosition: mate.start }
-  }
-  return { endBlock: startBlock, endPosition: feature.get('end') }
-}
 
 const Chord = observer(function Chord({
   feature,

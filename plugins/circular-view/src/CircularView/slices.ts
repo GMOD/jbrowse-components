@@ -18,6 +18,25 @@ export interface SliceNonElidedRegion {
 }
 export type SliceRegion = SliceNonElidedRegion | SliceElidedRegion
 
+/**
+ * Angle (radians) of a genomic position within a slice/block. Elided regions
+ * collapse to their midpoint since individual positions aren't resolvable.
+ */
+export function bpToRadians(
+  block: {
+    startRadians: number
+    endRadians: number
+    bpPerRadian: number
+    region: { elided: true } | { elided?: false; start: number }
+  },
+  bp: number,
+) {
+  const { region, startRadians, endRadians, bpPerRadian } = block
+  return region.elided
+    ? (startRadians + endRadians) / 2
+    : (bp - region.start) / bpPerRadian + startRadians
+}
+
 export class Slice {
   key: string
 
@@ -45,11 +64,7 @@ export class Slice {
   }
 
   bpToXY(bp: number, radiusPx: number) {
-    const offsetBp = this.region.elided
-      ? this.region.widthBp / 2
-      : bp - this.region.start
-    const totalRadians = offsetBp / this.bpPerRadian + this.offsetRadians
-    return polarToCartesian(radiusPx, totalRadians)
+    return polarToCartesian(radiusPx, bpToRadians(this, bp))
   }
 }
 

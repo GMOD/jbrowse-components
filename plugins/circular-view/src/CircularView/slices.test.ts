@@ -1,4 +1,26 @@
-import { calculateStaticSlices } from './slices.ts'
+import { bpToRadians, calculateStaticSlices } from './slices.ts'
+
+test('bpToRadians maps position linearly within a non-elided block', () => {
+  const block = {
+    startRadians: 2,
+    endRadians: 4,
+    bpPerRadian: 100,
+    region: { elided: false as const, start: 1000 },
+  }
+  expect(bpToRadians(block, 1000)).toBe(2)
+  expect(bpToRadians(block, 1100)).toBe(3)
+  expect(bpToRadians(block, 900)).toBe(1)
+})
+
+test('bpToRadians collapses an elided block to its midpoint', () => {
+  const block = {
+    startRadians: 1,
+    endRadians: 3,
+    bpPerRadian: 100,
+    region: { elided: true as const },
+  }
+  expect(bpToRadians(block, 999)).toBe(2)
+})
 
 test('one slice', () => {
   const view = {
