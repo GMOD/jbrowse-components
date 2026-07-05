@@ -80,7 +80,7 @@ The demo includes BAM tracks for a parent–child trio, available under **1000
 Genomes → Alignments** in the track selector. Load all three (mother, child,
 father) to stack them beneath the variant track.
 
-[Open the extended trio session](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json&session=share-SUK-mntGyB&password=eQF0F)
+[Open the extended trio session](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"1:40,485,000-40,528,000","tracks":["1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf","HG02031.final","HG02030.final","HG02032.final"]}]})
 
 Once you have an SV of interest, check the three trio rows in the SAMPLES table
 and the corresponding read tracks:
@@ -116,7 +116,7 @@ allele.
 
 <Figure caption="chr19 region containing the large inversion shown in the 1KGP SV callset alongside pileup tracks from multiple samples. The dense colored variation in the alignment tracks reflects the two orientations of the inverted segment segregating in the population. The track selector panel on the right shows the 1000 Genomes track categories; enabling 1000 Genomes → Alignments adds coverage and pileup panels per sample." src="/img/multisv.png" />
 
-[Open the inversion demo session](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json&session=share-DN_h4SIwo4&password=CxkLw)
+[Open the inversion demo session](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"19:41,700,000-42,000,000","tracks":[{"trackId":"1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf","displaySnapshot":{"type":"MultiLinearVariantDisplay"}},"ncbi_refseq_109_hg38_latest"]}]})
 
 ### Read orientation evidence at the breakpoints
 

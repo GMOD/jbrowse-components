@@ -91,7 +91,7 @@ a `MultiQuantitativeTrack` with `h` (5hmC) and `m` (5mC) subtracks.
 
 <Figure caption="COLO829 tumor ONT alignments (top) with per-read modification coloring, alongside the modkit bedMethyl MultiQuantitativeTrack (bottom) showing 5hmC ('h') and 5mC ('m') methylation fractions at individual CpG positions." src="/img/methylation/colo829_cram_and_bedmethyl.png" />
 
-[Live demo — COLO829 CRAM + bedMethyl](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-RveRrmeOL8&password=V2mo9)
+[Live demo — COLO829 CRAM + bedMethyl](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"20:10,000,000-10,003,000","tracks":["COLO829_tumor.ht","COLO829_tumor.ht_modkit.bed_multi"]}]})
 
 ## Plant methylation in non-CpG contexts (CHG/CHH)
 
