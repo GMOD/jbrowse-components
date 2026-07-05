@@ -1,17 +1,10 @@
-import { getType } from '@jbrowse/mobx-state-tree'
-
-import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
-import { isSlotDefinitionEntry } from './util.ts'
+import { getConfigurationSchemaDefinition, isSlotDefinitionEntry } from './util.ts'
 import { getEnv } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationModel } from './types.ts'
 import type PluginManager from '../PluginManager.ts'
-
-function slotTable(node: AnyConfigurationModel) {
-  return getConfigurationSchemaMetadata(getType(node))?.definition
-}
 
 /**
  * The slot's metadata entry, or undefined when `slotName` names a nested
@@ -21,7 +14,7 @@ function slotDefinition(
   node: AnyConfigurationModel,
   slotName: string,
 ): ConfigSlotDefinition | undefined {
-  const def = slotTable(node)?.[slotName]
+  const def = getConfigurationSchemaDefinition(node)?.[slotName]
   return isSlotDefinitionEntry(def) ? def : undefined
 }
 

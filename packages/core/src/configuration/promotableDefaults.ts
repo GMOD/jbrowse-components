@@ -1,8 +1,9 @@
-import { getType } from '@jbrowse/mobx-state-tree'
-
-import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import { getSlotDefinition } from './slotFacade.ts'
-import { getConf, isSlotDefinitionEntry } from './util.ts'
+import {
+  getConf,
+  getConfigurationSchemaDefinition,
+  isSlotDefinitionEntry,
+} from './util.ts'
 import { getSession } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 
@@ -55,9 +56,7 @@ function sameValue(a: unknown, b: unknown): boolean {
 // The names of every promotable slot on a display's config schema (includes
 // slots inherited via baseConfiguration — merged into the table at construction).
 function promotableSlots(self: PromotableDisplay): string[] {
-  const table = getConfigurationSchemaMetadata(
-    getType(self.configuration),
-  )?.definition
+  const table = getConfigurationSchemaDefinition(self.configuration)
   return Object.entries(table ?? {})
     .filter(([, def]) => isSlotDefinitionEntry(def) && def.promotable)
     .map(([name]) => name)

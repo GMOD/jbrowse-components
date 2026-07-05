@@ -178,7 +178,7 @@ export function readConfObject(
  */
 export function getConfSnapshot(confObject: AnyConfigurationModel) {
   const result: Record<string, unknown> = {}
-  const table = getConfigurationSchemaMetadata(getType(confObject))?.definition
+  const table = getConfigurationSchemaDefinition(confObject)
   for (const [key, def] of Object.entries(table ?? {})) {
     const v = confObject[key]
     if (isSlotDefinitionEntry(def)) {
@@ -331,6 +331,17 @@ export function isConfigurationModel(
   thing: unknown,
 ): thing is AnyConfigurationModel {
   return isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
+}
+
+/**
+ * The slot/sub-schema/constant table for a live config node (includes slots
+ * merged in from `baseConfiguration` at schema construction). Undefined when the
+ * node's type isn't a registered configuration schema. The single accessor for
+ * "what are this config's slots?" — shared by the slot facade, promotable
+ * defaults, and getConfSnapshot.
+ */
+export function getConfigurationSchemaDefinition(node: AnyConfigurationModel) {
+  return getConfigurationSchemaMetadata(getType(node))?.definition
 }
 
 function resolveConfigValue(
