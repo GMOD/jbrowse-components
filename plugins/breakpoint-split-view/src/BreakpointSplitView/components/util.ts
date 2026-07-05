@@ -3,7 +3,7 @@ import {
   isAbnormalPairDirection,
   pairDirection,
 } from '@jbrowse/alignments-core'
-import { featurizeSA } from '@jbrowse/cigar-utils'
+import { featurizeSA, getClip } from '@jbrowse/cigar-utils'
 import { assembleLocStringFast, notEmpty } from '@jbrowse/core/util'
 
 import type { LayoutMatch } from '../types.ts'
@@ -53,6 +53,21 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
   }
 
   return multi(candidates)
+}
+
+// A segment's position on the read's 5' axis, used to sort a split read's
+// alignments into read order. Core alignment adapters expose it directly; derive
+// it from the CIGAR for any that don't, rather than letting a missing field
+// collapse every segment to 0 and silently no-op the read-order sort.
+export function getClipLengthAtStartOfRead(feature: Feature) {
+  const derived = feature.get('clipLengthAtStartOfRead') as number | undefined
+  return (
+    derived ??
+    getClip(
+      (feature.get('CIGAR') as string | undefined) ?? '',
+      (feature.get('strand') as number | undefined) ?? 1,
+    )
+  )
 }
 
 interface ChainSegment {

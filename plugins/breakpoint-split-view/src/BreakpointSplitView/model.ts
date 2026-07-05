@@ -13,6 +13,7 @@ import { autorun } from 'mobx'
 import {
   classifyVariantFeatures,
   getBadlyPairedAlignments,
+  getClipLengthAtStartOfRead,
   getMatchedAlignmentFeatures,
   getMatchedBreakendFeatures,
   getMatchedPairedFeatures,
@@ -282,8 +283,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           c
             .map(feature => {
               const clipLengthAtStartOfRead =
-                (feature.get('clipLengthAtStartOfRead') as
-                  number | undefined) ?? 0
+                getClipLengthAtStartOfRead(feature)
               for (const [level, track] of tracks.entries()) {
                 const layout = calc(track, feature)
                 if (layout) {

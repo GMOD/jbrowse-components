@@ -2,6 +2,7 @@ import {
   classifyVariantFeatures,
   findMatchingAlt,
   getBadlyPairedAlignments,
+  getClipLengthAtStartOfRead,
   getMatchedAlignmentFeatures,
   getMatchedBreakendFeatures,
   getMatchedPairedFeatures,
@@ -605,6 +606,34 @@ describe('getMatchedPairedFeatures', () => {
     expect(
       getMatchedPairedFeatures(mapOf(paired('sv1'), paired('sv2'))),
     ).toHaveLength(0)
+  })
+})
+
+describe('getClipLengthAtStartOfRead', () => {
+  const feat = (fields: Record<string, unknown>) =>
+    ({ get: (k: string) => fields[k] }) as unknown as Feature
+
+  test('prefers the adapter-provided field', () => {
+    expect(getClipLengthAtStartOfRead(feat({ clipLengthAtStartOfRead: 42 }))).toBe(
+      42,
+    )
+  })
+
+  test('derives from the CIGAR when the field is absent (forward strand)', () => {
+    expect(
+      getClipLengthAtStartOfRead(feat({ CIGAR: '100S50M', strand: 1 })),
+    ).toBe(100)
+  })
+
+  test('derives from the CIGAR when the field is absent (reverse strand)', () => {
+    // reverse strand: the read's 5' clip is the trailing CIGAR op
+    expect(
+      getClipLengthAtStartOfRead(feat({ CIGAR: '50M100S', strand: -1 })),
+    ).toBe(100)
+  })
+
+  test('falls back to 0 only when neither field nor CIGAR is available', () => {
+    expect(getClipLengthAtStartOfRead(feat({}))).toBe(0)
   })
 })
 
