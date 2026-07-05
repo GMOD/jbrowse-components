@@ -21,26 +21,14 @@ Here is a complete config.json file containing only the hg19 assembly:
         "trackId": "hg19_config",
         "adapter": {
           "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
-            "locationType": "UriLocation"
-          }
+          "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
         }
       },
       "refNameAliases": {
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt",
-            "locationType": "UriLocation"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
           }
         }
       }
@@ -154,8 +142,7 @@ chrPltd	11
 ```json
 {
   "geneticCodesLocation": {
-    "uri": "https://example.com/grch38.genetic_codes.tsv",
-    "locationType": "UriLocation"
+    "uri": "https://example.com/grch38.genetic_codes.tsv"
   }
 }
 ```
@@ -187,19 +174,28 @@ sequence.fa.gz.gzi
 sequence.fa.gz.fai
 ```
 
-The adapter config uses `fastaLocation`, `faiLocation`, and `gziLocation` as
-shown in the complete config example above.
-
-A reduced form is also accepted: when only `uri` is given, the adapter assumes
-the index files sit next to the data file with the standard suffixes appended
-(here `yourfile.fa.gz.fai` and `yourfile.fa.gz.gzi`). The other sequence
-adapters below accept the same `uri` shorthand. See the
-[BgzipFastaAdapter config docs](/docs/config/bgzipfastaadapter) for all options.
+With the `uri` shorthand (as in the assembly above) the adapter assumes the two
+index files sit next to the data file with the standard suffixes appended (here
+`hg19.fa.gz.fai` and `hg19.fa.gz.gzi`). The other sequence adapters below accept
+the same shorthand.
 
 ```json
 {
   "type": "BgzipFastaAdapter",
   "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+}
+```
+
+Spell out the `fastaLocation`, `faiLocation`, and `gziLocation` slots only when
+the index files are named differently (see the
+[BgzipFastaAdapter config docs](/docs/config/bgzipfastaadapter) for all options):
+
+```json
+{
+  "type": "BgzipFastaAdapter",
+  "fastaLocation": { "uri": "https://example.com/genome.fa.gz" },
+  "faiLocation": { "uri": "https://example.com/genome.index.fai" },
+  "gziLocation": { "uri": "https://example.com/genome.index.gzi" }
 }
 ```
 
@@ -215,31 +211,25 @@ sequence.fa
 sequence.fa.fai
 ```
 
-These are loaded into an IndexedFastaAdapter as follows
-
-```json
-{
-  "type": "IndexedFastaAdapter",
-  "fastaLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa",
-    "locationType": "UriLocation"
-  },
-  "faiLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.fai",
-    "locationType": "UriLocation"
-  }
-}
-```
-
-The same `uri` shorthand applies (here the index is assumed at
-`yourfile.fa.fai`); see the
-[IndexedFastaAdapter config docs](/docs/config/indexedfastaadapter) for all
-options.
+Load it with the `uri` shorthand (the index is assumed at `<uri>.fai`):
 
 ```json
 {
   "type": "IndexedFastaAdapter",
   "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa"
+}
+```
+
+Spell out the `fastaLocation` and `faiLocation` slots only when the `.fai` is
+named differently (see the
+[IndexedFastaAdapter config docs](/docs/config/indexedfastaadapter) for all
+options):
+
+```json
+{
+  "type": "IndexedFastaAdapter",
+  "fastaLocation": { "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa" },
+  "faiLocation": { "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.fai" }
 }
 ```
 
@@ -272,8 +262,7 @@ displayed as-is, so the format is not strict from JBrowse's perspective.
 
 ```json
   "metadataLocation": {
-    "uri": "https://raw.githubusercontent.com/FFRGS/FFRGS-Specification/main/examples/example.yaml",
-    "locationType": "UriLocation"
+    "uri": "https://raw.githubusercontent.com/FFRGS/FFRGS-Specification/main/examples/example.yaml"
   }
 ```
 
@@ -286,32 +275,12 @@ parsing time.
 ```json
 {
   "type": "TwoBitAdapter",
-  "twoBitLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.2bit",
-    "locationType": "UriLocation"
-  }
+  "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.2bit"
 }
 ```
 
-Optionally you can specify a .chrom.sizes file which will speed up loading the
-2bit especially if it has many chromosomes in it
-
-```json
-{
-  "type": "TwoBitAdapter",
-  "twoBitLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.2bit",
-    "locationType": "UriLocation"
-  },
-  "chromSizesLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.chrom.sizes",
-    "locationType": "UriLocation"
-  }
-}
-```
-
-The `uri` shorthand applies here too, with an optional `chromSizes` field (see
-the [TwoBitAdapter config docs](/docs/config/twobitadapter) for all options):
+Optionally add a `.chrom.sizes` file, which speeds up loading a 2bit that has
+many chromosomes:
 
 ```json
 {
@@ -320,6 +289,9 @@ the [TwoBitAdapter config docs](/docs/config/twobitadapter) for all options):
   "chromSizes": "https://jbrowse.org/genomes/hg19/fasta/hg19.chrom.sizes"
 }
 ```
+
+The longhand form uses the `twoBitLocation` and `chromSizesLocation` slots — see
+the [TwoBitAdapter config docs](/docs/config/twobitadapter) for all options.
 
 ## ChromSizesAdapter
 
@@ -330,21 +302,12 @@ loading a FASTA), use a `.chrom.sizes` file (tab-separated `name<TAB>length`).
 ```json
 {
   "type": "ChromSizesAdapter",
-  "chromSizesLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/hg19.chrom.sizes",
-    "locationType": "UriLocation"
-  }
-}
-```
-
-The `uri` shorthand applies here too:
-
-```json
-{
-  "type": "ChromSizesAdapter",
   "uri": "https://jbrowse.org/genomes/hg19/hg19.chrom.sizes"
 }
 ```
+
+The longhand form uses a `chromSizesLocation` slot — see the
+[ChromSizesAdapter config docs](/docs/config/chromsizesadapter) for all options.
 
 The reference sequence track displays no base-level sequence with this adapter,
 since there is none to show.
@@ -370,8 +333,7 @@ fetched from a `CytobandAdapter` pointing at a UCSC-style `cytoBand.txt` file:
     "adapter": {
       "type": "CytobandAdapter",
       "cytobandLocation": {
-        "uri": "https://jbrowse.org/genomes/hg19/hg19_cytoband.txt",
-        "locationType": "UriLocation"
+        "uri": "https://jbrowse.org/genomes/hg19/hg19_cytoband.txt"
       }
     }
   }

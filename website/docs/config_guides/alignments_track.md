@@ -8,54 +8,39 @@ Example `AlignmentsTrack` config:
 
 ```json
 {
+  "type": "AlignmentsTrack",
   "trackId": "my_alignments_track",
   "name": "My Alignments",
   "assemblyNames": ["hg19"],
-  "type": "AlignmentsTrack",
   "adapter": {
     "type": "BamAdapter",
-    "bamLocation": {
-      "uri": "http://yourhost/file.bam"
-    },
-    "index": {
-      "location": {
-        "uri": "http://yourhost/file.bam.bai"
-      }
-    }
+    "uri": "https://yourhost/file.bam"
   }
 }
 ```
 
 ## BamAdapter configuration options
 
-- `bamLocation` - a 'file location' for the BAM
-- `index` - a subconfiguration schema containing
-  - indexType: options BAI or CSI. default: BAI
-  - location: a 'file location' of the index
+The `uri` shorthand assumes the index sits next to the data file at `<uri>.bai`.
+Spell out the location slots only when the index is named differently or is a CSI
+index:
 
-Example `BamAdapter` config:
+- `bamLocation` - file location of the BAM
+- `index.location` - file location of the index
+- `index.indexType` - `BAI` (default) or `CSI`
 
 ```json
 {
   "type": "BamAdapter",
-  "bamLocation": {
-    "uri": "http://yourhost/file.bam"
-  },
+  "bamLocation": { "uri": "https://yourhost/file.bam" },
   "index": {
-    "location": {
-      "uri": "http://yourhost/file.bam.bai"
-    }
+    "indexType": "CSI",
+    "location": { "uri": "https://yourhost/file.bam.csi" }
   }
 }
 ```
 
-A reduced form is also accepted: when only `uri` is given, the adapter assumes
-the index is at `yourfile.bam.bai` (the data URI with `.bai` appended). See the
-[BamAdapter config docs](/docs/config/bamadapter) for all options.
-
-```json
-{ "type": "BamAdapter", "uri": "http://yourhost/file.bam" }
-```
+See the [BamAdapter config docs](/docs/config/bamadapter) for all options.
 
 ## CramAdapter configuration options
 
@@ -67,7 +52,7 @@ do not need to set `sequenceAdapter` manually. See the
 [CramAdapter config docs](/docs/config/cramadapter) for all options.
 
 ```json
-{ "type": "CramAdapter", "uri": "http://yourhost/file.cram" }
+{ "type": "CramAdapter", "uri": "https://yourhost/file.cram" }
 ```
 
 ## Display options
@@ -84,7 +69,7 @@ track's `displayDefaults` shorthand:
   "trackId": "my_alignments_track",
   "name": "My Alignments",
   "assemblyNames": ["hg19"],
-  "adapter": { "type": "BamAdapter", "uri": "http://yourhost/file.bam" },
+  "adapter": { "type": "BamAdapter", "uri": "https://yourhost/file.bam" },
   "displayDefaults": { "colorBy": { "type": "pairOrientation" }, "height": 250 }
 }
 ```

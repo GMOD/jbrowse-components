@@ -120,13 +120,11 @@ dialog. `.bed.gz` files require manual adapter selection.
   "adapter": {
     "type": "GWASAdapter",
     "bedGzLocation": {
-      "uri": "https://yourhost/results.bed.gz",
-      "locationType": "UriLocation"
+      "uri": "https://yourhost/results.bed.gz"
     },
     "index": {
       "location": {
-        "uri": "https://yourhost/results.bed.gz.tbi",
-        "locationType": "UriLocation"
+        "uri": "https://yourhost/results.bed.gz.tbi"
       }
     }
   }
@@ -145,13 +143,11 @@ dialog. `.bed.gz` files require manual adapter selection.
     "type": "GWASAdapter",
     "scoreColumn": "neg_log_pvalue",
     "bedGzLocation": {
-      "uri": "https://yourhost/sle.bed.gz",
-      "locationType": "UriLocation"
+      "uri": "https://yourhost/sle.bed.gz"
     },
     "index": {
       "location": {
-        "uri": "https://yourhost/sle.bed.gz.tbi",
-        "locationType": "UriLocation"
+        "uri": "https://yourhost/sle.bed.gz.tbi"
       }
     }
   },
@@ -163,8 +159,7 @@ dialog. `.bed.gz` files require manual adapter selection.
       "ldAdapter": {
         "type": "PlinkLDAdapter",
         "ldLocation": {
-          "uri": "https://yourhost/sle.ld",
-          "locationType": "UriLocation"
+          "uri": "https://yourhost/sle.ld"
         }
       }
     }
@@ -184,13 +179,11 @@ dialog. `.bed.gz` files require manual adapter selection.
       "ldAdapter": {
         "type": "PlinkLDTabixAdapter",
         "ldLocation": {
-          "uri": "https://yourhost/study.ld.gz",
-          "locationType": "UriLocation"
+          "uri": "https://yourhost/study.ld.gz"
         },
         "index": {
           "location": {
-            "uri": "https://yourhost/study.ld.gz.tbi",
-            "locationType": "UriLocation"
+            "uri": "https://yourhost/study.ld.gz.tbi"
           }
         }
       }

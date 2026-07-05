@@ -47,8 +47,7 @@ Points at a hub's `hub.txt`. See
   "connectionId": "ucsc_example",
   "name": "UCSC example hub",
   "hubTxtLocation": {
-    "uri": "https://example.com/hub.txt",
-    "locationType": "UriLocation"
+    "uri": "https://example.com/hub.txt"
   }
 }
 ```
@@ -65,8 +64,7 @@ Points at a JBrowse 2 config file. See
   "connectionId": "jb2_example",
   "name": "JB2 example hub",
   "configJsonLocation": {
-    "uri": "https://example.com/config.json",
-    "locationType": "UriLocation"
+    "uri": "https://example.com/config.json"
   }
 }
 ```
@@ -84,8 +82,7 @@ JBrowse 1 connection requires `assemblyNames`. See
   "name": "JBrowse 1 data",
   "assemblyNames": ["hg19"],
   "dataDirLocation": {
-    "uri": "https://example.com/jbrowse1/data/",
-    "locationType": "UriLocation"
+    "uri": "https://example.com/jbrowse1/data/"
   }
 }
 ```

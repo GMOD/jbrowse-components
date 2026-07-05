@@ -14,37 +14,16 @@ Example Hi-C track config:
   "assemblyNames": ["hg19"],
   "adapter": {
     "type": "HicAdapter",
-    "hicLocation": {
-      "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic",
-      "locationType": "UriLocation"
-    }
+    "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
   }
 }
 ```
 
 ## HicAdapter config
 
-The HicAdapter only requires a `hicLocation`:
-
-```json
-{
-  "type": "HicAdapter",
-  "hicLocation": {
-    "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic",
-    "locationType": "UriLocation"
-  }
-}
-```
-
-A reduced form is also accepted (see the
-[HicAdapter config docs](/docs/config/hicadapter) for all options):
-
-```json
-{
-  "type": "HicAdapter",
-  "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
-}
-```
+The `HicAdapter` needs only the `.hic` file location, given here with the `uri`
+shorthand. The longhand form uses a `hicLocation` slot — see the
+[HicAdapter config docs](/docs/config/hicadapter) for all options.
 
 ## Color scheme
 

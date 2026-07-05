@@ -10,16 +10,13 @@ Example QuantitativeTrack config:
 
 ```json
 {
+  "type": "QuantitativeTrack",
   "trackId": "my_wiggle_track",
   "name": "My Wiggle Track",
   "assemblyNames": ["hg19"],
-  "type": "QuantitativeTrack",
   "adapter": {
     "type": "BigWigAdapter",
-    "bigWigLocation": {
-      "uri": "http://yourhost/file.bw",
-      "locationType": "UriLocation"
-    }
+    "uri": "https://yourhost/file.bw"
   }
 }
 ```
@@ -40,7 +37,7 @@ wiggle display for you — no need to know the display's name
   "assemblyNames": ["hg19"],
   "adapter": {
     "type": "BigWigAdapter",
-    "uri": "http://yourhost/file.bw"
+    "uri": "https://yourhost/file.bw"
   },
   "displayDefaults": { "scaleType": "log" }
 }

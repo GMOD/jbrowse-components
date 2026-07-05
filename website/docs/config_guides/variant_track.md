@@ -15,53 +15,35 @@ Example config:
   "assemblyNames": ["hg19"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": {
-      "uri": "http://yourhost/file.vcf.gz",
-      "locationType": "UriLocation"
-    },
-    "index": {
-      "location": {
-        "uri": "http://yourhost/file.vcf.gz.tbi",
-        "locationType": "UriLocation"
-      }
-    }
+    "uri": "https://yourhost/file.vcf.gz"
   }
 }
 ```
 
 ## VcfTabixAdapter configuration options
 
-- `vcfGzLocation` - a 'file location' for the bgzip'd VCF file
-- `index` - a sub-configuration schema containing
-  - indexType: 'TBI' or 'CSI'. Default: 'TBI'. Use CSI for chromosomes longer
-    than 512 Mb (e.g. some plant genomes) since TBI cannot index them
-  - location: a 'file location' for the index
+The `uri` shorthand above is the common case: the adapter assumes the tabix
+index sits next to the data file at `<uri>.tbi`. Spell out the location slots
+only when the index is named differently or is a CSI index:
 
-Example VcfTabixAdapter adapter config:
+- `vcfGzLocation` - file location of the bgzip'd VCF
+- `index.location` - file location of the index
+- `index.indexType` - `TBI` (default) or `CSI`; use CSI for chromosomes longer
+  than 512 Mb (e.g. some plant genomes), which TBI cannot index
 
 ```json
 {
   "type": "VcfTabixAdapter",
-  "vcfGzLocation": {
-    "uri": "http://yourhost/file.vcf.gz",
-    "locationType": "UriLocation"
-  },
+  "vcfGzLocation": { "uri": "https://yourhost/file.vcf.gz" },
   "index": {
-    "location": {
-      "uri": "http://yourhost/file.vcf.gz.tbi",
-      "locationType": "UriLocation"
-    }
+    "indexType": "CSI",
+    "location": { "uri": "https://yourhost/file.vcf.gz.csi" }
   }
 }
 ```
 
-A reduced form is also accepted: when only `uri` is given, the adapter assumes
-the index is at `yourfile.vcf.gz.tbi` (the data URI with `.tbi` appended). See
-the [VcfTabixAdapter config docs](/docs/config/vcftabixadapter) for all options.
-
-```json
-{ "type": "VcfTabixAdapter", "uri": "http://yourhost/file.vcf.gz" }
-```
+See the [VcfTabixAdapter config docs](/docs/config/vcftabixadapter) for all
+options.
 
 ## Coloring variants by type
 
@@ -77,7 +59,7 @@ field via `feature.INFO.SVTYPE` and maps it to a color:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "uri": "http://yourhost/svs.vcf.gz"
+    "uri": "https://yourhost/svs.vcf.gz"
   },
   "displayDefaults": {
     "color": "jexl:({'DEL':'red','INS':'blue','DUP':'green','INV':'orange','BND':'purple','TRA':'purple'})[feature.INFO.SVTYPE[0]] || 'gray'"
@@ -145,16 +127,7 @@ configure the display to always show reference alleles:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": {
-      "uri": "http://yourhost/samples.vcf.gz",
-      "locationType": "UriLocation"
-    },
-    "index": {
-      "location": {
-        "uri": "http://yourhost/samples.vcf.gz.tbi",
-        "locationType": "UriLocation"
-      }
-    }
+    "uri": "https://yourhost/samples.vcf.gz"
   },
   "displays": [
     {
@@ -183,16 +156,7 @@ You can combine multiple settings to customize the default behavior:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": {
-      "uri": "http://yourhost/diversity.vcf.gz",
-      "locationType": "UriLocation"
-    },
-    "index": {
-      "location": {
-        "uri": "http://yourhost/diversity.vcf.gz.tbi",
-        "locationType": "UriLocation"
-      }
-    }
+    "uri": "https://yourhost/diversity.vcf.gz"
   },
   "displays": [
     {
@@ -240,19 +204,9 @@ by:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": {
-      "uri": "http://yourhost/samples.vcf.gz",
-      "locationType": "UriLocation"
-    },
-    "index": {
-      "location": {
-        "uri": "http://yourhost/samples.vcf.gz.tbi",
-        "locationType": "UriLocation"
-      }
-    },
+    "uri": "https://yourhost/samples.vcf.gz",
     "samplesTsvLocation": {
-      "uri": "http://yourhost/sample_metadata.tsv",
-      "locationType": "UriLocation"
+      "uri": "https://yourhost/sample_metadata.tsv"
     }
   },
   "displays": [
@@ -282,19 +236,9 @@ display options:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": {
-      "uri": "http://yourhost/diversity.vcf.gz",
-      "locationType": "UriLocation"
-    },
-    "index": {
-      "location": {
-        "uri": "http://yourhost/diversity.vcf.gz.tbi",
-        "locationType": "UriLocation"
-      }
-    },
+    "uri": "https://yourhost/diversity.vcf.gz",
     "samplesTsvLocation": {
-      "uri": "http://yourhost/sample_populations.tsv",
-      "locationType": "UriLocation"
+      "uri": "https://yourhost/sample_populations.tsv"
     }
   },
   "displays": [
@@ -340,11 +284,30 @@ variants. There are two ways to supply the data:
 
 ### Generating the PLINK file
 
-The PLINK `--r2` command and the bgzip/tabix steps for the tabix adapter are
-documented in the
-[GWAS track guide → Preparing the LD file](/docs/config_guides/gwas_track#preparing-the-ld-file)
-— the same `.ld` file is used both for coloring GWAS points by LD and for the
-standalone LD track here.
+Produce the `.ld` file with PLINK's `--r2` report, from a PLINK binary fileset
+(`.bed`/`.bim`/`.fam`) or directly from a VCF:
+
+```bash
+plink --vcf study.vcf.gz --r2 dprime with-freqs \
+  --ld-window 99999 --ld-window-kb 1000 --ld-window-r2 0 \
+  --out study
+```
+
+This writes `study.ld` (columns `CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2`, plus
+`DP`/`MAF_A`/`MAF_B` from the `dprime`/`with-freqs` flags), which
+`PlinkLDAdapter` reads directly. For a chromosome-scale or genome-wide file,
+bgzip and tabix it first so it can be used with `PlinkLDTabixAdapter`:
+
+```bash
+# preserve the header, sort the rest by CHR_A then BP_A
+(head -1 study.ld; tail -n +2 study.ld | sort -k1,1 -k2,2n) > study.sorted.ld
+bgzip study.sorted.ld
+tabix -s 1 -b 2 -e 2 -c C study.sorted.ld.gz
+```
+
+The [GWAS track guide → Preparing the LD file](/docs/config_guides/gwas_track#preparing-the-ld-file)
+explains these flags in full — the same `.ld` file is used both for coloring
+GWAS points by LD and for the standalone LD track here.
 
 ### Pre-computed LD track (plain `.ld`)
 
@@ -356,17 +319,13 @@ standalone LD track here.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "PlinkLDAdapter",
-    "ldLocation": {
-      "uri": "https://yourhost/study.ld",
-      "locationType": "UriLocation"
-    }
+    "uri": "https://yourhost/study.ld"
   }
 }
 ```
 
-The adapter also accepts a `uri` shorthand
-(`"adapter": { "type": "PlinkLDAdapter", "uri": "study.ld" }`), which expands to
-the `ldLocation` slot above.
+The `uri` expands to the `ldLocation` slot; see the
+[PlinkLDAdapter config docs](/docs/config/plinkldadapter) for the longhand form.
 
 ### Pre-computed LD track (tabix-indexed `.ld.gz`)
 
@@ -381,22 +340,15 @@ in the visible region are fetched:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "PlinkLDTabixAdapter",
-    "ldLocation": {
-      "uri": "https://yourhost/study.ld.gz",
-      "locationType": "UriLocation"
-    },
-    "index": {
-      "location": {
-        "uri": "https://yourhost/study.ld.gz.tbi",
-        "locationType": "UriLocation"
-      }
-    }
+    "uri": "https://yourhost/study.ld.gz"
   }
 }
 ```
 
-This adapter accepts a `uri` shorthand too; it assumes a sibling `<uri>.tbi`
-index.
+The `uri` shorthand assumes a sibling `<uri>.tbi` index; spell out `ldLocation`
+and `index.location` (see the
+[PlinkLDTabixAdapter config docs](/docs/config/plinkldtabixadapter)) if the index
+is named differently.
 
 ### Computed-from-VCF LD display
 
@@ -411,16 +363,7 @@ needed — LD is computed from genotypes in the visible region:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": {
-      "uri": "https://yourhost/variants.vcf.gz",
-      "locationType": "UriLocation"
-    },
-    "index": {
-      "location": {
-        "uri": "https://yourhost/variants.vcf.gz.tbi",
-        "locationType": "UriLocation"
-      }
-    }
+    "uri": "https://yourhost/variants.vcf.gz"
   },
   "displays": [
     {

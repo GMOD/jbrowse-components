@@ -16,16 +16,13 @@ An aggregate index looks like this:
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "hg19-index",
       "ixFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
-        "locationType": "UriLocation"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
       },
       "ixxFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx",
-        "locationType": "UriLocation"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
       },
       "metaFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json",
-        "locationType": "UriLocation"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
       },
       "assemblyNames": ["hg19"]
     }
