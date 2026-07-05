@@ -24,32 +24,37 @@ type Frames = [
   MaybePaletteColor,
   MaybePaletteColor,
 ]
+// plain '#rrggbb' string colors present (required) on Palette and (optional) on
+// PaletteOptions — declared once here and reused on both via the interfaces
+// below, so a new string color is added in a single place
+interface JBrowseStringColors {
+  stopCodon: string
+  startCodon: string
+  codonNonsynonymous: string
+  codonSynonymous: string
+  codonStop: string
+  coverage: string
+  insertion: string
+  softclip: string
+  skip: string
+  hardclip: string
+  deletion: string
+  modificationFwd: string
+  modificationRev: string
+  mutedSnpBase: string
+  missingData: string
+  gridlineMinor: string
+  gridlineMajor: string
+  featureHover: string
+  featureSelected: string
+  featureDescription: string
+}
 declare module '@mui/material/styles' {
-  interface Palette {
+  interface Palette extends JBrowseStringColors {
     tertiary: PaletteColor
     quaternary: PaletteColor
     highlight: PaletteColor
     textHighlight: PaletteColor
-    stopCodon: string
-    startCodon: string
-    codonNonsynonymous: string
-    codonSynonymous: string
-    codonStop: string
-    coverage: string
-    insertion: string
-    softclip: string
-    skip: string
-    hardclip: string
-    deletion: string
-    modificationFwd: string
-    modificationRev: string
-    mutedSnpBase: string
-    missingData: string
-    gridlineMinor: string
-    gridlineMajor: string
-    featureHover: string
-    featureSelected: string
-    featureDescription: string
     bases: {
       A: PaletteColor
       C: PaletteColor
@@ -66,31 +71,11 @@ declare module '@mui/material/styles' {
       pairRR: string
     }
   }
-  interface PaletteOptions {
+  interface PaletteOptions extends Partial<JBrowseStringColors> {
     tertiary?: PaletteColorOptions
     quaternary?: PaletteColorOptions
     highlight?: PaletteColorOptions
     textHighlight?: PaletteColorOptions
-    stopCodon?: string
-    startCodon?: string
-    codonNonsynonymous?: string
-    codonSynonymous?: string
-    codonStop?: string
-    coverage?: string
-    hardclip?: string
-    softclip?: string
-    insertion?: string
-    skip?: string
-    deletion?: string
-    modificationFwd?: string
-    modificationRev?: string
-    mutedSnpBase?: string
-    missingData?: string
-    gridlineMinor?: string
-    gridlineMajor?: string
-    featureHover?: string
-    featureSelected?: string
-    featureDescription?: string
     bases?: {
       A?: PaletteColorOptions
       C?: PaletteColorOptions
@@ -445,7 +430,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       },
       MuiButton: {
         defaultProps: {
-          size: 'small' as const,
+          size: 'small',
         },
         // the default button, especially when not using variant=contained, uses
         // theme.palette.primary.main for text which is very bad with dark
@@ -465,24 +450,24 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       },
       MuiFilledInput: {
         defaultProps: {
-          margin: 'dense' as const,
+          margin: 'dense',
         },
       },
       MuiFormControl: {
         defaultProps: {
-          margin: 'dense' as const,
-          size: 'small' as const,
+          margin: 'dense',
+          size: 'small',
         },
       },
       MuiFormHelperText: {
         defaultProps: {
-          margin: 'dense' as const,
+          margin: 'dense',
         },
       },
 
       MuiIconButton: {
         defaultProps: {
-          size: 'small' as const,
+          size: 'small',
         },
         styleOverrides: darkModePrimaryIconOverride(),
       },
@@ -491,22 +476,22 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       },
       MuiInputBase: {
         defaultProps: {
-          margin: 'dense' as const,
+          margin: 'dense',
         },
       },
       MuiAutocomplete: {
         defaultProps: {
-          size: 'small' as const,
+          size: 'small',
         },
       },
       MuiInputLabel: {
         defaultProps: {
-          margin: 'dense' as const,
+          margin: 'dense',
         },
       },
       MuiToolbar: {
         defaultProps: {
-          variant: 'dense' as const,
+          variant: 'dense',
         },
       },
       MuiListItem: {
@@ -516,12 +501,12 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       },
       MuiOutlinedInput: {
         defaultProps: {
-          margin: 'dense' as const,
+          margin: 'dense',
         },
       },
       MuiFab: {
         defaultProps: {
-          size: 'small' as const,
+          size: 'small',
         },
         styleOverrides: {
           secondary: ({ theme: t }: { theme: Theme }) => ({
@@ -531,7 +516,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       },
       MuiTable: {
         defaultProps: {
-          size: 'small' as const,
+          size: 'small',
         },
       },
       MuiPopover: {
@@ -552,8 +537,8 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
 
       MuiTextField: {
         defaultProps: {
-          margin: 'dense' as const,
-          variant: 'standard' as const,
+          margin: 'dense',
+          variant: 'standard',
         },
       },
       MuiLink: {
@@ -591,7 +576,7 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
       },
       MuiToggleButtonGroup: {
         defaultProps: {
-          size: 'small' as const,
+          size: 'small',
         },
       },
       // Speed up ripple animations for snappier feel (default is 550ms)
@@ -720,14 +705,14 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
   }
   const basesEntry = theme.palette?.bases
   if (basesEntry) {
-    const bases: PaletteOptions['bases'] = {}
+    const resolvedBases: PaletteOptions['bases'] = {}
     for (const key of baseKeys) {
       const entry = basesEntry[key]
       if (entry) {
-        bases[key] = augmentColorOption(entry)
+        resolvedBases[key] = augmentColorOption(entry)
       }
     }
-    overlay.bases = bases
+    overlay.bases = resolvedBases
   }
   return Object.keys(overlay).length > 0
     ? deepmerge(theme, { palette: overlay })
