@@ -2,6 +2,7 @@ import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
+  SAM_FLAG_SECONDARY,
   splitInversion,
 } from '@jbrowse/alignments-core'
 import {
@@ -210,6 +211,9 @@ interface SegAln {
   strand: number
   // soft/hard-clip at the 5' start of the read — read-order sort key
   clipAtStart: number
+  // present in the current view (a fetched pileup entry) vs. known only from a
+  // sibling's SA tag (maps to a region no displayed region covers)
+  onScreen: boolean
 }
 
 interface ArcEndpoint {
@@ -378,53 +382,90 @@ function mateArc(entry: ReadEntry): PendingArc {
   }
 }
 
-// A lone read carrying an SA tag: chain primary → supplementary blocks in true
-// read order (sorted by clip-at-start-of-read), connecting each segment's
-// read-trailing edge to the next segment's read-leading edge. Strand-correct so
-// fwd→rev / rev→fwd inversion junctions join at the breakpoint rather than the
-// far edge of the reverse segment.
-function splitArcsFromSA(entry: ReadEntry): PendingArc[] {
+function entrySeg(entry: ReadEntry): SegAln {
   const { data, readIdx, refName } = entry
-  const allAlns: SegAln[] = [
-    {
-      refName,
-      start: data.readPositions[readIdx * 2]!,
-      end: data.readPositions[readIdx * 2 + 1]!,
-      strand: data.readStrands[readIdx]!,
-      clipAtStart: data.readClipAtStart?.[readIdx] ?? 0,
-    },
-    ...featurizeSA(
+  return {
+    refName,
+    start: data.readPositions[readIdx * 2]!,
+    end: data.readPositions[readIdx * 2 + 1]!,
+    strand: data.readStrands[readIdx]!,
+    clipAtStart: data.readClipAtStart?.[readIdx] ?? 0,
+    onScreen: true,
+  }
+}
+
+// The unpaired read's complete segment chain: every on-screen segment (a fetched
+// entry) plus any segment named in a sibling's SA tag that no view currently
+// shows. Deduped by genomic position so a read fetched in two regions, or a
+// segment both on screen and named in a sibling SA, is counted once (the
+// on-screen record wins). This is what lets a connector step through an
+// off-screen segment rather than silently joining the two on-screen segments
+// that flank it. Sorted into read order by clip-at-start-of-read.
+function unpairedReadChain(entries: ReadEntry[]): SegAln[] {
+  const byPos = new Map<string, SegAln>()
+  for (const entry of entries) {
+    // Secondary alignments are alternate mappings, not part of the read's split
+    // chain — dropped here as the multi-entry path does.
+    if (!(entry.data.readFlags[entry.readIdx]! & SAM_FLAG_SECONDARY)) {
+      const seg = entrySeg(entry)
+      byPos.set(`${seg.refName}:${seg.start}`, seg)
+    }
+  }
+  for (const { data, readIdx } of entries) {
+    for (const sa of featurizeSA(
       data.readSuppAlignments?.[readIdx],
       data.readIds[readIdx]!,
       data.readStrands[readIdx],
       data.readNames[readIdx],
-    )
+    )) {
       // Drop truncated / placeholder-CIGAR / non-numeric-position SA entries —
       // they parse to a zero-length or NaN span and would emit a junk arc.
-      .filter(sa => Number.isFinite(sa.start) && sa.end > sa.start)
-      .map(sa => ({
-        refName: sa.refName,
-        start: sa.start,
-        end: sa.end,
-        strand: sa.strand,
-        clipAtStart: sa.clipLengthAtStartOfRead,
-      })),
-  ].sort((a, b) => a.clipAtStart - b.clipAtStart)
+      const key = `${sa.refName}:${sa.start}`
+      if (Number.isFinite(sa.start) && sa.end > sa.start && !byPos.has(key)) {
+        byPos.set(key, {
+          refName: sa.refName,
+          start: sa.start,
+          end: sa.end,
+          strand: sa.strand,
+          clipAtStart: sa.clipLengthAtStartOfRead,
+          onScreen: false,
+        })
+      }
+    }
+  }
+  return [...byPos.values()].sort((a, b) => a.clipAtStart - b.clipAtStart)
+}
+
+// Chain an unpaired read's segments in true read order (by clip-at-start-of-read,
+// which getClip already makes strand-correct), connecting each segment's
+// read-trailing (3') edge to the next segment's read-leading (5') edge — so a
+// fwd→rev inversion joins at the breakpoint, not the far edge of the reverse
+// segment. A junction between two on-screen segments always draws; one touching
+// an off-screen segment is a long-range connection, drawn only when those are
+// enabled — this is also what suppresses a misleading direct join across an
+// off-screen segment (the flanking pair are not actually read-adjacent).
+function unpairedChainArcs(
+  entries: ReadEntry[],
+  drawLongRange: boolean,
+): PendingArc[] {
+  const chain = unpairedReadChain(entries)
   const arcs: PendingArc[] = []
-  for (let j = 0; j < allAlns.length - 1; j++) {
-    const a1 = allAlns[j]!
-    const a2 = allAlns[j + 1]!
-    arcs.push({
-      p1Ref: a1.refName,
-      p1Bp: readTrailingBp(a1.strand, a1.start, a1.end),
-      p1Strand: a1.strand,
-      p2Ref: a2.refName,
-      p2Bp: readLeadingBp(a2.strand, a2.start, a2.end),
-      p2Strand: a2.strand,
-      pairOrientationNum: undefined,
-      tlen: undefined,
-      isSplit: true,
-    })
+  for (let j = 0; j < chain.length - 1; j++) {
+    const a1 = chain[j]!
+    const a2 = chain[j + 1]!
+    if ((a1.onScreen && a2.onScreen) || drawLongRange) {
+      arcs.push({
+        p1Ref: a1.refName,
+        p1Bp: readTrailingBp(a1.strand, a1.start, a1.end),
+        p1Strand: a1.strand,
+        p2Ref: a2.refName,
+        p2Bp: readLeadingBp(a2.strand, a2.start, a2.end),
+        p2Strand: a2.strand,
+        pairOrientationNum: undefined,
+        tlen: undefined,
+        isSplit: true,
+      })
+    }
   }
   return arcs
 }
@@ -460,29 +501,33 @@ function collectPendingArcs(
 ) {
   const pendingArcs: PendingArc[] = []
   for (const entries of readsByName.values()) {
-    if (entries.length === 1) {
-      // A lone read connects to an off-screen mate / supplementary block — only
-      // drawn when long-range connections are enabled. The two link kinds are
-      // independent read properties, so a read gets BOTH: its mate link (when
-      // paired with a mapped mate) AND its SA split junctions (when it carries
-      // supplementary alignments). splitArcsFromSA emits nothing without an SA
-      // tag, so an ordinary paired read still draws just the one mate arc. This
-      // mirrors the multi-entry path, which likewise chains a read's SA
-      // junctions and adds the mate link.
+    const anyPaired = entries.some(
+      e => e.data.readFlags[e.readIdx]! & SAM_FLAG_PAIRED,
+    )
+    if (!anyPaired) {
+      // Unpaired (long) read: chain its full read-order segment set, stepping
+      // through any off-screen segment rather than joining across it. Handles
+      // both the lone-read (single on-screen segment, junctions all long-range)
+      // and the multi-segment on-screen cases uniformly.
+      pendingArcs.push(...unpairedChainArcs(entries, drawLongRange))
+    } else if (entries.length === 1) {
+      // A lone paired read connects to an off-screen mate / supplementary block —
+      // only drawn when long-range connections are enabled. The two link kinds
+      // are independent read properties, so it gets BOTH: its mate link (when
+      // the mate is mapped) AND its SA split junctions (when it carries
+      // supplementary alignments).
       if (drawLongRange) {
         const entry = entries[0]!
         const flags = entry.data.readFlags[entry.readIdx]!
-        const isMateMapped =
-          !!(flags & SAM_FLAG_PAIRED) && !(flags & SAM_FLAG_MATE_UNMAPPED)
-        if (isMateMapped) {
+        if (!(flags & SAM_FLAG_MATE_UNMAPPED)) {
           pendingArcs.push(mateArc(entry))
         }
-        pendingArcs.push(...splitArcsFromSA(entry))
+        pendingArcs.push(...unpairedChainArcs(entries, drawLongRange))
       }
     } else {
-      // ≥2 on-screen alignments sharing a name: resolve into per-mate split
-      // junctions + the mate link (handles paired reads that are themselves
-      // SA-split), then materialize each as an arc.
+      // ≥2 on-screen paired alignments sharing a name: resolve into per-mate
+      // split junctions + the mate link (handles paired reads that are
+      // themselves SA-split), then materialize each as an arc.
       pendingArcs.push(
         ...readGroupConnections(entries).map(pendingArcFromConnection),
       )

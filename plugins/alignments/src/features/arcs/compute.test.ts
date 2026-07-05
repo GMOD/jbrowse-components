@@ -801,6 +801,58 @@ describe('computeArcsFromPileupData', () => {
     expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([3200, 1000])
   })
 
+  test('multi-entry split read steps through an off-screen segment, not across it', () => {
+    // Two on-screen segments A (clip 0, chr1:1000) and C (clip 200, chr1:5000)
+    // of one unpaired read; the middle segment B (clip 100) maps off-screen at
+    // chr1:9000 and is known only from the SA tags. The chain must be A→B→C, not
+    // a single misleading A→C join across the hidden segment.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1200, 5000, 5200]),
+      readFlags: new Uint16Array([0, SAM_FLAG_SUPPLEMENTARY]),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([0, 0]),
+      readPairOrientations: new Uint8Array([0, 0]),
+      readNames: ['readA', 'readA'],
+      readClipAtStart: new Uint32Array([0, 200]),
+      readSuppAlignments: [
+        // A's SA names B (off-screen) and C
+        'chr1,9001,+,100S200M,60,0;chr1,5001,+,200S200M,60,0;',
+        // C's SA names A and B (off-screen)
+        'chr1,1001,+,200M200S,60,0;chr1,9001,+,100S200M,60,0;',
+      ],
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
+    ]
+    const withLongRange = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    }).arcs
+    // A→B (1200→9000) and B→C (9200→5000); never the direct A→C (1200→5000)
+    expect(withLongRange.map(a => [a.p1.bp, a.p2.bp])).toEqual([
+      [1200, 9000],
+      [9200, 5000],
+    ])
+    expect(
+      withLongRange.some(a => a.p1.bp === 1200 && a.p2.bp === 5000),
+    ).toBe(false)
+
+    // with long-range off, the flanking segments are not read-adjacent, so
+    // nothing is drawn rather than the misleading direct join
+    const withoutLongRange = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      regions,
+      {
+        colorByType: 'insertSizeAndOrientation',
+        drawInter: false,
+        drawLongRange: false,
+      },
+    ).arcs
+    expect(withoutLongRange).toHaveLength(0)
+  })
+
   test('paired + SA-split: split junction colored by its own strands, not pair', () => {
     // read1 (first-in-pair) is SA-split fwd→rev — an inversion junction — and
     // read2 (second-in-pair) is its mate. The dataset is paired (global
