@@ -131,6 +131,10 @@ jobs:
         run:
           node --experimental-strip-types
           website/scripts/generate-guide-indexes.ts --check
+      - name: Check doc code/path references resolve
+        run:
+          node --experimental-strip-types
+          website/scripts/check-doc-imports.ts
       - name: Check color tables are up to date
         run: node --experimental-strip-types docs/generateColorDocs.ts --check
       - name: Check jexl catalog is up to date
