@@ -7811,34 +7811,6 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 10000,
   },
-  {
-    mode: 'url',
-    name: 'gallery/volvox_bedpe_arc',
-    url: lgvSession(VOLVOX, {
-      assembly: 'volvox',
-      loc: 'ctgA:1-50,000',
-      tracks: ['volvox_bedpe'],
-    }),
-    readyText: 'BEDPE arcs',
-    settleMs: 5000,
-    viewportHeight: 420,
-  },
-  {
-    mode: 'url',
-    name: 'gallery/volvox_circular_sv',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'CircularView',
-          assembly: 'volvox',
-          tracks: ['volvox_sv_test'],
-        },
-      ],
-    }),
-    settleMs: 10000,
-    viewportHeight: 600,
-  },
-
   // products/jbrowse-img/README.md example images, rendered by the jb2export
   // CLI (see CliSpec above). Ported 1:1 from the old
   // render-comparative-examples.sh so the args stay in sync with the README's

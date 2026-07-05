@@ -6,11 +6,14 @@ import page from '../styles/page.module.css'
 
 // Sections shown as screenshot cards vs. compact link lists: an item appears in
 // the card grid when it has an image, otherwise in the "more examples" list.
-const sections = gallerySections.map(s => ({
-  ...s,
-  cards: s.items.filter(i => i.img),
-  links: s.items.filter(i => !i.img),
-}))
+// `demoOnly` items (entry points / hubs) are shown only on the demos page.
+const sections = gallerySections
+  .map(s => ({
+    ...s,
+    cards: s.items.filter(i => i.img && !i.demoOnly),
+    links: s.items.filter(i => !i.img && !i.demoOnly),
+  }))
+  .filter(s => s.cards.length > 0 || s.links.length > 0)
 ---
 
 <BaseLayout

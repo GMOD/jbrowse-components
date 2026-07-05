@@ -19,6 +19,10 @@ export interface GalleryItem {
   // Path under /img (no base prefix). Present items appear on the gallery page.
   img?: string
   description?: string
+  // Entry points / hubs that are useful to link from the demos page but aren't
+  // visualization highlights worth featuring in the gallery. These are excluded
+  // from the gallery page and shown only on the demos page.
+  demoOnly?: boolean
 }
 
 export interface GallerySection {
@@ -144,22 +148,6 @@ export const gallerySections: readonly GallerySection[] = [
         label: 'Inversion (linked reads mode)',
         session:
           '?config=test_data%2Fconfig_demo.json&session=share-ofjI26CNas&password=ohqlR',
-      },
-      {
-        label: 'BEDPE arc display (volvox SVs)',
-        img: 'gallery/volvox_bedpe_arc.png',
-        session:
-          '?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":["volvox_bedpe"]}]}',
-        description:
-          'Paired breakend records from a BEDPE file drawn as arcs connecting the two ends of each structural variant along a single linear view.',
-      },
-      {
-        label: 'Circular genome view (volvox SVs as chords)',
-        img: 'gallery/volvox_circular_sv.png',
-        session:
-          '?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"assembly":"volvox","type":"CircularView","tracks":["volvox_sv_test"]}]}',
-        description:
-          'A whole-genome circular overview where structural-variant breakends are rendered as chords spanning the two loci they join.',
       },
     ],
   },
@@ -397,16 +385,13 @@ export const gallerySections: readonly GallerySection[] = [
         label: 'Human demo instance (many tracks available)',
         session:
           '?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
-      },
-      {
-        label: 'Volvox sample data (small imaginary test datasets)',
-        session:
-          '?config=test_data%2Fvolvox%2Fconfig.json&session=share-JCsm46ATdn&password=ilHg5',
+        demoOnly: true,
       },
       {
         label: 'UCSC GenArk hub import (GCF_019202715.1)',
         session:
           '?hubURL=https://hgdownload.soe.ucsc.edu/hubs/GCF/019/202/715/GCF_019202715.1/hub.txt&config=none',
+        demoOnly: true,
       },
     ],
   },
