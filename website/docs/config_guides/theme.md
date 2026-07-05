@@ -155,3 +155,12 @@ can't be expressed in the config but can be added via a plugin. See
 which adds a theme and overrides the 'default' theme from a plugin. See
 [no-build plugin tutorial](/docs/developer_guides/no_build_plugin) for how to
 load a small plugin like this from config.
+
+## See also
+
+- [Theming (developer guide)](/docs/developer_guides/theming) — the full palette
+  and the exported color constants for use in plugin code
+- [JBrowseConfiguration config docs](/docs/config/jbrowseconfiguration) — the
+  `theme`, `extraThemes`, and `logoPath` global slots in the schema reference
+- [Configuring plugins](/docs/config_guides/plugins) — loading the small plugin
+  needed for callback-based style overrides

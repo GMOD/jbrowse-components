@@ -30,11 +30,16 @@ jexl: feature.id // the feature's id attribute, e.g. a GFF3 ID=
 jexl: feature.parent // parent feature, e.g. the gene of an mRNA (undefined if none)
 ```
 
-:::note
+:::note Property access vs. `get()`, and version compatibility
 
-The older `get(feature,'start')` function form is equivalent to `feature.start`
-and still works, so existing configs need no changes. New configs can use
-whichever reads more clearly.
+`feature.start` (property access) and `get(feature,'start')` (function form) are
+equivalent, and both are fully supported — existing configs need no changes.
+
+The difference is compatibility: the `get()` form is the original and works on
+**every** JBrowse release, while property access was added more recently. If
+your config must run on older JBrowse versions, prefer the `get()` form; if you
+are on a current release, use whichever reads more clearly (property access is
+usually shorter). The examples in this guide use property access.
 
 :::
 

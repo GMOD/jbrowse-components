@@ -94,3 +94,12 @@ For embedded components, see the
 [inline plugins example](https://jbrowse.org/storybook/lgv/with-inline-plugins/).
 
 :::
+
+## See also
+
+- [Using jexl callbacks](/docs/config_guides/jexl) — the jexl expression syntax
+  and the full catalog of built-in functions (including the color helpers)
+- [Customizing feature details](/docs/config_guides/customizing_feature_details)
+  — the same plugin-function pattern applied to the feature-details panel
+- [No-build plugin tutorial](/docs/developer_guides/no_build_plugin) — a full
+  walkthrough of the single-file plugin used above

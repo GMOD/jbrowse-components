@@ -67,7 +67,7 @@ the [VcfTabixAdapter config docs](/docs/config/vcftabixadapter) for all options.
 
 Use a jexl expression on the display's `color` slot to color variants by their
 `SVTYPE` INFO field (or any other VCF field). The expression reads the INFO
-field via `get(feature,'INFO').SVTYPE` and maps it to a color:
+field via `feature.INFO.SVTYPE` and maps it to a color:
 
 ```json
 {
@@ -80,7 +80,7 @@ field via `get(feature,'INFO').SVTYPE` and maps it to a color:
     "uri": "http://yourhost/svs.vcf.gz"
   },
   "displayDefaults": {
-    "color": "jexl:({'DEL':'red','INS':'blue','DUP':'green','INV':'orange','BND':'purple','TRA':'purple'})[get(feature,'INFO').SVTYPE[0]] || 'gray'"
+    "color": "jexl:({'DEL':'red','INS':'blue','DUP':'green','INV':'orange','BND':'purple','TRA':'purple'})[feature.INFO.SVTYPE[0]] || 'gray'"
   }
 }
 ```
@@ -94,9 +94,13 @@ array form (see the
 The `|| 'gray'` fallback colors any SVTYPE not in the map (or variants without
 an SVTYPE field) gray. INFO fields are parsed as arrays, so index the first
 value (`[0]`) as shown above. You can use the same pattern for SNP/INDEL VCFs by
-reading `get(feature,'INFO').CLNSIG[0]` or any other INFO key. See
+reading `feature.INFO.CLNSIG[0]` or any other INFO key. See
 [customizing feature colors](/docs/config_guides/customizing_feature_colors) for
 more jexl color examples.
+
+If your config must run on older JBrowse releases, use the equivalent
+`get(feature,'INFO').SVTYPE[0]` function form instead of property access — see
+the [jexl guide's note on the two forms](/docs/config_guides/jexl).
 
 ## MultiVariant display configuration
 

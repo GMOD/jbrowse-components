@@ -263,3 +263,12 @@ these extension points (see
 - `Core-extraFeaturePanel` - append a custom panel (your own React component)
   below the built-in sections
 - `Core-replaceWidget` - wrap or replace the whole feature-details widget
+
+## See also
+
+- [Using jexl callbacks](/docs/config_guides/jexl) — the expression syntax used
+  in `formatDetails` callbacks
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) —
+  the same jexl-and-plugin pattern applied to per-feature coloring
+- [Extension points](/docs/developer_guides/extension_points) — the
+  `Core-extraFeaturePanel` / `Core-replaceWidget` hooks above

@@ -207,13 +207,15 @@ dialog. `.bed.gz` files require manual adapter selection.
     {
       "type": "LinearManhattanDisplay",
       "displayId": "my_gwas-LinearManhattanDisplay",
-      "color": "jexl:get(feature,'score') > 7.3 ? 'red' : '#0068d1'"
+      "color": "jexl:feature.score > 7.3 ? 'red' : '#0068d1'"
     }
   ]
 }
 ```
 
-See the [jexl guide](/docs/config_guides/jexl) for expression syntax.
+See the [jexl guide](/docs/config_guides/jexl) for expression syntax. On older
+JBrowse releases, use the equivalent `get(feature,'score')` function form in
+place of property access.
 
 ### Custom significance thresholds
 
