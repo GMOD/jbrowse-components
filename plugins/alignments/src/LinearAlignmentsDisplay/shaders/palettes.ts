@@ -18,7 +18,7 @@ import type { RGBColor } from './colors.ts'
 // renderers share one value.
 export { ARC_HEIGHT_MARGIN } from './slang/arc.iface.generated.ts'
 
-// Palette indices match the Slang arc shaders (u.arcColor0..7). Canvas2D / SVG
+// Palette indices match the Slang arc shaders (u.arcColor0..8). Canvas2D / SVG
 // arc renderers reuse these same arrays, and the interchromosomal connector
 // ticks (arcLine) index into this palette too. Adding a color here requires
 // growing the Slang Uniforms struct and the writeUniforms() palette copy.

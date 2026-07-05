@@ -118,7 +118,7 @@ function unpairedOrientationColor(p1Strand: number, p2Strand: number) {
 
 // pairOrientationToNum (see shared/buildBaseFeatureData.ts) encodes:
 //   0=unknown, 1=LR/normal (F1R2,F2R1), 2=RL (R1F2,R2F1),
-//   3=RR (R1R2,R2R1), 4=FF (F1F2,F2F1).
+//   3=RR (R1R2,R2R1), 4=LL (F1F2,F2F1).
 // undefined means "normal/LR or unknown orientation" — the caller decides the
 // fallback (plain default vs. defer to insert size).
 function orientationColor(pairOrientationNum: number) {

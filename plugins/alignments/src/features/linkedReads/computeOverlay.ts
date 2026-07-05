@@ -22,11 +22,10 @@ export interface PileupArc {
   stroke: string
   id1: string
   id2: string
-  // Connection classification for the hover tooltip. Split-read inversion and RR
-  // pairs deliberately share the inversion blue — hue carries the biological
-  // signal, and both genuinely mean inversion, so the shared color reads as
-  // corroboration. The tooltip names which evidence produced the arc rather than
-  // overloading a second dimension onto the stroke.
+  // Connection classification for the hover tooltip. Split-read inversion gets
+  // its own color (colorSplitReadInversion), distinct from the RR-pair blue, so
+  // the two are tellable apart at a glance; the tooltip names which evidence
+  // produced the arc rather than overloading a second dimension onto the stroke.
   label: string
 }
 

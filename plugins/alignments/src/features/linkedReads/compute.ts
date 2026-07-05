@@ -24,8 +24,8 @@ export const LINKED_READ_COLOR_SPLIT_INV = 6
 // same LR/RL/RR/LL nomenclature IGV uses reads consistently across the swatch
 // and the arc. Split labels are interpretive because a split-read strand flip is
 // an unambiguous inversion junction (unlike library-dependent pair orientation);
-// split inversion and RR pairs deliberately share the inversion blue (see
-// linkedReadColorPalette) — the dashed stroke says which evidence produced it.
+// split inversion gets its own color (colorSplitReadInversion), distinct from
+// the RR-pair blue (see linkedReadColorPalette), so the two are tellable apart.
 export function connectionLabel(colorType: number) {
   switch (colorType) {
     case LINKED_READ_COLOR_SPLIT_INV:

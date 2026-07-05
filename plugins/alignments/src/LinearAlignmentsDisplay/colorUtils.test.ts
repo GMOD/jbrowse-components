@@ -155,7 +155,7 @@ describe('readColorCategory', () => {
     ).not.toBe('supplementary')
   })
 
-  test('paired split-inversion chains (chainHasSupp=3) paint the RR inversion blue', () => {
+  test('paired split-inversion chains (chainHasSupp=3) paint the dedicated split-inversion color', () => {
     // orientation schemes: the whole chain reads as an inversion regardless of
     // the concordant pair orientation it inherited (po=1 LR here)
     expect(

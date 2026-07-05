@@ -2,7 +2,7 @@
 // an interchromosomal mate's breakpoint, spanning the full arc band. The pass
 // runs inside the arc-band viewport (see drawArcsPass), so the band fills the
 // viewport and the tick is just the two opposite clip-space edges (±1) — no
-// per-instance Y is needed. Colored from the shared arc palette (arcColor0..7).
+// per-instance Y is needed. Colored from the shared arc palette (arcColor0..8).
 //! targets: wgsl, glsl
 
 import alignmentsUniforms;

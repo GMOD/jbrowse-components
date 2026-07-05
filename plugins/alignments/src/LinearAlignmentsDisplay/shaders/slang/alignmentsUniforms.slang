@@ -196,7 +196,7 @@ public float pileupRowCenterPx(float row, Uniforms u) {
   return pileupRowTopPx(row, u) + u.featHeight * 0.5;
 }
 
-// Paired-read arc palette (arcColor0..7), indexed by the per-instance color
+// Paired-read arc palette (arcColor0..8), indexed by the per-instance color
 // type. Shared by the arc curves (arc.slang) and the interchromosomal
 // connector ticks (arcLine.slang) so both stay in lockstep.
 public float3 arcColorByIndex(uint idx, Uniforms u) {
