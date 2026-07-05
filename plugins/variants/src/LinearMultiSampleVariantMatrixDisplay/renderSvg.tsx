@@ -57,7 +57,12 @@ function VariantMatrixSvgBody({
     return null
   }
 
-  const { rowHeight, scrollTop, availableHeight, canDisplayLabels } = model
+  const {
+    effectiveRowHeight: rowHeight,
+    scrollTop,
+    availableHeight,
+    canDisplayLabels,
+  } = model
   const canvasWidth = view.totalWidthPxWithoutBorders
   const cellsNode = paintLayer(canvasWidth, availableHeight, opts, ctx => {
     drawVariantMatrixBlocks(ctx, cellData, {

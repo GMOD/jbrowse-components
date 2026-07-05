@@ -1,3 +1,5 @@
+import matrixConfigFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
+import matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/model.ts'
 import configFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import stateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
 
@@ -51,5 +53,26 @@ describe('row height resolution', () => {
     m.resizeHeight(oldHeight)
     expect(m.rowHeight).toBe(0)
     expect(m.height).toBe(oldHeight * 2)
+  })
+
+  // The matrix display reserves a `lineZoneHeight` (20px) for the connector
+  // zone, so rows live in `availableHeight = height - lineZoneHeight`. A pinned
+  // rowHeight must scale by the available-height ratio, not the full-height
+  // ratio, or the visible fraction of rows drifts on resize.
+  it('resizeHeight scales a pinned rowHeight by availableHeight (matrix)', () => {
+    const configSchema = matrixConfigFactory()
+    const m = matrixStateModelFactory(configSchema).create({
+      type: 'LinearMultiSampleVariantMatrixDisplay',
+      configuration: configSchema.create({
+        type: 'LinearMultiSampleVariantMatrixDisplay',
+        displayId: 'test-matrix',
+      }),
+    })
+    m.setRowHeight(10)
+    const oldHeight = m.height
+    // grow the display so availableHeight exactly doubles
+    m.resizeHeight(oldHeight - m.lineZoneHeight)
+    expect(m.height).toBe(2 * oldHeight - m.lineZoneHeight)
+    expect(m.rowHeight).toBeCloseTo(20)
   })
 })

@@ -5,7 +5,7 @@ export interface RenderSvgBaseModel extends SvgExportable {
   id: string
   cellData: unknown
   regionTooLarge: boolean
-  rowHeight: number
+  effectiveRowHeight: number
   scrollTop: number
   availableHeight: number
   height: number

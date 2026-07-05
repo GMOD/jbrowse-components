@@ -64,14 +64,14 @@ const MultiSampleVariantColorLegend = observer(
   }: {
     model: {
       canDisplayLabels: boolean
-      rowHeight: number
+      effectiveRowHeight: number
       sources?: Source[]
     }
     labelWidth: number
     startIdx: number
     endIdx: number
   }) {
-    const { canDisplayLabels, rowHeight, sources } = model
+    const { canDisplayLabels, effectiveRowHeight: rowHeight, sources } = model
     const theme = useTheme()
 
     const hasColors = sources?.some(s => s.color) ?? false

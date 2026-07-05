@@ -56,7 +56,7 @@ function VariantSvgBody({
   }
 
   const {
-    rowHeight,
+    effectiveRowHeight: rowHeight,
     scrollTop,
     availableHeight,
     referenceDrawingMode,

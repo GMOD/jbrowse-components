@@ -599,7 +599,8 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #action
-         * Toggle auto height mode. When turning off, uses default of 10px per row.
+         * Enable fit-to-display-height mode: `rowHeight = 0` makes
+         * `effectiveRowHeight` divide `availableHeight` across the rows.
          */
         setFitToHeight() {
           self.rowHeight = 0
@@ -607,15 +608,21 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #action
-         * Override resizeHeight to scale row heights proportionally when
-         * the display is vertically resized
+         * Override resizeHeight to scale a pinned row height proportionally when
+         * the display is vertically resized. Rows live in `availableHeight`
+         * (`height - lineZoneHeight`), not the full height, so scale by the
+         * available-height ratio — otherwise the visible fraction of rows drifts
+         * on resize whenever `lineZoneHeight` is non-zero (the matrix display).
          */
         resizeHeight(distance: number) {
           const oldHeight = self.height
-          const newHeight = Math.max(self.height + distance, 20)
+          const newHeight = Math.max(oldHeight + distance, 20)
+          const oldAvailableHeight = oldHeight - self.lineZoneHeight
           self.configuration.setSlot('height', newHeight)
-          if (self.rowHeight > 0) {
-            self.rowHeight = self.rowHeight * (newHeight / oldHeight)
+          if (self.rowHeight > 0 && oldAvailableHeight > 0) {
+            self.rowHeight =
+              (self.rowHeight * (newHeight - self.lineZoneHeight)) /
+              oldAvailableHeight
           }
           return newHeight - oldHeight
         },
@@ -933,7 +940,7 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          */
         get totalHeight() {
-          return self.effectiveRowHeight * (self.sources?.length ?? 1)
+          return self.effectiveRowHeight * self.nrow
         },
         /**
          * #getter

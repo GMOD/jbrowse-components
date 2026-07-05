@@ -7,8 +7,14 @@ import type { RowColorsModel } from './types.ts'
 
 const MultiSampleVariantRowColors = observer(
   function MultiSampleVariantRowColors({ model }: { model: RowColorsModel }) {
-    const { id, scrollTop, height, canDisplayLabels, rowHeight, sources } =
-      model
+    const {
+      id,
+      scrollTop,
+      height,
+      canDisplayLabels,
+      effectiveRowHeight: rowHeight,
+      sources,
+    } = model
     const svgFontSize = Math.min(rowHeight, 12)
     const clipid = `row-colors-${typeof jest === 'undefined' ? id : 'test'}`
 

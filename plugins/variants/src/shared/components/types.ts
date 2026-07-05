@@ -9,7 +9,7 @@ export interface RowColorsModel {
   treeAreaWidth: number
   totalHeight: number
   canDisplayLabels: boolean
-  rowHeight: number
+  effectiveRowHeight: number
   sources?: Source[]
   showTree: boolean
 }
