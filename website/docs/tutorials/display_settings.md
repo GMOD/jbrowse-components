@@ -94,6 +94,8 @@ URL-encoded onto the end of a JBrowse link:
 ?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"colorBy":{"type":"pairOrientation"}}}]}]}
 ```
 
+<Figure caption="What that link opens: the volvox-sv (cram) track at ctgA:1–10,000 with the displaySnapshot applied — a 250px-tall pileup, soft-clipping shown, and reads colored by pair orientation. The colored cluster at the left flags a structural variant; concordant pairs stay grey." src="/img/display_settings_url_snapshot.png" />
+
 See [URL parameters](/docs/urlparams) for the full session-spec format,
 including `trackSnapshot` and multi-view specs.
 

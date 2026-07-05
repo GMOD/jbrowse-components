@@ -2056,7 +2056,9 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 10000,
   },
 
-  // Multi-way synteny demos for the multiway_synteny.md tutorial. Both load a
+  // Multi-way synteny demos: grape_peach_cacao for the multiway_synteny.md
+  // (ortholog tables) tutorial, ecoli_pangenome for the allvsall_synteny.md
+  // tutorial. Both load a
   // hosted demo config (whose defaultSession opens the stacked LinearSyntenyView)
   // as a bare ?config= against the local build, since MCScanBlocksAdapter /
   // AllVsAllPAFAdapter are newer than jbrowse.org/code/jb2/latest. Generous
@@ -2121,11 +2123,8 @@ export const specs: ScreenshotSpec[] = [
               { assembly: 'CFT073' },
               { assembly: 'NCTC86' },
             ],
-            tracks: [
-              ['K12_Sakai_ava'],
-              ['Sakai_CFT073_ava'],
-              ['CFT073_NCTC86_ava'],
-            ],
+            // one all-vs-all track backs every band (lists all four assemblies)
+            tracks: [['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava']],
             drawCurves: true,
             colorBy: 'default',
           },
@@ -2135,6 +2134,74 @@ export const specs: ScreenshotSpec[] = [
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
+  },
+
+  // The Linear synteny view import form for the allvsall_synteny.md "From the
+  // UI" section. A bare LinearSyntenyView session spec is rejected (needs >=2
+  // views), so open it the way a user does: load the ecoli_pangenome demo config
+  // with no views, then Add -> Linear synteny view, which calls
+  // addView('LinearSyntenyView', {}) -> an empty view that lands on the import
+  // form (model.hasSomethingToShow is false). The demo config's four E. coli
+  // strains populate the assembly dropdowns. Annotate the controls the tutorial
+  // names: Add row, the per-pair connector button, the single all-vs-all track
+  // it configures on the right, and Launch.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_import_form',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+      ),
+      { views: [] },
+    ),
+    readyText: 'Select a view to launch',
+    readyTimeout: 60000,
+    settleMs: 1000,
+    viewportHeight: 360,
+    crop: { x: 0, y: 0, width: 1500, height: 360 },
+    actions: [
+      { type: 'click', text: 'Add' },
+      { type: 'waitForText', text: 'Linear synteny view' },
+      { type: 'click', text: 'Linear synteny view' },
+      { type: 'waitForText', text: 'Select assemblies for linear synteny view' },
+      { type: 'delay', ms: 1000 },
+    ],
+    annotations: [
+      // Add row: click once per extra strain (form starts with two rows)
+      { type: 'box', anchor: { text: 'Add row' } },
+      // per-pair connector button -> selects which pair the right panel configures
+      { type: 'box', anchor: { selector: '[data-testid="synbutton"]' } },
+      // the one all-vs-all track backs every pair
+      { type: 'box', anchor: { text: 'E. coli pangenome (all-vs-all PAF)' } },
+      { type: 'box', anchor: { text: 'Launch' } },
+    ],
+  },
+
+  // display_settings.md: render the tutorial's own URL session-spec example so
+  // the reader sees what that displaySnapshot produces. Matches the doc's JSON
+  // verbatim (volvox_sv_cram at ctgA:1-10000, height 250, softclipping on,
+  // colored by pair orientation).
+  {
+    mode: 'url',
+    name: 'display_settings_url_snapshot',
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-10000',
+      tracks: [
+        {
+          trackId: 'volvox_sv_cram',
+          displaySnapshot: {
+            height: 250,
+            showSoftClipping: true,
+            colorBy: { type: 'pairOrientation' },
+          },
+        },
+      ],
+    }),
+    readyText: 'volvox-sv (cram)',
+    settleMs: 5000,
+    viewportHeight: 540,
+    crop: { x: 0, y: 0, width: 1500, height: 445 },
   },
 
   // For the gallery: load the exact curated share session the reviewer wants
