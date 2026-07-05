@@ -6048,6 +6048,96 @@ export const specs: ScreenshotSpec[] = [
   // RNA-seq tutorial screenshots (use hg19 ACTB region from DEMO_CONFIG)
   // ────────────────────────────────────────────────────────────────────────
 
+  // Whole-gene overview: coverage histogram, strand-colored splice arcs, and the
+  // spliced read pileup over ACTB — the anchor figure for "what RNA-seq looks
+  // like". minSashimiScore 3 drops the low-support aligner-noise arcs (see
+  // compact_stacked below for the rationale).
+  {
+    mode: 'url',
+    name: 'rnaseq/basic',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr7:5,567,000-5,570,000',
+      trackLabels: 'offset',
+      tracks: [
+        'ncbi_gff_hg19',
+        {
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            coverageHeight: 120,
+            height: 460,
+            maxHeight: 2000,
+            minSashimiScore: 3,
+          },
+        },
+      ],
+    }),
+    readyText: 'ACTB',
+    readyTimeout: 60000,
+    settleMs: 15000,
+    viewportHeight: 700,
+  },
+
+  // Zoomed to 1 kb so reads resolve individually. Default feature height (not
+  // compact) keeps each read and its teal per-read splice connector distinct.
+  {
+    mode: 'url',
+    name: 'rnaseq/reads_zoomed',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr7:5,568,000-5,569,000',
+      trackLabels: 'offset',
+      tracks: [
+        'ncbi_gff_hg19',
+        {
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            coverageHeight: 100,
+            height: 460,
+            maxHeight: 2000,
+            minSashimiScore: 3,
+          },
+        },
+      ],
+    }),
+    readyText: 'ACTB',
+    readyTimeout: 60000,
+    settleMs: 15000,
+    viewportHeight: 700,
+  },
+
+  // Tighter window on a few spliced reads: the grey exon-aligned ends joined by a
+  // thin teal line across the skipped intron, the per-read connector the "Looking
+  // at a specific read" section describes.
+  {
+    mode: 'url',
+    name: 'rnaseq/single_read',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr7:5,568,200-5,569,200',
+      trackLabels: 'offset',
+      tracks: [
+        'ncbi_gff_hg19',
+        {
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            coverageHeight: 100,
+            height: 460,
+            maxHeight: 2000,
+            minSashimiScore: 3,
+          },
+        },
+      ],
+    }),
+    readyText: 'ACTB',
+    readyTimeout: 60000,
+    settleMs: 15000,
+    viewportHeight: 700,
+  },
+
   // Compact read drawing mode: featureHeight 3 / spacing 0 packs the full ACTB
   // read stack into view, with maxHeight raised so the whole pileup renders
   // instead of clipping at "Max layout height reached" — that full, dense stack

@@ -6,75 +6,48 @@ description:
 guide_category: Tutorials
 ---
 
-This tutorial is a visual introduction to RNA-seq data in JBrowse 2. It walks
-through what RNA-seq reads look like in the genome browser, how spliced
-alignments and splice arcs are derived from CIGAR strings, and how short-read
-and long-read RNA-seq differ. Every screenshot has a live link so you can open
-the same view yourself — these use JBrowse's
+This tutorial shows how RNA-seq data appears in JBrowse 2: what the reads look
+like, how spliced alignments and splice arcs come from CIGAR strings, and how
+short-read and long-read RNA-seq differ. Every screenshot has a live link so you
+can open the same view yourself, using JBrowse's
 [session-spec URL format](/docs/urlparams#session-spec).
 
-## What does RNA-seq look like in the genome browser?
+## What RNA-seq looks like in the genome browser
 
-Open the live demo to see an RNA-seq BAM file in JBrowse 2. Each grey box is a
-read; the thin teal lines that jump across a gap are spliced alignments, where a
-read maps partly to one exon and partly to the next, skipping the intron between
-them. The histogram along the top shows read coverage at each position, and the
-reference gene annotation (from a GFF downloaded from NCBI) sits above it.
+An RNA-seq BAM file over the ACTB gene. Each grey box is a **read**; the thin
+teal lines jumping across a gap are **spliced alignments**, where a read maps
+partly to one exon and partly to the next, skipping the intron between them. The
+histogram along the top is read coverage at each position, and the reference
+gene annotation (an NCBI GFF) sits above it.
 
-[Live demo — RNA-seq BAM at ACTB](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5567000-5570000","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
-
-The little grey boxes connected by teal lines are the **reads** in the RNA-seq
-BAM file. The histogram along the top shows how many reads mapped to a given
-position in the genome.
+<Figure caption="RNA-seq reads over ACTB: the coverage histogram (top), strand-colored splice arcs, the spliced read pileup, and the NCBI RefSeq gene model." src="/img/rnaseq/basic.png" />
 
 ## Zooming in on the reads
 
-Zoom in further to see the individual reads:
+Zoom in to resolve the individual reads. Each grey box is one read, and each
+read corresponds to a fragment of RNA.
 
-[Live demo — reads zoomed in](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5568000-5569000","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
+<Figure caption="Zoomed to 1 kb, individual reads resolve. Grey boxes are reads; thin teal lines are the per-read splice connectors across skipped introns." src="/img/rnaseq/reads_zoomed.png" />
 
-Each little grey box is a read off the sequencer — in this case, an Illumina
-machine (the RNA is reverse-transcribed to cDNA before sequencing). The
-important part: each read corresponds directly with a fragment of RNA. This is
-why we call it RNA-seq.
+## Read depth reflects expression level
 
-## The central dogma
+The more reads that stack up over a region, the more highly expressed it is. The
+coverage histogram along the top of the track is JBrowse's running per-position
+read count, so tall coverage marks highly-transcribed genes at a glance.
 
-The
-[central dogma of molecular biology](https://en.wikipedia.org/wiki/Central_dogma_of_molecular_biology)
-tells us that "DNA makes RNA, and RNA makes protein". When we do RNA-seq, we
-measure the middle part of this dogma — the RNA part. This gives us insight into
-which parts of your DNA are turned into RNA.
+Turn on the **compact** display to pack the full read stack into view:
 
-## RNA-seq is a quantitative measure of gene expression
+<Figure caption="The compact display packing the full read stack over a gene. Coverage depth broadly tracks expression, though an accurate expression estimate requires normalization (for gene length, library size, and mapping biases) via tools like HTSeq." src="/img/rnaseq/compact_stacked.png" />
 
-RNA-seq is not just a qualitative view of which parts of your genome are
-transcribed — it is also a quantitative measure of transcription. If you observe
-many reads from a particular area of your genome, that region is highly
-expressed.
+## Spliced reads and CIGAR strings
 
-In the screenshot below, the "compact" visualization is turned on to show the
-entire set of reads that stack up. Tools like
-[HTSeq](https://htseq.readthedocs.io/en/latest/) can automatically count how
-many reads align to each gene (the orange boxes in the genome browser), which
-tells you, genome-wide, how much each gene is being expressed.
+RNA is spliced before sequencing, so a read mapped back to the genome can skip
+across the introns that were removed. A spliced aligner like
+[STAR](https://github.com/alexdobin/STAR) records this by split-mapping the read
+— part aligns to one exon, part to the next — and encodes the skip in the read's
+CIGAR string.
 
-<Figure caption="The compact visualization showing reads stacking up over a gene. Read coverage depth broadly tracks how much a gene is expressed, though turning it into an accurate expression estimate requires normalization (for gene length, library size, and mapping biases)." src="/img/rnaseq/compact_stacked.png" />
-
-## RNA-seq is a qualitative measure of gene structure
-
-RNA is transcribed from DNA and then undergoes splicing, which removes intronic
-sequences. When you do RNA-seq on these fragments and map them back to the
-genome, there are large gaps where the introns were removed. We need tools (like
-[STAR](https://github.com/alexdobin/STAR)) that perform a **spliced alignment**.
-This means part of an RNA-seq read may get split-mapped, where part of it aligns
-to (e.g.) exon 1 and part aligns to exon 2.
-
-Tools like STAR output BAM files (or SAM files — the same idea, but a plaintext
-version of a BAM) which describe those spliced alignments using CIGAR strings.
-
-For example, if a read maps partially to exon 1 and partially to exon 2, the
-CIGAR string might say:
+For a read spanning exon 1 and exon 2, the CIGAR might say:
 
 ```
 10M 500N 10M
@@ -82,81 +55,43 @@ CIGAR string might say:
 
 (CIGAR strings normally have no spaces; they are added here for readability.)
 
-That means 10 base pairs (`M` for match) of the read aligned to exon 1, then
-there is a 500 bp gap (`N` for skip, generally implying a skip over an intronic
-region), and another 10 bases (`M`) aligned to exon 2.
+That means 10 bp (`M`, match) aligned to exon 1, a 500 bp skip (`N`) over the
+intron, and another 10 bp (`M`) aligned to exon 2.
 
-## What are the splice arcs in the screenshots?
+## Splice arcs
 
-JBrowse counts, on the fly, all the reads whose CIGAR string contains a skip
-(e.g. the `500N` above) and displays each as an arc. From the splicing signal —
-the GT/AG dinucleotides surrounding introns — JBrowse can also determine the
-strand of the gene. Blue arcs indicate reverse-strand splicing events, and red
-arcs indicate forward-strand splicing events.
-
-Recall that DNA is a double helix with a forward and a reverse strand (sometimes
-called the Watson and Crick strands).
+JBrowse counts, on the fly, every read whose CIGAR contains a skip (the `500N`
+above) and draws each as an arc. It also reads the splice signal (the GT/AG
+dinucleotides flanking the intron) to determine strand: red arcs are
+forward-strand splice events, blue arcs are reverse-strand.
 
 ## Looking at a specific read
 
-With the compact view turned off, you can mouse over a specific read to inspect
-it. A single spliced read has its exon-aligned ends drawn as grey boxes, joined
-by a thin **teal** line across the skipped intron — the same per-read connector
-shown when reads are zoomed in above (distinct from the red/blue sashimi arcs,
-which are colored by strand). Part of the read aligns to the left exon and part
-to the right exon, and the teal line marks the intronic region the read skips
-over.
+With compact display off, each spliced read draws its two exon-aligned ends as
+grey boxes joined by a thin **teal** line across the skipped intron — the same
+per-read connector seen zoomed in above, and distinct from the red/blue splice
+arcs, which are colored by strand. Mouse over any read to inspect it.
 
-[Live demo — single spliced read at ACTB](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5568200-5569200","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
+<Figure caption="A tighter window on a few spliced reads. Each read's exon-aligned ends (grey) are joined by a thin teal line spanning the intron it skips." src="/img/rnaseq/single_read.png" />
 
-## How scientists use RNA-seq
+## Short reads vs long reads
 
-Each of the ~20,000 human protein-coding genes can be **alternatively spliced**,
-producing different proteins from different exon combinations. Because
-transcription varies by cell type and condition, scientists typically run
-RNA-seq across multiple conditions — for example, drought vs. healthy in a plant
-— to identify which genes are activated.
+Short-read RNA-seq (usually Illumina, ~150 bp per read) fragments each
+transcript and is reassembled from many overlapping reads. Long-read RNA-seq
+(PacBio IsoSeq, Nanopore) often spans a whole transcript in one read, so a
+single read can align across every exon:
 
-## Short reads and long reads
+<Figure caption="Long-read (IsoSeq) RNA-seq in JBrowse 2. A long read often spans all of a transcript's exons at once, producing a long, clean spliced alignment." src="/img/rnaseq/longread_isoseq.png" />
 
-Many RNA-seq files you encounter are **short reads**. This is often Illumina
-sequencing, which reads ~150 letters of the RNA (or the DNA version of the RNA).
-
-There are also **long-read** versions of RNA sequencing (from PacBio and
-Nanopore). Long-read sequencing can tell you all the letters of a whole gene
-transcript at once, whereas short-read sequencing is more like putting together
-a puzzle.
-
-Here is what long-read RNA sequencing looks like in JBrowse 2. The data below is
-called IsoSeq:
-
-<Figure caption="Long-read (IsoSeq) RNA-seq in JBrowse 2. Long reads often span all of a transcript's exons at once, producing long, clean spliced alignments." src="/img/rnaseq/longread_isoseq.png" />
-
-Just as a short read may align partially to exon 1 and exon 2, a long read often
-aligns partially to all of the exons. So if you had a gene with five 10 bp exons
-separated by 500 bp introns, a long-read CIGAR string might look like:
+A read across five 10 bp exons separated by 500 bp introns produces a CIGAR
+like:
 
 ```
 10M 500N 10M 500N 10M 500N 10M 500N 10M
 ```
 
-Long-read data is very clean compared to short fragmented Illumina sequencing,
-but it is more expensive — and since scientists often run many RNA-seq
-experiments across different biological conditions, the costs add up.
-
-## Where do you get RNA-seq data?
-
-There is a massive repository of reads on the NCBI
-[Sequence Read Archive (SRA)](https://www.ncbi.nlm.nih.gov/sra). Reads on SRA
-must be downloaded with a special tool, and you generally get FASTQ — the reads
-are not yet aligned to any reference genome (so there are no BAM files), and you
-have to align them yourself.
-
-Alternatively, repositories like [ENCODE](https://www.encodeproject.org/) offer
-pre-aligned BAM files. Note that human data is often restricted access; only
-specially consented datasets such as ENCODE and 1000 Genomes provide BAM files
-for humans. This is because you can determine a lot about a person from BAM data
-— it is essentially their whole genome — so there are privacy concerns.
+Both render identically in JBrowse — the splice arcs and per-read connectors
+come straight from these CIGAR skips.
 
 ## Loading your own RNA-seq data
 

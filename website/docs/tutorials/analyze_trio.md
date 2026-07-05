@@ -65,22 +65,15 @@ The hap-ibd program takes as input:
 - a genetic map in PLINK format (the README of hap-ibd provides these for
   GRCh38)
 
-## A quick aside: crossing over, and why grandparents matter
+## What we're visualizing: crossover points
 
-Before we run the program, it helps to know what we are looking for.
-"Recombination" (or "crossing over") is, in the words of the
-[NHGRI genetics glossary](https://www.genome.gov/genetics-glossary/Crossing-Over),
-"the exchange of DNA between paired homologous chromosomes (one from each
-parent) that occurs during the development of egg and sperm cells (meiosis)."
+Each of the child's inherited chromosomes is a mosaic of the two copies its
+parent carries, spliced together at
+[recombination](https://www.genome.gov/genetics-glossary/Crossing-Over)
+(crossing-over) breakpoints. The painting below marks exactly where those
+splices fall along each chromosome.
 
-![](/img/crossing_over.jpg) Figure from the
-[NHGRI genetics glossary](https://www.genome.gov/genetics-glossary/Crossing-Over)
-
-The subtle part: crossing over does not happen when the child is conceived — it
-happens earlier, when each parent's egg or sperm is made. So a crossover we
-detect along the child's chromosome is a recombination between the
-_grandparents'_ chromosomes, carried into the child through that parent. The
-hap-ibd painting below is what lets us see exactly where those crossovers fell.
+<Figure caption="Crossing-over: the exchange of DNA between paired homologous chromosomes during meiosis. Figure from the NHGRI genetics glossary." src="/img/crossing_over.jpg"/>
 
 ## Running hap-ibd
 
@@ -234,14 +227,8 @@ HG02025):
 Read the two blue rows together as the child's single **paternal** chromosome:
 at any position exactly one of them is filled, telling you which of the father's
 two copies the child inherited there. Each place the block steps between the two
-blue rows is a **crossing-over point** — a recombination between the father's
-two chromosomes when his sperm was made. The two red rows are the same story for
+blue rows is a **crossing-over point**. The two red rows are the same story for
 the **maternal** chromosome.
-
-This is why we mentioned grandparents earlier: the father's two haplotypes are
-themselves the chromosomes _he_ inherited from _his_ parents, so a step between
-the two blue rows is a recombination that happened in the grandparents' genomes,
-passed down through the father.
 
 ## Relating the painting back to the genotypes
 
@@ -260,13 +247,13 @@ painting's block-step is unmistakable and the genotype columns resolve into
 individual variants. The clearest crossover to start with is the **paternal**
 one near chr1:29.7 Mb:
 
-<Figure caption="Paternal crossover near chr1:29.7 Mb, ~400 kb wide. In the painting (top) the child's paternal chromosome steps from Father hap2 (light blue) to Father hap1 (dark blue), and an arrow drops to the same breakpoint in the genotypes below. The tinted frames make the switch explicit: left of the crossover the yellow frame ties Child hap1 (the paternally-inherited haplotype) to Father hap2, the copy it matches there; right of the crossover the purple frame ties Child hap1 to Father hap1. The Child hap1 row carries a yellow block abutting a purple block exactly at the crossover, so you can read the inherited copy flipping straight off its own genotypes." src="/img/trio-crossover-paternal.png"/>
+<Figure caption="Paternal crossover near chr1:29.7 Mb (~400 kb wide). In the painting (top) the child's paternal chromosome steps from Father hap2 (light blue) to Father hap1 (dark blue); an arrow drops to the same breakpoint in the genotypes below. The tinted frames read the switch off the raw genotypes: left of the crossover the yellow frame ties Child hap1 to Father hap2, right of it the purple frame ties Child hap1 to Father hap1, and the yellow/purple blocks on the Child hap1 row abut exactly at the breakpoint." src="/img/trio-crossover-paternal.png"/>
 
 The **maternal** chromosome does the same thing at its own boundaries. Near
 chr1:55.8 Mb the child's maternal haplotype steps between the mother's two
 copies:
 
-<Figure caption="Maternal crossover near chr1:55.8 Mb, ~400 kb wide — the cleanest maternal boundary on chr1, the one place where the raw genotypes plainly switch which maternal copy the child carries. The child's maternal chromosome steps from Mother hap2 (pink) to Mother hap1 (red). Same idea as the paternal figure but in its own palette: the green frame ties Child hap2 (the maternally-inherited haplotype) to Mother hap2 left of the crossover, the orange frame ties Child hap2 to Mother hap1 right of it, and the green/orange blocks abut at the breakpoint on the Child hap2 row. Within each tint the child's barcode and the matched parental copy line up column-for-column." src="/img/trio-crossover-maternal.png"/>
+<Figure caption="Maternal crossover near chr1:55.8 Mb (~400 kb wide), the cleanest maternal boundary on chr1. The child's maternal chromosome steps from Mother hap2 (pink) to Mother hap1 (red). Same idea as the paternal figure in its own palette: the green frame ties Child hap2 to Mother hap2 left of the crossover, the orange frame ties it to Mother hap1 right of it, and the green/orange blocks abut at the breakpoint on the Child hap2 row." src="/img/trio-crossover-maternal.png"/>
 
 The painting is the clean, readable summary; the genotype rows are the raw,
 statistically-phased evidence it is built from, and that evidence is noisy. If
