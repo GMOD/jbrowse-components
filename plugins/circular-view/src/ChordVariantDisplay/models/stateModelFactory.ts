@@ -1,3 +1,5 @@
+import { lazy } from 'react'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -24,6 +26,10 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { ThemeOptions } from '@mui/material'
+
+const ErrorMessageStackTraceDialog = lazy(
+  () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
+)
 
 /**
  * #stateModel ChordVariantDisplay
@@ -93,6 +99,21 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
       /**
        * #getter
        */
+      get radiusPx() {
+        return (getContainingView(self) as CircularViewModel).radiusPx
+      },
+
+      /**
+       * #getter
+       * how far chords bow toward the center
+       */
+      get bezierRadius() {
+        return this.radiusPx * self.bezierRadiusRatio
+      },
+
+      /**
+       * #getter
+       */
       get blocksForRefs(): Record<string, Block> {
         const view = getContainingView(self) as CircularViewModel
         const result: Record<string, Block> = {}
@@ -127,6 +148,16 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
          */
         onChordClick(feature: Feature) {
           getConf(self, 'onChordClick', { feature, track: self, pluginManager })
+        },
+
+        /**
+         * #action
+         */
+        openErrorDialog() {
+          getSession(self).queueDialog(onClose => [
+            ErrorMessageStackTraceDialog,
+            { onClose, error: self.error },
+          ])
         },
 
         /**

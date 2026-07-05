@@ -1,3 +1,6 @@
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { Feature } from '@jbrowse/core/util'
+
 export interface Region {
   end: number
   start: number
@@ -17,4 +20,17 @@ export interface Block {
   startRadians: number
   endRadians: number
   region: AnyRegion
+}
+
+export interface ChordDisplayModel {
+  error: unknown
+  ready: boolean
+  features: Feature[] | undefined
+  blocksForRefs: Record<string, Block>
+  selectedFeatureId: string | undefined
+  configuration: AnyConfigurationModel
+  radiusPx: number
+  bezierRadius: number
+  onChordClick: (feature: Feature) => void
+  openErrorDialog: () => void
 }

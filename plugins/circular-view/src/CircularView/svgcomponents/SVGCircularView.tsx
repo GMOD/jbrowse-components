@@ -13,23 +13,19 @@ export async function renderToSvg(
   opts: ExportSvgOptions,
 ) {
   await when(() => model.initialized)
-  const { themeName = 'default', Wrapper = ({ children }) => children } = opts
+  const { themeName = 'default', Wrapper } = opts
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
 
-  const { figureSize } = model
-  const tracks = [...model.tracks]
+  const { figureSize, staticSlices, offsetRadians, centerXY } = model
   const displayResults = await Promise.all(
-    tracks.map(async track => ({
-      track,
+    model.tracks.map(async track => ({
+      id: track.id,
       result: await track.displays[0]!.renderSvg({ ...opts, theme }),
     })),
   )
-
-  const { staticSlices, offsetRadians, centerXY } = model
   const deg = radToDeg(offsetRadians)
 
-  // the xlink namespace is used for rendering <image> tag
   return wrapSvgExport({
     theme,
     width: figureSize,
@@ -41,8 +37,8 @@ export async function renderToSvg(
         {staticSlices.map(slice => (
           <Ruler key={slice.key} model={model} slice={slice} />
         ))}
-        {displayResults.map(({ track, result }) => (
-          <Fragment key={track.id}>{result}</Fragment>
+        {displayResults.map(({ id, result }) => (
+          <Fragment key={id}>{result}</Fragment>
         ))}
       </g>
     ),
