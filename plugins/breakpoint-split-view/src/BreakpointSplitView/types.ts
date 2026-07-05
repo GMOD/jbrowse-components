@@ -32,6 +32,11 @@ export interface LayoutMatch {
   layout: LayoutRecord
   level: number
   clipLengthAtStartOfRead: number
+  // For split-read chains (clip-sorted): loc strings of any alignment segments
+  // the read has between this entry and the previous one that aren't present in
+  // any loaded view, so the connector to it spans hidden segments. Undefined
+  // when the two are truly consecutive.
+  hiddenSegmentsBefore?: string[]
 }
 
 export interface OverlayMatch {

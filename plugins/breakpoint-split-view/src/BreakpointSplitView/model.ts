@@ -18,6 +18,7 @@ import {
   getMatchedPairedFeatures,
   getMatchedTranslocationFeatures,
   hasPairedReads,
+  markHiddenSegments,
 } from './components/util.ts'
 import {
   VIEW_DIVIDER_HEIGHT,
@@ -348,6 +349,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   (a, b) =>
                     a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead,
                 )
+                markHiddenSegments(m)
               }
             }
             result.set(trackId, {

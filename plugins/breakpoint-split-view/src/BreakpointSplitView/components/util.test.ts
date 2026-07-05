@@ -7,8 +7,10 @@ import {
   getMatchedPairedFeatures,
   getMatchedTranslocationFeatures,
   hasPairedReads,
+  markHiddenSegments,
 } from './util.ts'
 
+import type { LayoutMatch } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function fakeFeature(id: string, type: string) {
@@ -603,6 +605,58 @@ describe('getMatchedPairedFeatures', () => {
     expect(
       getMatchedPairedFeatures(mapOf(paired('sv1'), paired('sv2'))),
     ).toHaveLength(0)
+  })
+})
+
+describe('markHiddenSegments', () => {
+  // A split-read segment aligned at `clip` bases into the read (forward strand),
+  // carrying an SA tag naming the read's other segments. Forward-strand clip =
+  // leading soft-clip, so CIGAR "100S50M" => clipLengthAtStartOfRead 100.
+  function seg(id: string, clip: number, sa: string): LayoutMatch {
+    const fields: Record<string, unknown> = {
+      strand: 1,
+      name: 'read',
+      tags: { SA: sa },
+    }
+    return {
+      feature: {
+        id: () => id,
+        get: (k: string) => fields[k],
+      } as unknown as Feature,
+      layout: [0, 0, 0, 0],
+      level: 0,
+      clipLengthAtStartOfRead: clip,
+    }
+  }
+
+  // read maps to three loci at read-clip 0, 100, 200; each SA names the others
+  const seg0 = 'chrX,1,+,50M150S,0,0;'
+  const seg100 = 'chrX,500,+,100S50M,0,0;'
+  const seg200 = 'chrX,900,+,200S50M,0,0;'
+
+  test('no loci when every segment of the read is visible', () => {
+    const chunk = [
+      seg('s0', 0, seg100 + seg200),
+      seg('s1', 100, seg0 + seg200),
+      seg('s2', 200, seg0 + seg100),
+    ]
+    markHiddenSegments(chunk)
+    expect(chunk[1]!.hiddenSegmentsBefore).toBeUndefined()
+    expect(chunk[2]!.hiddenSegmentsBefore).toBeUndefined()
+  })
+
+  test('names the segment spanned by a connector but absent from all views', () => {
+    // only the clip-0 and clip-200 segments are visible; the SA tag reveals a
+    // clip-100 segment (chrX 1-based 500..549) mapping to a region no view shows
+    const chunk = [seg('s0', 0, seg100 + seg200), seg('s2', 200, seg0 + seg100)]
+    markHiddenSegments(chunk)
+    expect(chunk[1]!.hiddenSegmentsBefore).toEqual(['chrX:500..549'])
+  })
+
+  test('no loci when two adjacent visible segments are truly consecutive', () => {
+    const chunk = [seg('s0', 0, seg100), seg('s1', 100, seg0)]
+    markHiddenSegments(chunk)
+    expect(chunk[1]!.hiddenSegmentsBefore).toBeUndefined()
   })
 })
 

@@ -36,7 +36,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
   const { layoutMatches, hasPairedReads: hasPaired, allFeatures } = match
 
   const connections = [...resolvedPairs({ match, assembly, tracks })].flatMap(
-    ({ f1, f2, level1, level2, c1, c2, f1ref, f2ref }) => {
+    ({ f1, f2, level1, level2, c1, c2, f1ref, f2ref, hiddenSegmentsBetween }) => {
       if (!showIntraviewLinks && level1 === level2) {
         return []
       }
@@ -97,6 +97,9 @@ const AlignmentConnections = observer(function AlignmentConnections({
         cy1,
         cy2,
       })
+      const hiddenNote = hiddenSegmentsBetween?.length
+        ? `hidden segment${hiddenSegmentsBetween.length > 1 ? 's' : ''} not in view: ${hiddenSegmentsBetween.join(', ')}`
+        : undefined
       return [
         {
           id: `${f1.id()}-${f2.id()}`,
@@ -104,7 +107,10 @@ const AlignmentConnections = observer(function AlignmentConnections({
           orientationColor: orientation?.color,
           f1id: f1.id(),
           f2id: f2.id(),
-          tooltip: buildPairTooltip(f1, f2, colorReason),
+          hiddenSegment: !!hiddenNote,
+          tooltip: hiddenNote
+            ? `${buildPairTooltip(f1, f2, colorReason)}<br/>${hiddenNote}`
+            : buildPairTooltip(f1, f2, colorReason),
         },
       ]
     },
@@ -113,13 +119,15 @@ const AlignmentConnections = observer(function AlignmentConnections({
 
   return (
     <g fill="none" data-testid={getTestId(trackId, layoutMatches.length > 0)}>
-      {connections.map(({ id, path, orientationColor, f1id, f2id }) => (
+      {connections.map(
+        ({ id, path, orientationColor, f1id, f2id, hiddenSegment }) => (
         <path
           d={path}
           key={id}
           data-testid="r1"
           pointerEvents={interactiveOverlay ? 'auto' : undefined}
           strokeWidth={mouseoverElt === id ? 5 : 1}
+          strokeDasharray={hiddenSegment ? '4 3' : undefined}
           {...getStrokeProps(orientationColor ?? theme.palette.text.disabled)}
           {...createAlignmentMouseHandlers(
             id,

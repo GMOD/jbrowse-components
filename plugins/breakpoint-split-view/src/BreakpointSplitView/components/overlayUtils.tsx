@@ -296,6 +296,9 @@ export interface ResolvedPair {
   c2: LayoutRecord
   f1ref: string
   f2ref: string
+  // split-read connectors only: loc strings of this read's segments that map
+  // between f1 and f2 but aren't shown in any view, so the connector spans them
+  hiddenSegmentsBetween: string[] | undefined
 }
 
 // Walks each layoutMatch chunk's adjacent feature pairs, skipping minimized
@@ -315,7 +318,12 @@ export function* resolvedPairs({
   for (const chunk of match.layoutMatches) {
     for (let i = 0; i < chunk.length - 1; i++) {
       const { layout: c1, feature: f1, level: level1 } = chunk[i]!
-      const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]!
+      const {
+        layout: c2,
+        feature: f2,
+        level: level2,
+        hiddenSegmentsBefore,
+      } = chunk[i + 1]!
       if (isLevelPairMinimized(tracks, level1, level2)) {
         continue
       }
@@ -325,7 +333,16 @@ export function* resolvedPairs({
         f2.get('refName'),
       )
       if (refs) {
-        yield { f1, f2, level1, level2, c1, c2, ...refs }
+        yield {
+          f1,
+          f2,
+          level1,
+          level2,
+          c1,
+          c2,
+          hiddenSegmentsBetween: hiddenSegmentsBefore,
+          ...refs,
+        }
       }
     }
   }
