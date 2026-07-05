@@ -1,17 +1,17 @@
 import { SanitizedHTML } from '@jbrowse/core/ui'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
-import ArrowRightIcon from '@mui/icons-material/ArrowRight'
-import CloseIcon from '@mui/icons-material/Close'
-import { IconButton, Paper, Typography } from '@mui/material'
+import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import {
+  TrackLabelCloseButton,
+  TrackLabelMinimizeButton,
+} from './TrackLabelButtons.tsx'
 import TrackLabelDragHandle from './TrackLabelDragHandle.tsx'
 import TrackLabelMenu from './TrackLabelMenu.tsx'
 
-import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()(theme => ({
@@ -26,45 +26,23 @@ const useStyles = makeStyles()(theme => ({
     fontSize: '0.8rem',
     pointerEvents: 'none',
   },
-  iconButton: {
-    padding: 0,
-  },
 }))
 
-type LGV = LinearGenomeViewModel
-
-interface Props {
+const TrackLabel = observer(function TrackLabel({
+  track,
+  className,
+}: {
   track: BaseTrackModel
   className?: string
-}
-
-const TrackLabel = observer(function TrackLabel({ track, className }: Props) {
+}) {
   const { classes } = useStyles()
-  const view = getContainingView(track) as LGV
-  const session = getSession(track)
-  const { minimized } = track
-  const trackName = getTrackName(track.configuration, session)
+  const trackName = getTrackName(track.configuration, getSession(track))
 
   return (
     <Paper className={cx(className, classes.root)}>
       <TrackLabelDragHandle track={track} />
-      <IconButton
-        onClick={() => view.hideTrack(track.trackId)}
-        className={classes.iconButton}
-        title="close this track"
-      >
-        <CloseIcon fontSize="small" />
-      </IconButton>
-      <IconButton
-        onClick={() => {
-          track.setMinimized(!minimized)
-        }}
-        className={classes.iconButton}
-        title={minimized ? 'restore track' : 'minimize track'}
-      >
-        {minimized ? <ArrowRightIcon /> : <ArrowDropDownIcon />}
-      </IconButton>
-
+      <TrackLabelCloseButton track={track} />
+      <TrackLabelMinimizeButton track={track} />
       <Typography
         variant="body1"
         component="span"
