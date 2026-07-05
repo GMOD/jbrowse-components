@@ -1030,7 +1030,14 @@ export default function baseStateModelFactory(
          * #getter
          */
         get maxY() {
-          const max = maxBottom(self.laidOutDataMap)
+          const raw = maxBottom(self.laidOutDataMap)
+          // Squeeze mode scales content to exactly fill the track, but the
+          // base*scale round-trip rounds a hair above `height` in ~5% of float
+          // cases — which would spuriously arm the expand button, mark the track
+          // as overflowing, and open a sub-pixel scrollbar. The content occupies
+          // `height` by construction, so clamp to it while squeezing.
+          const max =
+            self.squeezeScale === 1 ? raw : Math.min(raw, self.height)
           // During a Y morph hold the height at the taller of the old/new
           // layout so features animating up from a deeper row aren't clipped at
           // the bottom; it settles to the destination height when the morph
@@ -1084,9 +1091,12 @@ export default function baseStateModelFactory(
         // isn't enough: when the display is already at/above the maxHeight cap
         // (e.g. dragged taller than maxHeight while content still overflows),
         // fitHeight <= height and "expanding" would *shrink* it. Gate the expand
-        // affordance on this so the button only ever offers a real grow.
+        // affordance on this so the button only ever offers a real grow. Squeeze
+        // mode fits content to the current height by design, so never offer
+        // expand there (fitHeight still floors at MIN_FIT_HEIGHT, which would
+        // otherwise leak the button for a sub-50px track).
         get canExpand() {
-          return this.fitHeight > self.height
+          return !self.squeezeToDisplayHeight && this.fitHeight > self.height
         },
 
         /**
@@ -1252,9 +1262,13 @@ export default function baseStateModelFactory(
             // height and makes the squeeze a no-op; the two modes are opposite
             // intents, so entering squeeze turns auto-fit off (mirrors how
             // setAutoHeight/setDisplayMode clear the other mode). setAutoHeight
-            // is defined in a later actions block, so clear the slot directly —
-            // its only extra work (clearHeightBeforeExpand) is on the true path.
+            // is defined in a later actions block, so clear the slot directly.
             self.configuration.setSlot('autoHeight', false)
+            // A pending expand/restore marker ("Restore previous height") is
+            // stale once squeeze drives the fit — same reasoning setAutoHeight
+            // clears it — so drop it too (setAutoHeight routes through
+            // clearHeightBeforeExpand; the field is set directly here).
+            self.heightBeforeExpand = undefined
             self.setScrollTop(0)
           }
         },
