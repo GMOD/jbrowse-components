@@ -103,7 +103,9 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     const feats = await this.setup(opts)
     const map = this.assemblyToPrefix()
     const anchorPrefix =
-      assemblyName === undefined ? undefined : (map[assemblyName] ?? assemblyName)
+      assemblyName === undefined
+        ? undefined
+        : (map[assemblyName] ?? assemblyName)
     const targetPrefix =
       targetAssemblyName === undefined
         ? undefined

@@ -5,7 +5,10 @@ import Palette from '@mui/icons-material/Palette'
 
 import { checkboxItem, radioItems, radioModeMenuItem } from './menuHelpers.ts'
 import { makeModificationThresholdItem } from './modificationThresholdMenu.tsx'
-import { colorSchemeLabel, radioColorOptions } from '../../shared/colorSchemes.ts'
+import {
+  colorSchemeLabel,
+  radioColorOptions,
+} from '../../shared/colorSchemes.ts'
 import { modificationData } from '../../shared/modificationData.ts'
 import { modificationThresholdField } from '../../shared/types.ts'
 
@@ -241,7 +244,11 @@ function buildByTypeItem(model: ModificationsModel): MenuItem {
     ),
     ...(multiType
       ? types.map(k =>
-          radio(twoColor ? `Two-color: ${modName(k)}` : modName(k), twoColor, k),
+          radio(
+            twoColor ? `Two-color: ${modName(k)}` : modName(k),
+            twoColor,
+            k,
+          ),
         )
       : []),
   ]

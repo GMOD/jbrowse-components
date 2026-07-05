@@ -26,9 +26,8 @@ function makeAdapter(
 // the real fixture the browser suite drives (volvox_ins/volvox/volvox_del
 // pangenome), for a realistic end-to-end check with CIGAR + de:f: tags
 const volvoxPaf = () => ({
-  localPath: require.resolve(
-    '../../../../test_data/volvox/volvox_all_vs_all.paf',
-  ),
+  localPath:
+    require.resolve('../../../../test_data/volvox/volvox_all_vs_all.paf'),
   locationType: 'LocalPathLocation' as const,
 })
 

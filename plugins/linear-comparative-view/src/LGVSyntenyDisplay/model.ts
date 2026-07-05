@@ -99,8 +99,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           // one-vs-all can pair the feature with a sample that isn't a loaded
           // assembly; a synteny view can only be launched against a loaded one
           const mate = feature?.get('mate') as
-            | { assemblyName?: string }
-            | undefined
+            { assemblyName?: string } | undefined
           const mateAssembly = mate?.assemblyName
           const canLaunchSynteny =
             mateAssembly !== undefined &&
@@ -125,7 +124,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                             LaunchSyntenyViewDialog,
                             {
                               visibleRegion: findVisibleBlockForFeature(
-                                getContainingView(self) as LinearGenomeViewModel,
+                                getContainingView(
+                                  self,
+                                ) as LinearGenomeViewModel,
                                 feature,
                               ),
                               trackId: getConf(

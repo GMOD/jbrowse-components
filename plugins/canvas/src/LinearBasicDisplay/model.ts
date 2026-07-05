@@ -288,7 +288,8 @@ export default function stateModelFactory(
                 {
                   label: `Default (${displayModeLabel(self.inheritedDisplayMode)})`,
                   type: 'radio' as const,
-                  checked: !self.squeezeToDisplayHeight && !self.isDisplayModePinned,
+                  checked:
+                    !self.squeezeToDisplayHeight && !self.isDisplayModePinned,
                   onClick: () => {
                     self.resetDisplayMode()
                   },

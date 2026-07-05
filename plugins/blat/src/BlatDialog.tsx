@@ -39,7 +39,11 @@ const BlatDialog = observer(function BlatDialog({
   session: AbstractSessionModel
   handleClose: () => void
 }) {
-  const query = useUcscQuery({ session, handleClose, defaultUrl: DEFAULT_BLAT_URL })
+  const query = useUcscQuery({
+    session,
+    handleClose,
+    defaultUrl: DEFAULT_BLAT_URL,
+  })
   const { db, urlBase, apiKey, loading, challenged, error } = query
   const [seq, setSeq] = useState('')
 

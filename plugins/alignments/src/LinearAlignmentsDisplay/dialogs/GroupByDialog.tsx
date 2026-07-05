@@ -32,7 +32,9 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // reads (e.g. synteny mate-assembly) and are surfaced by their own display's
 // menu instead. Chain mode partitions whole chains, so it only offers the
 // chain-consistent dimensions (every read of a chain shares one key).
-const STACK_DIMENSIONS = Object.values(GROUP_BY_DIMENSIONS).filter(d => !d.hidden)
+const STACK_DIMENSIONS = Object.values(GROUP_BY_DIMENSIONS).filter(
+  d => !d.hidden,
+)
 const CHAIN_STACK_DIMENSIONS = STACK_DIMENSIONS.filter(d => d.chainConsistent)
 
 // Shared with the track-menu item (getGroupByMenuItem) so the two can't disagree

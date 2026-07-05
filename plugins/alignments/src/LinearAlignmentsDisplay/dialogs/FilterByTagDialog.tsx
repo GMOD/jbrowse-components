@@ -251,7 +251,10 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
             setTag={setTag}
             setTagValue={setTagValue}
           />
-          <ReadNameFilterSection readName={readName} setReadName={setReadName} />
+          <ReadNameFilterSection
+            readName={readName}
+            setReadName={setReadName}
+          />
         </DialogContent>
         <DialogActions>
           <Button
@@ -262,12 +265,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
           >
             Reset defaults
           </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            autoFocus
-            type="submit"
-          >
+          <Button variant="contained" color="primary" autoFocus type="submit">
             Submit
           </Button>
           <Button

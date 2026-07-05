@@ -336,7 +336,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           // keys on the same reference assembly's chromosome names
           const queryAsm = views[this.level]?.assemblyNames[0]
           const targetAsm = views[this.level + 1]?.assemblyNames[0]
-          return targetAsm === anchor && queryAsm !== anchor ? 'target' : 'query'
+          return targetAsm === anchor && queryAsm !== anchor
+            ? 'target'
+            : 'query'
         }
         return colorBy
       },

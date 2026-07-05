@@ -3297,7 +3297,11 @@ export const specs: ScreenshotSpec[] = [
         type: 'click',
         selector: '[data-testid="feature-name-HGSV_2721"]',
       },
-      { type: 'delay', ms: 4000 },
+      // wait for the feature-details widget's lazy chunk to load and populate
+      // (a fixed delay races the Suspense fallback and captures an empty
+      // "Loading" sidebar); CPX_TYPE is the INFO field the annotation anchors to
+      { type: 'waitForText', text: 'CPX_TYPE' },
+      { type: 'delay', ms: 1000 },
     ],
     // explain the read evidence, plus a single connector from the "INVdup" callout
     // directly to the CPX_TYPE INFO field in the feature-details sidebar so the
