@@ -540,6 +540,7 @@ describe('GPU renderBlocks canvasDrawn gating', () => {
     colorLongInsert: triple,
     colorShortInsert: triple,
     colorSupplementary: triple,
+    colorSplitInversion: triple,
     colorUnmappedMate: triple,
     colorInterchrom: triple,
   }

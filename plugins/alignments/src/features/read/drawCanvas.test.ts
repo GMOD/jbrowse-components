@@ -39,6 +39,7 @@ const palette = {
   colorLongInsert: BLACK,
   colorShortInsert: BLACK,
   colorSupplementary: BLACK,
+  colorSplitInversion: BLACK,
   colorUnmappedMate: BLACK,
   colorInterchrom: BLACK,
 } satisfies ColorPalette

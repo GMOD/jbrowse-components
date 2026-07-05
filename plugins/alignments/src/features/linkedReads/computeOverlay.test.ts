@@ -5,7 +5,10 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
-import { LINKED_READ_COLOR_PAIR_RR } from './compute.ts'
+import {
+  LINKED_READ_COLOR_PAIR_RR,
+  LINKED_READ_COLOR_SPLIT_INV,
+} from './compute.ts'
 import {
   computePileupBezierArcs,
   enumerateBezierPairs,
@@ -164,13 +167,14 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
   })
 })
 
-describe('computePileupBezierArcs — shared inversion hue + tooltip label', () => {
-  // A split-read inversion and an RR pair deliberately share the inversion blue
-  // (both genuinely mean inversion), so the shared color reads as corroboration.
-  // The tooltip label — not a visual channel — names which evidence produced it.
+describe('computePileupBezierArcs — distinct inversion hue + tooltip label', () => {
+  // A split-read inversion gets its OWN color (colorSplitReadInversion), distinct
+  // from the RR-pair blue, so the connector matches the magenta read fill and the
+  // two categories are tellable apart in the legend.
   const rr = rgb255(linkedReadColorPalette[LINKED_READ_COLOR_PAIR_RR]!)
+  const splitInv = rgb255(linkedReadColorPalette[LINKED_READ_COLOR_SPLIT_INV]!)
 
-  it('split inversion: inversion blue, labeled', () => {
+  it('split inversion: own inversion hue, distinct from RR, labeled', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -186,11 +190,12 @@ describe('computePileupBezierArcs — shared inversion hue + tooltip label', () 
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
-    expect(arcs[0]!.stroke).toBe(rr) // same blue as an RR pair
+    expect(splitInv).not.toBe(rr) // no longer shares the RR-pair blue
+    expect(arcs[0]!.stroke).toBe(splitInv)
     expect(arcs[0]!.label).toBe('Split-read inversion')
   })
 
-  it('RR pair: same inversion blue, distinct label', () => {
+  it('RR pair: navy blue, distinct label', () => {
     const data = makeData({
       names: ['p', 'p'],
       flags: [

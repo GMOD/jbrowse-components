@@ -54,7 +54,7 @@ struct Instance {
   uint  pairOrient     : ATTR6;
   int   strand         : ATTR7;
   uint  tagColor       : ATTR8;   // ABGR u32; 0 = not set
-  uint  chainHasSupp   : ATTR9;   // 0=no supp, 1=supp + primary fwd, 2=supp + primary rev
+  uint  chainHasSupp   : ATTR9;   // 0=no supp, 1=supp+primary fwd, 2=supp+primary rev, 3=paired split inversion
   uint  edgeFlags      : ATTR10;  // bit 0 = is_first, bit 1 = is_last
   uint  interchrom     : ATTR11;  // 1 = mate on a different chromosome
 };
@@ -165,6 +165,15 @@ float3 getReadColor(Instance inst, Uniforms u) {
     int primaryStrand = (inst.chainHasSupp > 1u) ? -1 : 1;
     int eff = (u.flipStrandLongRead == 1) ? inst.strand * primaryStrand : inst.strand;
     return strandColor(eff, u);
+  }
+
+  // Paired split read crossing an inversion (chainHasSupp == 3): paint the whole
+  // chain the dedicated split-inversion hue under an orientation scheme — a
+  // distinct color, NOT the RR-pair blue, so the two stay tellable apart.
+  // SYNC: colorUtils.ts.
+  if (cm == CM_LINKED_READ && inst.chainHasSupp == 3u && isPaired
+      && (cs == CS_PAIR_ORIENT || cs == CS_IS_AND_ORIENT)) {
+    return unpackRGBA(u.colorSplitInversion).xyz;
   }
 
   bool mateUnmapped = (inst.flags & 8u) != 0u;

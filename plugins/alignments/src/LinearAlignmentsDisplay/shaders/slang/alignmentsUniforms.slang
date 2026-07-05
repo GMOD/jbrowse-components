@@ -135,6 +135,10 @@ public struct Uniforms {
   // Only the read pass reads it; kept last so adding it leaves every other
   // shader's shared-UBO field offsets unchanged.
   public int colorSuppChains;
+  // Dedicated paired-split-inversion fill color (only the read pass reads it).
+  // Kept at the tail, next to colorSuppChains, for the same offset-stability
+  // reason — appending here left the other 17 shaders' generated offsets alone.
+  public uint colorSplitInversion;
 };
 
 // ---- Helper functions ---------------------------------------------------

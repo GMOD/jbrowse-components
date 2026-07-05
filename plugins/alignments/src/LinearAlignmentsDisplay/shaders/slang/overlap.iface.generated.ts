@@ -11,7 +11,7 @@ export const FADE_LO_PX = 1.5
 
 export const FADE_HI_PX = 12
 
-export const UNIFORMS_SIZE_BYTES = 320
+export const UNIFORMS_SIZE_BYTES = 336
 
 // Indices into a Float32Array / Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -95,6 +95,7 @@ export const UNIFORM_OFFSET_F32 = {
   linkedReadColor7: 77,
   pxPerBp: 78,
   colorSuppChains: 79,
+  colorSplitInversion: 80,
 } as const
 
 
@@ -187,6 +188,7 @@ export interface Uniforms {
   linkedReadColor7: number
   pxPerBp: number
   colorSuppChains: number
+  colorSplitInversion: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -273,6 +275,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   u32[77] = uniforms.linkedReadColor7
   f32[78] = uniforms.pxPerBp
   i32[79] = uniforms.colorSuppChains
+  u32[80] = uniforms.colorSplitInversion
 }
 
 export const INSTANCE_STRIDE_BYTES = 12

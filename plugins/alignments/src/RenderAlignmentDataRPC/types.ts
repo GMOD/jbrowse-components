@@ -68,7 +68,7 @@ export interface PileupDataResult {
   readInsertSizes: Float32Array // keep float (can be large/negative)
   readPairOrientations: Uint8Array // 0=unknown, 1=LR, 2=RL, 3=RR, 4=LL
   readStrands: Int8Array // -1=reverse, 0=unknown, 1=forward
-  readChainHasSupp?: Uint8Array // 0=no supp, 1=supp w/ primary fwd, 2=supp w/ primary rev
+  readChainHasSupp?: Uint8Array // 0=no supp, 1=supp+primary fwd, 2=supp+primary rev, 3=paired split inversion
   readInterchrom: Uint8Array // 1 = mate on a different chromosome (else 0)
   readIds: string[] // feature IDs for hit testing
   readNames: string[] // read names (QNAME) for tooltip display

@@ -233,6 +233,8 @@ export const colorUnmappedMate = '#b05a20'
 export const colorUnknown = '#808080'
 export const colorLongreadRevFwd = '#6688ee'
 export const colorLongreadInv = '#7755bb'
+/** #color alignments-pair-orientation | Split-read inversion | A paired read's supplementary segment maps opposite-strand to its primary — the split crosses an inversion junction */
+export const colorSplitReadInversion = '#9b30b0'
 export const colorSupplementary = '#f0b878'
 
 // Qualitative palette for coloring reads by an arbitrary tag value (e.g. the HP

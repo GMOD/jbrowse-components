@@ -7,6 +7,7 @@ import {
   colorPairRL,
   colorPairRR,
   colorShortInsertArc,
+  colorSplitReadInversion,
 } from '@jbrowse/core/ui/theme'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
@@ -45,6 +46,6 @@ export const linkedReadColorPalette: RGBColor[] = [
   rgb(colorPairRR), // 3 RR
   rgb(colorPairLL), // 4 LL
   rgb(colorPairLR), // 5 split normal (same-strand deletion)
-  rgb(colorPairRR), // 6 split inversion — shares RR-pair blue on purpose: both genuinely mean inversion, so the shared hue reads as corroboration (the arc tooltip names which evidence produced it)
+  rgb(colorSplitReadInversion), // 6 split inversion — matches the read-fill split-inversion color so a magenta segment and its connector agree
   rgb(colorPairLR), // 7 fallback
 ]

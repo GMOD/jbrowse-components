@@ -155,6 +155,44 @@ describe('readColorCategory', () => {
     ).not.toBe('supplementary')
   })
 
+  test('paired split-inversion chains (chainHasSupp=3) paint the RR inversion blue', () => {
+    // orientation schemes: the whole chain reads as an inversion regardless of
+    // the concordant pair orientation it inherited (po=1 LR here)
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 3, flags: 1, pairOrientation: 1 }),
+        ColorScheme.pairOrientation,
+        chainOpts,
+      ),
+    ).toBe('splitInversion')
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 3, flags: 1, pairOrientation: 1 }, stats),
+        ColorScheme.insertSizeAndOrientation,
+        chainOpts,
+      ),
+    ).toBe('splitInversion')
+    // non-orientation schemes keep their own coloring (strand here)
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 3, flags: 1, strand: -1 }),
+        ColorScheme.strand,
+        chainOpts,
+      ),
+    ).toBe('revStrand')
+    // pileup (linkedReads off): no chain classification
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 3, flags: 1, pairOrientation: 1 }),
+        ColorScheme.pairOrientation,
+      ),
+    ).toBe('pairLR')
+  })
+
   test('colorSupplementaryChains opt-in restores the flat orange override', () => {
     // with the opt-in on, a paired supplementary chain is the flat bucket again,
     // overriding the pair-orientation color

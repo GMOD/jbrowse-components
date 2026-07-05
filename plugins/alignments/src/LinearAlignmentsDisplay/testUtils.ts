@@ -35,6 +35,7 @@ export function makeTestPalette(
     colorLongInsert: z,
     colorShortInsert: z,
     colorSupplementary: z,
+    colorSplitInversion: z,
     colorUnmappedMate: z,
     colorInterchrom: z,
     ...overrides,

@@ -8,6 +8,7 @@ import {
   colorNostrand,
   colorRevStrand,
   colorShortInsert,
+  colorSplitReadInversion,
   colorSupplementary,
   colorUnmappedMate,
 } from '@jbrowse/core/ui/theme'
@@ -74,6 +75,7 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     colorLongInsert: toRgb(colorLongInsert),
     colorShortInsert: toRgb(colorShortInsert),
     colorSupplementary: toRgb(colorSupplementary),
+    colorSplitInversion: toRgb(colorSplitReadInversion),
     colorUnmappedMate: toRgb(colorUnmappedMate),
     colorInterchrom: toRgb(colorInterchrom),
   }

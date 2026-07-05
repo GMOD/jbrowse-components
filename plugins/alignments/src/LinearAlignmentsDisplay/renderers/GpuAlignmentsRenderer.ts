@@ -279,6 +279,7 @@ function writePaletteToUbo(u: Uint32Array, c: ColorPalette) {
   u[U.colorLongInsert] = pack(c.colorLongInsert)
   u[U.colorShortInsert] = pack(c.colorShortInsert)
   u[U.colorSupplementary] = pack(c.colorSupplementary)
+  u[U.colorSplitInversion] = pack(c.colorSplitInversion)
   u[U.colorUnmappedMate] = pack(c.colorUnmappedMate)
   u[U.colorInterchrom] = pack(c.colorInterchrom)
   u[U.colorMutedSnpBase] = pack(c.colorMutedSnpBase)

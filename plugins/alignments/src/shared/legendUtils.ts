@@ -40,6 +40,7 @@ const CATEGORY_LEGEND: { category: SwatchCategory; label: string }[] = [
   { category: 'normalInsert', label: 'Normal' },
   { category: 'longInsert', label: 'Long insert' },
   { category: 'shortInsert', label: 'Short insert' },
+  { category: 'splitInversion', label: 'Split-read inversion' },
   { category: 'interchrom', label: 'Inter-chromosomal' },
   { category: 'unmappedMate', label: 'Unmapped mate' },
   { category: 'supplementary', label: 'Supplementary/split' },

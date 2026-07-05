@@ -36,6 +36,10 @@ export interface ColorPalette {
   colorLongInsert: RGBColor
   colorShortInsert: RGBColor
   colorSupplementary: RGBColor
+  // Paired split reads crossing an inversion junction. A dedicated hue (not the
+  // RR-pair blue) so the legend swatch is distinguishable from the RR-pair
+  // orientation category, which is a different measurement.
+  colorSplitInversion: RGBColor
   colorUnmappedMate: RGBColor
   colorInterchrom: RGBColor
 }

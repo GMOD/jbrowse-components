@@ -36,6 +36,7 @@ interface ReadColorData {
 // swatch ('mapq', 'tag', 'modFwd'/'modRev', 'plain') get no legend entry.
 export type ReadColorCategory =
   | 'supplementary'
+  | 'splitInversion'
   | 'unmappedMate'
   | 'interchrom'
   | 'fwdStrand'
@@ -136,6 +137,22 @@ export function readColorCategory(
     const effectiveStrand =
       opts.flipStrandLongReadChains !== false ? strand * primaryStrand : strand
     return strandCategory(effectiveStrand)
+  }
+
+  // Paired split read whose supplementary segment maps opposite-strand to its
+  // own primary mate (chainSupp === 3): the split crosses an inversion junction.
+  // Under an orientation scheme, paint the whole chain a dedicated inversion hue,
+  // distinct from the RR-pair blue so the two are tellable apart. Co-linear
+  // paired splits keep their per-scheme pair-orientation color.
+  // SYNC: mirror of the `chainHasSupp == 3u` branch in read.slang.
+  if (
+    isChain &&
+    chainSupp === 3 &&
+    isPaired &&
+    (colorScheme === ColorScheme.pairOrientation ||
+      colorScheme === ColorScheme.insertSizeAndOrientation)
+  ) {
+    return 'splitInversion'
   }
 
   // unmapped mate (flag 8) — its own color for orientation-aware schemes (tlen=0
@@ -321,6 +338,9 @@ const swatchPaletteKeys = {
   interchrom: 'colorInterchrom',
   unmappedMate: 'colorUnmappedMate',
   supplementary: 'colorSupplementary',
+  // dedicated inversion hue (colorSplitReadInversion), distinct from the RR-pair
+  // blue so the legend swatch and read fill are unambiguous
+  splitInversion: 'colorSplitInversion',
 } satisfies Partial<Record<ReadColorCategory, keyof ColorPalette>>
 
 export type SwatchCategory = keyof typeof swatchPaletteKeys

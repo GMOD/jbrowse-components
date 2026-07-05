@@ -1,5 +1,8 @@
 import {
+  SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_PAIRED,
   SAM_FLAG_REVERSE,
+  SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
@@ -69,6 +72,99 @@ test('chain pair orientation comes from the primary, not the supplementary', () 
     }),
   ])
   expect([...chainPairOrientations]).toEqual([3])
+})
+
+test('flags the read1 mate when its supplementary opposes the primary strand', () => {
+  // read1 primary forward, read1 supplementary reverse -> read1 spans an
+  // inversion junction, so chainMate0Inverted is set (read2 untouched). The
+  // chain-level supp type stays 1 (has-supp); the per-read fan-out uses the mate
+  // flag to paint BOTH read1 segments.
+  const { chainSuppTypes, chainMate0Inverted, chainMate1Inverted } =
+    buildChainMetadata([
+      feat({
+        id: 'r1.1',
+        name: 'r1',
+        strand: 1,
+        flags: SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+      }),
+      feat({
+        id: 'r1.supp',
+        name: 'r1',
+        start: 900,
+        end: 950,
+        strand: -1,
+        flags:
+          SAM_FLAG_PAIRED |
+          SAM_FLAG_FIRST_IN_PAIR |
+          SAM_FLAG_SUPPLEMENTARY |
+          SAM_FLAG_REVERSE,
+      }),
+    ])
+  expect([...chainSuppTypes]).toEqual([1])
+  expect([...chainMate0Inverted]).toEqual([1])
+  expect([...chainMate1Inverted]).toEqual([0])
+})
+
+test('does not flag a co-linear (same-strand) supplementary', () => {
+  const { chainMate0Inverted } = buildChainMetadata([
+    feat({
+      id: 'r1.1',
+      name: 'r1',
+      strand: 1,
+      flags: SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+    }),
+    feat({
+      id: 'r1.supp',
+      name: 'r1',
+      start: 900,
+      end: 950,
+      strand: 1,
+      flags: SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SUPPLEMENTARY,
+    }),
+  ])
+  expect([...chainMate0Inverted]).toEqual([0])
+})
+
+test('flags the read2 mate for a second-in-pair inverted supplementary', () => {
+  const { chainMate0Inverted, chainMate1Inverted } = buildChainMetadata([
+    feat({
+      id: 'r1.2',
+      name: 'r1',
+      strand: 1,
+      flags: SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+    }),
+    feat({
+      id: 'r1.supp',
+      name: 'r1',
+      start: 900,
+      end: 950,
+      strand: -1,
+      flags:
+        SAM_FLAG_PAIRED |
+        SAM_FLAG_SECOND_IN_PAIR |
+        SAM_FLAG_SUPPLEMENTARY |
+        SAM_FLAG_REVERSE,
+    }),
+  ])
+  expect([...chainMate0Inverted]).toEqual([0])
+  expect([...chainMate1Inverted]).toEqual([1])
+})
+
+test('an unpaired long-read inverted split does not set a mate flag', () => {
+  // unpaired split-inversion is the long-read strand-framing path's job
+  const { chainMate0Inverted, chainMate1Inverted } = buildChainMetadata([
+    feat({ id: 'r1.1', name: 'r1', strand: 1, flags: 0 }),
+    feat({
+      id: 'r1.supp',
+      name: 'r1',
+      start: 900,
+      end: 950,
+      strand: -1,
+      flags: SAM_FLAG_SUPPLEMENTARY | SAM_FLAG_REVERSE,
+    }),
+  ])
+  expect([...chainMate0Inverted]).toEqual([0])
+  expect([...chainMate1Inverted]).toEqual([0])
 })
 
 test('a secondary alignment does NOT chain with its primary', () => {
