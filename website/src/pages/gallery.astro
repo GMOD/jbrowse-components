@@ -1,0 +1,163 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { baseUrl } from '../lib/base-url.ts'
+import { gallerySections, itemHref } from '../lib/gallery.ts'
+import page from '../styles/page.module.css'
+
+// Sections shown as screenshot cards vs. compact link lists: an item appears in
+// the card grid when it has an image, otherwise in the "more examples" list.
+const sections = gallerySections.map(s => ({
+  ...s,
+  cards: s.items.filter(i => i.img),
+  links: s.items.filter(i => !i.img),
+}))
+---
+
+<BaseLayout
+  title="JBrowse 2 Visualizations Gallery"
+  description="A gallery of genome visualizations built with JBrowse 2, including synteny, structural variants, alignments, methylation, and Hi-C contact matrices."
+>
+  <div class={page.content}>
+    <h1>JBrowse 2 visualizations gallery</h1>
+    <p>
+      Examples of the visualizations JBrowse 2 has to offer. Every item links to
+      a live session you can open and explore in the app — see the{' '}
+      <a href={`${baseUrl}/demos/`}>demos page</a> for the same examples as a
+      compact link list, plus conference and workshop material.
+    </p>
+
+    <nav class="toc">
+      {
+        sections.map(s => (
+          <a href={`#${s.id}`}>{s.title}</a>
+        ))
+      }
+    </nav>
+
+    {
+      sections.map(s => (
+        <section>
+          <h2 id={s.id}>{s.title}</h2>
+          {s.cards.length > 0 && (
+            <div class="grid">
+              {s.cards.map(item => {
+                const href = itemHref(item, baseUrl)
+                return (
+                  <figure class="card">
+                    <a href={href}>
+                      <img
+                        src={`${baseUrl}/img/${item.img}`}
+                        alt={item.label}
+                        loading="lazy"
+                      />
+                    </a>
+                    <figcaption>
+                      <a href={href} class="card-title">
+                        {item.label}
+                      </a>
+                      {item.description && <p>{item.description}</p>}
+                    </figcaption>
+                  </figure>
+                )
+              })}
+            </div>
+          )}
+          {s.links.length > 0 && (
+            <>
+              {s.cards.length > 0 && <p class="more">More examples</p>}
+              <ul class="links">
+                {s.links.map(item => (
+                  <li>
+                    <a href={itemHref(item, baseUrl)}>{item.label}</a>
+                    {item.description && <span> — {item.description}</span>}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 1rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+  }
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin: 2.5rem 0 1rem;
+    scroll-margin-top: 5rem;
+  }
+
+  .toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    font-size: 0.9rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    margin: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.15s;
+  }
+  .card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  .card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-bottom: 1px solid var(--color-border);
+  }
+  figcaption {
+    padding: 0.75rem 1rem 1rem;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  figcaption p {
+    margin: 0.4rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+  }
+
+  .more {
+    margin: 1.25rem 0 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+  }
+  .links {
+    margin: 0.25rem 0;
+    padding-left: 1.25rem;
+    line-height: 1.7;
+  }
+  .links span {
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+  }
+</style>

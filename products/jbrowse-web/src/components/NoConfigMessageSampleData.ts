@@ -361,7 +361,7 @@ export const galleryDemos: readonly SampleLink[] = [
     label: 'GIAB - Heterozygous small deletion',
   },
   {
-    href: '?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
+    href: '?config=test_data%2Fconfig_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
     label: 'GIAB - ~1.5kb insertion',
   },
   {
