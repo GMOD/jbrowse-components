@@ -14,6 +14,7 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
+  MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -94,8 +95,6 @@ export interface MafSource {
   label?: string
   color?: string
 }
-
-const minDisplayHeight = 20
 
 /**
  * #stateModel LinearMafDisplay
@@ -792,7 +791,7 @@ export default function stateModelFactory(
         // even if a prior fixed-mode drag left a stale explicit height.
         self.configuration.setSlot(
           'height',
-          Math.max(self.height, minDisplayHeight),
+          Math.max(self.height, MIN_DISPLAY_HEIGHT),
         )
         self.configuration.setSlot('rowHeight', 0)
         self.scrollTop = 0
@@ -809,7 +808,7 @@ export default function stateModelFactory(
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
-        const newHeight = Math.max(oldHeight + distance, minDisplayHeight)
+        const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
         self.configuration.setSlot('height', newHeight)
         if (self.rowHeight > 0) {
           self.configuration.setSlot(
