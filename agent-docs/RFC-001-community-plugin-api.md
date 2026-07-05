@@ -405,7 +405,14 @@ export function WiggleCommonMixin() {
 
 ### 8c. ConfigOverrideMixin dependency
 
-Both mixins compose `ConfigOverrideMixin` from `@jbrowse/plugin-linear-genome-view`. That stays — already exported.
+> **Superseded:** `ConfigOverrideMixin` has since been removed. Settings that
+> override a config default now write the config slot directly via `setSlot`
+> (read via `getConf`), with read-time tier resolution handled by promotable
+> slots / `getConfResolved` (see `agent-docs/CONFIG_PATTERN.md`). This
+> subsection no longer applies — the extracted mixins have no override-mixin
+> dependency to carry.
+
+~~Both mixins compose `ConfigOverrideMixin` from `@jbrowse/plugin-linear-genome-view`. That stays — already exported.~~
 
 ### 8d. What this enables for community plugins
 
