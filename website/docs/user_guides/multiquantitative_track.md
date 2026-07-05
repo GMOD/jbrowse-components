@@ -28,7 +28,7 @@ track menu.
 
 Three ways to create one:
 
-- **Add-track panel** — paste a list of BigWig URLs, or open multiple BigWig
+- **"Add a track" form** — paste a list of BigWig URLs, or open multiple BigWig
   files from your machine
 - **Track selector** — multi-select existing tracks and combine them into a
   multi-quantitative track from your selection
@@ -36,8 +36,8 @@ Three ways to create one:
   [multi-quantitative track configuration](/docs/config_guides/multiquantitative_track/)
   guide
 
-<Figure caption="The add-track widget's workflow selector (red callout) lets you reach the multi-quantitative workflow, where you can paste a list of BigWig URLs or open multiple BigWig files from disk." src="/img/multiwig/addtrack.png" />
-<Figure caption="In the track selector, the '...' menu adds individual tracks or whole categories to your selection. The cart icon in the add-track widget then turns the selection into a multi-quantitative track." src="/img/multiwig/trackselector.png" />
+<Figure caption="The 'Add a track' form's workflow selector (red callout) lets you reach the multi-quantitative workflow, where you can paste a list of BigWig URLs or open multiple BigWig files from disk." src="/img/multiwig/addtrack.png" />
+<Figure caption="In the track selector, the '...' menu adds individual tracks or whole categories to your selection. The cart icon in the 'Add a track' form then turns the selection into a multi-quantitative track." src="/img/multiwig/trackselector.png" />
 
 ## Loading bedMethyl as a multi-quantitative track
 
@@ -64,7 +64,7 @@ fraction). Omit it for separate 5mC and 5hmC rows.
 
 ### Add-track UI
 
-In the add-track dialog, paste the URL to your `.bedmethyl.gz` file. JBrowse
+In the "Add a track" form, paste the URL to your `.bedmethyl.gz` file. JBrowse
 detects the `.bedmethyl.gz` extension and selects **BedTabixAdapter** and
 **MultiQuantitativeTrack** automatically.
 

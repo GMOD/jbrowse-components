@@ -18,7 +18,7 @@ appears asking for your SV data.
 The following formats are supported:
 
 - CSV, TSV
-- VCF or VCF.gz (plain text VCF, or (b)gzipped VCF)
+- VCF or VCF.gz (plain text or (b)gzipped)
 - BED, BEDPE
 - STAR-fusion result file
 

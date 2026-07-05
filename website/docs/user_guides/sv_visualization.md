@@ -210,14 +210,14 @@ of curves rather than scattered singleton pileup rows.
 — HG002 deletion with Nanopore and Illumina reads in arc mode
 
 A read can look concordant (light-grey LR fill) yet still carry a dark-blue
-connector. That happens when the read itself crosses the inversion breakpoint: it
-is split into a primary alignment and a strand-flipped supplementary alignment,
-and the arc joining those two segments is colored for the inversion — the same
-dark blue as an RR pair. This is not an aberrant mate pair. It is a second,
-independent line of evidence for the same inversion, from a single split read
-rather than a pair, so the shared color is corroboration. Hover any connector to
-read its classification (for example, _Split-read inversion_ versus _RR — both
-mates reverse strand_).
+connector. That happens when the read itself crosses the inversion breakpoint:
+it is split into a primary alignment and a strand-flipped supplementary
+alignment, and the arc joining those two segments is colored for the inversion —
+the same dark blue as an RR pair. This is not an aberrant mate pair. It is a
+second, independent line of evidence for the same inversion, from a single split
+read rather than a pair, so the shared color is corroboration. Hover any
+connector to read its classification (for example, _Split-read inversion_ versus
+_RR — both mates reverse strand_).
 
 ## Linked reads
 
@@ -315,7 +315,7 @@ Loading a very large genomic region can trigger an error when the window would
 require fetching more data than JBrowse allows in a single request. For large or
 inter-chromosomal SVs, a better approach is:
 
-- Use a **bigWig coverage track** (or a
+- Use a **BigWig coverage track** (or a
   [multi-quantitative track](/docs/user_guides/multiquantitative_track) for
   tumor vs normal comparison) instead of a full alignments track when surveying
   the region — it loads at any scale and makes copy-number changes immediately
@@ -328,7 +328,7 @@ inter-chromosomal SVs, a better approach is:
 - Use the **SV inspector** for whole-genome triage before drilling into
   individual calls
 
-<Figure caption="COLO829 melanoma tumor (red) and matched normal (blue) whole-genome coverage as a multi-quantitative bigWig track. Copy-number changes are visible at chromosome scale without loading any reads." src="/img/cnv.png" />
+<Figure caption="COLO829 melanoma tumor (red) and matched normal (blue) whole-genome coverage as a multi-quantitative BigWig track. Copy-number changes are visible at chromosome scale without loading any reads." src="/img/cnv.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-AcZSrC_yOb&password=e7b64)
 — COLO829 tumor vs normal whole-genome coverage
@@ -376,7 +376,7 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
   required to fully resolve the inserted sequence
 - **Repetitive regions**: SVs in segmental duplications or repeats produce
   noisy, ambiguous signals; soft-clipped reads and orientation anomalies are
-  common artefacts in these regions
+  common artifacts in these regions
 - **Short-read orientation coloring** assumes `fr` (Illumina) read pairs;
   SOLiD-style orientations are not supported.
 

@@ -14,9 +14,9 @@ hic-straw module.
 
 ## Loading a Hi-C track
 
-In the Add track dialog, paste the URL to a `.hic` file (or open it from disk).
-JBrowse auto-detects the format and creates a Hi-C track. The track renders a
-triangular contact matrix below the chromosome ruler.
+In the "Add a track" form, paste the URL to a `.hic` file (or open it from
+disk). JBrowse auto-detects the format and creates a Hi-C track. The track
+renders a triangular contact matrix below the chromosome ruler.
 
 ## Reading the contact matrix
 
