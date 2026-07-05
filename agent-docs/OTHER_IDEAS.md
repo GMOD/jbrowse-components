@@ -106,6 +106,40 @@ query/reference.
 **Better defaults for human vs mouse.** Tune color schemes and default display options
 for common interspecies comparisons.
 
+**Barycenter / layer-sweep chromosome diagonalization (upgrade over single-pass greedy
+best-hit).** `diagonalizeRegions` (packages/core) assigns each query chromosome to its
+single **best** reference (max aligned bases) and sorts by position within that one ref —
+a single-pass greedy best-hit, the same tier as D-GENIES / RaGOO / mummerplot `--layout`.
+`runDiagonalize` now cascades this top-down across a stacked N-way view (each level
+diagonalizes against the row the level above just reordered — a one-sided Sugiyama
+layer-sweep, top row pinned). Two research-backed upgrades remain, both aimed at fewer
+ribbon crossings for polyploid / multi-mapping genomes (e.g. grape's ancestral
+triplication in the grape/peach/cacao demo, where one grape chromosome maps to ~3 others):
+
+- **Soft (barycenter) positioning instead of winner-take-all.** Place each query
+  chromosome at the aligned-base-weighted mean of *all* its partners' positions on a
+  global reference axis (cumulative ref-length offsets), rather than snapping to one best
+  hit and discarding the other 2/3 of the mapping. D-GENIES's squared-length "gravity"
+  weighting is a good noise-suppressor variant. Contained rewrite of `diagonalizeRegions`
+  (per-query accumulation of a global weighted position + strand sum, sort by that
+  scalar) — and *also* a simplification (drops the nested per-(query,ref) `PairStats` map).
+- **Iterative up/down sweeps** (Sugiyama median heuristic — a 3-approximation, Eades &
+  Wormald 1994) for the no-pinned-focus case, and/or an optional simulated-annealing
+  polish on the true crossing count (AccuSyn) seeded from the barycenter layout.
+
+Why deferred, not done: it **changes documented tie-breaking semantics**, not just adds.
+The `base-count tie` test in `diagonalize.test.ts` pins `[qY, qX, qZ]` (a tied qX snapped
+to its first-seen ref); a barycenter places qX at the centroid of both refs → `[qY, qZ,
+qX]`. The determinism invariant (result independent of input order) still holds, but the
+specific expected order changes, and whether the new layout is *visually* cleaner needs
+A/B validation across several real datasets (rebuild jbrowse-web + regenerate synteny
+screenshots), not just this one demo — where the dominant messiness is the *transitive*
+peach↔cacao band, which no reordering can fix. A deliberate, separately-scoped pass with
+browser verification. Sources: Sugiyama-Tagawa-Toda 1981; Eades & Wormald 1994 (median
+3-approx); D-GENIES `paf.py` gravity; AccuSyn (crossing-count SA); ChromSyn / GENESPACE
+(focal-propagation barycenter). Orthogonal to the "phylogeny-aware row ordering" note
+below (that orders *rows* by relatedness; this orders *chromosomes within a row*).
+
 **CIGAR draw toggles via gpuProps.** Shader uniform bit flags to gate
 `drawCIGAR`/`drawCIGARMatchesOnly`/`drawLocationMarkers`; worker always emits full
 geometry, flags control visibility. Only worth it if users toggle frequently.
