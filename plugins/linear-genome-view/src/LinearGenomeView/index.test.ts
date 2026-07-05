@@ -14,6 +14,7 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
+import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
 import { stateModelFactory } from './index.ts'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 'json' }
@@ -132,6 +133,9 @@ function initialize() {
       name: 'testSession',
       rpcManager: 'rpcManagerExists',
       view: types.maybe(LinearGenomeModel),
+      // a view held by the session but absent from `views`, so isTopLevelView
+      // is false for it (mimics an lgv nested inside another view)
+      nestedView: types.maybe(LinearGenomeModel),
       configuration: types.map(types.string),
       // presence of `widgets` is what isSessionModelWithWidgets keys off, so
       // activateTrackSelector (used by init.tracklist) works in the stub
@@ -146,7 +150,11 @@ function initialize() {
         },
       }),
     })
-    .views(() => ({
+    .views(self => ({
+      // isTopLevelView keys off session.views membership; only `view` counts
+      get views() {
+        return self.view ? [self.view] : []
+      },
       getTracksById() {
         return {}
       },
@@ -157,6 +165,10 @@ function initialize() {
     .actions(self => ({
       setView(view: LGV) {
         self.view = view
+        return view
+      },
+      setNestedView(view: LGV) {
+        self.nestedView = view
         return view
       },
       notifyError(message: string, _error?: unknown) {
@@ -1779,6 +1791,61 @@ describe('onTrackDragOver reorders tracks', () => {
     const { model, a, b, c } = setup()
     model.onTrackDragOver(b, 100)
     expect(model.tracks.map(t => t.id)).toEqual([a, b, c])
+  })
+})
+
+describe('getTrackOrderSubMenu gates items by track count and view level', () => {
+  function makeView(trackCount: number, nested = false) {
+    const { Session, LinearGenomeModel } = initialize()
+    const view = LinearGenomeModel.create({
+      id: nested ? 'nested' : 'topLevel',
+      type: 'LinearGenomeView',
+      tracks: Array.from({ length: trackCount }, (_, i) => ({
+        name: `t${i}`,
+        type: 'BasicTrack',
+      })),
+    })
+    const session = Session.create({ configuration: {} })
+    return nested ? session.setNestedView(view) : session.setView(view)
+  }
+
+  function labels(view: LGV) {
+    return getTrackOrderSubMenu({ view, track: view.tracks[0]! }).map(m =>
+      'label' in m ? m.label : undefined,
+    )
+  }
+
+  test('single top-level track offers pin only, no moves', () => {
+    expect(labels(makeView(1))).toEqual(['Pin track'])
+  })
+
+  test('two tracks add up/down but not the to-top/to-bottom jumps', () => {
+    expect(labels(makeView(2))).toEqual([
+      'Pin track',
+      'Move track up',
+      'Move track down',
+    ])
+  })
+
+  test('three+ tracks add the to-top and to-bottom jumps', () => {
+    expect(labels(makeView(3))).toEqual([
+      'Pin track',
+      'Move track to top',
+      'Move track up',
+      'Move track down',
+      'Move track to bottom',
+    ])
+  })
+
+  test('pin item reflects the pinned state', () => {
+    const view = makeView(1)
+    view.tracks[0]!.setPinned(true)
+    expect(labels(view)).toEqual(['Unpin track'])
+  })
+
+  test('single nested (non-top-level) track yields an empty submenu', () => {
+    // regression: this used to render an empty "Track order" parent entry
+    expect(labels(makeView(1, true))).toEqual([])
   })
 })
 
