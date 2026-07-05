@@ -1,7 +1,7 @@
-import matrixConfigFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
-import matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/model.ts'
 import configFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
 import stateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
+import matrixConfigFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
+import matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/model.ts'
 
 // The raw `rowHeight` property holds px, or 0 for fit-to-display-height; the
 // resolved value is the `effectiveRowHeight` getter (0 -> availableHeight/nrow).
