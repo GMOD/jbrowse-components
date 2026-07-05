@@ -8,6 +8,10 @@ import { drawDotplotInstances } from './drawDotplot.ts'
 import type { DotplotRenderModel } from './types.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 
+// Minimal structural view type instead of DotplotViewModel: this file is in
+// the display model's return-type inference path, so importing the view model
+// (which references the display model) forms a cycle that collapses the whole
+// model type to `any`. Keep it structural.
 interface RenderSvgView {
   viewWidth: number
   viewHeight: number

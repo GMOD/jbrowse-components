@@ -1,4 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { exportMargin } from '@jbrowse/core/svg/constants'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { when } from 'mobx'
@@ -14,7 +15,7 @@ export async function renderToSvg(
   opts: ExportSvgOptions,
 ) {
   await when(() => model.initialized)
-  const { themeName = 'default', Wrapper = ({ children }) => children } = opts
+  const { themeName = 'default', Wrapper } = opts
 
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
@@ -40,18 +41,17 @@ export async function renderToSvg(
     height,
     Wrapper,
     children: (
-      <>
+      <g transform={`translate(${exportMargin} 0)`}>
         <VerticalAxisRaw model={model} />
         <g transform={`translate(${borderX} 0)`}>
           <DotplotGrid model={model} />
-          {additional}
           <SvgClipRect
             id={`clip-ruler-${model.id}`}
             width={viewWidth}
             height={viewHeight}
           >
+            {additional}
             {displayResults.map(({ track, result }) => (
-              /* biome-ignore lint/suspicious/noArrayIndexKey: */
               <g key={track.configuration.trackId}>{result}</g>
             ))}
           </SvgClipRect>
@@ -59,7 +59,7 @@ export async function renderToSvg(
         <g transform={`translate(${borderX} ${viewHeight})`}>
           <HorizontalAxisRaw model={model} />
         </g>
-      </>
+      </g>
     ),
   })
 }
