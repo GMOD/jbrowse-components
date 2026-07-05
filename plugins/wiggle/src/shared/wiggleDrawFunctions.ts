@@ -13,6 +13,19 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
+// One source's features painted into one block's row. Shared by every render
+// mode; each mode adds its own color/size fields (see the per-fn args below).
+// Built once per source per block, so spreading into it isn't a hot path.
+interface RowDraw {
+  ctx: Ctx2D
+  source: SourceRenderData
+  block: RenderBlock
+  rowHeight: number
+  rowTop: number
+  domainY: [number, number]
+  scaleType: number
+}
+
 function makeScoreToY(
   rowHeight: number,
   domainY: [number, number],
@@ -26,16 +39,16 @@ function makeScoreToY(
   return (score: number) => (1 - normalize(score)) * rowHeight
 }
 
-export function drawXYPlot(
-  ctx: Ctx2D,
-  source: SourceRenderData,
-  block: RenderBlock,
-  rowHeight: number,
-  rowTop: number,
-  domainY: [number, number],
-  scaleType: number,
-  rgb: string,
-) {
+export function drawXYPlot({
+  ctx,
+  source,
+  block,
+  rowHeight,
+  rowTop,
+  domainY,
+  scaleType,
+  rgb,
+}: RowDraw & { rgb: string }) {
   ctx.fillStyle = rgb
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const originY = scoreToY(0) + rowTop
@@ -63,27 +76,23 @@ export function drawXYPlot(
     const scoreY = scoreToY(scores[i]!) + rowTop
     const left = Math.min(x1, x2)
     const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
-    const h = originY - scoreY
-    if (h >= 0) {
-      ctx.fillRect(left, scoreY, w, h)
-    } else {
-      ctx.fillRect(left, originY, w, -h)
-    }
+    // bar grows from the score baseline (originY) up or down to the score
+    ctx.fillRect(left, Math.min(scoreY, originY), w, Math.abs(originY - scoreY))
   }
 }
 
-export function drawDensity(
-  ctx: Ctx2D,
-  source: SourceRenderData,
-  block: RenderBlock,
-  rowHeight: number,
-  rowTop: number,
-  domainY: [number, number],
-  scaleType: number,
-  r: number,
-  g: number,
-  b: number,
-) {
+export function drawDensity({
+  ctx,
+  source,
+  block,
+  rowHeight,
+  rowTop,
+  domainY,
+  scaleType,
+  r,
+  g,
+  b,
+}: RowDraw & { r: number; g: number; b: number }) {
   const colorFn = makeDensityRgbStringFn(
     domainY[0],
     domainY[1],
@@ -126,16 +135,16 @@ export function drawDensity(
 // for each feature; the implicit continuation between iterations draws the
 // vertical step at the junction. Drop-to-zero is just another lineTo when
 // the next feature is non-adjacent.
-export function drawLine(
-  ctx: Ctx2D,
-  source: SourceRenderData,
-  block: RenderBlock,
-  rowHeight: number,
-  rowTop: number,
-  domainY: [number, number],
-  scaleType: number,
-  rgb: string,
-) {
+export function drawLine({
+  ctx,
+  source,
+  block,
+  rowHeight,
+  rowTop,
+  domainY,
+  scaleType,
+  rgb,
+}: RowDraw & { rgb: string }) {
   const n = source.numFeatures
   if (n === 0) {
     return
@@ -189,17 +198,17 @@ export function drawLine(
   ctx.stroke()
 }
 
-export function drawScatter(
-  ctx: Ctx2D,
-  source: SourceRenderData,
-  block: RenderBlock,
-  rowHeight: number,
-  rowTop: number,
-  domainY: [number, number],
-  scaleType: number,
-  rgb: string,
-  pointSize: number,
-) {
+export function drawScatter({
+  ctx,
+  source,
+  block,
+  rowHeight,
+  rowTop,
+  domainY,
+  scaleType,
+  rgb,
+  pointSize,
+}: RowDraw & { rgb: string; pointSize: number }) {
   ctx.fillStyle = rgb
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const positions = source.featurePositions

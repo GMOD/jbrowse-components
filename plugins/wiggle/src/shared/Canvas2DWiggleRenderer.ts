@@ -61,45 +61,16 @@ function drawWiggleBlocks(
       const g = Math.round(source.color[1] * 255)
       const b = Math.round(source.color[2] * 255)
       const rgb = `rgb(${r},${g},${b})`
+      const row = { ctx, source, block, rowHeight, rowTop, domainY, scaleType }
 
       if (renderingType === RENDERING_TYPE_LINE) {
-        drawLine(ctx, source, block, rowHeight, rowTop, domainY, scaleType, rgb)
+        drawLine({ ...row, rgb })
       } else if (renderingType === RENDERING_TYPE_DENSITY) {
-        drawDensity(
-          ctx,
-          source,
-          block,
-          rowHeight,
-          rowTop,
-          domainY,
-          scaleType,
-          r,
-          g,
-          b,
-        )
+        drawDensity({ ...row, r, g, b })
       } else if (renderingType === RENDERING_TYPE_SCATTER) {
-        drawScatter(
-          ctx,
-          source,
-          block,
-          rowHeight,
-          rowTop,
-          domainY,
-          scaleType,
-          rgb,
-          scatterPointSize,
-        )
+        drawScatter({ ...row, rgb, pointSize: scatterPointSize })
       } else {
-        drawXYPlot(
-          ctx,
-          source,
-          block,
-          rowHeight,
-          rowTop,
-          domainY,
-          scaleType,
-          rgb,
-        )
+        drawXYPlot({ ...row, rgb })
       }
     }
     ctx.restore()
