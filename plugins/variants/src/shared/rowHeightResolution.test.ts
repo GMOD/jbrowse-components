@@ -30,6 +30,30 @@ describe('row height resolution', () => {
     expect(m.effectiveRowHeight).toBe(20)
   })
 
+  // Fit mode divides availableHeight across the rows, so the content fills the
+  // viewport exactly: nothing overflows and there is nothing to scroll.
+  it('fit mode fills the viewport exactly (no overflow, no scroll)', () => {
+    const m = createDisplay()
+    m.setSources([{ name: 'A' }, { name: 'B' }, { name: 'C' }])
+    expect(m.nrow).toBe(3)
+    expect(m.effectiveRowHeight).toBe(m.availableHeight / 3)
+    expect(m.totalHeight).toBeCloseTo(m.availableHeight)
+    expect(m.hasOverflow).toBe(false)
+    expect(m.scrollableHeight).toBe(0)
+  })
+
+  // A pinned rowHeight taller than the fit height makes the rows overflow the
+  // viewport; totalHeight tracks nrow and the excess becomes scrollable.
+  it('a pinned rowHeight taller than fit overflows and scrolls', () => {
+    const m = createDisplay()
+    m.setSources([{ name: 'A' }, { name: 'B' }, { name: 'C' }])
+    const rh = m.availableHeight // each row as tall as the whole viewport
+    m.setRowHeight(rh)
+    expect(m.totalHeight).toBe(rh * 3)
+    expect(m.hasOverflow).toBe(true)
+    expect(m.scrollableHeight).toBe(rh * 2)
+  })
+
   it('setFitToHeight returns to fit mode', () => {
     const m = createDisplay()
     m.setRowHeight(20)
