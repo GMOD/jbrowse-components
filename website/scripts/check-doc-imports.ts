@@ -254,9 +254,9 @@ function isPointInTimeDoc(file: string) {
   const name = file.slice(file.lastIndexOf('/') + 1)
   return (
     file.includes('/architecture-decision-records/') ||
-    /^RFC-/.test(name) ||
+    name.startsWith('RFC-') ||
     name === 'OTHER_IDEAS.md' ||
-    /_PLAN\.md$/.test(name)
+    name.endsWith('_PLAN.md')
   )
 }
 

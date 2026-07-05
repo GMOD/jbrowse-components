@@ -1,7 +1,7 @@
 import { getCollection } from 'astro:content'
 
 import { baseUrl } from '../lib/base-url.ts'
-import { blogPath } from '../lib/blog-path.ts'
+import { blogExcerpt, blogPath } from '../lib/blog-path.ts'
 import { renderMarkdown } from '../lib/markdown.ts'
 
 import type { APIRoute } from 'astro'
@@ -9,8 +9,6 @@ import type { APIRoute } from 'astro'
 const CHANNEL_TITLE = 'JBrowse Blog'
 const CHANNEL_DESCRIPTION =
   'Release announcements and news from the JBrowse project.'
-// Match the blog index excerpt length so the feed shows the same preview.
-const EXCERPT_CHARS = 600
 const MAX_ITEMS = 20
 
 function escapeXml(s: string) {
@@ -31,10 +29,8 @@ export const GET: APIRoute = async ({ site }) => {
   const items = await Promise.all(
     posts.slice(0, MAX_ITEMS).map(async post => {
       const link = abs(`blog/${blogPath(post)}/`)
-      const body = post.body ?? ''
-      const excerpt =
-        body.length > EXCERPT_CHARS ? body.slice(0, EXCERPT_CHARS) : body
-      const { html } = await renderMarkdown(excerpt)
+      const { text } = blogExcerpt(post.body ?? '')
+      const { html } = await renderMarkdown(text)
       return `    <item>
       <title>${escapeXml(post.data.title)}</title>
       <link>${link}</link>

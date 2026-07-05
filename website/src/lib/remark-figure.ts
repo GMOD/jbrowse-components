@@ -27,6 +27,15 @@ function parseAttrs(str: string): Record<string, string> {
   return attrs
 }
 
+// Escape for HTML text content (rehype-raw parses this string, so a literal
+// `<DEL>` in a caption would otherwise become an actual element).
+function escapeHtml(s: string): string {
+  return s
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+}
+
 const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
   const base = options.base?.replace(/\/$/, '') ?? ''
   return tree => {
@@ -61,11 +70,11 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       const attrs = parseAttrs(match[1]!)
       const rawSrc = attrs.src ?? ''
       const src = base && rawSrc.startsWith('/') ? `${base}${rawSrc}` : rawSrc
-      const caption = attrs.caption ?? ''
+      const caption = escapeHtml(attrs.caption ?? '')
       // explicit link= wins; otherwise auto-link screenshots that came from a
       // screenshot-spec session
       const liveUrl = attrs.link ?? liveUrlByImg.get(rawSrc)
-      const altText = caption.replaceAll('&', '&amp;').replaceAll('"', '&quot;')
+      const altText = caption.replaceAll('"', '&quot;')
       const img = `<img src="${src}" alt="${altText}"/>`
       if (liveUrl) {
         const a = (inner: string) =>

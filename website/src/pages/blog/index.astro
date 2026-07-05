@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content'
 
 import BlogLayout from '../../layouts/BlogLayout.astro'
 import { baseUrl } from '../../lib/base-url.ts'
-import { blogPath } from '../../lib/blog-path.ts'
+import { blogExcerpt, blogPath } from '../../lib/blog-path.ts'
 import { renderMarkdown } from '../../lib/markdown.ts'
 import blog from '../../styles/blog.module.css'
 
@@ -11,15 +11,10 @@ const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 )
 
-const EXCERPT_CHARS = 600
-
 const renderedPosts = await Promise.all(
   posts.slice(0, 10).map(async post => {
-    const body = post.body ?? ''
-    const truncated = body.length > EXCERPT_CHARS
-    const { html } = await renderMarkdown(
-      truncated ? body.slice(0, EXCERPT_CHARS) : body,
-    )
+    const { text, truncated } = blogExcerpt(post.body ?? '')
+    const { html } = await renderMarkdown(text)
     return { post, html, truncated }
   }),
 )
