@@ -321,6 +321,37 @@ const pill = (cls, text) => '<span class="pill ' + cls + '">' + text + '</span>'
 
 const nameGroup = name => name.split('-')[0] ?? name
 
+// Persist the current filter state in the URL query string so a review view can
+// be reloaded, bookmarked, or shared. Only non-default values are written to
+// keep the URL clean.
+function writeUrl() {
+  const params = new URLSearchParams()
+  const q = $('#search').value
+  if (q) params.set('q', q)
+  if (filters.status !== 'needs') params.set('status', filters.status)
+  if (filters.changedOnly) params.set('changed', '1')
+  if (filters.sortBy !== 'default') params.set('sort', filters.sortBy)
+  if (filters.group) params.set('group', filters.group)
+  if (filters.kind !== 'all') params.set('kind', filters.kind)
+  const qs = params.toString()
+  history.replaceState(null, '', qs ? '?' + qs : location.pathname)
+}
+
+function readUrl() {
+  const params = new URLSearchParams(location.search)
+  const status = params.get('status')
+  if (status) filters.status = status
+  filters.changedOnly = params.get('changed') === '1'
+  const sort = params.get('sort')
+  if (sort) filters.sortBy = sort
+  const group = params.get('group')
+  if (group) filters.group = group
+  const kind = params.get('kind')
+  if (kind) filters.kind = kind
+  const q = params.get('q')
+  if (q) $('#search').value = q
+}
+
 // Diff vs origin/main, the screenshots a branch review cares about:
 // "new" = added on this branch (not on main); "changed" = on main but the
 // working-tree pixels differ (an update). \`s.changed\` is computed server-side.
@@ -333,27 +364,28 @@ const needsReview = s => !s.verdict || s.stale
 function changeFilter(key, value) {
   filters[key] = value
   justActed = new Set()
+  writeUrl()
   render()
 }
 
 function buildGroupOptions() {
   const sel = $('#group')
-  const current = sel.value
   const groups = [...new Set(data.map(s => nameGroup(s.name)))].sort()
   sel.innerHTML = '<option value="">All groups</option>' +
     groups.map(g => '<option value="' + g + '">' + g + '</option>').join('')
-  if (groups.includes(current)) {
-    sel.value = current
-    filters.group = current
-  } else {
-    sel.value = ''
+  // drop a restored group filter that no longer names an existing group
+  if (!groups.includes(filters.group)) {
     filters.group = ''
   }
+  sel.value = filters.group
 }
 
 async function load() {
+  readUrl()
   data = await (await fetch('/api/specs')).json()
   buildGroupOptions()
+  // canonicalize: drops a shared-URL group that no longer names a real group
+  writeUrl()
   render()
 }
 
@@ -540,7 +572,10 @@ $('header').addEventListener('click', e => {
     changeFilter('changedOnly', !filters.changedOnly)
   }
 })
-$('#search').addEventListener('input', render)
+$('#search').addEventListener('input', () => {
+  writeUrl()
+  render()
+})
 $('#sortby').addEventListener('change', () => changeFilter('sortBy', $('#sortby').value))
 $('#group').addEventListener('change', () => changeFilter('group', $('#group').value))
 $('#kind').addEventListener('change', () => changeFilter('kind', $('#kind').value))
