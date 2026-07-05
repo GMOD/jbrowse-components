@@ -27,5 +27,17 @@ export function dedupedSortedCDS(feature: Feature): CdsSegment[] {
       }
     }
   }
+  // Standalone polyprotein CDS (no gene/mRNA wrapper): its children are the
+  // mature-protein cleavage products, not CDS segments, so the loop above finds
+  // none. The CDS feature is itself the single coding unit, so its own span is
+  // the one translation segment — keeping the overlay and the translation in
+  // agreement, same as every other shape.
+  if (cds.length === 0 && isCDS(feature)) {
+    const start = feature.get('start')
+    const end = feature.get('end')
+    if (start < end) {
+      cds.push({ start, end, phase: feature.get('phase') ?? 0 })
+    }
+  }
   return cds
 }

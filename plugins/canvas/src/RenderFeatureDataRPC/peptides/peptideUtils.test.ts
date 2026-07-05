@@ -235,6 +235,35 @@ describe('findTranscriptsWithCDS', () => {
     expect(result[0]!.id()).toBe('mRNA-1')
   })
 
+  it('finds a standalone polyprotein CDS (mature-protein children, no wrapper)', () => {
+    // a bare CDS -> mature_protein_region GFF with no gene/mRNA layer: the CDS
+    // is itself the coding unit, so it must be translated even though its
+    // cleavage-product children are not CDS segments
+    const cds = createMockFeature({
+      id: 'cds-1',
+      type: 'CDS',
+      subfeatures: [
+        createMockFeature({ type: 'mature_protein_region_of_CDS' }),
+        createMockFeature({ type: 'mature_protein_region_of_CDS' }),
+      ],
+    })
+
+    const features = new Map([['cds-1', cds]])
+    const result = findTranscriptsWithCDS(features)
+
+    expect(result).toHaveLength(1)
+    expect(result[0]!.id()).toBe('cds-1')
+  })
+
+  it('ignores a bare CDS with no children', () => {
+    const cds = createMockFeature({ id: 'cds-1', type: 'CDS', subfeatures: [] })
+
+    const features = new Map([['cds-1', cds]])
+    const result = findTranscriptsWithCDS(features)
+
+    expect(result).toHaveLength(0)
+  })
+
   it('descends into a structural container (children are containers) for a custom type', () => {
     const mRNA = createMockFeature({
       id: 'mRNA-1',
@@ -329,6 +358,30 @@ describe('processTranscriptFromSeq', () => {
     expect(
       processTranscriptFromSeq(seq, transcript, standardCode)?.protein,
     ).toBe('MK')
+  })
+
+  it('translates a standalone polyprotein CDS from its own span', () => {
+    // the CDS owns mature_protein_region children (not CDS segments), so the
+    // coding sequence is the CDS feature's own extent
+    const cds = createCoordFeature({
+      type: 'CDS',
+      start: 0,
+      end: 6,
+      strand: 1,
+      subfeatures: [
+        createCoordFeature({
+          type: 'mature_protein_region_of_CDS',
+          start: 0,
+          end: 3,
+        }),
+        createCoordFeature({
+          type: 'mature_protein_region_of_CDS',
+          start: 3,
+          end: 6,
+        }),
+      ],
+    })
+    expect(processTranscriptFromSeq(seq, cds, standardCode)?.protein).toBe('MK')
   })
 
   it('dedupes duplicate CDS rows so the protein is not frameshifted', () => {

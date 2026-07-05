@@ -13,6 +13,7 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { dedupedSortedCDS } from './cdsSegments.ts'
 import { hasCDSSubfeature, hasContainerChildren } from '../glyphs/glyphUtils.ts'
+import { hasMatureProteinChildren } from '../glyphs/matureProteinRegion.ts'
 import { getSubfeatures, isCDS } from '../util.ts'
 
 import type { PeptideData } from '../types.ts'
@@ -69,7 +70,15 @@ export function findTranscriptsWithCDS(
   const transcripts: Feature[] = []
 
   for (const feature of features.values()) {
-    if (hasContainerChildren(feature)) {
+    // Standalone polyprotein CDS (no gene/mRNA wrapper, e.g. a bare
+    // CDS → mature_protein_region GFF): the CDS is itself the coding unit that
+    // findGlyph routes to MatureProteinRegion, so it must translate as its own
+    // single-segment transcript — dedupedSortedCDS returns its own span. Checked
+    // first since its cleavage-product children satisfy none of the CDS-child
+    // heuristics below.
+    if (isCDS(feature) && hasMatureProteinChildren(feature)) {
+      transcripts.push(feature)
+    } else if (hasContainerChildren(feature)) {
       const matchingTranscripts =
         getSubfeatures(feature).filter(hasCDSSubfeature)
       if (matchingTranscripts.length > 0) {
