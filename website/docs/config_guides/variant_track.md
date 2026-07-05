@@ -1,5 +1,5 @@
 ---
-title: Variant track configuration
+title: Variant track
 description:
   VCF variant track config, SVTYPE coloring, and multi-sample displays
 guide_category: Track types

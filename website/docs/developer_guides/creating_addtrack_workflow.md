@@ -1,5 +1,5 @@
 ---
-title: Creating custom add-track workflows
+title: Add-track workflows
 description: Custom UI in the Add track dialog for non-standard track types
 guide_category: Creating pluggable elements
 ---

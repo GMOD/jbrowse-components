@@ -7501,8 +7501,8 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 540,
     settleMs: 2000,
     hideTooltip: true,
-    // subject is the manager table; the hg38 assembly exists in config but
-    // isn't assigned to the view, so the empty view fails to launch
+    // subject is the assembly-manager dialog opened over a view with no
+    // assembly assigned, so the empty view legitimately fails to launch
     expectedConsole: ['No assembly provided when launching linear genome view'],
     actions: [
       { type: 'click', text: 'Tools' },
@@ -7528,8 +7528,8 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 540,
     settleMs: 2000,
     hideTooltip: true,
-    // subject is the assembly-manager dialog opened over a view with no
-    // assembly assigned, so the empty view legitimately fails to launch
+    // subject is the manager table; the hg38 assembly exists in config but
+    // isn't assigned to the view, so the empty view fails to launch
     expectedConsole: ['No assembly provided when launching linear genome view'],
     actions: [
       { type: 'click', text: 'Tools' },

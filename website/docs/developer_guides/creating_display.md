@@ -1,5 +1,5 @@
 ---
-title: Creating custom display types
+title: Custom display types
 description: Control how a track renders in a given view type
 guide_category: Creating pluggable elements
 ---

@@ -37,7 +37,7 @@ test('uses an explicit mate field (already 0-based)', () => {
     refName: 'chr1',
     start: 100,
     end: 200,
-    mate: { refName: 'chr2', start: 500 },
+    mate: { refName: 'chr2', start: 500, end: 600 },
   })
   expect(getEndpoint(feature, blocksForRefs, chr1)).toEqual({
     endBlock: chr2,

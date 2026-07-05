@@ -935,4 +935,24 @@ as promotable config slots that resolve at read-time on the display — NOT the
 See **`agent-docs/DISPLAY_TYPE_DEFAULTS.md`** for the master doc.
 
 
-## make option for 'fit to display height' for plugins/alignments and plugins/canvas?
+
+## display types
+
+
+What I got wrong
+
+ConfigurationEditorWidget.target is not the live display model. It's either track.configuration or a temporary MST config trackSchema.create(...) (DrawerWidgets.ts:184), and edits are debounce-saved back as a trackConfigDeltas diff (Session/CLAUDE.md), not a live mutation. Three consequences I hadn't accounted for:
+
+- The node can be detached — so getSession(node) inside makeSlotFacade can throw. Session has to be threaded from the widget (which can reach it, as its own debounce autorun proves). So it's prop-drilling/context, not a tidy SlotFacade field.
+- Two different persistence axes in one form. The value editor writes a per-track delta; a promotion checkbox writes a session-wide preference. Mixing them in one panel is conceptually muddy — workable, but not the clean "it's just more chrome like the jexl toggle" story I told.
+- The editor shows raw stripped values, which diverge from what's rendered. An un-pinned track has the slot stripped, so slot.value is the default (or the 'inherit' sentinel), while the track visually renders the active session default (Compact). So the editor would show displayMode: 'inherit' on a track that's drawing Compact. The "inheriting…" caption papers over it, but the raw-vs-resolved gap is real, and worst exactly for the sentinel slots.
+
+Calibrated confidence
+
+- Direction — metadata-driven, single promotable flag feeds the UI: high (~85%). Architecturally sound; the badge already proves zero-per-slot enumeration works.
+- Track-menu auto-generation via the mixin: high (~80%). It operates on the live display model, where resolveSlot/getConfResolved already work correctly and reactively. This is the safe generalization, and it's where the
+- Config-editor GUI as a clean drop-in: low (~40%). Feasible, but it's athree frictions above — detached taaw-vs-resolved display — not a small SlotEditor addition. I over-sold it last turn.
+Things I still haven't measured that gate any of this: the field-wise slmany existing subclasses override anly inherit baseadvanced/description — unknown, potentially wide), and the test surface (displayMode/showSoftClipping/Overr).
+                                                                                                     What I'd actually recommend
+                                                                                                     Do the mixin-driven track-menu autohigh-confidence generalization, runs where the resolver already behaves, and gets per-slot cost down to a schema line without touching    the editor's delta/detached-target ditor control as a separate, laterspike, and only after deciding how you want raw-vs-resolved and the two-axes mixing to read — that's a UX call, not just code.
+                                                                                                     Want me to prototype the mixin auto (low blast radius, easy to verifyagainst the existing displayMode/showSoftClipping tests), and leave the editor question parked until we've seen that land?

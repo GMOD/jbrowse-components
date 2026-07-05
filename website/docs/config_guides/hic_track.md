@@ -1,5 +1,5 @@
 ---
-title: Hi-C track configuration
+title: Hi-C track
 description: Contact matrix track config using the HicAdapter
 guide_category: Track types
 ---

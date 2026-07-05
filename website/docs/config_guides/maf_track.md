@@ -1,5 +1,5 @@
 ---
-title: Multiple alignment (MAF) track configuration
+title: MAF track
 description:
   Multiple alignment tracks using the MafTabixAdapter, BigMafAdapter, and
   BgzipTaffyAdapter

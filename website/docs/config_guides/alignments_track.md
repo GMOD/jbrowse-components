@@ -1,5 +1,5 @@
 ---
-title: Alignments track configuration
+title: Alignments track
 description: BAM/CRAM track config with BamAdapter and CramAdapter options
 guide_category: Track types
 ---

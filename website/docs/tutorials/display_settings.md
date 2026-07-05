@@ -1,5 +1,5 @@
 ---
-title: Applying display settings
+title: Display settings
 description:
   Set track display settings via config.json, URL, or embedded session
 guide_category: Tutorials

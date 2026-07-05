@@ -39,13 +39,12 @@ program such as SHAPEIT.
 
 <Figure caption="Screenshot showing the phased rendering mode along with the menu item used to select it 'Rendering mode'->'Phased'" src="/img/trio-matrix-phased.png"/>
 
-## Finding matching haplotypes with "visual phasing"
+## Reading matching haplotypes off the matrix
 
-The term "visual phasing" comes from the genetic genealogy subfield. We borrow
-it here, but the idea is simple: look at the genotype matrix and find areas
-where different rows match. You would expect the child to match the mom in some
-places and the dad in others. Each row looks like a barcode, so you can find
-matching pieces by eye.
+In the phased display each row reads like a barcode, so matching stretches
+between rows stand out by eye: the child's two haplotypes match the mother's in
+some blocks and the father's in others. The rest of this tutorial turns that
+by-eye pattern into a painted track.
 
 <Figure caption="Screenshot showing the phased rendering mode without any added markup. You can look at this figure and see various areas where rows match one another. The first two rows are the two haplotypes of the child, next two rows are the two haplotypes of the mom, and next two rows are the two haplotypes of the father" src="/img/trio-matrix-phased-clean.png"/>
 
@@ -68,12 +67,9 @@ The hap-ibd program takes as input:
 ## What we're visualizing: crossover points
 
 Each of the child's inherited chromosomes is a mosaic of the two copies its
-parent carries, spliced together at
-[recombination](https://www.genome.gov/genetics-glossary/Crossing-Over)
-(crossing-over) breakpoints. The painting below marks exactly where those
-splices fall along each chromosome.
-
-<Figure caption="Crossing-over: the exchange of DNA between paired homologous chromosomes during meiosis. Figure from the NHGRI genetics glossary." src="/img/crossing_over.jpg"/>
+parent carries, joined at crossover breakpoints. The painting below marks where
+those joins fall — one row per parental haplotype, with the block stepping
+between a parent's two rows at each crossover.
 
 ## Running hap-ibd
 
@@ -106,7 +102,7 @@ event we want to see.
 
 The raw segments are fragmented, though: hap-ibd only emits stretches that pass
 its cM-length thresholds, so there are gaps, and statistically-phased data (see
-[Is hap-ibd the right tool?](#is-hap-ibd-the-right-tool) below) sprinkles in
+[the caveat on the input data](#a-caveat-on-the-input-data) below) sprinkles in
 short spurious flips. So we don't paint the raw segments — we first collapse
 them into clean inheritance blocks.
 
@@ -266,32 +262,17 @@ survive a check against the genotype transmission, so treat the two crossovers
 above as the well-supported ones and the rest as approximate. The next section
 is about why.
 
-## Is hap-ibd the right tool?
+## A caveat on the input data
 
-Not really — and it's worth being honest about why. hap-ibd is built to detect
-IBD between _distantly_ related individuals in large cohorts, so its cM-length
-thresholds are tuned to suppress false positives. A parent and child share a
-whole haplotype, which is a much stronger signal, so hap-ibd's thresholds end up
-fighting you: too strict and the blocks are sparse, too loose and short spurious
-segments creep in (which is why tuning the block-size parameters matters, and
-why we post-process into consensus runs above).
-
-The deeper issue is the input data. This 1000 Genomes VCF is _statistically_
-phased, not trio- or read-backed phased, so its haplotypes carry **switch
-errors** every megabase or so. If you skip hap-ibd entirely and read the
-inherited copy straight off the genotypes (at sites where a parent is
-heterozygous, the child's transmitted allele names the parental copy), chr1
-appears to have ~50 crossovers per parent — but a real human meiosis has only
-about [one to three per chromosome](https://www.nature.com/articles/ng.3669).
-Almost all of those apparent switches are phasing errors, not biology. hap-ibd's
-length threshold is, in effect, a switch-error filter, which is what makes its
-(post-processed) output look closer to the truth here.
-
-So for a clean, _exact_ crossover map you would first re-phase the trio with a
-pedigree-aware or read-backed phaser (e.g. SHAPEIT with the pedigree, or
-WhatsHap on long reads) and then read the mosaic directly from the genotypes.
-hap-ibd is a reasonable stand-in when all you have is a statistically-phased
-VCF, as long as you treat the block boundaries as approximate.
+This 1000 Genomes VCF is _statistically_ phased, not trio- or read-backed
+phased, so its haplotypes carry **switch errors** roughly every megabase. Read
+straight off the genotypes, those errors look like dozens of extra crossovers
+per chromosome. hap-ibd's cM-length threshold acts as a switch-error filter,
+which is why its post-processed blocks track the real boundaries more closely —
+but it was built for distant relatives in large cohorts, not trios, so treat the
+block boundaries as approximate. For an exact map, re-phase the trio with a
+pedigree-aware or read-backed phaser (SHAPEIT with the pedigree, WhatsHap on
+long reads) before painting.
 
 ## A direct alternative: read crossovers from the genotypes
 

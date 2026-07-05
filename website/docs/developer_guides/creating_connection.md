@@ -1,5 +1,5 @@
 ---
-title: Creating custom connections
+title: Custom connections
 description:
   Add many tracks at once, or dynamically query a remote resource, with a
   connection type

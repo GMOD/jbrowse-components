@@ -492,17 +492,16 @@ coverage changes line up with the called intervals.
 
 Raw coverage is only a sanity check on existing calls. For a normalized signal
 that reads directly as copy number, use the log2 ratio and BAF tracks built
-above. HG008-T is a pancreatic ductal adenocarcinoma, and its benchmark calls
-contain the canonical PDAC driver alterations — each with a **different**
-signature across the log2 ratio, BAF, and benchmark CNV tracks, which makes this
-dataset a compact tour of how to read somatic copy number:
+above. Four loci in HG008-T each carry a **different** copy-number state, so
+together they make a compact tour of how the log2 ratio, BAF, and benchmark CNV
+tracks read against one another:
 
-| Gene             | Role       | Alteration in HG008-T            | Signature on the tracks                  |
-| ---------------- | ---------- | -------------------------------- | ---------------------------------------- |
-| **CDKN2A**       | suppressor | Focal homozygous deletion (CN 0) | log2 drops to the floor; depth ratio → 0 |
-| **TP53**         | suppressor | 17p loss + LOH (CN 1, 1+0)       | negative log2 **and** a BAF split        |
-| **SMAD4** (DPC4) | suppressor | 18q loss + LOH (CN 1, 0+1)       | negative log2 **and** a BAF split        |
-| **KRAS**         | oncogene   | Allelic gain (CN 3, 2+1)         | positive log2, imbalanced BAF            |
+| Locus  | State in HG008-T                 | Signature on the tracks                  |
+| ------ | -------------------------------- | ---------------------------------------- |
+| CDKN2A | Focal homozygous deletion (CN 0) | log2 drops to the floor; depth ratio → 0 |
+| TP53   | 17p loss + LOH (CN 1, 1+0)       | negative log2 **and** a BAF split        |
+| SMAD4  | 18q loss + LOH (CN 1, 0+1)       | negative log2 **and** a BAF split        |
+| KRAS   | Allelic gain (CN 3, 2+1)         | positive log2, imbalanced BAF            |
 
 #### CDKN2A: a homozygous deletion vs a single-copy loss
 
@@ -576,29 +575,25 @@ BAF track directly.
 
 #### KRAS and SMAD4
 
-The same reading covers the other two drivers. `KRAS`, the central PDAC
-oncogene, sits on a low-level gain on chr12 (CN 3, 2+1) — positive log2, and a
-BAF split off 0 but well short of 0.5, since a 2+1 gain only partially
-imbalances the alleles.
+The same reading covers the other two loci. `KRAS` on chr12 is a low-level gain
+(CN 3, 2+1) — positive log2, and a BAF split off 0 but well short of 0.5, the
+partial imbalance a 2+1 gain produces rather than a full haplotype loss.
 
 <Figure caption="KRAS on chr12: log2 ratio (top) over BAF (bottom) over the CNV calls. The benchmark SV_101 call is a low-level allelic gain (CN 3, 2+1) — log2 sits just above 0 across the whole gain, and the BAF splits off 0 but stays well short of 0.5, the partial imbalance expected from a 2+1 gain rather than a full haplotype loss." src="/img/sv_cgiab/driver_kras_gain.png" />
 
-`SMAD4` (historically "DPC4", _deleted in pancreatic cancer_) is lost with LOH
-on 18q (CN 1, 0+1), the mirror image of the TP53 event, though the shift here is
-far more muted than the stark chr17 example below.
+`SMAD4` on 18q is lost with LOH (CN 1, 0+1), the mirror image of the TP53 event,
+though the shift here is far more muted than the chr17 example.
 
 <Figure caption="Chromosome 18: log2 ratio (top) over BAF (bottom) over the CNV calls. The centromere-proximal ~22 Mb is noisy mapping-bias signal and uncalled (noCNV); CNA_48, the single-copy loss with LOH, spans nearly the rest of the chromosome but reads as only a modest negative log2 dip and a sparse BAF lift off 0 — both far weaker than the TP53 event on chr17, illustrating how tumor purity can dilute the same underlying allelic-loss signature." src="/img/sv_cgiab/driver_smad4_loh.png" />
 
-Two interpretive caveats: how far the BAF bands separate from 0.5 reflects tumor
-purity (normal-cell contamination pulls the split back toward 0.5), and PDAC
-genomes are whole-genome-doubled in roughly half of cases, which shifts the
-ploidy baseline — allelic states like 2+2 are the tell. Dedicated callers
+How far the BAF bands separate from 0.5 also depends on tumor purity —
+normal-cell contamination pulls the split back toward 0.5 — which is why the
+same allelic state can read strong or muted between loci. Dedicated callers
 ([HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV),
 [Wakhan](https://github.com/KolmogorovLab/Wakhan)) model purity and ploidy
-explicitly; this walkthrough reads the raw signal rather than replacing them.
-See also the
-[multi-quantitative track guide](/docs/user_guides/multiquantitative_track) for
-more on tumor vs normal coverage comparison.
+explicitly; this walkthrough just reads the raw signal off the tracks. See also
+the [multi-quantitative track guide](/docs/user_guides/multiquantitative_track)
+for tumor vs normal coverage comparison.
 
 ### Walkthrough: synteny and dotplot views of the tumor assembly
 

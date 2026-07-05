@@ -1,5 +1,5 @@
 ---
-title: Configuration model basics
+title: Config model basics
 description: Config slot types, defaults, and how configuration schemas work
 guide_category: Core concepts
 ---

@@ -1,5 +1,5 @@
 ---
-title: Plugin dependencies and re-exports
+title: Dependencies and re-exports
 description:
   What JBrowse provides as shared libraries (re-exports) versus what your plugin
   bundles itself from npm, and how to import each

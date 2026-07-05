@@ -1,5 +1,5 @@
 ---
-title: Multi-sample SVs (1000 Genomes)
+title: 1000 Genomes SVs
 description:
   Inspect population-level SVs, explore a family trio, and characterize a large
   chromosomal inversion
@@ -104,8 +104,12 @@ the [Phased trio analysis](/docs/tutorials/analyze_trio) tutorial.
 
 ## The chr19 large inversion
 
-The 1KGP SV callset includes a large well-studied inversion polymorphism on
-chromosome 19. Navigate to **chr19:41,700,000–42,000,000**.
+The 1KGP SV callset includes a large inversion call on chromosome 19 —
+`HGSV_72999`, a ~730 kb inversion spanning roughly chr19:41,797,752–42,527,236.
+It is an imprecise, manually-flagged call that overlaps neighboring complex
+(CPX) events, which makes it a good case for reading the read-level evidence at
+the breakpoints rather than trusting the call outright. Navigate to
+**chr19:41,700,000–42,000,000** to start at its left breakpoint region.
 
 At this scale the variant track shows the inversion call as a wide bar spanning
 the region. Use the **Cluster by genotype** option in the track menu to group

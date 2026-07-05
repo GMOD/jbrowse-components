@@ -1,5 +1,5 @@
 ---
-title: Adding SVG export to a display
+title: SVG export
 description: How to implement renderSvg on a custom display type
 guide_category: Creating pluggable elements
 ---

@@ -1,5 +1,5 @@
 ---
-title: Configuring tracks
+title: Tracks
 description: Configuration options common to all track types
 guide_category: Core configuration
 ---

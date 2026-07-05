@@ -1,5 +1,5 @@
 ---
-title: Synteny track config
+title: Synteny track
 description: Synteny track config for dotplot and linear synteny views
 guide_category: Track types
 ---

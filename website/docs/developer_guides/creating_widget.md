@@ -1,5 +1,5 @@
 ---
-title: Creating custom widgets
+title: Custom widgets
 description: Add new drawer/panel UI components
 guide_category: Creating pluggable elements
 ---

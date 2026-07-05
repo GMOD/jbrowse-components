@@ -1,5 +1,5 @@
 ---
-title: Structural variant visualization
+title: SV visualization
 description: Interpreting SV signals across display types
 guide_category: Views
 ---

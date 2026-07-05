@@ -1,5 +1,5 @@
 ---
-title: Creating a custom text search adapter
+title: Text search adapters
 description: Implement a custom backend for the search box
 guide_category: Creating pluggable elements
 ---

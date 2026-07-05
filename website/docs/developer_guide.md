@@ -69,29 +69,29 @@ own via pull request.
 
 ### Core concepts
 
-- [Configuration model basics](/docs/developer_guides/config_model) - Config slot types, defaults, and how configuration schemas work
+- [Config model basics](/docs/developer_guides/config_model) - Config slot types, defaults, and how configuration schemas work
 - [Configuration schema](/docs/developer_guides/configuration_schema) - Slot types, inheritance, preProcessSnapshot, and reading config values
 - [Data fetching pipeline](/docs/developer_guides/data_fetching) - How BaseLinearDisplay fetches data, the autorun chain, and rpcProps
 - [Extension points](/docs/developer_guides/extension_points) - Callbacks registered by producers and consumed across the app
-- [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports) - What JBrowse provides as shared libraries (re-exports) versus what your plugin bundles itself from npm, and how to import each
+- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports) - What JBrowse provides as shared libraries (re-exports) versus what your plugin bundles itself from npm, and how to import each
 - [MST patterns](/docs/developer_guides/mst_patterns) - Common MobX-State-Tree patterns used across JBrowse plugins
 - [Renderer architecture](/docs/developer_guides/renderer_architecture) - GPU main-thread rendering of worker-fetched feature data
 - [RPC and worker system](/docs/developer_guides/rpc_workers) - How to register and call RPC methods that run in web workers
 
 ### Creating pluggable elements
 
-- [Creating custom adapters](/docs/developer_guides/creating_adapter) - Read data from custom file formats with feature, regions, or sequence adapters
-- [Creating custom add-track workflows](/docs/developer_guides/creating_addtrack_workflow) - Custom UI in the Add track dialog for non-standard track types
-- [Creating custom connections](/docs/developer_guides/creating_connection) - Add many tracks at once, or dynamically query a remote resource, with a connection type
-- [Creating custom display types](/docs/developer_guides/creating_display) - Control how a track renders in a given view type
-- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display) - Build a display that renders with WebGPU/WebGL2 and falls back to Canvas2D
-- [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter) - Implement a custom backend for the search box
-- [Creating custom track types](/docs/developer_guides/creating_track) - Define new high-level track concepts backed by display types
-- [Creating custom view types](/docs/developer_guides/creating_view) - Add entirely new view panels such as DotplotView or CircularView
-- [Creating custom widgets](/docs/developer_guides/creating_widget) - Add new drawer/panel UI components
-- [Drawer widgets in embedded components](/docs/developer_guides/drawer_widgets) - Launching sidebar or popup widgets in the embedded LGV
-- [Creating custom top-level menu items](/docs/developer_guides/menus) - Add items to the top-level application menu bar
-- [Adding SVG export to a display](/docs/developer_guides/svg_export) - How to implement renderSvg on a custom display type
+- [Custom adapters](/docs/developer_guides/creating_adapter) - Read data from custom file formats with feature, regions, or sequence adapters
+- [Add-track workflows](/docs/developer_guides/creating_addtrack_workflow) - Custom UI in the Add track dialog for non-standard track types
+- [Custom connections](/docs/developer_guides/creating_connection) - Add many tracks at once, or dynamically query a remote resource, with a connection type
+- [Custom display types](/docs/developer_guides/creating_display) - Control how a track renders in a given view type
+- [GPU displays](/docs/developer_guides/creating_gpu_display) - Build a display that renders with WebGPU/WebGL2 and falls back to Canvas2D
+- [Text search adapters](/docs/developer_guides/creating_text_search_adapter) - Implement a custom backend for the search box
+- [Custom track types](/docs/developer_guides/creating_track) - Define new high-level track concepts backed by display types
+- [Custom view types](/docs/developer_guides/creating_view) - Add entirely new view panels such as DotplotView or CircularView
+- [Custom widgets](/docs/developer_guides/creating_widget) - Add new drawer/panel UI components
+- [Drawer widgets](/docs/developer_guides/drawer_widgets) - Launching sidebar or popup widgets in the embedded LGV
+- [Top-level menu items](/docs/developer_guides/menus) - Add items to the top-level application menu bar
+- [SVG export](/docs/developer_guides/svg_export) - How to implement renderSvg on a custom display type
 
 ### Advanced topics
 

@@ -27,5 +27,5 @@ export function getEndpoint(
       }
     : mate
       ? { endBlock: blocksForRefs[mate.refName], endPosition: mate.start }
-      : { endBlock: startBlock, endPosition: feature.get('end') as number }
+      : { endBlock: startBlock, endPosition: feature.get('end') }
 }

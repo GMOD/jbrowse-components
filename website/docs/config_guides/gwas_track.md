@@ -1,5 +1,5 @@
 ---
-title: GWAS track configuration
+title: GWAS track
 description:
   Preparing GWAS and LD files and configuring GWASTrack, GWASAdapter, and
   LinearManhattanDisplay

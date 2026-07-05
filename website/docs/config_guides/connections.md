@@ -1,5 +1,5 @@
 ---
-title: Configuring connections
+title: Connections
 description:
   Connection config for UCSC/JB2 track hubs and JBrowse 1 data directories, and
   how connections are stored in config vs. the session

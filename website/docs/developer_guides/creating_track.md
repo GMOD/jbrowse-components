@@ -1,5 +1,5 @@
 ---
-title: Creating custom track types
+title: Custom track types
 description: Define new high-level track concepts backed by display types
 guide_category: Creating pluggable elements
 ---

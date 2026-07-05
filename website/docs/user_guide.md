@@ -29,7 +29,7 @@ title: User guide
 - [Linear synteny view](/docs/user_guides/linear_synteny_view) - Side-by-side alignment of two genomes
 - [Spreadsheet view](/docs/user_guides/spreadsheet_view) - Import tabular data as a searchable feature table
 - [SV inspector view](/docs/user_guides/sv_inspector_view) - Structural variant spreadsheet and circular view
-- [Structural variant visualization](/docs/user_guides/sv_visualization) - Interpreting SV signals across display types
+- [SV visualization](/docs/user_guides/sv_visualization) - Interpreting SV signals across display types
 
 ## Other features
 
@@ -38,15 +38,16 @@ title: User guide
 
 ## Tutorials
 
+- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - Stack strains or accessions in a linear synteny view from a single all-vs-all PAF
 - [Phased trio analysis](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm) - Painting many-cell-type ChromHMM segmentations in one track with the multi-row feature display
-- [Applying display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
+- [Display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
 - [Introgression tracts](/docs/tutorials/introgression) - Painting per-haplotype archaic introgression segments as one labeled row per haplotype with the multi-row feature display
 - [DNA methylation](/docs/tutorials/methylation) - Per-read and aggregate methylation from ONT and modkit
-- [Multi-way synteny from an ortholog table](/docs/tutorials/multiway_synteny) - Build an N-genome linear synteny view from a jcvi MCScan .blocks file
-- [Protein structures and multiple sequence alignments](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
+- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes in a linear synteny view from a jcvi MCScan .blocks file
+- [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
 - [RNA-seq analysis](/docs/tutorials/rnaseq) - Understand what RNA-seq looks like in the genome browser, from spliced reads to splice arcs
-- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) - Inspect population-level SVs, explore a family trio, and characterize a large chromosomal inversion
+- [1000 Genomes SVs](/docs/tutorials/sv_multisamples) - Inspect population-level SVs, explore a family trio, and characterize a large chromosomal inversion
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - Load and inspect structural variants from real cancer sequencing data
-- [Synteny visualization and genome alignment](/docs/tutorials/synteny_visualization) - Compare genome assemblies using dotplot and linear synteny views
+- [Synteny visualization](/docs/tutorials/synteny_visualization) - Compare genome assemblies using dotplot and linear synteny views

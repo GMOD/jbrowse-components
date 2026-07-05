@@ -1,5 +1,5 @@
 ---
-title: Configuring plugins
+title: Plugins
 description: Adding first- and third-party plugins via config.json
 guide_category: Core configuration
 ---

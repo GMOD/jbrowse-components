@@ -1,5 +1,5 @@
 ---
-title: Protein structures and multiple sequence alignments
+title: Protein structures
 description: View 3D protein structures and MSAs linked to genomic variants
 guide_category: Tutorials
 ---
@@ -19,16 +19,25 @@ This functionality is provided by two plugins:
   embeds [react-msaview](https://github.com/GMOD/react-msaview) for MSA and tree
   views, and can run NCBI BLAST
 
-These approaches are described in a
-[2026 _Journal of Molecular Biology_ paper](https://doi.org/10.1016/j.jmb.2026.169645).
+These approaches are described in our
+[_Proteins in the Genome Browser_ paper](https://doi.org/10.1016/j.jmb.2026.169645)
+(_Journal of Molecular Biology_, 2026).
 
 ## Try it without installing anything
 
-Both plugins come preconfigured on the public genome browsers linked from
+The quickest way to see all three views linked at once is the hosted
+[JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/): search a
+human gene and it auto-launches a connected MSA (across 100 vertebrates), an
+AlphaFold 3D structure, and a linear genome view, with hovering synchronized
+across all three. It is part of the
+[Proteins in the Genome Browser](https://github.com/GMOD/proteinbrowser)
+project.
+
+The same plugins come preconfigured on the public genome browsers at
 [genomes.jbrowse.org](https://genomes.jbrowse.org) — pick a genome (for example
-[hg38](https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json)) to
-open JBrowse, search for a gene, right click it, and choose to launch the 3D
-protein viewer or the MSA viewer.
+[hg38](https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json)),
+search for a gene, right click it, and choose to launch the 3D protein viewer or
+the MSA viewer.
 
 For a one-click example, this link opens the AlphaFold structure of human BRAF
 (UniProt P15056) directly in the hg38 browser:
@@ -120,6 +129,13 @@ for details.
 
 ## See also
 
+- [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/) —
+  hosted one-click demo linking an MSA, AlphaFold 3D structure, and linear
+  genome view for any human gene
+- [Proteins in the Genome Browser](https://github.com/GMOD/proteinbrowser) — the
+  project combining MSAs, 3D structures, and nucleotide-level genome evidence
+- [_Proteins in the Genome Browser_ paper](https://doi.org/10.1016/j.jmb.2026.169645)
+  (_Journal of Molecular Biology_, 2026) — the methods behind these plugins
 - [Gene tracks](/docs/user_guides/gene_track) — color-by-CDS reading frames and
   peptide lettering on the linear gene track, from the same
   transcript-to-protein mapping the protein viewer uses
@@ -127,10 +143,8 @@ for details.
   such as ClinVar in the genome view
 - [Plugin store](/docs/user_guides/plugin_store) — installing Protein3d,
   MSAView, and other plugins
-- [protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md)
-  — launching a connected protein view programmatically or via session-spec URLs
+- [protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md#connected-genome--protein-view)
+  — declaratively specifying a connected protein view as a session-spec URL
 - [msaview developer docs](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/DEVELOPERS.md)
-  — launching an MSA view (with an optional connected genome view) via
-  session-spec URLs
-- [2026 _Journal of Molecular Biology_ paper](https://doi.org/10.1016/j.jmb.2026.169645)
-  — the methods behind these plugins
+  — declaratively specifying an MSA view (with an optional connected genome
+  view) as a session-spec URL

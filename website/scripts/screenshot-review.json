@@ -172,8 +172,9 @@
   "inverted_duplication": {
     "name": "inverted_duplication",
     "status": "good",
-    "note": "fixed: dropped the floating-origin arrow and instead drew a single connector from the \"Annotated as INVdup\" callout's right edge straight to the INFO.CPX_TYPE field in the feature-details sidebar (anchored head), so the annotation and the data it describes are visibly linked. Moved/narrowed the callout (x640, maxWidth360) to sit at the same height as the field so the connector stays short. Regenerated + verified the arrowhead lands on INFO.CPX_TYPE = INVdup.",
-    "reviewedAt": "2026-06-22T12:00:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-07-05T12:22:29.868Z",
+    "hash": "bcf381ab56a1d3d043698c760a678bbb158f5784"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -1142,9 +1143,9 @@
   },
   "maf_inversions": {
     "name": "maf_inversions",
-    "status": "bad",
-    "note": "[1px tree clip FIXED via TREE_LEFT_PAD 1->2] remaining: inversions still too hard to see; wants a specialized structure-only view (deferred design work)",
-    "reviewedAt": "2026-07-03T13:22:44.543Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-05T12:23:19.510Z",
     "hash": "36ef8042f4650c66cd9209bd7e7f877bbbcaedaf"
   },
   "sv_cgiab/cnv_log2_baf": {

@@ -1,5 +1,5 @@
 ---
-title: Configuring assemblies
+title: Assemblies
 description:
   Setting up reference genomes with sequence adapters and refname aliases
 guide_category: Core configuration
