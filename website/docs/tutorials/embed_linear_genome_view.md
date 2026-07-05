@@ -8,10 +8,18 @@ This tutorial embeds a single JBrowse linear genome view into a web page using a
 `<script>` tag — no build step or React project required. For the full JBrowse
 app, see the [web quickstart](/docs/quickstart_web) instead.
 
-The [LGV storybook](https://jbrowse.org/storybook/lgv/) has the most complete
-set of live, runnable examples for this component. To embed other view types
-(synteny, dotplot, circular) or use a different bundler, see
-[Embedded components](/docs/embedded_components).
+:::tip
+
+The [LGV storybook](https://jbrowse.org/storybook/lgv/) is the reference for
+_customizing_ this component. It has live, runnable, copy-pasteable examples for
+custom themes, per-feature colors, text searching, drawer widgets, reacting to
+view state, web-worker rendering, and much more. This tutorial covers getting a
+basic view on the page; reach for the storybook for anything beyond that.
+
+:::
+
+To embed other view types (synteny, dotplot, circular) or use a different
+bundler, see [Embedded components](/docs/embedded_components).
 
 <Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
@@ -42,7 +50,13 @@ world!".
 The `-S` flag tells `serve` to resolve symlinks rather than return a 404, so
 data files you symlink into the folder will load.
 
-## Preparing a bgzip FASTA file
+## Preparing your own data files
+
+The example below loads data hosted on `jbrowse.org`, so you can skip ahead to
+[Setup](#setup) to get a working page first. The prep steps in this section are
+for when you want to serve your _own_ genome and tracks.
+
+### Preparing a bgzip FASTA file
 
 This is generally done with samtools:
 
@@ -54,7 +68,7 @@ samtools faidx file.fa.gz
 Running `samtools faidx` on the bgzipped file produces both the `.fa.gz.fai` and
 `.fa.gz.gzi` indexes that the `BgzipFastaAdapter` needs.
 
-## Preparing a tabix indexed GFF3 file
+### Preparing a tabix indexed GFF3 file
 
 We recommend the [@jbrowse/cli](/docs/cli):
 
@@ -66,7 +80,7 @@ bgzip myfile.sorted.gff
 tabix myfile.sorted.gff.gz
 ```
 
-## Preparing text searching for your GFF file
+### Preparing text searching for your GFF file
 
 You can use the @jbrowse/cli tool to create a text search index with a command
 like this:
@@ -85,7 +99,8 @@ elaborate example below.
 
 Pass the assembly, tracks, and an initial session to `createViewState`. This
 example wires up an hg38 genome with gene, repeat, alignment, variant, and
-conservation tracks:
+conservation tracks. The [next section](#render-the-view) shows where this call
+goes in the page:
 
 ```typescript
 const state = createViewState({
@@ -211,6 +226,54 @@ Notes about the above config:
   to its data file (e.g. `file.cram.crai`). To place an index elsewhere, use the
   full adapter form — see the
   [auto-generated config reference](/docs/config_guide).
+
+## Render the view
+
+Replace the "Hello world!" `index.html` from earlier with the page below. It
+loads the component's UMD bundle from a CDN, calls `createViewState` with the
+config from the previous section, and mounts the view into a `<div>`:
+
+```html title="index.html"
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>JBrowse Linear Genome View</title>
+    <script
+      src="https://unpkg.com/@jbrowse/react-linear-genome-view2/dist/react-linear-genome-view.umd.production.min.js"
+      crossorigin
+    ></script>
+  </head>
+  <body>
+    <div id="jbrowse_linear_genome_view"></div>
+    <script>
+      const { React, createRoot, createViewState, JBrowseLinearGenomeView } =
+        JBrowseReactLinearGenomeView
+
+      const state = createViewState({
+        /* the assembly, tracks, and defaultSession from the previous section */
+      })
+
+      const root = createRoot(
+        document.getElementById('jbrowse_linear_genome_view'),
+      )
+      root.render(
+        React.createElement(JBrowseLinearGenomeView, { viewState: state }),
+      )
+    </script>
+  </body>
+</html>
+```
+
+Loading the UMD bundle in the `<head>` defines a global
+`JBrowseReactLinearGenomeView` that re-exports everything you need, including
+`React` and `createRoot`, so the page needs no other `<script>` tags. Reload the
+served page and the view appears.
+
+The unpkg URL above always fetches the latest release. To guard against breaking
+changes between versions, pin one — e.g.
+`@jbrowse/react-linear-genome-view2@4.3.0/dist/...` — or download the bundle and
+serve it yourself.
 
 ## Using the component in a React app
 
