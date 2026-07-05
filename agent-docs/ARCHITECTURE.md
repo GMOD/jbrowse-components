@@ -8,9 +8,9 @@ not the primary axis of sharing. Three foundations cover every in-tree display:
 
 | Foundation (composed on `BaseDisplay`) | Brings | Displays |
 | --- | --- | --- |
-| `MultiRegionDisplayMixin()` | `RenderLifecycleMixin` + `FetchMixin` + `RegionTooLargeMixin` + the four fetch autoruns + `rpcProps()`→refetch wiring | `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `LinearManhattanDisplay`, `LinearAlignmentsDisplay`, and — via `LinearCanvasBaseDisplay` — `LinearBasicDisplay`, `LinearVariantDisplay` |
-| `GlobalDataDisplayMixin()` | same slot mixins, **no** fetch autoruns (each display installs its own `afterAttach` autorun) | HiC (`LinearHicDisplay`), LD (`plugins/variants/LDDisplay`), multi-variant matrix, dotplot |
-| `FeatureDensityMixin()` + custom `renderSvg` | lightweight React-SVG render — no GPU upload, no block machinery | `LinearArcDisplay`, `LinearPairedArcDisplay` |
+| `MultiRegionDisplayMixin()` | `RenderLifecycleMixin` + `FetchMixin` + `RegionTooLargeMixin` + the four fetch autoruns + `rpcProps()`→refetch wiring | `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `LinearManhattanDisplay`, `LinearAlignmentsDisplay`, both multi-sample variant displays (`LinearMultiSampleVariantDisplay` + `…MatrixDisplay`, via `MultiSampleVariantBaseModel`), `LinearReferenceSequenceDisplay`, and — via `LinearCanvasBaseDisplay` — `LinearBasicDisplay`, `LinearVariantDisplay`, `LinearMultiRowFeatureDisplay` |
+| `GlobalDataDisplayMixin()` | same slot mixins, **no** fetch autoruns (each display installs its own `afterAttach` autorun) | HiC (`LinearHicDisplay`), LD (`plugins/variants/src/LDDisplay`) |
+| `RegionTooLargeMixin()` + custom `renderSvg` (no GPU/fetch mixin) | lightweight React-SVG render — no GPU upload, no block machinery | `LinearArcDisplay`, `LinearPairedArcDisplay` |
 
 `LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these — it is a
 canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only
@@ -104,11 +104,12 @@ expressed through the `regionTooLarge` getter so consumers
 `FetchVisibleRegions` gate) work with either.
 
 - **Imperative** (`RegionTooLargeMixin` default; used by wiggle, alignments,
-  hic): `setRegionTooLarge(true)` flips a volatile flag inside `fetchRegions`
+  LD): `setRegionTooLarge(true)` flips a volatile flag inside `fetchRegions`
   when the byte estimate exceeds the limit. `ClearBlockingStateOnViewportChange`
   clears the flag on viewport change so `FetchVisibleRegions` can retry.
 - **Derived** (canvas's `LinearCanvasBaseDisplay`): a pure function of cached
-  stats × current `bpPerPx` + visible regions, mirroring `FeatureDensityMixin`.
+  stats × current `bpPerPx` + visible regions, mirroring `RegionTooLargeMixin`'s
+  feature-density stats.
   - `bytesEstimateTooLarge` tests `estimatedVisibleBytes` against
     `resolveByteLimit()` (user override → adapter limit → config; an adapter
     limit of `0` means "no opinion" and is skipped, not a zero budget).
@@ -155,8 +156,9 @@ state recomputes the same value before and after.
 than `self.regionTooLargeState` (the volatile) so subclass overrides flow
 into the banner UI and SVG export text.
 
-**Shared decision primitives.** The imperative, derived, and block
-(`FeatureDensityMixin`) paths diverge only in *how* they measure bytes/density;
+**Shared decision primitives.** The imperative, derived, and arc/React-SVG
+(`RegionTooLargeMixin`, via `fetchArcFeatures`) paths diverge only in *how* they
+measure bytes/density;
 the verdict, threshold, and banner text are unified in
 `shared/featureDensityUtils.ts` so they can't drift:
 
@@ -168,8 +170,9 @@ the verdict, threshold, and banner text are unified in
   the canonical verdict+reason: below `AUTO_FORCE_LOAD_BP` nothing gates, else
   bytes-over-limit takes precedence over density. `densityTooLarge` is
   **opt-in**, so byte-only displays (alignments) pass only bytes and never gate
-  on density. Used by `FeatureDensityMixin`; the derived canvas path composes
-  the same pieces around its scaled `estimatedVisibleBytes`.
+  on density. Used by the arc path (`RegionTooLargeMixin` via `fetchArcFeatures`);
+  the derived canvas path composes the same pieces around its scaled
+  `estimatedVisibleBytes`.
 
 Variants are monolithic: `MultiSampleVariantGetCellData` returns one batched
 payload covering all visible regions, so variants' `fetchNeeded` expands
@@ -336,10 +339,13 @@ leaf package (deps: `mobx` + `@jbrowse/mobx-state-tree` + `react` peer; **no**
 `@jbrowse/core`), so a third-party display can depend on it directly. Import
 rendering primitives from `@jbrowse/render-core`; the former
 `@jbrowse/core/gpu/*` re-export shims were removed once every in-tree import
-migrated (ADR-030 follow-up). The shader-codegen pipeline
-(`packages/core/src/gpu/{shaders,passes}` + `packages/shader-tools/src/build-shaders.ts`) and the
-display-integration layer (`MultiRegionDisplayMixin` / `GlobalDataDisplayMixin` /
-`DisplayChrome`, all in the LGV plugin) stay where they are. The GPU API is
+migrated (ADR-030 follow-up). The shader codegen
+(`packages/shader-tools/src/build-shaders.ts`, which scans
+`packages/render-core/src/shaders` for cross-plugin `.slang` modules, plus
+`slangPass` in render-core) and the display-integration layer
+(`MultiRegionDisplayMixin` / `GlobalDataDisplayMixin` / `DisplayChrome`, all in
+the LGV plugin) stay where they are; per-display shaders/passes live per-plugin
+under `plugins/<plugin>/src/<display>/{shaders,passes}`. The GPU API is
 **static-import-only** — never exposed via the runtime `ReExports` registry. See
 ADR-030.
 
@@ -603,10 +609,14 @@ Two invariants make the renderer implementations small and uniform:
 - `hal.drawPass` short-circuits when the region has no buffer for that pass,
   so GPU renderers issue draws unconditionally — no per-region flag cache.
 
-For MAF, the upload payload (`MafUploadPayload`) wraps a pre-encoded GPU
-buffer AND the raw `MafRegionData`; only the latter is needed at render
-time. `PerRegionRenderingBackend` has an optional fourth type param `RenderData`
-(defaults to `UploadData`) to support this split.
+For MAF, `UploadData` and `RenderData` diverge. The upload payload
+(`MafUploadPayload`) carries **only** the pre-encoded GPU buffer
+(`{ instanceBuffer, instanceCount }`); the render side reads the raw
+`MafRegionData` directly from the model's `rpcDataMap` (so Canvas2D can draw it
+and the GPU path can check presence). `PerRegionRenderingBackend`'s optional
+fourth type param `RenderData` (defaults to `UploadData`) expresses this split —
+shared with `LinearMultiRowFeatureDisplay`, which uses the same
+pre-encoded-payload / raw-render shape; most per-region plugins keep the default.
 
 Whole-map synced (alignments, multi-LGV-synteny) and monolithic (HiC, LD,
 multi-variant-matrix, dotplot) plugins still define their own backend
@@ -642,12 +652,16 @@ RPC methods:
 
 GWAS's Manhattan does **not** compose `linearWiggleDisplayModelFactory`. It
 builds its own model — `BaseDisplay` + `TrackHeightMixin()` +
-`MultiRegionDisplayMixin()` + `WiggleScoreConfigMixin(['colorBy', 'minimalTicks'])`
-— pulls the score domain/scale utilities and `makeScoreSubMenu` from
-`@jbrowse/wiggle-core`, and takes its config from `linearWiggleDisplayConfigSchema`.
+`MultiRegionDisplayMixin()` + `WiggleScoreConfigMixin()` (no args — `colorBy` is
+Manhattan's own config slot, `minimalTicks` is read via `getConf`) — pulls the
+score domain/scale utilities and `makeScoreSubMenu` from `@jbrowse/wiggle-core`,
+and extends `linearWiggleDisplayConfigSchema` as its `baseConfiguration`.
 It ships its own `GetManhattanData` RPC (per-feature points, not pre-binned
-density), implements `WiggleRenderingBackend` with its own pass, and overrides
-`isCacheValid` to `() => true` since Manhattan data is zoom-independent.
+density), implements its own `ManhattanRenderingBackend`
+(`PerRegionRenderingBackend<ManhattanRpcResult, ManhattanRenderState>`) with its
+own pass, and is zoom-independent by **never setting `loadedBpPerPx`** — the
+inherited `isCacheValid` short-circuits to `true` whenever `loadedBpPerPx` is
+`undefined` — rather than by overriding `isCacheValid`.
 
 #### Three upload patterns
 
@@ -658,7 +672,7 @@ the data shape, not the one your neighbour copied:
 |---|---|---|---|---|
 | **Per-region streamed** | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, state)` | each region's data is independent across regions, reactive per-region updates | canvas, wiggle, multi-wiggle, **MAF**, manhattan, multi-variant |
 | **Whole-map synced** | `sync(sources)` | `renderBlocks(blocks, state)` | per-region streams must rebuild coherently (e.g. main-thread cross-region Y layout), or encoder settings drive packing | alignments, multi-LGV synteny |
-| **Monolithic** (base class `GlobalRenderingBackend` / `GpuGlobalRenderingBackend`, mixin `GlobalDataDisplayMixin`) | `uploadX(data)` | `render(state)` (no blocks) | display has no region partitioning (heatmaps spanning the whole view) | HiC, LD, multi-variant matrix, dotplot |
+| **Monolithic** (base class `GlobalRenderingBackend` / `GpuGlobalRenderingBackend`) | `uploadX(data)` | `render(state)` (no blocks) | display has no region partitioning (heatmaps spanning the whole view) | HiC, LD (both `GlobalDataDisplayMixin`); multi-variant matrix (monolithic backend but `MultiRegionDisplayMixin` fetch); dotplot (view-level `RenderLifecycleMixin`) |
 
 MAF is **per-region streamed** (like canvas/wiggle), not whole-map synced like
 alignments. MAF blocks are independent — no main-thread Y-layout couples
@@ -691,9 +705,11 @@ re-uploads all N regions — O(N²) total GPU uploads when N regions arrive
 sequentially.
 
 **The fix lives in `@jbrowse/render-core/installPerRegionLifecycle`** and is
-used by every per-region plugin (wiggle, multi-wiggle, manhattan, MAF,
-multi-variant, multi-variant-matrix). Each plugin's `startRenderingBackend`
-action collapses to a single call:
+used by wiggle, multi-wiggle, manhattan, MAF, sequence, and canvas's
+`LinearMultiRowFeatureDisplay`. (The multi-variant displays are per-region
+streamed too but hand-roll their `attachRenderingBackend` upload loop rather
+than use this helper.) Each plugin's `startRenderingBackend` action collapses to
+a single call:
 
 ```ts
 startRenderingBackend(backend: XxxRenderingBackend) {
@@ -765,7 +781,10 @@ re-fire on every new arrival.
   `laidOutDataMap` computed stays pure. Stability unit is the ref-group, not
   the region, because collapsed-intron views split one chromosome into many
   displayed regions and a spanning feature must hold the same Y row in each —
-  so adding a region to an existing group relays out that whole group.
+  so adding a region to an existing group relays out that whole group. (This
+  covers `LinearBasicDisplay`; canvas's other display,
+  `LinearMultiRowFeatureDisplay`, has no cross-region row coupling and so uses
+  `installPerRegionLifecycle` like wiggle.)
 - **Alignments/synteny** keep the whole-map form. They are never shown at
   whole-genome scale (data density forces gene-level zoom, or synteny is
   pairwise), so N is typically 4–8 buffered regions (more in collapsed-intron).
@@ -852,15 +871,20 @@ mixin:
   multi-variant-matrix): `(viewportWithinLoadedData && loadedRegions.size > 0)
   || error || regionTooLarge`. The spatial-coverage check is what waits for
   *every* visible region (not the first to stream in) and goes false the instant
-  a pan/zoom moves the viewport past loaded data. Wiggle-family + manhattan call
-  it through the `waitForRenderableState(model)` helper in `@jbrowse/wiggle-core`.
+  a pan/zoom moves the viewport past loaded data. Wiggle-family + manhattan gate
+  on it the same way as every other display — `await awaitSvgReady(model)` in
+  `renderSvg.tsx`, reading this getter.
 - **`GlobalDataDisplayMixin.svgReady`** (whole-view single-blob displays — HiC,
-  LD): `displayPhase !== 'loading'`. A global display has no per-region spatial
-  axis, so "settled" (has its one dataset / terminal / intentionally empty, and
-  not mid-fetch) is the analog. Reuses `displayPhase` because the Global loading
-  predicate is just `isLoading || fetchCanceled` — no `canvasDrawn` — whereas
-  MultiRegion's loading predicate *does* fold in `canvasDrawn`, which is why that
-  mixin needs a separate getter rather than `displayPhase !== 'loading'`.
+  LD): `dataLoaded || error || regionTooLarge || svgReadyExtraTerminal`. A global
+  display has no per-region spatial axis, so it requires the single dataset to
+  actually be loaded (or a terminal error / too-large / extra state) — deliberately
+  **not** `displayPhase !== 'loading'`, because the fetch trigger is a debounced
+  `afterAttach` autorun, so at export time `isLoading` can be false with no data
+  yet and a `displayPhase !== 'loading'` test would capture an empty render. Never
+  gates on `canvasDrawn`. `dataLoaded` is an overridable getter (default `false`)
+  each display must implement — both HiC and LD return `rpcData !== null`. A
+  display that forgets to override it leaves `svgReady` unable to resolve on a
+  successful load, hanging SVG export.
 
 The sequence display layers one extra disjunct (`svgReady || zoomedOut`) because
 zoomed past its base-render threshold it shows a static "zoom in" message and
@@ -870,12 +894,14 @@ issues no fetch, so `svgReady` alone would never resolve.
 than inheriting a mixin's — they don't track `loadedRegions`/`displayPhase` the
 same way. Arc / paired-arc are still LGV track displays, so they keep the full
 contract (own `svgReady` getter + `awaitSvgReady` + `SvgChrome`/`SVGErrorBox`): drawing
-all features into a single array via `FeatureDensityMixin`, their `svgReady` is
-just `features !== undefined || error || regionTooLarge` (no `loadedRegions`
-spatial-coverage signal to wait on). Known gap: that stays true through an
-in-place refetch, so an export fired right after a pan/zoom can capture stale
-arcs — tightening it would need fetch-generation tracking the single-array model
-lacks. The non-LGV views are a different category — radial / dotplot canvas with
+all features into a single array (gated by `RegionTooLargeMixin`), their
+`svgReady` is `(features !== undefined &&
+loadedRegionSignature === currentRegionSignature(self)) || error ||
+regionTooLarge`. The `loadedRegionSignature` freshness compare (a region-key
+string, the single-array analog of `loadedRegions`) is what makes an export
+fired right after a pan/zoom wait for fresh arcs instead of capturing stale ones
+— closing the in-place-refetch gap earlier writeups (and `plugins/arc/CLAUDE.md`)
+still describe as open. The non-LGV views are a different category — radial / dotplot canvas with
 no rectangular width/height or per-region axis — so they keep a bespoke gate and
 their own error UI instead of `SvgChrome` + `SVGErrorBox`: dotplot
 (`!!geometry || !!error`), multi-LGV-synteny (`featureData != null || error`),
@@ -927,7 +953,7 @@ sync with the on-screen renderer (different bicolor handling, different
 Y-axis offsets, different bezier curves, different palettes — each plugin
 had its own flavor of drift). The canonical reference for the
 builder-wrapper shape is
-`plugins/alignments/src/LinearAlignmentsDisplay/components/Canvas2DAlignmentsRenderer.ts`
+`plugins/alignments/src/LinearAlignmentsDisplay/renderers/Canvas2DAlignmentsRenderer.ts`
 (`buildAlignmentsRegionMap` + `drawAlignmentsToCtx` + `drawAlignmentBlocks`);
 for the direct shape see
 `plugins/maf/src/LinearMafRenderer/drawMafBlocks.ts`.
@@ -1135,8 +1161,8 @@ and GLSL ES 3.00 (WebGL2) by `packages/shader-tools/src/build-shaders.ts`. See A
 **Layout:** display-specific shaders in
 `plugins/<plugin>/src/<display>/shaders/<name>.slang`; per-plugin shared in
 `plugins/<plugin>/src/shared/shaders/`; cross-plugin modules
-(`hpmath.slang`, `colorPack.slang`) in `packages/core/src/gpu/shaders/`.
-Codegen emits `<name>.generated.ts`.
+(`hpmath.slang`, `colorPack.slang`, `pointGlyph.slang`) in
+`packages/render-core/src/shaders/`. Codegen emits `<name>.generated.ts`.
 
 **What's auto-derived from Slang reflection (not hand-coded):** the
 `.generated.ts` file exports shader source strings (`WGSL_SOURCE`,
@@ -1221,27 +1247,32 @@ attributes above. A synteny ribbon connects two views with independent
 absolute bp. So:
 
 - The vertex attribute is `(bpHi, bpLo)` Float32 pairs, pre-split on the CPU
-  via `splitPositionWithFrac` against 4096-bp buckets — same hi/lo math as
-  the LGV path, just split up-front instead of in the shader.
+  against 4096-bp buckets — same hi/lo math as the LGV path, just split up-front
+  instead of in the shader. Per-corner values use `writeHiLo` (a non-allocating
+  variant of `splitPositionWithFrac`); the view-origin uniform below uses
+  `splitPositionWithFrac` itself.
 - The view origin uniform `viewBp = offsetPx * bpPerPx` is also hi/lo split
-  (`viewBp{0,1}{Hi,Lo}`). This is **padded-bp at canvas left** — not pure
-  cumulative genomic bp; it includes the padding-as-bp contribution, which
-  is what lets the per-instance `pad` cancel out the padding-at-canvas-left
-  term in the shader formula `(cumBp − viewBp)/bpPerPx + pad`. No companion
-  `viewPad` uniform is needed.
-- Inter-region padding pixels stay as a per-instance Float32 attribute
-  (`padTop`, `padBottom`), accumulated up to the corner's region.
+  (`viewBp{0,1}{Hi,Lo}`). Because `offsetPx` is the view's canvas-left offset in
+  its own (padded) pixel space, `viewBp` is **padded-bp at canvas left**. The
+  shader (`hpCornerScreenX` in `hpmath.slang`, shared by synteny and dotplot)
+  computes `(cumBp − viewBp)/bpPerPx`, which reduces to
+  `cumBp/bpPerPx − offsetPx` — the LGV render position. There is **no**
+  per-instance pad attribute and **no** `viewPad` uniform; the per-instance
+  layout is just the four corners (`bp{1..4}{Hi,Lo}`) plus `color`, `featureId`,
+  `alignmentLength`, `kind` (see `syntenyTypes.slang` / `instanceInterleave.ts`).
 
 Storing as cumBp instead of regional bp + region index avoids the
 per-region uniform table / per-(region-pair) draw call concerns that ruled
-out earlier hp-math attempts; padding per-instance plus a single per-view
-origin uniform handles inter-region offsets without any `MAX_REGIONS` cap.
-See ADR-010 for the rejected per-region-table alternatives, ADR-018 for
-why this shape works.
+out earlier hp-math attempts; a single per-view origin uniform handles
+inter-region offsets without any `MAX_REGIONS` cap. See ADR-010 for the
+rejected per-region-table alternatives, ADR-018 for why this shape works.
 
-Dotplot currently stays on pre-projected Float32 pixel offsets per
-ADR-010. Its geometry-buffer layout (line endpoints) differs from
-synteny's parallelogram corners and would need its own migration.
+Dotplot uses the **same** hi/lo cumBp scheme via the same `hpCornerScreenX`:
+positions are absolute genomic cumBp held in `Float64Array` on the JS side
+(`dotplotRenderingBackendTypes.ts`) and split to Float32 hi/lo only at the GPU
+upload boundary (`GpuDotplotRenderer`), with the view origin hi/lo split the
+same way. Its geometry buffer stores line endpoints rather than synteny's
+parallelogram corners, but the coordinate-precision technique is identical.
 
 #### Genome-size limits (what must fit where)
 

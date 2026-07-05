@@ -47,12 +47,13 @@ the retry button dead.
 
 ## Readiness / testid
 
-`svgReady` (features present, or error, or too-large) is arc's first-paint flag
+`svgReady` (features present **and** `loadedRegionSignature ===
+currentRegionSignature(self)`, or error, or too-large) is arc's first-paint flag
 — the SVG-export terminal gate and the `arc-display${svgReady ? '-done' : ''}`
-testid browser tests wait on. It's the SVG analogue of GPU `canvasDrawn`. Known
-gap (documented on the `svgReady` getter): it stays true through an in-place
-refetch, so a single-array model has no `loadedRegions` staleness signal — an
-export fired right after a pan/zoom can capture stale arcs.
+testid browser tests wait on. It's the SVG analogue of GPU `canvasDrawn`. The
+`loadedRegionSignature` compare (a region-key string, the single-array analog of
+`loadedRegions`) is the staleness signal: an export fired right after a pan/zoom
+waits for fresh arcs instead of capturing stale ones.
 
 ## Too-large gating
 

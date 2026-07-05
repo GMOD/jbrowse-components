@@ -123,8 +123,9 @@ export interface MafUploadPayload {
 
 // MAF uploads a pre-encoded GPU buffer; the render-side reads raw blocks
 // directly from the model's `rpcDataMap` (so Canvas2D can draw them and
-// GPU can check presence). RenderData diverges from UploadData here —
-// every other per-region plugin keeps the default `RenderData = UploadData`.
+// GPU can check presence). RenderData thus diverges from UploadData — the same
+// shape LinearMultiRowFeatureDisplay uses; most per-region plugins instead keep
+// the default `RenderData = UploadData`.
 export type MafRenderingBackend = PerRegionRenderingBackend<
   MafUploadPayload,
   MafGPURenderState,

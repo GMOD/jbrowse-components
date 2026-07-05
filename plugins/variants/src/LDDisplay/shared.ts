@@ -217,6 +217,16 @@ export default function sharedModelFactory(
       get recombination() {
         return self.rpcData?.recombination
       },
+      /**
+       * #getter
+       * Global-display data-loaded signal read by `GlobalDataDisplayMixin.svgReady`.
+       * The fetch commits `rpcData` even for an empty viewport, so this flips true
+       * once data has loaded. Without the override the mixin default (`false`)
+       * leaves `svgReady` unable to resolve on a successful load, hanging SVG export.
+       */
+      get dataLoaded(): boolean {
+        return self.rpcData !== null
+      },
       get isPrecomputedLD() {
         return (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(
           self.adapterConfig?.type,
