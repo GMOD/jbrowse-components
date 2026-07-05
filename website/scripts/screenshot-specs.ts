@@ -2041,10 +2041,15 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/grape_peach_cacao',
-    // colorBy:'reference' keys every level on the shared reference genome
-    // (grape, the middle row) so a grape chromosome carries ONE color as it's
-    // traced up into peach and down into cacao (reviewer: consistent coloring
-    // across levels). Mirrors the hosted config's defaultSession init otherwise.
+    // Rows peach / cacao / grape. colorBy:'reference' anchors every level on the
+    // max-adjacency middle row (cacao, shared by both bands) so a cacao
+    // chromosome carries ONE color as it's traced up into peach and down into
+    // grape. The top peach-cacao band is a transitive ortholog link (grape is
+    // the MCScan reference, so only grape-adjacent pairs are direct); the
+    // grape-cacao band is direct. autoDiagonalize reorders/flips each lower axis
+    // to follow the one above, so the ribbons run near-diagonal instead of
+    // crossing into a hairball. showColorLegend:false hides the floating legend.
+    // Mirrors the hosted config's defaultSession init otherwise.
     url: sessionSpec(
       encodeURIComponent(
         'https://jbrowse.org/demos/grape_peach_cacao/config.json',
@@ -2055,12 +2060,14 @@ export const specs: ScreenshotSpec[] = [
             type: 'LinearSyntenyView',
             views: [
               { assembly: 'peach' },
-              { assembly: 'grape' },
               { assembly: 'cacao' },
+              { assembly: 'grape' },
             ],
-            tracks: [['peach_grape_blocks'], ['grape_cacao_blocks']],
+            tracks: [['peach_cacao_blocks'], ['grape_cacao_blocks']],
             drawCurves: true,
             colorBy: 'reference',
+            autoDiagonalize: true,
+            showColorLegend: false,
           },
         ],
       },

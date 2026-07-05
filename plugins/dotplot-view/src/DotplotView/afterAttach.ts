@@ -134,6 +134,9 @@ function applyInitDisplaySettings(
   self: DotplotViewModel,
   init: DotplotViewInit,
 ) {
+  if (init.showColorLegend !== undefined) {
+    self.setShowColorLegend(init.showColorLegend)
+  }
   if (init.colorBy !== undefined || init.minAlignmentLength !== undefined) {
     for (const track of self.tracks) {
       for (const display of track.displays) {

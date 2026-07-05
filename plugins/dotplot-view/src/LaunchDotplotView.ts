@@ -1,3 +1,5 @@
+import { launchSyntenyView } from '@jbrowse/synteny-core'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
@@ -25,18 +27,11 @@ declare module '@jbrowse/core/PluginManager' {
 export default function LaunchDotplotView(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-DotplotView | async | Programmatically launch a dotplot view */
   pluginManager.addToExtensionPoint('LaunchView-DotplotView', args => {
-    const { session, views, tracks = [], ...rest } = args
-    // guard `!views` too: a spec that nests these fields under `init` (the shape
-    // session.addView takes directly) leaves top-level `views` undefined, and a
-    // bare `views.length` would throw an opaque TypeError instead of this message
-    if (!views || views.length < 2) {
-      throw new Error('DotplotView requires 2 views to be specified')
-    }
-    // remaining init fields (colorBy, autoDiagonalize, highlight, ...) forward
-    // verbatim; the init autorun guards each on undefined
-    session.addView('DotplotView', {
-      init: { views, tracks, ...rest },
-    })
+    // views/tracks and the remaining init fields (colorBy, autoDiagonalize,
+    // highlight, ...) forward verbatim; each is guarded on undefined by the
+    // init autorun.
+    const { session, views = [], tracks = [], ...rest } = args
+    launchSyntenyView(session, 'DotplotView', { views, tracks, ...rest })
     return args
   })
 }

@@ -1,3 +1,5 @@
+import { launchSyntenyView } from '@jbrowse/synteny-core'
+
 import { normalizeTrackLevels } from './LinearSyntenyView/util/initHelpers.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -30,24 +32,14 @@ declare module '@jbrowse/core/PluginManager' {
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-LinearSyntenyView | async | Programmatically launch a linear synteny view */
   pluginManager.addToExtensionPoint('LaunchView-LinearSyntenyView', args => {
-    const { session, views, tracks = [], ...rest } = args
-    // guard `!views` too: a spec that nests these fields under `init` (the shape
-    // session.addView takes directly) leaves top-level `views` undefined, and a
-    // bare `views.length` would throw an opaque TypeError instead of this message
-    if (!views || views.length < 2) {
-      throw new Error(
-        'LinearSyntenyView requires at least 2 views to be specified',
-      )
-    }
-    // tracks is one entry per level (between views[i] and views[i+1]); a flat
-    // string[] is shorthand for "all on level 0". The rest of the init fields
-    // (colorBy, autoDiagonalize, levelHeights, ...) forward verbatim.
-    session.addView('LinearSyntenyView', {
-      init: {
-        views,
-        tracks: normalizeTrackLevels(tracks),
-        ...rest,
-      },
+    // views/tracks and the remaining init fields (colorBy, autoDiagonalize,
+    // levelHeights, ...) forward verbatim; tracks is one entry per level, with a
+    // flat string[] as shorthand for "all on level 0".
+    const { session, views = [], tracks = [], ...rest } = args
+    launchSyntenyView(session, 'LinearSyntenyView', {
+      views,
+      tracks: normalizeTrackLevels(tracks),
+      ...rest,
     })
     return args
   })

@@ -25,6 +25,9 @@ export function applyInitSettings(
   if (init.colorBy) {
     self.setColorBy(init.colorBy)
   }
+  if (init.showColorLegend !== undefined) {
+    self.setShowColorLegend(init.showColorLegend)
+  }
   if (init.minAlignmentLength !== undefined) {
     self.setMinAlignmentLength(init.minAlignmentLength)
   }

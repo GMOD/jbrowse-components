@@ -105,8 +105,8 @@ The `blockAssemblies` slot names every column in order (column 0 first), and
 }
 ```
 
-Stack the three genomes with the reference in the middle so both bands are
-direct comparisons, referencing that single track from each band:
+Stack the three genomes and reference that single track from each band. This
+demo stacks them peach – cacao – grape:
 
 ```json
 {
@@ -114,31 +114,82 @@ direct comparisons, referencing that single track from each band:
   "init": {
     "views": [
       { "assembly": "peach" },
-      { "assembly": "grape" },
-      { "assembly": "cacao" }
+      { "assembly": "cacao" },
+      { "assembly": "grape" }
     ],
     "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
-    "drawCurves": true
+    "drawCurves": true,
+    "autoDiagonalize": true
   }
 }
 ```
 
-`tracks` is one entry per band: `tracks[0]` connects rows 0–1 (peach–grape) and
-`tracks[1]` connects rows 1–2 (grape–cacao) — both served by the same track.
+`tracks` is one entry per band: `tracks[0]` connects rows 0–1 (peach–cacao) and
+`tracks[1]` connects rows 1–2 (cacao–grape) — both served by the same track,
+which lists all three genomes in `assemblyNames` so it can back any pair.
 
-<Figure caption="Three genomes stacked peach – grape – cacao, with one MCScan .blocks file backing both synteny bands. Color by → Reference paints both bands by the shared reference genome (grape, the middle row), so a grape chromosome keeps one consistent color as its orthologs are traced up into peach and down into cacao." src="/img/multiway_synteny/grape_peach_cacao.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/grape_peach_cacao/config.json" />
+`autoDiagonalize` reorders and flips each row's chromosomes on load so the
+ribbons run along the diagonal instead of crossing into a hairball. It sweeps
+top-down: the top row stays put, the middle row is reordered to follow it, then
+the bottom row is reordered to follow the _reordered_ middle row — so the
+diagonal cascades down the whole stack.
 
-## Reference in the middle, and transitive pairs
+That view snapshot goes straight into the config's `defaultSession`, which is
+how JBrowse opens a view declaratively on load — no clicks, no imperative setup.
+The session is just a `views` array of the same snapshots; sibling fields like
+`displayName` and `showColorLegend` are ordinary view properties, while the
+one-time load settings (row order, tracks, `colorBy`, `autoDiagonalize`) go
+under `init`:
 
-Because a `.blocks` table is reference-anchored, any pair that includes the
-reference (peach–grape, grape–cacao) is a direct synteny relationship — so
-putting the reference genome in the **middle** row keeps every band faithful.
+```json
+{
+  "defaultSession": {
+    "name": "Grape / Peach / Cacao multi-way synteny",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "Peach – Cacao – Grape (MCScan blocks)",
+        "showColorLegend": false,
+        "init": {
+          "views": [
+            { "assembly": "peach" },
+            { "assembly": "cacao" },
+            { "assembly": "grape" }
+          ],
+          "tracks": [
+            ["grape_peach_cacao_blocks"],
+            ["grape_peach_cacao_blocks"]
+          ],
+          "drawCurves": true,
+          "colorBy": "query",
+          "autoDiagonalize": true
+        }
+      }
+    ]
+  }
+}
+```
 
-The adapter can also serve a pair where _neither_ side is the reference (e.g.
-peach–cacao): it joins the two columns on their shared reference gene. That link
-means "both are orthologous to the same grape gene" — a **transitive** ortholog
-relationship, not a direct alignment — which is worth keeping in mind if you
-stack non-reference genomes adjacently.
+<Figure caption="Three genomes stacked peach – cacao – grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal. Color by → Reference paints both bands by the max-adjacency middle row (cacao), so a cacao chromosome keeps one consistent color as its orthologs are traced up into peach and down into grape." src="/img/multiway_synteny/grape_peach_cacao.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/grape_peach_cacao/config.json" />
+
+## Direct vs transitive pairs, and row order
+
+Because a `.blocks` table is reference-anchored on grape (column 0), only pairs
+that **include** grape are direct synteny relationships. The adapter can still
+serve a pair where _neither_ side is the reference — e.g. peach–cacao, the top
+band above — by joining the two columns on their shared grape gene. That link
+means "both are orthologous to the same grape gene": a **transitive** ortholog
+relationship, not a direct alignment.
+
+So row order is a choice, and here it is a deliberate one. Grape carries the
+ancestral eudicot genome triplication and has more chromosomes (19) than peach
+(8) or cacao (10), so any band _containing_ grape fans out into a busy
+many-to-one ribbon tangle. Peach and cacao have similar chromosome counts and
+read close to one-to-one, so stacking peach – cacao – grape puts the cleanest,
+most legible band on top — at the cost of making it a transitive link (peach and
+cacao joined through their shared grape ortholog, not directly aligned). When no
+genome dominates the ploidy like this, prefer the reference in the **middle** —
+peach – grape – cacao — so _every_ band is a direct comparison.
 
 ## All-vs-all PAF: the pangenome case
 

@@ -14,6 +14,9 @@ export interface SyntenyViewSharedInit {
   // Initial colorBy. Use 'query' (chromosome painting) for whole-genome
   // views where the default red is hard to distinguish across many ribbons.
   colorBy?: SyntenyColorBy
+  // Show the floating color-by legend on load. Set false to hide it (e.g. a
+  // curated demo/screenshot where the legend would clutter the figure).
+  showColorLegend?: boolean
   // Per-feature alignment-length filter applied at the renderer. Hides
   // chains shorter than this many bp; cuts the genome-scale hairball.
   minAlignmentLength?: number
