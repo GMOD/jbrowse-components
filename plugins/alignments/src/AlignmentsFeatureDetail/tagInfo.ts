@@ -56,7 +56,7 @@ export const tags = {
   MF: 'Reserved for backwards compatibility reasons',
   MI: 'Molecular identifier; a string that uniquely identifies the molecule from which the record was derived',
   ML: 'Base modification probabilities',
-  MM: 'Base modifications / methylation ',
+  MM: 'Base modifications / methylation',
   MQ: 'Mapping quality of the mate/next segment',
   NH: 'Number of reported alignments that contain the query in the current record',
   NM: 'Edit distance to the reference',

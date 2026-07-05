@@ -8,6 +8,7 @@ export interface AlignmentFeatureSerialized extends SimpleFeatureSerialized {
   tags?: Record<string, unknown>
 }
 
-export function getTag(tag: string, feat: AlignmentFeatureSerialized) {
-  return feat.tags?.[tag]
+export function getStringTag(tag: string, feat: AlignmentFeatureSerialized) {
+  const val = feat.tags?.[tag]
+  return typeof val === 'string' ? val : undefined
 }

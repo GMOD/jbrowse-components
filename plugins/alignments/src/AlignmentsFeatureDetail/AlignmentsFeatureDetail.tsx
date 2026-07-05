@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { SAM_FLAG_PAIRED } from '@jbrowse/alignments-core'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { ActionLink } from '@jbrowse/core/ui'
@@ -9,7 +10,7 @@ import { observer } from 'mobx-react'
 
 import Flags from './Flags.tsx'
 import { fieldDescriptions, tags } from './tagInfo.ts'
-import { getTag } from './util.ts'
+import { getStringTag } from './util.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
@@ -31,8 +32,7 @@ const AlignmentsFeatureDetailsBody = observer(
     model: AlignmentFeatureWidgetModel
   }) {
     const { flags } = feat
-    const sa = getTag('SA', feat)
-    const SA = typeof sa === 'string' ? sa : undefined
+    const SA = getStringTag('SA', feat)
     return (
       <Paper data-testid="alignment-side-drawer">
         <FeatureDetails
@@ -60,7 +60,7 @@ const AlignmentsFeatureDetailsBody = observer(
         ) : null}
         {flags !== undefined ? (
           <>
-            {flags & 1 ? (
+            {flags & SAM_FLAG_PAIRED ? (
               <LinkedPairedAlignments model={model} feature={feat} />
             ) : null}
 

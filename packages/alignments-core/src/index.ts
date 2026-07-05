@@ -65,6 +65,7 @@ export {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
   SAM_FLAG_UNMAPPED,
+  samFlagDescriptions,
   samFlagLabels,
 } from './samFlags.ts'
 export {

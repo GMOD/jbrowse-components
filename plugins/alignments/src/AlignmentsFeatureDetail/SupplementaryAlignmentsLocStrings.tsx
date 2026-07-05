@@ -23,7 +23,9 @@ const SupplementaryAlignmentsLocStrings = observer(
             .split(';')
             .filter(Boolean)
             .map(SA => {
-              const [saRef, saStart, saStrand, saCigar] = SA.split(',')
+              // SA tag format: rname,pos,strand,CIGAR,mapQ,NM
+              const [saRef, saStart, saStrand, saCigar, saMapq, saNm] =
+                SA.split(',')
               if (!saRef || !saStart || !saStrand || !saCigar) {
                 return null
               }
@@ -32,7 +34,9 @@ const SupplementaryAlignmentsLocStrings = observer(
               const start = +saStart
               const end = start + saLength
               const locString = `${saRef}:${Math.max(1, start - extra)}-${end + extra}`
-              const label = `${saRef}:${toLocale(start)}-${toLocale(end)} (${saStrand}) [${saLength}bp]`
+              const mapq = saMapq ? ` MAPQ:${saMapq}` : ''
+              const nm = saNm ? ` NM:${saNm}` : ''
+              const label = `${saRef}:${toLocale(start)}-${toLocale(end)} (${saStrand}) [${saLength}bp]${mapq}${nm}`
               return (
                 <li key={locString}>
                   <ActionLink

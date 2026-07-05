@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { getSession } from '@jbrowse/core/util'
 
-import { getTag } from './util.ts'
+import { getStringTag } from './util.ts'
 
 import type { AlignmentFeatureSerialized } from './util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -43,8 +43,7 @@ export async function getSAFeatures({
   if (readName === undefined) {
     throw new Error('feature missing name')
   }
-  const sa = getTag('SA', feature)
-  const SA = typeof sa === 'string' ? sa : ''
+  const SA = getStringTag('SA', feature) ?? ''
   const clipLengthAtStartOfRead = getClip(cigar, 1)
 
   // get the canonical refname for the read because if the read.get('refName')

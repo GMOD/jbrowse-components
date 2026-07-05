@@ -58,3 +58,23 @@ export const samFlagLabels = [
   'read is PCR or optical duplicate',
   'supplementary alignment',
 ] as const
+
+/**
+ * Human-readable description for each SAM flag bit, in the same canonical order
+ * as `samFlagLabels` (index `i` describes bit `1 << i`). Surfaced as tooltips in
+ * the feature-details flag list so the terse labels are self-explanatory.
+ */
+export const samFlagDescriptions = [
+  'Template has multiple segments in sequencing (paired-end / mate-pair)',
+  'Each segment is properly aligned according to the aligner',
+  'This segment is unmapped',
+  'The mate / next segment in the template is unmapped',
+  'SEQ is reverse-complemented (read aligns to the reverse strand)',
+  'SEQ of the mate / next segment is reverse-complemented',
+  'This is the first segment in the template',
+  'This is the last segment in the template',
+  'Secondary alignment (not the primary linear representation of the read)',
+  'Read did not pass filters such as platform / vendor quality controls',
+  'PCR or optical duplicate',
+  'Supplementary alignment (part of a chimeric / split read)',
+] as const

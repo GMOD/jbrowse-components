@@ -1,9 +1,18 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { hasBreakpointSplitView } from '@jbrowse/sv-core'
+import { ActionLink } from '@jbrowse/core/ui'
+import { getSession, toLocale } from '@jbrowse/core/util'
+import {
+  getAssemblyName,
+  hasBreakpointSplitView,
+  launchBreakpointSplitView,
+} from '@jbrowse/sv-core'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import LaunchPairedEndBreakpointSplitViewPanel from './LaunchPairedEndBreakpointSplitViewPanel.tsx'
-import { computeMateFields } from '../shared/mateFeature.ts'
+import {
+  buildPairedEndMateFeature,
+  computeMateFields,
+} from '../shared/mateFeature.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
@@ -17,7 +26,9 @@ const LinkedPairedAlignments = observer(function LinkedPairedAlignments({
 }) {
   const { uniqueId, refName, start, end, strand, flags, next_ref, next_pos } =
     feature
-  const hasMappedMate = !!computeMateFields({
+  const session = getSession(model)
+  const assemblyName = getAssemblyName(model.view)
+  const mate = computeMateFields({
     uniqueId,
     refName,
     start,
@@ -27,12 +38,22 @@ const LinkedPairedAlignments = observer(function LinkedPairedAlignments({
     nextRef: next_ref,
     nextPos: next_pos,
   })
-  return hasBreakpointSplitView(model) && hasMappedMate ? (
+  return hasBreakpointSplitView(model) && assemblyName && mate ? (
     <BaseCard title="Paired alignments">
-      <LaunchPairedEndBreakpointSplitViewPanel
-        model={model}
-        feature={feature}
-      />
+      <Typography>Launch split view</Typography>
+      <ActionLink
+        onClick={() => {
+          launchBreakpointSplitView({
+            session,
+            view: model.view,
+            assemblyName,
+            feature: buildPairedEndMateFeature(mate),
+          })
+        }}
+      >
+        {refName}:{toLocale(start)} -&gt; {mate.nextRef}:{toLocale(mate.nextPos)}{' '}
+        (breakpoint split view)
+      </ActionLink>
     </BaseCard>
   ) : null
 })
