@@ -118,6 +118,12 @@ interface CommonSpecFields {
   // crop the capture to this CSS-px rect (ignored by embedded specs, which
   // screenshot the component element directly)
   crop?: { x: number; y: number; width: number; height: number }
+  // substrings of browser console errors this spec is EXPECTED to emit, so the
+  // generator suppresses them instead of printing them as alarming
+  // browser[error] lines. Use only for specs whose subject IS an error/empty
+  // state (e.g. the config-not-found landing page, or an assembly-manager shot
+  // captured over a view with no assembly). Anything not listed still surfaces.
+  expectedConsole?: string[]
 }
 
 // Mode 1: navigate to app, interact via UI to open tracks.
@@ -7383,6 +7389,9 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 540,
     settleMs: 2000,
     hideTooltip: true,
+    // subject is the manager table; the hg38 assembly exists in config but
+    // isn't assigned to the view, so the empty view fails to launch
+    expectedConsole: ['No assembly provided when launching linear genome view'],
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Assembly manager' },
@@ -7407,6 +7416,9 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 540,
     settleMs: 2000,
     hideTooltip: true,
+    // subject is the assembly-manager dialog opened over a view with no
+    // assembly assigned, so the empty view legitimately fails to launch
+    expectedConsole: ['No assembly provided when launching linear genome view'],
     actions: [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Assembly manager' },
@@ -7434,6 +7446,9 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 480,
     settleMs: 2000,
     hideTooltip: true,
+    // subject is the set-default-session dialog opened over a view with no
+    // assembly assigned, so the empty view legitimately fails to launch
+    expectedConsole: ['No assembly provided when launching linear genome view'],
     stages: [
       {
         actions: [
@@ -7464,6 +7479,11 @@ export const specs: ScreenshotSpec[] = [
     viewportWidth: 1200,
     viewportHeight: 720,
     settleMs: 1500,
+    // subject IS the missing-config landing page: the absent config.json 404s
+    expectedConsole: [
+      'HTTP 404 fetching config.json',
+      'Failed to load resource',
+    ],
   },
 
   // The embed tutorial's hero figure: the *embedded*

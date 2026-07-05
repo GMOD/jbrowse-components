@@ -695,9 +695,11 @@ async function main() {
       }
       page.on('console', msg => {
         const t = msg.type()
-        if (!isBrowserConsoleNoise(msg.text())) {
+        const text = msg.text()
+        const expected = spec.expectedConsole?.some(s => text.includes(s))
+        if (!isBrowserConsoleNoise(text) && !expected) {
           console.error(
-            `    [${spec.name}] browser[${t}]: ${msg.text().substring(0, 300)}`,
+            `    [${spec.name}] browser[${t}]: ${text.substring(0, 300)}`,
           )
         }
       })
