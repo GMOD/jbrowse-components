@@ -132,3 +132,4 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
 export { default as SVGGridlines } from './SVGGridlines.tsx'
 export { default as SVGRuler } from './SVGRuler.tsx'
 export { default as SVGTracks } from './SVGTracks.tsx'
+export { default as SVGView } from './SVGView.tsx'

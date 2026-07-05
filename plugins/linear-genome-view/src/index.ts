@@ -153,6 +153,7 @@ export {
   SVGGridlines,
   SVGRuler,
   SVGTracks,
+  SVGView,
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
 export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'

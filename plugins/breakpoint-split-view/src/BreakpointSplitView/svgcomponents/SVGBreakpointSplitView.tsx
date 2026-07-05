@@ -1,13 +1,7 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getFillProps, getSession, sum } from '@jbrowse/core/util'
-import {
-  SVGGridlines,
-  SVGRuler,
-  SVGTracks,
-  totalHeight,
-} from '@jbrowse/plugin-linear-genome-view'
+import { getSession, sum } from '@jbrowse/core/util'
+import { SVGView, totalHeight } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
 import { getTrackNameMaxLen, getTrackOffsets } from './util.ts'
@@ -68,7 +62,6 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     ),
   )
   const w = width + trackLabelOffset
-  const t = createJBrowseTheme(theme)
 
   // the xlink namespace is used for rendering <image> tag
   return wrapSvgExport({
@@ -85,31 +78,17 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
               key={view.id}
               transform={`translate(${exportMargin} ${yOffset})`}
             >
-              <g transform={`translate(${trackLabelOffset})`}>
-                <text
-                  x={0}
-                  fontSize={fontSize}
-                  {...getFillProps(t.palette.text.primary)}
-                >
-                  {view.assemblyNames.join(', ')}
-                </text>
-                <SVGRuler model={view} fontSize={fontSize} />
-              </g>
-              {showGridlines ? (
-                <g transform={`translate(${trackLabelOffset} ${offset})`}>
-                  <SVGGridlines model={view} height={tracksHeights[idx]!} />
-                </g>
-              ) : null}
-              <g transform={`translate(0 ${offset})`}>
-                <SVGTracks
-                  textHeight={textHeight}
-                  trackLabels={trackLabels}
-                  fontSize={fontSize}
-                  model={view}
-                  displayResults={data}
-                  trackLabelOffset={trackLabelOffset}
-                />
-              </g>
+              <SVGView
+                view={view}
+                displayResults={data}
+                fontSize={fontSize}
+                textHeight={textHeight}
+                trackLabels={trackLabels}
+                trackLabelOffset={trackLabelOffset}
+                contentTop={offset}
+                tracksHeight={tracksHeights[idx]!}
+                showGridlines={showGridlines}
+              />
             </g>
           )
         })}

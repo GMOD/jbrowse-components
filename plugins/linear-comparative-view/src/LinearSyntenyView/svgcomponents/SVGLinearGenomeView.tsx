@@ -2,14 +2,11 @@ import type { ReactNode } from 'react'
 
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
-import { getEnv, getFillProps } from '@jbrowse/core/util'
+import { getEnv } from '@jbrowse/core/util'
 import {
-  SVGGridlines,
   SVGHighlights,
-  SVGRuler,
-  SVGTracks,
+  SVGView,
 } from '@jbrowse/plugin-linear-genome-view'
-import { useTheme } from '@mui/material'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
@@ -47,7 +44,6 @@ export default function SVGLinearGenomeView({
   showGridlines?: boolean
   tracksHeight: number
 }) {
-  const theme = useTheme()
   const { view } = displayResults
   const { pluginManager } = getEnv(view)
   const clipId = `highlight-clip-${view.id}`
@@ -59,31 +55,17 @@ export default function SVGLinearGenomeView({
   )
   return (
     <g transform={`translate(${exportMargin} ${fontSize})`}>
-      <g transform={`translate(${trackLabelOffset})`}>
-        <text
-          x={0}
-          fontSize={fontSize}
-          {...getFillProps(theme.palette.text.primary)}
-        >
-          {view.assemblyNames.join(', ')}
-        </text>
-        <SVGRuler model={view} fontSize={fontSize} />
-      </g>
-      {showGridlines ? (
-        <g transform={`translate(${trackLabelOffset} ${rulerHeight})`}>
-          <SVGGridlines model={view} height={tracksHeight} />
-        </g>
-      ) : null}
-      <g transform={`translate(0 ${rulerHeight})`}>
-        <SVGTracks
-          textHeight={textHeight}
-          trackLabels={trackLabels}
-          fontSize={fontSize}
-          model={view}
-          displayResults={displayResults.data}
-          trackLabelOffset={trackLabelOffset}
-        />
-      </g>
+      <SVGView
+        view={view}
+        displayResults={displayResults.data}
+        fontSize={fontSize}
+        textHeight={textHeight}
+        trackLabels={trackLabels}
+        trackLabelOffset={trackLabelOffset}
+        contentTop={rulerHeight}
+        tracksHeight={tracksHeight}
+        showGridlines={showGridlines}
+      />
       <g transform={`translate(${trackLabelOffset} ${rulerHeight})`}>
         <SvgClipRect id={clipId} width={view.width} height={tracksHeight}>
           <SVGHighlights model={view} height={tracksHeight} />

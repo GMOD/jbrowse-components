@@ -1,4 +1,4 @@
-import { getSession, stripAlpha } from '@jbrowse/core/util'
+import { getFillProps, getSession } from '@jbrowse/core/util'
 import {
   createOverviewLayout,
   getContentBlocksPxSpan,
@@ -74,10 +74,15 @@ export default function SVGHeader({
 }) {
   const { assemblyNames, showCytobands } = model
   const { assemblyManager } = getSession(model)
-  const assemblyName = assemblyNames.length === 1 ? assemblyNames[0] : undefined
-  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
+  // cytobands need a single unambiguous assembly, but the header label names
+  // every assembly in the view
+  const cytobandAssemblyName =
+    assemblyNames.length === 1 ? assemblyNames[0] : undefined
+  const assembly = cytobandAssemblyName
+    ? assemblyManager.get(cytobandAssemblyName)
+    : undefined
   const theme = useTheme()
-  const c = stripAlpha(theme.palette.text.primary)
+  const fillProps = getFillProps(theme.palette.text.primary)
   const visibleRegions = model.dynamicBlocks.contentBlocks
   if (!visibleRegions.length) {
     return null
@@ -86,15 +91,15 @@ export default function SVGHeader({
   const y = +showCytobands * cytobandHeight
   return (
     <g id="header">
-      {assemblyName ? (
+      {assemblyNames.length ? (
         <text
           x={0}
           y={0}
           dominantBaseline="hanging"
           fontSize={fontSize}
-          fill={c}
+          {...fillProps}
         >
-          {assemblyName}
+          {assemblyNames.join(', ')}
         </text>
       ) : null}
 

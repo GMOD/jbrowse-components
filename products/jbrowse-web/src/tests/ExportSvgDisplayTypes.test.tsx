@@ -134,6 +134,21 @@ test('alignments display SVG vector export', async () => {
   expect(svg).not.toContain('<image')
 }, 45000)
 
+test('refName label stays on-canvas when zoomed into a chromosome interior', async () => {
+  const { view, findByTestId } = await createView()
+  // deep inside ctgA, so the region's left edge has scrolled off the left of
+  // the viewport — the sticky refName label must pin to x=0, not render at the
+  // (far off-canvas) block start
+  await view.navToLocString('ctgA:30000..40000')
+  fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
+  await findByTestId(/^display-.*-done$/, ...opts)
+
+  await view.exportSvg({ rasterizeLayers: false })
+  const svg = getSavedSvg()
+  const sticky = /<text x="0"[^>]*font-weight="bold"[^>]*>ctgA<\/text>/
+  expect(svg).toMatch(sticky)
+}, 45000)
+
 test('arc display SVG export renders bezier arcs for BND variants', async () => {
   const { view, findByTestId, findByText } = await createView()
   await view.navToLocString('ctgA:1..50000')

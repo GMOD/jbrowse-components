@@ -1,0 +1,72 @@
+import { getFillProps } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
+
+import SVGGridlines from './SVGGridlines.tsx'
+import SVGRuler from './SVGRuler.tsx'
+import SVGTracks from './SVGTracks.tsx'
+
+import type { LinearGenomeViewModel } from '../index.ts'
+import type { TrackLabelMode } from '../types.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
+interface DisplayResult {
+  track: {
+    configuration: AnyConfigurationModel
+    displays: { height: number }[]
+  }
+  result: React.ReactNode
+}
+
+// One LGV's worth of exported SVG: assembly label + ruler on top, then optional
+// gridlines and the track bodies. Shared verbatim by the linear-synteny and
+// breakpoint-split exports so their per-view layout can't drift; `contentTop` is
+// where the tracks start below the ruler (the two callers reserve different
+// header heights).
+export default function SVGView({
+  view,
+  displayResults,
+  fontSize,
+  textHeight,
+  trackLabels,
+  trackLabelOffset,
+  contentTop,
+  tracksHeight,
+  showGridlines,
+}: {
+  view: LinearGenomeViewModel
+  displayResults: DisplayResult[]
+  fontSize: number
+  textHeight: number
+  trackLabels: TrackLabelMode
+  trackLabelOffset: number
+  contentTop: number
+  tracksHeight: number
+  showGridlines: boolean
+}) {
+  const theme = useTheme()
+  return (
+    <>
+      <g transform={`translate(${trackLabelOffset})`}>
+        <text x={0} fontSize={fontSize} {...getFillProps(theme.palette.text.primary)}>
+          {view.assemblyNames.join(', ')}
+        </text>
+        <SVGRuler model={view} fontSize={fontSize} />
+      </g>
+      {showGridlines ? (
+        <g transform={`translate(${trackLabelOffset} ${contentTop})`}>
+          <SVGGridlines model={view} height={tracksHeight} />
+        </g>
+      ) : null}
+      <g transform={`translate(0 ${contentTop})`}>
+        <SVGTracks
+          textHeight={textHeight}
+          trackLabels={trackLabels}
+          fontSize={fontSize}
+          model={view}
+          displayResults={displayResults}
+          trackLabelOffset={trackLabelOffset}
+        />
+      </g>
+    </>
+  )
+}
