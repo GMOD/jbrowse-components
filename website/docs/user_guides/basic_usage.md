@@ -224,6 +224,22 @@ rubberband-select a region.
 
 <Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc." src="/img/rubberband.png" />
 
+## Scalebar chromosome name menu
+
+The chromosome (reference sequence) names drawn along the scale bar are
+clickable. Clicking a name opens a menu with:
+
+- **Focus on `<name>`** — navigate to that entire region
+- **Actions** submenu:
+  - **Reverse region** — reverse-complement just that region, in place
+  - **Horizontally flip view** — reverse-complement the whole view (the same as
+    the header-bar flip described below)
+  - **Move left** / **Move right** and **Move to far left** / **Move to far
+    right** — reorder the region relative to the others when multiple regions are
+    displayed (the "far" options appear only when they would land somewhere
+    different from a single-step move)
+  - **Remove this region from view**
+
 ## Track label positioning
 
 Track labels can be positioned on their own row or overlapping the data to save

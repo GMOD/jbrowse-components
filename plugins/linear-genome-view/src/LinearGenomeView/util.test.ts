@@ -9,6 +9,7 @@ import {
   makeBlockTicks,
   makeOverviewTicks,
   makeTicks,
+  regionMoveActions,
   stickyBlockIndex,
 } from './util.ts'
 
@@ -398,5 +399,51 @@ describe('getScalebarRefNameLabels', () => {
     })
     expect(labels).toEqual([])
     expect(showPrefixFallback).toBe(true)
+  })
+})
+
+describe('regionMoveActions', () => {
+  test('single region: no moves offered', () => {
+    expect(regionMoveActions(0, 1)).toEqual({
+      canMoveLeft: false,
+      canMoveRight: false,
+      canMoveFarLeft: false,
+      canMoveFarRight: false,
+    })
+  })
+
+  test('two regions: only single steps, never "far" (would duplicate)', () => {
+    expect(regionMoveActions(0, 2)).toEqual({
+      canMoveLeft: false,
+      canMoveRight: true,
+      canMoveFarLeft: false,
+      canMoveFarRight: false,
+    })
+    expect(regionMoveActions(1, 2)).toEqual({
+      canMoveLeft: true,
+      canMoveRight: false,
+      canMoveFarLeft: false,
+      canMoveFarRight: false,
+    })
+  })
+
+  test('adjacent-to-end index suppresses the redundant "far" move', () => {
+    // idx 1 of 3: "far left" (→0) would duplicate "left" (→0), so it's off;
+    // "far right" (→2) would duplicate "right" (→2), so it's off too
+    expect(regionMoveActions(1, 3)).toEqual({
+      canMoveLeft: true,
+      canMoveRight: true,
+      canMoveFarLeft: false,
+      canMoveFarRight: false,
+    })
+  })
+
+  test('interior index with a gap to both ends offers all four', () => {
+    expect(regionMoveActions(2, 5)).toEqual({
+      canMoveLeft: true,
+      canMoveRight: true,
+      canMoveFarLeft: true,
+      canMoveFarRight: true,
+    })
   })
 })

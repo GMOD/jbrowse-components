@@ -27,11 +27,19 @@ function TestRubberband({ model }: { model: LinearGenomeViewModel }) {
   )
 }
 
-function makeModel(setOffsets = jest.fn()) {
+function makeModel({
+  setOffsets = jest.fn(),
+  scalebarRefNameClickPending = false,
+  setScalebarRefNameClickPending = jest.fn(),
+}: {
+  setOffsets?: jest.Mock
+  scalebarRefNameClickPending?: boolean
+  setScalebarRefNameClickPending?: jest.Mock
+} = {}) {
   return {
     isScalebarRefNameMenuOpen: false,
-    scalebarRefNameClickPending: false,
-    setScalebarRefNameClickPending: jest.fn(),
+    scalebarRefNameClickPending,
+    setScalebarRefNameClickPending,
     setOffsets,
     pxToBp: (px: number) => ({ index: 0, offset: px, refName: 'ctgA' }),
     bpPerPx: 1,
@@ -41,7 +49,7 @@ function makeModel(setOffsets = jest.fn()) {
 describe('useRangeSelect (LGV)', () => {
   it('commits selection on window mouseup after drag', () => {
     const setOffsets = jest.fn()
-    render(<TestRubberband model={makeModel(setOffsets)} />)
+    render(<TestRubberband model={makeModel({ setOffsets })} />)
     const el = screen.getByTestId('rubberband')
 
     fireEvent.mouseDown(el, { clientX: 100, clientY: 0 })
@@ -60,7 +68,7 @@ describe('useRangeSelect (LGV)', () => {
 
   it('does not commit selection for small drag (click)', () => {
     const setOffsets = jest.fn()
-    render(<TestRubberband model={makeModel(setOffsets)} />)
+    render(<TestRubberband model={makeModel({ setOffsets })} />)
     const el = screen.getByTestId('rubberband')
 
     fireEvent.mouseDown(el, { clientX: 100, clientY: 0 })
@@ -90,7 +98,7 @@ describe('useRangeSelect (LGV)', () => {
 
   it('a new drag re-engages after a click opened the menu', () => {
     const setOffsets = jest.fn()
-    render(<TestRubberband model={makeModel(setOffsets)} />)
+    render(<TestRubberband model={makeModel({ setOffsets })} />)
     const el = screen.getByTestId('rubberband')
 
     // first interaction: a click (tiny movement) opens the menu
@@ -120,7 +128,7 @@ describe('useRangeSelect (LGV)', () => {
 
   it('escape key during drag cancels selection', () => {
     const setOffsets = jest.fn()
-    render(<TestRubberband model={makeModel(setOffsets)} />)
+    render(<TestRubberband model={makeModel({ setOffsets })} />)
     const el = screen.getByTestId('rubberband')
 
     fireEvent.mouseDown(el, { clientX: 100, clientY: 0 })
@@ -136,5 +144,61 @@ describe('useRangeSelect (LGV)', () => {
     })
 
     expect(setOffsets).not.toHaveBeenCalled()
+  })
+
+  it('a click begun on a refName label suppresses the rubberband menu and clears the pending flag', () => {
+    const setOffsets = jest.fn()
+    const setScalebarRefNameClickPending = jest.fn()
+    render(
+      <TestRubberband
+        model={makeModel({
+          setOffsets,
+          scalebarRefNameClickPending: true,
+          setScalebarRefNameClickPending,
+        })}
+      />,
+    )
+    const el = screen.getByTestId('rubberband')
+
+    fireEvent.mouseDown(el, { clientX: 100, clientY: 0 })
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('mouseup', { bubbles: true, clientX: 101, clientY: 0 }),
+      )
+    })
+
+    // rubberband menu must not open — the label's own onClick handles it
+    expect(screen.getByTestId('menuOpen').textContent).toBe('false')
+    // flag cleared here (not left for the label's onClick), so it can't get
+    // stuck and swallow the next scalebar click if mouseup drifts off the label
+    expect(setScalebarRefNameClickPending).toHaveBeenCalledWith(false)
+  })
+
+  it('a drag begun on a refName label still commits and clears the pending flag', () => {
+    const setOffsets = jest.fn()
+    const setScalebarRefNameClickPending = jest.fn()
+    render(
+      <TestRubberband
+        model={makeModel({
+          setOffsets,
+          scalebarRefNameClickPending: true,
+          setScalebarRefNameClickPending,
+        })}
+      />,
+    )
+    const el = screen.getByTestId('rubberband')
+
+    fireEvent.mouseDown(el, { clientX: 100, clientY: 0 })
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('mouseup', { bubbles: true, clientX: 250, clientY: 0 }),
+      )
+    })
+
+    expect(setScalebarRefNameClickPending).toHaveBeenCalledWith(false)
+    expect(setOffsets).toHaveBeenCalledWith(
+      expect.objectContaining({ offset: 100 }),
+      expect.objectContaining({ offset: 250 }),
+    )
   })
 })

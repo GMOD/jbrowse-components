@@ -239,6 +239,21 @@ export function getScalebarRefNameLabels({
 }
 
 /**
+ * Which reorder actions the refName-label menu should offer for the region at
+ * `idx` of `numRegions`. The "far" moves are gated on there being a gap of more
+ * than one between `idx` and the end — otherwise "Move to far left/right" would
+ * target the same index as "Move left/right" and duplicate the entry.
+ */
+export function regionMoveActions(idx: number, numRegions: number) {
+  return {
+    canMoveLeft: idx > 0,
+    canMoveRight: idx < numRegions - 1,
+    canMoveFarLeft: idx > 1,
+    canMoveFarRight: idx < numRegions - 2,
+  }
+}
+
+/**
  * Whether a label occupying [leftPx, leftPx + labelWidth] fits within a block
  * of the given pixel width, used to skip tick labels that would be clipped at a
  * region edge (common with small collapsed-intron regions).

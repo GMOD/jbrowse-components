@@ -4,7 +4,7 @@ import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { getScalebarRefNameLabels } from '../util.ts'
+import { getScalebarRefNameLabels, regionMoveActions } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -36,7 +36,7 @@ const useStyles = makeStyles()(theme => ({
       background: theme.palette.action.hover,
     },
   },
-  b0: {
+  prefixLabel: {
     zIndex: 100,
   },
 }))
@@ -49,11 +49,12 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   const { classes, cx } = useStyles()
   const [menuState, setMenuState] = useState<MenuState>()
 
+  const prefix = model.scalebarDisplayPrefix()
   const { labels, showPrefixFallback } = getScalebarRefNameLabels({
     blocks: model.staticBlocks.blocks,
     offsetPx: model.offsetPx,
     regionEndPx: model.scalebarRegionEndPx,
-    prefix: model.scalebarDisplayPrefix(),
+    prefix,
   })
 
   return (
@@ -99,10 +100,10 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
         carried it (e.g. the leftmost region was too narrow to label) */}
         {showPrefixFallback ? (
           <span
-            className={cx(classes.b0, classes.refLabel)}
+            className={cx(classes.prefixLabel, classes.refLabel)}
             data-testid="refLabel-prefix"
           >
-            {model.scalebarDisplayPrefix()}
+            {prefix}
           </span>
         ) : null}
       </div>
@@ -132,9 +133,8 @@ const RefNameMenu = observer(function RefNameMenu({
   const { displayedRegions } = model
   const { refName, displayedRegionIndex: idx } = menuState
   const numRegions = displayedRegions.length
-  const canMoveLeft = idx > 0
-  const canMoveRight = idx < numRegions - 1
-  const manyRegions = numRegions > 2
+  const { canMoveLeft, canMoveRight, canMoveFarLeft, canMoveFarRight } =
+    regionMoveActions(idx, numRegions)
 
   function moveRegion(fromIndex: number, toIndex: number) {
     const regions = [...displayedRegions]
@@ -182,6 +182,13 @@ const RefNameMenu = observer(function RefNameMenu({
               },
             },
             {
+              show: true,
+              label: 'Horizontally flip view',
+              onClick: () => {
+                model.horizontallyFlip()
+              },
+            },
+            {
               show: canMoveLeft,
               label: 'Move left',
               onClick: () => {
@@ -196,14 +203,14 @@ const RefNameMenu = observer(function RefNameMenu({
               },
             },
             {
-              show: manyRegions && canMoveLeft,
+              show: canMoveFarLeft,
               label: 'Move to far left',
               onClick: () => {
                 moveRegion(idx, 0)
               },
             },
             {
-              show: manyRegions && canMoveRight,
+              show: canMoveFarRight,
               label: 'Move to far right',
               onClick: () => {
                 moveRegion(idx, numRegions - 1)

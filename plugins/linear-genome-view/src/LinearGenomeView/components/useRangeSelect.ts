@@ -53,16 +53,21 @@ export function useRangeSelect(
       const offsetX = getRelativeX(event, ref.current)
       const isClick = Math.abs(offsetX - startX) <= 3
 
-      // If click started on a scalebar refname label, let that component
-      // handle it instead of showing the rubberband menu
-      if (isClick && model.scalebarRefNameClickPending) {
+      // Clear the flag unconditionally once consumed: the label's own onClick
+      // also clears it, but that only fires if mouseup lands on the label, so
+      // relying on it alone can leave the flag stuck (swallowing the next
+      // scalebar click) when mouseup drifts a few px off the label edge.
+      const startedOnRefLabel = model.scalebarRefNameClickPending
+      if (startedOnRefLabel) {
+        model.setScalebarRefNameClickPending(false)
+      }
+
+      // A click that began on a scalebar refname label is handled by that
+      // label's onClick (opens its menu), not by the rubberband menu here
+      if (isClick && startedOnRefLabel) {
         setStartX(undefined)
         setCurrentX(undefined)
         return
-      }
-
-      if (!isClick && model.scalebarRefNameClickPending) {
-        model.setScalebarRefNameClickPending(false)
       }
 
       setAnchorPosition({ offsetX, clientX, clientY, isClick })
