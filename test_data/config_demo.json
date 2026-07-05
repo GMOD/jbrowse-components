@@ -5171,6 +5171,61 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "hgdp_archaic_introgression",
+      "name": "Archaic introgression (hmmix, HGDP selected individuals)",
+      "category": ["1000 Genomes", "Introgression"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "sample",
+          "source",
+          "meanprob",
+          "pop",
+          "region"
+        ],
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/introgression/introgression.multirow.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/introgression/introgression.multirow.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "hgdp_archaic_introgression-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "color": "jexl:get(feature,'source')=='Denisova' ? '#2c7fb8' : get(feature,'source')=='Both' ? '#756bb1' : '#e34a33'",
+          "rowOrder": [
+            "French hap1",
+            "French hap2",
+            "Han hap1",
+            "Han hap2",
+            "Karitiana hap1",
+            "Karitiana hap2",
+            "Bougainville hap1",
+            "Bougainville hap2",
+            "PapuanHighlands hap1",
+            "PapuanHighlands hap2"
+          ],
+          "rowHeight": 20
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "chm13v2.0_rmsk",
       "name": "chm13v2.0_rmsk",
       "adapter": {

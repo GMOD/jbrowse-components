@@ -30,6 +30,7 @@
         "tutorials/protein_structure",
         "tutorials/methylation",
         "tutorials/chromhmm",
+        "tutorials/introgression",
         "tutorials/rnaseq",
         "tutorials/display_settings"
       ]
