@@ -46,9 +46,11 @@ const useStyles = makeStyles()(theme => ({
 const ViewContainer = observer(function ViewContainer({
   view,
   session,
+  scrollOnMount,
 }: {
   view: AbstractViewModel
   session: SessionWithFocusedViewAndDrawerWidgets
+  scrollOnMount?: boolean
 }) {
   const ref = useWidthSetter(view)
   const { classes } = useStyles()
@@ -87,6 +89,7 @@ const ViewContainer = observer(function ViewContainer({
           view.setMinimized(!view.minimized)
         }}
         className={backgroundColorClassName}
+        scrollOnMount={scrollOnMount}
       />
       <Paper elevation={0}>
         <div

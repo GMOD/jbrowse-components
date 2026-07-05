@@ -26,11 +26,7 @@ export function useViewVisibility(rootMargin: string, estimatedHeight: number) {
   const [visible, setVisible] = useState(() => !intersectionObserverAvailable())
   const [rememberedHeight, setRememberedHeight] = useState(0)
 
-  // latest `visible` for the ResizeObserver callback, so we only record the
-  // body's real content height while it's mounted (not the spacer height)
-  const visibleRef = useRef(false)
-  visibleRef.current = visible
-
+  // Toggle `visible` as the body scrolls in/out of the viewport (root: null).
   useEffect(() => {
     const node = ref.current
     if (node && intersectionObserverAvailable()) {
@@ -44,25 +40,33 @@ export function useViewVisibility(rootMargin: string, estimatedHeight: number) {
         { rootMargin },
       )
       io.observe(node)
-
-      const ro =
-        'ResizeObserver' in window
-          ? new ResizeObserver(entries => {
-              const box = entries[entries.length - 1]?.contentBoxSize[0]
-              if (box && visibleRef.current && box.blockSize > 0) {
-                setRememberedHeight(box.blockSize)
-              }
-            })
-          : undefined
-      ro?.observe(node)
-
       return () => {
         io.disconnect()
-        ro?.disconnect()
       }
     }
     return undefined
   }, [rootMargin])
+
+  // Only measure while visible, so we record the body's real content height and
+  // never the collapsed spacer height. Re-subscribing on the `visible`
+  // transition lets the callback record unconditionally, instead of reading the
+  // latest `visible` back through a render-written ref.
+  useEffect(() => {
+    const node = ref.current
+    if (node && visible && 'ResizeObserver' in window) {
+      const ro = new ResizeObserver(entries => {
+        const box = entries[entries.length - 1]?.contentBoxSize[0]
+        if (box && box.blockSize > 0) {
+          setRememberedHeight(box.blockSize)
+        }
+      })
+      ro.observe(node)
+      return () => {
+        ro.disconnect()
+      }
+    }
+    return undefined
+  }, [visible])
 
   return {
     ref,

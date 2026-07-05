@@ -38,7 +38,7 @@ const ViewsContainer = observer(function ViewsContainer(props: Props) {
             <ClassicViewsContainer session={session} />
           )
         ) : (
-          <ViewLauncher {...props} />
+          <ViewLauncher session={session} />
         )}
       </Suspense>
     </div>

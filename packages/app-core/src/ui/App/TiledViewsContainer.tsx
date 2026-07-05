@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { DockviewReact } from 'dockview-react'
-import { autorun } from 'mobx'
+import { autorun, runInAction } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { DockviewContext } from './DockviewContext.tsx'
@@ -103,15 +103,20 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         return
       }
 
-      session.removeViewFromPanel(viewId)
-
       const panelId = createPanelId()
       api.addPanel({
         ...createPanelConfig(panelId),
         position: getPanelPosition(api.activeGroup, direction),
       })
-      session.assignViewToPanel(panelId, viewId)
-      session.setActivePanelId(panelId)
+      // Batch the unassign+reassign so the view-reconcile autorun only observes
+      // the final state (view in the new panel). Without the batch it fires
+      // right after removeViewFromPanel — sees the view unassigned and re-adds
+      // it to activePanelId — leaving the view stacked in two panels at once.
+      runInAction(() => {
+        session.removeViewFromPanel(viewId)
+        session.assignViewToPanel(panelId, viewId)
+        session.setActivePanelId(panelId)
+      })
     },
     [api, session],
   )

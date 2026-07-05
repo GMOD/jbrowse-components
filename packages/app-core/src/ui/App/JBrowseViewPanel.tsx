@@ -4,7 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { useDockview } from './DockviewContext.tsx'
-import ViewContainer from './ViewContainer.tsx'
+import ViewStack from './ViewStack.tsx'
 import { getViewsForPanel } from './dockviewUtils.ts'
 
 import type { JBrowseViewPanelParams } from './types.ts'
@@ -21,9 +21,6 @@ const useStyles = makeStyles()(theme => ({
   viewStack: {
     display: 'flex',
     flexDirection: 'column',
-  },
-  spacer: {
-    height: 300,
   },
   emptyPanel: {
     display: 'flex',
@@ -65,10 +62,7 @@ const JBrowseViewPanel = observer(function JBrowseViewPanel({
   return (
     <div className={classes.container}>
       <div className={classes.viewStack}>
-        {views.map(view => (
-          <ViewContainer key={view.id} view={view} session={session} />
-        ))}
-        <div className={classes.spacer} />
+        <ViewStack views={views} session={session} />
       </div>
     </div>
   )

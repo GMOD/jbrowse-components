@@ -1,7 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import ViewContainer from './ViewContainer.tsx'
+import ViewStack from './ViewStack.tsx'
 
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
@@ -11,9 +11,6 @@ const useStyles = makeStyles()({
     width: '100%',
     gridRow: 'components',
     overflowY: 'auto',
-  },
-  spacer: {
-    height: 300,
   },
 })
 
@@ -29,10 +26,7 @@ const ClassicViewsContainer = observer(function ClassicViewsContainer({
 
   return (
     <div className={classes.container}>
-      {views.map(view => (
-        <ViewContainer key={view.id} view={view} session={session} />
-      ))}
-      <div className={classes.spacer} />
+      <ViewStack views={views} session={session} />
     </div>
   )
 })
