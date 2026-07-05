@@ -180,7 +180,7 @@ statistics required of the reader.
 Some callers emit a _per-window score_ per sample rather than discrete segments
 (e.g. Sprime scores, or windowed D / f-statistics). That shape is a wiggle, not
 an interval — convert each sample's windows to bedGraph/bigWig and load them
-into a [multi-wiggle](/docs/user_guides/multiwiggle) track for one signal row
+into a [multi-wiggle](/docs/user_guides/multiquantitative_track) track for one signal row
 per sample. Tracts (above) are the more legible primary view; the windowed
 signal is a useful companion.
 
