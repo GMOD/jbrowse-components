@@ -98,10 +98,16 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
         factory={SequenceRenderer}
         testid="sequence-display"
         style={{ width: '100%', height }}
-        onMouseMove={event => { handleMouseMove(event) }}
-        onMouseLeave={() => { handleMouseLeave() }}
+        onMouseMove={event => {
+          handleMouseMove(event)
+        }}
+        onMouseLeave={() => {
+          handleMouseLeave()
+        }}
       >
-        {({ canvasRef }) => <SequenceBody model={model} canvasRef={canvasRef} />}
+        {({ canvasRef }) => (
+          <SequenceBody model={model} canvasRef={canvasRef} />
+        )}
       </DisplayChrome>
       {hover && clientCoord ? (
         <BaseTooltip

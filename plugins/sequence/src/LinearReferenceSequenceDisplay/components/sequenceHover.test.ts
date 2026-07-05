@@ -59,9 +59,9 @@ test('rowLayout without translation is just the base rows', () => {
 const seq = 'ATGGCC'
 
 test('forward base row reports the reference base', () => {
-  expect(hoverDetailForRow({ type: 'base', strand: 1 }, seq, 0, 0, false, standard)).toEqual(
-    { type: 'base', strand: 1, base: 'A' },
-  )
+  expect(
+    hoverDetailForRow({ type: 'base', strand: 1 }, seq, 0, 0, false, standard),
+  ).toEqual({ type: 'base', strand: 1, base: 'A' })
 })
 
 test('reverse base row reports the complement', () => {

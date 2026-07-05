@@ -42,7 +42,10 @@ describe('buildSimplePath', () => {
 
 describe('resolvedPairs', () => {
   const feat = (refName: string) =>
-    ({ id: () => refName, get: (k: string) => (k === 'refName' ? refName : undefined) }) as unknown as Feature
+    ({
+      id: () => refName,
+      get: (k: string) => (k === 'refName' ? refName : undefined),
+    }) as unknown as Feature
   const entry = (
     refName: string,
     hiddenSegmentsBefore?: string[],

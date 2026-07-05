@@ -1036,8 +1036,7 @@ export default function baseStateModelFactory(
           // cases — which would spuriously arm the expand button, mark the track
           // as overflowing, and open a sub-pixel scrollbar. The content occupies
           // `height` by construction, so clamp to it while squeezing.
-          const max =
-            self.squeezeScale === 1 ? raw : Math.min(raw, self.height)
+          const max = self.squeezeScale === 1 ? raw : Math.min(raw, self.height)
           // During a Y morph hold the height at the taller of the old/new
           // layout so features animating up from a deeper row aren't clipped at
           // the bottom; it settles to the destination height when the morph

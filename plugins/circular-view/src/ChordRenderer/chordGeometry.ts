@@ -14,8 +14,7 @@ export function getEndpoint(
 ) {
   const alt = (feature.get('ALT') as string[] | undefined)?.[0]
   const mate = feature.get('mate') as
-    | { refName: string; start: number }
-    | undefined
+    { refName: string; start: number } | undefined
   const parsed = parseSvAlt(feature, alt)
   return parsed
     ? {

@@ -825,19 +825,23 @@ describe('computeArcsFromPileupData', () => {
     const regions = [
       { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
     ]
-    const withLongRange = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
-      drawInter: false,
-      drawLongRange: true,
-    }).arcs
+    const withLongRange = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      regions,
+      {
+        colorByType: 'insertSizeAndOrientation',
+        drawInter: false,
+        drawLongRange: true,
+      },
+    ).arcs
     // A→B (1200→9000) and B→C (9200→5000); never the direct A→C (1200→5000)
     expect(withLongRange.map(a => [a.p1.bp, a.p2.bp])).toEqual([
       [1200, 9000],
       [9200, 5000],
     ])
-    expect(
-      withLongRange.some(a => a.p1.bp === 1200 && a.p2.bp === 5000),
-    ).toBe(false)
+    expect(withLongRange.some(a => a.p1.bp === 1200 && a.p2.bp === 5000)).toBe(
+      false,
+    )
 
     // with long-range off, the flanking segments are not read-adjacent, so
     // nothing is drawn rather than the misleading direct join

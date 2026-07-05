@@ -541,9 +541,9 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
     expect(result.arrowXs.length).toBe(2)
     // each transcript registered as a subfeature parented to the gene
     expect(result.subfeatureInfos.map(s => s.featureId)).toEqual(['tx1', 'tx2'])
-    expect(
-      result.subfeatureInfos.every(s => s.parentFeatureId === 'g1'),
-    ).toBe(true)
+    expect(result.subfeatureInfos.every(s => s.parentFeatureId === 'g1')).toBe(
+      true,
+    )
     expect(result.subfeatureInfos.map(s => s.topPx)).toEqual([0, 15])
   })
 

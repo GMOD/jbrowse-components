@@ -188,7 +188,8 @@ the same shorthand.
 
 Spell out the `fastaLocation`, `faiLocation`, and `gziLocation` slots only when
 the index files are named differently (see the
-[BgzipFastaAdapter config docs](/docs/config/bgzipfastaadapter) for all options):
+[BgzipFastaAdapter config docs](/docs/config/bgzipfastaadapter) for all
+options):
 
 ```json
 {

@@ -45,10 +45,7 @@ function walk(dir: string, prefix = ''): string[] {
 }
 
 const allSlugs = new Map(
-  walk(docsDir).map(rel => [
-    slugOf(rel, hasRootSlug(join(docsDir, rel))),
-    rel,
-  ]),
+  walk(docsDir).map(rel => [slugOf(rel, hasRootSlug(join(docsDir, rel))), rel]),
 )
 
 // Mirrors entrySlug(): strip a trailing /index, and treat "introduction" as the
@@ -83,8 +80,8 @@ function collectCovered(items: SidebarItem[], covered: Set<string>): void {
   }
 }
 
-const sidebar = JSON.parse(readFileSync(sidebarPath, 'utf8')).sidebar as
-  SidebarItem[]
+const sidebar = JSON.parse(readFileSync(sidebarPath, 'utf8'))
+  .sidebar as SidebarItem[]
 const covered = new Set<string>()
 collectCovered(sidebar, covered)
 

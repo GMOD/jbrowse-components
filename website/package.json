@@ -10,7 +10,7 @@
     "lint-docs": "node --experimental-strip-types scripts/generate-guide-indexes.ts",
     "lint-docs-check": "node --experimental-strip-types scripts/generate-guide-indexes.ts --check",
     "check-doc-imports": "node --experimental-strip-types scripts/check-doc-imports.ts",
-  "check-sidebar": "node --experimental-strip-types scripts/check-sidebar.ts",
+    "check-sidebar": "node --experimental-strip-types scripts/check-sidebar.ts",
     "check-links": "node --experimental-strip-types scripts/check-links.ts",
     "generate-screenshots": "node --experimental-strip-types scripts/generate-screenshots.ts",
     "review-screenshots-web": "node --experimental-strip-types scripts/review-screenshots-web.ts",

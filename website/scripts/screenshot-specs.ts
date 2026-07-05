@@ -231,7 +231,10 @@ const HG00151_ONT_1000G_ADAPTER = {
   type: 'BamAdapter',
   bamLocation: { uri: HG00151_ONT_1000G_BAM, locationType: 'UriLocation' },
   index: {
-    location: { uri: `${HG00151_ONT_1000G_BAM}.bai`, locationType: 'UriLocation' },
+    location: {
+      uri: `${HG00151_ONT_1000G_BAM}.bai`,
+      locationType: 'UriLocation',
+    },
     indexType: 'BAI',
   },
 }
@@ -2165,7 +2168,10 @@ export const specs: ScreenshotSpec[] = [
       { type: 'click', text: 'Add' },
       { type: 'waitForText', text: 'Linear synteny view' },
       { type: 'click', text: 'Linear synteny view' },
-      { type: 'waitForText', text: 'Select assemblies for linear synteny view' },
+      {
+        type: 'waitForText',
+        text: 'Select assemblies for linear synteny view',
+      },
       { type: 'delay', ms: 1000 },
     ],
     stages: [

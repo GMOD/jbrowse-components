@@ -36,7 +36,17 @@ const AlignmentConnections = observer(function AlignmentConnections({
   const { layoutMatches, hasPairedReads: hasPaired, allFeatures } = match
 
   const connections = [...resolvedPairs({ match, assembly, tracks })].flatMap(
-    ({ f1, f2, level1, level2, c1, c2, f1ref, f2ref, hiddenSegmentsBetween }) => {
+    ({
+      f1,
+      f2,
+      level1,
+      level2,
+      c1,
+      c2,
+      f1ref,
+      f2ref,
+      hiddenSegmentsBetween,
+    }) => {
       if (!showIntraviewLinks && level1 === level2) {
         return []
       }
@@ -121,23 +131,24 @@ const AlignmentConnections = observer(function AlignmentConnections({
     <g fill="none" data-testid={getTestId(trackId, layoutMatches.length > 0)}>
       {connections.map(
         ({ id, path, orientationColor, f1id, f2id, hiddenSegment }) => (
-        <path
-          d={path}
-          key={id}
-          data-testid="r1"
-          pointerEvents={interactiveOverlay ? 'auto' : undefined}
-          strokeWidth={mouseoverElt === id ? 5 : 1}
-          strokeDasharray={hiddenSegment ? '4 3' : undefined}
-          {...getStrokeProps(orientationColor ?? theme.palette.text.disabled)}
-          {...createAlignmentMouseHandlers(
-            id,
-            setMouseoverElt,
-            session,
-            allFeatures.get(f1id)?.toJSON(),
-            allFeatures.get(f2id)?.toJSON(),
-          )}
-        />
-      ))}
+          <path
+            d={path}
+            key={id}
+            data-testid="r1"
+            pointerEvents={interactiveOverlay ? 'auto' : undefined}
+            strokeWidth={mouseoverElt === id ? 5 : 1}
+            strokeDasharray={hiddenSegment ? '4 3' : undefined}
+            {...getStrokeProps(orientationColor ?? theme.palette.text.disabled)}
+            {...createAlignmentMouseHandlers(
+              id,
+              setMouseoverElt,
+              session,
+              allFeatures.get(f1id)?.toJSON(),
+              allFeatures.get(f2id)?.toJSON(),
+            )}
+          />
+        ),
+      )}
       {hoveredConnection ? (
         <BreakpointTooltip contents={hoveredConnection.tooltip} />
       ) : null}

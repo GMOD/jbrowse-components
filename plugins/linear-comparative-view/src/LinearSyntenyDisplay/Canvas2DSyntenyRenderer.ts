@@ -130,12 +130,12 @@ function drawInstances(
     const isHovered = featureId === hoveredFeatureId
     const isClicked = featureId === clickedFeatureId
     const isCigar = kind >= KIND_CIGAR_MATCH
-    const { r, g, b, a: fa } = resolveInstanceFill(
-      packed,
-      isCigar,
-      isHovered,
-      alpha,
-    )
+    const {
+      r,
+      g,
+      b,
+      a: fa,
+    } = resolveInstanceFill(packed, isCigar, isHovered, alpha)
 
     // Sub-pixel handling keys on the ribbon's PERPENDICULAR (visual) thickness,
     // not horizontal span: a steep diagonal can be several px wide horizontally

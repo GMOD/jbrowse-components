@@ -1,4 +1,8 @@
-import { getBpDisplayStr, getFillProps, getStrokeProps } from '@jbrowse/core/util'
+import {
+  getBpDisplayStr,
+  getFillProps,
+  getStrokeProps,
+} from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import type { LinearGenomeViewModel } from '../index.ts'

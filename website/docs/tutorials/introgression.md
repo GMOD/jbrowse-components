@@ -11,8 +11,8 @@ segments they call as Neanderthal- or Denisovan-derived. That output is a set of
 intervals with a per-haplotype label and a source — exactly the shape the
 **multi-row feature display** draws: one labeled row per haplotype, features
 colored by source. This tutorial takes a published callset, reshapes it into one
-BED, and configures the display. JBrowse does no inference; it draws the segments
-the caller produced.
+BED, and configures the display. JBrowse does no inference; it draws the
+segments the caller produced.
 
 <Figure src="/img/introgression.png" caption="hmmix archaic-segment calls as a multi-row feature track: one row per haplotype, features colored by inferred source — Neanderthal (red), Denisovan (blue), both (purple). Whole chr1 arm, five individuals × two haplotypes; the four Oceanian rows (bottom) carry the blue Denisovan segments."/>
 
@@ -61,8 +61,8 @@ tabix -p bed introgression.multirow.bed.gz
 
 The five individuals are one each from Europe (French), East Asia (Han), the
 Americas (Karitiana), and Oceania (Bougainville, PapuanHighlands). Each output
-line is BED6 plus three trailing fields — `sample` (the `<pop> <hap>` row label),
-`source`, and `meanprob` — which drive the rows and colors.
+line is BED6 plus three trailing fields — `sample` (the `<pop> <hap>` row
+label), `source`, and `meanprob` — which drive the rows and colors.
 
 ## 3. Configure the multi-row feature display
 
@@ -133,8 +133,8 @@ The display config, field by field:
   labeled row, so the 10 `<pop> <hap>` values draw as 10 stacked rows.
 - **`color`** — a [jexl](/docs/config_guides/jexl) callback coloring each
   _feature_ by its `source`. Use `get(feature,'meanprob')` instead to shade by
-  the caller's posterior. There's no built-in legend, so put the color mapping in
-  the track name or figure caption. (The `sampleColorMap` slot is a different
+  the caller's posterior. There's no built-in legend, so put the color mapping
+  in the track name or figure caption. (The `sampleColorMap` slot is a different
   axis — it colors whole rows by sample, not features by source.)
 - **`rowOrder`** — pins the row order; omit it and rows fall back to first-seen
   order.
@@ -163,6 +163,6 @@ assembly and the input file, the track config is unchanged.
 
 ## Data and attribution
 
-The archaic-segment calls are the hmmix HGDP/1000 Genomes callset of Skov et al.,
-CC-BY 4.0, at
+The archaic-segment calls are the hmmix HGDP/1000 Genomes callset of Skov et
+al., CC-BY 4.0, at
 [doi:10.5281/zenodo.14136628](https://doi.org/10.5281/zenodo.14136628).

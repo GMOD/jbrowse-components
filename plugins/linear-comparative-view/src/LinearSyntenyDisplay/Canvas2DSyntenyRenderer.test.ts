@@ -548,7 +548,10 @@ describe('Canvas2DSyntenyRenderer', () => {
       }),
     )
     const state = makeState([[0, makeParams()]])
-    expect(renderer.pick(100.75, 50, state)).toEqual({ key: 0, featureIndex: 0 })
+    expect(renderer.pick(100.75, 50, state)).toEqual({
+      key: 0,
+      featureIndex: 0,
+    })
   })
 
   test('sub-pixel ribbon drawn as a stroke (perpW < 1) is not pickable', () => {

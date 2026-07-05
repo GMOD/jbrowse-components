@@ -1,5 +1,9 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
-import { getFillProps, getStrokeProps, getTickDisplayStr } from '@jbrowse/core/util'
+import {
+  getFillProps,
+  getStrokeProps,
+  getTickDisplayStr,
+} from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import BlockClipGroup from './BlockClipGroup.tsx'
@@ -58,7 +62,13 @@ function Ruler({
             .map(({ base, x }) => {
               const label = getTickDisplayStr(base + 1, bpPerPx)
               return labelFitsInBlock(x - 3, tickLabelWidth(label), widthPx) ? (
-                <text key={`label-${base}`} x={x - 3} y={7 + 11} fontSize={11} {...fillProps}>
+                <text
+                  key={`label-${base}`}
+                  x={x - 3}
+                  y={7 + 11}
+                  fontSize={11}
+                  {...fillProps}
+                >
                   {label}
                 </text>
               ) : null
@@ -73,7 +83,13 @@ function Ruler({
 // pinned to the viewport's left edge when a region has scrolled off — otherwise
 // the name renders off-canvas whenever you export a view zoomed into a
 // chromosome interior.
-function SVGRefNameLabels({ model, fontSize }: { model: LGV; fontSize: number }) {
+function SVGRefNameLabels({
+  model,
+  fontSize,
+}: {
+  model: LGV
+  fontSize: number
+}) {
   const theme = useTheme()
   const fillProps = getFillProps(theme.palette.text.primary)
   const prefix = model.scalebarDisplayPrefix()

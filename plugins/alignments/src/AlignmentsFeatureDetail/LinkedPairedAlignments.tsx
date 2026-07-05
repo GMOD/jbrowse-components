@@ -41,8 +41,8 @@ const LinkedPairedAlignments = observer(function LinkedPairedAlignments({
         assemblyName={assemblyName}
         feature={buildPairedEndMateFeature(mate)}
       >
-        {refName}:{toLocale(start)} -&gt; {mate.nextRef}:{toLocale(mate.nextPos)}{' '}
-        (breakpoint split view)
+        {refName}:{toLocale(start)} -&gt; {mate.nextRef}:
+        {toLocale(mate.nextPos)} (breakpoint split view)
       </LaunchBreakpointSplitViewLink>
     </BaseCard>
   ) : null

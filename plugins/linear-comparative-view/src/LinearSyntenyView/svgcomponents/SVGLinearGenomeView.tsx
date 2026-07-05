@@ -3,10 +3,7 @@ import type { ReactNode } from 'react'
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { getEnv } from '@jbrowse/core/util'
-import {
-  SVGHighlights,
-  SVGView,
-} from '@jbrowse/plugin-linear-genome-view'
+import { SVGHighlights, SVGView } from '@jbrowse/plugin-linear-genome-view'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {

@@ -47,7 +47,11 @@ export default function SVGView({
   return (
     <>
       <g transform={`translate(${trackLabelOffset})`}>
-        <text x={0} fontSize={fontSize} {...getFillProps(theme.palette.text.primary)}>
+        <text
+          x={0}
+          fontSize={fontSize}
+          {...getFillProps(theme.palette.text.primary)}
+        >
           {view.assemblyNames.join(', ')}
         </text>
         <SVGRuler model={view} fontSize={fontSize} />

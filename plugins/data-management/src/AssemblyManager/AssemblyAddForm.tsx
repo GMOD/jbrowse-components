@@ -27,10 +27,13 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
   async function onSubmit() {
     try {
       // web has no samtools faidx, so a plain FASTA stays unindexed
-      const conf = await buildAssemblyConf(form, (fastaLocation: FileLocation) => ({
-        type: 'UnindexedFastaAdapter' as const,
-        fastaLocation,
-      }))
+      const conf = await buildAssemblyConf(
+        form,
+        (fastaLocation: FileLocation) => ({
+          type: 'UnindexedFastaAdapter' as const,
+          fastaLocation,
+        }),
+      )
       session.addAssembly?.(conf)
       session.notify(`Added "${conf.name}"`, 'success')
       onClose()

@@ -32,7 +32,13 @@ function ramp(
   maxLabel: string,
 ): ColorBySwatchSpec {
   const stops = rampStops(toRgb)
-  return { kind: 'ramp', background: gradientCss(stops), stops, minLabel, maxLabel }
+  return {
+    kind: 'ramp',
+    background: gradientCss(stops),
+    stops,
+    minLabel,
+    maxLabel,
+  }
 }
 
 export interface ColorChip {

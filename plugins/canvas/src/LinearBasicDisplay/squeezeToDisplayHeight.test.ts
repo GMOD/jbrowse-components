@@ -24,9 +24,7 @@ function stackedRegionData(rows: number, heightPx: number) {
         featureHeightPx: f.height,
       }),
     ),
-    rectPositions: new Uint32Array(
-      features.flatMap(f => [f.startBp, f.endBp]),
-    ),
+    rectPositions: new Uint32Array(features.flatMap(f => [f.startBp, f.endBp])),
     rectYs: new Float32Array(features.length),
     rectHeights: new Float32Array(features.map(f => f.height)),
     rectColors: new Uint32Array(features.length),

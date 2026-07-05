@@ -23,14 +23,16 @@ regionStart-relative arithmetic crosses the worker boundary. See
   don't split `.views()`/`.actions()` across files. Small mixins/utilities can
   be extracted.
 - To override a config-slot default, write the slot directly
-  (`self.configuration.setSlot(name, value)`) and read it back via `getConf`; the
-  old `<name>Override` shadow-property system was removed. For a default that must
-  resolve across tiers (config default → display-type/session default → instance
-  pin) at read time, use the promotable-slot mechanism / `getConfResolved`.
+  (`self.configuration.setSlot(name, value)`) and read it back via `getConf`;
+  the old `<name>Override` shadow-property system was removed. For a default
+  that must resolve across tiers (config default → display-type/session default
+  → instance pin) at read time, use the promotable-slot mechanism /
+  `getConfResolved`.
 - A bare getter must return a resolved value, never `undefined`. When a bespoke
-  (non-config) MST prop encodes a sentinel (e.g. `rowHeight === 0` = fit-to-height),
-  expose the resolved value under a distinct getter (`effectiveRowHeight`) and make
-  every consumer — render, SVG export, overlays — read that, never the raw prop.
+  (non-config) MST prop encodes a sentinel (e.g. `rowHeight === 0` =
+  fit-to-height), expose the resolved value under a distinct getter
+  (`effectiveRowHeight`) and make every consumer — render, SVG export, overlays
+  — read that, never the raw prop.
 - In React, use `autorun` inside `useEffect` to track observables (prefer over
   `reaction`); `untracked` for untracked code.
 

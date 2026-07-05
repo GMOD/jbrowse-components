@@ -614,9 +614,9 @@ describe('getClipLengthAtStartOfRead', () => {
     ({ get: (k: string) => fields[k] }) as unknown as Feature
 
   test('prefers the adapter-provided field', () => {
-    expect(getClipLengthAtStartOfRead(feat({ clipLengthAtStartOfRead: 42 }))).toBe(
-      42,
-    )
+    expect(
+      getClipLengthAtStartOfRead(feat({ clipLengthAtStartOfRead: 42 })),
+    ).toBe(42)
   })
 
   test('derives from the CIGAR when the field is absent (forward strand)', () => {

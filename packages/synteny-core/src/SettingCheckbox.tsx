@@ -17,7 +17,13 @@ export default function SettingCheckbox({
   return (
     <FormControlLabel
       control={
-        <Checkbox checked={checked} onChange={() => { onChange() }} size="small" />
+        <Checkbox
+          checked={checked}
+          onChange={() => {
+            onChange()
+          }}
+          size="small"
+        />
       }
       label={
         <span style={{ display: 'inline-flex', alignItems: 'center' }}>

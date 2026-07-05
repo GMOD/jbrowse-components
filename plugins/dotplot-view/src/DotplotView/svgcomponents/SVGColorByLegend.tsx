@@ -44,7 +44,9 @@ export function SVGColorByLegend({
           ),
         )
       : 0
-  const noteRow = swatch ? 0 : measureText('Distinct color per sequence', rowSize)
+  const noteRow = swatch
+    ? 0
+    : measureText('Distinct color per sequence', rowSize)
   const bodyRows =
     swatch?.kind === 'chips' ? swatch.chips.length : swatch ? 1 : 1
 
@@ -120,7 +122,10 @@ export function SVGColorByLegend({
 
       {swatch?.kind === 'chips'
         ? swatch.chips.map((chip, i) => (
-            <g key={chip.label} transform={`translate(0 ${bodyTop + i * rowH})`}>
+            <g
+              key={chip.label}
+              transform={`translate(0 ${bodyTop + i * rowH})`}
+            >
               <rect
                 x={pad}
                 y={(rowH - swatchBox) / 2}

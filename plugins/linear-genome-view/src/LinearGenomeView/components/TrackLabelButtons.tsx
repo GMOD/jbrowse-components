@@ -33,20 +33,20 @@ export const TrackLabelCloseButton = observer(function TrackLabelCloseButton({
   )
 })
 
-export const TrackLabelMinimizeButton = observer(function TrackLabelMinimizeButton({
-  track,
-}: {
-  track: BaseTrackModel
-}) {
-  const { classes } = useStyles()
-  const { minimized } = track
-  return (
-    <IconButton
-      onClick={() => { track.setMinimized(!minimized) }}
-      className={classes.iconButton}
-      title={minimized ? 'restore track' : 'minimize track'}
-    >
-      {minimized ? <ArrowRightIcon /> : <ArrowDropDownIcon />}
-    </IconButton>
-  )
-})
+export const TrackLabelMinimizeButton = observer(
+  function TrackLabelMinimizeButton({ track }: { track: BaseTrackModel }) {
+    const { classes } = useStyles()
+    const { minimized } = track
+    return (
+      <IconButton
+        onClick={() => {
+          track.setMinimized(!minimized)
+        }}
+        className={classes.iconButton}
+        title={minimized ? 'restore track' : 'minimize track'}
+      >
+        {minimized ? <ArrowRightIcon /> : <ArrowDropDownIcon />}
+      </IconButton>
+    )
+  },
+)

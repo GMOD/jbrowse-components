@@ -62,7 +62,5 @@ export function computeTriangleYScalar({
   triangleWidth: number
 }): number {
   const triangleHeight = triangleWidth / 2
-  return fitToHeight && triangleHeight > 0
-    ? displayHeight / triangleHeight
-    : 1
+  return fitToHeight && triangleHeight > 0 ? displayHeight / triangleHeight : 1
 }

@@ -1,9 +1,9 @@
 # LinearReferenceSequenceDisplay — biology-surfacing feature ideas
 
 Backlog of features that would help users read biology out of the reference
-sequence display. Ordered roughly by value/effort. **Done:** hover
-introspection (position + reference base + codon→amino-acid, see
-`sequenceHover.ts` + `model.hoverAt`).
+sequence display. Ordered roughly by value/effort. **Done:** hover introspection
+(position + reference base + codon→amino-acid, see `sequenceHover.ts` +
+`model.hoverAt`).
 
 ## Copy / "Get sequence" for a region
 
@@ -13,10 +13,10 @@ Let a rubberband selection (or the whole visible window) be extracted as:
 - reverse complement
 - protein translation (all 3 frames, or a chosen frame)
 
-The building blocks already exist: `revcom`/`complement` from `@jbrowse/core/util`
-and `getGeneticCode().codonTable`. The main work is a selection affordance +
-a dialog/clipboard write. This is the single most-requested bench task the
-display can't do today.
+The building blocks already exist: `revcom`/`complement` from
+`@jbrowse/core/util` and `getGeneticCode().codonTable`. The main work is a
+selection affordance + a dialog/clipboard write. This is the single
+most-requested bench task the display can't do today.
 
 ## ORF highlighting
 

@@ -22,16 +22,12 @@ const sections = gallerySections.map(s => ({
     <p>
       Examples of the visualizations JBrowse 2 has to offer. Every item links to
       a live session you can open and explore in the app — see the{' '}
-      <a href={`${baseUrl}/demos/`}>demos page</a> for the same examples as a
-      compact link list, plus conference and workshop material.
+      <a href={`${baseUrl}/demos/`}>demos page</a> for the same examples as a compact
+      link list, plus conference and workshop material.
     </p>
 
     <nav class="toc">
-      {
-        sections.map(s => (
-          <a href={`#${s.id}`}>{s.title}</a>
-        ))
-      }
+      {sections.map(s => <a href={`#${s.id}`}>{s.title}</a>)}
     </nav>
 
     {

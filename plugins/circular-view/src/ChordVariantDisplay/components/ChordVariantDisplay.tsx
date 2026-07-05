@@ -15,7 +15,9 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
     <DisplayError
       model={display}
       radius={display.radiusPx}
-      onClick={() => { display.openErrorDialog() }}
+      onClick={() => {
+        display.openErrorDialog()
+      }}
     />
   ) : display.features ? (
     <SVChordsReactComponent display={display} />

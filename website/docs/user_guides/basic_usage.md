@@ -235,8 +235,8 @@ clickable. Clicking a name opens a menu with:
   - **Horizontally flip view** — reverse-complement the whole view (the same as
     the header-bar flip described below)
   - **Move left** / **Move right** and **Move to far left** / **Move to far
-    right** — reorder the region relative to the others when multiple regions are
-    displayed (the "far" options appear only when they would land somewhere
+    right** — reorder the region relative to the others when multiple regions
+    are displayed (the "far" options appear only when they would land somewhere
     different from a single-step move)
   - **Remove this region from view**
 

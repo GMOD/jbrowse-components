@@ -1,4 +1,7 @@
-import { getConfigurationSchemaDefinition, isSlotDefinitionEntry } from './util.ts'
+import {
+  getConfigurationSchemaDefinition,
+  isSlotDefinitionEntry,
+} from './util.ts'
 import { getEnv } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 

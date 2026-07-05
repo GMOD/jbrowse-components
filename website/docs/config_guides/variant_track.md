@@ -305,7 +305,8 @@ bgzip study.sorted.ld
 tabix -s 1 -b 2 -e 2 -c C study.sorted.ld.gz
 ```
 
-The [GWAS track guide → Preparing the LD file](/docs/config_guides/gwas_track#preparing-the-ld-file)
+The
+[GWAS track guide → Preparing the LD file](/docs/config_guides/gwas_track#preparing-the-ld-file)
 explains these flags in full — the same `.ld` file is used both for coloring
 GWAS points by LD and for the standalone LD track here.
 
@@ -347,8 +348,8 @@ in the visible region are fetched:
 
 The `uri` shorthand assumes a sibling `<uri>.tbi` index; spell out `ldLocation`
 and `index.location` (see the
-[PlinkLDTabixAdapter config docs](/docs/config/plinkldtabixadapter)) if the index
-is named differently.
+[PlinkLDTabixAdapter config docs](/docs/config/plinkldtabixadapter)) if the
+index is named differently.
 
 ### Computed-from-VCF LD display
 

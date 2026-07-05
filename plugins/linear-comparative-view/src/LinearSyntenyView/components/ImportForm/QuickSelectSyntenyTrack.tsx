@@ -37,8 +37,7 @@ const QuickSelectSyntenyTrack = observer(function QuickSelectSyntenyTrack({
           )
           if (track) {
             const names = readConfObject(track, 'assemblyNames') as string[]
-            const rows =
-              names.length > 2 ? [...names] : [names[0]!, names[1]!]
+            const rows = names.length > 2 ? [...names] : [names[0]!, names[1]!]
             setSelectedAssemblyNames(rows)
             setSelectedRow(0)
             model.clearImportFormSyntenyTracks()

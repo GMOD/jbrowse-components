@@ -22,8 +22,8 @@ Example `AlignmentsTrack` config:
 ## BamAdapter configuration options
 
 The `uri` shorthand assumes the index sits next to the data file at `<uri>.bai`.
-Spell out the location slots only when the index is named differently or is a CSI
-index:
+Spell out the location slots only when the index is named differently or is a
+CSI index:
 
 - `bamLocation` - file location of the BAM
 - `index.location` - file location of the index

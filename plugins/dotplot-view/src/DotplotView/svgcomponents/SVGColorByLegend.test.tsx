@@ -4,7 +4,9 @@ import { render } from '@testing-library/react'
 
 import { SVGColorByLegend } from './SVGColorByLegend.tsx'
 
-function renderLegend(colorBy: Parameters<typeof SVGColorByLegend>[0]['colorBy']) {
+function renderLegend(
+  colorBy: Parameters<typeof SVGColorByLegend>[0]['colorBy'],
+) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <svg>

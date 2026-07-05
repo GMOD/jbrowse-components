@@ -1,7 +1,8 @@
 ---
 title: Synteny all-vs-all
 description:
-  Stack strains or accessions in a linear synteny view from a single all-vs-all PAF
+  Stack strains or accessions in a linear synteny view from a single all-vs-all
+  PAF
 guide_category: Tutorials
 ---
 
@@ -71,9 +72,9 @@ load.
 Open a linear synteny view — **Add → Linear synteny view** — to reach the import
 form. Because `ecoli_ava` lists all four assemblies, you don't have to build the
 rows by hand: open **Quick start from a synteny track** and choose it. Every
-assembly in the track's `assemblyNames` becomes a row — one per strain — and that
-single track is wired to back every adjacent band. Click **Launch** to open the
-stacked view.
+assembly in the track's `assemblyNames` becomes a row — one per strain — and
+that single track is wired to back every adjacent band. Click **Launch** to open
+the stacked view.
 
 You can still build the stack manually — **Add row** adds a strain, and the
 connector button between each pair picks its synteny track — but for an
@@ -114,11 +115,11 @@ snapshot in the config's `defaultSession`. Four rows means three bands, so
 `tracks` is one entry per band: `tracks[0]` connects rows 0–1, `tracks[1]` rows
 1–2, and `tracks[2]` rows 2–3 — all the same `ecoli_ava` track, which lists
 every assembly in `assemblyNames` so it can back any pair. `minAlignmentLength`
-hides the short minimap2 alignments so the shared backbone reads as clean ribbons
-instead of a dense noise band — raise or lower it to taste. The one-time load
-settings (row order, tracks, `drawCurves`, `minAlignmentLength`) go under `init`;
-see the [ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for a fuller
-walk-through of the `defaultSession` structure.
+hides the short minimap2 alignments so the shared backbone reads as clean
+ribbons instead of a dense noise band — raise or lower it to taste. The one-time
+load settings (row order, tracks, `drawCurves`, `minAlignmentLength`) go under
+`init`; see the [ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for
+a fuller walk-through of the `defaultSession` structure.
 
 <Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from a single minimap2 all-vs-all PAF, with short alignments filtered out (minAlignmentLength). Every adjacent band is a direct alignment because an all-vs-all file is a complete graph; the ribbons trace the shared chromosomal backbone with strain-specific rearrangements." src="/img/multiway_synteny/ecoli_pangenome.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json" />
 
