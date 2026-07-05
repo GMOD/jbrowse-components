@@ -193,6 +193,34 @@ describe('readColorCategory', () => {
     ).toBe('pairLR')
   })
 
+  test('paired split-deletion chains (chainHasSupp=4) get the deletion bucket', () => {
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 4, flags: 1, pairOrientation: 1 }),
+        ColorScheme.pairOrientation,
+        chainOpts,
+      ),
+    ).toBe('splitDeletion')
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 4, flags: 1, pairOrientation: 1 }, stats),
+        ColorScheme.insertSizeAndOrientation,
+        chainOpts,
+      ),
+    ).toBe('splitDeletion')
+    // non-orientation scheme (strand) keeps its own coloring
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 4, flags: 1, strand: -1 }),
+        ColorScheme.strand,
+        chainOpts,
+      ),
+    ).toBe('revStrand')
+  })
+
   test('colorSupplementaryChains opt-in restores the flat orange override', () => {
     // with the opt-in on, a paired supplementary chain is the flat bucket again,
     // overriding the pair-orientation color

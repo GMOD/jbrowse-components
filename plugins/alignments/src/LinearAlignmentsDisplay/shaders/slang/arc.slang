@@ -59,7 +59,7 @@ struct VsOut {
 // arcColorByIndex is shared from alignmentsUniforms (also used by arcLine).
 float3 arcColor(float ct, Uniforms u) {
   uint idx = uint(ct + 0.5);
-  if (idx < 8u) { return arcColorByIndex(idx, u); }
+  if (idx < 9u) { return arcColorByIndex(idx, u); }
   // Gradient fallback for colorType >= NUM_ARC_COLORS.
   return hueRampHalfSat(u.gradientHue);
 }

@@ -35,6 +35,12 @@ export const ARC_SHAPE_ARC = 0
 export const ARC_SHAPE_FLAT = 1
 export const ARC_SHAPE_FLAT_SPLIT = 2
 
+// Both flat variants (solid samplot line + dashed split line) plot as a
+// horizontal line with endpoint-square markers, unlike the curved ARC shape.
+export function isFlatArcShape(shape: number) {
+  return shape === ARC_SHAPE_FLAT || shape === ARC_SHAPE_FLAT_SPLIT
+}
+
 // Matches samplot.py --jitter const default (0.08). Applied multiplicatively
 // to |tlen| so lines at the same insert size are visually separated.
 const SAMPLOT_JITTER_BOUNDS = 0.08
@@ -87,20 +93,25 @@ const COLOR_DEFAULT = 0
 const COLOR_LONG_INSERT = 1
 const COLOR_SHORT_INSERT = 2
 const COLOR_INTERCHROM = 3
-// LL and unpaired-FR share slot 4; RR slot 5; RL slot 6 (see arcColorPalette).
+// LL slot 4; RR slot 5; RL slot 6 (see arcColorPalette).
 const COLOR_PAIR_LL = 4
 const COLOR_PAIR_RR = 5
 const COLOR_PAIR_RL = 6
-const COLOR_UNPAIRED_FR = 4
-const COLOR_UNPAIRED_RF = 7
+// Split-read inversion, EITHER strand-flip direction (rf/fr) → one magenta
+// slot, matching the read-fill + connector split-inversion color.
+const COLOR_SPLIT_INVERSION = 7
+// Same-strand (co-linear) split — a deletion / tandem-dup junction — → the
+// supplementary yellow, matching the read-fill + connector deletion color.
+const COLOR_SPLIT_DELETION = 8
 
-// Maps the shared split-inversion category to this path's GPU palette indices.
+// A split junction (or unpaired-read segment pairing): opposite strands → the
+// magenta inversion color; same strands (both known) → the yellow deletion
+// color; unknown → default. Matches the split-read fill + connector colors.
 function unpairedOrientationColor(p1Strand: number, p2Strand: number) {
-  const inv = splitInversion(p1Strand, p2Strand)
-  return inv === 'rf'
-    ? COLOR_UNPAIRED_RF
-    : inv === 'fr'
-      ? COLOR_UNPAIRED_FR
+  return splitInversion(p1Strand, p2Strand) !== undefined
+    ? COLOR_SPLIT_INVERSION
+    : p1Strand !== 0 && p2Strand !== 0
+      ? COLOR_SPLIT_DELETION
       : COLOR_DEFAULT
 }
 
@@ -235,7 +246,10 @@ interface PendingArc {
 // offset regardless of fetch/render order, so snapshot tests don't flake.
 // `Math.sin(x)*43758.5453 mod 1` is the standard GPU-style cheap hash.
 function pairJitter01(p1Bp: number, p2Bp: number) {
-  const seed = (p1Bp * 374761393 + p2Bp * 668265263) >>> 0
+  // Math.imul keeps each product a true 32-bit multiply; a plain `*` overflows
+  // the 2^53 safe-integer range for large genomic coordinates (bp·constant ≈
+  // 1e17) and silently rounds away low bits before the `>>> 0`.
+  const seed = (Math.imul(p1Bp, 374761393) + Math.imul(p2Bp, 668265263)) >>> 0
   const x = Math.sin(seed) * 43758.5453
   return x - Math.floor(x)
 }
@@ -448,18 +462,22 @@ function collectPendingArcs(
   for (const entries of readsByName.values()) {
     if (entries.length === 1) {
       // A lone read connects to an off-screen mate / supplementary block — only
-      // drawn when long-range connections are enabled. Whether it links to its
-      // mate or chains its SA segments is the read's own property (its PAIRED
-      // flag), not the dataset-global one — so a split read still draws its SA
-      // junctions in a dataset that also contains paired reads.
+      // drawn when long-range connections are enabled. The two link kinds are
+      // independent read properties, so a read gets BOTH: its mate link (when
+      // paired with a mapped mate) AND its SA split junctions (when it carries
+      // supplementary alignments). splitArcsFromSA emits nothing without an SA
+      // tag, so an ordinary paired read still draws just the one mate arc. This
+      // mirrors the multi-entry path, which likewise chains a read's SA
+      // junctions and adds the mate link.
       if (drawLongRange) {
         const entry = entries[0]!
         const flags = entry.data.readFlags[entry.readIdx]!
         const isMateMapped =
-          flags & SAM_FLAG_PAIRED && !(flags & SAM_FLAG_MATE_UNMAPPED)
-        pendingArcs.push(
-          ...(isMateMapped ? [mateArc(entry)] : splitArcsFromSA(entry)),
-        )
+          !!(flags & SAM_FLAG_PAIRED) && !(flags & SAM_FLAG_MATE_UNMAPPED)
+        if (isMateMapped) {
+          pendingArcs.push(mateArc(entry))
+        }
+        pendingArcs.push(...splitArcsFromSA(entry))
       }
     } else {
       // ≥2 on-screen alignments sharing a name: resolve into per-mate split
@@ -563,31 +581,28 @@ export function computeArcsFromPileupData(
   return { arcs, lines }
 }
 
+function bucketByRef<T>(items: T[], refOf: (item: T) => string) {
+  const byRef = new Map<string, T[]>()
+  for (const item of items) {
+    const ref = refOf(item)
+    let bucket = byRef.get(ref)
+    if (!bucket) {
+      bucket = []
+      byRef.set(ref, bucket)
+    }
+    bucket.push(item)
+  }
+  return byRef
+}
+
 // Group computed arcs and lines by the refName they belong to so callers
 // can look up the per-region subset in O(1) instead of filtering the full
 // array once per displayed region.
 export function groupArcsByRef(arcs: ComputedArc[], lines: ComputedLine[]) {
-  const arcsByRef = new Map<string, ComputedArc[]>()
-  for (const arc of arcs) {
-    const ref = arc.p1.refName
-    let bucket = arcsByRef.get(ref)
-    if (!bucket) {
-      bucket = []
-      arcsByRef.set(ref, bucket)
-    }
-    bucket.push(arc)
+  return {
+    arcsByRef: bucketByRef(arcs, arc => arc.p1.refName),
+    linesByRef: bucketByRef(lines, line => line.x.refName),
   }
-  const linesByRef = new Map<string, ComputedLine[]>()
-  for (const line of lines) {
-    const ref = line.x.refName
-    let bucket = linesByRef.get(ref)
-    if (!bucket) {
-      bucket = []
-      linesByRef.set(ref, bucket)
-    }
-    bucket.push(line)
-  }
-  return { arcsByRef, linesByRef }
 }
 
 export function arcsToRegionResult(
@@ -608,9 +623,7 @@ export function arcsToRegionResult(
     arcColorTypes[i] = arc.colorType
     arcShapeTypes[i] = arc.shapeType
     arcYBp[i] = arc.yBp
-    const isFlat =
-      arc.shapeType === ARC_SHAPE_FLAT || arc.shapeType === ARC_SHAPE_FLAT_SPLIT
-    if (isFlat && arc.yBp > maxFlatArcYBp) {
+    if (isFlatArcShape(arc.shapeType) && arc.yBp > maxFlatArcYBp) {
       maxFlatArcYBp = arc.yBp
     }
   }

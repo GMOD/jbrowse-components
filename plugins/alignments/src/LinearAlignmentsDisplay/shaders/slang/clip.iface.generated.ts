@@ -90,6 +90,7 @@ export const UNIFORM_OFFSET_F32 = {
   pxPerBp: 78,
   colorSuppChains: 79,
   colorSplitInversion: 80,
+  arcColor8: 81,
 } as const
 
 
@@ -97,7 +98,7 @@ export const UNIFORM_OFFSET_F32 = {
 // fields, indexed into the 4-byte-word uniform buffer (works with
 // either Uint32Array or Float32Array views — the field kind picks).
 export const UNIFORM_SLOT_ARRAYS = {
-  arcColor: [62, 63, 64, 65, 66, 67, 68, 69] as const,
+  arcColor: [62, 63, 64, 65, 66, 67, 68, 69, 81] as const,
   linkedReadColor: [70, 71, 72, 73, 74, 75, 76, 77] as const,
 } as const
 
@@ -183,6 +184,7 @@ export interface Uniforms {
   pxPerBp: number
   colorSuppChains: number
   colorSplitInversion: number
+  arcColor8: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -270,6 +272,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[78] = uniforms.pxPerBp
   i32[79] = uniforms.colorSuppChains
   u32[80] = uniforms.colorSplitInversion
+  u32[81] = uniforms.arcColor8
 }
 
 export const INSTANCE_STRIDE_BYTES = 16

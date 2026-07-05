@@ -139,6 +139,9 @@ public struct Uniforms {
   // Kept at the tail, next to colorSuppChains, for the same offset-stability
   // reason — appending here left the other 17 shaders' generated offsets alone.
   public uint colorSplitInversion;
+  // 9th arc-palette slot (split-read deletion). Appended at the tail so adding
+  // it leaves arcColor0..7's offsets — and every other field's — unchanged.
+  public uint arcColor8;
 };
 
 // ---- Helper functions ---------------------------------------------------
@@ -197,12 +200,13 @@ public float pileupRowCenterPx(float row, Uniforms u) {
 // type. Shared by the arc curves (arc.slang) and the interchromosomal
 // connector ticks (arcLine.slang) so both stay in lockstep.
 public float3 arcColorByIndex(uint idx, Uniforms u) {
-  uint colors[8];
+  uint colors[9];
   colors[0] = u.arcColor0; colors[1] = u.arcColor1;
   colors[2] = u.arcColor2; colors[3] = u.arcColor3;
   colors[4] = u.arcColor4; colors[5] = u.arcColor5;
   colors[6] = u.arcColor6; colors[7] = u.arcColor7;
-  return unpackRGBA(colors[min(idx, 7u)]).xyz;
+  colors[8] = u.arcColor8;
+  return unpackRGBA(colors[min(idx, 8u)]).xyz;
 }
 
 // Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip

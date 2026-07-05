@@ -603,7 +603,7 @@ describe('computeArcsFromPileupData', () => {
     ).toHaveLength(1)
   })
 
-  test('read cloud SA-tag arcs color by strand like arcs (FR→4, same-strand→0)', () => {
+  test('read cloud SA-tag arcs color by strand like arcs (inversion→7, same-strand→8)', () => {
     const mkSplit = (primaryStrand: number, saStrand: '+' | '-') =>
       makePileupData({
         regionStart: 1000,
@@ -624,16 +624,16 @@ describe('computeArcsFromPileupData', () => {
       drawInter: false,
       drawLongRange: true,
     }
-    // Same strand (+/+) → default unpaired orientation slot 0
+    // Same strand (+/+) → split-deletion slot 8 (yellow)
     expect(
       computeArcsFromPileupData(new Map([[0, mkSplit(1, '+')]]), regions, opts)
         .arcs[0]!.colorType,
-    ).toBe(0)
-    // Opposite strand (+/-) → unpaired FR slot 4 (fwd→rev breakpoint)
+    ).toBe(8)
+    // Opposite strand (+/-) → split-inversion slot 7 (magenta)
     expect(
       computeArcsFromPileupData(new Map([[0, mkSplit(1, '-')]]), regions, opts)
         .arcs[0]!.colorType,
-    ).toBe(4)
+    ).toBe(7)
   })
 
   test('samplot in-view split read (primary + supplementary entries) is dashed at the gap span', () => {
@@ -672,17 +672,17 @@ describe('computeArcsFromPileupData', () => {
     expect(inv[0]!.shapeType).toBe(ARC_SHAPE_FLAT_SPLIT)
     // Y is the gap-span radius (|3001-1500|/2 ≈ 750), not collapsed to 0
     expect(inv[0]!.yBp).toBeGreaterThan(500)
-    // opposite strands → unpaired FR slot 4 (arc coloring)
-    expect(inv[0]!.colorType).toBe(4)
+    // opposite strands → split-inversion slot 7 (magenta arc)
+    expect(inv[0]!.colorType).toBe(7)
 
-    // same strands → default slot 0, still dashed split
+    // same strands → split-deletion slot 8, still dashed split
     const del = computeArcsFromPileupData(
       new Map([[0, mkInViewSplit(1, 1)]]),
       regions,
       opts,
     ).arcs
     expect(del[0]!.shapeType).toBe(ARC_SHAPE_FLAT_SPLIT)
-    expect(del[0]!.colorType).toBe(0)
+    expect(del[0]!.colorType).toBe(8)
   })
 
   test('in-view split inversion connects a2↔b2, not a2↔b1', () => {
@@ -771,7 +771,8 @@ describe('computeArcsFromPileupData', () => {
     // read1 (first-in-pair) is SA-split fwd→rev — an inversion junction — and
     // read2 (second-in-pair) is its mate. The dataset is paired (global
     // hasPaired=true), but the split junction must still color by its segment
-    // strands (FR slot 4), not fall into the paired insert-size branch.
+    // strands (split-inversion slot 7), not fall into the paired insert-size
+    // branch.
     const data = makePileupData({
       regionStart: 1000,
       readPositions: new Uint32Array([1000, 1200, 3000, 3200, 5000, 5200]),
@@ -797,9 +798,9 @@ describe('computeArcsFromPileupData', () => {
     expect(arcs).toHaveLength(2)
     // arc[0] = read1's fwd→rev split junction (a.end 1200 → b.end 3200).
     expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([1200, 3200])
-    // Colored FR (4) by its own strands — NOT the paired insert-size default
-    // (0) the global hasPaired branch would have produced.
-    expect(arcs[0]!.colorType).toBe(4)
+    // Colored split-inversion (7) by its own strands — NOT the paired
+    // insert-size default (0) the global hasPaired branch would have produced.
+    expect(arcs[0]!.colorType).toBe(7)
     // arc[1] = the read1↔read2 mate link, still colored by pair semantics.
     expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([1200, 5000])
   })
@@ -846,7 +847,7 @@ describe('computeArcsFromPileupData', () => {
     // long-range threshold a finite value. A lone unpaired read (idx 2) is
     // SA-split fwd→rev spanning >10kb — its |gap|/2 clears both the
     // long-range and the 10kb large-insert threshold. The split must still
-    // color by its own strands (inversion FR slot 4), NOT get repainted
+    // color by its own strands (split-inversion slot 7), NOT get repainted
     // long-insert (slot 1) by the paired-only large-insert override.
     const data = makePileupData({
       regionStart: 1000,
@@ -873,8 +874,8 @@ describe('computeArcsFromPileupData', () => {
     const loneArc = arcs.find(a => a.p1.bp === 1500)!
     // |30200 - 1500| / 2 ≈ 14350 > 10000 large-insert threshold
     expect(Math.abs((loneArc.p2.bp - loneArc.p1.bp) / 2)).toBeGreaterThan(10000)
-    // fwd→rev split junction → unpaired FR inversion slot 4, not long-insert 1
-    expect(loneArc.colorType).toBe(4)
+    // fwd→rev split junction → split-inversion slot 7, not long-insert 1
+    expect(loneArc.colorType).toBe(7)
   })
 })
 

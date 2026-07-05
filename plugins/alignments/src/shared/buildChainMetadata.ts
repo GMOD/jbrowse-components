@@ -35,18 +35,18 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
   const chainNames: string[] = []
   // Worker-local: drives readChainHasSupp in the read-array loop. Not part of
   // the result transferred to the main thread.
-  // 0=no supp, 1=supp+primary fwd, 2=supp+primary rev. (The split-inversion
-  // marker 3 is applied per-read in the fan-out to BOTH segments of a mate whose
-  // supplementary is inverted — see chainMate{0,1}Inverted below.)
+  // 0=no supp, 1=supp+primary fwd, 2=supp+primary rev. (The split markers 3
+  // (inversion) and 4 (deletion) are applied per-read in the fan-out to BOTH
+  // segments of a split mate — see chainMate{0,1}SplitKind below.)
   const chainSuppTypes = new Uint8Array(numChains)
-  // Per-mate (read1/read2) flag: this mate has a supplementary segment mapping
-  // opposite-strand to its own primary, i.e. that mate's read crosses an
-  // inversion junction. Worker-local. The fan-out paints BOTH the primary and
-  // the supplementary of a flagged mate the split-inversion color, so the split
-  // read stands out and which mate split is visible; the normal partner mate is
-  // left its own pair-orientation color.
-  const chainMate0Inverted = new Uint8Array(numChains)
-  const chainMate1Inverted = new Uint8Array(numChains)
+  // Per-mate (read1/read2) split kind: 0=none, 1=inverted (supplementary maps
+  // opposite-strand to its own primary — an inversion junction), 2=co-linear
+  // (same-strand supplementary — a deletion / tandem-dup junction). Worker-local.
+  // The fan-out paints BOTH segments of a split mate the matching color so the
+  // split read stands out and which mate split is visible; the normal partner
+  // mate keeps its own pair-orientation color.
+  const chainMate0SplitKind = new Uint8Array(numChains)
+  const chainMate1SplitKind = new Uint8Array(numChains)
   // Pair orientation (0=unknown, 1=LR, 2=RL, 3=RR, 4=LL) taken from the chain's
   // primary read, so supplementary segments can inherit the pair's orientation
   // rather than the divergent one their own strand-flipped record computes.
@@ -91,24 +91,29 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
       }
       featureIdToChainIdx.set(f.id, chainIdx)
     }
-    // Second pass over the (tiny) chain, only when it could matter: flag a mate
-    // whose supplementary maps opposite-strand to its own primary. Routed
-    // through splitInversion so this can't drift from the arc/connector
-    // classifier; ORs across multiple supplements so a mixed multi-split mate is
-    // still flagged. Primaries are known from pass 1, so segment order is moot.
-    let mate0Inverted = false
-    let mate1Inverted = false
+    // Second pass over the (tiny) chain, only when it could matter: classify
+    // each mate's split as inverted (opposite-strand supp — via the shared
+    // splitInversion classifier, so this can't drift from the arc/connector) or
+    // co-linear (same-strand supp — a deletion junction). Inversion is the
+    // stronger signal and wins if a mate has both. Primaries are known from pass
+    // 1, so segment order is moot.
+    let mate0SplitKind = 0
+    let mate1SplitKind = 0
     if (paired && hasSupp) {
       for (const f of chain) {
         if (f.flags & SAM_FLAG_SUPPLEMENTARY) {
           const isFirst = (f.flags & SAM_FLAG_FIRST_IN_PAIR) !== 0
           const primary = isFirst ? mate0Primary : mate1Primary
-          if (splitInversion(primary, f.strand) !== undefined) {
-            if (isFirst) {
-              mate0Inverted = true
-            } else {
-              mate1Inverted = true
-            }
+          const kind =
+            splitInversion(primary, f.strand) !== undefined
+              ? 1
+              : primary !== 0 && f.strand !== 0
+                ? 2
+                : 0
+          if (isFirst) {
+            mate0SplitKind = kind === 1 ? 1 : mate0SplitKind || kind
+          } else {
+            mate1SplitKind = kind === 1 ? 1 : mate1SplitKind || kind
           }
         }
       }
@@ -128,8 +133,8 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     // (cross-region merge + chainIdMap both key on this). Never displayed.
     chainNames.push(chainKey)
     chainSuppTypes[chainIdx] = hasSupp ? (primaryStrand === -1 ? 2 : 1) : 0
-    chainMate0Inverted[chainIdx] = mate0Inverted ? 1 : 0
-    chainMate1Inverted[chainIdx] = mate1Inverted ? 1 : 0
+    chainMate0SplitKind[chainIdx] = mate0SplitKind
+    chainMate1SplitKind[chainIdx] = mate1SplitKind
     chainPairOrientations[chainIdx] = primaryPairOrientation
     chainHasMultiple[chainIdx] = chain.length >= 2 ? 1 : 0
   }
@@ -140,8 +145,8 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     chainDistances,
     chainNames,
     chainSuppTypes,
-    chainMate0Inverted,
-    chainMate1Inverted,
+    chainMate0SplitKind,
+    chainMate1SplitKind,
     chainPairOrientations,
     chainHasMultiple,
     chainFirstReadIndices,

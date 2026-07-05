@@ -54,7 +54,7 @@ struct Instance {
   uint  pairOrient     : ATTR6;
   int   strand         : ATTR7;
   uint  tagColor       : ATTR8;   // ABGR u32; 0 = not set
-  uint  chainHasSupp   : ATTR9;   // 0=no supp, 1=supp+primary fwd, 2=supp+primary rev, 3=paired split inversion
+  uint  chainHasSupp   : ATTR9;   // 0=no supp, 1=supp+primary fwd, 2=supp+primary rev, 3=paired split inversion, 4=paired split deletion
   uint  edgeFlags      : ATTR10;  // bit 0 = is_first, bit 1 = is_last
   uint  interchrom     : ATTR11;  // 1 = mate on a different chromosome
 };
@@ -174,6 +174,12 @@ float3 getReadColor(Instance inst, Uniforms u) {
   if (cm == CM_LINKED_READ && inst.chainHasSupp == 3u && isPaired
       && (cs == CS_PAIR_ORIENT || cs == CS_IS_AND_ORIENT)) {
     return unpackRGBA(u.colorSplitInversion).xyz;
+  }
+  // Same-strand (co-linear) split — a deletion junction — reuses the
+  // supplementary yellow. SYNC: colorUtils.ts chainSupp === 4.
+  if (cm == CM_LINKED_READ && inst.chainHasSupp == 4u && isPaired
+      && (cs == CS_PAIR_ORIENT || cs == CS_IS_AND_ORIENT)) {
+    return unpackRGBA(u.colorSupplementary).xyz;
   }
 
   bool mateUnmapped = (inst.flags & 8u) != 0u;

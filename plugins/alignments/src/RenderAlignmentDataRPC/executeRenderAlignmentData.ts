@@ -160,8 +160,8 @@ function buildChainResultFields(
     chainDistances,
     chainNames,
     chainSuppTypes,
-    chainMate0Inverted,
-    chainMate1Inverted,
+    chainMate0SplitKind,
+    chainMate1SplitKind,
     chainPairOrientations,
     chainHasMultiple,
     chainFirstReadIndices,
@@ -176,15 +176,16 @@ function buildChainResultFields(
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const cIdx = featureIdToChainIdx.get(f.id) ?? 0
-    // Value 3 (split-inversion) is per-MATE: BOTH segments of the mate whose
-    // supplementary crosses an inversion junction get it, so the whole split
-    // read stands out; the normal partner mate keeps the chain's plain has-supp
-    // value (1/2) and its pair color.
-    const mateInverted =
+    // Split markers are per-MATE: BOTH segments of a split mate get the marker
+    // (3=inversion, 4=deletion) so the whole split read stands out; the normal
+    // partner mate keeps the chain's plain has-supp value (1/2) and its pair
+    // color.
+    const splitKind =
       f.flags & SAM_FLAG_FIRST_IN_PAIR
-        ? chainMate0Inverted[cIdx]!
-        : chainMate1Inverted[cIdx]!
-    readChainHasSupp[i] = mateInverted ? 3 : chainSuppTypes[cIdx]!
+        ? chainMate0SplitKind[cIdx]!
+        : chainMate1SplitKind[cIdx]!
+    readChainHasSupp[i] =
+      splitKind === 1 ? 3 : splitKind === 2 ? 4 : chainSuppTypes[cIdx]!
     readChainIndices[i] = cIdx
     readNextRefs.push(f.nextRef ?? '')
     // Only overwrite when the chain's primary (paired) read set an orientation;

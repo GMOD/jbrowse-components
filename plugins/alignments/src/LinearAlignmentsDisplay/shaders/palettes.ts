@@ -1,13 +1,13 @@
 import {
   colorInterchrom,
   colorLongInsert,
-  colorLongreadRevFwd,
   colorPairLL,
   colorPairLR,
   colorPairRL,
   colorPairRR,
   colorShortInsertArc,
   colorSplitReadInversion,
+  colorSupplementary,
 } from '@jbrowse/core/ui/theme'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
@@ -33,7 +33,8 @@ export const arcColorPalette: RGBColor[] = [
   rgb(colorPairLL),
   rgb(colorPairRR),
   rgb(colorPairRL),
-  rgb(colorLongreadRevFwd),
+  rgb(colorSplitReadInversion), // 7 split-read inversion — matches read fill + connector
+  rgb(colorSupplementary), // 8 split-read deletion (same-strand) — matches yellow deletion fill
 ]
 
 // Indices match LINKED_READ_COLOR_* in features/linkedReads/compute.ts. Used by the
@@ -45,7 +46,7 @@ export const linkedReadColorPalette: RGBColor[] = [
   rgb(colorPairRL), // 2 RL
   rgb(colorPairRR), // 3 RR
   rgb(colorPairLL), // 4 LL
-  rgb(colorPairLR), // 5 split normal (same-strand deletion)
+  rgb(colorSupplementary), // 5 split deletion (same-strand) — matches the yellow deletion read fill
   rgb(colorSplitReadInversion), // 6 split inversion — matches the read-fill split-inversion color so a magenta segment and its connector agree
   rgb(colorPairLR), // 7 fallback
 ]

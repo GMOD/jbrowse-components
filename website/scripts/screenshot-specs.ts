@@ -3332,11 +3332,20 @@ export const specs: ScreenshotSpec[] = [
         anchor: { text: 'CPX_TYPE' },
       },
       {
+        // inversion evidence
         type: 'text',
         x: 60,
-        y: 470,
-        text: 'The read pileup supports an INVdup: green (LL) and navy (RR) same-orientation pairs flag the inverted segment, and magenta split reads mark reads that cross the inversion junction directly (a mate whose supplementary alignment maps in the opposite orientation). Elevated coverage and the arc connections mark the extra duplicated copy.',
-        maxWidth: 520,
+        y: 440,
+        text: 'Green (LL) and navy (RR) same-orientation pairs — plus magenta split reads — flag the inverted segment.',
+        maxWidth: 470,
+      },
+      {
+        // duplication evidence, stacked below with a gap
+        type: 'text',
+        x: 60,
+        y: 610,
+        text: 'Elevated coverage and the arc connections mark the extra duplicated copy.',
+        maxWidth: 470,
       },
     ],
   },

@@ -37,6 +37,7 @@ interface ReadColorData {
 export type ReadColorCategory =
   | 'supplementary'
   | 'splitInversion'
+  | 'splitDeletion'
   | 'unmappedMate'
   | 'interchrom'
   | 'fwdStrand'
@@ -153,6 +154,19 @@ export function readColorCategory(
       colorScheme === ColorScheme.insertSizeAndOrientation)
   ) {
     return 'splitInversion'
+  }
+
+  // Same as above but for a same-strand (co-linear) split — a deletion / tandem-
+  // dup junction. Its own color (the supplementary yellow), reserving magenta
+  // for the more specific inversion case. SYNC: `chainHasSupp == 4u` in read.slang.
+  if (
+    isChain &&
+    chainSupp === 4 &&
+    isPaired &&
+    (colorScheme === ColorScheme.pairOrientation ||
+      colorScheme === ColorScheme.insertSizeAndOrientation)
+  ) {
+    return 'splitDeletion'
   }
 
   // unmapped mate (flag 8) — its own color for orientation-aware schemes (tlen=0
@@ -341,6 +355,9 @@ const swatchPaletteKeys = {
   // dedicated inversion hue (colorSplitReadInversion), distinct from the RR-pair
   // blue so the legend swatch and read fill are unambiguous
   splitInversion: 'colorSplitInversion',
+  // co-linear (deletion) split reuses the supplementary yellow — "ordinary split
+  // read", with magenta reserved for the special inverted case
+  splitDeletion: 'colorSupplementary',
 } satisfies Partial<Record<ReadColorCategory, keyof ColorPalette>>
 
 export type SwatchCategory = keyof typeof swatchPaletteKeys
