@@ -98,6 +98,41 @@ test('synteny with an unreadable assembly rejects instead of hanging', async () 
   )
 })
 
+// autoDiagonalize reorders the lower axis to follow the upper one. A PAF that
+// cross-maps ctgA<->ctgB between the two assemblies forces the lower axis to
+// flip from [ctgA,ctgB] to [ctgB,ctgA], so the diagonalized render differs from
+// the undiagonalized one (rendering is otherwise deterministic, so the flag is
+// the only variable). Also exercises the DiagonalizeSynteny RPC headlessly on
+// the main-thread driver — a missing RPC registration would hang to the init
+// timeout instead of returning.
+test('synteny --autoDiagonalize reorders the lower axis', async () => {
+  const crossPaf = path.join(tmp, 'cross.paf')
+  fs.writeFileSync(
+    crossPaf,
+    [
+      'ctgA\t50001\t1000\t6000\t+\tctgB\t6079\t100\t5100\t5000\t5000\t60',
+      'ctgB\t6079\t100\t5100\t+\tctgA\t50001\t1000\t6000\t5000\t5000\t60',
+    ].join('\n') + '\n',
+  )
+  const argv = [
+    ['fasta', [volvoxFasta]],
+    ['paf', [crossPaf]],
+    ['fasta', [fasta2]],
+  ]
+  const plain = await renderRegion({ mode: 'synteny', argv })
+  const diagonalized = await renderRegion({
+    mode: 'synteny',
+    argv,
+    autoDiagonalize: true,
+  })
+  assert.ok(diagonalized.includes('<svg'), 'diagonalized output should be SVG')
+  assert.notEqual(
+    diagonalized,
+    plain,
+    'autoDiagonalize should reorder the axis, changing the render',
+  )
+})
+
 // N-way synteny is driven by a --config (assemblies + synteny tracks) plus a
 // session-spec JSON, the same shape documented in urlparams.md. Mode is derived
 // from the spec's view type when no subcommand is given.
