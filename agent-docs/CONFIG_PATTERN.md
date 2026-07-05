@@ -25,7 +25,6 @@ RPC payload extension hook — see `ARCHITECTURE.md` §"`rpcProps()` /
       adapterConfig: self.adapterConfigSnapshot,
       displayConfig: {
         ...getConfSnapshot(self.configuration),
-        ...self.configOverrides,
       } as DisplayConfig,
       // ...
     }
@@ -135,28 +134,33 @@ catch-all member (one whose `type` is a plain string rather than a literal) — 
 that case MST can't prove the discriminator match is unique and falls back to
 validating every member.
 
-## Runtime overrides (`ConfigOverrideMixin`)
+## Runtime setting changes (write the slot directly)
 
-`ConfigOverrideMixin` (`plugins/linear-genome-view/src/BaseLinearDisplay/
-models/`) lets a display shadow config at runtime via one `configOverrides`
-frozen map (persisted unless empty; old `xxxSetting` keys migrate in via
-`migrateOldSettingSnapshots`):
+A runtime UI change to a display setting writes the **config slot itself**
+(`self.configuration.setSlot(key, value)`) and reads it back through `getConf` /
+`getConfSnapshot`. There is no separate override map: the earlier
+`ConfigOverrideMixin` (a `configOverrides` frozen map with `getConfWithOverride`
+/ `getOverride` / `setOverride`) was collapsed. A setting's current value lives
+in the slot, so the `displayConfig` snapshot above already reflects any runtime
+change with no extra spread.
 
-- `getConfWithOverride<T>(key)` — override else config-schema value
-- `getOverride<T>(key)` — override only (`undefined` if unset)
-- `setOverride(key, v)` / `clearOverride(key)`
+Where to put a new setting:
 
-**New-setting storage:** prefer `configOverrides` for any *display option* —
-`getConfWithOverride` when it has a config-schema default, `getOverride` when it
-doesn't (yet). The win is future-proofing: adding a config default later is a
-one-line schema change with no consumer edits. Plain MST fields are the older
-mechanism still used by many display toggles; the line is fuzzy, so match
-neighbouring settings rather than enforcing a hard rule.
+- **Config-backed setting** (the default for any display option) — add a slot to
+  the display config schema, write it with `setSlot`, read it with `getConf`. It
+  serializes into the session and can take a declarative config default.
+- **Read-time default resolution** — when a value must resolve across tiers
+  (config default → display-type/session default → per-instance pin), use the
+  promotable-slot mechanism / `getConfResolved` rather than a shadow property.
+- **Bespoke MST prop** — only for state that isn't a config slot (an ephemeral
+  volatile, or a sentinel like `rowHeight === 0` = fit-to-height). When a prop
+  encodes a sentinel, expose the resolved value under a distinct getter
+  (`effectiveRowHeight`) and make every consumer read that, never the raw prop.
 
-The wholesale `displayConfig: { ...getConfSnapshot, ...configOverrides }` form
-above ships every slot to the worker (canvas/wiggle); alignments instead curates
-a narrow `rpcProps()` so visual overrides don't refetch (its CLAUDE.md
-§"Settings: storage + invalidation tiers").
+The wholesale `displayConfig: { ...getConfSnapshot }` form above ships every slot
+to the worker (canvas/wiggle); alignments instead curates a narrow `rpcProps()`
+so visual-only changes don't refetch (its CLAUDE.md §"Settings: storage +
+invalidation tiers").
 
 ## Key functions
 

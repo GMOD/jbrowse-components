@@ -22,8 +22,15 @@ regionStart-relative arithmetic crosses the worker boundary. See
 - Keep the main model chain in one file (e.g. `LinearGenomeView/model.ts`);
   don't split `.views()`/`.actions()` across files. Small mixins/utilities can
   be extracted.
-- For a setting that overrides a config-slot default, store `<name>Override` and
-  keep the bare `<name>` getter returning a resolved value (never `undefined`).
+- To override a config-slot default, write the slot directly
+  (`self.configuration.setSlot(name, value)`) and read it back via `getConf`; the
+  old `<name>Override` shadow-property system was removed. For a default that must
+  resolve across tiers (config default → display-type/session default → instance
+  pin) at read time, use the promotable-slot mechanism / `getConfResolved`.
+- A bare getter must return a resolved value, never `undefined`. When a bespoke
+  (non-config) MST prop encodes a sentinel (e.g. `rowHeight === 0` = fit-to-height),
+  expose the resolved value under a distinct getter (`effectiveRowHeight`) and make
+  every consumer — render, SVG export, overlays — read that, never the raw prop.
 - In React, use `autorun` inside `useEffect` to track observables (prefer over
   `reaction`); `untracked` for untracked code.
 
