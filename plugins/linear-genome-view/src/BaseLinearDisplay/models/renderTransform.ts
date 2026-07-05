@@ -43,3 +43,26 @@ export function computeRenderTransform({
     viewOffsetX: apexGenomePx * scale - viewOffsetPx,
   }
 }
+
+/**
+ * Vertical squash factor for the fit-to-height triangle displays (HiC, LD).
+ * A rotated contact matrix has a natural apex height of `triangleWidth / 2`;
+ * when `fitToHeight` is on this stretches (or squashes) that apex into
+ * `displayHeight`, otherwise it's identity. Kept on the main thread so a
+ * resize only repaints — no worker refetch. Returns 1 for a degenerate
+ * (zero-width) triangle so callers never divide by zero.
+ */
+export function computeTriangleYScalar({
+  fitToHeight,
+  displayHeight,
+  triangleWidth,
+}: {
+  fitToHeight: boolean
+  displayHeight: number
+  triangleWidth: number
+}): number {
+  const triangleHeight = triangleWidth / 2
+  return fitToHeight && triangleHeight > 0
+    ? displayHeight / triangleHeight
+    : 1
+}

@@ -13,6 +13,7 @@ import {
   StaleViewportRescaleMixin,
   TrackHeightMixin,
   computeRenderTransform,
+  computeTriangleYScalar,
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
@@ -211,16 +212,15 @@ export default function stateModelFactory(
         return idx === -1 ? 0 : idx
       },
       get yScalar() {
-        // Squash (or stretch) the natural width/2 triangle into the dragged
-        // display height. Matches the LD display's bidirectional fill — dragging
-        // taller than the natural height fills the space rather than leaving a
+        // Bidirectional fill like the LD display: dragging taller than the
+        // natural triangle height stretches to fill rather than leaving a
         // blank band below.
-        if (!self.fitToHeight) {
-          return 1
-        }
         const view = getContainingView(self) as LinearGenomeViewModel
-        const defaultHeight = view.totalWidthPx / 2
-        return defaultHeight > 0 ? self.height / defaultHeight : 1
+        return computeTriangleYScalar({
+          fitToHeight: self.fitToHeight,
+          displayHeight: self.height,
+          triangleWidth: view.totalWidthPx,
+        })
       },
     }))
     .views(self => ({

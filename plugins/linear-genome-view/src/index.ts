@@ -95,6 +95,7 @@ export {
   baseLinearDisplayConfigSchema,
   bytesTooLargeReason,
   computeRenderTransform,
+  computeTriangleYScalar,
   drawCanvasImageData,
   evaluateRegionTooLarge,
   fetchAllRegions,

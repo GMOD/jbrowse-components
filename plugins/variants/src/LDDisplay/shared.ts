@@ -15,6 +15,7 @@ import {
   TrackHeightMixin,
   bytesTooLargeReason,
   computeRenderTransform,
+  computeTriangleYScalar,
   resolveByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
@@ -274,13 +275,12 @@ export default function sharedModelFactory(
        * the main thread so resize doesn't trigger a worker re-fetch.
        */
       get yScalar() {
-        if (!self.fitToHeight) {
-          return 1
-        }
         const view = getContainingView(self) as LinearGenomeViewModel
-        const canvasWidth = view.dynamicBlocks.totalWidthPxWithoutBorders
-        const triangleHeight = canvasWidth / 2
-        return triangleHeight > 0 ? this.ldCanvasHeight / triangleHeight : 1
+        return computeTriangleYScalar({
+          fitToHeight: self.fitToHeight,
+          displayHeight: this.ldCanvasHeight,
+          triangleWidth: view.dynamicBlocks.totalWidthPxWithoutBorders,
+        })
       },
 
       // Literal RPC payload for RenderLDData. Adding a field here
