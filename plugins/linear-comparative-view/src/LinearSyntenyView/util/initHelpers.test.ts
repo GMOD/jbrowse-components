@@ -1,4 +1,60 @@
-import { normalizeTrackLevels } from './initHelpers.ts'
+import { applyInitSettings, normalizeTrackLevels } from './initHelpers.ts'
+
+import type { LinearSyntenyViewModel } from '../model.ts'
+
+// A minimal stand-in recording which one-time-on-load setters applyInitSettings
+// invokes; the real model's setters just assign observable props.
+function makeModel() {
+  const calls: Record<string, unknown> = {}
+  return {
+    calls,
+    setColorBy: (v: string) => {
+      calls.colorBy = v
+    },
+    setShowColorLegend: (v: boolean) => {
+      calls.showColorLegend = v
+    },
+    setMinAlignmentLength: (v: number) => {
+      calls.minAlignmentLength = v
+    },
+    setDrawCurves: (v: boolean) => {
+      calls.drawCurves = v
+    },
+    setAlpha: (v: number) => {
+      calls.alpha = v
+    },
+    setFadeThinAlignments: (v: boolean) => {
+      calls.fadeThinAlignments = v
+    },
+    levels: [],
+  }
+}
+
+describe('applyInitSettings', () => {
+  test('applies showColorLegend:false (guarded on !== undefined, not truthiness)', () => {
+    const model = makeModel()
+    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
+      views: [],
+      showColorLegend: false,
+    })
+    expect(model.calls.showColorLegend).toBe(false)
+  })
+
+  test('leaves showColorLegend untouched when omitted', () => {
+    const model = makeModel()
+    applyInitSettings(model as unknown as LinearSyntenyViewModel, { views: [] })
+    expect('showColorLegend' in model.calls).toBe(false)
+  })
+
+  test('applies colorBy when set', () => {
+    const model = makeModel()
+    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
+      views: [],
+      colorBy: 'reference',
+    })
+    expect(model.calls.colorBy).toBe('reference')
+  })
+})
 
 describe('normalizeTrackLevels', () => {
   test('flat string[] is shorthand for a single level-0 list', () => {
