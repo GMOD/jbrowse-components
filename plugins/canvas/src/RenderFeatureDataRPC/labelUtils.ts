@@ -80,9 +80,15 @@ export function readFeatureLabels(
 // drawn at labelFontSize() = LABEL_FONT_SIZE × LABEL_FONT_MULTIPLIERS, which is
 // deliberately gentler than HEIGHT_MULTIPLIERS. So in compact/superCompact the
 // reserved slot (×0.6 / ×0.3) is smaller than the drawn label (×0.85 / ×0.7)
-// and `below` labels overlap the next row. Correct in normal mode (both ×1). A
-// real fix means reserving this row on the main thread (where labelFontPx and
-// the mode are known) rather than baking it into worker geometry — the worker
+// and `below` labels overlap the next row. Correct in normal mode (both ×1).
+//
+// The real fix is bigger than "reserve the row on the main thread": this gap is
+// NOT a separable row. layoutSubfeatures folds totalLayoutHeight into the
+// running currentYPx, so every following transcript's exon/intron Y positions
+// (and thus rectYs/lineYs) already carry it, and applyHeightScale then scales
+// the lot uniformly. Correcting it means re-doing intra-gene transcript vertical
+// stacking on the main thread (inserting labelFontPx gaps in place of the
+// worker's LABEL_FONT_SIZE), since that's where the mode is known — the worker
 // is intentionally mode-agnostic so compact toggles never trigger a re-fetch.
 export function applyLabelDimensions(
   layout: FeatureLayout,
