@@ -21,12 +21,15 @@
       "type": "category",
       "label": "User tutorials",
       "items": [
+        { "type": "link", "label": "All tutorials", "to": "tutorials" },
         "tutorials/analyze_trio",
         "tutorials/sv_visualization_cgiab",
         "tutorials/sv_multisamples",
         "tutorials/synteny_visualization",
+        "tutorials/multiway_synteny",
         "tutorials/protein_structure",
         "tutorials/methylation",
+        "tutorials/chromhmm",
         "tutorials/rnaseq",
         "tutorials/display_settings"
       ]
