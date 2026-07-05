@@ -7613,6 +7613,33 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 480,
   },
 
+  // Zoomed payoff for the introgression tutorial: a single ~150 kb Denisovan
+  // haplotype on chr13 carried by all four Oceanian haplotypes (Bougainville +
+  // PapuanHighlands, blue) and absent from the other six rows, shown against
+  // NCBI RefSeq genes for genomic context. The base-pair counterpart to the
+  // whole-arm population view above.
+  {
+    mode: 'url',
+    name: 'introgression_locus',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr13:104,500,000-105,100,000',
+      tracks: [
+        'ncbi_refseq_109_hg38',
+        {
+          trackId: 'hgdp_archaic_introgression',
+          displaySnapshot: {
+            type: 'LinearMultiRowFeatureDisplay',
+            height: 320,
+          },
+        },
+      ],
+    }),
+    readyText: 'Archaic introgression',
+    settleMs: 6000,
+    viewportHeight: 560,
+  },
+
   // products/jbrowse-img/README.md example images, rendered by the jb2export
   // CLI (see CliSpec above). Ported 1:1 from the old
   // render-comparative-examples.sh so the args stay in sync with the README's

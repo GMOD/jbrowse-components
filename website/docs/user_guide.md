@@ -42,7 +42,7 @@ title: User guide
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm) - Painting many-cell-type ChromHMM segmentations in one track with the multi-row feature display
 - [Applying display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
-- [Introgression tracts](/docs/tutorials/introgression) - Painting per-individual archaic (Neanderthal/Denisovan) introgression segments as one labeled row per sample with the multi-row feature display
+- [Introgression tracts](/docs/tutorials/introgression) - Painting per-haplotype archaic introgression segments as one labeled row per haplotype with the multi-row feature display
 - [DNA methylation](/docs/tutorials/methylation) - Per-read and aggregate methylation from ONT and modkit
 - [Multi-way synteny from an ortholog table](/docs/tutorials/multiway_synteny) - Build an N-genome linear synteny view from a jcvi MCScan .blocks file
 - [Protein structures and multiple sequence alignments](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants

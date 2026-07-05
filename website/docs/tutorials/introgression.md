@@ -1,43 +1,26 @@
 ---
 title: Introgression tracts
 description:
-  Painting per-individual archaic (Neanderthal/Denisovan) introgression segments
-  as one labeled row per haplotype with the multi-row feature display
+  Painting per-haplotype archaic introgression segments as one labeled row per
+  haplotype with the multi-row feature display
 guide_category: Tutorials
 ---
 
-Archaic introgression — the Neanderthal and Denisovan ancestry carried by
-present-day humans — is inferred by dedicated population-genetics tools, not by
-the genome browser. A caller like
-[hmmix](https://github.com/LauritsSkov/Introgression-detection) reads a
-multi-sample VCF and emits, _per individual haplotype_, the genomic segments it
-calls as archaic, each classified by source. That output is exactly the shape
-JBrowse draws well: intervals, one labeled row per haplotype.
+Archaic introgression callers emit, per individual haplotype, the genomic
+segments they call as Neanderthal- or Denisovan-derived. That output is a set of
+intervals with a per-haplotype label and a source — exactly the shape the
+**multi-row feature display** draws: one labeled row per haplotype, features
+colored by source. This tutorial takes a published callset, reshapes it into one
+BED, and configures the display. JBrowse does no inference; it draws the segments
+the caller produced.
 
-This tutorial builds the JBrowse demo's introgression track: take a published
-per-haplotype archaic-segment callset, reshape it into a single **multi-row
-feature track** — one row per haplotype, painted by inferred source — and read
-the tracts off the rows. JBrowse does no inference; it displays what the caller
-decided.
-
-<Figure src="/img/introgression.png" caption="Per-haplotype archaic introgression segments from an hmmix HGDP callset, one row per haplotype, colored by source: Neanderthal (red), Denisovan (blue), both (purple). The two Oceanian individuals (Bougainville, PapuanHighlands) carry conspicuously more Denisovan segments than the European, East Asian, and American individuals — the classic Denisovan-in-Oceania signal."/>
-
-## The idea: the caller does the analysis, the browser shows the tracts
-
-The division of labor matters. Detecting introgression means modeling private
-variant density along the genome (hmmix uses an HMM against an unadmixed
-outgroup), then classifying each archaic segment by comparison to sequenced
-archaic genomes (Altai, Vindija, Denisova, Chagyrskaya). All of that happens in
-the caller. What reaches the browser is a plain table of segments per haplotype,
-which we reshape into one file with a per-haplotype label column and let the
-**multi-row feature display** split back into a labeled sub-row — the same recipe
-the [ChromHMM tutorial](/docs/tutorials/chromhmm) uses to stack cell types.
+<Figure src="/img/introgression.png" caption="hmmix archaic-segment calls as a multi-row feature track: one row per haplotype, features colored by inferred source — Neanderthal (red), Denisovan (blue), both (purple). Whole chr1 arm, five individuals × two haplotypes; the four Oceanian rows (bottom) carry the blue Denisovan segments."/>
 
 ## 1. Get the segment calls
 
-We use the published hmmix callset for the
+Use the published hmmix callset for the
 [HGDP](https://www.internationalgenome.org/data-portal/data-collection/hgdp) and
-1000 Genomes panels (hg38 coordinates, CC-BY 4.0), on
+1000 Genomes panels (hg38, CC-BY 4.0) on
 [Zenodo](https://doi.org/10.5281/zenodo.14136628):
 
 ```bash
@@ -51,18 +34,16 @@ name       haplotype  pop     region  chrom  start    end      mean_prob  ND_typ
 HGDP00548  hap1       PapuanHighlands  OCEANIA  chr1  911000  940000  0.96174  Denisova  ...
 ```
 
-`ND_type` is the inferred source (`Neanderthal`, `Denisova`, `Both`, or `none`
-for archaic-state segments that match no sequenced archaic). To run the caller
-yourself instead of downloading calls, follow hmmix's
-[1000 Genomes walkthrough](https://github.com/LauritsSkov/Introgression-detection)
-(`create_outgroup → mutation_rate → create_ingroup → train → decode -admixpop`);
-its `decode` output has these same columns.
+`ND_type` is the inferred source (`Neanderthal`, `Denisova`, `Both`, or `none`).
+To generate calls yourself, hmmix's
+[walkthrough](https://github.com/LauritsSkov/Introgression-detection)
+(`create_outgroup → mutation_rate → create_ingroup → train → decode -admixpop`)
+produces the same columns.
 
 ## 2. Reshape into one multi-row file
 
-Keep the classified archaic segments for a handful of individuals spanning
-regions, label each row `<pop> <hap>`, and carry the source through so the
-display can color by it. One `awk` does the whole reshape:
+Keep the classified archaic segments for a few individuals, label each row
+`<pop> <hap>`, and carry `source` through for coloring. One `awk`:
 
 ```bash
 awk -F'\t' 'BEGIN{OFS="\t"}
@@ -79,10 +60,9 @@ tabix -p bed introgression.multirow.bed.gz
 ```
 
 The five individuals are one each from Europe (French), East Asia (Han), the
-Americas (Karitiana), and two from Oceania (Bougainville, PapuanHighlands) — the
-Oceanian pair carries the Denisovan signal. Each line is BED6 plus three trailing
-fields — `sample` (the `<pop> <hap>` row label), `source`, and `meanprob` — which
-drive the rows and colors below.
+Americas (Karitiana), and Oceania (Bougainville, PapuanHighlands). Each output
+line is BED6 plus three trailing fields — `sample` (the `<pop> <hap>` row label),
+`source`, and `meanprob` — which drive the rows and colors.
 
 ## 3. Configure the multi-row feature display
 
@@ -147,56 +127,42 @@ fields, and a `LinearMultiRowFeatureDisplay` that partitions on `sample`:
 }
 ```
 
-The three fields that make this work are the same ones the ChromHMM track uses:
+The display config, field by field:
 
 - **`partitionField: "sample"`** — every distinct `sample` value becomes its own
-  labeled sub-row, so a 5-individual × 2-haplotype file draws as 10 stacked rows.
-- **`color`** — a [jexl](/docs/config_guides/jexl) callback mapping each
-  segment's inferred `source` to a color: Denisovan blue, both purple,
-  Neanderthal red. Swap in `get(feature,'meanprob')` to shade by the caller's
-  posterior instead. This colors _features_ by source; there's no built-in
-  legend for it, so state the mapping in the track name or figure caption. (The
-  separate `sampleColorMap` slot colors whole _rows_ by sample — a different
-  axis, not a substitute for per-segment source coloring.)
-- **`rowOrder`** — pins the haplotypes, grouped by region so the Oceanian rows
-  (Denisovan-rich) sit together at the bottom.
-- **`rowHeight`** — a fixed 20px per row here; the default `0` instead auto-fits
-  every row into the display height (denser as you add individuals). Fixed
-  height keeps the 10-row demo legible.
+  labeled row, so the 10 `<pop> <hap>` values draw as 10 stacked rows.
+- **`color`** — a [jexl](/docs/config_guides/jexl) callback coloring each
+  _feature_ by its `source`. Use `get(feature,'meanprob')` instead to shade by
+  the caller's posterior. There's no built-in legend, so put the color mapping in
+  the track name or figure caption. (The `sampleColorMap` slot is a different
+  axis — it colors whole rows by sample, not features by source.)
+- **`rowOrder`** — pins the row order; omit it and rows fall back to first-seen
+  order.
+- **`rowHeight`** — fixed 20px per row; the default `0` auto-fits all rows into
+  the display height.
 
-## What the tracts show
+## Zooming in
 
-Zoom out to a whole chromosome and the biology reads straight off the rows: the
-European, East Asian, and American haplotypes are painted almost entirely red
-(Neanderthal), while the two Oceanian individuals — Bougainville and
-PapuanHighlands — carry a heavy scattering of blue **Denisovan** tracts on top of
-their Neanderthal segments. Denisovan ancestry concentrated in Oceania (and
-largely absent elsewhere) is one of the most robust results in the field; here
-it's simply the difference between the bottom four rows and the rest, no
-statistics required of the reader.
+At a single locus the display only renders rows that have a feature in view —
+rows with no segment there drop out.
+
+<Figure src="/img/introgression_locus.png" caption="The same track zoomed to chr13:104.5–105.1 Mb, over NCBI RefSeq genes. Only the four Oceanian haplotypes appear — the other six carry no segment in this window, so their rows drop out — each with an overlapping ~150 kb Denisovan (blue) block."/>
 
 ## Windowed scores instead of tracts: multi-wiggle
 
-Some callers emit a _per-window score_ per sample rather than discrete segments
-(e.g. Sprime scores, or windowed D / f-statistics). That shape is a wiggle, not
-an interval — convert each sample's windows to bedGraph/bigWig and load them
-into a [multi-wiggle](/docs/user_guides/multiquantitative_track) track for one signal row
-per sample. Tracts (above) are the more legible primary view; the windowed
-signal is a useful companion.
+Some callers emit a per-window score per sample rather than discrete segments
+(Sprime scores, windowed D / f-statistics). That's a wiggle, not an interval:
+convert each sample's windows to bedGraph/bigWig and load them into a
+[multi-wiggle](/docs/user_guides/multiquantitative_track) track for one signal
+row per sample.
 
 ## The same pattern, beyond humans
 
-Nothing here is human-specific. Any introgression caller that outputs
-per-individual segments — the classic adaptive-introgression stories of
-[_Heliconius_ wing-pattern loci](https://doi.org/10.1038/nature11041) or the
-[_Anopheles gambiae_ malaria-vector complex](https://doi.org/10.1126/science.1258524)
-among them — reshapes into the same one-row-per-sample multi-row track. Point the
-assembly at the relevant reference genome and the recipe is unchanged.
+Any caller that outputs per-individual segments loads the same way — swap the
+assembly and the input file, the track config is unchanged.
 
 ## Data and attribution
 
 The archaic-segment calls are the hmmix HGDP/1000 Genomes callset of Skov et al.,
-distributed under CC-BY 4.0 at
-[doi:10.5281/zenodo.14136628](https://doi.org/10.5281/zenodo.14136628). The
-method is described in Skov et al., _Detecting archaic introgression using an
-unadmixed outgroup_ (PLoS Genetics, 2018).
+CC-BY 4.0, at
+[doi:10.5281/zenodo.14136628](https://doi.org/10.5281/zenodo.14136628).
