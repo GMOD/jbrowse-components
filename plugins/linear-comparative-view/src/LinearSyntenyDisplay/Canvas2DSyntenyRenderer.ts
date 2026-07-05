@@ -37,6 +37,46 @@ export type { CanvasLike } from './syntenyPickEngine.ts'
 // invisible on a whole-genome view with no minAlignmentLength filter.
 const WIDTH_FADE_FLOOR = 0.15
 
+const rgba = (r: number, g: number, b: number, a: number) =>
+  `rgba(${r},${g},${b},${a})`
+
+interface ResolvedFill {
+  r: number
+  g: number
+  b: number
+  a: number
+}
+
+// Displayed fill for one instance, from its packed color + hover state. A few
+// arithmetic ops rather than a per-color Map lookup — the draw loop runs this
+// once per on-screen instance. `shade` doubles as the CIGAR white-blend factor
+// and the BASE output alpha (identical expression in both branches).
+// SYNC: mirrors shadeFill() in syntenyTypes.slang — CIGAR pre-blends with white
+// at the (hover-boosted) alpha so indels fade against the page; BASE darkens by
+// 0.7 and boosts alpha ×5 (capped 0.35) on hover.
+function resolveInstanceFill(
+  packed: number,
+  isCigar: boolean,
+  isHovered: boolean,
+  alpha: number,
+): ResolvedFill {
+  const pa = abgrAlpha(packed) / 255
+  const darken = isHovered ? 0.7 : 1
+  const shade = isHovered ? Math.min(pa * alpha * 5, 0.35) : pa * alpha
+  const r = abgrRed(packed) * darken
+  const g = abgrGreen(packed) * darken
+  const b = abgrBlue(packed) * darken
+  const white = 255 * (1 - shade)
+  return isCigar
+    ? {
+        r: (r * shade + white) | 0,
+        g: (g * shade + white) | 0,
+        b: (b * shade + white) | 0,
+        a: pa,
+      }
+    : { r: r | 0, g: g | 0, b: b | 0, a: shade }
+}
+
 function drawInstances(
   ctx: CanvasLike,
   data: SyntenyInstanceData,
@@ -75,7 +115,12 @@ function drawInstances(
     if (kind === KIND_MARKER) {
       const xt = (c.sx1 + c.sx2) * 0.5
       const xb = (c.sx3 + c.sx4) * 0.5
-      ctx.strokeStyle = `rgba(${abgrRed(packed)},${abgrGreen(packed)},${abgrBlue(packed)},${abgrAlpha(packed) / 255})`
+      ctx.strokeStyle = rgba(
+        abgrRed(packed),
+        abgrGreen(packed),
+        abgrBlue(packed),
+        abgrAlpha(packed) / 255,
+      )
       ctx.lineWidth = 1
       strokeCenterline(ctx, xt, xb, yTop, height, drawCurves)
       continue
@@ -85,34 +130,12 @@ function drawInstances(
     const isHovered = featureId === hoveredFeatureId
     const isClicked = featureId === clickedFeatureId
     const isCigar = kind >= KIND_CIGAR_MATCH
-
-    // Resolve the displayed fill inline: a handful of arithmetic ops, cheaper
-    // (and allocation-free) than the per-color Map lookup it replaces — which
-    // matters at whole-genome zoom, where the loop runs over every on-screen
-    // instance each frame. `shade` doubles as the CIGAR white-blend factor and
-    // the BASE output alpha (identical expression in both).
-    // SYNC: mirrors shadeFill() in syntenyTypes.slang — CIGAR pre-blends with
-    // white at the (hover-boosted) alpha so indels fade against the page; BASE
-    // darkens by 0.7 and boosts alpha ×5 (capped 0.35) on hover.
-    const pa = abgrAlpha(packed) / 255
-    const darken = isHovered ? 0.7 : 1
-    const shade = isHovered ? Math.min(pa * alpha * 5, 0.35) : pa * alpha
-    let r: number
-    let g: number
-    let b: number
-    let fa: number
-    if (isCigar) {
-      const white = 255 * (1 - shade)
-      r = (abgrRed(packed) * darken * shade + white) | 0
-      g = (abgrGreen(packed) * darken * shade + white) | 0
-      b = (abgrBlue(packed) * darken * shade + white) | 0
-      fa = pa
-    } else {
-      r = (abgrRed(packed) * darken) | 0
-      g = (abgrGreen(packed) * darken) | 0
-      b = (abgrBlue(packed) * darken) | 0
-      fa = shade
-    }
+    const { r, g, b, a: fa } = resolveInstanceFill(
+      packed,
+      isCigar,
+      isHovered,
+      alpha,
+    )
 
     // Sub-pixel handling keys on the ribbon's PERPENDICULAR (visual) thickness,
     // not horizontal span: a steep diagonal can be several px wide horizontally
@@ -134,11 +157,11 @@ function drawInstances(
       const widthFade = fadeThinAlignments
         ? Math.max(perpW, WIDTH_FADE_FLOOR)
         : 1
-      ctx.strokeStyle = `rgba(${r},${g},${b},${isCigar ? fa : fa * widthFade})`
+      ctx.strokeStyle = rgba(r, g, b, isCigar ? fa : fa * widthFade)
       ctx.lineWidth = 1
       strokeCenterline(ctx, xt, xb, yTop, height, drawCurves)
     } else {
-      ctx.fillStyle = `rgba(${r},${g},${b},${fa})`
+      ctx.fillStyle = rgba(r, g, b, fa)
       buildFeaturePath(ctx, c, yTop, height, drawCurves)
       ctx.fill()
       if (isClicked && !isCigar) {

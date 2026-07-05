@@ -1,4 +1,4 @@
-import React from 'react'
+import type { ReactNode } from 'react'
 
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
@@ -14,10 +14,6 @@ import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'
-
-interface TrackEntry {
-  displays: LinearSyntenyDisplayModel[]
-}
 
 // render LGV to SVG
 export async function renderToSvg(
@@ -43,38 +39,42 @@ export async function renderToSvg(
   const tracksHeights = views.map(v =>
     totalHeight(v.tracks, textHeight, trackLabels),
   )
-  const viewHeights = tracksHeights.map(h => headerHeight + h)
 
   // each display's renderSvg owns its own readiness wait (LGV track displays
   // await feature-density stats internally, renderSyntenyDisplaySvg awaits
-  // featureData/error), so no outer when() gate is needed here
-  const displayResults = await Promise.all(
-    views.map(
-      async view =>
-        ({
-          view,
-          data: await Promise.all(
-            view.tracks.map(async track => {
-              const d = track.displays[0]
-              return {
-                track,
-                result: await d.renderSvg({ ...opts, theme: themeVar }),
-              }
-            }),
-          ),
-        }) as const,
+  // featureData/error), so no outer when() gate is needed here. The genome-view
+  // track results and the ribbon levels are independent, so let both fan out
+  // concurrently rather than blocking one behind the other.
+  const [displayResults, renderings] = await Promise.all([
+    Promise.all(
+      views.map(
+        async view =>
+          ({
+            view,
+            data: await Promise.all(
+              view.tracks.map(async track => {
+                const d = track.displays[0]
+                return {
+                  track,
+                  result: await d.renderSvg({ ...opts, theme: themeVar }),
+                }
+              }),
+            ),
+          }) as const,
+      ),
     ),
-  )
-
-  const renderings = await Promise.all(
-    levels.map(level =>
-      Promise.all(
-        level.tracks.map((track: TrackEntry) =>
-          renderSyntenyDisplaySvg(track.displays[0]!, opts),
+    Promise.all(
+      levels.map(level =>
+        Promise.all(
+          // linearSyntenyDisplays' getter return type widens to any through the
+          // view's Instance type (MST drops getter types), so annotate d.
+          level.linearSyntenyDisplays.map((d: LinearSyntenyDisplayModel) =>
+            renderSyntenyDisplaySvg(d, opts),
+          ),
         ),
       ),
     ),
-  )
+  ])
 
   const trackLabelMaxLen =
     max(
@@ -88,14 +88,15 @@ export async function renderToSvg(
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
 
-  // walk top to bottom, alternating a genome view and the ribbon level beneath
-  // it, advancing y by each element's own height so everything abuts with no
-  // gaps. the ribbons for level i fill the band between view i and view i+1.
-  const RenderList: React.ReactNode[] = []
-  let y = 0
-  for (let i = 0; i < views.length; i++) {
-    RenderList.push(
-      <g key={views[i]!.id} transform={`translate(0 ${y})`}>
+  // The export is a vertical stack, top to bottom: each genome view, and
+  // directly beneath it the synteny ribbon level between it and the next view.
+  // The last view has no level below it (N views -> N-1 levels), so `levels[i]`
+  // is the single source of that invariant — no index bookkeeping in the layout.
+  const rows = views.flatMap((view, i) => {
+    const viewRow = {
+      key: view.id,
+      height: headerHeight + tracksHeights[i]!,
+      node: (
         <SVGLinearGenomeView
           rulerHeight={rulerHeight}
           trackLabelOffset={trackLabelOffset}
@@ -106,33 +107,51 @@ export async function renderToSvg(
           showGridlines={showGridlines}
           tracksHeight={tracksHeights[i]!}
         />
-      </g>,
-    )
-    y += viewHeights[i]!
-    const levelHeight = levels[i]?.height
-    if (levelHeight !== undefined) {
-      RenderList.push(
-        <g key={`level-${i}`} transform={`translate(0 ${y})`}>
-          <SVGSyntenyLevel
-            clipId={`synclip-${model.id}-${i}`}
-            width={width}
-            levelHeight={levelHeight}
-            trackLabelOffset={trackLabelOffset}
-            rendering={renderings[i] ?? []}
-          />
-        </g>,
-      )
-      y += levelHeight
+      ),
     }
-  }
-  const totalHeightSvg = y + exportMargin
+    const level = levels[i]
+    return level
+      ? [
+          viewRow,
+          {
+            key: `level-${i}`,
+            height: level.height,
+            node: (
+              <SVGSyntenyLevel
+                clipId={`synclip-${model.id}-${i}`}
+                width={width}
+                levelHeight={level.height}
+                trackLabelOffset={trackLabelOffset}
+                rendering={renderings[i]!}
+              />
+            ),
+          },
+        ]
+      : [viewRow]
+  })
+
+  // stack the rows top to bottom: one fold threads `y` (the running top offset)
+  // through them, producing both the positioned groups and the final height in a
+  // single pass — so the canvas size and the layout share one source of truth.
+  const stacked = rows.reduce<{ y: number; children: ReactNode[] }>(
+    (acc, row) => ({
+      y: acc.y + row.height,
+      children: [
+        ...acc.children,
+        <g key={row.key} transform={`translate(0 ${acc.y})`}>
+          {row.node}
+        </g>,
+      ],
+    }),
+    { y: 0, children: [] },
+  )
 
   // the xlink namespace is used for rendering <image> tag
   return wrapSvgExport({
     theme: themeVar,
     width: w,
-    height: totalHeightSvg,
+    height: stacked.y + exportMargin,
     Wrapper,
-    children: RenderList,
+    children: stacked.children,
   })
 }
