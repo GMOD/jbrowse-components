@@ -89,60 +89,73 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         */
-        prepareToBreakConnection(
-          configuration: AnyConfigurationModel,
-        ): [() => void, Record<string, number>] | undefined {
-          const callbacksToDeref: (() => void)[] = []
-          const derefTypeCount: Record<string, number> = {}
-          const { connectionId } = configuration
-          const connection = self.connectionInstances.find(
-            c => c.connectionId === connectionId,
-          )
-          if (!connection) {
-            return undefined
-          }
-          const referringByTrackId = session.getReferringMultiple(
-            connection.tracks,
-          )
-          for (const track of connection.tracks) {
-            const refs = referringByTrackId.get(track.trackId) ?? []
-            session.removeReferring(
-              refs,
-              track,
-              callbacksToDeref,
-              derefTypeCount,
-            )
-          }
-          return [
-            () => {
-              for (const cb of callbacksToDeref) {
-                cb()
-              }
-              this.breakConnection(configuration)
-            },
-            derefTypeCount,
-          ]
-        },
-
-        /**
-         * #action
+         * Remove a live connection instance. Tolerant of an already-dormant
+         * connection (its instance is stripped from the session on reload).
+         * Leaves persisted open-track configs alone — the connect() error path
+         * calls this and the user's already-open tracks must survive a transient
+         * failure. Full removal goes through `deleteConnection`.
          */
         breakConnection(configuration: AnyConfigurationModel) {
           const { connectionId } = configuration
           const connection = self.connectionInstances.find(
             c => c.connectionId === connectionId,
           )
-          if (!connection) {
-            throw new Error(`no connection found with id ${connectionId}`)
+          if (connection) {
+            self.connectionInstances.remove(connection)
           }
-          self.connectionInstances.remove(connection)
         },
 
         /**
          * #action
+         * Close every track a connection contributed — the live instance's
+         * tracks plus any persisted open-track configs (a dormant connection,
+         * never expanded this session, still renders its opened tracks from
+         * `connectionTrackConfigs`) — from all views/widgets, drop the live
+         * instance, and drop the persisted configs. The session is left as if the
+         * connection had never loaded.
+         */
+        teardownConnection(configuration: AnyConfigurationModel) {
+          const { connectionId } = configuration
+          const connection = self.connectionInstances.find(
+            c => c.connectionId === connectionId,
+          )
+          const trackIds = [
+            ...new Set([
+              ...(connection?.tracks.map(
+                (t: AnyConfigurationModel) => t.trackId,
+              ) ?? []),
+              ...Object.entries(self.connectionTrackConfigs)
+                .filter(([, e]) => e.connectionId === connectionId)
+                .map(([trackId]) => trackId),
+            ]),
+          ]
+          const referring = session.getReferringMultiple(trackIds)
+          for (const trackId of trackIds) {
+            session.dereferenceTrack(trackId, referring.get(trackId) ?? [])
+          }
+          this.breakConnection(configuration)
+          // closing the tracks above prunes their configs via hideTrack; this
+          // mops up any orphaned entry that had no open view
+          const remaining = Object.fromEntries(
+            Object.entries(self.connectionTrackConfigs).filter(
+              ([, e]) => e.connectionId !== connectionId,
+            ),
+          )
+          if (
+            Object.keys(remaining).length !==
+            Object.keys(self.connectionTrackConfigs).length
+          ) {
+            self.connectionTrackConfigs = remaining
+          }
+        },
+
+        /**
+         * #action
+         * Fully remove a connection: tear down its tracks and live instance, then
+         * delete its config.
          */
         deleteConnection(configuration: AnyConfigurationModel) {
+          this.teardownConnection(configuration)
           return session.jbrowse.deleteConnectionConf(configuration)
         },
 
@@ -169,21 +182,17 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
          */
         captureConnectionTrack(trackId: string) {
           if (!(trackId in self.connectionTrackConfigs)) {
-            const conn = self.connectionInstances.find(c =>
-              c.tracks.some(
+            for (const conn of self.connectionInstances) {
+              const track = conn.tracks.find(
                 (t: AnyConfigurationModel) => t.trackId === trackId,
-              ),
-            )
-            const track = conn?.tracks.find(
-              (t: AnyConfigurationModel) => t.trackId === trackId,
-            )
-            if (conn && track) {
-              self.connectionTrackConfigs = {
-                ...self.connectionTrackConfigs,
-                [trackId]: {
-                  connectionId: conn.connectionId,
-                  config: structuredClone(getSnapshot(track)),
-                },
+              )
+              if (track) {
+                this.setConnectionTrackConfig(
+                  trackId,
+                  conn.connectionId,
+                  structuredClone(getSnapshot(track)),
+                )
+                break
               }
             }
           }
@@ -200,13 +209,26 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         ) {
           const existing = self.connectionTrackConfigs[trackConf.trackId]
           if (existing) {
-            self.connectionTrackConfigs = {
-              ...self.connectionTrackConfigs,
-              [trackConf.trackId]: {
-                connectionId: existing.connectionId,
-                config: trackConf,
-              },
-            }
+            this.setConnectionTrackConfig(
+              trackConf.trackId,
+              existing.connectionId,
+              trackConf,
+            )
+          }
+        },
+
+        /**
+         * #action
+         * Upsert one opened connection track's persisted config.
+         */
+        setConnectionTrackConfig(
+          trackId: string,
+          connectionId: string,
+          config: Record<string, unknown>,
+        ) {
+          self.connectionTrackConfigs = {
+            ...self.connectionTrackConfigs,
+            [trackId]: { connectionId, config },
           }
         },
 
@@ -216,17 +238,12 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
          * references it, so the session doesn't accumulate closed tracks.
          */
         pruneConnectionTrackConfig(trackId: string) {
-          if (trackId in self.connectionTrackConfigs) {
-            // getReferring compares track configs by trackId, so a {trackId}
-            // shim suffices to test whether any view still holds this track
-            const refs = session.getReferring({
-              trackId,
-            })
-            if (refs.length === 0) {
-              const { [trackId]: _removed, ...rest } =
-                self.connectionTrackConfigs
-              self.connectionTrackConfigs = rest
-            }
+          if (
+            trackId in self.connectionTrackConfigs &&
+            session.getReferring(trackId).length === 0
+          ) {
+            const { [trackId]: _removed, ...rest } = self.connectionTrackConfigs
+            self.connectionTrackConfigs = rest
           }
         },
 

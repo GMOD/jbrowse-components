@@ -204,10 +204,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   captureConnectionTrack?: (trackId: string) => void
   pruneConnectionTrackConfig?: (trackId: string) => void
   hydrateConnection?: (connectionId: string) => void
-
-  prepareToBreakConnection?: (
-    arg: AnyConfigurationModel,
-  ) => [() => void, Record<string, number>] | undefined
   adminMode?: boolean
   showWidget?: (widget: unknown) => void
   addWidget?: (
@@ -357,15 +353,14 @@ export interface ConnectionInstance {
   connectionId: string
   tracks: AnyConfigurationModel[]
   configuration: AnyConfigurationModel
+  // true while the connection is fetching its tracks
+  loading: boolean
 }
 /** a session that can turn connections on and off */
 export interface SessionWithConnections extends AbstractSessionModel {
   connectionInstances: ConnectionInstance[]
   makeConnection: (arg: AnyConfigurationModel) => void
   breakConnection: (arg: AnyConfigurationModel) => void
-  prepareToBreakConnection: (
-    arg: AnyConfigurationModel,
-  ) => [() => void, Record<string, number>] | undefined
   deleteConnection: (arg: AnyConfigurationModel) => void
 }
 export function isSessionModelWithConnections(

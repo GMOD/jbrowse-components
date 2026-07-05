@@ -111,18 +111,8 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       deleteTrackConf(trackConf: AnyConfigurationModel) {
-        const callbacksToDereferenceTrack: (() => void)[] = []
-        const dereferenceTypeCount: Record<string, number> = {}
-        const referring = self.getReferring(trackConf)
-        self.removeReferring(
-          referring,
-          trackConf,
-          callbacksToDereferenceTrack,
-          dereferenceTypeCount,
-        )
-        for (const cb of callbacksToDereferenceTrack) {
-          cb()
-        }
+        const { trackId } = trackConf
+        self.dereferenceTrack(trackId, self.getReferring(trackId))
         if (self.adminMode) {
           return self.jbrowse.deleteTrackConf(trackConf)
         }

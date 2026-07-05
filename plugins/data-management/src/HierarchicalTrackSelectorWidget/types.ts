@@ -24,6 +24,9 @@ export interface TreeCategoryNode {
   // for connection categories: dormant (unloaded) connections default collapsed
   // so expanding one is what loads it; a loaded connection defaults expanded.
   defaultCollapsed?: boolean
+  // a connection category that has been expanded (its connection is live) but
+  // whose tracks haven't arrived yet — drives a loading spinner on the label
+  loading?: boolean
 }
 
 export type TreeNode = TreeTrackNode | TreeCategoryNode

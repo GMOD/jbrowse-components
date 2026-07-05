@@ -77,12 +77,14 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
           // a session connection is removed from sessionConnections regardless
           // of adminMode (an admin may be viewing a shared/hub session that
           // carries them); only a config-level connection defers to jbrowse,
-          // which only admins may edit
+          // which only admins may edit. Both paths tear down the connection's
+          // tracks first (super does it for the config path).
           const { connectionId } = configuration
           const idx = self.sessionConnections.findIndex(
             c => c.connectionId === connectionId,
           )
           if (idx !== -1) {
+            self.teardownConnection(configuration)
             return self.sessionConnections.splice(idx, 1)
           } else if (self.adminMode) {
             return superDeleteConnection(configuration)

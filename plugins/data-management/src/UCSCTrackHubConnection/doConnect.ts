@@ -48,102 +48,99 @@ async function loadGenomeTracks({
   })
 }
 
+// make sure a hub genome is available to attach tracks to: present already, or
+// added as a session assembly. Returns false only when it's absent and the
+// session can't add assemblies.
+function ensureAssembly(
+  session: ReturnType<typeof getSession>,
+  genome: RaStanza,
+  genomeName: string,
+  baseUri: string,
+) {
+  if (session.assemblyManager.get(genomeName)) {
+    return true
+  } else if (session.addSessionAssembly) {
+    session.addSessionAssembly(generateAssembly(genome, baseUri))
+    return true
+  } else {
+    return false
+  }
+}
+
+// lazyConnect wraps this in the shared connect-failure handler
 export async function doConnect(self: ConnectionDoConnectArg) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
-  const notLoadedAssemblies: string[] = []
-  try {
-    const hubFileLocation = getConf(self, 'hubTxtLocation')
-    if (
-      !isUriLocation(hubFileLocation) &&
-      !isLocalPathLocation(hubFileLocation)
-    ) {
-      throw new Error('UCSC track hubs must be loaded from a URL or local file')
-    }
-    const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
-    const hubUri = hubBaseUrl(hubFileLocation)
-    const { assemblyManager } = session
-    if (hubFileText.includes('useOneFile on')) {
-      const hub = new SingleFileHub(hubFileText)
-      const { genome, tracks } = hub
-      const genomeName = genome.name!
+  const hubFileLocation = getConf(self, 'hubTxtLocation')
+  if (!isUriLocation(hubFileLocation) && !isLocalPathLocation(hubFileLocation)) {
+    throw new Error('UCSC track hubs must be loaded from a URL or local file')
+  }
+  const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
+  const hubUri = hubBaseUrl(hubFileLocation)
 
-      if (!assemblyManager.get(genomeName)) {
-        if (session.addSessionAssembly) {
-          session.addSessionAssembly(generateAssembly(genome, hubUri))
-        } else {
-          // the hub's single genome isn't present and can't be added, so its
-          // tracks would have nowhere to attach
-          throw new Error(
-            `Cannot load hub: assembly ${genomeName} is not present and this session cannot add assemblies`,
-          )
-        }
-      }
-      const tracksNew = generateTracks({
+  if (hubFileText.includes('useOneFile on')) {
+    const { genome, tracks } = new SingleFileHub(hubFileText)
+    const genomeName = genome.name!
+    if (!ensureAssembly(session, genome, genomeName, hubUri)) {
+      // the hub's single genome isn't present and can't be added, so its tracks
+      // would have nowhere to attach
+      throw new Error(
+        `Cannot load hub: assembly ${genomeName} is not present and this session cannot add assemblies`,
+      )
+    }
+    self.addTrackConfs(
+      generateTracks({
         trackDb: tracks,
         trackDbLoc: hubFileLocation,
         assemblyName: genomeName,
         baseUrl: hubUri,
+      }),
+    )
+    if (!self.silent) {
+      pluginManager.evaluateExtensionPoint('LaunchView-LinearGenomeView', {
+        session,
+        assembly: genomeName,
+        tracklist: true,
+        loc: genome.data.defaultPos,
       })
-      self.addTrackConfs(tracksNew)
-      if (!self.silent) {
-        pluginManager.evaluateExtensionPoint('LaunchView-LinearGenomeView', {
-          session,
-          assembly: genomeName,
-          tracklist: true,
-          loc: genome.data.defaultPos,
-        })
-      }
-    } else {
-      const hubFile = new HubFile(hubFileText)
-      const genomeFile = hubFile.data.genomesFile
-      if (!genomeFile) {
-        throw new Error('genomesFile not found on hub')
-      }
-
-      const genomesLoc = makeLocFromUri(genomeFile, hubUri)
-      const genomesFile = await fetchGenomesFile(genomesLoc)
-      const assemblyNames = getConf(self, 'assemblyNames')
-      const genomesBaseUri = hubBaseUrl(genomesLoc)
-      const trackCounts: Record<string, number> = {}
-      for (const [genomeName, genome] of Object.entries(genomesFile.data)) {
-        if (assemblyNames.length > 0 && !assemblyNames.includes(genomeName)) {
-          continue
-        }
-
-        // mirror the single-file branch: auto-add an assembly the instance
-        // doesn't already have, so a standard multi-genome hub still loads its
-        // tracks. only skip when there's no way to add one (addSessionAssembly
-        // absent)
-        if (!assemblyManager.get(genomeName)) {
-          if (session.addSessionAssembly) {
-            session.addSessionAssembly(generateAssembly(genome, genomesBaseUri))
-          } else {
-            notLoadedAssemblies.push(genomeName)
-            continue
-          }
-        }
-
-        const tracks = await loadGenomeTracks({
-          genome,
-          genomeName,
-          genomesBaseUri,
-          hubUri,
-        })
-        self.addTrackConfs(tracks)
-        trackCounts[genomeName] = tracks.length
-      }
-
-      if (!self.silent) {
-        session.notify(
-          formatHubLoadSummary(trackCounts, notLoadedAssemblies),
-          'success',
-        )
-      }
     }
-  } catch (e) {
-    console.error(e)
-    session.notifyError(`${getConf(self, 'name')}: "${e}"`, e)
-    session.breakConnection?.(self.configuration)
+  } else {
+    const genomeFile = new HubFile(hubFileText).data.genomesFile
+    if (!genomeFile) {
+      throw new Error('genomesFile not found on hub')
+    }
+    const genomesLoc = makeLocFromUri(genomeFile, hubUri)
+    const genomesFile = await fetchGenomesFile(genomesLoc)
+    const assemblyNames = getConf(self, 'assemblyNames')
+    const genomesBaseUri = hubBaseUrl(genomesLoc)
+    const trackCounts: Record<string, number> = {}
+    const notLoadedAssemblies: string[] = []
+    for (const [genomeName, genome] of Object.entries(genomesFile.data)) {
+      if (assemblyNames.length > 0 && !assemblyNames.includes(genomeName)) {
+        continue
+      }
+      // auto-add an assembly the instance doesn't already have, so a standard
+      // multi-genome hub still loads its tracks; only skip when there's no way
+      // to add one
+      if (!ensureAssembly(session, genome, genomeName, genomesBaseUri)) {
+        notLoadedAssemblies.push(genomeName)
+        continue
+      }
+      const tracks = await loadGenomeTracks({
+        genome,
+        genomeName,
+        genomesBaseUri,
+        hubUri,
+      })
+      self.addTrackConfs(tracks)
+      trackCounts[genomeName] = tracks.length
+    }
+
+    if (!self.silent) {
+      session.notify(
+        formatHubLoadSummary(trackCounts, notLoadedAssemblies),
+        'success',
+      )
+    }
   }
 }

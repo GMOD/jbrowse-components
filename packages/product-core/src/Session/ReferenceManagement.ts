@@ -18,7 +18,6 @@ import {
 import { isBaseSession } from './BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { TrackViewModel } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
@@ -36,71 +35,28 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #method
-       * See if any MST nodes currently have a types.reference to this object.
-       *
-       * @param object - object
-       * @returns An array where the first element is the node referring
-       * to the object and the second element is they property name the node is
-       * using to refer to the object
+       * Walk the tree once and map each requested trackId to the nodes holding a
+       * `types.reference` that resolves to it (a view's track entry, a config
+       * editor widget). Track configs are matched by trackId, not identity, so a
+       * frozen base and its hydrated MST node compare equal.
        */
-      getReferring(object: IAnyStateTreeNode) {
-        const refs: ReferringNode[] = []
-        // For frozen tracks, compare by trackId instead of object identity
-        const targetTrackId = (object as { trackId?: string }).trackId
-        walk(getParent(self), node => {
-          if (isModelType(getType(node))) {
-            const members = getMembers(node)
-            for (const [key, value] of Object.entries(members.properties)) {
-              if (isReferenceType(value)) {
-                const ref = node[key]
-                // Compare by trackId for track configurations, fall back to identity
-                const refTrackId = ref?.trackId
-                if (
-                  ref === object ||
-                  (targetTrackId && refTrackId && refTrackId === targetTrackId)
-                ) {
-                  refs.push({ node, key })
-                }
-              }
-            }
-          }
-        })
-        return refs
-      },
-
-      /**
-       * Batch version of getReferring: walks the tree once and returns a map
-       * from trackId to referring nodes. Use this instead of calling
-       * getReferring() in a loop to avoid O(n × treeSize) traversals.
-       */
-      getReferringMultiple(tracks: IAnyStateTreeNode[]) {
-        const byTrackId = new Map<string, IAnyStateTreeNode>()
-        const byIdentity = new Map<IAnyStateTreeNode, string>()
-        for (const t of tracks) {
-          const id = (t as { trackId?: string }).trackId
-          if (id) {
-            byTrackId.set(id, t)
-            byIdentity.set(t, id)
-          }
-        }
+      getReferringMultiple(trackIds: string[]): Map<string, ReferringNode[]> {
+        const ids = new Set(trackIds)
         const result = new Map<string, ReferringNode[]>()
-        if (byTrackId.size === 0) {
+        if (ids.size === 0) {
           return result
         }
         walk(getParent(self), node => {
           if (isModelType(getType(node))) {
-            const members = getMembers(node)
-            for (const [key, value] of Object.entries(members.properties)) {
+            for (const [key, value] of Object.entries(
+              getMembers(node).properties,
+            )) {
               if (isReferenceType(value)) {
-                const ref = node[key]
-                const trackId =
-                  (ref?.trackId !== undefined && byTrackId.has(ref.trackId)
-                    ? ref.trackId
-                    : undefined) ?? byIdentity.get(ref)
-                if (trackId !== undefined) {
-                  const existing = result.get(trackId) ?? []
+                const id = node[key]?.trackId
+                if (id !== undefined && ids.has(id)) {
+                  const existing = result.get(id) ?? []
                   existing.push({ node, key })
-                  result.set(trackId, existing)
+                  result.set(id, existing)
                 }
               }
             }
@@ -109,47 +65,39 @@ export function ReferenceManagementSessionMixin(_pluginManager: PluginManager) {
         return result
       },
     }))
+    .views(self => ({
+      /**
+       * #method
+       * The nodes currently referring to `trackId` (see getReferringMultiple).
+       */
+      getReferring(trackId: string): ReferringNode[] {
+        return self.getReferringMultiple([trackId]).get(trackId) ?? []
+      },
+    }))
     .actions(self => ({
       /**
        * #action
+       * Remove `trackId` from every view referring to it and close any config
+       * editor widget open on it. Runs immediately: the walk that produced
+       * `referring` has finished, so mutating those views here is safe.
        */
-      removeReferring(
-        referring: ReferringNode[],
-        track: BaseTrackConfig,
-        callbacks: (() => void)[],
-        dereferenceTypeCount: Record<string, number>,
-      ) {
+      dereferenceTrack(trackId: string, referring: ReferringNode[]) {
         for (const { node } of referring) {
-          let dereferenced = false
+          let view: TrackViewModel | undefined
           try {
-            // If a view is referring to the track config, remove the track
-            // from the view
-            const type = 'open track(s)'
-            const view = getContainingView(node) as TrackViewModel
-            callbacks.push(() => {
-              view.hideTrack(track.trackId)
-            })
-            dereferenced = true
-            dereferenceTypeCount[type] ??= 0
-            dereferenceTypeCount[type] += 1
+            view = getContainingView(node) as TrackViewModel
           } catch {
-            // ignore
+            // node isn't contained in a view (e.g. it's a widget)
           }
-
-          if (isSessionModelWithWidgets(self) && self.widgets.has(node.id)) {
-            // If a configuration editor widget has the track config
-            // open, close the widget
-            const type = 'configuration editor widget(s)'
-            callbacks.push(() => {
-              self.hideWidget(node)
-            })
-            dereferenced = true
-            dereferenceTypeCount[type] ??= 0
-            dereferenceTypeCount[type] += 1
-          }
-          if (!dereferenced) {
+          const widget =
+            isSessionModelWithWidgets(self) && self.widgets.has(node.id)
+          if (view) {
+            view.hideTrack(trackId)
+          } else if (widget) {
+            self.hideWidget(node)
+          } else {
             throw new Error(
-              `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
+              `node still refers to track ${trackId}: ${JSON.stringify(
                 getSnapshot(node),
               )}`,
             )
@@ -164,7 +112,7 @@ export type SessionWithReferenceManagementType = ReturnType<
   typeof ReferenceManagementSessionMixin
 >
 
-/** Instance of a session with MST reference management (`getReferring()`, `removeReferring()`)  */
+/** Instance of a session with MST reference management (`getReferring()`, `dereferenceTrack()`)  */
 export type SessionWithReferenceManagement =
   Instance<SessionWithReferenceManagementType>
 
@@ -176,7 +124,7 @@ export function isSessionWithReferenceManagement(
     isBaseSession(thing) &&
     'getReferring' in thing &&
     typeof thing.getReferring === 'function' &&
-    'removeReferring' in thing &&
-    typeof thing.removeReferring === 'function'
+    'dereferenceTrack' in thing &&
+    typeof thing.dereferenceTrack === 'function'
   )
 }

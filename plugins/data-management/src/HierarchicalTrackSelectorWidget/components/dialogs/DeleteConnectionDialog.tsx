@@ -25,9 +25,8 @@ const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
       submitText="Delete"
       onCancel={handleClose}
       onSubmit={() => {
-        // break the live connection instance (dereferencing any of its tracks
-        // open in views) before removing the config it points at
-        session.prepareToBreakConnection(connectionConf)?.[0]()
+        // tears down the connection's open tracks and live instance, then
+        // removes its config
         session.deleteConnection(connectionConf)
         handleClose()
       }}

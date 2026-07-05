@@ -44,6 +44,67 @@ test('generateTracks resolves bigDataUrl + index against a local trackDb', () =>
   })
 })
 
+test('generateTracks derives category from ancestor container shortLabels', () => {
+  // a superTrack container whose child sets no `group`: the folder name must
+  // come from the parent shortLabel, not be dropped
+  const compositeDb = new TrackDbFile(`track testgroup
+superTrack on
+shortLabel Test group
+longLabel A grouping of alignment tracks
+
+track volvoxBam
+parent testgroup
+type bam
+shortLabel BAM
+longLabel BAM alignments
+bigDataUrl tiny.bam
+`)
+  const tracks = generateTracks({
+    trackDb: compositeDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+    baseUrl: 'https://x.org/hub.txt',
+  })
+  // the container stanza itself is not emitted as a track
+  expect(tracks).toHaveLength(1)
+  expect(tracks[0]!.category).toEqual(['Test group'])
+})
+
+test('generateTracks inherits type from a composite parent named with a visibility suffix', () => {
+  // a composite child commonly omits `type` and inherits it from the parent,
+  // and `parent` carries a `on`/`off` visibility suffix. The parent lookup must
+  // strip that suffix or the child falls through to an unknown track type.
+  const compositeDb = new TrackDbFile(`track mycomposite
+compositeTrack on
+type bigBed
+shortLabel Composite
+longLabel A composite of bigBed subtracks
+
+track child1
+parent mycomposite on
+shortLabel Child 1
+longLabel A child bigBed
+bigDataUrl child1.bb
+`)
+  const tracks = generateTracks({
+    trackDb: compositeDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+    baseUrl: 'https://x.org/hub.txt',
+  })
+  expect(tracks).toHaveLength(1)
+  expect(tracks[0]).toMatchObject({
+    type: 'FeatureTrack',
+    adapter: {
+      type: 'BigBedAdapter',
+      bigBedLocation: {
+        uri: 'https://x.org/volvox/child1.bb',
+        locationType: 'UriLocation',
+      },
+    },
+  })
+})
+
 test('generateTracks keeps remote locations remote', () => {
   const tracks = generateTracks({
     trackDb,

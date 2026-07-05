@@ -90,6 +90,32 @@ describe('JBrowseWebSessionModel', () => {
       expect(session.sessionConnections).toHaveLength(1)
       expect(result).toBe(existing)
     })
+
+    it('deleting a dormant connection prunes only its persisted open-track configs', () => {
+      // a reloaded session restores opened connection tracks from
+      // connectionTrackConfigs without re-establishing the connection (dormant,
+      // no live connectionInstances entry). Deleting it must still prune those
+      // configs, not leave them orphaned, and must leave other connections' be.
+      const session = createTestSession({
+        sessionSnapshot: {
+          sessionConnections: [
+            { ...connSnap, connectionId: 'conn1', name: 'conn1' },
+            { ...connSnap, connectionId: 'conn2', name: 'conn2' },
+          ],
+          connectionTrackConfigs: {
+            t1: { connectionId: 'conn1', config: { trackId: 't1' } },
+            t2: { connectionId: 'conn2', config: { trackId: 't2' } },
+          },
+        },
+      })
+      const conn1 = session.connections.find(c => c.connectionId === 'conn1')!
+      session.deleteConnection(conn1)
+      expect(session.connectionTrackConfigs.t1).toBeUndefined()
+      expect(session.connectionTrackConfigs.t2).toBeTruthy()
+      expect(session.sessionConnections.map(c => c.connectionId)).toEqual([
+        'conn2',
+      ])
+    })
   })
 
   describe('displayTypeDefaults store', () => {

@@ -12,7 +12,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import FolderIcon from '@mui/icons-material/Folder'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
-import { Typography } from '@mui/material'
+import { CircularProgress, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { useMenuGuardedClick } from './useMenuGuardedClick.ts'
@@ -79,6 +79,10 @@ const useStyles = makeStyles()(theme => ({
   countBadge: {
     marginLeft: 4,
     opacity: 0.7,
+  },
+  spinner: {
+    marginLeft: 4,
+    verticalAlign: 'middle',
   },
 }))
 
@@ -245,6 +249,9 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
       <Typography data-testid={`htsCategory-${name}`}>
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         <SanitizedHTML html={name} />
+        {item.loading ? (
+          <CircularProgress size={12} className={classes.spinner} />
+        ) : null}
         <CascadingMenuButton
           data-testid={`htsCategoryMenu-${name}`}
           menuItems={() => {

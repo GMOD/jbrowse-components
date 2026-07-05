@@ -584,6 +584,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             tracks: self.configAndSessionTrackConfigurations,
             noCategories: false,
             defaultCollapsed: false,
+            loading: false,
           },
           ...connections.map(conf => {
             const live = liveByConnectionId.get(conf.connectionId)
@@ -595,6 +596,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
               // dormant connections collapse by default so expanding loads them;
               // a loaded one shows its tracks
               defaultCollapsed: !live,
+              // show a spinner while the connection is fetching. A failed connect
+              // breaks the instance (no longer live), so this clears too
+              loading: live?.loading ?? false,
             }
           }),
         ]
@@ -615,6 +619,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             type: 'category' as const,
             nestingLevel: 0,
             defaultCollapsed: s.defaultCollapsed,
+            loading: s.loading,
             children: generateHierarchy({
               model: self,
               trackConfs: s.tracks,
