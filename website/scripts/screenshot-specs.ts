@@ -3493,7 +3493,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'HG00151 Nanopore',
     readyTimeout: 90000,
-    viewportHeight: 1740,
+    viewportHeight: 1900,
     settleMs: 40000,
     annotations: [
       {
@@ -7584,6 +7584,33 @@ export const specs: ScreenshotSpec[] = [
     viewportWidth: 1200,
     viewportHeight: 1000,
     diffThreshold: 0.02,
+  },
+
+  // Archaic introgression tracts (tutorials/introgression.md): per-haplotype
+  // hmmix segments from the HGDP callset drawn as a multi-row feature track,
+  // colored by source. The two Oceanian rows (Bougainville, PapuanHighlands)
+  // carry the blue Denisovan segments the European/Asian/American rows lack —
+  // the Denisovan-in-Oceania signal. Wide chr1 window so the per-row population
+  // contrast reads at a glance.
+  {
+    mode: 'url',
+    name: 'introgression',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr1:1-100,000,000',
+      tracks: [
+        {
+          trackId: 'hgdp_archaic_introgression',
+          displaySnapshot: {
+            type: 'LinearMultiRowFeatureDisplay',
+            height: 320,
+          },
+        },
+      ],
+    }),
+    readyText: 'Archaic introgression',
+    settleMs: 6000,
+    viewportHeight: 480,
   },
 
   // products/jbrowse-img/README.md example images, rendered by the jb2export
