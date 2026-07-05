@@ -54,21 +54,17 @@ function overlaysReady(
 }
 
 const useStyles = makeStyles()(theme => ({
-  // Labels re-derive their color from the theme here (rather than reusing the
-  // worker's label.color, which the SVG export consumes) so a theme switch
-  // recolors them instantly without re-running the worker. Description and
-  // light-background overlay labels override the default below.
-  // fontSize is applied inline per-label from the model's resolved label size
-  // (it shrinks in compact display modes), so it isn't pinned here.
+  // Color is applied inline per-label from the worker-baked label.color (the
+  // single source of truth the SVG export also consumes), so the DOM overlay
+  // and the export can't drift. It's safe to read here rather than re-deriving
+  // from the live theme because the active theme is an RPC cache key
+  // (rpcProps.theme): switching themes clears and refetches, so a shown label's
+  // baked color always matches the current theme. fontSize is likewise inline
+  // from the model's resolved label size (it shrinks in compact display modes).
   floatingLabel: {
     position: 'absolute',
     lineHeight: 1,
     whiteSpace: 'nowrap',
-    color: theme.palette.text.primary,
-  },
-  // theme-aware blue accent for descriptions — see theme.ts featureDescription
-  floatingLabelDescription: {
-    color: theme.palette.featureDescription,
   },
   floatingLabelClickable: {
     pointerEvents: 'auto',
@@ -77,9 +73,10 @@ const useStyles = makeStyles()(theme => ({
   floatingLabelStatic: {
     pointerEvents: 'none',
   },
+  // Light backing rect for overlay labels; the text color still comes from the
+  // baked label.color (worker sets it to a dark tone that reads on this rect).
   floatingLabelOverlay: {
     background: LABEL_OVERLAY_BACKGROUND,
-    color: theme.palette.common.black,
   },
   // Overlay boxes: only left/top/width/height vary per-feature (inline); the
   // appearance below is all static theme derivation. Weight ranks the states:
@@ -195,12 +192,12 @@ export function useFloatingLabels(
                 ? classes.floatingLabelClickable
                 : classes.floatingLabelStatic,
               label.isOverlay && classes.floatingLabelOverlay,
-              kind === 'desc' && classes.floatingLabelDescription,
             )}
             onClick={clickable ? handleLabelClick : undefined}
             onContextMenu={clickable ? handleLabelContextMenu : undefined}
             onMouseMove={clickable ? handleLabelMouseMove : undefined}
             style={{
+              color: label.color,
               fontSize: labelFontSize,
               transform: `translate(${labelX}px, ${labelY}px)`,
             }}
