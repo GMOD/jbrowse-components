@@ -1,5 +1,3 @@
-import React from 'react'
-
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
 
@@ -25,6 +23,12 @@ test('renders an input per column with initial values', () => {
   setup()
   expect(screen.getByPlaceholderText('Filter genotype')).toHaveValue('0|0')
   expect(screen.getByPlaceholderText('Filter alleles')).toHaveValue('A')
+})
+
+test('each input exposes an accessible name for screen readers', () => {
+  setup()
+  expect(screen.getByLabelText('Filter genotype')).toBeInTheDocument()
+  expect(screen.getByLabelText('Filter alleles')).toBeInTheDocument()
 })
 
 test('empty filter shows empty inputs', () => {

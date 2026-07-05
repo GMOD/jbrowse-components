@@ -34,14 +34,15 @@ const columnDisplayModes: ReadonlySet<ColumnDisplayMode> = new Set([
 const gtOnlyFields = new Set(['sample', 'GT'])
 const gtAndGenotypeFields = new Set(['sample', 'GT', 'genotype'])
 
-// Stable empty defaults so the row/frequency memos below don't churn on every
-// render when a field is absent.
+// Stable empty defaults so the row/frequency/column memos below don't churn on
+// every render when a field is absent.
 const EMPTY_SAMPLES = {}
 const EMPTY_ALT: string[] = []
+const EMPTY_DESCRIPTIONS: VariantFieldDescriptions = {}
 
 export default function VariantSampleGrid({
   feature,
-  descriptions = {},
+  descriptions = EMPTY_DESCRIPTIONS,
 }: {
   feature: VCFFeatureSerialized
   descriptions?: VariantFieldDescriptions | null
@@ -93,25 +94,44 @@ export default function VariantSampleGrid({
     [samples, REF, ALT],
   )
 
-  const { rows: textFilteredRows, error } = filterSampleRows(rows, filter)
-
-  const filteredRows =
-    selectedGenotypes === null
-      ? textFilteredRows
-      : textFilteredRows.filter(row => selectedGenotypes.has(row.GT))
-
-  const keys = [
-    'sample',
-    ...Object.keys(rows[0] ?? {}).filter(k => k !== 'id' && k !== 'sample'),
-  ]
-  const columns = keys.map(
-    field =>
-      ({
-        field,
-        description: descriptions?.FORMAT?.[field]?.Description,
-        width: measureGridWidth(rows.map(r => r[field])),
-      }) satisfies GridColDef<(typeof rows)[0]>,
+  // Recompiles regexes and rescans every row, so memoize on the same footing as
+  // the row build above.
+  const { rows: textFilteredRows, error } = useMemo(
+    () => filterSampleRows(rows, filter),
+    [rows, filter],
   )
+
+  const filteredRows = useMemo(
+    () =>
+      selectedGenotypes === null
+        ? textFilteredRows
+        : textFilteredRows.filter(row => selectedGenotypes.has(row.GT)),
+    [textFilteredRows, selectedGenotypes],
+  )
+
+  // Columns are the union of FORMAT fields across every sample, not just
+  // rows[0]: VCF lets a sample drop trailing fields (a bare "0/1" call yields
+  // only GT), so keying off the first row alone would hide columns other
+  // samples populate. measureGridWidth also scans every row per column, so
+  // memoize alongside the row build rather than re-measuring on each keystroke.
+  const columns = useMemo(() => {
+    const fields = new Set<string>()
+    for (const row of rows) {
+      for (const key in row) {
+        if (key !== 'id' && key !== 'sample') {
+          fields.add(key)
+        }
+      }
+    }
+    return ['sample', ...fields].map(
+      field =>
+        ({
+          field,
+          description: descriptions?.FORMAT?.[field]?.Description,
+          width: measureGridWidth(rows.map(r => r[field])),
+        }) satisfies GridColDef<(typeof rows)[0]>,
+    )
+  }, [rows, descriptions])
 
   return !rows.length ? null : (
     <BaseCard title="Samples">
