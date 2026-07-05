@@ -65,11 +65,9 @@ function resolveFeatureLabels(
   labelData: FeatureLabelData,
   toScreen: (bp: number) => number,
   vr: BpRegionBounds,
-  wantName: boolean,
-  wantDesc: boolean,
-  wantSub: boolean,
-  fontSize: number,
+  context: LabelRenderContext,
 ): ResolvedLabel[] {
+  const { showLabels, showDescriptions, fontSize } = context
   const px1 = toScreen(labelData.minX)
   const px2 = toScreen(labelData.maxX)
   const featureLeftPx = Math.min(px1, px2)
@@ -81,22 +79,23 @@ function resolveFeatureLabels(
     featureBottomPx: labelData.topY + labelData.featureHeight,
     screenStartPx: vr.screenStartPx,
   }
+  const { nameLabel, descriptionLabel, subfeatureLabel } = labelData
   const out: ResolvedLabel[] = []
-  if (wantName) {
+  if (showLabels && nameLabel) {
     out.push({
-      label: labelData.nameLabel!,
-      ...computeLabelPosition(labelData.nameLabel!, 2, bounds),
+      label: nameLabel,
+      ...computeLabelPosition(nameLabel, 2, bounds),
       kind: 'name',
     })
   }
-  if (wantDesc) {
+  if (showDescriptions && descriptionLabel) {
     // The description sits one label-line (fontSize) below the name; when the
     // name is hidden it collapses up to fill the vacated row. Derived from the
     // mode's fontSize here (not the RPC-baked relativeY) so the gap tracks the
     // compact-shrunk text.
     const desc = {
-      ...labelData.descriptionLabel!,
-      relativeY: wantName ? fontSize : 0,
+      ...descriptionLabel,
+      relativeY: showLabels && nameLabel ? fontSize : 0,
     }
     out.push({
       label: desc,
@@ -104,10 +103,10 @@ function resolveFeatureLabels(
       kind: 'desc',
     })
   }
-  if (wantSub) {
+  if (subfeatureLabel) {
     out.push({
-      label: labelData.subfeatureLabel!,
-      ...computeLabelPosition(labelData.subfeatureLabel!, 0, bounds),
+      label: subfeatureLabel,
+      ...computeLabelPosition(subfeatureLabel, 0, bounds),
       kind: 'sub',
     })
   }
@@ -125,7 +124,7 @@ export function forEachRenderedLabel(
   emit: (featureId: string, labels: ResolvedLabel[]) => void,
   skip?: Set<string>,
 ) {
-  const { showLabels, showDescriptions, fontSize } = context
+  const { showLabels, showDescriptions } = context
   let toScreen: ((bp: number) => number) | undefined
 
   for (const featureId in data.floatingLabelsData) {
@@ -146,18 +145,7 @@ export function forEachRenderedLabel(
     }
     // Lazy: only build the bp→px mapper once we know we'll emit something.
     toScreen ??= makeBpMapper(vr)
-    emit(
-      featureId,
-      resolveFeatureLabels(
-        labelData,
-        toScreen,
-        vr,
-        wantName,
-        wantDesc,
-        wantSub,
-        fontSize,
-      ),
-    )
+    emit(featureId, resolveFeatureLabels(labelData, toScreen, vr, context))
   }
 }
 
