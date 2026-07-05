@@ -190,7 +190,9 @@ export function ribbonPerpWidth(c: ProjectedCorners, height: number) {
 }
 
 // Per-edge cull: drop the instance when any single edge lies entirely outside
-// the draw limits. Matches isCulled() in syntenyTypes.slang. An AABB-only
+// the draw limits. Mirrors the viewport half of isCulled() in
+// syntenyTypes.slang — the shader also folds in the minAlignmentLength cull,
+// which here the draw/pick callers apply separately per instance. An AABB-only
 // check would keep drawing trapezoids that span huge horizontal travel.
 export function isEdgeCulled(
   c: ProjectedCorners,

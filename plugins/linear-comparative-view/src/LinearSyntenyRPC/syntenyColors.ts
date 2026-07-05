@@ -1,4 +1,4 @@
-import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/alignments-core'
+import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/cigar-utils'
 import { category10 } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import {
