@@ -4,12 +4,14 @@ import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
+import { SVGColorByLegend } from './SVGColorByLegend.tsx'
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
 import DotplotGrid from '../components/DotplotGrid.tsx'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../model.ts'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
-// render LGV to SVG
+// render the dotplot view to an SVG string
 export async function renderToSvg(
   model: DotplotViewModel,
   opts: ExportSvgOptions,
@@ -20,6 +22,9 @@ export async function renderToSvg(
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
   const { width, borderX, viewWidth, viewHeight, tracks, height } = model
+  const legendColorBy = model.showColorLegend
+    ? (model.dotplotDisplays[0]?.colorBy as SyntenyColorBy | undefined)
+    : undefined
   const displayResults = await Promise.all(
     tracks.map(async track => {
       const display = track.displays[0]
@@ -55,6 +60,9 @@ export async function renderToSvg(
               <g key={track.configuration.trackId}>{result}</g>
             ))}
           </SvgClipRect>
+          {legendColorBy ? (
+            <SVGColorByLegend colorBy={legendColorBy} viewWidth={viewWidth} />
+          ) : null}
         </g>
         <g transform={`translate(${borderX} ${viewHeight})`}>
           <HorizontalAxisRaw model={model} />

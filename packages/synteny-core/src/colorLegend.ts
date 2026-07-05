@@ -6,16 +6,33 @@ import type { SyntenyColorBy } from './colorUtils.ts'
 
 const rgbCss = ([r, g, b]: Rgb) => `rgb(${r},${g},${b})`
 
-// Sample a ramp at 9 stops into a left→right CSS gradient — the legend swatch
-// for a continuous color-by mode, drawn from the exact same toRgb the renderer
-// uses so the two can't disagree.
-function gradientCss(toRgb: (norm: number) => Rgb) {
-  const stops: string[] = []
-  for (let i = 0; i <= 8; i++) {
-    const t = i / 8
-    stops.push(`${rgbCss(toRgb(t))} ${Math.round(t * 100)}%`)
-  }
-  return `linear-gradient(to right, ${stops.join(',')})`
+export interface GradientStop {
+  offset: number
+  color: string
+}
+
+// Sample a ramp at 9 stops, drawn from the exact same toRgb the renderer uses
+// so the two can't disagree. Consumed as a CSS gradient (HTML legend) and as
+// SVG <stop>s (export legend).
+function rampStops(toRgb: (norm: number) => Rgb): GradientStop[] {
+  return Array.from({ length: 9 }, (_, i) => ({
+    offset: i / 8,
+    color: rgbCss(toRgb(i / 8)),
+  }))
+}
+
+function gradientCss(stops: GradientStop[]) {
+  const list = stops.map(s => `${s.color} ${Math.round(s.offset * 100)}%`)
+  return `linear-gradient(to right, ${list.join(',')})`
+}
+
+function ramp(
+  toRgb: (norm: number) => Rgb,
+  minLabel: string,
+  maxLabel: string,
+): ColorBySwatchSpec {
+  const stops = rampStops(toRgb)
+  return { kind: 'ramp', background: gradientCss(stops), stops, minLabel, maxLabel }
 }
 
 export interface ColorChip {
@@ -27,7 +44,13 @@ export interface ColorChip {
 // modes (default/strand) map to a set of discrete labeled chips — including the
 // CIGAR indel colors those modes overlay, which a single swatch can't convey.
 export type ColorBySwatchSpec =
-  | { kind: 'ramp'; background: string; minLabel?: string; maxLabel?: string }
+  | {
+      kind: 'ramp'
+      background: string
+      stops: GradientStop[]
+      minLabel?: string
+      maxLabel?: string
+    }
   | { kind: 'chips'; chips: ColorChip[] }
 
 const { cigarColors: defaultCigar } = colorSchemes.default
@@ -87,35 +110,17 @@ export function getColorBySwatch(
   switch (colorBy) {
     case 'identity':
     case 'meanQueryIdentity':
-      return {
-        kind: 'ramp',
-        background: gradientCss(continuousRampConfig.identity.toRgb),
-        minLabel: '0%',
-        maxLabel: '100%',
-      }
+      return ramp(continuousRampConfig.identity.toRgb, '0%', '100%')
     case 'mappingQuality':
-      return {
-        kind: 'ramp',
-        background: gradientCss(continuousRampConfig.mappingQuality.toRgb),
-        minLabel: '0',
-        maxLabel: '60',
-      }
+      return ramp(continuousRampConfig.mappingQuality.toRgb, '0', '60')
     case 'meanQueryMappingQuality':
-      return {
-        kind: 'ramp',
-        background: gradientCss(
-          continuousRampConfig.meanQueryMappingQuality.toRgb,
-        ),
-        minLabel: 'weak',
-        maxLabel: 'strong',
-      }
+      return ramp(
+        continuousRampConfig.meanQueryMappingQuality.toRgb,
+        'weak',
+        'strong',
+      )
     case 'identityDiverging':
-      return {
-        kind: 'ramp',
-        background: gradientCss(t => divergingIdentityRgb(t)),
-        minLabel: 'divergent',
-        maxLabel: 'conserved',
-      }
+      return ramp(t => divergingIdentityRgb(t), 'divergent', 'conserved')
     case 'strand':
       return {
         kind: 'chips',
