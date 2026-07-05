@@ -78,6 +78,24 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) with two overlapping orientation signals, shown twice: a compact overview (top frame) and the same locus at the normal feature height (bottom frame), where individual read pairs and their orientation colors are easier to follow. Teal reads are RL-oriented (mates pointing away from each other, as if ← →), a signature of tandem duplication. Green LL reads (→→) and dark blue RR reads (←←) point the same direction, a signature of an inversion. The orientation-colored reads are a minority of the pileup — most pairs are concordant LR (light grey) — so they cluster at the breakpoints rather than filling the view." src="/img/inverted_duplication.png" />
 
+#### Short reads vs. long reads
+
+Short paired-end reads can only _infer_ an inversion: because neither mate spans
+the breakpoint, the evidence is indirect — a cluster of same-orientation (LL/RR)
+or split pairs arcing across the two junctions, a minority signal in an otherwise
+concordant (grey) pileup. Long reads span the whole event, so a single read
+crosses both breakpoints and splits into a forward and a reverse-strand
+alignment. With **View as pairs / link supplementary alignments** on, those split
+segments chain onto one row: the inverted middle segment paints the flipped
+(reverse-strand) color while the flanks stay forward, so the inverted interval
+reads out as a colored block, and the split junctions are joined by a magenta
+inversion arc (the split-read color scheme, shared with the pileup fill and the
+linked-read connectors). The figure below shows the same ~1.2 kb inversion in one
+1000 Genomes sample (HG00151) with both technologies — Illumina high-coverage on
+top, Oxford Nanopore below.
+
+<Figure caption="The same inversion (HGSV_10047, chr1:197,787,660-197,788,855) shown with short and long reads from one sample, both with supplementary alignments linked. Top (Illumina paired-end): the inversion is only inferred — a minority of same-orientation pairs and split-read arcs cluster at the breakpoints in an otherwise concordant grey pileup. Bottom (Oxford Nanopore): each long read spans the whole inverted segment, so its reverse-strand middle paints a distinct color between forward-strand flanks and the split junctions arc in magenta — the inversion is read out directly rather than triangulated." src="/img/inversion_long_read.png" />
+
 ### Insert size color scheme
 
 **In the pileup**, set the color scheme to Insert size from the track menu.

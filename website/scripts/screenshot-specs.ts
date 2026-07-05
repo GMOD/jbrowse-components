@@ -211,6 +211,24 @@ const HG002_NANOPORE_ADAPTER = {
     indexType: 'BAI',
   },
 }
+// HG00151 Oxford Nanopore reads from the 1000 Genomes ONT Sequencing Consortium
+// (s3://1000g-ont), minimap2-aligned to hg38. Deliberately the MINIMAP2_ALIGNED_BAMS
+// file, NOT the NAPU/PMDV_FINAL.haplotagged.bam — the DeepVariant-haplotagged
+// output drops the supplementary (SA-tag) split alignments, so an inversion's
+// split reads vanish from it; the minimap2 alignment is the one the consortium's
+// SV callers used and where the fwd/rev split at the breakpoint is visible.
+// Paired with HG00151's Illumina high-coverage CRAM (HG00151.final, in the KG
+// config) for the same-sample short-vs-long inversion figure.
+const HG00151_ONT_1000G_BAM =
+  'https://1000g-ont.s3.amazonaws.com/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/HG00151-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam'
+const HG00151_ONT_1000G_ADAPTER = {
+  type: 'BamAdapter',
+  bamLocation: { uri: HG00151_ONT_1000G_BAM, locationType: 'UriLocation' },
+  index: {
+    location: { uri: `${HG00151_ONT_1000G_BAM}.bai`, locationType: 'UriLocation' },
+    indexType: 'BAI',
+  },
+}
 // NA12878 direct-RNA nanopore reads sliced to just the PTEN locus and re-hosted,
 // so the collapse-introns/sashimi figure downloads a ~2 MB deterministic file
 // instead of range-querying the whole-genome BAM (which never quiesced before
@@ -1310,7 +1328,7 @@ export const specs: ScreenshotSpec[] = [
             y: 34,
             maxWidth: 440,
             fontSize: 15,
-            text: '1. Feature height defaults to Normal — both alignments tracks inherit it',
+            text: '1. Feature height defaults to Normal — both tracks inherit it',
           },
         ],
       },
@@ -1353,7 +1371,7 @@ export const specs: ScreenshotSpec[] = [
             y: 34,
             maxWidth: 440,
             fontSize: 15,
-            text: '2. "Use ... as the default for alignments tracks" promotes the height to a session default — every un-pinned track follows',
+            text: '2. "Use ... as the default" promotes it to a session default — every un-pinned track follows',
           },
         ],
       },
@@ -2224,7 +2242,7 @@ export const specs: ScreenshotSpec[] = [
             dx: -440,
             dy: -30,
             maxWidth: 270,
-            text: 'Right-click a mismatch in the pileup to sort reads by the base there',
+            text: 'Right-click a mismatch to sort reads by that base',
           },
         ],
       },
@@ -2438,7 +2456,7 @@ export const specs: ScreenshotSpec[] = [
         dx: -360,
         dy: -10,
         maxWidth: 360,
-        text: 'Color by modifications: only called 5mC, at MM-tag positions.',
+        text: 'Color by modifications: called 5mC at MM-tag positions.',
       },
       {
         type: 'text',
@@ -2449,7 +2467,7 @@ export const specs: ScreenshotSpec[] = [
         dx: -360,
         dy: -10,
         maxWidth: 360,
-        text: 'Color by methylation: scans the read for CpGs, painting unmethylated ones blue — surfaces hypomethylated regions like this island.',
+        text: 'Color by methylation: unmethylated CpGs paint blue, surfacing hypomethylated regions like this island.',
       },
     ],
   },
@@ -3125,7 +3143,7 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         x: 60,
         y: 270,
-        text: 'Automatically launches a breakpoint split view for the TRA SV. Paired-end and long reads also have this in their feature details.',
+        text: 'Launches a breakpoint split view for the TRA — also in paired-end and long-read feature details.',
       },
     ],
   },
@@ -3336,7 +3354,7 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         x: 60,
         y: 440,
-        text: 'Green (LL) and navy (RR) same-orientation pairs — plus magenta split reads — flag the inverted segment.',
+        text: 'Green (LL), navy (RR), and magenta split reads flag the inverted segment.',
         maxWidth: 470,
       },
       {
@@ -3344,7 +3362,7 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         x: 60,
         y: 610,
-        text: 'Elevated coverage and the arc connections mark the extra duplicated copy.',
+        text: 'Elevated coverage and arcs mark the duplicated copy.',
         maxWidth: 470,
       },
     ],
@@ -3396,8 +3414,113 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         x: 60,
         y: 470,
-        text: 'View as pairs + bezier connections: each read pair collapses onto one row joined by a horizontal-tangent oval curve. Green (LL) and navy (RR) same-orientation pairs bundle across the inverted-duplication locus, and magenta marks split reads that cross the inversion junction — both the split mate and its connecting curve.',
+        text: 'View as pairs joins each pair with a bezier curve. Green (LL) and navy (RR) same-orientation pairs bundle across the locus; magenta marks split reads crossing the inversion.',
         maxWidth: 520,
+      },
+    ],
+  },
+
+  // Same inversion, short reads vs long reads, in ONE sample (HG00151). The
+  // companion to inverted_duplication: that figure shows how short paired-end
+  // reads only *infer* an inversion (from discordant pair orientation + a few
+  // split reads at the breakpoints). Here a ~1.2 kb pure inversion (HGSV_10047,
+  // chr1:197,787,660-197,788,855, called by the 1KGP Illumina ensemble AND by the
+  // 1000G-ONT consortium's SV callers) is shown with BOTH technologies:
+  //   - HG00151 Illumina high-coverage (short paired-end): the inverted segment
+  //     reads as a cluster of same-orientation / split pairs arcing over the two
+  //     breakpoints.
+  //   - HG00151 Oxford Nanopore (long reads): single reads span the whole inverted
+  //     segment, so each crosses both breakpoints and splits into a forward + a
+  //     reverse-strand supplementary alignment — the split junctions arc in magenta
+  //     (the split-read inversion color), directly reading out the inversion that
+  //     short reads can only triangulate.
+  // HG00151 is Illumina-genotyped 0/1 here; the ONT reads are the minimap2
+  // alignment (supplementary/split reads intact — see HG00151_ONT_1000G_ADAPTER).
+  {
+    mode: 'url',
+    name: 'inversion_long_read',
+    url: kgUrl({
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'HG00151_ONT_1000g',
+          name: 'HG00151 Nanopore (1000G ONT, minimap2)',
+          assemblyNames: ['hg38'],
+          adapter: HG00151_ONT_1000G_ADAPTER,
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '1:197,786,600-197,789,900',
+          tracks: [
+            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            {
+              trackId: 'HG00151.final',
+              displaySnapshot: {
+                // link supplementary alignments (View as pairs): chains each
+                // pair + its split segments onto one row, so a paired split read
+                // that crosses the inversion junction paints magenta
+                linkedReads: 'normal',
+                readConnections: 'arc',
+                // normal read height (with a tall track) so the chevron read
+                // directions on the aberrant/split pairs stay legible
+                height: 1000,
+                coverageHeight: 70,
+                featureHeight: 7,
+                colorBy: { type: 'pairOrientation' },
+                showLegend: true,
+              },
+            },
+            {
+              trackId: 'HG00151_ONT_1000g',
+              displaySnapshot: {
+                // link supplementary alignments: chains each long read's split
+                // segments, so the reverse-strand piece of an inversion-spanning
+                // read paints the flipped-strand color (and the junction arcs
+                // magenta) instead of an uncolored plain pileup
+                linkedReads: 'normal',
+                readConnections: 'arc',
+                height: 560,
+                coverageHeight: 70,
+                colorBy: { type: 'pairOrientation' },
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG00151 Nanopore',
+    readyTimeout: 90000,
+    viewportHeight: 1740,
+    settleMs: 40000,
+    annotations: [
+      {
+        type: 'text',
+        x: 60,
+        y: 330,
+        text: 'Short reads (Illumina): the inversion is only inferred — aberrant pairs cluster at the breakpoints.',
+        maxWidth: 470,
+      },
+      {
+        type: 'text',
+        x: 560,
+        y: 560,
+        text: 'Purple marks split/supplementary alignments that point in opposite directions.',
+        maxWidth: 360,
+      },
+      {
+        type: 'arrow',
+        from: { x: 600, y: 650 },
+        to: { x: 520, y: 845 },
+      },
+      {
+        type: 'text',
+        x: 60,
+        y: 1300,
+        text: 'Long reads (Nanopore): one read spans the inversion — reverse-strand core between forward flanks, magenta arcs at the split junctions.',
+        maxWidth: 470,
       },
     ],
   },
@@ -3495,7 +3618,7 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         x: 60,
         y: 90,
-        text: 'SV_20: the chr3↔chr13 CHROMOPLEXY translocation shown drilled into below.',
+        text: 'SV_20: the chr3↔chr13 chromoplexy translocation, drilled into below.',
         maxWidth: 420,
       },
     ],
@@ -3680,7 +3803,7 @@ export const specs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'Searching "SV_85" filters the table to one DEL call (a heterozygous CUZD1 deletion)',
+        text: 'Searching "SV_85" filters to one DEL (a het CUZD1 deletion)',
         x: 70,
         y: 180,
         fontSize: 18,
@@ -3691,7 +3814,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'box', x: 592, y: 700, width: 112, height: 52 },
       {
         type: 'text',
-        text: 'Clicking the location link opens the region below, where SVTYPE=DEL is drawn as the <DEL> ALT allele',
+        text: 'The location link opens the region below, where SVTYPE=DEL draws as the <DEL> allele',
         x: 745,
         y: 690,
         fontSize: 18,
@@ -5803,7 +5926,7 @@ export const specs: ScreenshotSpec[] = [
             type: 'text',
             x: 470,
             y: 310,
-            text: 'Use this dropdown to reach alternative add-track workflows, e.g. multi-wiggle',
+            text: 'This dropdown reaches other add-track workflows, e.g. multi-wiggle',
             background: 'rgba(0,0,0,0.8)',
             textColor: '#fff',
             fontSize: 22,
