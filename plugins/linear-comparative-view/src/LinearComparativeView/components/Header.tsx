@@ -12,8 +12,8 @@ import ColorBySelector from './ColorBySelector.tsx'
 import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
 import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
 import SyntenyWarnings from './SyntenyWarnings.tsx'
+import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 
-import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
@@ -55,54 +55,40 @@ const Header = observer(function Header({
     views.length <= 3,
   )
 
-  // The dynamic-control widgets are synteny-specific (colorBy, alpha, etc).
-  // Gate on the actual MST type discriminator so a non-synteny
-  // LinearComparativeView never renders these controls against a model that
-  // lacks the matching state/actions.
-  const syntenyModel: LinearSyntenyViewModel | undefined =
-    model.type === 'LinearSyntenyView'
-      ? (model as LinearSyntenyViewModel)
-      : undefined
+  const syntenyModel = asSyntenyModel(model)
+
+  // Track selectors for each synteny level (between adjacent rows) and each
+  // individual genome row. Shown flat for a two-genome view, grouped into
+  // submenus once there are more rows.
+  const syntenySelectors = views.slice(0, -1).map((_, idx) => ({
+    label: `Row ${idx + 1} → ${idx + 2} (${views[idx]!.assemblyNames.join(',')} → ${views[idx + 1]!.assemblyNames.join(',')})`,
+    onClick: () => {
+      model.activateTrackSelector(idx)
+    },
+  }))
+  const rowSelectors = views.map((view, idx) => ({
+    label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
+    onClick: () => {
+      view.activateTrackSelector()
+    },
+  }))
 
   return (
     <div className={classes.headerBar}>
       <CascadingMenuButton
-        menuItems={
+        menuItems={() =>
           views.length === 2
-            ? [
-                {
-                  label: `Synteny track selector (${views[0]!.assemblyNames.join(',')} → ${views[1]!.assemblyNames.join(',')})`,
-                  onClick: () => {
-                    model.activateTrackSelector(0)
-                  },
-                },
-                ...views.map((view, idx) => ({
-                  label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
-                  onClick: () => {
-                    view.activateTrackSelector()
-                  },
-                })),
-              ]
+            ? [...syntenySelectors, ...rowSelectors]
             : [
                 {
                   label: 'Synteny track selectors',
                   type: 'subMenu',
-                  subMenu: views.slice(0, -1).map((_, idx) => ({
-                    label: `Row ${idx + 1} → ${idx + 2} (${views[idx]!.assemblyNames.join(',')} → ${views[idx + 1]!.assemblyNames.join(',')})`,
-                    onClick: () => {
-                      model.activateTrackSelector(idx)
-                    },
-                  })),
+                  subMenu: syntenySelectors,
                 },
                 {
                   label: 'Row track selectors',
                   type: 'subMenu',
-                  subMenu: views.map((view, idx) => ({
-                    label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
-                    onClick: () => {
-                      view.activateTrackSelector()
-                    },
-                  })),
+                  subMenu: rowSelectors,
                 },
               ]
         }

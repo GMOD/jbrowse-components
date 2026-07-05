@@ -5,8 +5,8 @@ import { observer } from 'mobx-react'
 
 import Header from './Header.tsx'
 import LinearComparativeRenderArea from './LinearComparativeRenderArea.tsx'
+import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 
-import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
@@ -30,14 +30,6 @@ const useStyles = makeStyles()(theme => ({
     position: 'relative',
   },
 }))
-
-// The dynamic color controls are synteny-specific. Gate on the MST type
-// discriminator so a plain LinearComparativeView never reads synteny-only state.
-function asSyntenyModel(model: LinearComparativeViewModel) {
-  return model.type === 'LinearSyntenyView'
-    ? (model as LinearSyntenyViewModel)
-    : undefined
-}
 
 const LinearComparativeView = observer(function LinearComparativeView({
   model,

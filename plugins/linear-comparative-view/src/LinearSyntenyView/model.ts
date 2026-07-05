@@ -794,3 +794,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 }
 export type LinearSyntenyViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearSyntenyViewModel = Instance<LinearSyntenyViewStateModel>
+
+/**
+ * The synteny-specific header controls (colorBy, alpha, etc.) read state that
+ * only exists on a LinearSyntenyView. Gate on the MST type discriminator so a
+ * plain LinearComparativeView never renders those controls against a model that
+ * lacks the matching state/actions.
+ */
+export function asSyntenyModel(model: { type: string }) {
+  return model.type === 'LinearSyntenyView'
+    ? (model as LinearSyntenyViewModel)
+    : undefined
+}

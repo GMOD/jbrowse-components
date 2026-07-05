@@ -2,12 +2,11 @@ import { SingleSlider } from '@jbrowse/core/ui'
 import {
   MinLengthSlider,
   OpacitySlider,
+  SettingCheckbox,
   SettingRow,
   SettingsPopover,
   SliderTooltip,
 } from '@jbrowse/synteny-core'
-import HelpIcon from '@mui/icons-material/Help'
-import { Checkbox, FormControlLabel, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
@@ -72,49 +71,21 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
             slots={{ valueLabel: SliderTooltip }}
           />
         </SettingRow>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={opacityByIdentity}
-              onChange={() => {
-                model.setOpacityByIdentity(!opacityByIdentity)
-              }}
-              size="small"
-            />
-          }
-          label={
-            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-              <Typography variant="body2">Fade by identity</Typography>
-              <Tooltip
-                title="Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel."
-                arrow
-              >
-                <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
-              </Tooltip>
-            </span>
-          }
+        <SettingCheckbox
+          label="Fade by identity"
+          help="Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel."
+          checked={opacityByIdentity}
+          onChange={() => {
+            model.setOpacityByIdentity(!opacityByIdentity)
+          }}
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={fadeThinAlignments}
-              onChange={() => {
-                model.setFadeThinAlignments(!fadeThinAlignments)
-              }}
-              size="small"
-            />
-          }
-          label={
-            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-              <Typography variant="body2">Fade thin alignments</Typography>
-              <Tooltip
-                title="Fades sub-pixel-thin ribbons by their on-screen width, so an unfiltered whole-genome view doesn't read as a hard full-opacity hairball. Turn off for a genuinely sparse comparison (e.g. distant species) where every real alignment is sub-pixel and the fade would wash the view out instead of decluttering it."
-                arrow
-              >
-                <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
-              </Tooltip>
-            </span>
-          }
+        <SettingCheckbox
+          label="Fade thin alignments"
+          help="Fades sub-pixel-thin ribbons by their on-screen width, so an unfiltered whole-genome view doesn't read as a hard full-opacity hairball. Turn off for a genuinely sparse comparison (e.g. distant species) where every real alignment is sub-pixel and the fade would wash the view out instead of decluttering it."
+          checked={fadeThinAlignments}
+          onChange={() => {
+            model.setFadeThinAlignments(!fadeThinAlignments)
+          }}
         />
       </div>
     </SettingsPopover>
