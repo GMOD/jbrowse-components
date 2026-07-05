@@ -714,6 +714,17 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * True when fit-to-display mode is on AND a pitch has been computed
+         * (`fittedHeightPx > 0`, i.e. there are rows and room to fit them). The
+         * single gate both size getters read, so it's obvious they either both
+         * split the fitted pitch or both fall back to config — never a mix.
+         */
+        get isFitting(): boolean {
+          return self.fitHeightToDisplay && self.fittedHeightPx > 0
+        },
+
+        /**
+         * #getter
          */
         // featureHeight/featureSpacing are promotable slots: each resolves
         // through getConfResolved (track value, else session-wide default, else
@@ -721,10 +732,10 @@ export default function stateModelFactory(
         // In fit-to-height mode they instead split the autorun-cached fit pitch
         // (`fittedHeightPx` = pileupSpace/rows) into a read body plus spacing, so
         // every read-height consumer sees the fitted values without threading a
-        // separate getter. body + spacing always equals the pitch, so the fill
-        // stays exact regardless of the spacing.
+        // separate getter. body + spacing === pitch by construction (body is the
+        // pitch minus the spacing), so the fill stays exact regardless of spacing.
         get featureHeight(): number {
-          return self.fitHeightToDisplay && self.fittedHeightPx > 0
+          return this.isFitting
             ? self.fittedHeightPx - this.featureSpacing
             : getConfResolved(self, 'featureHeight')
         },
@@ -736,10 +747,11 @@ export default function stateModelFactory(
         // gap between reads (leaving a >2px body); below that reads stay flush so
         // no pixel is wasted on spacing.
         get featureSpacing(): number {
-          if (self.fitHeightToDisplay && self.fittedHeightPx > 0) {
-            return self.fittedHeightPx > 3 ? 1 : 0
-          }
-          return getConfResolved(self, 'featureSpacing')
+          return this.isFitting
+            ? self.fittedHeightPx > 3
+              ? 1
+              : 0
+            : getConfResolved(self, 'featureSpacing')
         },
 
         // true when the current size already equals the session-wide default
@@ -2265,9 +2277,15 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Enter/leave "fit to display height" mode. Entering drops per-group
-           * height overrides so the fit is uniform; the afterAttach autorun then
-           * keeps `featureHeight` sized to fit as the display/data change.
+           * Enter/leave "fit to display height" mode. Entering resets the two
+           * bits of transient state that a uniform fit contradicts — per-group
+           * height overrides (a drag opts a group out of the fit budget) and the
+           * scroll offset (a fitted stack doesn't scroll). These clears are tied
+           * to the explicit user action on purpose: a track that inherits `fit`
+           * passively from a session-wide default keeps its overrides, so setting
+           * an unrelated default can't silently wipe a group the user dragged. The
+           * afterAttach autorun then keeps `featureHeight` sized to fit as the
+           * display/data change, regardless of how fit was entered.
            */
           setFitHeightToDisplay(fit: boolean) {
             self.configuration.setSlot('heightMode', fit ? 'fit' : 'fixed')
