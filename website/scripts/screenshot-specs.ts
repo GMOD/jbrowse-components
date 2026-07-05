@@ -2137,14 +2137,13 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // The Linear synteny view import form for the allvsall_synteny.md "From the
-  // UI" section. A bare LinearSyntenyView session spec is rejected (needs >=2
-  // views), so open it the way a user does: load the ecoli_pangenome demo config
-  // with no views, then Add -> Linear synteny view, which calls
-  // addView('LinearSyntenyView', {}) -> an empty view that lands on the import
-  // form (model.hasSomethingToShow is false). The demo config's four E. coli
-  // strains populate the assembly dropdowns. Annotate the controls the tutorial
-  // names: Add row, the per-pair connector button, the single all-vs-all track
-  // it configures on the right, and Launch.
+  // UI" section, using the all-vs-all quick-start path. A bare LinearSyntenyView
+  // session spec is rejected (needs >=2 views), so open it the way a user does:
+  // load the ecoli_pangenome demo config with no views, then Add -> Linear
+  // synteny view -> an empty view that lands on the import form. Two-stage
+  // teaching figure: (1) open "Quick start" and pick the all-vs-all track, (2)
+  // every assembly in that track's assemblyNames becomes a row (the single track
+  // backs every band), then Launch.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_import_form',
@@ -2157,8 +2156,8 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'Select a view to launch',
     readyTimeout: 60000,
     settleMs: 1000,
-    viewportHeight: 360,
-    crop: { x: 0, y: 0, width: 1500, height: 360 },
+    viewportHeight: 500,
+    crop: { x: 0, y: 0, width: 1500, height: 470 },
     actions: [
       { type: 'click', text: 'Add' },
       { type: 'waitForText', text: 'Linear synteny view' },
@@ -2166,14 +2165,57 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Select assemblies for linear synteny view' },
       { type: 'delay', ms: 1000 },
     ],
-    annotations: [
-      // Add row: click once per extra strain (form starts with two rows)
-      { type: 'box', anchor: { text: 'Add row' } },
-      // per-pair connector button -> selects which pair the right panel configures
-      { type: 'box', anchor: { selector: '[data-testid="synbutton"]' } },
-      // the one all-vs-all track backs every pair
-      { type: 'box', anchor: { text: 'E. coli pangenome (all-vs-all PAF)' } },
-      { type: 'box', anchor: { text: 'Launch' } },
+    stages: [
+      {
+        actions: [
+          {
+            type: 'click',
+            text: 'Select a synteny track to auto-fill assemblies',
+          },
+          { type: 'waitForSelector', selector: 'li[data-value="ecoli_ava"]' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            text: '1',
+            anchor: { text: 'Quick start from a synteny track' },
+            dx: -45,
+          },
+          { type: 'box', anchor: { selector: 'li[data-value="ecoli_ava"]' } },
+          {
+            type: 'text',
+            text: 'Open Quick start and pick your all-vs-all track',
+            x: 130,
+            y: 345,
+            maxWidth: 430,
+          },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', selector: 'li[data-value="ecoli_ava"]' },
+          { type: 'waitForText', text: 'Row 4 assembly' },
+          { type: 'delay', ms: 1000 },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            text: '2',
+            anchor: { text: 'Select assemblies for linear synteny view' },
+            dx: -45,
+          },
+          {
+            type: 'text',
+            text: 'Every assembly in the track becomes a row — the one all-vs-all track backs every band',
+            x: 520,
+            y: 340,
+            maxWidth: 470,
+          },
+          { type: 'circle', text: '3', anchor: { text: 'Launch' }, dx: 58 },
+          { type: 'box', anchor: { text: 'Launch' } },
+        ],
+      },
     ],
   },
 

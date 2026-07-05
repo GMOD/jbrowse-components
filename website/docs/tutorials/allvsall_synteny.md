@@ -68,15 +68,18 @@ load.
 
 ### From the UI
 
-From the JBrowse start screen, click **Linear synteny view**. The import form
-starts with two rows; click **Add row** until you have one row per strain and set
-each row's assembly. Between each adjacent pair, click the connector button and
-choose the `ecoli_ava` track — the same track configures every pair, since it
-lists all four assemblies in `assemblyNames`. Click **Launch** to open the view,
-then pick **Re-order chromosomes** from the view menu to line the ribbons up
-along the diagonal.
+Open a linear synteny view — **Add → Linear synteny view** — to reach the import
+form. Because `ecoli_ava` lists all four assemblies, you don't have to build the
+rows by hand: open **Quick start from a synteny track** and choose it. Every
+assembly in the track's `assemblyNames` becomes a row — one per strain — and that
+single track is wired to back every adjacent band. Click **Launch** to open the
+stacked view.
 
-<Figure caption="The linear synteny import form. It opens with two rows; Add row adds one per strain, and each row's assembly comes from its dropdown. The connector button between a pair selects which pair the right-hand panel configures — here the single E. coli pangenome (all-vs-all PAF) track backs every pair, since it lists all four assemblies. Launch opens the stacked view." src="/img/multiway_synteny/ecoli_import_form.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json" />
+You can still build the stack manually — **Add row** adds a strain, and the
+connector button between each pair picks its synteny track — but for an
+all-vs-all track Quick start does it in one step.
+
+<Figure caption="Stacking all four strains from the UI with the all-vs-all quick start. (1) Open 'Quick start from a synteny track' and pick the ecoli_ava track. (2) Every assembly it lists becomes a row, and the one track backs every band. (3) Launch the stacked view." src="/img/multiway_synteny/ecoli_import_form.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json" />
 
 ### Declaratively with defaultSession
 
@@ -99,8 +102,7 @@ snapshot in the config's `defaultSession`. Four rows means three bands, so
             { "assembly": "NCTC86" }
           ],
           "tracks": [["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"]],
-          "drawCurves": true,
-          "autoDiagonalize": true
+          "drawCurves": true
         }
       }
     ]
@@ -110,10 +112,8 @@ snapshot in the config's `defaultSession`. Four rows means three bands, so
 
 `tracks` is one entry per band: `tracks[0]` connects rows 0–1, `tracks[1]` rows
 1–2, and `tracks[2]` rows 2–3 — all the same `ecoli_ava` track, which lists
-every assembly in `assemblyNames` so it can back any pair. `autoDiagonalize`
-reorders and flips each row's chromosomes on load so the ribbons run along the
-diagonal instead of crossing into a hairball. The one-time load settings (row
-order, tracks, `drawCurves`, `autoDiagonalize`) go under `init`; see the
+every assembly in `assemblyNames` so it can back any pair. The one-time load
+settings (row order, tracks, `drawCurves`) go under `init`; see the
 [ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for a fuller
 walk-through of the `defaultSession` structure.
 

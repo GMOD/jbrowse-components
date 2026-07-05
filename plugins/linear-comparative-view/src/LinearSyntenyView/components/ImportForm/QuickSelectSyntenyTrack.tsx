@@ -7,10 +7,12 @@ import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 
-// Auto-fill both row assemblies from an existing synteny track's assemblyNames,
+// Auto-fill the row assemblies from an existing synteny track's assemblyNames,
 // so a user with a pre-configured PAF/chain track can launch it without first
-// guessing which two assemblies it connects. Passing [] to getSyntenyTracks
-// returns every synteny track in the session.
+// guessing which assemblies it connects. A pairwise track fills its two rows; an
+// all-vs-all track (more than two assemblyNames) stacks every assembly as a row,
+// with the single track backing every adjacent band. Passing [] to
+// getSyntenyTracks returns every synteny track in the session.
 const QuickSelectSyntenyTrack = observer(function QuickSelectSyntenyTrack({
   model,
   setSelectedAssemblyNames,
@@ -35,13 +37,17 @@ const QuickSelectSyntenyTrack = observer(function QuickSelectSyntenyTrack({
           )
           if (track) {
             const names = readConfObject(track, 'assemblyNames') as string[]
-            setSelectedAssemblyNames([names[0]!, names[1]!])
+            const rows =
+              names.length > 2 ? [...names] : [names[0]!, names[1]!]
+            setSelectedAssemblyNames(rows)
             setSelectedRow(0)
             model.clearImportFormSyntenyTracks()
-            model.setImportFormSyntenyTrack(0, {
-              type: 'preConfigured',
-              value: track.trackId,
-            })
+            for (let idx = 0; idx < rows.length - 1; idx++) {
+              model.setImportFormSyntenyTrack(idx, {
+                type: 'preConfigured',
+                value: track.trackId,
+              })
+            }
           }
         }}
       >
