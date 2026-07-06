@@ -1264,41 +1264,45 @@ float clipX = (dHi + dLo) / bpLen * 2.0 - 1.0;
 `blockClipUtils.clipBlock` emits `[bpStartHi, bpStartLo]` for the visible
 window; `splitPositionWithFrac` is the CPU equivalent for UBO fields.
 
-#### Synteny: pre-split Float32 hi/lo cumulative-bp
+#### Synteny + dotplot: window-relative Float32 cumulative-bp
 
-Synteny corner storage takes a different shape than the LGV-family uint32
-attributes above. A synteny ribbon connects two views with independent
-`bpPerPx` and independent inter-region paddings; per-corner positions are
-**cumulative-bp across all regions of the corner's view**, not single-region
-absolute bp. So:
+Synteny and dotplot corner storage takes a different shape than the LGV-family
+uint32 attributes above. A synteny ribbon connects two views (dotplot: two
+axes) with independent `bpPerPx`; per-corner positions are **cumulative-bp
+across all regions of the corner's view/axis**, not single-region absolute bp —
+genome scale, up to Gbp, past Float32's 24-bit mantissa.
 
-- The vertex attribute is `(bpHi, bpLo)` Float32 pairs, pre-split on the CPU
-  against 4096-bp buckets — same hi/lo math as the LGV path, just split up-front
-  instead of in the shader. Per-corner values use `writeHiLo` (a non-allocating
-  variant of `splitPositionWithFrac`); the view-origin uniform below uses
-  `splitPositionWithFrac` itself.
-- The view origin uniform `viewBp = offsetPx * bpPerPx` is also hi/lo split
-  (`viewBp{0,1}{Hi,Lo}`). Because `offsetPx` is the view's canvas-left offset in
-  its own (padded) pixel space, `viewBp` is **padded-bp at canvas left**. The
-  shader (`hpCornerScreenX` in `hpmath.slang`, shared by synteny and dotplot)
-  computes `(cumBp − viewBp)/bpPerPx`, which reduces to
-  `cumBp/bpPerPx − offsetPx` — the LGV render position. There is **no**
-  per-instance pad attribute and **no** `viewPad` uniform; the per-instance
-  layout is just the four corners (`bp{1..4}{Hi,Lo}`) plus `color`, `featureId`,
-  `alignmentLength`, `kind` (see `syntenyTypes.slang` / `instanceInterleave.ts`).
+Rather than the hi/lo split the LGV path uses, both store each corner **relative
+to a per-axis fetch-time base** (`base = offsetPx * bpPerPx`, the viewport-start
+cumBp captured when the geometry is built):
 
-Storing as cumBp instead of regional bp + region index avoids the
-per-region uniform table / per-(region-pair) draw call concerns that ruled
-out earlier hp-math attempts; a single per-view origin uniform handles
-inter-region offsets without any `MAX_REGIONS` cap. See ADR-010 for the
-rejected per-region-table alternatives, ADR-018 for why this shape works.
+- The vertex attribute is a single Float32 `bpRel = cumBp − base`. The shader
+  reconstructs screen X as `bpRel * bpPerPxInv + panPx`, where
+  `panPx = (base − viewBp) / bpPerPx` is folded on the CPU in float64 from a
+  SMALL delta (the pan since fetch — see `GpuSyntenyRenderer` /
+  `GpuDotplotRenderer`). Because the base cancels the genome-scale magnitude,
+  both `bpRel*inv` (small for on-screen corners) and `panPx` (small for
+  realistic pans) stay sub-pixel in a single Float32 — no hi/lo pair, half the
+  position bytes. The per-instance layout is the four corners (`bp{1..4}` /
+  `x1,y1,x2,y2`) plus `color` etc. (`syntenyTypes.slang` / `dotplot.slang`).
+- Synteny bakes the window-relative value into its geometry buffers, so the CPU
+  pick path reads it directly (`buildSyntenyGeometry` returns `base0`/`base1`).
+  Dotplot keeps **absolute** cumBp `Float64Array`s in geometry — the Canvas2D /
+  SVG renderers consume them unchanged — and subtracts the base only at GPU
+  upload; `buildLineSegments` carries `baseH`/`baseV` alongside for the GPU path.
 
-Dotplot uses the **same** hi/lo cumBp scheme via the same `hpCornerScreenX`:
-positions are absolute genomic cumBp held in `Float64Array` on the JS side
-(`dotplotRenderingBackendTypes.ts`) and split to Float32 hi/lo only at the GPU
-upload boundary (`GpuDotplotRenderer`), with the view origin hi/lo split the
-same way. Its geometry buffer stores line endpoints rather than synteny's
-parallelogram corners, but the coordinate-precision technique is identical.
+This is viable because the fetch is scoped per window and re-runs when the
+window moves (synteny: both views refetch on pan; dotplot: the h-axis refetches,
+and a zoom on either axis rebuilds geometry), so the base stays near the view.
+Far-off-screen corners — a distant-mate ribbon/segment on another chromosome —
+lose absolute precision but only on the clipped-away sliver; visible error stays
+~`panDistancePx · 2⁻²³`. Storing cumBp instead of regional bp + region index
+avoids the per-region uniform table / per-(region-pair) draw-call concerns that
+ruled out earlier hp-math attempts; no `MAX_REGIONS` cap. See ADR-010 for the
+rejected per-region-table alternatives, ADR-018 for the earlier hi/lo shape this
+replaced. (That shape's shared helper `hpCornerScreenX` was removed from
+`hpmath.slang` once both views dropped it; the LGV in-shader
+`hpSplitUint`/`hpToClipX` path is untouched.)
 
 #### Genome-size limits (what must fit where)
 
@@ -1314,27 +1318,23 @@ Two distinct thresholds apply — one hard, one not a real limit:
   830 Mbp). It would only wrap for a genome whose *single* reference exceeds
   4.29 Gbp (e.g. certain lungfish/amphibian chromosomes) — out of scope.
 
-- **Whole-assembly cumulative-bp is NOT bounded by uint32, but has its own
-  ~68 Gbp GPU ceiling.** The sum across all chromosomes — what a synteny ribbon
-  corner and the whole-genome overview span — is Float64 on the CPU (exact to
-  2⁵³) and split to a Float32 hi/lo pair for the GPU. Because `hi` is a
-  4096-bp-aligned (2¹²) multiple, it stays exact in Float32 (24-bit mantissa)
-  only while `cumBp < 2³⁶ ≈ 68.7 Gbp`. So a 16 Gbp assembly (e.g. hexaploid
-  wheat, 21 chromosomes) positions and renders correctly in the synteny view
-  and its overview scalebar; `Region.start`/`end` are Float64 throughout with
-  no bitwise coordinate ops.
+- **Whole-assembly cumulative-bp is NOT bounded by uint32, and no longer has a
+  fixed GPU size ceiling.** The sum across all chromosomes — what a synteny
+  ribbon corner or dotplot segment spans — is Float64 on the CPU (exact to 2⁵³).
+  On the GPU it is stored **window-relative** as a single Float32 (`cumBp −
+  fetch-time base`; see the window-relative subsection above), so on-screen
+  precision is `~panDistancePx · 2⁻²³` — sub-pixel for all realistic navigation
+  *regardless of assembly size* (16 Gbp hexaploid wheat, or even 100+ Gbp
+  genomes like *Tmesipteris oblanceolata* ≈ 160 Gbp / *Paris japonica* ≈ 148 Gbp
+  all render correctly), because a zoom recaptures the base near the view.
+  `Region.start`/`end` are Float64 throughout with no bitwise coordinate ops.
 
-  **Above ~68.7 Gbp the hi/lo split degrades.** Real genomes exceed it —
-  *Tmesipteris oblanceolata* ≈ 160 Gbp, *Paris japonica* ≈ 148 Gbp, some
-  lungfish ≈ 130 Gbp. Past 2³⁶ the Float32 ULP grows beyond 4096, so `hi` can
-  no longer sit exactly on its 4096 boundary and rounds — introducing up to
-  ±8192 bp of error per corner. In a **whole-genome overview** this is
-  harmless (`bpPerPx ≈ 10⁸`, so the error is sub-pixel and the overview looks
-  correct), but **zoomed-in navigation on the far end of such a genome would
-  misalign ribbons by `~16384 / bpPerPx` px.** If we ever need to support
-  those genomes, widening the hi/lo bucket from 2¹² to 2¹⁴ (in `writeHiLo`,
-  `splitPositionWithFrac`, and `hpmath.slang`'s `HP_LOW_MASK` in lockstep)
-  pushes the exact range to `2¹⁴ · 2²⁴ ≈ 274 Gbp`; `lo` stays sub-bp precise.
+  This retired the former ~68.7 Gbp ceiling: synteny+dotplot used to split cumBp
+  into a 4096-bp-aligned Float32 hi/lo pair, exact only while `cumBp < 2³⁶`, and
+  degraded past that. The window-relative base cancels the genome-scale
+  magnitude, so the cap is gone. (The LGV-family in-shader hi/lo path still uses
+  `splitPositionWithFrac`, but only on single-chromosome `bpRange` uniforms
+  `< 2³² = 4.29 Gbp` — well inside the exact range.)
 
 - **Soft, non-bp ceiling:** the synteny per-instance `featureId`
   (`instanceInterleave.ts`) is a Float32, exact only to 2²⁴ ≈ 16.7M *rendered

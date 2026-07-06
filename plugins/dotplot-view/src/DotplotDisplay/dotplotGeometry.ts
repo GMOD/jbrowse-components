@@ -11,7 +11,10 @@ import type { DotplotRpcData } from './types.ts'
 // small-but-visible blocks still show detail rather than being flattened.
 const MIN_CIGAR_PX_WIDTH = 2
 
-type GeometryBuffers = Omit<DotplotGeometryData, 'instanceCount'>
+type GeometryBuffers = Omit<
+  DotplotGeometryData,
+  'instanceCount' | 'baseH' | 'baseV'
+>
 
 function allocBuffers(capacity: number): GeometryBuffers {
   return {
@@ -39,7 +42,12 @@ function writeSegment(
   b.colors[n] = color
 }
 
-function trimToCount(b: GeometryBuffers, n: number): DotplotGeometryData {
+function trimToCount(
+  b: GeometryBuffers,
+  n: number,
+  baseH: number,
+  baseV: number,
+): DotplotGeometryData {
   return {
     x1: b.x1.subarray(0, n),
     y1: b.y1.subarray(0, n),
@@ -47,6 +55,8 @@ function trimToCount(b: GeometryBuffers, n: number): DotplotGeometryData {
     y2: b.y2.subarray(0, n),
     colors: b.colors.subarray(0, n),
     instanceCount: n,
+    baseH,
+    baseV,
   }
 }
 
@@ -57,6 +67,8 @@ export function buildLineSegments(
   minAlignmentLength: number,
   bpPerPxH: number,
   bpPerPxV: number,
+  baseH: number,
+  baseV: number,
 ): DotplotGeometryData {
   const { p11, p12, p21, p22, starts, ends, strands, parsedCigars } = data
   const count = p11.length
@@ -113,5 +125,5 @@ export function buildLineSegments(
     }
   }
 
-  return trimToCount(buf, n)
+  return trimToCount(buf, n, baseH, baseV)
 }

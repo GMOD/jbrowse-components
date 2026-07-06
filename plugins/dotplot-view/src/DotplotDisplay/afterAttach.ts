@@ -11,7 +11,7 @@ import {
   detectDisplayAssembliesSwapped,
   renameRegionsForAdapter,
 } from '@jbrowse/synteny-core'
-import { autorun } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import { createDotplotColorFunction } from './dotplotColors.ts'
 import { buildLineSegments } from './dotplotGeometry.ts'
@@ -130,6 +130,14 @@ export function doAfterAttach(
           return
         }
         const { drawCigar, hview, vview } = view
+        // GPU precision anchor: the viewport-start cumBp per axis at build time.
+        // Read offsetPx untracked so panning alone doesn't rebuild geometry
+        // (pan is a uniform-only update on the GPU); a zoom changes bpPerPx,
+        // which IS tracked, so the base is recaptured near the view on zoom.
+        const { baseH, baseV } = untracked(() => ({
+          baseH: hview.offsetPx * hview.bpPerPx,
+          baseV: vview.offsetPx * vview.bpPerPx,
+        }))
         self.setGeometry(
           buildLineSegments(
             rpcData,
@@ -138,6 +146,8 @@ export function doAfterAttach(
             minAlignmentLength,
             hview.bpPerPx,
             vview.bpPerPx,
+            baseH,
+            baseV,
           ),
         )
       },

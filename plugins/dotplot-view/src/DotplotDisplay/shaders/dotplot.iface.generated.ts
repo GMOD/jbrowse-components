@@ -5,32 +5,26 @@ import type { GlAttributeLayout } from '@jbrowse/render-core/hal'
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 48
+export const UNIFORMS_SIZE_BYTES = 32
 
 // Indices into a Float32Array / Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
   resolution: 0,
   lineWidth: 2,
-  viewBpHHi: 3,
-  viewBpHLo: 4,
-  bpPerPxHInv: 5,
-  viewBpVHi: 6,
-  viewBpVLo: 7,
-  bpPerPxVInv: 8,
-  hpZero: 9,
+  panPxH: 3,
+  bpPerPxHInv: 4,
+  panPxV: 5,
+  bpPerPxVInv: 6,
 } as const
 
 
 export interface Uniforms {
   resolution: [number, number]
   lineWidth: number
-  viewBpHHi: number
-  viewBpHLo: number
+  panPxH: number
   bpPerPxHInv: number
-  viewBpVHi: number
-  viewBpVLo: number
+  panPxV: number
   bpPerPxVInv: number
-  hpZero: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -38,51 +32,36 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[0] = uniforms.resolution[0]
   f32[1] = uniforms.resolution[1]
   f32[2] = uniforms.lineWidth
-  f32[3] = uniforms.viewBpHHi
-  f32[4] = uniforms.viewBpHLo
-  f32[5] = uniforms.bpPerPxHInv
-  f32[6] = uniforms.viewBpVHi
-  f32[7] = uniforms.viewBpVLo
-  f32[8] = uniforms.bpPerPxVInv
-  f32[9] = uniforms.hpZero
+  f32[3] = uniforms.panPxH
+  f32[4] = uniforms.bpPerPxHInv
+  f32[5] = uniforms.panPxV
+  f32[6] = uniforms.bpPerPxVInv
 }
 
-export const INSTANCE_STRIDE_BYTES = 36
-export const INSTANCE_STRIDE_F32 = 9
+export const INSTANCE_STRIDE_BYTES = 20
+export const INSTANCE_STRIDE_F32 = 5
 
 export const FIELD_OFFSET_F32 = {
-  x1Hi: 0,
-  x1Lo: 1,
-  y1Hi: 2,
-  y1Lo: 3,
-  x2Hi: 4,
-  x2Lo: 5,
-  y2Hi: 6,
-  y2Lo: 7,
-  color: 8,
+  x1: 0,
+  y1: 1,
+  x2: 2,
+  y2: 3,
+  color: 4,
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
-  { name: 'a_x1Hi', components: 1, type: 'float', offsetBytes: 0, integer: false },
-  { name: 'a_x1Lo', components: 1, type: 'float', offsetBytes: 4, integer: false },
-  { name: 'a_y1Hi', components: 1, type: 'float', offsetBytes: 8, integer: false },
-  { name: 'a_y1Lo', components: 1, type: 'float', offsetBytes: 12, integer: false },
-  { name: 'a_x2Hi', components: 1, type: 'float', offsetBytes: 16, integer: false },
-  { name: 'a_x2Lo', components: 1, type: 'float', offsetBytes: 20, integer: false },
-  { name: 'a_y2Hi', components: 1, type: 'float', offsetBytes: 24, integer: false },
-  { name: 'a_y2Lo', components: 1, type: 'float', offsetBytes: 28, integer: false },
-  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 32, integer: true },
+  { name: 'a_x1', components: 1, type: 'float', offsetBytes: 0, integer: false },
+  { name: 'a_y1', components: 1, type: 'float', offsetBytes: 4, integer: false },
+  { name: 'a_x2', components: 1, type: 'float', offsetBytes: 8, integer: false },
+  { name: 'a_y2', components: 1, type: 'float', offsetBytes: 12, integer: false },
+  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
 ]
 
 export interface InstanceArrays {
-  x1Hi: ArrayLike<number>
-  x1Lo: ArrayLike<number>
-  y1Hi: ArrayLike<number>
-  y1Lo: ArrayLike<number>
-  x2Hi: ArrayLike<number>
-  x2Lo: ArrayLike<number>
-  y2Hi: ArrayLike<number>
-  y2Lo: ArrayLike<number>
+  x1: ArrayLike<number>
+  y1: ArrayLike<number>
+  x2: ArrayLike<number>
+  y2: ArrayLike<number>
   color: ArrayLike<number>
 }
 
@@ -93,18 +72,14 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { x1Hi, x1Lo, y1Hi, y1Lo, x2Hi, x2Lo, y2Hi, y2Lo, color } = arrays
+  const { x1, y1, x2, y2, color } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_F32
-    f32[o + 0] = x1Hi[i]!
-    f32[o + 1] = x1Lo[i]!
-    f32[o + 2] = y1Hi[i]!
-    f32[o + 3] = y1Lo[i]!
-    f32[o + 4] = x2Hi[i]!
-    f32[o + 5] = x2Lo[i]!
-    f32[o + 6] = y2Hi[i]!
-    f32[o + 7] = y2Lo[i]!
-    u32[o + 8] = color[i]!
+    f32[o + 0] = x1[i]!
+    f32[o + 1] = y1[i]!
+    f32[o + 2] = x2[i]!
+    f32[o + 3] = y2[i]!
+    u32[o + 4] = color[i]!
   }
   return buf
 }

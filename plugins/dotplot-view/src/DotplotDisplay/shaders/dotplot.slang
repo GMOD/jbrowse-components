@@ -2,43 +2,53 @@
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 // Dotplot line segment renderer. Each instance is a line from (x1,y1) to
-// (x2,y2) in cumulative-bp space; the shader converts to screen pixels using
-// hp-math (hi/lo split for precision at T2T scale) and expands the line into
-// a screen-space quad with rounded caps, matching Canvas2D's lineCap:'round'
-// behavior. The quad is extended by lineWidth/2 along the segment tangent at
-// each end and a capsule SDF in the fragment shader produces circular caps
-// so short alignments render as dots that grow isotropically with lineWidth.
+// (x2,y2) in WINDOW-RELATIVE bp — cumBp minus a per-axis fetch-time base
+// (`baseH`/`baseV` = the viewport-start cumBp captured when the geometry was
+// built). The base keeps on-screen coords small-magnitude, so a single Float32
+// per coord is sub-pixel accurate — no hi/lo hp-math split. (Absolute cumBp is
+// genome-scale, up to Gbp, past Float32's 24-bit mantissa, and would need the
+// split; the base cancels that.) This is viable because the fetch is scoped per
+// h-window and refetches when it moves, and a zoom rebuilds the geometry (so the
+// base is recaptured near the view). Far-off-screen coords — a distant-mate
+// segment on another chromosome, only reachable off-screen — lose absolute
+// precision but only on the clipped-away sliver; visible error stays
+// ~panDistancePx*2^-23.
+//
+// The shader converts window-relative bp to screen px with
+// `bpRel*bpPerPxInv + panPx`, where `panPx = (base - viewBp)/bpPerPx` is folded
+// on the CPU (float64) from a SMALL delta (see GpuDotplotRenderer.render), then
+// expands the line into a screen-space quad with rounded caps, matching
+// Canvas2D's lineCap:'round' behavior. The quad is extended by lineWidth/2 along
+// the segment tangent at each end and a capsule SDF in the fragment shader
+// produces circular caps so short alignments render as dots that grow
+// isotropically with lineWidth.
 //
 // Colors are pre-packed ABGR u32 on the CPU side
 // (dotplotColors.ts#packColor). Blend uses premultiplied alpha
 // (one / one-minus-src-alpha).
 //! targets: wgsl, glsl
 
-import hpmath;
 import colorPack;
 
 struct DotplotInstance {
-  float x1Hi : ATTR0;
-  float x1Lo : ATTR1;
-  float y1Hi : ATTR2;
-  float y1Lo : ATTR3;
-  float x2Hi : ATTR4;
-  float x2Lo : ATTR5;
-  float y2Hi : ATTR6;
-  float y2Lo : ATTR7;
-  uint  color : ATTR8;
+  float x1 : ATTR0;
+  float y1 : ATTR1;
+  float x2 : ATTR2;
+  float y2 : ATTR3;
+  uint  color : ATTR4;
 };
 
+// Per-axis `panPx` + `bpPerPxInv`. `panPx = (base - viewBp)/bpPerPx` (computed
+// float64 on the main thread from a SMALL delta) carries how far the current
+// view has panned from the fetch-time base; `bpRel*bpPerPxInv + panPx`
+// reconstructs the screen position.
 struct Uniforms {
   float2 resolution;
   float  lineWidth;
-  float  viewBpHHi;
-  float  viewBpHLo;
+  float  panPxH;
   float  bpPerPxHInv;
-  float  viewBpVHi;
-  float  viewBpVLo;
+  float  panPxV;
   float  bpPerPxVInv;
-  float  hpZero;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -62,10 +72,10 @@ VsOut vs_main(DotplotInstance inst, uint vid : SV_VertexID) {
   float t = (v == 2u || v == 3u || v == 5u) ? 1.0 : 0.0;
   float side = (v == 1u || v == 4u || v == 5u) ? 1.0 : -1.0;
 
-  float sx1 = hpCornerScreenX(inst.x1Hi, inst.x1Lo, u.viewBpHHi, u.viewBpHLo, u.bpPerPxHInv, u.hpZero);
-  float sy1 = u.resolution.y - hpCornerScreenX(inst.y1Hi, inst.y1Lo, u.viewBpVHi, u.viewBpVLo, u.bpPerPxVInv, u.hpZero);
-  float sx2 = hpCornerScreenX(inst.x2Hi, inst.x2Lo, u.viewBpHHi, u.viewBpHLo, u.bpPerPxHInv, u.hpZero);
-  float sy2 = u.resolution.y - hpCornerScreenX(inst.y2Hi, inst.y2Lo, u.viewBpVHi, u.viewBpVLo, u.bpPerPxVInv, u.hpZero);
+  float sx1 = inst.x1 * u.bpPerPxHInv + u.panPxH;
+  float sy1 = u.resolution.y - (inst.y1 * u.bpPerPxVInv + u.panPxV);
+  float sx2 = inst.x2 * u.bpPerPxHInv + u.panPxH;
+  float sy2 = u.resolution.y - (inst.y2 * u.bpPerPxVInv + u.panPxV);
 
   float dx = sx2 - sx1;
   float dy = sy2 - sy1;
