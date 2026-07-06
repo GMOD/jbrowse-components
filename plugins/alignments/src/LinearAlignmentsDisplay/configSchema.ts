@@ -282,8 +282,19 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       linkedReads: {
         type: 'stringEnum',
-        model: types.enumeration('LinkedReadsMode', ['off', 'normal']),
-        defaultValue: 'off',
+        model: types.enumeration('LinkedReadsMode', [
+          'inherit',
+          'off',
+          'normal',
+        ]),
+        // Sentinel promotable slot (like heightMode): `inherit` is the un-pinned
+        // state, resolving to the session-wide default for this display type,
+        // falling back to `promotedBase` ('off'). Being a sentinel lets a track
+        // pin `off` back over a session-wide `normal` (view-as-pairs) default.
+        // See promotableDefaults.ts.
+        defaultValue: 'inherit',
+        promotedBase: 'off',
+        promotable: true,
         description: 'Linked-read (barcode-chain) layout mode',
       },
       /**
@@ -402,11 +413,17 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       readConnections: {
         type: 'stringEnum',
         model: types.enumeration('ReadConnectionsMode', [
+          'inherit',
           'off',
           'arc',
           'samplot',
         ]),
-        defaultValue: 'off',
+        // Sentinel promotable slot: `inherit` follows the session-wide default
+        // (else `promotedBase` 'off'), and a track can pin `off` back over a
+        // session-wide `arc` default. See promotableDefaults.ts.
+        defaultValue: 'inherit',
+        promotedBase: 'off',
+        promotable: true,
         description:
           'Read-connection rendering mode (mate pairs + split reads)',
       },

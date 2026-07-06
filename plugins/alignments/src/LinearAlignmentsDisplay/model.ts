@@ -327,8 +327,18 @@ export default function stateModelFactory(
       // slots persist across hide/retick (#5591), unlike the old MST props.
       .views(self => ({
         /** #getter */
+        // Resolved through the promotable-slot tiers: a track pins 'off'/'normal'
+        // explicitly, else follows the session-wide default (view-as-pairs),
+        // falling back to 'off'. getConfResolved never returns the 'inherit'
+        // sentinel. See promotableDefaults.ts.
         get linkedReads(): LinkedReadsMode {
-          return getConf(self, 'linkedReads')
+          return getConfResolved<LinkedReadsMode>(self, 'linkedReads')
+        },
+        /** #getter */
+        // true when linked-reads already equals the session-wide default for this
+        // display type (drives the "make default" checkbox)
+        get isLinkedReadsDefault(): boolean {
+          return areSlotsAtSessionDefault(self, ['linkedReads'])
         },
         /** #getter */
         get showBezierConnections(): boolean {
@@ -383,8 +393,18 @@ export default function stateModelFactory(
           return getConf(self, 'arcColorByType')
         },
         /** #getter */
+        // Resolved through the promotable-slot tiers: a track pins
+        // 'off'/'arc'/'samplot' explicitly, else follows the session-wide
+        // default, falling back to 'off'. getConfResolved never returns the
+        // 'inherit' sentinel. See promotableDefaults.ts.
         get readConnections(): ReadConnectionsMode {
-          return getConf(self, 'readConnections')
+          return getConfResolved<ReadConnectionsMode>(self, 'readConnections')
+        },
+        /** #getter */
+        // true when read-connections already equals the session-wide default for
+        // this display type (drives the "make default" checkbox)
+        get isReadConnectionsDefault(): boolean {
+          return areSlotsAtSessionDefault(self, ['readConnections'])
         },
         /** #getter */
         get readConnectionsDown(): boolean {
@@ -2300,6 +2320,17 @@ export default function stateModelFactory(
           /**
            * #action
            */
+          // Promote (or clear) the current read-connections mode as the
+          // session-wide default for this display type. Every alignments track
+          // that hasn't pinned a mode picks it up through the readConnections
+          // getter.
+          setReadConnectionsDefault(promote: boolean) {
+            setSlotsSessionDefault(self, ['readConnections'], promote)
+          },
+
+          /**
+           * #action
+           */
           // Shared below-coverage band orientation for both read-connection
           // arcs and sashimi arcs. Single source of truth — there is no
           // per-feature direction to keep in sync.
@@ -2483,6 +2514,17 @@ export default function stateModelFactory(
               }
               self.invalidateLoadedRegions()
             }
+          },
+
+          /**
+           * #action
+           */
+          // Promote (or clear) the current linked-reads mode (view-as-pairs) as
+          // the session-wide default for this display type. Every alignments
+          // track that hasn't pinned a mode picks it up through the linkedReads
+          // getter (a tier-1 change: the un-pinned tracks refetch).
+          setLinkedReadsDefault(promote: boolean) {
+            setSlotsSessionDefault(self, ['linkedReads'], promote)
           },
 
           /**

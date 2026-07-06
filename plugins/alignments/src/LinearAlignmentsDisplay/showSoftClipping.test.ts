@@ -681,3 +681,129 @@ describe('alignments colorBy session default', () => {
     })
   })
 })
+
+// linkedReads (view-as-pairs) is a sentinel promotable slot: 'inherit' is the
+// un-pinned state (resolving to the session-wide default, else promotedBase
+// 'off'), so a track can pin 'off' back over a session-wide 'normal' default —
+// which a plain slot could not. getConfResolved never returns 'inherit'.
+describe('alignments linkedReads (view as pairs) session default', () => {
+  it('resolves to off by default with no config and no session default', () => {
+    const { display } = createDisplay()
+    expect(display.linkedReads).toBe('off')
+    expect(display.isLinkedReadsDefault).toBe(false)
+  })
+
+  it('follows a session-wide normal (pairs) default when un-pinned', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'linkedReads',
+      'normal',
+    )
+    expect(display.linkedReads).toBe('normal')
+    expect(display.isLinkedReadsDefault).toBe(true)
+    expect(display.sessionDefaultChanges()).toEqual([
+      { path: ['linkedReads'], from: 'off', to: 'normal' },
+    ])
+  })
+
+  it('a track pinned off wins over a session-wide normal default (the sentinel win)', () => {
+    const { session, display } = createDisplay({ linkedReads: 'off' })
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'linkedReads',
+      'normal',
+    )
+    // the whole reason for the sentinel: a track explicitly set to 'off' holds
+    // off even under a session-wide pairs default, and reads as its own choice
+    expect(display.linkedReads).toBe('off')
+    expect(display.sessionDefaultChanges()).toEqual([])
+  })
+
+  it('ignores a malformed (non-enum) session default', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'linkedReads',
+      'wobble',
+    )
+    expect(display.linkedReads).toBe('off')
+  })
+
+  describe('setLinkedReadsDefault', () => {
+    it('promotes the current normal (pairs) mode to the session default', () => {
+      const { session, display } = createDisplay({ linkedReads: 'normal' })
+      expect(display.isLinkedReadsDefault).toBe(false)
+
+      display.setLinkedReadsDefault(true)
+      expect(
+        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
+      ).toBe('normal')
+      expect(display.isLinkedReadsDefault).toBe(true)
+    })
+
+    it('clears the session default when promote is false', () => {
+      const { session, display } = createDisplay({ linkedReads: 'normal' })
+      display.setLinkedReadsDefault(true)
+      expect(display.isLinkedReadsDefault).toBe(true)
+
+      display.setLinkedReadsDefault(false)
+      expect(
+        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
+      ).toBeUndefined()
+    })
+  })
+})
+
+// readConnections (arcs / read cloud) is a sentinel promotable slot too.
+describe('alignments readConnections (arcs) session default', () => {
+  it('resolves to off by default with no config and no session default', () => {
+    const { display } = createDisplay()
+    expect(display.readConnections).toBe('off')
+    expect(display.isReadConnectionsDefault).toBe(false)
+  })
+
+  it('follows a session-wide arc default when un-pinned', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'readConnections',
+      'arc',
+    )
+    expect(display.readConnections).toBe('arc')
+    expect(display.isReadConnectionsDefault).toBe(true)
+    expect(display.sessionDefaultChanges()).toEqual([
+      { path: ['readConnections'], from: 'off', to: 'arc' },
+    ])
+  })
+
+  it('a track pinned off wins over a session-wide arc default', () => {
+    const { session, display } = createDisplay({ readConnections: 'off' })
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'readConnections',
+      'arc',
+    )
+    expect(display.readConnections).toBe('off')
+    expect(display.sessionDefaultChanges()).toEqual([])
+  })
+
+  it('promotes the current mode and clears it', () => {
+    const { session, display } = createDisplay({ readConnections: 'arc' })
+    display.setReadConnectionsDefault(true)
+    expect(
+      session.getDisplayTypeDefault(
+        'LinearAlignmentsDisplay',
+        'readConnections',
+      ),
+    ).toBe('arc')
+
+    display.setReadConnectionsDefault(false)
+    expect(
+      session.getDisplayTypeDefault(
+        'LinearAlignmentsDisplay',
+        'readConnections',
+      ),
+    ).toBeUndefined()
+  })
+})

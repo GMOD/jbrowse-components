@@ -20,6 +20,7 @@ read one section, read [The cascade](#the-cascade).
 | Badge hooks mixin | `plugins/linear-genome-view/src/BaseLinearDisplay/models/PromotableDefaultsMixin.tsx` |
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
 | Adopter: `displayMode` (sentinel) | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts` |
+| Adopter: `heightMode` / `linkedReads` / `readConnections` (sentinel) | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
 | Adopter: `showSoftClipping` / `featureHeight` / `featureSpacing` / `colorBy` (plain) | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
 
 Tests: `displayMode.test.ts`, `showSoftClipping.test.ts` (both under their
@@ -64,17 +65,24 @@ The only real design choice per slot: **is the default value itself pinnable?**
   soft-clipping session default, a track can't hold `false` (writing `false`
   reads as "inherit" → resolves back to `true`). **One-directional pin.**
 
-- **Sentinel** (`displayMode`) — `defaultValue` is a dedicated `'inherit'` enum
-  member (the CSS `inherit` keyword), and a separate `promotedBase` field holds
-  the value it resolves to (`'normal'`, the CSS `initial`). Now **every real
-  value — `promotedBase` included — is pinnable**, so a track *can* hold
-  `displayMode: 'normal'` over a `compact` session default.
+- **Sentinel** (`displayMode`, `heightMode`, `linkedReads`, `readConnections`) —
+  `defaultValue` is a dedicated `'inherit'` enum member (the CSS `inherit`
+  keyword), and a separate `promotedBase` field holds the value it resolves to
+  (the CSS `initial`, e.g. `'normal'` for displayMode, `'off'` for linkedReads).
+  Now **every real value — `promotedBase` included — is pinnable**, so a track
+  *can* hold `displayMode: 'normal'` over a `compact` session default, or
+  `linkedReads: 'off'` over a `normal` (view-as-pairs) session default.
 
-The plain limitation is intentional: the reverse pin doesn't happen in practice
-(nobody sets soft-clipping-on as a default, or pins a number to *exactly* its
-default). Only `displayMode` earned a sentinel, because `normal` is a value users
-genuinely pin. Don't add sentinels reflexively — a boolean that needed one would
-go tri-state (true/false/inherit) and need an inherit control in the UI.
+Reach for a sentinel when the value users promote is the **non-default** and
+they'll plausibly want to opt an individual track back out — the whole point of
+`linkedReads`/`readConnections` is to promote pairs/arcs (non-default) as a
+session default while still letting one track pin `off`. The plain limitation is
+only acceptable when the reverse pin doesn't happen in practice (nobody pins a
+number to *exactly* its default; a `showSoftClipping` track rarely needs to force
+`false` under an on default). Still don't add sentinels reflexively — a *boolean*
+that needed one would go tri-state (true/false/inherit) and need an inherit
+control in the UI; prefer a stringEnum with an explicit `'inherit'` member (the
+sentinel getter never surfaces it — `getConfResolved` returns `promotedBase`).
 
 ## The resolver
 
@@ -141,12 +149,16 @@ degrades to "no promoted defaults", never throws.
 
 ## UI surface
 
-- **Track menu** (per adopter): a radio/checkbox for the value, a "Use X by
+- **Track menu** (per adopter): a radio/checkbox for the value plus a "Use X by
   default for all tracks like this" checkbox (`areSlotsAtSessionDefault` state +
-  `toggleSlotsSessionDefault`), and — only when `isSlotPinned` — a "Follow
-  default" reset item that writes the slot back to its default/sentinel.
-  Selecting the sentinel slot's base value now **pins** it; the reset item is the
-  un-pin path.
+  `toggleSlotsSessionDefault`). Selecting the sentinel slot's base value **pins**
+  it. An explicit **"Follow default" reset item** (shown only when `isSlotPinned`,
+  writes the `'inherit'` sentinel) is *optional* — offer it only when re-inheriting
+  is a distinct user need. `displayMode` folds it into a top "Default (X)" radio;
+  `heightMode`/`linkedReads`/`readConnections` **omit** it — picking a value pins
+  and that's enough (the menu stays short), and an untouched track still inherits.
+  Don't add a reset item reflexively for every sentinel; it doubles the item count
+  per slot.
 - **Badge** (`OverrideBadge.tsx`, track selector): a distinct `SettingsSuggestIcon`
   (vs. the per-track-edit pencil) shows when `sessionDefaultChanges()` is
   non-empty; click opens `TrackSettingsChangesDialog` with a "clear default"

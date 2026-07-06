@@ -1,6 +1,7 @@
 import PolylineIcon from '@mui/icons-material/Polyline'
 
 import { checkboxItem } from './menuHelpers.ts'
+import { promotableToggleItem } from './promotableToggleItem.tsx'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -17,8 +18,12 @@ export const PAIR_OVERLAY_OPTIONS: {
 interface ReadConnectionsModel {
   linkedReads: LinkedReadsMode
   setLinkedReads: (mode: LinkedReadsMode) => void
+  isLinkedReadsDefault: boolean
+  setLinkedReadsDefault: (promote: boolean) => void
   readConnections: ReadConnectionsMode
   setReadConnections: (mode: ReadConnectionsMode) => void
+  isReadConnectionsDefault: boolean
+  setReadConnectionsDefault: (promote: boolean) => void
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
   drawLongRange: boolean
@@ -46,13 +51,20 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
     icon: PolylineIcon,
     type: 'subMenu' as const,
     subMenu: [
-      checkboxItem(
-        'View as pairs / link supplementary alignments',
-        linked,
-        () => {
-          model.setLinkedReads(model.linkedReads === 'off' ? 'normal' : 'off')
+      // Value + "default for all" in one row (see PromotableToggleRow). The
+      // default control appears only while pairs are on, so promoting the base
+      // 'off' — a no-op — is never offered.
+      promotableToggleItem({
+        label: 'View as pairs / link supplementary alignments',
+        checked: linked,
+        onToggle: () => {
+          model.setLinkedReads(linked ? 'off' : 'normal')
         },
-      ),
+        isDefault: model.isLinkedReadsDefault,
+        onToggleDefault: () => {
+          model.setLinkedReadsDefault(!model.isLinkedReadsDefault)
+        },
+      }),
       checkboxItem('Show singletons', model.drawSingletons, () => {
         model.setDrawSingletons(!model.drawSingletons)
       }),
@@ -61,21 +73,36 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
       }),
       // Arcs and read cloud share one band and the read cloud repurposes the
       // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two
-      // overlays are mutually exclusive — enabling one disables the other.
-      checkboxItem('Show read arcs', model.readConnections === 'arc', () => {
-        model.setReadConnections(
-          model.readConnections === 'arc' ? 'off' : 'arc',
-        )
+      // overlays are mutually exclusive — enabling one disables the other. Each
+      // carries its own "default for all" toggle; because the two are mutually
+      // exclusive and the default control only shows while that mode is on,
+      // isReadConnectionsDefault always refers to the visible mode.
+      promotableToggleItem({
+        label: 'Show read arcs',
+        checked: model.readConnections === 'arc',
+        onToggle: () => {
+          model.setReadConnections(
+            model.readConnections === 'arc' ? 'off' : 'arc',
+          )
+        },
+        isDefault: model.isReadConnectionsDefault,
+        onToggleDefault: () => {
+          model.setReadConnectionsDefault(!model.isReadConnectionsDefault)
+        },
       }),
-      checkboxItem(
-        'Show read cloud',
-        model.readConnections === 'samplot',
-        () => {
+      promotableToggleItem({
+        label: 'Show read cloud',
+        checked: model.readConnections === 'samplot',
+        onToggle: () => {
           model.setReadConnections(
             model.readConnections === 'samplot' ? 'off' : 'samplot',
           )
         },
-      ),
+        isDefault: model.isReadConnectionsDefault,
+        onToggleDefault: () => {
+          model.setReadConnectionsDefault(!model.isReadConnectionsDefault)
+        },
+      }),
       ...(overlayActive
         ? [
             checkboxItem(
