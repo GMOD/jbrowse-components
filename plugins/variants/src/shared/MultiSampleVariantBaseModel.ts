@@ -10,7 +10,13 @@ import {
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getEnv,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
   MultiRegionDisplayMixin,
@@ -23,6 +29,7 @@ import {
   clusterLayout,
 } from '@jbrowse/tree-sidebar'
 import deepEqual from 'fast-deep-equal'
+import { autorun } from 'mobx'
 
 import {
   GENOTYPE_SPLITTER,
@@ -1110,6 +1117,19 @@ export default function MultiSampleVariantBaseModelF(
       }))
       .actions(self => ({
         afterAttach() {
+          // Keep scrollTop within the content by construction. A row-height
+          // shrink or a display drag-resize lowers scrollableHeight, and the
+          // matrix display scrolls a canvas with no native overflow container
+          // to self-correct — so re-clamp reactively here rather than making
+          // every geometry-changing action remember to call setScrollTop.
+          addDisposer(
+            self,
+            autorun(() => {
+              if (self.scrollTop > self.scrollableHeight) {
+                self.setScrollTop(self.scrollableHeight)
+              }
+            }),
+          )
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             try {

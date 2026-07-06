@@ -47,18 +47,33 @@ describe('canvas display squeeze-to-display-height', () => {
     expect(display.squeezeScale).toBe(1)
   })
 
-  it('entering squeeze mode resets scroll; leaving it leaves scroll alone', () => {
+  it('entering squeeze mode resets scroll; leaving it re-enables scrolling', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setScrollTop(300)
+    const { display, view } = createDisplay()
+    // Overflow content so there is a real scroll range (scrollTop is clamped to
+    // the content, so a bare display with maxY 0 can't hold a nonzero scroll).
+    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, {
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+    })
+    display.setHeight(97)
+    expect(display.scrollableHeight).toBeGreaterThan(120)
 
+    display.setScrollTop(120)
+    expect(display.scrollTop).toBe(120)
+
+    // Entering squeeze fits the content to the track, so the scroll resets.
     display.setSqueezeToDisplayHeight(true)
     expect(display.squeezeToDisplayHeight).toBe(true)
     expect(display.scrollTop).toBe(0)
 
-    display.setScrollTop(120)
+    // Leaving squeeze restores the overflow and a fresh scroll is honored — the
+    // exit doesn't lock scrolling at the top.
     display.setSqueezeToDisplayHeight(false)
     expect(display.squeezeToDisplayHeight).toBe(false)
+    display.setScrollTop(120)
     expect(display.scrollTop).toBe(120)
   })
 

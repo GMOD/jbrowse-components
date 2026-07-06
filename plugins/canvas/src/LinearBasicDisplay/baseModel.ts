@@ -2013,6 +2013,25 @@ export default function baseStateModelFactory(
               ),
             )
 
+            // Keep scrollTop within the content whenever the scroll extent
+            // shrinks. The morph autorun already clamps on a layout change, but
+            // a manual drag-resize that grows the display (raising the viewport
+            // past the old scroll bottom) has no layout change to trigger it,
+            // and the sticky canvas has no native overflow container to
+            // self-correct. Enforcing the bound reactively here means no
+            // geometry-changing action has to remember to re-clamp.
+            addDisposer(
+              self,
+              autorun(
+                () => {
+                  if (self.scrollTop > self.scrollableHeight) {
+                    self.setScrollTop(self.scrollableHeight)
+                  }
+                },
+                { name: 'CanvasClampScroll' },
+              ),
+            )
+
             // Drop density-derived state when displayedRegions change
             // (chromosome navigation). Both maps are keyed by
             // displayedRegionIndex which gets reused across chromosomes —
