@@ -276,8 +276,30 @@ export default class PluginManager {
    * addTrackType) then by the frozen object itself, so a cache hit can only
    * ever come from this same PluginManager instance and this same track type.
    * See ADR-031.
+   *
+   * The outer level is a `Map` (not `WeakMap`) so `invalidateTrackConfigHydration`
+   * can iterate the per-type sub-caches. Its keys are the registered config
+   * schemas — a bounded set that lives as long as the PluginManager anyway
+   * (already held by the type registries), so this holds no extra lifetime. The
+   * inner level stays a `WeakMap` — that's the one keyed by 10k+ frozen configs
+   * that must stay GC-eligible.
    */
-  trackConfigHydrationCache = new WeakMap<object, WeakMap<object, unknown>>()
+  trackConfigHydrationCache = new Map<object, WeakMap<object, unknown>>()
+
+  /**
+   * Drop the cached hydrated MST node for a frozen track/display config so the
+   * next reference read re-hydrates it fresh. A cached node is a mirror of its
+   * frozen source, but a quick-edit (`setSlot`) mutates it in place; when the
+   * edit is later reverted (a non-admin drops its config delta and the merged
+   * config returns to the base frozen by identity), the stale mutated node must
+   * not be reused. Iterates the per-type sub-caches so the caller need not know
+   * which schema hydrated it; the frozen object is a key in at most one.
+   */
+  invalidateTrackConfigHydration(frozenConfig: object) {
+    for (const subCache of this.trackConfigHydrationCache.values()) {
+      subCache.delete(frozenConfig)
+    }
+  }
 
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin

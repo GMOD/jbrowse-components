@@ -202,9 +202,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           t => t.trackId === trackId,
         )
         if (base) {
-          const schema = pluginManager.getTrackType(base.type as string)
-            .configSchema
-          pluginManager.trackConfigHydrationCache.get(schema)?.delete(base)
+          pluginManager.invalidateTrackConfigHydration(base)
         }
       }
       return {

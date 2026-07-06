@@ -7838,6 +7838,145 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportHeight: 700,
   },
+  // Remaining gallery cards promoted from link-only /gallery/ entries. Each
+  // `url` is the exact session that gallery.ts opened as a live link, so the
+  // figure and the link stay identical; the loading-overlay + display-done
+  // waits gate readiness, so no readyText is needed.
+  {
+    mode: 'url',
+    name: 'gallery/sarscov2_polyprotein',
+    url: '?config=test_data%2Fsars-cov2%2Fconfig.json&session=spec-{"views":[{"assembly":"Wuhan-Hu-1","loc":"NC_045512.2:266-21555","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_genes_with_mature_peptides"]}]}',
+    readyTimeout: 60000,
+    settleMs: 6000,
+    viewportHeight: 420,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/pten_cds',
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"10:87863113-87971930","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_refseq_109_hg38_latest"]}]}',
+    readyTimeout: 60000,
+    settleMs: 8000,
+    viewportHeight: 420,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/gwas_sle_stat4',
+    url: '?config=test_data%2Fconfig_gwas.json&session=spec-{"views":[{"assembly":"hg19","loc":"2:191790000-192120000","type":"LinearGenomeView","tracks":["sle_gwas_ld"]}]}',
+    readyTimeout: 90000,
+    settleMs: 10000,
+    viewportHeight: 500,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/rnaseq_paired',
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"1:1-5000000","type":"LinearGenomeView","tracks":["Pairend_StrandSpecific_51mer_Human_hg19"]}]}',
+    readyTimeout: 90000,
+    settleMs: 12000,
+    viewportHeight: 500,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/fiberseq_magel2',
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"15:23615000-23680000","type":"LinearGenomeView","tracks":[{"trackId":"HG002_WGS_fiberseq.MAGEL2_2","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"modifications"}}}]}]}',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 700,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/directrna_brca1',
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"17:43000000-43200000","type":"LinearGenomeView","tracks":["NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted"]}]}',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 700,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/hg002_dipcall',
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:16900000-16920000","type":"LinearGenomeView","tracks":["hg002_dipcall_dip_vcf_t2t","hg002_dipcall_hap1_t2t","hg002_dipcall_hap2_t2t"]}]}',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 900,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/chromhmm_encode',
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":["broad_chromhmm_multirow_hg19"]}]}',
+    readyTimeout: 90000,
+    settleMs: 12000,
+    viewportHeight: 700,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/scatac_catlas',
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"11:2153000-2172000","type":"LinearGenomeView","tracks":["catlas_scatac_celltypes_hg38"]}]}',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 700,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/nanopore_methylation',
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"20:18,503,000-18,509,000","type":"LinearGenomeView","tracks":[{"trackId":"human_chr20_mod_call_5mC_5hmC_CG_cram","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"methylation"}}}]}]}',
+    readyTimeout: 90000,
+    settleMs: 15000,
+    viewportHeight: 600,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/1000g_trio',
+    // absolute config url (matches the `multisv` spec): the screenshot server
+    // has no /genomes/ path, and a root-relative config 404s against it
+    url: '?config=https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:40484345-40515236","type":"LinearGenomeView","tracks":["1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf","HG02031.final","HG02030.final","HG02032.final"]}]}',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 900,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/human_trio_phased',
+    // narrow window: the whole 1.35Mb region trips the VCF "too many features"
+    // guard; ~50kb renders the phased calls without a force-load
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:163950000-164000000","type":"LinearGenomeView","tracks":["HG02024_VN049_KHVTrio.chr1.vcf"]}]}',
+    readyTimeout: 90000,
+    settleMs: 10000,
+    viewportHeight: 500,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/encode_multibigwig',
+    // ENCODE Broad-Histone H3K27ac for five cell lines, over the HBB locus where
+    // erythroid K562 shows strong signal. Uses the UCSC-hosted encodeDCC bigWigs
+    // (an inline MultiWiggleAdapter) because the original encodeproject.org URLs
+    // now 403.
+    // no per-source `color`: a `#` hex value would be read as a URL fragment and
+    // truncate the session; the multiwiggle palette colors the rows instead
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"sessionTracks":[{"type":"MultiQuantitativeTrack","trackId":"encode_h3k27ac_multi","name":"ENCODE H3K27ac (5 cell lines)","assemblyNames":["hg19"],"adapter":{"type":"MultiWiggleAdapter","subadapters":[{"type":"BigWigAdapter","source":"GM12878","bigWigLocation":{"uri":"https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneGm12878H3k27acStdSig.bigWig","locationType":"UriLocation"}},{"type":"BigWigAdapter","source":"K562","bigWigLocation":{"uri":"https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneK562H3k27acStdSig.bigWig","locationType":"UriLocation"}},{"type":"BigWigAdapter","source":"H1-hESC","bigWigLocation":{"uri":"https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneH1hescH3k27acStdSig.bigWig","locationType":"UriLocation"}},{"type":"BigWigAdapter","source":"NHLF","bigWigLocation":{"uri":"https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k27acStdSig.bigWig","locationType":"UriLocation"}},{"type":"BigWigAdapter","source":"HSMM","bigWigLocation":{"uri":"https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k27acStdSig.bigWig","locationType":"UriLocation"}}]}}],"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"11:5220000-5320000","tracks":[{"trackId":"encode_h3k27ac_multi","displaySnapshot":{"type":"MultiLinearWiggleDisplay","defaultRendering":"multirowxy","height":400}}]}]}',
+    readyTimeout: 90000,
+    settleMs: 12000,
+    viewportHeight: 550,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/celegans_26way',
+    // no rowHeight: the slot defaults to 0 (fit-to-display-height), so all 26
+    // species fit the viewport with no scroll
+    url: '?config=https://jbrowse.org/demos/ce/config.json&session=spec-{"views":[{"assembly":"ce11","loc":"chrI:2998500-3001800","type":"LinearGenomeView","tracks":[{"trackId":"ce11.26way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true}}]}]}',
+    readyTimeout: 180000,
+    settleMs: 15000,
+    viewportHeight: 500,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/cactus_447way',
+    // ~5kb: a 447-way MAF over the full BRCA1 gene trips the "too much data"
+    // guard, so zoom to a slice that auto-loads. rowHeight defaults to 0
+    // (fit-to-display-height), fitting the 447 species into the display height.
+    url: '?config=https://jbrowse.org/ucsc/hg38/config.json&session=spec-{"views":[{"assembly":"hg38","loc":"chr17:43050000-43055000","type":"LinearGenomeView","tracks":[{"trackId":"hg38-cactus447way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true}}]}]}',
+    readyTimeout: 180000,
+    settleMs: 15000,
+    viewportHeight: 900,
+  },
   // products/jbrowse-img/README.md example images, rendered by the jb2export
   // CLI (see CliSpec above). Ported 1:1 from the old
   // render-comparative-examples.sh so the args stay in sync with the README's

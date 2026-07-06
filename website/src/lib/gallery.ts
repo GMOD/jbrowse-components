@@ -182,18 +182,21 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Paired-end stranded RNA-seq',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"1:1-5000000","type":"LinearGenomeView","tracks":["Pairend_StrandSpecific_51mer_Human_hg19"]}]}',
+        spec: 'gallery/rnaseq_paired',
+        description:
+          'Paired-end stranded RNA-seq: strand-colored coverage and reads with splice-junction arcs.',
       },
       {
         label: 'Fiber-seq single-molecule methylation (MAGEL2)',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"15:23615000-23680000","type":"LinearGenomeView","tracks":[{"trackId":"HG002_WGS_fiberseq.MAGEL2_2","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"modifications"}}}]}]}',
+        spec: 'gallery/fiberseq_magel2',
+        description:
+          'Fiber-seq single-molecule m6A footprints across MAGEL2, each read colored per-base by modification.',
       },
       {
         label: 'Direct RNA-seq nanopore modifications (BRCA1)',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"17:43000000-43200000","type":"LinearGenomeView","tracks":["NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted"]}]}',
+        spec: 'gallery/directrna_brca1',
+        description:
+          'Nanopore direct-RNA reads over BRCA1 with per-base modification calls.',
       },
     ],
   },
@@ -203,10 +206,9 @@ export const gallerySections: readonly GallerySection[] = [
     items: [
       {
         label: 'Nanopore methylation / modifications coloring',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=share-XyL52LPDoO&password=861E4',
+        spec: 'gallery/nanopore_methylation',
         description:
-          'Human nanopore reads colored by base modification (methylation) calls.',
+          'Human nanopore reads colored by base-modification (methylation) calls over a chr20 CpG island.',
       },
       {
         label: 'COLO829 tumor nanopore methylation',
@@ -231,8 +233,9 @@ export const gallerySections: readonly GallerySection[] = [
     items: [
       {
         label: '1000 genomes extended trio',
-        session:
-          '?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-SUK-mntGyB&password=eQF0F',
+        spec: 'gallery/1000g_trio',
+        description:
+          'A 1000 Genomes trio (mother, child, father) coverage beneath the ensemble structural-variant VCF.',
       },
       {
         label: 'Tetraploid potato multi-sample VCF',
@@ -240,13 +243,14 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Human trio phased VCF rendering',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=share-vQBatl-Of9&password=Mhl6F',
+        spec: 'gallery/human_trio_phased',
+        description: 'Phased trio VCF calls from a KHV trio on chr1.',
       },
       {
         label: 'HG002 diploid assembly (dipcall hap1 + hap2 vs GRCh38)',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:16900000-16920000","type":"LinearGenomeView","tracks":["hg002_dipcall_dip_vcf_t2t","hg002_dipcall_hap1_t2t","hg002_dipcall_hap2_t2t"]}]}',
+        spec: 'gallery/hg002_dipcall',
+        description:
+          'HG002 dipcall diploid assembly: hap1 and hap2 aligned to GRCh38 under the combined variant calls.',
       },
       {
         label: 'GWAS LocusZoom-style LD coloring (GIANT BMI, FTO locus)',
@@ -256,8 +260,9 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'GWAS LocusZoom-style LD coloring (SLE, STAT4 locus)',
-        session:
-          '?config=test_data%2Fconfig_gwas.json&session=spec-{"views":[{"assembly":"hg19","loc":"2:191790000-192120000","type":"LinearGenomeView","tracks":["sle_gwas_ld"]}]}',
+        spec: 'gallery/gwas_sle_stat4',
+        description:
+          'An SLE GWAS Manhattan plot with LocusZoom-style LD coloring around the STAT4 locus.',
       },
     ],
   },
@@ -292,8 +297,9 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'ChromHMM states (9 ENCODE cell types, β-globin)',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":["broad_chromhmm_multirow_hg19"]}]}',
+        spec: 'gallery/chromhmm_encode',
+        description:
+          'ChromHMM chromatin states for 9 ENCODE cell types across the β-globin locus.',
       },
       {
         label: 'ChromHMM states (Roadmap, 127 epigenomes)',
@@ -302,13 +308,15 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Single-cell ATAC by cell type (CATlas, INS locus)',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"11:2153000-2172000","type":"LinearGenomeView","tracks":["catlas_scatac_celltypes_hg38"]}]}',
+        spec: 'gallery/scatac_catlas',
+        description:
+          'Single-cell ATAC accessibility by cell type (CATlas) around the INS locus, one coverage row per cell type.',
       },
       {
-        label: 'ENCODE multi-bigwig',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=share-Pw7kOjagSF&password=e0SuE',
+        label: 'ENCODE H3K27ac multi-wiggle (5 cell lines)',
+        spec: 'gallery/encode_multibigwig',
+        description:
+          'ENCODE H3K27ac for five cell lines in one multi-wiggle track; K562 marks the active β-globin locus.',
       },
     ],
   },
@@ -329,8 +337,9 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'SARS-CoV2 polyprotein (ORF1ab mature peptides)',
-        session:
-          '?config=test_data%2Fsars-cov2%2Fconfig.json&session=spec-{"views":[{"assembly":"Wuhan-Hu-1","loc":"NC_045512.2:266-21555","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_genes_with_mature_peptides"]}]}',
+        spec: 'gallery/sarscov2_polyprotein',
+        description:
+          'The SARS-CoV-2 ORF1ab polyprotein colored by CDS frame and cleaved into its mature peptides.',
       },
       {
         label: 'Enterovirus D polyprotein (mature peptides)',
@@ -352,8 +361,8 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Human PTEN gene (color by CDS frame)',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"10:87863113-87971930","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_refseq_109_hg38_latest"]}]}',
+        spec: 'gallery/pten_cds',
+        description: 'The human PTEN gene colored by CDS frame.',
       },
       {
         label: 'Maize transposable elements (LTR subparts)',
@@ -367,13 +376,15 @@ export const gallerySections: readonly GallerySection[] = [
     items: [
       {
         label: 'hg38 447-way Cactus alignment (BRCA1)',
-        session:
-          '?config=https://jbrowse.org/ucsc/hg38/config.json&session=spec-{"views":[{"assembly":"hg38","loc":"chr17:43044000-43126000","type":"LinearGenomeView","tracks":["hg38-cactus447way"]}]}',
+        spec: 'gallery/cactus_447way',
+        description:
+          'The UCSC 447-way Cactus mammalian alignment over BRCA1, all species fit to the display height with a conservation track.',
       },
       {
         label: 'C. elegans 26-way alignment (conservation band)',
-        session:
-          '?config=https://jbrowse.org/demos/ce/config.json&session=spec-{"views":[{"assembly":"ce11","loc":"chrI:2998500-3001800","type":"LinearGenomeView","tracks":[{"trackId":"ce11.26way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true,"rowHeight":8}}]}]}',
+        spec: 'gallery/celegans_26way',
+        description:
+          'A 26-way whole-genome alignment across Caenorhabditis species with a conservation band.',
       },
     ],
   },
