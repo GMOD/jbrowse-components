@@ -571,6 +571,41 @@ function hpyloriSyntenyWithGenes() {
   })
 }
 
+// Human (hg38) vs chimp (panTro6) synteny at LMNB2, from the hosted UCSC
+// hg38->panTro6 liftOver PIF + RefSeq genes on jbrowse.org/ucsc.
+const HG38_PANTRO6_CONFIG = 'test_data/hg38_panTro6_synteny/config.json'
+
+// A hosted liftOver chain is one chromosome-scale block; drawn zoomed in it
+// exercises the oversized-block viewport clip (the worker trims the block to the
+// visible slice, else the ribbon would vanish). The window holds LMNB2 —
+// annotated on both sides — and three human/chimp indels (628/584/281 bp):
+// "Transparent indels" (cigarMode 'matches') shows them as see-through gaps,
+// "Colored indels" ('full') as painted wedges.
+function hg38ChimpSynteny(cigarMode: 'matches' | 'full') {
+  return sessionSpec(HG38_PANTRO6_CONFIG, {
+    views: [
+      {
+        type: 'LinearSyntenyView',
+        cigarMode,
+        drawCurves: true,
+        tracks: [['hg38_panTro6_synteny']],
+        views: [
+          {
+            assembly: 'hg38',
+            loc: 'chr19:2,424,000-2,442,000',
+            tracks: ['hg38-genes'],
+          },
+          {
+            assembly: 'panTro6',
+            loc: 'chr19:2,331,500-2,349,800',
+            tracks: ['panTro6-genes'],
+          },
+        ],
+      },
+    ],
+  })
+}
+
 // S3-hosted yeast comparison (S. cerevisiae R64 vs the YJM1447 strain), used by
 // the dotplot/synteny CliSpecs below.
 const YEAST =
@@ -923,6 +958,32 @@ const jbrowseImgSpecs: CliSpec[] = [
 ]
 
 export const specs: ScreenshotSpec[] = [
+  // Human vs chimp synteny (hosted liftOver chain, zoomed to LMNB2) rendered two
+  // ways: "Transparent indels" leaves the 3 indels as see-through gaps in the
+  // ribbon, "Colored indels" paints them. Doubles as the regression guard for
+  // the oversized-block viewport clip (a chromosome-scale block rendering at
+  // high zoom instead of a blank canvas).
+  {
+    mode: 'url',
+    name: 'synteny_human_chimp_transparent',
+    url: hg38ChimpSynteny('matches'),
+    viewportWidth: 1200,
+    viewportHeight: 720,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 5000,
+  },
+  {
+    mode: 'url',
+    name: 'synteny_human_chimp_colored',
+    url: hg38ChimpSynteny('full'),
+    viewportWidth: 1200,
+    viewportHeight: 720,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 5000,
+  },
+
   {
     mode: 'url',
     name: 'volvox_alignments',
