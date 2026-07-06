@@ -42,6 +42,8 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "ncbi_genes_enterovirus_d-LinearBasicDisplay",
+          "height": 250,
+          "subfeatureLabels": "overlay",
           "labels": {
             "name": "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')"
           }

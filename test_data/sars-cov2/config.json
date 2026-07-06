@@ -57,6 +57,8 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "ncbi_genes_with_mature_peptides-LinearBasicDisplay",
+          "height": 500,
+          "subfeatureLabels": "overlay",
           "labels": {
             "name": "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')"
           }
