@@ -63,13 +63,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   const theme = useTheme()
   const contrastMap = useMemo(
-    () =>
-      getMismatchContrastMap(
-        model.colorBy.type,
-        model.showModifications,
-        theme,
-      ),
-    [theme, model.colorBy.type, model.showModifications],
+    () => getMismatchContrastMap(model.showModifications, theme),
+    [theme, model.showModifications],
   )
 
   const {

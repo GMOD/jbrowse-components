@@ -92,11 +92,7 @@ export async function renderSvg(
     showMismatches: model.showMismatches,
     scrollTop: 0,
   })
-  const contrastMap = getMismatchContrastMap(
-    model.colorBy.type,
-    model.showModifications,
-    theme,
-  )
+  const contrastMap = getMismatchContrastMap(model.showModifications, theme)
   const pileupNode = paintLayer(canvasWidth, displayHeight, opts, ctx => {
     drawAlignmentsToCtx(
       ctx,

@@ -97,18 +97,17 @@ export function getContrastBaseMap(theme: Theme) {
   )
 }
 
-// Returns contrast colors for mismatch base letters when they are meaningful:
-// normal colorBy (reads are grey, mismatch rects use base colors) and
-// modifications hidden (else rects are muted grey, not the base color).
-// Empty map otherwise → drawAlignmentLabels falls back to black.
+// Returns contrast colors for mismatch/softclip/per-base letters. The rects
+// under these letters are always drawn in the base palette (baseColors.ts),
+// independent of colorBy.type — only showModifications mutes them to a uniform
+// grey. So contrast text is meaningful in every color mode except when
+// modifications collapse the rects to grey, where black reads best and the
+// empty map makes drawAlignmentLabels fall back to it.
 export function getMismatchContrastMap(
-  colorByType: string,
   showModifications: boolean,
   theme: Theme,
 ): Record<string, string> {
-  return colorByType === 'normal' && !showModifications
-    ? getContrastBaseMap(theme)
-    : {}
+  return showModifications ? {} : getContrastBaseMap(theme)
 }
 
 function isTypedArray(
