@@ -68,6 +68,7 @@
           "type": "LinearManhattanDisplay",
           "height": 250,
           "colorBy": "ld",
+          "scatterPointSize": 8,
           "ldAdapter": {
             "type": "PlinkLDTabixAdapter",
             "ldLocation": {
