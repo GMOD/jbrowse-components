@@ -1,5 +1,3 @@
-import { NO_CIGAR_OPS } from '@jbrowse/synteny-core'
-
 import { KIND_CIGAR_D, KIND_CIGAR_I, KIND_CIGAR_N } from './syntenyColors.ts'
 
 import type { CigarOpPresence } from '@jbrowse/synteny-core'
@@ -26,5 +24,5 @@ export function computePresentCigarKinds(
       N = true
     }
   }
-  return I || D || N ? { I, D, N } : NO_CIGAR_OPS
+  return { I, D, N }
 }

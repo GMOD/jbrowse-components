@@ -100,18 +100,6 @@ function indelChips(
   return chips
 }
 
-// Point-based views (dotplot) paint each alignment a single flat color and never
-// draw CIGAR ops, so their default/strand legends drop the indel chips the
-// ribbon-based synteny view shows. The dotplot default is plain black (its
-// conventional point color), not the ribbon's red match.
-const DOTPLOT_DEFAULT_CHIPS: ColorChip[] = [
-  { color: '#000', label: 'alignment' },
-]
-const DOTPLOT_STRAND_CHIPS: ColorChip[] = [
-  { color: posColor, label: 'forward' },
-  { color: negColor, label: 'reverse' },
-]
-
 // Short human-readable title for the floating legend header.
 export const colorByShortLabel: Record<SyntenyColorBy, string> = {
   default: 'Default',
@@ -137,6 +125,8 @@ export function getColorBySwatch(
     cigarOps = DEFAULT_CIGAR_OPS,
   }: { pointBased?: boolean; cigarOps?: CigarOpPresence } = {},
 ): ColorBySwatchSpec | undefined {
+  // dotplot paints flat points and never draws CIGAR ops
+  const ops = pointBased ? NO_CIGAR_OPS : cigarOps
   switch (colorBy) {
     case 'identity':
     case 'meanQueryIdentity':
@@ -146,22 +136,22 @@ export function getColorBySwatch(
     case 'strand':
       return {
         kind: 'chips',
-        chips: pointBased
-          ? DOTPLOT_STRAND_CHIPS
-          : [
-              { color: posColor, label: 'forward' },
-              { color: negColor, label: 'reverse' },
-              ...indelChips(strandCigar, cigarOps),
-            ],
+        chips: [
+          { color: posColor, label: 'forward' },
+          { color: negColor, label: 'reverse' },
+          ...indelChips(strandCigar, ops),
+        ],
       }
     case 'default':
       return {
         kind: 'chips',
+        // dotplot draws each alignment as one flat black point, not the
+        // ribbon's red match block
         chips: pointBased
-          ? DOTPLOT_DEFAULT_CHIPS
+          ? [{ color: '#000', label: 'alignment' }]
           : [
               { color: defaultCigar.M, label: 'match' },
-              ...indelChips(defaultCigar, cigarOps),
+              ...indelChips(defaultCigar, ops),
             ],
       }
     case 'query':
