@@ -1,4 +1,3 @@
-import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -130,7 +129,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
       }
       const fillPass = params.drawCurves ? PASS_FILL_CURVE : PASS_FILL_STRAIGHT
       this.ensureUploaded(key, fillPass, data)
-      this.writeUniforms(params, state.overdrawPx)
+      this.writeUniforms(params, state.overdrawPx, data)
       this.hal.drawPass(fillPass, key)
       if (params.clickedFeatureId > 0) {
         // Edge pass only outlines the clicked feature's BASE silhouette
@@ -172,7 +171,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
   // patches only the color lane; a drawCurves toggle returns the bytes as-is.
   private getInterleaved(key: number, data: SyntenyInstanceData): ArrayBuffer {
     const cached = this.interleaveCache.get(key)
-    if (cached?.geomToken === data.bp1Hi) {
+    if (cached?.geomToken === data.bp1) {
       if (cached.colors !== data.colors) {
         patchInstanceColors(cached.buf, data.colors)
         cached.colors = data.colors
@@ -181,7 +180,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     }
     const buf = interleaveInstances(data)
     this.interleaveCache.set(key, {
-      geomToken: data.bp1Hi,
+      geomToken: data.bp1,
       colors: data.colors,
       buf,
     })
@@ -212,25 +211,26 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     this.hal.dispose()
   }
 
-  private writeUniforms(p: SyntenyTrackRenderParams, overdrawPx: number) {
+  private writeUniforms(
+    p: SyntenyTrackRenderParams,
+    overdrawPx: number,
+    data: SyntenyInstanceData,
+  ) {
     const dpr = getDpr()
     const u = this.uniformF32
     u[U.resolution] = this.canvas.width / dpr
     u[U.resolution + 1] = this.canvas.height / dpr
     u[U.height] = p.height
-    // SYNC: matches viewBp{0,1} in syntenyPickEngine.computeTransform and the
-    // Uniforms struct in syntenyTypes.slang. Padded-bp at canvas left
-    // (offsetPx * bpPerPx); hi/lo split for hp-math precision in the shader.
-    // See ADR-018.
-    const [vb0Hi, vb0Lo] = splitPositionWithFrac(p.offsetPx0 * p.bpPerPx0)
-    const [vb1Hi, vb1Lo] = splitPositionWithFrac(p.offsetPx1 * p.bpPerPx1)
-    u[U.viewBp0Hi] = vb0Hi
-    u[U.viewBp0Lo] = vb0Lo
+    // panPx = (base - offsetPx*bpPerPx)/bpPerPx: how far the current view has
+    // panned from the fetch-time base, in px. Computed float64 from a SMALL
+    // numerator (base ≈ the fetch-time viewport start), so no genome-scale
+    // magnitude is multiplied by the rounded inv — that's what lets a single
+    // Float32 corner stay sub-pixel. SYNC: matches computeTransform in
+    // syntenyPickEngine and computeCorners in syntenyTypes.slang.
+    u[U.panPx0] = (data.base0 - p.offsetPx0 * p.bpPerPx0) / p.bpPerPx0
     u[U.bpPerPxInv0] = 1 / p.bpPerPx0
-    u[U.viewBp1Hi] = vb1Hi
-    u[U.viewBp1Lo] = vb1Lo
+    u[U.panPx1] = (data.base1 - p.offsetPx1 * p.bpPerPx1) / p.bpPerPx1
     u[U.bpPerPxInv1] = 1 / p.bpPerPx1
-    u[U.hpZero] = 0
     u[U.overdrawPx] = overdrawPx
     u[U.minAlignmentLength] = p.minAlignmentLength
     u[U.alpha] = p.alpha

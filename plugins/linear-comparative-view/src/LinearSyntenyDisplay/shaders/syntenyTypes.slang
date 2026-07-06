@@ -1,8 +1,16 @@
 // Shared per-instance layout + uniform block for fill/edge synteny shaders.
-// Each instance is one parallelogram (or one curved ribbon strip): four
-// corner positions in cumulative-bp space (split hi/lo for hp-math precision).
-// Corners 1/2 belong to the top view (view 0), corners 3/4 to the bottom view
-// (view 1).
+// Each instance is one parallelogram (or one curved ribbon strip): four corner
+// positions in WINDOW-RELATIVE bp — cumBp minus a per-axis fetch-time base
+// (`base0`/`base1` = offsetPx*bpPerPx at fetch). Corners 1/2 belong to the top
+// view (view 0), corners 3/4 to the bottom view (view 1).
+//
+// The base keeps on-screen corners small-magnitude, so a single Float32 per
+// corner is sub-pixel accurate — no hi/lo hp-math split. (Absolute cumBp is
+// genome-scale, up to Gbp, and would need the split; the base cancels that.)
+// This is viable because the fetch is now scoped per window and refetches when
+// the window moves, so the base stays near the view. Far-off-screen corners
+// (distant-mate diagonals) lose absolute precision but only on the clipped-away
+// sliver — visible error stays ~viewportWidth*2^-23.
 //
 // Curve mode and straight-line mode live in separate shader files
 // (syntenyFill{Curve,Straight}.slang, syntenyEdge{Curve,Straight}.slang) so
@@ -10,26 +18,20 @@
 // dispatches the appropriate pass per track. This module is mode-agnostic.
 module syntenyTypes;
 
-import hpmath;
-
 public struct Instance {
-  public float bp1Hi : ATTR0;
-  public float bp1Lo : ATTR1;
-  public float bp2Hi : ATTR2;
-  public float bp2Lo : ATTR3;
-  public float bp3Hi : ATTR4;
-  public float bp3Lo : ATTR5;
-  public float bp4Hi : ATTR6;
-  public float bp4Lo : ATTR7;
-  public uint  color             : ATTR8;
-  public float featureId         : ATTR9;
-  public float alignmentLength   : ATTR10;
+  public float bp1               : ATTR0;
+  public float bp2               : ATTR1;
+  public float bp3               : ATTR2;
+  public float bp4               : ATTR3;
+  public uint  color             : ATTR4;
+  public float featureId         : ATTR5;
+  public float alignmentLength   : ATTR6;
   // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyColors.ts).
   // The fill fragment uses it only for shading: CIGAR indel tiles get the white
   // pre-blend in shadeFill and skip the density width-fade in fillCoverage. The
   // coverage/AA path is identical to BASE (smooth analytic bezier edge), so
   // indels aren't faceted or aliased.
-  public float kind              : ATTR11;
+  public float kind              : ATTR7;
 };
 
 // First CIGAR kind. Kinds 0..2 are whole-feature (KIND_BASE/BASE_HIDDEN/MARKER);
@@ -58,20 +60,19 @@ public bool isMarkerKind(float kind) { return abs(kind - KIND_MARKER) < 0.5; }
 // faintly locatable; dense overlaps still read brighter via alpha blend.
 public static const float WIDTH_FADE_FLOOR = 0.15;
 
-// Per-view hp-math origin (`viewBp = offsetPx * bpPerPx`, hi/lo split) +
-// `bpPerPxInv`. The view origin reconstructs LGV-aligned screen positions
-// directly (math derivation in hpCornerScreenX). `hpZero` is the sentinel
-// passed through to hpmath helpers (always 0 from JS).
+// Per-view `panPx` + `bpPerPxInv`. `panPx = (base - offsetPx*bpPerPx)/bpPerPx`
+// (computed float64 on the main thread from a SMALL delta — see
+// GpuSyntenyRenderer.writeUniforms) carries how far the current view has panned
+// from the fetch-time base, so `bpRel*bpPerPxInv + panPx` reconstructs the
+// LGV-aligned screen X. The delta is bounded by the pan buffer, so panPx is a
+// small, exactly-representable Float32.
 public struct Uniforms {
   public float2 resolution;
   public float  height;
-  public float  viewBp0Hi;
-  public float  viewBp0Lo;
+  public float  panPx0;
   public float  bpPerPxInv0;
-  public float  viewBp1Hi;
-  public float  viewBp1Lo;
+  public float  panPx1;
   public float  bpPerPxInv1;
-  public float  hpZero;
   public float  overdrawPx;
   public float  minAlignmentLength;
   public float  alpha;
@@ -85,16 +86,15 @@ public struct Corners {
   public float x1, x2, x3, x4;
 };
 
+// screenX = (cumBp - offsetPx*bpPerPx)/bpPerPx, with cumBp = bpRel + base folded
+// so only small magnitudes reach Float32: bpRel*inv (on-screen bpRel is small)
+// plus panPx = (base - offsetPx*bpPerPx)*inv.
 public Corners computeCorners(Instance inst, Uniforms u) {
   Corners c;
-  c.x1 = hpCornerScreenX(inst.bp1Hi, inst.bp1Lo, u.viewBp0Hi, u.viewBp0Lo,
-                         u.bpPerPxInv0, u.hpZero);
-  c.x2 = hpCornerScreenX(inst.bp2Hi, inst.bp2Lo, u.viewBp0Hi, u.viewBp0Lo,
-                         u.bpPerPxInv0, u.hpZero);
-  c.x3 = hpCornerScreenX(inst.bp3Hi, inst.bp3Lo, u.viewBp1Hi, u.viewBp1Lo,
-                         u.bpPerPxInv1, u.hpZero);
-  c.x4 = hpCornerScreenX(inst.bp4Hi, inst.bp4Lo, u.viewBp1Hi, u.viewBp1Lo,
-                         u.bpPerPxInv1, u.hpZero);
+  c.x1 = inst.bp1 * u.bpPerPxInv0 + u.panPx0;
+  c.x2 = inst.bp2 * u.bpPerPxInv0 + u.panPx0;
+  c.x3 = inst.bp3 * u.bpPerPxInv1 + u.panPx1;
+  c.x4 = inst.bp4 * u.bpPerPxInv1 + u.panPx1;
   return c;
 }
 

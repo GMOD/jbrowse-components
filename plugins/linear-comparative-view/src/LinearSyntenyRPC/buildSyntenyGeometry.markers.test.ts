@@ -40,15 +40,16 @@ test('wide feature emits floor(width/20)+1 evenly-spaced zero-width markers', ()
   // Each marker is a vertical tick: a point on each axis (top span and bottom
   // span both zero).
   for (const i of markers) {
-    expect(g.bp1Hi[i]! + g.bp1Lo[i]!).toBe(g.bp2Hi[i]! + g.bp2Lo[i]!)
-    expect(g.bp3Hi[i]! + g.bp3Lo[i]!).toBe(g.bp4Hi[i]! + g.bp4Lo[i]!)
+    expect(g.bp1[i]!).toBe(g.bp2[i]!)
+    expect(g.bp3[i]!).toBe(g.bp4[i]!)
   }
 
-  // Endpoints land exactly on the feature corners (t=0 and t=1).
+  // Endpoints land exactly on the feature corners (t=0 and t=1). base0 == 0
+  // here (viewOff0 == 0), so window-relative bp equals cumBp.
   const first = markers[0]!
   const last = markers.at(-1)!
-  expect(g.bp1Hi[first]! + g.bp1Lo[first]!).toBe(0)
-  expect(g.bp1Hi[last]! + g.bp1Lo[last]!).toBe(width)
+  expect(g.bp1[first]!).toBe(0)
+  expect(g.bp1[last]!).toBe(width)
 })
 
 test('feature narrower than the 30px average-width gate emits no markers', () => {

@@ -32,9 +32,10 @@ function build(drawCIGARMatchesOnly: boolean) {
 }
 
 // Top-axis [start, end] bp interval of instance i (bp1 = top-left corner,
-// bp2 = top-right corner; see addInstance corner order).
+// bp2 = top-right corner; see addInstance corner order). Corners are window-
+// relative but base0 == 0 here (viewOff0 == 0), so they equal cumBp.
 function topSpan(g: ReturnType<typeof build>, i: number) {
-  return [g.bp1Hi[i]! + g.bp1Lo[i]!, g.bp2Hi[i]! + g.bp2Lo[i]!] as const
+  return [g.bp1[i]! + g.base0, g.bp2[i]! + g.base0] as const
 }
 
 function covers(span: readonly [number, number], bp: number) {

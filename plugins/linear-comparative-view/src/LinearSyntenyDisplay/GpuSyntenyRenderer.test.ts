@@ -1,6 +1,7 @@
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { GpuSyntenyRenderer, SYNTENY_PASSES } from './GpuSyntenyRenderer.ts'
+import { UNIFORM_OFFSET_F32 as U } from './shaders/syntenyFillStraight.generated.ts'
 
 import type {
   SyntenyRenderState,
@@ -13,17 +14,15 @@ function makeMockCanvas(width = 800, height = 100): HTMLCanvasElement {
 }
 
 function makeInstanceData(count = 1): SyntenyInstanceData {
-  const z = () => new Float32Array(count)
-  const lo = (v: number) => new Float32Array(count).fill(v)
+  const bp = (v: number) => new Float32Array(count).fill(v)
   return {
-    bp1Hi: z(),
-    bp1Lo: lo(10),
-    bp2Hi: z(),
-    bp2Lo: lo(100),
-    bp3Hi: z(),
-    bp3Lo: lo(110),
-    bp4Hi: z(),
-    bp4Lo: lo(20),
+    // window-relative bp; base0/base1 = 0 so these equal cumBp
+    bp1: bp(10),
+    bp2: bp(100),
+    bp3: bp(110),
+    bp4: bp(20),
+    base0: 0,
+    base1: 0,
     colors: new Uint32Array(count).fill(0x80808080),
     kinds: new Uint8Array(count),
     instanceFeatureIdx: new Uint32Array(count),
@@ -118,5 +117,42 @@ describe('GpuSyntenyRenderer CPU pick', () => {
     renderer.uploadGeometry(0, makeInstanceData())
 
     expect(renderer.pick(50, 9999, state)).toBeUndefined()
+  })
+})
+
+describe('GpuSyntenyRenderer window-relative uniforms', () => {
+  beforeEach(() => {
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
+  })
+
+  // The panPx uniform is the whole point of the window-relative scheme: it
+  // folds the genome-scale (base - viewportStart) delta on the CPU (float64) so
+  // a single Float32 corner projects correctly. base0/base1 = 0 in the other
+  // fixtures, so this is the only test that exercises a non-trivial base.
+  test('panPx projects a genome-scale corner to the correct screen X', () => {
+    const hal = new MockHal(SYNTENY_PASSES)
+    const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas(800, 100))
+    const base = 1.5e9 // fetch-time base cumBp, past Float32 exact-int
+    const data: SyntenyInstanceData = {
+      ...makeInstanceData(1),
+      base0: base,
+      base1: base,
+      bp1: Float32Array.from([300]), // corner at cumBp = base + 300
+    }
+    renderer.uploadGeometry(0, data)
+    // Render with the view panned 500px past the fetch base (bpPerPx = 1).
+    const offsetPx = base - 500
+    renderer.render(
+      makeState([[0, makeParams({ offsetPx0: offsetPx, offsetPx1: offsetPx })]]),
+    )
+    const u = hal.getLastUniformsF32()!
+    // panPx0 = (base - offsetPx*bpPerPx)/bpPerPx = 500
+    expect(u[U.panPx0]!).toBeCloseTo(500, 2)
+    // screenX = bp1*bpPerPxInv0 + panPx0 == true (cumBp/bpPerPx - offsetPx)
+    const screenX = data.bp1[0]! * u[U.bpPerPxInv0]! + u[U.panPx0]!
+    expect(screenX).toBeCloseTo((base + 300) / 1 - offsetPx, 2)
   })
 })

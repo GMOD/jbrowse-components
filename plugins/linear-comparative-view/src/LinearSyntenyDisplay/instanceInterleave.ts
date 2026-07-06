@@ -8,14 +8,10 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 
 export function interleaveInstances(data: SyntenyInstanceData) {
   const {
-    bp1Hi,
-    bp1Lo,
-    bp2Hi,
-    bp2Lo,
-    bp3Hi,
-    bp3Lo,
-    bp4Hi,
-    bp4Lo,
+    bp1,
+    bp2,
+    bp3,
+    bp4,
     colors,
     kinds,
     instanceFeatureIdx,
@@ -28,14 +24,10 @@ export function interleaveInstances(data: SyntenyInstanceData) {
 
   for (let i = 0; i < n; i++) {
     const off = i * INSTANCE_STRIDE_F32
-    f[off + FIELD_OFFSET_F32.bp1Hi] = bp1Hi[i]!
-    f[off + FIELD_OFFSET_F32.bp1Lo] = bp1Lo[i]!
-    f[off + FIELD_OFFSET_F32.bp2Hi] = bp2Hi[i]!
-    f[off + FIELD_OFFSET_F32.bp2Lo] = bp2Lo[i]!
-    f[off + FIELD_OFFSET_F32.bp3Hi] = bp3Hi[i]!
-    f[off + FIELD_OFFSET_F32.bp3Lo] = bp3Lo[i]!
-    f[off + FIELD_OFFSET_F32.bp4Hi] = bp4Hi[i]!
-    f[off + FIELD_OFFSET_F32.bp4Lo] = bp4Lo[i]!
+    f[off + FIELD_OFFSET_F32.bp1] = bp1[i]!
+    f[off + FIELD_OFFSET_F32.bp2] = bp2[i]!
+    f[off + FIELD_OFFSET_F32.bp3] = bp3[i]!
+    f[off + FIELD_OFFSET_F32.bp4] = bp4[i]!
     u32[off + FIELD_OFFSET_F32.color] = colors[i]!
     // featureId goes through the Float32 view (shader reads it as a float
     // attribute + compares to the float hovered/clickedFeatureId uniforms), so

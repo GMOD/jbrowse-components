@@ -155,23 +155,20 @@ export interface ProjectedCorners {
   sx4: number
 }
 
-// SYNC: matches hpCornerScreenX in syntenyTypes.slang. Canvas2D operates in
-// Float64 so we don't need the hp-math hi/lo separation, but must reproduce
-// the same arithmetic to keep visuals identical.
+// SYNC: matches computeCorners in syntenyTypes.slang. Corners are window-
+// relative bp (cumBp - base); Float64 here recovers absolute cumBp by adding
+// base back, then applies the same (cumBp - viewBp)/bpPerPx as the shader.
 export function projectCorners(
   data: SyntenyInstanceData,
   i: number,
   t: ComputedTransform,
 ): ProjectedCorners {
-  const bp1 = data.bp1Hi[i]! + data.bp1Lo[i]!
-  const bp2 = data.bp2Hi[i]! + data.bp2Lo[i]!
-  const bp3 = data.bp3Hi[i]! + data.bp3Lo[i]!
-  const bp4 = data.bp4Hi[i]! + data.bp4Lo[i]!
+  const { base0, base1 } = data
   return {
-    sx1: (bp1 - t.viewBp0) * t.bpPerPxInv0,
-    sx2: (bp2 - t.viewBp0) * t.bpPerPxInv0,
-    sx3: (bp3 - t.viewBp1) * t.bpPerPxInv1,
-    sx4: (bp4 - t.viewBp1) * t.bpPerPxInv1,
+    sx1: (data.bp1[i]! + base0 - t.viewBp0) * t.bpPerPxInv0,
+    sx2: (data.bp2[i]! + base0 - t.viewBp0) * t.bpPerPxInv0,
+    sx3: (data.bp3[i]! + base1 - t.viewBp1) * t.bpPerPxInv1,
+    sx4: (data.bp4[i]! + base1 - t.viewBp1) * t.bpPerPxInv1,
   }
 }
 

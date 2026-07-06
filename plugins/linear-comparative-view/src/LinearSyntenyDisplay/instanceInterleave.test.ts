@@ -9,14 +9,12 @@ function makeData(colors: Uint32Array): SyntenyInstanceData {
   const seq = (base: number) =>
     Float32Array.from({ length: n }, (_, i) => base + i)
   return {
-    bp1Hi: seq(1000),
-    bp1Lo: seq(0.1),
-    bp2Hi: seq(2000),
-    bp2Lo: seq(0.2),
-    bp3Hi: seq(3000),
-    bp3Lo: seq(0.3),
-    bp4Hi: seq(4000),
-    bp4Lo: seq(0.4),
+    bp1: seq(1000),
+    bp2: seq(2000),
+    bp3: seq(3000),
+    bp4: seq(4000),
+    base0: 0,
+    base1: 0,
     colors,
     kinds: Uint8Array.from({ length: n }, (_, i) => i % 7),
     instanceFeatureIdx: Uint32Array.from({ length: n }, (_, i) => i),

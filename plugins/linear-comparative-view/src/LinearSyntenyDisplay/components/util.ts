@@ -40,10 +40,12 @@ export function getCigarOpAtInstance(
   if (!op) {
     return undefined
   }
-  const bp1 = data.bp1Hi[i]! + data.bp1Lo[i]!
-  const bp2 = data.bp2Hi[i]! + data.bp2Lo[i]!
-  const bp3 = data.bp3Hi[i]! + data.bp3Lo[i]!
-  const bp4 = data.bp4Hi[i]! + data.bp4Lo[i]!
+  // Window-relative bp; the op length is a within-axis span, so the per-axis
+  // base cancels in the subtraction (bp1/bp2 share base0, bp3/bp4 share base1).
+  const bp1 = data.bp1[i]!
+  const bp2 = data.bp2[i]!
+  const bp3 = data.bp3[i]!
+  const bp4 = data.bp4[i]!
   const length = Math.round(Math.max(Math.abs(bp2 - bp1), Math.abs(bp3 - bp4)))
   return { op, length }
 }

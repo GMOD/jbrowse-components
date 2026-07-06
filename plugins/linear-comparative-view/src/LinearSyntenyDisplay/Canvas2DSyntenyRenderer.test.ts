@@ -48,29 +48,22 @@ function createMockCanvas() {
   return { canvas, ctx, pathOps }
 }
 
-function bpHiLo(values: number[]) {
-  const hi = new Float32Array(values.length)
-  const lo = new Float32Array(values)
-  return { hi, lo }
+// Window-relative corner bp (base0/base1 = 0 in tests, so these equal cumBp).
+function bpArr(values: number[]) {
+  return Float32Array.from(values)
 }
 
 function makeInstanceData(
   count: number,
   overrides?: Partial<SyntenyInstanceData>,
 ): SyntenyInstanceData {
-  const c1 = bpHiLo(Array.from({ length: count }, () => 10))
-  const c2 = bpHiLo(Array.from({ length: count }, () => 100))
-  const c3 = bpHiLo(Array.from({ length: count }, () => 110))
-  const c4 = bpHiLo(Array.from({ length: count }, () => 20))
   return {
-    bp1Hi: c1.hi,
-    bp1Lo: c1.lo,
-    bp2Hi: c2.hi,
-    bp2Lo: c2.lo,
-    bp3Hi: c3.hi,
-    bp3Lo: c3.lo,
-    bp4Hi: c4.hi,
-    bp4Lo: c4.lo,
+    bp1: bpArr(Array.from({ length: count }, () => 10)),
+    bp2: bpArr(Array.from({ length: count }, () => 100)),
+    bp3: bpArr(Array.from({ length: count }, () => 110)),
+    bp4: bpArr(Array.from({ length: count }, () => 20)),
+    base0: 0,
+    base1: 0,
     colors: new Uint32Array(count).fill(0x80808080),
     kinds: new Uint8Array(count),
     instanceFeatureIdx: new Uint32Array(count),
@@ -217,21 +210,19 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    const c1 = bpHiLo([5000])
-    const c2 = bpHiLo([6000])
-    const c3 = bpHiLo([6000])
-    const c4 = bpHiLo([5000])
+    const c1 = bpArr([5000])
+    const c2 = bpArr([6000])
+    const c3 = bpArr([6000])
+    const c4 = bpArr([5000])
     renderer.uploadGeometry(
       0,
       makeInstanceData(1, {
-        bp1Hi: c1.hi,
-        bp1Lo: c1.lo,
-        bp2Hi: c2.hi,
-        bp2Lo: c2.lo,
-        bp3Hi: c3.hi,
-        bp3Lo: c3.lo,
-        bp4Hi: c4.hi,
-        bp4Lo: c4.lo,
+        bp1: c1,
+        bp2: c2,
+        bp3: c3,
+        bp4: c4,
+        base0: 0,
+        base1: 0,
       }),
     )
     renderer.render(makeState([[0, makeParams()]]))
@@ -290,21 +281,19 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 100)
     // vertical ribbon (top & bottom centered at 10.25 → slope 0, perpFactor 1),
     // 0.5px wide on both ends → perpW 0.5
-    const c1 = bpHiLo([10])
-    const c2 = bpHiLo([10.5])
-    const c3 = bpHiLo([10.5])
-    const c4 = bpHiLo([10])
+    const c1 = bpArr([10])
+    const c2 = bpArr([10.5])
+    const c3 = bpArr([10.5])
+    const c4 = bpArr([10])
     renderer.uploadGeometry(
       0,
       makeInstanceData(1, {
-        bp1Hi: c1.hi,
-        bp1Lo: c1.lo,
-        bp2Hi: c2.hi,
-        bp2Lo: c2.lo,
-        bp3Hi: c3.hi,
-        bp3Lo: c3.lo,
-        bp4Hi: c4.hi,
-        bp4Lo: c4.lo,
+        bp1: c1,
+        bp2: c2,
+        bp3: c3,
+        bp4: c4,
+        base0: 0,
+        base1: 0,
         colors: new Uint32Array([0x80808080]),
       }),
     )
@@ -329,21 +318,19 @@ describe('Canvas2DSyntenyRenderer', () => {
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
     // same 0.5px-wide vertical ribbon as the floor test above
-    const c1 = bpHiLo([10])
-    const c2 = bpHiLo([10.5])
-    const c3 = bpHiLo([10.5])
-    const c4 = bpHiLo([10])
+    const c1 = bpArr([10])
+    const c2 = bpArr([10.5])
+    const c3 = bpArr([10.5])
+    const c4 = bpArr([10])
     renderer.uploadGeometry(
       0,
       makeInstanceData(1, {
-        bp1Hi: c1.hi,
-        bp1Lo: c1.lo,
-        bp2Hi: c2.hi,
-        bp2Lo: c2.lo,
-        bp3Hi: c3.hi,
-        bp3Lo: c3.lo,
-        bp4Hi: c4.hi,
-        bp4Lo: c4.lo,
+        bp1: c1,
+        bp2: c2,
+        bp3: c3,
+        bp4: c4,
+        base0: 0,
+        base1: 0,
         colors: new Uint32Array([0x80808080]),
       }),
     )
@@ -362,21 +349,19 @@ describe('Canvas2DSyntenyRenderer', () => {
     // 2px wide horizontally on both ends, but the centerline shifts 100→500 over
     // height 100 (slope 4 → perpFactor ~4.12), so perpendicular width ~0.49px.
     // A horizontal-width test would have filled a ragged sliver here.
-    const c1 = bpHiLo([100])
-    const c2 = bpHiLo([102])
-    const c3 = bpHiLo([502])
-    const c4 = bpHiLo([500])
+    const c1 = bpArr([100])
+    const c2 = bpArr([102])
+    const c3 = bpArr([502])
+    const c4 = bpArr([500])
     renderer.uploadGeometry(
       0,
       makeInstanceData(1, {
-        bp1Hi: c1.hi,
-        bp1Lo: c1.lo,
-        bp2Hi: c2.hi,
-        bp2Lo: c2.lo,
-        bp3Hi: c3.hi,
-        bp3Lo: c3.lo,
-        bp4Hi: c4.hi,
-        bp4Lo: c4.lo,
+        bp1: c1,
+        bp2: c2,
+        bp3: c3,
+        bp4: c4,
+        base0: 0,
+        base1: 0,
       }),
     )
     renderer.render(makeState([[0, makeParams()]]))
@@ -530,21 +515,19 @@ describe('Canvas2DSyntenyRenderer', () => {
     ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    const c1 = bpHiLo([100])
-    const c2 = bpHiLo([101.5])
-    const c3 = bpHiLo([101.5])
-    const c4 = bpHiLo([100])
+    const c1 = bpArr([100])
+    const c2 = bpArr([101.5])
+    const c3 = bpArr([101.5])
+    const c4 = bpArr([100])
     renderer.uploadGeometry(
       0,
       makeInstanceData(1, {
-        bp1Hi: c1.hi,
-        bp1Lo: c1.lo,
-        bp2Hi: c2.hi,
-        bp2Lo: c2.lo,
-        bp3Hi: c3.hi,
-        bp3Lo: c3.lo,
-        bp4Hi: c4.hi,
-        bp4Lo: c4.lo,
+        bp1: c1,
+        bp2: c2,
+        bp3: c3,
+        bp4: c4,
+        base0: 0,
+        base1: 0,
       }),
     )
     const state = makeState([[0, makeParams()]])
@@ -564,21 +547,19 @@ describe('Canvas2DSyntenyRenderer', () => {
     ctx.isPointInPath = jest.fn(() => true)
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    const c1 = bpHiLo([100])
-    const c2 = bpHiLo([100.5])
-    const c3 = bpHiLo([100.5])
-    const c4 = bpHiLo([100])
+    const c1 = bpArr([100])
+    const c2 = bpArr([100.5])
+    const c3 = bpArr([100.5])
+    const c4 = bpArr([100])
     renderer.uploadGeometry(
       0,
       makeInstanceData(1, {
-        bp1Hi: c1.hi,
-        bp1Lo: c1.lo,
-        bp2Hi: c2.hi,
-        bp2Lo: c2.lo,
-        bp3Hi: c3.hi,
-        bp3Lo: c3.lo,
-        bp4Hi: c4.hi,
-        bp4Lo: c4.lo,
+        bp1: c1,
+        bp2: c2,
+        bp3: c3,
+        bp4: c4,
+        base0: 0,
+        base1: 0,
       }),
     )
     const state = makeState([[0, makeParams()]])

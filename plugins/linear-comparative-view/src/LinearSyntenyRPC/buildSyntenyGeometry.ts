@@ -1,7 +1,6 @@
 import { CIGAR_D, CIGAR_I, CIGAR_INDEL_MASK, CIGAR_N } from '@jbrowse/cigar-utils'
 import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 
-import { writeHiLo } from './hpMathSplit.ts'
 import {
   KIND_BASE,
   KIND_CIGAR_D,
@@ -16,19 +15,23 @@ import { PAN_BUFFER_PX } from './syntenyFetchWindow.ts'
 // the worker output independent of colorBy and lets colorBy changes re-upload
 // without an RPC refetch.
 //
-// Corner positions are stored as cumulative-bp (NOT pixel) hi/lo Float32
-// pairs. These reconstruct the screen position via hp-math in the vertex
-// shader, which avoids the Float32 precision blow-up that pixel-space storage
-// suffered when the mate was on a distant chromosome.
+// Corner positions are stored as WINDOW-RELATIVE bp (NOT pixel): cumBp minus a
+// per-axis fetch-time base (`base0`/`base1` = viewOff*bpPerPx at fetch). The
+// base keeps on-screen corners small-magnitude, so a single Float32 per corner
+// is sub-pixel accurate and the shader reconstructs screen X as
+// `bp*bpPerPxInv + panPx` — no hi/lo hp-math split. Absolute cumBp is
+// genome-scale (would need the split); the base cancels that. bp1/bp2 are the
+// top view (base0), bp3/bp4 the bottom view (base1).
 export interface SyntenyGeometry {
-  bp1Hi: Float32Array
-  bp1Lo: Float32Array
-  bp2Hi: Float32Array
-  bp2Lo: Float32Array
-  bp3Hi: Float32Array
-  bp3Lo: Float32Array
-  bp4Hi: Float32Array
-  bp4Lo: Float32Array
+  bp1: Float32Array
+  bp2: Float32Array
+  bp3: Float32Array
+  bp4: Float32Array
+  // Per-axis fetch-time base cumBp (viewOff*bpPerPx). The main thread turns
+  // these into the `panPx` uniforms each frame; the CPU Canvas2D/pick paths add
+  // them back to recover absolute cumBp. Zoom-independent (bp units).
+  base0: number
+  base1: number
   // Per-instance descriptors driving main-thread color recomputation on
   // colorBy change. `kinds` is one of the `KIND_*` constants from
   // syntenyColors.ts; `instanceFeatureIdx` is the parent feature index in
@@ -107,6 +110,12 @@ export function buildSyntenyGeometry({
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
 
+  // Per-axis fetch-time base cumBp (the viewport-start cumBp). Corners are
+  // stored relative to this so on-screen magnitudes stay small (Float32-exact
+  // without a hi/lo split). The main thread turns base into the panPx uniform.
+  const base0 = viewOff0 * bpPerPx0
+  const base1 = viewOff1 * bpPerPx1
+
   const alignmentLengths = new Float32Array(featureCount)
   // Per-feature: did we decide to draw CIGAR detail? Pass 1 always emits
   // KIND_BASE. When true, pass 2 runs the visitor and emits indel quads on top.
@@ -151,25 +160,22 @@ export function buildSyntenyGeometry({
     capacity += 1 + cigarBudget + markerBudget
   }
 
-  // Write cumBp hi/lo Float32 pairs directly at emit time. The shader
-  // reconstructs screen pixel via `(cumBpHi + cumBpLo) / bpPerPx` using
-  // hp-math, so the worker never needs to materialize Float64 pixel staging
-  // arrays — converting and splitting happens inline in `addInstance`.
-  const bp1HiArr = new Float32Array(capacity)
-  const bp1LoArr = new Float32Array(capacity)
-  const bp2HiArr = new Float32Array(capacity)
-  const bp2LoArr = new Float32Array(capacity)
-  const bp3HiArr = new Float32Array(capacity)
-  const bp3LoArr = new Float32Array(capacity)
-  const bp4HiArr = new Float32Array(capacity)
-  const bp4LoArr = new Float32Array(capacity)
+  // Write window-relative bp (cumBp - base) directly at emit time. The shader
+  // reconstructs screen pixel via `bp*bpPerPxInv + panPx`, so the worker never
+  // materializes Float64 pixel staging arrays and no hi/lo split is needed —
+  // the base subtraction (Float64, exact) happens inline in `addInstance`.
+  const bp1Arr = new Float32Array(capacity)
+  const bp2Arr = new Float32Array(capacity)
+  const bp3Arr = new Float32Array(capacity)
+  const bp4Arr = new Float32Array(capacity)
   const kindsArr = new Uint8Array(capacity)
   const featIdxArr = new Uint32Array(capacity)
   const instanceAlignmentLengths = new Float32Array(capacity)
 
   let idx = 0
 
-  // All four corner values are cumBp (bpBefore + bpOffset).
+  // All four corner values are cumBp (bpBefore + bpOffset). Stored window-
+  // relative: corners 1/2 use base0 (top view), 3/4 use base1 (bottom view).
   function addInstance(
     cumBp1: number,
     cumBp2: number,
@@ -179,10 +185,10 @@ export function buildSyntenyGeometry({
     featureIdx: number,
     alignmentLength: number,
   ) {
-    writeHiLo(cumBp1, bp1HiArr, bp1LoArr, idx)
-    writeHiLo(cumBp2, bp2HiArr, bp2LoArr, idx)
-    writeHiLo(cumBp3, bp3HiArr, bp3LoArr, idx)
-    writeHiLo(cumBp4, bp4HiArr, bp4LoArr, idx)
+    bp1Arr[idx] = cumBp1 - base0
+    bp2Arr[idx] = cumBp2 - base0
+    bp3Arr[idx] = cumBp3 - base1
+    bp4Arr[idx] = cumBp4 - base1
     kindsArr[idx] = kind
     featIdxArr[idx] = featureIdx
     instanceAlignmentLengths[idx] = alignmentLength
@@ -360,14 +366,12 @@ export function buildSyntenyGeometry({
   const instanceCount = idx
 
   return {
-    bp1Hi: bp1HiArr.subarray(0, instanceCount),
-    bp1Lo: bp1LoArr.subarray(0, instanceCount),
-    bp2Hi: bp2HiArr.subarray(0, instanceCount),
-    bp2Lo: bp2LoArr.subarray(0, instanceCount),
-    bp3Hi: bp3HiArr.subarray(0, instanceCount),
-    bp3Lo: bp3LoArr.subarray(0, instanceCount),
-    bp4Hi: bp4HiArr.subarray(0, instanceCount),
-    bp4Lo: bp4LoArr.subarray(0, instanceCount),
+    bp1: bp1Arr.subarray(0, instanceCount),
+    bp2: bp2Arr.subarray(0, instanceCount),
+    bp3: bp3Arr.subarray(0, instanceCount),
+    bp4: bp4Arr.subarray(0, instanceCount),
+    base0,
+    base1,
     kinds: kindsArr.subarray(0, instanceCount),
     instanceFeatureIdx: featIdxArr.subarray(0, instanceCount),
     alignmentLengths: instanceAlignmentLengths.subarray(0, instanceCount),
