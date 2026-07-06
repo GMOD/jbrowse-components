@@ -5,12 +5,8 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { NO_CIGAR_OPS, coerceColorBy } from '@jbrowse/synteny-core'
 
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
-import {
-  KIND_CIGAR_D,
-  KIND_CIGAR_I,
-  KIND_CIGAR_N,
-  computeSyntenyColors,
-} from '../LinearSyntenyRPC/syntenyColors.ts'
+import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
+import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { syntenyFetchRegions } from '../LinearSyntenyRPC/syntenyFetchWindow.ts'
 import { getCigarOpAtInstance, getTooltip } from './components/util.ts'
 
@@ -252,23 +248,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get presentCigarKinds(): CigarOpPresence {
         const { instanceData } = self
-        let I = false
-        let D = false
-        let N = false
-        if (instanceData) {
-          const { kinds, instanceCount } = instanceData
-          for (let i = 0; i < instanceCount && !(I && D && N); i++) {
-            const k = kinds[i]!
-            if (k === KIND_CIGAR_I) {
-              I = true
-            } else if (k === KIND_CIGAR_D) {
-              D = true
-            } else if (k === KIND_CIGAR_N) {
-              N = true
-            }
-          }
-        }
-        return I || D || N ? { I, D, N } : NO_CIGAR_OPS
+        return instanceData
+          ? computePresentCigarKinds(
+              instanceData.kinds,
+              instanceData.instanceCount,
+            )
+          : NO_CIGAR_OPS
       },
       /**
        * #getter
