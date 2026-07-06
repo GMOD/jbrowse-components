@@ -13,7 +13,12 @@ export interface LaunchLinearSyntenyViewArgs extends SyntenyViewSharedInit {
   // configure the per-panel track (matches LinearSyntenyViewInit.views).
   // optional: the extension point receives untrusted runtime spec data, so a
   // malformed spec can omit it — the handler guards and reports a clear error
-  views?: { loc?: string; assembly: string; tracks?: TrackInit[] }[]
+  views?: {
+    loc?: string
+    assembly: string
+    tracks?: TrackInit[]
+    trackLabels?: 'overlapping' | 'offset' | 'hidden'
+  }[]
   tracks?: string[] | string[][]
   levelHeights?: number[]
   drawCurves?: boolean

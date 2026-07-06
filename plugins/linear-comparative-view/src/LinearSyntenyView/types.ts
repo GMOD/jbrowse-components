@@ -15,6 +15,9 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
     // a bare trackId string, or { trackId, displaySnapshot, trackSnapshot } to
     // configure the per-panel track (e.g. a compact LGVSyntenyDisplay height)
     tracks?: TrackInit[]
+    // per-panel track-label placement (LGV `setTrackLabels`); 'offset' lifts the
+    // label to its own row above the track instead of overlaying the features
+    trackLabels?: 'overlapping' | 'offset' | 'hidden'
   }[]
   // synteny track ids per level: tracks[i] is shown between views[i] and
   // views[i+1]. string[] shorthand is treated as a single level-0 entry

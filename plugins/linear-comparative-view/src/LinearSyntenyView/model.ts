@@ -723,6 +723,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                         }
                       }
                     }
+                    if (viewInit.trackLabels) {
+                      view.setTrackLabels(viewInit.trackLabels)
+                    }
                   }),
                 )
 

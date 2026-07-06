@@ -611,12 +611,17 @@ function hg38ChimpSynteny(cigarMode: 'matches' | 'full') {
           {
             assembly: 'hg38',
             loc: 'chr19:2,424,000-2,442,000',
-            tracks: ['hg38-genes'],
+            // RepeatMasker last so it sits against the synteny band, where its
+            // elements line up with the indels
+            tracks: ['hg38-genes', 'hg38-rmsk'],
+            trackLabels: 'offset',
           },
           {
             assembly: 'panTro6',
             loc: 'chr19:2,331,500-2,349,800',
-            tracks: ['panTro6-genes'],
+            // RepeatMasker first so it sits against the synteny band above it
+            tracks: ['panTro6-rmsk', 'panTro6-genes'],
+            trackLabels: 'offset',
           },
         ],
       },
@@ -987,20 +992,20 @@ export const specs: ScreenshotSpec[] = [
     name: 'synteny_human_chimp_colored',
     url: hg38ChimpSynteny('full'),
     viewportWidth: 1200,
-    viewportHeight: 525,
+    viewportHeight: 1000,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
-    settleMs: 5000,
+    settleMs: 12000,
   },
   {
     mode: 'url',
     name: 'synteny_human_chimp_transparent',
     url: hg38ChimpSynteny('matches'),
     viewportWidth: 1200,
-    viewportHeight: 525,
+    viewportHeight: 1000,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
-    settleMs: 5000,
+    settleMs: 12000,
   },
   // Stacks the two declarative captures into one before/after figure. Both
   // panels stay openable live (the doc <Figure links=> points at the two specs

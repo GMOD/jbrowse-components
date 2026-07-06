@@ -89,6 +89,54 @@
       ]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "hg38-rmsk",
+      "name": "RepeatMasker",
+      "assemblyNames": ["hg38"],
+      "category": ["Repeats"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/rmsk.bed.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": { "uri": "https://jbrowse.org/ucsc/hg38/rmsk.bed.gz.csi" }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "hg38-rmsk-LinearBasicDisplay",
+          "autoHeight": true
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "panTro6-rmsk",
+      "name": "RepeatMasker",
+      "assemblyNames": ["panTro6"],
+      "category": ["Repeats"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/panTro6/rmsk.bed.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": { "uri": "https://jbrowse.org/ucsc/panTro6/rmsk.bed.gz.csi" }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "panTro6-rmsk-LinearBasicDisplay",
+          "autoHeight": true
+        }
+      ]
+    },
+    {
       "type": "SyntenyTrack",
       "trackId": "hg38_panTro6_synteny",
       "name": "Human vs Chimp (UCSC liftOver)",
