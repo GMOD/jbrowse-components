@@ -109,6 +109,20 @@ test('adapter can fetch features from peach_grape.paf', async () => {
   expect(fa2[0]!.get('refName')).toBe('chr1')
 })
 
+test('getFeatures returns nothing for an unknown assembly even when its refName collides with a target name', async () => {
+  const adapter = makeAdapter()
+  // 'chr1' is a grape (target) refName; an unknown assembly must not borrow
+  // target-side features just because the refName happens to match.
+  const features = adapter.getFeatures({
+    refName: 'chr1',
+    start: 0,
+    end: 200000,
+    assemblyName: 'unknown',
+  })
+  const fa = await firstValueFrom(features.pipe(toArray()))
+  expect(fa.length).toBe(0)
+})
+
 test('getRefNames returns query ref names for query assembly', async () => {
   const adapter = makeAdapter()
   const refNames = await adapter.getRefNames({

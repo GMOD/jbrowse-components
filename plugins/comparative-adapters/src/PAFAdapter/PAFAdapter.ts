@@ -91,54 +91,53 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       const flip = index === 0
       if (index === -1) {
         console.warn(`${assemblyName} not found in this adapter`)
-        observer.complete()
-      }
+      } else {
+        for (let i = 0; i < pafRecords.length; i++) {
+          const r = pafRecords[i]!
 
-      for (let i = 0; i < pafRecords.length; i++) {
-        const r = pafRecords[i]!
+          let start: number
+          let end: number
+          let refName: string
+          let mateName: string
+          let mateStart: number
+          let mateEnd: number
 
-        let start: number
-        let end: number
-        let refName: string
-        let mateName: string
-        let mateStart: number
-        let mateEnd: number
-
-        if (flip) {
-          start = r.qstart
-          end = r.qend
-          refName = r.qname
-          mateName = r.tname
-          mateStart = r.tstart
-          mateEnd = r.tend
-        } else {
-          start = r.tstart
-          end = r.tend
-          refName = r.tname
-          mateName = r.qname
-          mateStart = r.qstart
-          mateEnd = r.qend
-        }
-        const { extra, strand } = r
-        if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
-          observer.next(
-            makeSyntenyFeature({
-              syntenyId: i,
-              assemblyName,
-              refName,
-              start,
-              end,
-              strand,
-              extra,
-              flip,
-              mate: {
-                start: mateStart,
-                end: mateEnd,
-                refName: mateName,
-                assemblyName: assemblyNames[+flip]!,
-              },
-            }),
-          )
+          if (flip) {
+            start = r.qstart
+            end = r.qend
+            refName = r.qname
+            mateName = r.tname
+            mateStart = r.tstart
+            mateEnd = r.tend
+          } else {
+            start = r.tstart
+            end = r.tend
+            refName = r.tname
+            mateName = r.qname
+            mateStart = r.qstart
+            mateEnd = r.qend
+          }
+          const { extra, strand } = r
+          if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
+            observer.next(
+              makeSyntenyFeature({
+                syntenyId: i,
+                assemblyName,
+                refName,
+                start,
+                end,
+                strand,
+                extra,
+                flip,
+                mate: {
+                  start: mateStart,
+                  end: mateEnd,
+                  refName: mateName,
+                  assemblyName: assemblyNames[+flip]!,
+                },
+              }),
+            )
+          }
         }
       }
 
