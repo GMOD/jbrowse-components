@@ -1070,22 +1070,22 @@ export default function stateModelFactory(pm: PluginManager) {
                     subMenu: (
                       [
                         {
-                          label: 'Auto',
+                          label: 'Automatic (by zoom)',
                           value: 'auto',
                           helpText:
-                            'Switch between fine and coarse automatically based on zoom level.',
+                            'Show base-level detail when zoomed in, blocks-only when zoomed out.',
                         },
                         {
-                          label: 'Fine',
+                          label: 'Indels + mismatches',
                           value: 'fine',
                           helpText:
-                            'Always fetch per-row CIGAR detail. Slower at low zoom.',
+                            'Always load base-level indel/mismatch detail. Slower when zoomed far out.',
                         },
                         {
-                          label: 'Coarse',
+                          label: 'Alignment blocks only',
                           value: 'coarse',
                           helpText:
-                            'Skip CIGAR detail. Fastest, but no indel/mismatch colors.',
+                            'Skip base-level detail for speed — no indel or mismatch coloring.',
                         },
                       ] as const
                     ).map(({ label, value, helpText }) => ({

@@ -6,8 +6,10 @@ import type { DotplotRpcData } from './types.ts'
 
 // Below this on-screen feature width we collapse CIGAR detail to a single
 // segment — sub-pixel CIGAR ops aren't visible anyway and skipping them
-// is the dominant frame-time win at zoomed-out views.
-const MIN_CIGAR_PX_WIDTH = 4
+// is the dominant frame-time win at zoomed-out views. Kept in step with
+// MIN_INDEL_PX (the per-op gate that drops sub-pixel indels within a block) so
+// small-but-visible blocks still show detail rather than being flattened.
+const MIN_CIGAR_PX_WIDTH = 2
 
 type GeometryBuffers = Omit<DotplotGeometryData, 'instanceCount'>
 

@@ -45,7 +45,13 @@ export type SyntenyInstanceData = SyntenyGeometry & { colors: Uint32Array }
 // parsed nor drawn. Shared with the parse gate in
 // executeSyntenyFeaturesAndPositions so a feature's CIGAR is parsed only when
 // it will actually be visited here.
-export const MIN_CIGAR_PX_WIDTH = 8
+//
+// Kept in step with MIN_INDEL_PX (the per-op merge gate): a block only needs to
+// be wide enough to hold a visible indel to be worth parsing, and the per-op
+// gate already drops sub-pixel indels within it. A larger block gate just
+// redundantly hides detail on small-but-visible blocks — the "1px details are
+// interesting" frission this view is meant to preserve.
+export const MIN_CIGAR_PX_WIDTH = 2
 
 // Off-screen px kept on each side so panning reveals ribbons without a refetch.
 // executeSyntenyFeaturesAndPositions culls whole features first, so its cull
