@@ -5,13 +5,12 @@ import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
-import { ToggleButton } from '@mui/material'
+import { Divider, ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
 import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
 import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
-import SyntenyWarnings from './SyntenyWarnings.tsx'
 import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 
 import type { LinearComparativeViewModel } from '../model.ts'
@@ -20,6 +19,8 @@ const useStyles = makeStyles()({
   headerBar: {
     display: 'flex',
     alignItems: 'center',
+    gap: 4,
+    minHeight: 48,
   },
   inline: {
     display: 'inline-flex',
@@ -29,7 +30,8 @@ const useStyles = makeStyles()({
   },
   searchBoxContainer: {
     display: 'flex',
-    overflow: 'hidden',
+    // scroll rather than clip when many rows' search boxes exceed the bar width
+    overflowX: 'auto',
     minWidth: 0,
   },
   scrollZoomButton: {
@@ -76,6 +78,7 @@ const Header = observer(function Header({
   return (
     <div className={classes.headerBar}>
       <CascadingMenuButton
+        tooltip="Open track selectors"
         menuItems={() =>
           views.length === 2
             ? [...syntenySelectors, ...rowSelectors]
@@ -96,6 +99,7 @@ const Header = observer(function Header({
         <TrackSelectorIcon />
       </CascadingMenuButton>
       <CascadingMenuButton
+        tooltip="View options"
         menuItems={() => [
           {
             label: 'Row view menus',
@@ -152,7 +156,7 @@ const Header = observer(function Header({
         onChange={() => {
           model.setScrollZoom(!model.scrollZoom)
         }}
-        title="Toggle scroll zoom"
+        title="Scroll wheel zooms instead of scrolls"
         className={classes.scrollZoomButton}
         size="small"
       >
@@ -161,6 +165,7 @@ const Header = observer(function Header({
 
       {syntenyModel ? (
         <>
+          <Divider orientation="vertical" flexItem />
           <ColorBySelector model={syntenyModel} />
           <SyntenySettingsPopover model={syntenyModel} />
         </>
@@ -178,8 +183,6 @@ const Header = observer(function Header({
           ))}
         </span>
       ) : null}
-
-      <SyntenyWarnings model={model} />
     </div>
   )
 })
