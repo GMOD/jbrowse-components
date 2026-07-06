@@ -29,10 +29,11 @@ struct VsOut {
   // localPos.y = vertical offset from yTop in CSS px (≈[0, height], slightly
   // extended at top/bottom for AA fade).
   float2 localPos : COLOR3;
-  // 1.0 if this instance is a CIGAR tile (shares slanted edges with sibling
-  // CIGAR instances of the same feature, so perpendicular smoothstep AA
-  // double-fades the seam and bleeds bg through); 0.0 for whole-feature BASE
-  // instances whose perpendicular edges are silhouette and need full AA.
+  // 1.0 if this instance is a CIGAR indel tile. Indel tiles share the analytic
+  // edge + smoothstep AA path with BASE ribbons (smooth curve, antialiased
+  // edges); the flag only switches shading — the white pre-blend in shadeFill
+  // and skipping the density width-fade in fillCoverage. 0.0 for whole-feature
+  // BASE instances.
   nointerpolation float isCigar : COLOR4;
   // 1.0 for a KIND_MARKER tick (zero-width context line). Skips the sub-pixel
   // width fade and global-alpha shading so it stays a crisp fixed-alpha line.
@@ -70,14 +71,14 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   //   (1) thin-feature stroke widening: perpFactor·0.5 (1-px perpendicular
   //       stroke projected onto the x-axis at this slope).
   //   (2) AA fade at the boundary: 1 px.
-  // CIGAR tiles skip these so adjacent CIGAR polygons tile cleanly via the
-  // rasterizer top-left rule with no smoothstep double-fade bleed.
+  // CIGAR indel tiles use the same padded polygon as BASE — they share the
+  // analytic edge + smoothstep AA path (fillCoverage), so their perpendicular
+  // edges antialiase against the base block instead of stair-stepping.
   float slope = abs((c.x3 + c.x4 - c.x1 - c.x2) * 0.5) / h;
   float perpFactor = sqrt(1.0 + slope * slope);
-  bool isCigar = isCigarKind(inst.kind);
-  float pad = isCigar ? 0.0 : perpFactor * 0.5 + 1.0;
+  float pad = perpFactor * 0.5 + 1.0;
 
-  float y = isCigar ? (isTop ? 0.0 : h) : (isTop ? -1.0 : h + 1.0);
+  float y = isTop ? -1.0 : h + 1.0;
 
   float vx = isRight ? (xR + pad) : (xL - pad);
   o.localPos = float2(vx, y);

@@ -149,7 +149,8 @@ function drawInstances(
     // WIDTH_FADE_FLOOR, gated by fadeThinAlignments) mirror fillCoverage's
     // perpFactor/widthFade — a lone thin ribbon stays a faint locatable line
     // while a whole-genome tangle fades instead of stacking hard
-    // full-opacity lines. CIGAR keeps full alpha (hard-cut in the shader).
+    // full-opacity lines. CIGAR keeps full alpha (indel detail stays solid; the
+    // shader likewise skips the density fade for CIGAR in fillCoverage).
     const perpW = ribbonPerpWidth(c, height)
     if (perpW < 1) {
       const xt = (c.sx1 + c.sx2) * 0.5

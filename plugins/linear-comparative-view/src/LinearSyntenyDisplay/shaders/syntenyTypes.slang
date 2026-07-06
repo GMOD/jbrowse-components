@@ -25,10 +25,10 @@ public struct Instance {
   public float featureId         : ATTR9;
   public float alignmentLength   : ATTR10;
   // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyColors.ts).
-  // Used by the fill fragment to decide whether perpendicular AA should be
-  // smooth (BASE — outer feature silhouette) or hard-cut (CIGAR — tiles a
-  // feature, so smoothstep at shared edges with sibling CIGAR instances
-  // bleeds background through the seam under standard alpha blend).
+  // The fill fragment uses it only for shading: CIGAR indel tiles get the white
+  // pre-blend in shadeFill and skip the density width-fade in fillCoverage. The
+  // coverage/AA path is identical to BASE (smooth analytic bezier edge), so
+  // indels aren't faceted or aliased.
   public float kind              : ATTR11;
 };
 
@@ -39,9 +39,8 @@ public struct Instance {
 // whole CIGAR range must stay contiguous and above the non-CIGAR kinds.
 public static const float KIND_CIGAR_MIN = 3.0;
 
-// A CIGAR tile shares slanted edges with sibling tiles of the same feature, so
-// it needs hard-cut perpendicular coverage (no smoothstep) to tile cleanly;
-// whole-feature BASE instances get full silhouette AA.
+// Distinguishes indel tiles from whole-feature BASE instances for shading only
+// (white pre-blend, no density width-fade); both share the same smoothstep AA.
 public bool isCigarKind(float kind) { return kind >= KIND_CIGAR_MIN; }
 
 // KIND_MARKER (=2 in syntenyColors.ts): a periodic "location marker" tick — a
@@ -128,56 +127,44 @@ public float4 screenToClip(float2 screen, float2 resolution) {
 
 // Analytic coverage for a fill fragment. `localPos.x` is screen X, `localPos.y`
 // is the vertical offset from yTop. `(xL,xR)` are the ribbon edges at this y and
-// `perpFactor` the slope foreshortening. CIGAR tiles (`isCigar > 0.5`) get a
-// hard cut so adjacent tiles meet cleanly under alpha blend; everything else
-// gets smoothstep AA over the perpendicular distance.
+// `perpFactor` the slope foreshortening. BASE ribbons and CIGAR indel tiles
+// share this smoothstep-over-fwidth(perpDist) AA so both trace the smooth
+// analytic bezier edge with antialiased (not stair-stepped) sides; only the
+// density width-fade differs.
 public float fillCoverage(float2 localPos, float xL, float xR,
                           float perpFactor, float isCigar, float isMarker,
                           float h, float fadeThinAlignments) {
   float xC = (xL + xR) * 0.5;
   float perpDist = (localPos.x - xC) / perpFactor;
-  // Both CIGAR tiles and whole-feature (base) ribbons keep a 0.5px half-width
-  // floor (1px minimum visual footprint) so a sub-pixel ribbon stays a
+  // 0.5px half-width floor (1px minimum footprint) so a sub-pixel ribbon stays a
   // locatable, rasterizable band rather than dropping between sample points.
   // Wide ribbons (halfWidth > floor) are unaffected.
-  // NOTE: the floor only keeps a sub-pixel ribbon visible when the rasterizer
-  // had ≥1px of geometry to fill (whole BASE ribbons do; a sub-pixel CIGAR tile
-  // can still drop out — an accepted tradeoff, since CIGAR detail only shows
-  // when zoomed in).
-  float minHalf = 0.5;
-  float halfPerpW = max((xR - xL) / (2.0 * perpFactor), minHalf);
-  float cx;
-  if (isCigar > 0.5) {
-    cx = abs(perpDist) <= halfPerpW ? 1.0 : 0.0;
-  } else {
-    // Density-honest sub-pixel fade. The footprint floor above keeps a thin
-    // BASE ribbon a ~1px band, but its opacity scales with the ribbon's
-    // perpendicular (visual) width so a lone thin alignment fades gently and a
-    // whole-genome tangle of them stops reading as hard full-opacity lines —
-    // dense overlaps still accumulate via alpha blend. Using perpendicular
-    // width (the same metric as halfPerpW, not horizontal span) means steep
-    // diagonal ribbons — the crossing-line hairball of rearranged genomes —
-    // fade by their true thinness rather than escaping via a wide x-span.
-    // Ribbons ≥1px wide saturate widthFade at 1 and are unaffected.
-    // SYNC: Canvas2DSyntenyRenderer's sub-pixel branch (entered only for
-    // near-vertical ribbons, where perpFactor≈1) scales its centerline stroke
-    // alpha by the equivalent max(width, WIDTH_FADE_FLOOR).
-    // Markers are intentionally zero-width, so the density-honest fade is
-    // skipped (widthFade=1) — they stay a crisp 1px tick at the 0.5px floor.
-    // WIDTH_FADE_FLOOR keeps a lone sub-pixel ribbon locatable instead of
-    // fading all the way to invisible (see its definition above). The fade
-    // itself is opt-out (fadeThinAlignments) because a genuinely sparse
-    // whole-genome comparison (e.g. distant-species synteny) can have every
-    // real alignment sub-pixel, and the fade would wash the view out rather
-    // than declutter it, with no UI way to recover full opacity otherwise.
-    float widthFade = (isMarker > 0.5 || fadeThinAlignments < 0.5)
+  float halfPerpW = max((xR - xL) / (2.0 * perpFactor), 0.5);
+  // Density-honest sub-pixel fade, BASE ribbons only. A thin BASE ribbon's
+  // opacity scales with its perpendicular (visual) width so a lone thin
+  // alignment fades gently and a whole-genome tangle stops reading as hard
+  // full-opacity lines — dense overlaps still accumulate via alpha blend. Using
+  // perpendicular width (the same metric as halfPerpW, not horizontal span)
+  // means steep diagonal ribbons — the crossing-line hairball of rearranged
+  // genomes — fade by their true thinness rather than escaping via a wide
+  // x-span. Ribbons ≥1px wide saturate widthFade at 1 and are unaffected.
+  // SYNC: Canvas2DSyntenyRenderer's sub-pixel branch (entered only for
+  // near-vertical ribbons, where perpFactor≈1) scales its centerline stroke
+  // alpha by the equivalent max(width, WIDTH_FADE_FLOOR).
+  // CIGAR indel tiles and zero-width markers skip the fade (widthFade=1): indels
+  // are zoomed-in detail that should stay solid, markers are crisp 1px ticks.
+  // The fade is also opt-out for BASE (fadeThinAlignments) because a genuinely
+  // sparse whole-genome comparison (e.g. distant-species synteny) can have every
+  // real alignment sub-pixel, and the fade would wash the view out rather than
+  // declutter it, with no UI way to recover full opacity otherwise.
+  float widthFade =
+    (isCigar > 0.5 || isMarker > 0.5 || fadeThinAlignments < 0.5)
       ? 1.0
       : clamp((xR - xL) / perpFactor, WIDTH_FADE_FLOOR, 1.0);
-    float aaPerp = max(fwidth(perpDist), 1e-4);
-    cx = (1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
-                           halfPerpW + aaPerp * 0.5,
-                           abs(perpDist))) * widthFade;
-  }
+  float aaPerp = max(fwidth(perpDist), 1e-4);
+  float cx = (1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
+                               halfPerpW + aaPerp * 0.5,
+                               abs(perpDist))) * widthFade;
   float ay = max(fwidth(localPos.y), 1e-4) * 0.5;
   float cy = smoothstep(-ay, ay, localPos.y)
            - smoothstep(h - ay, h + ay, localPos.y);

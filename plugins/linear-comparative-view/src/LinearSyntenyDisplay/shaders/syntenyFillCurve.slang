@@ -13,7 +13,8 @@
 // (cubic convergence — sub-pixel accuracy from t₀ = y/h), evaluates the
 // two edge x-curves at that t, computes signed perpendicular distance
 // from the centerline, and outputs analytic coverage via smoothstep over
-// fwidth(perpDist) — geometrically correct AA at any slope.
+// fwidth(perpDist) — geometrically correct AA at any slope. BASE ribbons and
+// CIGAR indel tiles run the identical path (see fillCoverage).
 //
 // References:
 //   developer.nvidia.com/gpugems/gpugems3 chapter 25 (Loop-Blinn)
@@ -23,12 +24,16 @@
 import colorPack;
 import syntenyTypes;
 
-// Tessellation count: 8 segments × 6 verts each. Bezier bulge within one
-// segment is bounded by max|s''|·(dt²/8) = 6·(1/8)²/8 ≈ 0.012 in s-units,
-// i.e. ~2.3px for a ribbon spanning 200px horizontally — small enough that
-// the perpendicular pad bound is dominated by stroke widening rather than
-// bezier deviation. Doubling to 16 gives diminishing returns; halving to 4
-// makes the bulge term dominate the pad.
+// Tessellation count: 8 segments × 6 verts each. Both BASE ribbons and CIGAR
+// indel tiles pad the polygon by the per-segment bezier bulge and clip to the
+// true bezier analytically in the fragment (fillCoverage), so the visible edge
+// is the smooth curve regardless of N — 8 is plenty. (An earlier attempt drew
+// indel tiles from the raw chord geometry to get MSAA seam-tiling, but the
+// chords visibly faceted slanted ribbons, so indels went back on the analytic
+// curve.) Bezier bulge within one segment is bounded by max|s''|·(dt²/8) =
+// 6·(1/8)²/8 ≈ 0.012 in s-units, i.e. ~2.3px for a ribbon spanning 200px
+// horizontally — the pad's bulgeX term covers it. Halving to 4 makes the bulge
+// term dominate the pad; doubling to 16 gives diminishing returns.
 public static const uint NUM_SEGMENTS = 8u;
 public static const uint VERTS_PER_INSTANCE = NUM_SEGMENTS * 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -99,19 +104,13 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   //   (3) AA fade at the boundary: 1 px.
   // The bezier's centerline x'(t) reaches 1.5× the linear chord at t=0.5
   // while y'(t) drops to 0.75×, so local dx/dy peaks at 2× the chord slope.
-  //
-  // CIGAR tiles skip the AA-fade and stroke-widening pad terms — their polygon
-  // edges must coincide exactly with the ribbon edges so adjacent CIGAR
-  // polygons (sharing a slanted seam between e.g. M and I) tile via the
-  // rasterizer top-left rule with no smoothstep double-fade bleed. bulgeX is
-  // still included so the bezier bulge fragments stay inside the polygon.
+  // CIGAR indel tiles use the same pad as BASE — they clip to the smooth
+  // analytic curve in the fragment, not to this trapezoid geometry.
   float h = max(u.height, 1.0);
   float maxSlope = abs((c.x3 + c.x4 - c.x1 - c.x2) * 0.5) / h * 2.0;
   float maxPerpFactor = sqrt(1.0 + maxSlope * maxSlope);
   float bulgeX = max(abs(c.x4 - c.x1), abs(c.x3 - c.x2)) * invN * invN * 0.75;
-  float pad = isCigarKind(inst.kind)
-    ? bulgeX
-    : maxPerpFactor * 0.5 + bulgeX + 1.0;
+  float pad = maxPerpFactor * 0.5 + bulgeX + 1.0;
 
   // AA y-pad only at the first segment's top and last segment's bottom; the
   // shared boundaries between adjacent segments must match exactly.
