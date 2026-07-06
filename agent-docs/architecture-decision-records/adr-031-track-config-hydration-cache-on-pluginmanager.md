@@ -50,7 +50,9 @@ module-level `WeakMap`.
 (`packages/core/src/PluginManager.ts`):
 
 ```ts
-trackConfigHydrationCache = new WeakMap<object, WeakMap<object, unknown>>()
+// outer became a Map (was WeakMap) so it can be iterated for invalidation;
+// see ADR-032
+trackConfigHydrationCache = new Map<object, WeakMap<object, unknown>>()
 ```
 
 `TrackConfigurationReference`'s `get()` reaches it via
@@ -70,11 +72,13 @@ baked in, potentially referencing a tree that's since been torn down.
 
 Scoping the cache to the `PluginManager` instance rules this out
 structurally: two instances can never share a cache entry regardless of
-whether the frozen object is reused, because `pluginManager.
-trackConfigHydrationCache` is a different `WeakMap` object per instance.
-`WeakMap` semantics still apply at both levels, so entries (and, once a
-track type's schema is unreferenced, the whole inner map) are collected
-normally — no manual cache invalidation or teardown hook needed.
+whether the frozen object is reused, because
+`pluginManager.trackConfigHydrationCache` is a different map object per
+instance. The inner level is a `WeakMap` keyed by the frozen configs, so those
+entries are collected normally. (The outer level was later widened from a
+`WeakMap` to a `Map` so it can be iterated for the edit-path invalidation
+ADR-032 added; its keys are the registered schemas, a bounded set held for the
+PluginManager's lifetime anyway, so this retains nothing extra.)
 
 ## Rejected alternative: module-level `WeakMap` nested by schemaType
 

@@ -187,16 +187,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         addTrackConf: superAddTrackConf,
         deleteTrackConf: superDeleteTrackConf,
       } = self
-      // A non-admin quick-edit (a track-menu `setSlot`) mutates the shared
-      // hydrated MST node of the base track config in place. When that track's
-      // delta is later dropped, the `tracks` getter returns the base by
-      // identity again and TrackConfigurationReference's hydration cache would
-      // hand back the stale, still-mutated node — so a "reset to default"
-      // visibly reverts to the last edited value. Dropping the cache entry
-      // forces a clean re-hydration from the untouched frozen config, the
-      // analog of the admin path getting a fresh node by replacing the frozen
-      // entry outright. No-op for embedded/product-core, whose MST-node bases
-      // were never put in the hydration cache.
+      // Re-pin a track's base config to its pristine frozen source in the
+      // hydration cache. No-op for embedded/product-core, whose MST-node bases
+      // were never put in the cache.
       function invalidateBaseHydration(trackId: string) {
         const base = (self.jbrowse.tracks as PlainTrackConfig[]).find(
           t => t.trackId === trackId,
@@ -204,6 +197,22 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         if (base) {
           pluginManager.invalidateTrackConfigHydration(base)
         }
+      }
+      // The single choke point for every trackConfigDeltas write (pass undefined
+      // to clear). A delta only ever changes right after an in-place `setSlot`;
+      // for a track with no delta yet, that setSlot mutated the base config's
+      // shared hydrated MST node (the pre-delta resolved node). Re-pin that node
+      // on every delta write so the hydration cache stays a faithful mirror of
+      // jbrowse.tracks — the invariant in ADR-032. Once a delta exists the
+      // resolved node is the regenerable merged node, so later edits never touch
+      // the base again and the re-pin is a cheap no-op. Centralizing here makes
+      // "a delta can't change without the base being re-pinned" structural — no
+      // call site can forget it.
+      function writeDelta(trackId: string, delta: PlainTrackConfig | undefined) {
+        self.trackConfigDeltas = delta
+          ? { ...self.trackConfigDeltas, [trackId]: delta }
+          : withoutDelta(self.trackConfigDeltas, trackId)
+        invalidateBaseHydration(trackId)
       }
       return {
         /**
@@ -270,16 +279,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               // content-free delta; skip a no-op write when there's nothing to
               // clear, so the tracks getter doesn't needlessly churn identity
               if (deltaHasChanges(plainBase, delta)) {
-                self.trackConfigDeltas = {
-                  ...self.trackConfigDeltas,
-                  [trackId]: delta,
-                }
+                writeDelta(trackId, delta)
               } else if (trackId in self.trackConfigDeltas) {
-                self.trackConfigDeltas = withoutDelta(
-                  self.trackConfigDeltas,
-                  trackId,
-                )
-                invalidateBaseHydration(trackId)
+                writeDelta(trackId, undefined)
               }
             } else if (sessionIdx !== -1) {
               // a user-added session track (no admin base): edit it in place. A
@@ -322,11 +324,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          */
         resetTrackConfiguration(trackId: string) {
           if (trackId in self.trackConfigDeltas) {
-            self.trackConfigDeltas = withoutDelta(
-              self.trackConfigDeltas,
-              trackId,
-            )
-            invalidateBaseHydration(trackId)
+            writeDelta(trackId, undefined)
           }
         },
 
