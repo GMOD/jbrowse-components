@@ -310,3 +310,36 @@ test('a redundant identical save does not churn the delta identity', () => {
   session.updateTrackConfiguration(editedSnapshot(session))
   expect(session.trackConfigDeltas).toBe(firstDeltas)
 })
+
+test('a live setSlot edit persists as a delta via the reaction (non-admin)', () => {
+  // End-to-end for the working-copy refactor: an in-place setSlot on the
+  // resolved config (a private working copy) must be picked up by
+  // BaseTrackModel's debounced reaction and stored as a delta — without the
+  // test hand-calling updateTrackConfiguration. Uses real (fake) timer flow so
+  // the actual reaction fires, not a simulated persist.
+  jest.useFakeTimers()
+  try {
+    const { rootModel } = getPluginManager(undefined, false)
+    const session = rootModel.session as unknown as TestSession
+    const view = session.views[0]!
+    view.showTrack(TRACK_ID)
+    const openConfig = () =>
+      view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
+        .configuration as AnyConfigurationModel & {
+        setSlot: (slot: string, value: unknown) => void
+      }
+
+    openConfig().setSlot('name', 'Edited via reaction')
+    expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
+
+    // the debounced reaction (400ms) diffs the working copy against the base
+    // and stores the delta
+    jest.advanceTimersByTime(500)
+
+    expect(session.isTrackOverride(TRACK_ID)).toBe(true)
+    expect(session.trackConfigDeltas[TRACK_ID]).toBeDefined()
+    expect(readConfObject(openConfig(), 'name')).toBe('Edited via reaction')
+  } finally {
+    jest.useRealTimers()
+  }
+})
