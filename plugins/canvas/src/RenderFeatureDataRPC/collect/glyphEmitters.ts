@@ -1,12 +1,13 @@
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
+import { hasMatureProteinChildren } from '../glyphs/matureProteinRegion.ts'
 import {
   getFeatureName,
   readFeatureLabels,
   readFeatureName,
 } from '../labelUtils.ts'
-import { featureType, getSubfeatures } from '../util.ts'
+import { featureType, getSubfeatures, isCDS } from '../util.ts'
 import {
   centerShrink,
   emitCodonRects,
@@ -197,9 +198,13 @@ function registerSubfeature(
 
 // Viral polyproteins: a CDS whose mature_protein_region children tile the ORF,
 // stacked in rows by layoutMatureProteinRegion. Each child already carries its
-// own y/height; draw a strand arrow on the parent CDS when it is top-level so
-// it shows direction like every other glyph. baseTopPx shifts the rows when the
-// CDS is nested inside a container glyph (gene → CDS → mature regions).
+// own y/height; draw a strand arrow on the polyprotein CDS so it shows direction
+// like the transcript path does. Drawn unconditionally (not parent-gated like
+// leaf glyphs) because the enclosing gene renders as a Subfeatures container
+// that draws no arrow of its own — so a nested CDS (gene → ORF1ab CDS → nsp*,
+// and the enterovirus gene → CDS → mature peptides) would otherwise lose its
+// direction entirely, unlike a gene → mRNA whose transcript always shows one.
+// baseTopPx shifts the rows when the CDS is nested inside a container glyph.
 // rootFeature is the top-level feature (the one GetCanvasFeatureDetails resolves
 // by id, and the key into peptideDataMap — for a gene with multiple polyprotein
 // CDS children, e.g. SARS-CoV-2 ORF1a/ORF1ab, translation is keyed at the gene
@@ -234,6 +239,17 @@ function processMatureProteinLayout(
   // cleavage products rather than per child
   const cdsLabel = readFeatureName(ctx.config, cdsFeature, ctx.jexl)
 
+  // Only append the owning-CDS name to each peptide label when the peptide is
+  // genuinely ambiguous — i.e. the enclosing gene has more than one polyprotein
+  // CDS child that share cleavage products (SARS-CoV-2 ORF1a/ORF1ab both carry
+  // nsp1–nsp10 at identical coords). A single-polyprotein gene (enterovirus, the
+  // common case) or a standalone CDS has nothing to disambiguate, so suffixing
+  // all 12 labels with "(genome polyprotein)" would be pure repeated clutter.
+  const disambiguateWithCds =
+    getSubfeatures(rootFeature).filter(
+      f => isCDS(f) && hasMatureProteinChildren(f),
+    ).length > 1
+
   for (const [i, childLayout] of layout.children.entries()) {
     const childFeature = childLayout.feature
     const topPx = baseTopPx + childLayout.y
@@ -266,15 +282,17 @@ function processMatureProteinLayout(
       )
     }
     const childLabel = resolveSubfeatureLabel(childFeature, ctx)
-    // viral polyproteins (e.g. SARS-CoV-2 ORF1a/ORF1ab) share cleavage products:
-    // the same mature peptide (nsp1-nsp10) is a child of both polyprotein CDS
-    // records at identical coordinates, so the box and its label legitimately
-    // appear twice. When the owning CDS resolves a real name/product (not just
-    // its bare id), append it so the two rows read as distinct ("nsp1 (ORF1a
+    // For shared cleavage products (see disambiguateWithCds above): the same
+    // mature peptide appears once per polyprotein CDS at identical coordinates,
+    // so append the owning CDS's product to keep the rows distinct ("nsp1 (ORF1a
     // polyprotein)" vs "nsp1 (ORF1ab polyprotein)") instead of looking like a
-    // duplicate/bug.
+    // duplicate/bug — but only when the CDS resolves a real name/product, not
+    // just its bare id.
     const displayLabel =
-      cdsLabel && cdsLabel !== childLabel && cdsLabel !== cdsFeature.id()
+      disambiguateWithCds &&
+      cdsLabel &&
+      cdsLabel !== childLabel &&
+      cdsLabel !== cdsFeature.id()
         ? `${childLabel} (${cdsLabel})`
         : childLabel
 
@@ -293,7 +311,14 @@ function processMatureProteinLayout(
       collector,
     )
   }
-  emitTopLevelStrandArrow(layout, baseTopPx, flatbushIdx, ctx, collector)
+  emitStrandArrow(
+    layout.feature,
+    baseTopPx,
+    layout.height,
+    colorToUint32(strokeColor(layout.feature, ctx)),
+    flatbushIdx,
+    collector.arrows,
+  )
 }
 
 // Intact transposon (repeat_region): subparts on a single row, joined by one

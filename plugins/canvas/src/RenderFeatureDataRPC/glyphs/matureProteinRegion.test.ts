@@ -79,6 +79,20 @@ describe('hasMatureProteinChildren', () => {
     ).toBe(true)
   })
 
+  it('detects GenBank mat_peptide/sig_peptide children (GenBank→GFF3 conversion of a downloaded viral genome)', () => {
+    expect(
+      hasMatureProteinChildren(viralPolyprotein(['mat_peptide', 'sig_peptide'])),
+    ).toBe(true)
+  })
+
+  it('matches types case-insensitively, like isCDS/isExon', () => {
+    expect(
+      hasMatureProteinChildren(
+        viralPolyprotein(['Mature_Protein_Region_of_CDS']),
+      ),
+    ).toBe(true)
+  })
+
   it('is false for a plain CDS with no mature regions', () => {
     expect(
       hasMatureProteinChildren(mockFeature({ type: 'CDS', start: 1, end: 9 })),
@@ -277,7 +291,11 @@ describe('collectRenderData for mature protein regions', () => {
     ])
   })
 
-  it('disambiguates a mature region shared by two parent polyproteins (ORF1a/ORF1ab)', () => {
+  // Real SARS-CoV-2 shape: one gene (GU280_gp01) with two polyprotein CDS
+  // children (ORF1a and ORF1ab) that share nsp cleavage products at identical
+  // coordinates. Only here — a gene with >1 polyprotein CDS — is the peptide
+  // ambiguous, so the owning-CDS product is appended to keep the rows distinct.
+  it('disambiguates a mature region shared by two polyprotein CDS under one gene (ORF1a/ORF1ab)', () => {
     const config = mockDisplayConfig({
       labels: {
         name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
@@ -312,11 +330,16 @@ describe('collectRenderData for mature protein regions', () => {
         }),
       ],
     })
-    const layoutA = findGlyph(pp1a, config)({ feature: pp1a, config })
-    const layoutB = findGlyph(pp1ab, config)({ feature: pp1ab, config })
+    const gene = mockFeature({
+      type: 'gene',
+      start: 100,
+      end: 400,
+      subfeatures: [pp1a, pp1ab],
+    })
+    const layout = findGlyph(gene, config)({ feature: gene, config })
 
     const result = collectRenderData(
-      [layoutA, layoutB],
+      [layout],
       0,
       10000,
       config,
@@ -328,6 +351,60 @@ describe('collectRenderData for mature protein regions', () => {
     expect(result.subfeatureInfos.map(s => s.displayLabel)).toEqual([
       'nsp1 (ORF1a polyprotein)',
       'nsp1 (ORF1ab polyprotein)',
+    ])
+  })
+
+  // Enterovirus shape: a gene with a single polyprotein CDS. The peptides are
+  // unambiguous, so their labels stay clean — the owning-CDS product ("genome
+  // polyprotein") is NOT appended to every one of them.
+  it('does not clutter labels with the CDS name for a single-polyprotein gene', () => {
+    const config = mockDisplayConfig({
+      labels: {
+        name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
+        description: '',
+      },
+    })
+    const cds = mockFeature({
+      type: 'CDS',
+      start: 100,
+      end: 400,
+      product: 'genome polyprotein',
+      subfeatures: [
+        mockFeature({
+          type: 'mature_protein_region_of_CDS',
+          start: 100,
+          end: 200,
+          product: 'protein VP0',
+        }),
+        mockFeature({
+          type: 'mature_protein_region_of_CDS',
+          start: 200,
+          end: 300,
+          product: 'capsid protein VP1',
+        }),
+      ],
+    })
+    const gene = mockFeature({
+      type: 'gene',
+      start: 100,
+      end: 400,
+      subfeatures: [cds],
+    })
+    const layout = findGlyph(gene, config)({ feature: gene, config })
+
+    const result = collectRenderData(
+      [layout],
+      0,
+      10000,
+      config,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
+    expect(result.subfeatureInfos.map(s => s.displayLabel)).toEqual([
+      'protein VP0',
+      'capsid protein VP1',
     ])
   })
 
@@ -424,7 +501,12 @@ describe('collectRenderData for mature protein regions', () => {
     expect(subfeatureLabels).toHaveLength(0)
   })
 
-  it('omits the strand arrow when the CDS is not top-level', () => {
+  // The polyprotein CDS shows its own strand arrow even when nested under a
+  // gene: the enclosing gene renders as a Subfeatures container that draws no
+  // arrow, so gating on top-level (as leaf glyphs do) would leave a gene → CDS →
+  // mature-peptide polyprotein (enterovirus, SARS-CoV-2 ORF1ab) with no
+  // direction at all, unlike a gene → mRNA whose transcript always shows one.
+  it('draws the strand arrow even when the CDS is nested under a gene', () => {
     const parent = mockFeature({ type: 'gene', start: 100, end: 400 })
     const matures = [
       mockFeature({ type: 'mature_protein_region', start: 100, end: 200 }),
@@ -451,7 +533,9 @@ describe('collectRenderData for mature protein regions', () => {
       jexl,
     )
     expect(result.rectPositions).toHaveLength(2 * 2)
-    expect(result.arrowXs).toHaveLength(0)
+    expect(result.arrowXs).toHaveLength(1)
+    expect(result.arrowXs[0]).toBe(feature.get('end'))
+    expect(result.arrowDirections[0]).toBe(1)
   })
 
   // Real NCBI SARS-CoV-2 shape (test_data/sars-cov2/ncbi_original.gff3):

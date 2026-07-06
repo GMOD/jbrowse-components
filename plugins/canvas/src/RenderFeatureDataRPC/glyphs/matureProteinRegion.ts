@@ -4,20 +4,40 @@ import { featureType, getSubfeatures } from '../util.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// The complete `*_region_of_CDS` family NCBI emits as children of a CDS; all
-// render as stacked sub-regions along the CDS. `mature_protein_region` (no
-// `_of_CDS`) is the bare SO term, kept for non-NCBI sources.
+// Cleavage-product children of a CDS, all rendered as stacked sub-regions along
+// it. Two vocabularies land here:
+//   - NCBI RefSeq GFF3 SO terms: the `*_region_of_CDS` family (SO:0002205 etc.,
+//     created to annotate polypeptide regions on nucleotides — see
+//     github.com/The-Sequence-Ontology/SO-Ontologies/issues/484), plus the bare
+//     `mature_protein_region` (SO:0000419) for non-NCBI sources.
+//   - INSDC/GenBank feature keys (`mat_peptide`, `sig_peptide`,
+//     `transit_peptide`, `propeptide`; ebi.ac.uk/ena/WebFeat): what a GenBank
+//     flatfile → GFF3 conversion of a downloaded viral genome (enterovirus,
+//     poliovirus, …) emits. Without these, such a CDS drops its cleavage
+//     products to one flat box instead of the stacked glyph.
+// Compared case-insensitively, matching isCDS/isExon — real-world GFFs vary in
+// case and the dispatch and layout paths must agree (see util.ts isCDS).
+// Example data: test_data/enterovirus_d (RefSeq NC_001430.1, a gene → CDS →
+// mature_protein_region_of_CDS polyprotein) and test_data/sars-cov2
+// (ORF1a/ORF1ab); rendered by the `gene_track_mature_peptides` and
+// `gallery/sarscov2_polyprotein` website demos.
 const MATURE_PROTEIN_TYPES = new Set([
-  'mature_protein_region_of_CDS',
-  'signal_peptide_region_of_CDS',
-  'propeptide_region_of_CDS',
+  'mature_protein_region_of_cds',
+  'signal_peptide_region_of_cds',
+  'propeptide_region_of_cds',
   'mature_protein_region',
+  'mat_peptide',
+  'sig_peptide',
+  'transit_peptide',
+  'propeptide',
 ])
 
+export function isMatureProteinType(feature: Feature) {
+  return MATURE_PROTEIN_TYPES.has(featureType(feature).toLowerCase())
+}
+
 function getMatureProteinChildren(feature: Feature): Feature[] {
-  return getSubfeatures(feature).filter(sub =>
-    MATURE_PROTEIN_TYPES.has(featureType(sub)),
-  )
+  return getSubfeatures(feature).filter(isMatureProteinType)
 }
 
 export function hasMatureProteinChildren(feature: Feature) {
