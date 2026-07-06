@@ -14,7 +14,6 @@ export interface DotplotRpcData {
   ends: Uint32Array
   parsedCigars: number[][]
   identities: Float32Array
-  meanScores: Float32Array
   meanIdentities: Float32Array
   mappingQuals: Float32Array
   refNames: string[]

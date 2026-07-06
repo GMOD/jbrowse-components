@@ -55,12 +55,6 @@ const COLOR_MODES = [
     helpText:
       'Color by per-alignment PAF mapping quality (MAPQ, 0–60) on a perceptually-uniform cividis scale: low MAPQ dark blue, high MAPQ yellow. Highlights ambiguous or multi-mapping regions.',
   },
-  {
-    label: 'Mean query mapping quality',
-    value: 'meanQueryMappingQuality',
-    helpText:
-      'Color by the length-weighted mean mapping quality (MAPQ) per query/target pair, normalized across pairs to highlight relatively strong vs weak synteny (e.g. polyploidy). Based on the dotPlotly weighted-mean method.',
-  },
 ] as const
 
 const ColorBySelector = observer(function ColorBySelector({

@@ -14,7 +14,6 @@ function fakeRpcData(overrides: Partial<DotplotRpcData> = {}): DotplotRpcData {
     ends: new Uint32Array([100]),
     parsedCigars: [[]],
     identities: new Float32Array([0.5]),
-    meanScores: new Float32Array([0.5]),
     meanIdentities: new Float32Array([0.5]),
     mappingQuals: new Float32Array([30]),
     refNames: ['chr1'],

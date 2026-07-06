@@ -121,7 +121,6 @@ export const colorByShortLabel: Record<SyntenyColorBy, string> = {
   reference: 'Reference name',
   identity: 'Identity',
   meanQueryIdentity: 'Mean query identity',
-  meanQueryMappingQuality: 'Mean query MAPQ',
   mappingQuality: 'Mapping quality',
 }
 
@@ -144,12 +143,6 @@ export function getColorBySwatch(
       return ramp(continuousRampConfig.identity.toRgb, '0%', '100%')
     case 'mappingQuality':
       return ramp(continuousRampConfig.mappingQuality.toRgb, '0', '60')
-    case 'meanQueryMappingQuality':
-      return ramp(
-        continuousRampConfig.meanQueryMappingQuality.toRgb,
-        'weak',
-        'strong',
-      )
     case 'strand':
       return {
         kind: 'chips',

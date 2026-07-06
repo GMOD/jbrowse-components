@@ -17,7 +17,6 @@ function makeRpcData(
     starts: new Uint32Array([0]),
     ends: new Uint32Array([100]),
     identities: new Float32Array([-1]),
-    meanScores: new Float32Array([-1]),
     meanIdentities: new Float32Array([-1]),
     mappingQuals: new Float32Array([-1]),
     refNames: ['chr1'],

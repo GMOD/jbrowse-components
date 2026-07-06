@@ -10,12 +10,8 @@ test('continuous modes get a gradient ramp with bounded domain labels', () => {
   }
 
   const mapq = getColorBySwatch('mappingQuality')
-  const meanMapq = getColorBySwatch('meanQueryMappingQuality')
   if (mapq?.kind === 'ramp') {
     expect(mapq.maxLabel).toBe('60')
-  }
-  if (meanMapq?.kind === 'ramp') {
-    expect(meanMapq.minLabel).toBe('weak')
   }
 })
 

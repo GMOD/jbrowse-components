@@ -77,18 +77,13 @@ export function cividisRgb(norm: number): Rgb {
 // divides the raw per-feature value into that domain *with a clamp* — this is
 // the piece the dotplot view previously omitted for MAPQ, letting MAPQ > 60
 // escape the top of the ramp while the synteny LUT clamped it. identity /
-// meanQueryIdentity are true [0,1] fractions on viridis; meanQueryMappingQuality
-// is the normalized synteny-strength score and mappingQuality is raw MAPQ capped
-// at the minimap2 max of 60, both on cividis.
+// meanQueryIdentity are true [0,1] fractions on viridis; mappingQuality is raw
+// MAPQ capped at the minimap2 max of 60, on cividis.
 export const continuousRampConfig: Record<
-  | 'identity'
-  | 'meanQueryIdentity'
-  | 'meanQueryMappingQuality'
-  | 'mappingQuality',
+  'identity' | 'meanQueryIdentity' | 'mappingQuality',
   { toRgb: (norm: number) => Rgb; maxValue: number }
 > = {
   identity: { toRgb: viridisRgb, maxValue: 1 },
   meanQueryIdentity: { toRgb: viridisRgb, maxValue: 1 },
-  meanQueryMappingQuality: { toRgb: cividisRgb, maxValue: 1 },
   mappingQuality: { toRgb: cividisRgb, maxValue: 60 },
 }

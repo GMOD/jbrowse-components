@@ -29,12 +29,9 @@ export interface SyntenyFeatureData {
   // PAF mapping-quality (column 12), -1 where missing. Float32 because the
   // sentinel is -1 and we want to avoid an extra "valid" bitmap.
   mappingQuals: Float32Array
-  // Adapter-computed length-weighted mean MAPQ per query/target pair, min-max
-  // normalized to [0,1] ("synteny strength"). -1 where missing. See
-  // PAFAdapter/util.ts:getWeightedMeans.
-  meanScores: Float32Array
   // Adapter-computed length-weighted mean sequence identity per query/target
-  // pair, a true [0,1] fraction. -1 where missing.
+  // pair, a true [0,1] fraction. -1 where missing. See
+  // PAFAdapter/util.ts:getWeightedMeans.
   meanIdentities: Float32Array
   featureIds: string[]
   names: string[]

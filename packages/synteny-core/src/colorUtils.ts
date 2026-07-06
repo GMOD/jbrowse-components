@@ -77,7 +77,6 @@ export type SyntenyColorBy =
   | 'reference'
   | 'identity'
   | 'meanQueryIdentity'
-  | 'meanQueryMappingQuality'
   | 'mappingQuality'
 
 const syntenyColorByValues = new Set<string>([
@@ -88,7 +87,6 @@ const syntenyColorByValues = new Set<string>([
   'reference',
   'identity',
   'meanQueryIdentity',
-  'meanQueryMappingQuality',
   'mappingQuality',
 ])
 

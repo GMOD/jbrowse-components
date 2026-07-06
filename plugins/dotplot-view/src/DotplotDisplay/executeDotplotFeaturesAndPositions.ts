@@ -22,7 +22,6 @@ export interface DotplotFeaturesAndPositionsResult {
   starts: Uint32Array
   ends: Uint32Array
   identities: Float32Array
-  meanScores: Float32Array
   meanIdentities: Float32Array
   mappingQuals: Float32Array
   refNames: string[]
@@ -100,7 +99,6 @@ export async function executeDotplotFeaturesAndPositions({
   const starts = new Uint32Array(count)
   const ends = new Uint32Array(count)
   const identities = new Float32Array(count)
-  const meanScores = new Float32Array(count)
   const meanIdentities = new Float32Array(count)
   const mappingQuals = new Float32Array(count)
   const refNames: string[] = []
@@ -156,7 +154,6 @@ export async function executeDotplotFeaturesAndPositions({
     starts[n] = start
     ends[n] = end
     identities[n] = (f.get('identity') as number | undefined) ?? -1
-    meanScores[n] = (f.get('meanScore') as number | undefined) ?? -1
     meanIdentities[n] = (f.get('meanIdentity') as number | undefined) ?? -1
     mappingQuals[n] = (f.get('mappingQual') as number | undefined) ?? -1
     refNames.push(refName)
@@ -174,7 +171,6 @@ export async function executeDotplotFeaturesAndPositions({
     starts: starts.subarray(0, n),
     ends: ends.subarray(0, n),
     identities: identities.subarray(0, n),
-    meanScores: meanScores.subarray(0, n),
     meanIdentities: meanIdentities.subarray(0, n),
     mappingQuals: mappingQuals.subarray(0, n),
     refNames,
@@ -193,7 +189,6 @@ export async function executeDotplotFeaturesAndPositions({
     result.starts.buffer,
     result.ends.buffer,
     result.identities.buffer,
-    result.meanScores.buffer,
     result.meanIdentities.buffer,
     result.mappingQuals.buffer,
   ])

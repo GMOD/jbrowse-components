@@ -16,7 +16,6 @@ export interface PAFRecord {
     blockLen?: number
     mappingQual?: number
     numMatches?: number
-    meanScore?: number
     meanIdentity?: number
     [key: string]: string | number | undefined
   }
@@ -53,59 +52,32 @@ export interface PAFRecord {
 // that match a particular ref from a particular query (so 1d array of what
 // could be a 2d map)
 //
-// the result is a single number that says e.g. chr5 from human mapped to chr5
-// on mouse with 0.8 quality, and that 0.8 is then attached to all the pieces
-// of chr5 on human that mapped to chr5 on mouse. if chr5 on human also more
-// weakly mapped to chr6 on mouse, then it would have another value e.g. 0.6.
-// this can show strong and weak levels of synteny, especially in polyploidy
-// situations
+// the result is a single identity that says e.g. chr5 from human mapped to
+// chr5 on mouse at 0.8 identity, and that 0.8 is then attached to all the
+// pieces of chr5 on human that mapped to chr5 on mouse — so a query split
+// across many hits is colored by its overall identity to the target.
 
 export function getWeightedMeans(ret: PAFRecord[]) {
-  // One pass: length-weighted sums per query-target pair, for both MAPQ (→
-  // normalized "synteny strength") and sequence identity.
-  const map: Record<
-    string,
-    { mapqSum: number; idSum: number; weightSum: number }
-  > = {}
+  // One pass: length-weighted identity sums per query-target pair.
+  const map: Record<string, { idSum: number; weightSum: number }> = {}
   for (const entry of ret) {
     const key = `${entry.qname}-${entry.tname}`
-    // MAPQ 255 is the PAF spec sentinel for "not computed" — treat as missing,
-    // not as a high-quality signal (which would massively upweight such records).
-    const mapq = entry.extra.mappingQual
-    const qual = mapq !== undefined && mapq !== 255 ? mapq : 1
     const len = entry.extra.blockLen ?? 1
     const id = pafIdentity(entry.extra)
     const e = map[key]
     if (e) {
-      e.mapqSum += qual * len
       e.idSum += id * len
       e.weightSum += len
     } else {
-      map[key] = { mapqSum: qual * len, idSum: id * len, weightSum: len }
+      map[key] = { idSum: id * len, weightSum: len }
     }
   }
 
-  // Mean MAPQ is min-max normalized across pairs (the dotPlotly "weighted mean"
-  // method — surfaces relative strong vs weak synteny, e.g. polyploidy). Mean
-  // identity stays a true [0,1] fraction so it shares the per-alignment
+  // Mean identity is a true [0,1] fraction, so it shares the per-alignment
   // identity color scale.
-  const meanMapq: Record<string, number> = {}
-  let min = Infinity
-  let max = -Infinity
-  for (const [key, { mapqSum, weightSum }] of Object.entries(map)) {
-    const mean = mapqSum / weightSum
-    meanMapq[key] = mean
-    min = Math.min(mean, min)
-    max = Math.max(mean, max)
-  }
-
-  const range = max - min
   for (const entry of ret) {
     const key = `${entry.qname}-${entry.tname}`
     const { idSum, weightSum } = map[key]!
-    // When all pairs have identical quality (range === 0), use 0.5 rather than
-    // 1 so the encoding reads as "neutral" instead of "maximum quality."
-    entry.extra.meanScore = range > 0 ? (meanMapq[key]! - min) / range : 0.5
     entry.extra.meanIdentity = idSum / weightSum
   }
 

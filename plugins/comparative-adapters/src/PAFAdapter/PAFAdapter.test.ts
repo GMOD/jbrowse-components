@@ -26,43 +26,9 @@ function makeRecord(
   }
 }
 
-test('getWeightedMeans treats MAPQ 255 as missing, not as quality 255', () => {
-  const records = [
-    makeRecord('q1', 't1', 255, 1000),
-    makeRecord('q1', 't1', 60, 1000),
-  ]
-  getWeightedMeans(records)
-  // If 255 were used as-is the mean would be (255+60)/2 = 157.5, so min=max=157.5, meanScore=0.5.
-  // With the fix, 255 → 1, so mean = (1+60)/2 = 30.5, still min=max=30.5, meanScore=0.5.
-  // The key assertion is that the record with MAPQ 255 doesn't skew the result toward 255.
-  expect(records[0]!.extra.meanScore).toBe(0.5)
-  expect(records[1]!.extra.meanScore).toBe(0.5)
-})
-
-test('getWeightedMeans returns 0.5 when all pairs have identical quality', () => {
-  const records = [
-    makeRecord('q1', 't1', 60, 1000),
-    makeRecord('q2', 't2', 60, 500),
-  ]
-  getWeightedMeans(records)
-  expect(records[0]!.extra.meanScore).toBe(0.5)
-  expect(records[1]!.extra.meanScore).toBe(0.5)
-})
-
-test('getWeightedMeans normalizes scores correctly across different quality pairs', () => {
-  const records = [
-    makeRecord('q1', 't1', 60, 1000),
-    makeRecord('q2', 't2', 20, 1000),
-  ]
-  getWeightedMeans(records)
-  expect(records[0]!.extra.meanScore).toBe(1)
-  expect(records[1]!.extra.meanScore).toBe(0)
-})
-
 test('getWeightedMeans computes a true length-weighted mean identity per pair', () => {
   // Two alignments in the same pair: 90% identity over 1000bp and 50% over
-  // 1000bp → length-weighted mean = (0.9*1000 + 0.5*1000)/2000 = 0.7. Unlike
-  // meanScore, meanIdentity is NOT min-max normalized.
+  // 1000bp → length-weighted mean = (0.9*1000 + 0.5*1000)/2000 = 0.7.
   const records = [
     makeRecord('q1', 't1', 60, 1000, 900),
     makeRecord('q1', 't1', 60, 1000, 500),

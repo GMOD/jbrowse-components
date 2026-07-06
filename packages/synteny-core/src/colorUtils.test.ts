@@ -2,9 +2,7 @@ import { coerceColorBy } from './colorUtils.ts'
 
 test('coerceColorBy passes through valid modes', () => {
   expect(coerceColorBy('strand')).toBe('strand')
-  expect(coerceColorBy('meanQueryMappingQuality')).toBe(
-    'meanQueryMappingQuality',
-  )
+  expect(coerceColorBy('meanQueryIdentity')).toBe('meanQueryIdentity')
 })
 
 test('coerceColorBy maps retired identityDiverging to identity', () => {

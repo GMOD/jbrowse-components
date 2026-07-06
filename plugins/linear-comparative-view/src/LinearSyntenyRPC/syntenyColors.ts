@@ -53,10 +53,9 @@ function buildLut(toRgb: (norm: number) => readonly [number, number, number]) {
   return lut
 }
 
-// identity + meanQueryIdentity share the viridis ramp; mappingQuality +
-// meanQueryMappingQuality share cividis. Each colormap is baked once over the
-// normalized [0,1] domain — the per-mode maxValue is applied at lookup, so the
-// raw (0..60) and pre-normalized mapq modes reuse the single cividis LUT.
+// identity + meanQueryIdentity share the viridis ramp; mappingQuality uses
+// cividis. Each colormap is baked once over the normalized [0,1] domain — the
+// per-mode maxValue is applied at lookup.
 const IDENTITY_LUT = buildLut(continuousRampConfig.identity.toRgb)
 const MAPQ_LUT = buildLut(continuousRampConfig.mappingQuality.toRgb)
 
@@ -74,7 +73,6 @@ interface ColorInputs {
   mateRefNames: readonly string[]
   identities: Float32Array
   mappingQuals: Float32Array
-  meanScores: Float32Array
   meanIdentities: Float32Array
 }
 
@@ -87,8 +85,6 @@ function createColorFunction(
       return index => lutLookup(IDENTITY_LUT, d.identities[index]!)
     case 'meanQueryIdentity':
       return index => lutLookup(IDENTITY_LUT, d.meanIdentities[index]!)
-    case 'meanQueryMappingQuality':
-      return index => lutLookup(MAPQ_LUT, d.meanScores[index]!)
     case 'mappingQuality':
       return index =>
         lutLookup(

@@ -30,12 +30,6 @@ const COLOR_BY_OPTIONS: readonly {
       'Color by the length-weighted mean sequence identity across all alignments of each query/target pair (a true 0–100% value). A single long query split into many smaller hits is colored by its overall identity to the target. Similar to the program dotPlotly.',
   },
   {
-    value: 'meanQueryMappingQuality',
-    label: 'Mean query mapping quality',
-    helpText:
-      'Color by the length-weighted mean mapping quality (MAPQ) per query/target pair, normalized across pairs to highlight relatively strong vs. weak synteny (e.g. polyploidy). Based on the dotPlotly weighted-mean method.',
-  },
-  {
     value: 'mappingQuality',
     label: 'Mapping quality',
     helpText:
