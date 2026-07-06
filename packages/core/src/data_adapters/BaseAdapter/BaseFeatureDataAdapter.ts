@@ -78,20 +78,6 @@ export abstract class BaseFeatureDataAdapter<
   }
 
   /**
-   * Alias for getFeatures, retained because it is called from many sites
-   * across the codebase. Previously did an upfront hasDataForRefName check
-   * before fetching, but every modern indexed adapter (BigWig, Tabix, BAM,
-   * CRAM, etc.) already returns nothing for missing ref names, so the extra
-   * await per region just doubled the metadata round-trips.
-   */
-  public getFeaturesInRegion(
-    region: Region,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
-    return this.getFeatures(region, opts)
-  }
-
-  /**
    * Adapters that are frequently called on multiple regions simultaneously
    * may want to implement a more efficient custom version of this method.
    */
@@ -208,10 +194,9 @@ export abstract class BaseFeatureDataAdapter<
 
   async getSources(
     regions: Region[],
+    opts: BaseOptions = {},
   ): Promise<{ name: string; color?: string; [key: string]: unknown }[]> {
-    const features = await firstValueFrom(
-      this.getFeaturesInMultipleRegions(regions).pipe(toArray()),
-    )
+    const features = await this.getFeaturesInMultipleRegionsArray(regions, opts)
     const sources = new Set<string>()
     for (const f of features) {
       const source = f.get('source')

@@ -46,9 +46,7 @@ export async function fetchFeaturesFromAdapter({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  if (sequenceAdapter && !dataAdapter.sequenceAdapterConfig) {
-    dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
-  }
+  dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
 
   const fetchOpts: BaseOptions & { filterBy?: FilterBy } = {
     stopToken,

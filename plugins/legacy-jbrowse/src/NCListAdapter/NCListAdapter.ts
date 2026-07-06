@@ -42,9 +42,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
   }
 
   /**
-   * Fetch features for a certain region. Use getFeaturesInRegion() if you also
-   * want to verify that the store has features for the given reference sequence
-   * before fetching.
+   * Fetch features for a certain region.
    * @param region -
    * @param opts - [stopToken] optional stopTokenling object for aborting the fetch
    * @returns Observable of Feature objects in the region

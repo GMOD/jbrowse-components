@@ -1,6 +1,3 @@
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
-
 import { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
 
 import type { BaseOptions } from './types.ts'
@@ -31,8 +28,9 @@ export abstract class BaseSequenceAdapter<
    * @returns The sequence string for the region
    */
   async getSequence(region: NoAssemblyRegion, opts?: BaseOptions) {
-    const features = await firstValueFrom(
-      this.getFeatures({ ...region, assemblyName: '' }, opts).pipe(toArray()),
+    const features = await this.getFeaturesArray(
+      { ...region, assemblyName: '' },
+      opts,
     )
     return features[0]?.get('seq') as string | undefined
   }
