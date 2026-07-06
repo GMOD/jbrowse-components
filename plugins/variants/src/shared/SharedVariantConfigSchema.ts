@@ -80,6 +80,16 @@ export default function sharedVariantConfigFactory() {
       /**
        * #slot
        */
+      maxMissingnessFilter: {
+        type: 'number',
+        defaultValue: 1,
+        advanced: true,
+        description:
+          'Hide variants whose fraction of no-call (missing) genotypes is above this threshold; 1 keeps every variant',
+      },
+      /**
+       * #slot
+       */
       colorBy: {
         type: 'string',
         defaultValue: '',

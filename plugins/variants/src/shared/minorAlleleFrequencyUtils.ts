@@ -26,6 +26,19 @@ export function calculateMinorAlleleFrequency(
   return secondMax / (total || 1)
 }
 
+// Fraction of called alleles that are no-call ('.'); high on sparse
+// multi-sample panels where many samples lack a genotype at a site.
+export function calculateMissingnessFrequency(
+  alleleCounts: Record<string, number>,
+) {
+  let total = 0
+  for (const key in alleleCounts) {
+    total += alleleCounts[key]!
+  }
+  const missing = alleleCounts['.'] ?? 0
+  return missing / (total || 1)
+}
+
 function getMostFrequentAlt(alleleCounts: Record<string, number>) {
   let mostFrequentAlt
   let max = 0
@@ -66,20 +79,28 @@ function computeAlleleCounts(
   return alleleCounts
 }
 
+// The single feature-level filter chokepoint for the cell/matrix/cluster
+// paths: a jexl `filterChain`, a minor-allele-frequency floor, and a
+// no-call-missingness ceiling, all evaluated off the one allele-count pass.
+// `maxMissingnessFilter` of 1 (or undefined) disables the missingness ceiling.
 export function getFeaturesThatPassMinorAlleleFrequencyFilter({
   features,
   minorAlleleFrequencyFilter,
+  maxMissingnessFilter,
   filterChain,
   genotypesCache,
   report,
 }: {
   features: Iterable<Feature>
   minorAlleleFrequencyFilter: number
+  maxMissingnessFilter?: number
   filterChain?: SerializableFilterChain
   genotypesCache?: Map<string, Record<string, string>>
   report?: ProgressReporter
 }) {
   const results: MAFFilteredFeature[] = []
+  const missingnessCeiling = maxMissingnessFilter ?? 1
+  const filterMissingness = missingnessCeiling < 1
 
   for (const feature of features) {
     if (!filterChain || filterChain.passes(feature)) {
@@ -88,7 +109,9 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
       if (
         mostFrequentAlt !== undefined &&
         calculateMinorAlleleFrequency(alleleCounts) >=
-          minorAlleleFrequencyFilter
+          minorAlleleFrequencyFilter &&
+        (!filterMissingness ||
+          calculateMissingnessFrequency(alleleCounts) <= missingnessCeiling)
       ) {
         results.push({ feature, mostFrequentAlt })
       }

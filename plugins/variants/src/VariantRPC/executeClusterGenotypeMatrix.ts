@@ -26,6 +26,7 @@ export async function executeClusterGenotypeMatrix({
     regions: Region[]
     bpPerPx?: number
     minorAlleleFrequencyFilter: number
+    maxMissingnessFilter: number
     filters?: SerializableFilterChain
     statusCallback: StatusCallback
     sources: Source[]

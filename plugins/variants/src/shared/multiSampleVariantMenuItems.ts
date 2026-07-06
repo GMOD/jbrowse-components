@@ -15,6 +15,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { titleCase } from './constants.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
+import { createMissingnessFilterMenuItem } from './missingnessFilterUtils.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
@@ -197,6 +198,7 @@ export function variantTrackMenuItems(
       icon: ClearAllIcon,
       subMenu: [
         createMAFFilterMenuItem(self),
+        createMissingnessFilterMenuItem(self),
         {
           label: 'Edit filters',
           onClick: () => {

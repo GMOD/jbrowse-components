@@ -7,6 +7,7 @@ export interface ReducedModel {
   sourcesWithoutLayout?: Source[]
   sourcesVolatile?: Source[]
   minorAlleleFrequencyFilter?: number
+  maxMissingnessFilter?: number
   filters?: SerializableFilterChain
   adapterConfig: AnyConfigurationModel
   renderingMode: string

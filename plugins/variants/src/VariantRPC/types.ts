@@ -11,6 +11,8 @@ interface BaseVariantRpcArgs {
   regions: Region[]
   bpPerPx?: number
   minorAlleleFrequencyFilter: number
+  // fraction of no-call genotypes above which a variant is hidden; 1 keeps all
+  maxMissingnessFilter: number
   // jexl filters from the Edit filters dialog. On the wire this is a string[];
   // RpcMethodTypeWithFiltersAndRenameRegions rebuilds it into a chain in the
   // worker (and serializes the chain to string[] on the way out).

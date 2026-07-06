@@ -69,6 +69,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
       const {
         sourcesWithoutLayout,
         minorAlleleFrequencyFilter,
+        maxMissingnessFilter,
         filters,
         adapterConfig,
       } = model
@@ -77,6 +78,7 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
         regions: view.dynamicBlocks.contentBlocks,
         sources: sourcesWithoutLayout ?? [],
         minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
+        maxMissingnessFilter: maxMissingnessFilter ?? 1,
         filters,
         adapterConfig,
       })

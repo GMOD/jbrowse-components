@@ -231,6 +231,7 @@ export async function executeVariantCellData({
     referenceDrawingMode,
     featureColor,
     minorAlleleFrequencyFilter,
+    maxMissingnessFilter,
     filters,
     regions,
     adapterConfig,
@@ -326,6 +327,7 @@ export async function executeVariantCellData({
             getFeaturesThatPassMinorAlleleFrequencyFilter({
               features,
               minorAlleleFrequencyFilter,
+              maxMissingnessFilter,
               filterChain: filters,
               genotypesCache,
               report,
@@ -353,6 +355,7 @@ export async function executeVariantCellData({
         getFeaturesThatPassMinorAlleleFrequencyFilter({
           features: rawFeatures,
           minorAlleleFrequencyFilter,
+          maxMissingnessFilter,
           filterChain: filters,
           genotypesCache,
           report,

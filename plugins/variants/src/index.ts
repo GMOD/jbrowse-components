@@ -18,7 +18,10 @@ import VcfAdapterF from './VcfAdapter/index.ts'
 import ExtensionPointsF from './VcfExtensionPoints/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { calculateAlleleCounts } from './shared/alleleCounts.ts'
-import { calculateMinorAlleleFrequency } from './shared/minorAlleleFrequencyUtils.ts'
+import {
+  calculateMinorAlleleFrequency,
+  calculateMissingnessFrequency,
+} from './shared/minorAlleleFrequencyUtils.ts'
 import {
   getVariantConsequence,
   getVariantImpact,
@@ -72,6 +75,17 @@ export default class VariantsPlugin extends Plugin {
       }
       const alleleCounts = calculateAlleleCounts(genotypes)
       return calculateMinorAlleleFrequency(alleleCounts)
+    })
+
+    // Add jexl function to calculate the no-call (missing) genotype fraction
+    jexl.addFunction('missingness', (feature: Feature) => {
+      const genotypes = feature.get('genotypes') as
+        Record<string, string> | undefined
+      if (!genotypes) {
+        return 0
+      }
+      const alleleCounts = calculateAlleleCounts(genotypes)
+      return calculateMissingnessFrequency(alleleCounts)
     })
 
     // Variant-consequence helpers, reading SnpEff ANN / VEP CSQ. `impact` and

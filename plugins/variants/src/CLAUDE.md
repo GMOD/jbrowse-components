@@ -84,8 +84,8 @@ context-tuned — don't merge into a shared accumulator + per-allele helper:
 Rule: count inline while iterating; a transform-then-tally shape or per-allele
 function call regresses the hot loop. Length filtering is no longer built in —
 use a jexl filter (`jexl:get(feature,'end')-get(feature,'start')<N`), like the
-`maf()` jexl function in `index.ts`. `lengthCutoffFilter` was removed here (no
-UI, never set); LD keeps its functional one.
+`maf()` / `missingness()` jexl functions in `index.ts`. `lengthCutoffFilter` was
+removed here (no UI, never set); LD keeps its functional one.
 
 ## Genotypes: string `genotypes` map is the only representation
 
@@ -108,7 +108,10 @@ extend `RpcMethodTypeWithFiltersAndRenameRegions`, which serializes the chain to
 string[] and rebuilds it in the worker with `pluginManager.jexl`. The worker
 applies it in `getFeaturesThatPassMinorAlleleFrequencyFilter` (`filterChain`
 param), so cell data and clustering share one filtered set. Pass `filters` as a
-chain, not a string[] — `serializeArguments` calls `.toJSON()`.
+chain, not a string[] — `serializeArguments` calls `.toJSON()`. That same
+chokepoint applies the two frequency ceilings off one allele-count pass:
+`minorAlleleFrequencyFilter` (floor) and `maxMissingnessFilter` (no-call
+ceiling, 1 = keep all) — both config slots, both in `rpcProps()`.
 
 ## Phased expansion has one home
 

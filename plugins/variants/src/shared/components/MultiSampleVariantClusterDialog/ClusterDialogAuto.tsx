@@ -38,6 +38,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
   const {
     sourcesVolatile,
     minorAlleleFrequencyFilter,
+    maxMissingnessFilter,
     filters,
     adapterConfig,
     renderingMode,
@@ -95,6 +96,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                     regions: view.dynamicBlocks.contentBlocks,
                     sources: sourcesVolatile,
                     minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
+                    maxMissingnessFilter: maxMissingnessFilter ?? 1,
                     filters,
                     adapterConfig,
                     stopToken,

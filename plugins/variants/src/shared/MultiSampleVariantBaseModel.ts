@@ -91,6 +91,7 @@ type SetSlotFn = (slotName: string, value: unknown) => void
 const PORTABLE_CONFIG_KEYS = [
   'renderingMode',
   'minorAlleleFrequencyFilter',
+  'maxMissingnessFilter',
   'showSidebarLabels',
   'showTree',
   'showBranchLength',
@@ -165,6 +166,7 @@ async function callMultiSampleVariantCellData(args: {
   rpcProps: {
     sources: ProcessedSource[]
     minorAlleleFrequencyFilter: number
+    maxMissingnessFilter: number
     filters?: SerializableFilterChain
     renderingMode: string
     referenceDrawingMode: string
@@ -576,6 +578,12 @@ export default function MultiSampleVariantBaseModelF(
         setMafFilter(arg: number) {
           self.configuration.setSlot('minorAlleleFrequencyFilter', arg)
         },
+        /**
+         * #action
+         */
+        setMaxMissingnessFilter(arg: number) {
+          self.configuration.setSlot('maxMissingnessFilter', arg)
+        },
         setShowSidebarLabels(arg: boolean) {
           self.configuration.setSlot('showSidebarLabels', arg)
         },
@@ -656,6 +664,15 @@ export default function MultiSampleVariantBaseModelF(
          */
         get minorAlleleFrequencyFilter(): number {
           return getConf(self, 'minorAlleleFrequencyFilter')
+        },
+
+        /**
+         * #getter
+         * Max fraction of no-call genotypes a variant may have before it's
+         * hidden; 1 keeps every variant
+         */
+        get maxMissingnessFilter(): number {
+          return getConf(self, 'maxMissingnessFilter')
         },
 
         /**
@@ -798,6 +815,7 @@ export default function MultiSampleVariantBaseModelF(
           return {
             sources: self.sourcesBase,
             minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+            maxMissingnessFilter: self.maxMissingnessFilter,
             filters: self.filters,
             renderingMode: self.renderingMode,
             referenceDrawingMode: self.referenceDrawingMode,

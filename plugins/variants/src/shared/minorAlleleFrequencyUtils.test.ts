@@ -4,6 +4,7 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 import { calculateAlleleCounts } from './alleleCounts.ts'
 import {
   calculateMinorAlleleFrequency,
+  calculateMissingnessFrequency,
   getFeaturesThatPassMinorAlleleFrequencyFilter,
 } from './minorAlleleFrequencyUtils.ts'
 
@@ -411,5 +412,102 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
 
     // Cache should now contain the genotypes
     expect(genotypesCache.get('snp1')).toEqual(genotypes)
+  })
+
+  it('filters out variants above the missingness ceiling', () => {
+    const features = [
+      // 3/5 samples no-call => missingness 0.6
+      createMockFeature('sparse', 100, 101, {
+        s1: './.',
+        s2: './.',
+        s3: './.',
+        s4: '0/1',
+        s5: '1/1',
+      }),
+      // no missing calls => missingness 0
+      createMockFeature('dense', 200, 201, {
+        s1: '0/0',
+        s2: '0/1',
+        s3: '0/1',
+        s4: '1/1',
+        s5: '1/1',
+      }),
+    ]
+
+    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
+      features,
+      minorAlleleFrequencyFilter: 0,
+      maxMissingnessFilter: 0.5,
+    })
+
+    expect(result).toHaveLength(1)
+    expect(result[0]!.feature.id()).toBe('dense')
+  })
+
+  it('keeps every variant when the missingness ceiling is 1 (default)', () => {
+    const features = [
+      createMockFeature('sparse', 100, 101, {
+        s1: './.',
+        s2: './.',
+        s3: './.',
+        s4: '0/1',
+        s5: '1/1',
+      }),
+    ]
+
+    expect(
+      getFeaturesThatPassMinorAlleleFrequencyFilter({
+        features,
+        minorAlleleFrequencyFilter: 0,
+        maxMissingnessFilter: 1,
+      }),
+    ).toHaveLength(1)
+    // undefined behaves the same as the no-filter ceiling
+    expect(
+      getFeaturesThatPassMinorAlleleFrequencyFilter({
+        features,
+        minorAlleleFrequencyFilter: 0,
+      }),
+    ).toHaveLength(1)
+  })
+
+  it('keeps a variant at the exact missingness ceiling', () => {
+    const features = [
+      // 2/5 samples no-call => missingness exactly 0.4
+      createMockFeature('snp1', 100, 101, {
+        s1: './.',
+        s2: './.',
+        s3: '0/1',
+        s4: '0/1',
+        s5: '1/1',
+      }),
+    ]
+
+    expect(
+      getFeaturesThatPassMinorAlleleFrequencyFilter({
+        features,
+        minorAlleleFrequencyFilter: 0,
+        maxMissingnessFilter: 0.4,
+      }),
+    ).toHaveLength(1)
+  })
+})
+
+describe('calculateMissingnessFrequency', () => {
+  it('returns 0 when nothing is missing', () => {
+    expect(calculateMissingnessFrequency({ '0': 6, '1': 4 })).toBe(0)
+  })
+
+  it('returns the no-call fraction of all alleles', () => {
+    // 2 no-call alleles out of 10 total
+    expect(calculateMissingnessFrequency({ '.': 2, '0': 4, '1': 4 })).toBe(0.2)
+  })
+
+  it('returns 1 when every allele is missing', () => {
+    expect(calculateMissingnessFrequency({ '.': 8 })).toBe(1)
+  })
+
+  it('returns 0 for empty allele counts', () => {
+    expect(calculateMissingnessFrequency({})).toBe(0)
   })
 })

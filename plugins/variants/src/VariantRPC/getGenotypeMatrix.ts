@@ -38,6 +38,7 @@ export async function getGenotypeMatrix({
     sources: Source[]
     bpPerPx?: number
     minorAlleleFrequencyFilter: number
+    maxMissingnessFilter: number
     filters?: SerializableFilterChain
     statusCallback?: StatusCallback
   }
@@ -45,6 +46,7 @@ export async function getGenotypeMatrix({
   const {
     sources,
     minorAlleleFrequencyFilter,
+    maxMissingnessFilter,
     filters,
     regions,
     adapterConfig,
@@ -73,6 +75,7 @@ export async function getGenotypeMatrix({
   )
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
+    maxMissingnessFilter,
     filterChain: filters,
     features: rawFeatures,
     report: createProgressReporter({

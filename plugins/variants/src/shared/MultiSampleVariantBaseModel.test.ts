@@ -101,6 +101,25 @@ describe('SharedVariantConfigSchema', () => {
       expect(readConfObject(config, 'minorAlleleFrequencyFilter')).toBe(0.05)
     })
   })
+
+  describe('maxMissingnessFilter config slot', () => {
+    it('defaults to 1 (keep every variant)', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-missingness-default',
+      })
+      expect(readConfObject(config, 'maxMissingnessFilter')).toBe(1)
+    })
+
+    it('can be set to a custom value', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-missingness-custom',
+        maxMissingnessFilter: 0.2,
+      })
+      expect(readConfObject(config, 'maxMissingnessFilter')).toBe(0.2)
+    })
+  })
 })
 
 describe('colorBy config slot', () => {

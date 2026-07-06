@@ -27,6 +27,7 @@ export async function getPhasedGenotypeMatrix({
     sources: Source[]
     bpPerPx?: number
     minorAlleleFrequencyFilter: number
+    maxMissingnessFilter: number
     filters?: SerializableFilterChain
     sampleInfo: Record<string, SampleInfo>
     statusCallback?: StatusCallback
@@ -35,6 +36,7 @@ export async function getPhasedGenotypeMatrix({
   const {
     sources,
     minorAlleleFrequencyFilter,
+    maxMissingnessFilter,
     filters,
     regions,
     adapterConfig,
@@ -65,6 +67,7 @@ export async function getPhasedGenotypeMatrix({
   )
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
+    maxMissingnessFilter,
     filterChain: filters,
     features: rawFeatures,
     report: createProgressReporter({
