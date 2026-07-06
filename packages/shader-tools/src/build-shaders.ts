@@ -122,6 +122,23 @@ function ensureSlangc() {
 
 const SLANGC = ensureSlangc()
 
+// Run a build tool (slangc/naga/glslang), surfacing its diagnostic on failure.
+// spawnSync (vs execFileSync) keeps the tool's stderr as a decoded string rather
+// than throwing an exception whose Buffer fields dump as raw byte arrays — so a
+// shader compile error reads as the compiler's own message, file:line and all.
+function run(bin: string, args: string[]) {
+  const { error, status, signal, stderr } = spawnSync(bin, args, {
+    encoding: 'utf8',
+  })
+  if (error) {
+    throw new Error(`${path.basename(bin)}: ${error.message}`)
+  }
+  if (status !== 0) {
+    const how = signal ? `killed by ${signal}` : `exited with ${status}`
+    throw new Error(`${path.basename(bin)} ${how}\n\n${stderr.trim()}`)
+  }
+}
+
 function walk(dir: string, out: string[] = []) {
   for (const entry of readdirSync(dir)) {
     if (
@@ -389,10 +406,10 @@ function compileOne(slangPath: string) {
       '-I',
       SHARED_INCLUDE,
     ]
-    execFileSync(SLANGC, slangcArgs, { stdio: 'pipe' })
+    run(SLANGC, slangcArgs)
     const wgsl = readFileSync(wgslOut, 'utf8')
     if (NAGA) {
-      execFileSync(NAGA, [wgslOut], { stdio: 'pipe' })
+      run(NAGA, [wgslOut])
     }
 
     const reflection = JSON.parse(readFileSync(reflectionOut, 'utf8'))
@@ -409,44 +426,12 @@ function compileOne(slangPath: string) {
       }
       const glslVertexOut = path.join(tmp, `${base}.vert.glsl`)
       const glslFragmentOut = path.join(tmp, `${base}.frag.glsl`)
-      execFileSync(
-        SLANGC,
-        [
-          slangPath,
-          '-target',
-          'glsl',
-          '-stage',
-          'vertex',
-          '-entry',
-          vsName,
-          '-o',
-          glslVertexOut,
-          '-I',
-          dir,
-          '-I',
-          SHARED_INCLUDE,
-        ],
-        { stdio: 'pipe' },
-      )
-      execFileSync(
-        SLANGC,
-        [
-          slangPath,
-          '-target',
-          'glsl',
-          '-stage',
-          'fragment',
-          '-entry',
-          fsName,
-          '-o',
-          glslFragmentOut,
-          '-I',
-          dir,
-          '-I',
-          SHARED_INCLUDE,
-        ],
-        { stdio: 'pipe' },
-      )
+      const glslArgs = (stage: string, entry: string, out: string) => [
+        slangPath, '-target', 'glsl', '-stage', stage, '-entry', entry,
+        '-o', out, '-I', dir, '-I', SHARED_INCLUDE,
+      ]
+      run(SLANGC, glslArgs('vertex', vsName, glslVertexOut))
+      run(SLANGC, glslArgs('fragment', fsName, glslFragmentOut))
 
       const attributes = findVertexStructMeta(reflection)
       const uniformBlockName = findUniformBlockName(reflection)
@@ -483,12 +468,8 @@ function compileOne(slangPath: string) {
       writeFileSync(processedVertOut, glslVertex)
       writeFileSync(processedFragOut, glslFragment)
       if (GLSLANG) {
-        execFileSync(GLSLANG, ['-S', 'vert', processedVertOut], {
-          stdio: 'pipe',
-        })
-        execFileSync(GLSLANG, ['-S', 'frag', processedFragOut], {
-          stdio: 'pipe',
-        })
+        run(GLSLANG, ['-S', 'vert', processedVertOut])
+        run(GLSLANG, ['-S', 'frag', processedFragOut])
       }
     }
 
@@ -550,4 +531,11 @@ function main() {
   }
 }
 
-main()
+try {
+  main()
+} catch (e) {
+  // run() already put the tool's diagnostic in the Error message; print just
+  // that (no Node stack / raw Buffer dump) and fail the build.
+  console.error(`\ngen:shaders failed: ${e instanceof Error ? e.message : e}`)
+  process.exit(1)
+}
