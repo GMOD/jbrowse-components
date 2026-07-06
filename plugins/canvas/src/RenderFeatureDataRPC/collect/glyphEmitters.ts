@@ -33,6 +33,14 @@ import type { Collector, RenderContext } from './renderContext.ts'
 import type { FeatureLayout } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
+// Subfeature display label: the config-jexl `labels.name` slot (so a `product`
+// override surfaces for mature peptides / repeat subparts that carry no `name`),
+// falling back to the plain name/id. Shared by the mature-protein, repeat-region
+// and stacked-box paths so their labels can't drift.
+function resolveSubfeatureLabel(feature: Feature, ctx: RenderContext) {
+  return readFeatureName(ctx.config, feature, ctx.jexl) ?? getFeatureName(feature)
+}
+
 function emitExonRects(
   transcript: FeatureLayout,
   transcriptTopPx: number,
@@ -257,12 +265,7 @@ function processMatureProteinLayout(
         MATURE_PROTEIN_COLORS[colorIdx],
       )
     }
-    // config-driven name so a `labels.name` override can surface e.g. the GFF
-    // `product` attribute (mature peptides carry no `name`); falls back to the
-    // plain name/id
-    const childLabel =
-      readFeatureName(ctx.config, childFeature, ctx.jexl) ??
-      getFeatureName(childFeature)
+    const childLabel = resolveSubfeatureLabel(childFeature, ctx)
     // viral polyproteins (e.g. SARS-CoV-2 ORF1a/ORF1ab) share cleavage products:
     // the same mature peptide (nsp1-nsp10) is a child of both polyprotein CDS
     // records at identical coordinates, so the box and its label legitimately
@@ -348,9 +351,7 @@ function processRepeatRegionLayout(
       color === undefined ? undefined : colorToUint32(color),
     )
 
-    const displayLabel =
-      readFeatureName(ctx.config, childFeature, ctx.jexl) ??
-      getFeatureName(childFeature)
+    const displayLabel = resolveSubfeatureLabel(childFeature, ctx)
     registerSubfeature(
       {
         feature: childFeature,
@@ -464,9 +465,7 @@ function emitBox(
         type: featureType(feature),
         topPx: baseTopPx,
         heightPx: height,
-        displayLabel:
-          readFeatureName(ctx.config, feature, ctx.jexl) ??
-          getFeatureName(feature),
+        displayLabel: resolveSubfeatureLabel(feature, ctx),
       },
       ctx,
       collector,
