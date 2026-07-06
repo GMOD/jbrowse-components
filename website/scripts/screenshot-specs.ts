@@ -586,17 +586,30 @@ function hpyloriSyntenyWithGenes() {
   })
 }
 
-// Human (hg38) vs chimp (panTro6) synteny at LMNB2, from the hosted UCSC
-// hg38->panTro6 liftOver PIF + RefSeq genes on jbrowse.org/ucsc.
+// Human (hg38) vs chimp (panTro6) synteny from the hosted UCSC hg38->panTro6
+// liftOver PIF + RefSeq genes + RepeatMasker on jbrowse.org/ucsc.
 const HG38_PANTRO6_CONFIG = 'test_data/hg38_panTro6_synteny/config.json'
+
+// RB1 (retinoblastoma tumor suppressor): a full-length ~6 kb L1HS — the youngest,
+// still-active human LINE-1 subfamily — sits in an intron in human but is absent
+// at the orthologous chimp intron (chimp has only old L1PA13/14/16). It is
+// flanked by repeats conserved in both species (L1ME3A upstream, MER21C
+// downstream), so it renders as a clean human-specific transposon insertion; the
+// RepeatMasker track labels it "L1HS" exactly at the insertion.
+const RB1_L1_LOCUS = {
+  hg38: 'chr13:48,462,800-48,474,200',
+  panTro6: 'chr13:29,451,800-29,457,000',
+}
 
 // A hosted liftOver chain is one chromosome-scale block; drawn zoomed in it
 // exercises the oversized-block viewport clip (the worker trims the block to the
-// visible slice, else the ribbon would vanish). The window holds LMNB2 —
-// annotated on both sides — and three human/chimp indels (628/584/281 bp):
-// "Transparent indels" (cigarMode 'matches') shows them as see-through gaps,
-// "Colored indels" ('full') as painted wedges.
-function hg38ChimpSynteny(cigarMode: 'matches' | 'full') {
+// visible slice, else the ribbon would vanish). "Transparent indels" (cigarMode
+// 'matches') shows the indel as a see-through gap, "Colored indels" ('full') as
+// a painted wedge.
+function hg38ChimpSynteny(
+  cigarMode: 'matches' | 'full',
+  locus: { hg38: string; panTro6: string } = RB1_L1_LOCUS,
+) {
   return sessionSpec(HG38_PANTRO6_CONFIG, {
     views: [
       {
@@ -610,7 +623,7 @@ function hg38ChimpSynteny(cigarMode: 'matches' | 'full') {
         views: [
           {
             assembly: 'hg38',
-            loc: 'chr19:2,424,000-2,442,000',
+            loc: locus.hg38,
             // RepeatMasker last so it sits against the synteny band, where its
             // elements line up with the indels
             tracks: ['hg38-genes', 'hg38-rmsk'],
@@ -618,7 +631,7 @@ function hg38ChimpSynteny(cigarMode: 'matches' | 'full') {
           },
           {
             assembly: 'panTro6',
-            loc: 'chr19:2,331,500-2,349,800',
+            loc: locus.panTro6,
             // RepeatMasker first so it sits against the synteny band above it
             tracks: ['panTro6-rmsk', 'panTro6-genes'],
             trackLabels: 'offset',
@@ -992,7 +1005,7 @@ export const specs: ScreenshotSpec[] = [
     name: 'synteny_human_chimp_colored',
     url: hg38ChimpSynteny('full'),
     viewportWidth: 1200,
-    viewportHeight: 1000,
+    viewportHeight: 730,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
     settleMs: 12000,
@@ -1002,7 +1015,7 @@ export const specs: ScreenshotSpec[] = [
     name: 'synteny_human_chimp_transparent',
     url: hg38ChimpSynteny('matches'),
     viewportWidth: 1200,
-    viewportHeight: 1000,
+    viewportHeight: 730,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
     settleMs: 12000,
