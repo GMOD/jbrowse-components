@@ -958,25 +958,46 @@ const jbrowseImgSpecs: CliSpec[] = [
 ]
 
 export const specs: ScreenshotSpec[] = [
-  // Human vs chimp synteny (hosted liftOver chain, zoomed to LMNB2) rendered two
-  // ways: "Transparent indels" leaves the 3 indels as see-through gaps in the
-  // ribbon, "Colored indels" paints them. Doubles as the regression guard for
-  // the oversized-block viewport clip (a chromosome-scale block rendering at
-  // high zoom instead of a blank canvas).
+  // Human vs chimp synteny (hosted liftOver chain, zoomed to LMNB2). Two stages
+  // stacked (the generator -appends them): the loaded view (colored indels) on
+  // top, then the same view after toggling the hamburger's "CIGAR display mode"
+  // to Transparent indels below. One automated before/after figure — no manual
+  // convert -append — that also guards the oversized-block viewport clip (a
+  // chromosome-scale block rendering at high zoom instead of a blank canvas).
+  {
+    mode: 'url',
+    name: 'synteny_human_chimp_cigar_modes',
+    url: hg38ChimpSynteny('full'),
+    viewportWidth: 1200,
+    viewportHeight: 510,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 5000,
+    stages: [
+      // frame 1: as loaded — colored indels
+      {},
+      // frame 2: toggle the view's "CIGAR display mode" -> Transparent indels;
+      // the menu closes on click and the ribbon refetches, so the frame shows
+      // the clean transparent-indels view
+      {
+        actions: [
+          // the synteny CIGAR-mode control lives on the comparative view's
+          // "View options" header button (aria-label), not the app-core view menu
+          { type: 'click', selector: '[aria-label="View options"]' },
+          ...menuCascade(['CIGAR display mode', 'Transparent indels']),
+          { type: 'click', text: 'Transparent indels' },
+          { type: 'waitForText', text: 'Transparent indels', hidden: true },
+          { type: 'delay', ms: 8000 },
+        ],
+      },
+    ],
+  },
+  // Rendered only to supply the "Transparent indels" live link for the combined
+  // figure above (its image isn't embedded); also a second clip regression guard.
   {
     mode: 'url',
     name: 'synteny_human_chimp_transparent',
     url: hg38ChimpSynteny('matches'),
-    viewportWidth: 1200,
-    viewportHeight: 720,
-    readySelector: '[data-testid="synteny_canvas_done"]',
-    readyTimeout: 60000,
-    settleMs: 5000,
-  },
-  {
-    mode: 'url',
-    name: 'synteny_human_chimp_colored',
-    url: hg38ChimpSynteny('full'),
     viewportWidth: 1200,
     viewportHeight: 720,
     readySelector: '[data-testid="synteny_canvas_done"]',
