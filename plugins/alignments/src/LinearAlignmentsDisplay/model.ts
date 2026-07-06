@@ -1100,10 +1100,9 @@ export default function stateModelFactory(
          * #getter
          * Row count of the primary group across its regions. This reads only the
          * first group (`laidOutPileupMap`), so it is meaningful only on the
-         * single-section/ungrouped path (`totalPileupHeight`, `searchFeatureByID`,
-         * and the no-data synthetic section in `sections`). Grouped layout sizes
-         * each section from its own `groupMaxY`; don't use this as a cross-group
-         * aggregate.
+         * single-section/ungrouped path (`searchFeatureByID` and the no-data
+         * synthetic section in `sections`). Grouped layout sizes each section
+         * from its own `groupMaxY`; don't use this as a cross-group aggregate.
          */
         get maxY() {
           return groupMaxY(this.laidOutPileupMap)
@@ -1221,13 +1220,6 @@ export default function stateModelFactory(
          */
         get showPerBaseLetter() {
           return self.colorBy.type === 'perBaseLetter'
-        },
-
-        /**
-         * #getter
-         */
-        get totalPileupHeight() {
-          return self.maxY * (self.featureHeight + self.featureSpacing)
         },
 
         /**
@@ -1444,13 +1436,18 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Total scrollable content height. Ungrouped is just the pileup
-         * (coverage is sticky); grouped is the full stacked-sections height.
+         * Total scrollable content height. Grouped is the full stacked-sections
+         * height; ungrouped is the pileup band alone (coverage is sticky), which
+         * is the stacked height minus that sticky coverage band. Both read the
+         * laid-out `sections` so the scroll extent tracks the geometry actually
+         * drawn — when `showPileup` is off or the group is collapsed the section
+         * reserves no pileup rows, so this collapses to 0 and no phantom scroll
+         * region opens up below the coverage band.
          */
         get pileupContentHeight() {
           return this.isGrouped
             ? this.sections.contentHeight
-            : self.totalPileupHeight
+            : Math.max(0, this.sections.contentHeight - self.coverageDisplayHeight)
         },
 
         /**
@@ -1826,11 +1823,6 @@ export default function stateModelFactory(
             self.configuration.setSlot('showCoverage', true)
           }
         }
-        // Clamp the Y scroll back inside the (possibly shrunken) content after a
-        // group collapse/expand/resize changes the stacked height.
-        function clampScrollTop() {
-          self.scrollTop = Math.min(self.scrollTop, self.scrollableHeight)
-        }
         return {
           /**
            * #action
@@ -2141,7 +2133,6 @@ export default function stateModelFactory(
             } else {
               self.collapsedGroups.add(key)
             }
-            clampScrollTop()
           },
 
           /**
@@ -2158,7 +2149,6 @@ export default function stateModelFactory(
             } else {
               self.groupMaxHeightOverrides.set(key, self.maxHeight)
             }
-            clampScrollTop()
           },
 
           /**
@@ -2206,7 +2196,6 @@ export default function stateModelFactory(
                 growFullyShown ? Math.min(grown, displayed) : grown,
               )
             }
-            clampScrollTop()
           },
 
           /**
@@ -2842,6 +2831,20 @@ export default function stateModelFactory(
             autorun(() => {
               if (self.fitHeightToDisplay) {
                 self.setFittedHeightPx(self.fittedFeatureHeight)
+              }
+            }),
+          )
+          // Keep scrollTop inside the content by construction. Any geometry
+          // change — band resize, group collapse/expand/drag, show/hide
+          // coverage or pileup, read-connection mode, fit — can shrink
+          // scrollableHeight below the current offset, and there's no native
+          // overflow container to self-correct. Re-clamping reactively here
+          // means individual actions never have to remember to do it.
+          addDisposer(
+            self,
+            autorun(() => {
+              if (self.scrollTop > self.scrollableHeight) {
+                self.setScrollTop(self.scrollableHeight)
               }
             }),
           )
