@@ -7935,12 +7935,13 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gallery/human_trio_phased',
-    // narrow window: the whole 1.35Mb region trips the VCF "too many features"
-    // guard; ~50kb renders the phased calls without a force-load
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:163950000-164000000","type":"LinearGenomeView","tracks":["HG02024_VN049_KHVTrio.chr1.vcf"]}]}',
+    // LinearMultiSampleVariantDisplay shows the per-sample genotype matrix (the
+    // trio's phased calls), not a single variant row. ~50kb window keeps the VCF
+    // under the "too many features" guard.
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:163950000-164000000","type":"LinearGenomeView","tracks":[{"trackId":"HG02024_VN049_KHVTrio.chr1.vcf","displaySnapshot":{"type":"LinearMultiSampleVariantDisplay"}}]}]}',
     readyTimeout: 90000,
     settleMs: 10000,
-    viewportHeight: 500,
+    viewportHeight: 600,
   },
   {
     mode: 'url',
@@ -7976,6 +7977,52 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     settleMs: 15000,
     viewportHeight: 900,
+  },
+  // Bare-config gallery cards: each opens the config's own defaultSession (no
+  // session spec), the same view the /gallery/ link opens.
+  {
+    mode: 'url',
+    name: 'gallery/gwas_bmi_fto',
+    url: '?config=test_data%2Fgwas%2Flocuszoom_ld.json',
+    readyTimeout: 90000,
+    settleMs: 10000,
+    viewportHeight: 500,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/arabidopsis_ont',
+    url: '?config=test_data%2Farabidopsis_methylation%2Fconfig.json',
+    readyTimeout: 90000,
+    settleMs: 12000,
+    viewportHeight: 600,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/arabidopsis_emseq',
+    url: '?config=test_data%2Farabidopsis_methylation%2Fconfig_emseq_bisulfite.json',
+    readyTimeout: 90000,
+    settleMs: 12000,
+    viewportHeight: 600,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/maize_te',
+    url: '?config=test_data%2Fmaize_te%2Fconfig.json',
+    readyTimeout: 90000,
+    settleMs: 10000,
+    viewportHeight: 500,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/potato',
+    // absolute config (the screenshot server has no /genomes/ path). Explicit
+    // session rather than the config defaultSession, which opens with the track
+    // selector drawer covering a quarter of the view. tetraploid VCF as a
+    // genotype matrix.
+    url: '?config=https://jbrowse.org/genomes/potato/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"Stuberosum_448_v4.03","loc":"ST4.03ch01:23,700,000-26,100,000","tracks":[{"trackId":"tetraploid_vcf","displaySnapshot":{"type":"LinearVariantMatrixDisplay"}}]}]}',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 600,
   },
   // products/jbrowse-img/README.md example images, rendered by the jb2export
   // CLI (see CliSpec above). Ported 1:1 from the old

@@ -111,10 +111,6 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'Whole-genome dotplot of two yeast strains (R64 vs YJM1447): the diagonal traces collinear sequence, off-diagonal dots mark rearrangements.',
       },
-      {
-        label: 'hg19 vs hg38 liftover',
-        session: '?config=test_data%2Fhg19_vs_hg38%2Fconfig.json',
-      },
     ],
   },
   {
@@ -218,12 +214,15 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Arabidopsis methylation (ONT 5mC/5hmC)',
-        session: '?config=test_data%2Farabidopsis_methylation%2Fconfig.json',
+        spec: 'gallery/arabidopsis_ont',
+        description:
+          'Arabidopsis nanopore reads colored by 5mC/5hmC calls in CHH context.',
       },
       {
         label: 'Arabidopsis methylation (EM-seq bisulfite)',
-        session:
-          '?config=test_data%2Farabidopsis_methylation%2Fconfig_emseq_bisulfite.json',
+        spec: 'gallery/arabidopsis_emseq',
+        description:
+          'Arabidopsis EM-seq reads colored by bisulfite methylation in CHH context.',
       },
     ],
   },
@@ -239,7 +238,9 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Tetraploid potato multi-sample VCF',
-        session: '?config=%2Fgenomes%2Fpotato%2Fconfig.json',
+        spec: 'gallery/potato',
+        description:
+          'A tetraploid potato multi-sample VCF rendered as a genotype matrix.',
       },
       {
         label: 'Human trio phased VCF rendering',
@@ -254,7 +255,7 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'GWAS LocusZoom-style LD coloring (GIANT BMI, FTO locus)',
-        session: '?config=test_data%2Fgwas%2Flocuszoom_ld.json',
+        spec: 'gallery/gwas_bmi_fto',
         description:
           'A Manhattan plot with LocusZoom-style LD coloring around the FTO obesity locus.',
       },
@@ -300,11 +301,6 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'gallery/chromhmm_encode',
         description:
           'ChromHMM chromatin states for 9 ENCODE cell types across the β-globin locus.',
-      },
-      {
-        label: 'ChromHMM states (Roadmap, 127 epigenomes)',
-        session:
-          '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":["roadmap_chromhmm_multirow_hg19"]}]}',
       },
       {
         label: 'Single-cell ATAC by cell type (CATlas, INS locus)',
@@ -366,7 +362,9 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Maize transposable elements (LTR subparts)',
-        session: '?config=test_data%2Fmaize_te%2Fconfig.json',
+        spec: 'gallery/maize_te',
+        description:
+          'Maize EDTA transposable-element annotations with their LTR subparts.',
       },
     ],
   },

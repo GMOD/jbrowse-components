@@ -271,10 +271,11 @@ async function captureUrl(
     waitForDownloads: true,
     timeout: readyTimeout,
   })
-  // Data is loaded by this point, so any residual status text (e.g. "computing
-  // alignment") clears fast — use the helper's short default rather than the
-  // long readyTimeout, which is sized for slow remote downloads.
-  await waitForQuiescent(page)
+  // Wait out any in-track "Loading…"/"Rendering…" indicator (e.g. a slow remote
+  // MAF block that paints its own label). waitForQuiescent returns as soon as the
+  // label clears, so use the spec's readyTimeout — the fixed 30s default cut off
+  // slow whole-genome-alignment blocks mid-load and captured a "Loading" panel.
+  await waitForQuiescent(page, { timeout: readyTimeout })
   await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
 
@@ -428,7 +429,7 @@ async function captureEmbeddedToTemp(
       waitForDownloads: true,
       timeout: readyTimeout,
     })
-    await waitForQuiescent(page)
+    await waitForQuiescent(page, { timeout: readyTimeout })
     await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
     await waitForRasterize(page)
 
