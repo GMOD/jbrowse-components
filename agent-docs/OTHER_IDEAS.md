@@ -73,6 +73,44 @@ axis/legend that changes with it; per ADR-016 it belongs in the worker (mode cha
 infrequently, per-base pass is cheap → rpcProps). Start with MAPQ/discordancy as the
 proof point. Cross-ref [bigly](https://github.com/brentp/bigly).
 
+**Large-region viewing for dense BAM/CRAM.** Today alignments can't show a whole
+chromosome for a dense BAM/CRAM. The limits stack in three tiers, and lifting one
+just exposes the next — so this is a program of work, not a single fix:
+
+- **Width-driven (the easy one, being addressed separately).** The coverage band
+  packs one 8-byte GPU record per bp (`packCoverageBinsForGpu`), so the vertex
+  buffer hits the ~1 GiB device limit at ~135 Mbp *regardless of read count*, and
+  `computeVisibleCoverageStats` re-scans the full per-bp depth array (~1 s at
+  145 Mbp, measured) on every pan/zoom settle. Fix: downsample to a fixed cap
+  (~8k bins) in the worker for both the GPU buffer and the shipped array, keeping
+  per-bp only as a worker-internal transient for the SNP/indel/frequency
+  denominators. This is the coverage-OOM work; it unblocks *sparse* tracks and
+  synteny at wide zoom but does **not** help dense BAM.
+- **Data-driven (the real ceiling for dense BAM).** One GPU instance per read, per
+  mismatch, per gap. A 30× whole-chromosome BAM is ~29 M reads → the read pass
+  buffer alone can exceed 1 GiB, with tens of millions more mismatch instances. No
+  `maxDepth`/density cap exists in `executeRenderAlignmentData` — it uploads
+  everything and leans on the GPU-OOM overlay as a backstop. Needs real read
+  downsampling (cap reads/column, reservoir-sample per bin) and/or a
+  **coverage-only mode** that skips the pileup + mismatch passes entirely above a
+  zoom threshold (show only the binned coverage band). The coverage-summary
+  decomposition idea above pairs naturally with this — at whole-chromosome you want
+  MAPQ/discordancy summary, not individual reads.
+- **Fetch/bandwidth (unavoidable for BAM).** Coverage is *computed* from reads —
+  there's no BigWig-style pre-binned summary source (contrast wiggle, which gets
+  screen-resolution data free from bbi zoom levels and skips the density gate with
+  `alwaysRender:true`). So whole-chromosome coverage means downloading every read
+  in the region; the byte-estimate gate (`checkByteEstimate`, default
+  `fetchSizeLimit` 1 MB) blocks it first and forces "Force load to see features".
+  A genuine large-region mode would need either a reworked/removed byte gate for
+  the coverage-only path, or a precomputed-coverage sidecar (emit a companion
+  BigWig at index time) so the wide-zoom band reads a summary instead of the BAM.
+
+Order of value: coverage-only mode + read downsampling (makes force-load survivable
+and useful) → byte-gate rework for that path → optional precomputed-coverage
+sidecar. Cross-ref the coverage-OOM binning work (`packCoverageBinsForGpu`,
+`downsampleMinMax` in `packages/alignments-core`) and `runCoveragePipeline.ts`.
+
 ## Methylation plotting
 
 Modifications track: methylation line/matrix view (issue
@@ -305,6 +343,73 @@ likeliest to surface first, via dense all-vs-all whole-genome PAF (see
 `featureId` attribute + both uniforms from `float` to `uint` and regen the
 `.iface` (the interleave buffer already has a `u32` view). Fold into the
 all-vs-all PAF work rather than doing it speculatively.
+
+### Vendor-format leaf adapters + coloring conventions (2026-07 vendor survey)
+
+Surveyed `~/src/vendor/{ntSynt-viz,plotsr,SVbyEye,SafFire,jupiterplot}` against the
+current stack. The overriding conclusion is that **the render/model/color surface is
+already comprehensive** — `SyntenyColorBy` covers `default·strand·query·target·
+reference·identity·meanQueryIdentity·mappingQuality`, plus `opacityByIdentity`,
+`fadeThinAlignments`, N-way stacked views, `colorBy:'reference'` chromosome-painting,
+and `AllVsAllPAFAdapter`. So the remaining wins are **leaf parsers that map a popular
+file onto the EXISTING SyntenyTrack render path**, never new render/color surface. Each
+below reuses the renderer unchanged (the `MCScanBlocksAdapter` / `AllVsAllPAFAdapter`
+template: "one file backs N-1 pairwise tracks, no renderer change").
+
+- **ntSynt long-format blocks adapter (best leaf; local demo data ready).** ntSynt emits
+  a long-format multi-genome table (`block_id · genome · chrom · start · end · strand ·
+  n_minimizers · indel_flag`); one `block_id` groups one row per genome. For a pair
+  `[a,b]` the adapter keeps rows whose genome is `a` or `b`, groups by `block_id`, and
+  emits a feature+mate for blocks containing both — the *long-format twin* of
+  `MCScanBlocksAdapter`, and simpler (no BED-join; coords are inline). `adapterHint`-only
+  (`.tsv` is generic). Demo data already sits in `~/src/vendor/ntSynt-viz/tests/`
+  (great-apes 6-way `great-apes.ntSynt.synteny_blocks.tsv` + per-genome `.fai`s + a
+  Newick for row ordering). Popular T2T/pangenome-era tool (Birol lab). This is NOT
+  "native N-way blocks as the primitive" (rejected above) — it emits pairwise features
+  like every other adapter.
+
+- **SyRI adapter (deliberately deferred — the fiddly one, not the simple one).** plotsr
+  consumes SyRI output as **one file per adjacent pair** (pairwise, no join — structurally
+  the *simplest* shape, thinner than the PAF adapter), so it maps cleanly onto the existing
+  N-way stacked view. Two frictions: (1) SyRI files are commonly `*syri.out`, and `.out` is
+  already claimed by `MashMapAdapter` in the guesser — so it must be `adapterHint`-only;
+  (2) its only value over "just convert to PAF" is preserving SV type (SYN/INV/TRANS/DUP),
+  and surfacing that is where cross-cutting surface lives. Cheap path if built: parse type
+  into a **feature attribute** (tooltip only) and rely on existing `colorBy:'strand'` for
+  inversions — inversions already read via strand, which is ~80% of plotsr's visual value
+  with zero new `colorBy` arm. Only add `colorBy:'svType'` (touches ~4 exhaustive switches +
+  legend + SVG + Canvas2D + dotplot) if the trans/dup distinction proves it earns the tax.
+  Cross-ref "Explicit SV-type classification" above — same conclusion, now with the guesser
+  collision + rubric spelled out.
+
+- **nucmer `.coords` (show-coords tabular) leaf adapter.** SVbyEye/SafFire ingest nucmer via
+  `show-coords`-style tabular output (`[S1][E1]|[S2][E2]|[LEN1][LEN2]|[%IDY]|tags`). JBrowse
+  has `DeltaAdapter` (`.delta`) but not the tabular `.coords` form. Small leaf if a real user
+  arrives with `.coords`; low priority (they can run `.delta` today).
+
+- **Coloring conventions to consider (constants-only, near-zero surface).** Every vendor tool
+  uses **forward=blue / inversion=orange**; our `strand` scheme is pos=red/neg=blue
+  (`colorUtils.ts`). Aligning the palette is a constants-only change but a *default* change —
+  verify against existing screenshots before touching. Also: SVbyEye/SafFire discretize
+  identity into breaks (`c(90,95,99,99.5,…)`) where our `opacityByIdentity` is a continuous
+  fade — a discrete-bin mode is a possible legend-friendlier variant, but continuous is
+  arguably better and this would add a knob, so likely YAGNI.
+
+### Synteny shader dedup (done 2026-07) + what's deliberately NOT unified
+
+The two fill fragments (`syntenyFill{Straight,Curve}.slang`) duplicated the edge-lerp +
+per-edge slope-foreshortening + `pf0/pf1` block; only `s`/`sd`/`dydt` differ. Extracted one
+`fillEdges(corners, s, sd, dydt) -> FillEdges` into `syntenyTypes.slang` (straight passes
+`s=t, sd=1, dydt=h`; curve passes `s=sBlend(t), sd=sBlendDeriv(t), dydt=h·yCurveDeriv(t)`),
+plus a shared `edgeNormal(tangent)` for the two edge passes. This centralizes the drift-prone
+slope formula (the hard-won boundary-fuzz fix in `perpCoverage`) in one place; slangc keeps
+it a real function, `.iface` byte layouts unchanged, 142 plugin tests green.
+
+**Do NOT unify further.** The *vertex* stages stay separate on purpose: straight is one quad
+(6 verts), curve tessellates 8 segments × 6 with Newton-inverted `t` + bezier-bulge padding —
+genuinely different geometry, and the file split is what keeps `isCurve` branches out of the
+hot path (see the header comment in `syntenyTypes.slang`). Merging them would reintroduce the
+branch the split exists to avoid.
 
 ## Ortholog / multi-genome navigation
 
@@ -1045,3 +1150,83 @@ Things I still haven't measured that gate any of this: the field-wise slmany exi
                                                                                                      What I'd actually recommend
                                                                                                      Do the mixin-driven track-menu autohigh-confidence generalization, runs where the resolver already behaves, and gets per-slot cost down to a schema line without touching    the editor's delta/detached-target ditor control as a separate, laterspike, and only after deciding how you want raw-vs-resolved and the two-axes mixing to read — that's a UX call, not just code.
                                                                                                      Want me to prototype the mixin auto (low blast radius, easy to verifyagainst the existing displayMode/showSoftClipping tests), and leave the editor question parked until we've seen that land?
+
+
+
+
+## R export
+
+
+I am thinking about R figure export from our jbrowse genome browser. These were previous notes. Please continue evaluation. I want fair pushback where warranted, but this could be a highly valuable feature that would connect jbrowse to the world of reproducible R code: I have a very complicated feature request: I am strongly interested in potentially outputting actual R plotting code that corresponds with our jbrowse data visualizations. I understand this is an insanely complicated method, but I just feel like it would be a way to connect jbrowse to the world of actual clean R data visualizations. what could be done for this? leaning into ggplot2 might be valuable. We started some work on this in R_export2 branch.
+
+  I'll start by exploring what's already been done on the R_export2 branch and understanding the existing export infrastructure.
+
+    Ran 4 shell commands
+
+  There's a substantial R package already: packages/r/ggjbrowse. Let me examine what's been built there so I understand the existing approach before advising.
+
+    Ran 1 shell command
+
+  Let me look at the data-access layer, a representative geom, and the worked example to see how the two approaches (native-R vs. export-from-JBrowse) are being reconciled.
+
+    Ran 1 shell command
+
+  Now let me find the JBrowse-side (TypeScript) code generator that emits these R scripts, and check if it exists yet.
+
+    Ran 1 shell command
+
+  Let me read the TS-side generator and the per-display code generators to see the current strategy.
+
+    Ran 2 shell commands
+
+  I dug into origin/R_export2 (the remote branch — your local R_export is an older, smaller cut). Here's what's actually there and where I'd take it.
+
+  What you've already built
+
+  You have a two-part system that's further along than "started":
+
+  R side — packages/r/ggjbrowse/ — a
+  - Data access: jb_features() dispatches per track type to rtracklayer / VariantAnnotation /
+  Rsamtools (R/features.R)
+  - Custom geoms: geom_gene, geom_transcript, geom_wiggle, geom_alignment, geom_variant
+  - JBrowse-semantics helpers: computale_x_genomic, theme_jbrowse_track,a jb_session/jb_from_config model mirroring JBrowse config
+
+  JS side — a code-gen pipeline: LinearGenomeView/exportR.ts orchestrates, each display contributes a
+  fragment via exportRCode.ts (base fultiwiggle, canvas), surfacedthrough ExportRDialog.tsx + a menu item. Output is a runnable script
+  (test_data/volvox/jbrowse_view.R + -trips).
+
+  The key decision you've implicitly
+
+  The exported script is a recipe, noURIs + region + params a
+  ──── (130 lines hidden) ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   hand-mirre reading is the Canvas2D/SVGfallback; read.slang is the GPU twin, with big "SYNC: change both together" comments). The recipe                                                        path re-derives everything in R, so a third hand-synced copy in R.That's the real cost
+                                                                                                                                                                                                  But it splits cleanly into two tiers, and only one is expensive:
+                                                                                                                                                                                                  Tier 1 — cheap, low-drift, pure functions of one BAM record:
+  strand, mappingQuality (ramp), inser-by-tag. Every input is a field Ralready has after readGAlignments (flags, mapq, tlen, an arbitrary tag). These port to a few lines                         of R and won't drift much. Even inshe MAD upper/lower you compute overthe read set — r
+                                                                                                                                                                                                  Tier 2 — expensive, drift-prone, where your "custom logic" actually lives:
+  - Split/chain classification (chain and reconstructing the chain, plusthe inversion/deletion/supplementary precedence                                                                           - interchrom buckets, unmapped-mate
+  - Modifications/methylation (MM/ML tag parsing → per-base mod colors)                                                                                                                           - perBaseQuality / perBaseLetter
+                                                                                                                                                                                                  Reproducing Tier 2 exactly in R mea JBrowse itself keeps in twolockstep copies. Every way sync. That's the honest ceiling on fidelity.
+                                                                                                                                                                                                  Two things follow:
+                                                                                                                                                                                                  1. The codegen has to emit the color state, or even Tier 1 is wrong. Right now the alides strand colardless of what the user picked. Itmust emit the active colorBy scheme +the resolved palette so R colors by the same scheme with the same hues. Do this first — it makess most people use.                                                                              2. For Tier 2, consider an escape hatch that still honors "R loads the BAM": R loads tges/pileup/coveragea), but the per-read color category— the one thing that's gnarly tore-derive — rides along as a tiny sidebar keyed by qname+flag,    joined in R after loading. One factmplementation of the precedencechain. It's a compromise on "pure R," but it's the pragmaticget faithful split/mod coloringwithout a third copy of the classif
+                                                                                                     My recommendation: port Tier 1 to R/palette through the codegen — thatcovers                 strand/mapq/insertSize/pairOrientation/tag faithfully. Treat Tier 2 (splits, modificatlicitly best qname-join sidecar, and documentthat boundary so nobody expectspixel-parity on methylation coloring from a pure-R reload.                                                                                                                                      Do you want coloring to be pure-R (reimplement Tier 1, best-effort Tier 2), or are youar for the hard mod
+                                                                                                                                                                                                  I'll ground the continued evaluation in the actual code rather than more speculation —om the R_export2 branch so my read of the coloring/BAM situation is current.
+                                                                                                                                                                                                  Ran 5 shell commands
+                                                                                                                                                                                                  I checked out the actual R_export2 code to make sure this evaluation isn't running on aimed earlier is real, not hand-wavy:
+                                                                                                                                                                                                - fetch_bam_features really does end = bam$pos + nchar(bam$cigar) — that's the string " → span of 4. And ref_name = ...seqnames(gr)[1] hardcodes a single region. It's a stub.
+- alignments/exportRCode.ts really does hardcode fill = factor(strand) with a two-color scale, ignoring whatever colorBy the user actually set.                                                 - ReadColorCategory is exactly 21 members, and it splits cleanly at the line I describ
+                                                                                                                                                                                                So the picture is accurate. Here's where I land, with the pushback you asked for.
+                                                                                                                                                                                                The reframe that resolves the coloring question
+                                                                                                                                                                                                You're asking "pure-R vs sidecar for the hard color cases," but I think that's the sechat is this export actually for?
+                                                                                                                                                                                                The 21-category classifier is diagnostic browsing color — "show me split-read inversio mates, methylation." That's a tool for hunting anomalies in an interactive browser. Itis almost never what goes into a published figure. A figure says "here are the reads over my locus, colored by strand / mapq / a tag." So the honest scope split isn't Tier1/Tier2 by difficultypurpose:
+                                                                                                                                                                                                - Tier 1 (strand, mapq ramp, insert-size, pair-orientation, color-by-tag) — these are ord's fields that readGAlignments already hands you. A few dozen lines of R, low drift.This covers the overwhelming majority of real figure requests. Reimplement in R.                                                                                                                - Tier 2 (split/chain precedence, interchrom, MM/ML modifications, per-base) — this isthat fights the whole "reproducible from the BAM" promise, because JBrowse derives it in the worker and keeps it in two hand-synced copies already (colorUtils.ts + read.slang). A third R copy is a permanent three-way sync tax.
+The pushback
+Don't reimplement Tier 2 in R. Ever. Two reasons: it's the exact code JBrowse itself can't keep in one place, and it isn't what figures need. The sidecar (emit the per-read category as a join keyed by qname+flag) is the only faithful option for Tier 2 — but be honest that it brit loads" purity: those colors were computed by JBrowse, not derivable from the file.That's fine if it's opt-in and labeled, but it's a real seam, not a free win.
+So my recommendation: ship Tier 1 as pure-R recipe, and treat Tier 2 as an explicitly-labeled sidecar escape hatch that's only emitted when the user actually has that colorBy active. Default enever carry it. Document the boundary so nobody expects methylation pixel-parity from
+                                                                                                                                                                                                And the prerequisite for any of this being correct: exportRCode.ts must emit the activalette, because right now even the trivial strand case is wrong (it hardcodes colorsregardless of what you picked). That's the smallest, highest-leverage fix and it's independent of everything else.
+Concrete first milestone
+Three changes, in dependency order, testable against test_data/volvox alignments:
+1. Fix the BAM fetcher — GenomicAlignments::readGAlignments() (correct CIGAR-aware ends, N-introns, multi-region) + IRanges::disjointBins() for pileup rows. This deletes the broken nchar line hand-rolled compute_pileup greedy loop, and gets you JBrowse-equivalent stacking for f
+2. Emit colorBy state — active scheme + palette from the model into the codegen, so geom_alignment colors by what the user chose. Tier 1 schemes only for now.                                  3. Reference-based mismatches — emit the assembly sequence adapter URI (currently the  without the reference, R can only do mismatches when an MD tag happens to be present —a silent fidelity gap). Then pileup()/sequenceLayer() in R.
+Milestone 1 alone turns the BAM export from "wrong" to "correct reads with correct stacking," which is the load-bearing thing you actually asked for. 2 and 3 layer on top.
+Want me to check out R_export2 and do milestone 1 (BAM fetcher rewrite + a golden-file test against volvox)? That's the piece that proves the whole recipe direction works or doesn't, and it's self-contained.

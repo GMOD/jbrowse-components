@@ -77,14 +77,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float3 e = hermiteEdges(c, t);
   float edgeX = edgeIdx == 1u ? e.y : e.x;
   float rawDx = edgeIdx == 1u ? c.x3 - c.x2 : c.x4 - c.x1;
-  float2 tangent = edgeTangent(rawDx, t);
-  float tangentLen = length(tangent);
-  // The stroke is symmetric (`±side` expansion, `abs(dist)` in the fragment),
-  // so the normal's sign is irrelevant — only its perpendicular direction
-  // matters. No outward-orientation flip is needed.
-  float2 normal = tangentLen > 0.001
-    ? float2(-tangent.y, tangent.x) / tangentLen
-    : float2(0.0, 1.0);
+  float2 normal = edgeNormal(edgeTangent(rawDx, t));
 
   float2 pos = float2(edgeX, e.z) + normal * side * STROKE_WIDTH;
   o.dist = side * STROKE_WIDTH;

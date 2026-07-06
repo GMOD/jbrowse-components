@@ -138,23 +138,16 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     t = t - (yCurve(t) - yFrac) / yCurveDeriv(t);
   }
   t = clamp(t, 0.0, 1.0);
-  float s = sBlend(t);
 
-  float edge0 = lerp(fragIn.corners.x, fragIn.corners.w, s);
-  float edge1 = lerp(fragIn.corners.y, fragIn.corners.z, s);
+  // Curved ribbon: X-blend is the cubic smoothstep (s=sBlend(t), sd=sBlendDeriv)
+  // and y traces the ease-in-out (dydt=h·yCurveDeriv). fillEdges builds each
+  // edge's X + its OWN dx/dy foreshortening from those analytic derivatives —
+  // per-edge rather than a shared centerline slope, so a width-changing / bent
+  // ribbon keeps a crisp perpendicular coverage transition (see perpCoverage).
+  FillEdges e = fillEdges(fragIn.corners, sBlend(t), sBlendDeriv(t),
+                          h * yCurveDeriv(t));
 
-  // Each edge's OWN slope dx/dy at this t (analytic bezier derivatives). Per-edge
-  // rather than a shared centerline slope: where the ribbon changes width /
-  // bends, the two edges diverge in slope, and using each edge's own slope keeps
-  // the perpendicular coverage transition crisp (see perpCoverage).
-  float dydt = h * yCurveDeriv(t);
-  float sd = sBlendDeriv(t);
-  float slope0 = (fragIn.corners.w - fragIn.corners.x) * sd / max(abs(dydt), 1e-4);
-  float slope1 = (fragIn.corners.z - fragIn.corners.y) * sd / max(abs(dydt), 1e-4);
-  float pf0 = sqrt(1.0 + slope0 * slope0);
-  float pf1 = sqrt(1.0 + slope1 * slope1);
-
-  float coverage = fillCoverage(fragIn.localPos, edge0, edge1, pf0, pf1,
+  float coverage = fillCoverage(fragIn.localPos, e.edge0, e.edge1, e.pf0, e.pf1,
                                 fragIn.isCigar, fragIn.isMarker, h,
                                 u.fadeThinAlignments);
   if (coverage <= 0.0) { discard; }

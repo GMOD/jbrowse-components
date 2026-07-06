@@ -93,21 +93,13 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float h = max(u.height, 1.0);
   float t = clamp(yLocal / h, 0.0, 1.0);
 
-  // Two edge x's at this y. Min/max handles forward + crossed/inverted
-  // (bowtie) ribbons uniformly.
-  float edge0 = lerp(fragIn.corners.x, fragIn.corners.w, t);  // c.x1 → c.x4
-  float edge1 = lerp(fragIn.corners.y, fragIn.corners.z, t);  // c.x2 → c.x3
+  // Straight ribbon: X-blend is linear (s=t), y is linear (dydt=h, sd=1), so
+  // each edge's slope is just its constant top-to-bottom dx over h. fillEdges
+  // handles the min/max-free edge lerp + per-edge foreshortening (see
+  // perpCoverage) uniformly for forward and crossed/inverted (bowtie) ribbons.
+  FillEdges e = fillEdges(fragIn.corners, t, 1.0, h);
 
-  // Each edge's OWN slope dx/dy — constant along a straight edge. Per-edge
-  // rather than a shared centerline slope so a width-changing (trapezoidal)
-  // ribbon keeps a crisp perpendicular transition on both edges (see
-  // perpCoverage).
-  float slope0 = (fragIn.corners.w - fragIn.corners.x) / h;
-  float slope1 = (fragIn.corners.z - fragIn.corners.y) / h;
-  float pf0 = sqrt(1.0 + slope0 * slope0);
-  float pf1 = sqrt(1.0 + slope1 * slope1);
-
-  float coverage = fillCoverage(fragIn.localPos, edge0, edge1, pf0, pf1,
+  float coverage = fillCoverage(fragIn.localPos, e.edge0, e.edge1, e.pf0, e.pf1,
                                 fragIn.isCigar, fragIn.isMarker, h,
                                 u.fadeThinAlignments);
   if (coverage <= 0.0) { discard; }

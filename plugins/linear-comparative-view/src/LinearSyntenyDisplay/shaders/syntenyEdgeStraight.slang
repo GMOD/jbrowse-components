@@ -51,14 +51,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float edgeX = atBottom ? xBot : xTop;
   float edgeY = u.yTop + (atBottom ? u.height : 0.0);
 
-  // Normal to the line (xTop, yTop) → (xBot, yBottom). The stroke is symmetric
-  // (`±side` expansion, `abs(dist)` in the fragment), so the normal's sign is
-  // irrelevant — only its perpendicular direction matters.
-  float2 tangent = float2(xBot - xTop, u.height);
-  float tangentLen = length(tangent);
-  float2 normal = tangentLen > 0.001
-    ? float2(-tangent.y, tangent.x) / tangentLen
-    : float2(0.0, 1.0);
+  // Normal to the line (xTop, yTop) → (xBot, yBottom); see edgeNormal.
+  float2 normal = edgeNormal(float2(xBot - xTop, u.height));
 
   float2 pos = float2(edgeX, edgeY) + normal * side * STROKE_WIDTH;
   o.dist = side * STROKE_WIDTH;

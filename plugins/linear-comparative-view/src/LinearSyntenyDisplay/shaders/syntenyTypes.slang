@@ -174,6 +174,30 @@ float perpCoverage(float2 localPos, float edge0, float edge1,
        * smoothstep(-aaR * 0.5, aaR * 0.5, dR) * widthFade;
 }
 
+// Ribbon edge X positions + per-edge slope foreshortening at a point along the
+// ribbon, shared by both fill passes so the drift-prone per-edge slope formula
+// (the boundary-fuzz fix documented in perpCoverage) lives in ONE place. `s` is
+// the X-blend value and `sd = ds/dt`, `dydt = dy/dt` give each edge its own
+// dx/dy: straight mode passes s=t, sd=1, dydt=h (linear y); curve mode passes
+// s=sBlend(t), sd=sBlendDeriv(t), dydt=h·yCurveDeriv(t).
+public struct FillEdges {
+  public float edge0;
+  public float edge1;
+  public float pf0;
+  public float pf1;
+};
+
+public FillEdges fillEdges(float4 corners, float s, float sd, float dydt) {
+  FillEdges e;
+  e.edge0 = lerp(corners.x, corners.w, s);
+  e.edge1 = lerp(corners.y, corners.z, s);
+  float slope0 = (corners.w - corners.x) * sd / max(abs(dydt), 1e-4);
+  float slope1 = (corners.z - corners.y) * sd / max(abs(dydt), 1e-4);
+  e.pf0 = sqrt(1.0 + slope0 * slope0);
+  e.pf1 = sqrt(1.0 + slope1 * slope1);
+  return e;
+}
+
 // Analytic coverage for a fill fragment. `localPos.x` is screen X, `localPos.y`
 // is the vertical offset from yTop. `edge0`/`edge1` are the ribbon edges at this
 // y and `pf0`/`pf1` each edge's slope foreshortening. BASE ribbons and CIGAR
@@ -234,4 +258,13 @@ public float4 edgeStrokeColor(float dist) {
   float aa = fwidth(dist);
   float edgeAlpha = 1.0 - smoothstep(0.5 - aa * 0.5, 0.5 + aa, abs(dist));
   return float4(0.0, 0.0, 0.0, edgeAlpha * 0.4);
+}
+
+// Unit normal to an edge tangent (perpendicular in screen space), shared by
+// both edge passes. The stroke is symmetric (±side expansion, abs(dist) in the
+// fragment), so the sign is irrelevant — only the perpendicular direction
+// matters. Degenerate (zero-length) tangents fall back to vertical.
+public float2 edgeNormal(float2 tangent) {
+  float len = length(tangent);
+  return len > 0.001 ? float2(-tangent.y, tangent.x) / len : float2(0.0, 1.0);
 }
