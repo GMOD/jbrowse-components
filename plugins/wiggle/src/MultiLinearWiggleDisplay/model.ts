@@ -140,6 +140,12 @@ export default function stateModelFactory(
       get numSources() {
         return self.sources.length
       },
+
+      // Restrict the shared autoscale domain to the currently-visible sources
+      // (a subtree filter hides some), so hidden sources don't stretch the axis.
+      get autoscaleSourceNames() {
+        return new Set(self.sources.map(s => s.name))
+      },
     }))
     .views(self => ({
       get rowHeight() {
@@ -169,6 +175,9 @@ export default function stateModelFactory(
         }
         const view = getContainingView(self) as LGV
         const width = view.trackWidthPx
+        // Full height, no YSCALEBAR_LABEL_OFFSET inset (unlike single-wiggle):
+        // rows stack edge-to-edge for maximum density. Don't "unify" with
+        // LinearWiggleDisplay's inset — the divergence is intentional.
         const height = self.height
         return resolveRenderState(
           self.domain,
@@ -320,7 +329,13 @@ export default function stateModelFactory(
           needed: { region: Region; displayedRegionIndex: number }[],
         ) {
           const view = getContainingView(self) as LGV
-          const { adapterConfig, sources } = self
+          // Always fetch the full (unfiltered, un-reordered) source list. A
+          // subtree filter or reorder only affects client-side rendering
+          // (gpuProps re-upload) and the autoscale domain — never what's
+          // fetched — so every region's payload stays complete and consistent.
+          // Filtering here instead would leave regions fetched under a stale
+          // filter missing sources when the filter is later widened.
+          const { adapterConfig, sourcesWithoutLayout } = self
           if (adapterConfig) {
             const { bpPerPx } = view
             const sessionId = getRpcSessionId(self)
@@ -330,7 +345,7 @@ export default function stateModelFactory(
                 rpcManager.call(sessionId, 'RenderMultiWiggleData', {
                   adapterConfig,
                   region,
-                  sources,
+                  sources: sourcesWithoutLayout,
                   ...self.rpcProps(),
                   stopToken: ctx.stopToken,
                   bpPerPx,

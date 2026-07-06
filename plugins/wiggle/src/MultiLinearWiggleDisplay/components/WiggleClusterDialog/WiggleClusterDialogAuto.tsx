@@ -7,22 +7,19 @@ import {
   isAbortException,
   statusFraction,
   statusProgressLabel,
-  useLocalStorage,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { buildClusteredLayout } from '@jbrowse/tree-sidebar'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
+import SamplesPerPixelField from './SamplesPerPixelField.tsx'
+import {
+  clusterScoreMatrixArgs,
+  useClusterSamplingOptions,
+} from './clusterOptions.ts'
 
 import type { ReducedModel } from './types.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
@@ -42,14 +39,8 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
   const [stopToken, setStopToken] = useState<StopToken>()
-  const [showAdvanced, setShowAdvanced] = useLocalStorage(
-    'cluster-showAdvanced',
-    false,
-  )
-  const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
-    'cluster-samplesPerPixel',
-    '1',
-  )
+  const { showAdvanced, setShowAdvanced, samplesPerPixel, setSamplesPerPixel } =
+    useClusterSamplingOptions()
 
   // Abort an in-flight clustering RPC if the dialog is dismissed (title-bar X /
   // Escape) — the explicit Cancel button does this too, but closing any other
@@ -77,21 +68,12 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
             {showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
           </Button>
           {showAdvanced ? (
-            <div style={{ marginTop: 20 }}>
-              <Typography>
-                By default this samples the data once per screen pixel across
-                the currently visible region.
-              </Typography>
-              <TextField
-                label="Samples per pixel (>1 for denser sampling, between 0-1 for sparser sampling)"
-                variant="outlined"
-                size="small"
-                value={samplesPerPixel}
-                onChange={event => {
-                  setSamplesPerPixel(event.target.value)
-                }}
-              />
-            </div>
+            <SamplesPerPixelField
+              value={samplesPerPixel}
+              onChange={val => {
+                setSamplesPerPixel(val)
+              }}
+            />
           ) : null}
         </div>
         <div>
@@ -123,7 +105,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
             try {
               setError(undefined)
               const view = getContainingView(model) as LinearGenomeViewModel
-              const { sourcesWithoutLayout, adapterConfig } = model
+              const { sourcesWithoutLayout } = model
               if (!view.initialized) {
                 setError(
                   new Error(
@@ -143,12 +125,8 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                   sessionId,
                   'MultiWiggleClusterScoreMatrix',
                   {
-                    regions: view.dynamicBlocks.contentBlocks,
-                    sources: sourcesWithoutLayout,
-                    adapterConfig,
+                    ...clusterScoreMatrixArgs(model, samplesPerPixel),
                     stopToken,
-                    bpPerPx:
-                      view.bpPerPx / parseSamplesPerPixel(samplesPerPixel),
                     statusCallback: (arg: RpcStatus) => {
                       setStatus(arg)
                     },

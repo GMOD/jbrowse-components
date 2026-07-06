@@ -5,12 +5,7 @@ import {
   ErrorBanner,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  getSession,
-  useFetch,
-  useLocalStorage,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession, useFetch } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   buildClusteredLayout,
@@ -30,7 +25,11 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
+import SamplesPerPixelField from './SamplesPerPixelField.tsx'
+import {
+  clusterScoreMatrixArgs,
+  useClusterSamplingOptions,
+} from './clusterOptions.ts'
 
 import type { ReducedModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -45,15 +44,9 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
   children: React.ReactNode
 }) {
   const [paste, setPaste] = useState('')
-  const [showAdvanced, setShowAdvanced] = useLocalStorage(
-    'cluster-showAdvanced',
-    false,
-  )
+  const { showAdvanced, setShowAdvanced, samplesPerPixel, setSamplesPerPixel } =
+    useClusterSamplingOptions()
   const [clusterMethod, setClusterMethod] = useState('single')
-  const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
-    'cluster-samplesPerPixel',
-    '1',
-  )
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const shouldFetch = view.initialized && !!model.sourcesWithoutLayout.length
@@ -64,16 +57,13 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
   } = useFetch(
     shouldFetch ? ['scoreMatrix', model, samplesPerPixel] : null,
     async () => {
-      const { dynamicBlocks, bpPerPx } = view
       const { rpcManager } = getSession(model)
-      const { sourcesWithoutLayout, adapterConfig } = model
       const sessionId = getRpcSessionId(model)
-      return rpcManager.call(sessionId, 'MultiWiggleGetScoreMatrix', {
-        regions: dynamicBlocks.contentBlocks,
-        sources: sourcesWithoutLayout,
-        adapterConfig,
-        bpPerPx: bpPerPx / parseSamplesPerPixel(samplesPerPixel),
-      })
+      return rpcManager.call(
+        sessionId,
+        'MultiWiggleGetScoreMatrix',
+        clusterScoreMatrixArgs(model, samplesPerPixel),
+      )
     },
   )
 
@@ -170,21 +160,12 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
                     />
                   ))}
                 </RadioGroup>
-                <div style={{ marginTop: 20 }}>
-                  <Typography>
-                    By default this samples the data once per screen pixel
-                    across the currently visible region.
-                  </Typography>
-                  <TextField
-                    label="Samples per pixel (>1 for denser sampling, between 0-1 for sparser sampling)"
-                    variant="outlined"
-                    size="small"
-                    value={samplesPerPixel}
-                    onChange={event => {
-                      setSamplesPerPixel(event.target.value)
-                    }}
-                  />
-                </div>
+                <SamplesPerPixelField
+                  value={samplesPerPixel}
+                  onChange={val => {
+                    setSamplesPerPixel(val)
+                  }}
+                />
               </div>
             ) : null}
             {results ? (
