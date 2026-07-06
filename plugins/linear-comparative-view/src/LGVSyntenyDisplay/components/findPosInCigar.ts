@@ -3,6 +3,7 @@ import {
   CIGAR_EQ,
   CIGAR_I,
   CIGAR_M,
+  CIGAR_N,
   CIGAR_X,
 } from '@jbrowse/cigar-utils'
 
@@ -27,9 +28,12 @@ import {
 // navToSynteny pads both ends by windowSize regardless, so this sub-insertion
 // precision is immaterial in practice.
 //
-// Only M/=/X/I/D ops are recognized — H/S/P/N are silently skipped, which is
-// correct for the BAM/PAF supplementary-alignment CIGARs this is fed (clips
-// are stripped upstream by getLengthSansClipping etc.).
+// M/=/X/I/D/N ops are recognized — H/S/P (clips/padding, zero-width on the
+// reference) are silently skipped, which is correct for the BAM/PAF
+// supplementary-alignment CIGARs this is fed (clips are stripped upstream by
+// getLengthSansClipping etc.). N (skipped region / intron) consumes the
+// feature/reference axis only, exactly like D, so it is handled alongside it —
+// a spliced CIGAR is rare here but would otherwise mismap across the gap.
 export function findPosInCigar(cigar: number[], startX: number) {
   let featX = 0
   let mateX = 0
@@ -42,7 +46,7 @@ export function findPosInCigar(cigar: number[], startX: number) {
     const min = Math.min(len, startX - featX)
     if (opIdx === CIGAR_I) {
       mateX += len
-    } else if (opIdx === CIGAR_D) {
+    } else if (opIdx === CIGAR_D || opIdx === CIGAR_N) {
       featX += min
     } else if (opIdx === CIGAR_M || opIdx === CIGAR_EQ || opIdx === CIGAR_X) {
       mateX += min

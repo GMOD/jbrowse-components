@@ -59,8 +59,15 @@ describe('findPosInCigar', () => {
     expect(findPosInCigar(parseCigar2('30M50D30M'), 50)).toEqual([50, 30])
   })
 
-  it('unknown ops (S/H/N) are silently skipped', () => {
+  it('clip/pad ops (S/H) are silently skipped', () => {
     // 10S 100M — soft-clip should be ignored; 50bp ask hits matches directly
     expect(findPosInCigar(parseCigar2('10S100M'), 50)).toEqual([50, 50])
+  })
+
+  it('N (skipped region / intron) advances the feature axis like D', () => {
+    // 30M 50N 30M; startX=50 — N consumes ref only, capped at min(50, 50-30)=20
+    //  - 30M → 30,30
+    //  - 50N capped → featX 30→50, mateX stays 30
+    expect(findPosInCigar(parseCigar2('30M50N30M'), 50)).toEqual([50, 30])
   })
 })

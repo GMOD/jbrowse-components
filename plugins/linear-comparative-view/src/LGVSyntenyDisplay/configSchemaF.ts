@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { assembleLocString, toLocale } from '@jbrowse/core/util'
 import { linearAlignmentsDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
 
+import { getMate } from './components/util.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -35,13 +37,7 @@ import type { Feature } from '@jbrowse/core/util'
  */
 function configSchemaF(pluginManager: PluginManager) {
   pluginManager.jexl.addFunction('lgvSyntenyTooltip', (f: Feature) => {
-    const mate = f.get('mate') as {
-      name?: string
-      id?: string
-      refName: string
-      start: number
-      end: number
-    }
+    const mate = getMate(f)
 
     const l1name = f.get('name') || f.get('id')
     const l2name = mate.name || mate.id

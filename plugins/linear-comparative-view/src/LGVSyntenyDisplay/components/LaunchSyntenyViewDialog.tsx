@@ -8,6 +8,8 @@ import { navToSynteny } from './util.ts'
 
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
+const DEFAULT_WINDOW_SIZE = 1000
+
 const useStyles = makeStyles()({
   formControl: {
     margin: 10,
@@ -32,7 +34,9 @@ export default function LaunchSyntenyViewDialog({
   const inverted = feature.get('strand') === -1
   const hasCIGAR = !!feature.get('CIGAR')
   const [horizontallyFlip, setHorizontallyFlip] = useState(inverted)
-  const [windowSize, setWindowSize] = useState<number | undefined>(1000)
+  const [windowSize, setWindowSize] = useState<number | undefined>(
+    DEFAULT_WINDOW_SIZE,
+  )
   const [useRegionOfInterest, setUseRegionOfInterest] = useState(true)
   return (
     <SubmitDialog
@@ -86,7 +90,7 @@ export default function LaunchSyntenyViewDialog({
       ) : null}
       <NumberTextField
         label="Add window size in bp"
-        defaultValue={1000}
+        defaultValue={DEFAULT_WINDOW_SIZE}
         onValueChange={setWindowSize}
         min={0}
         errorText="Must be a non-negative number"

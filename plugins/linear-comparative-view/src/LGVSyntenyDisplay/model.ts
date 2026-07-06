@@ -18,7 +18,11 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
-import { findVisibleBlockForFeature } from './components/util.ts'
+import {
+  canLaunchSyntenyForMate,
+  findVisibleBlockForFeature,
+  getMate,
+} from './components/util.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -96,16 +100,13 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
          */
         contextMenuItems() {
           const feature = self.contextMenuFeature
-          // one-vs-all can pair the feature with a sample that isn't a loaded
-          // assembly; a synteny view can only be launched against a loaded one
-          const mate = feature?.get('mate') as
-            { assemblyName?: string } | undefined
-          const mateAssembly = mate?.assemblyName
-          const canLaunchSynteny =
-            mateAssembly !== undefined &&
-            getSession(self).assemblyManager.assemblyNamesList.includes(
-              mateAssembly,
-            )
+          const mateAssembly = feature
+            ? getMate(feature).assemblyName
+            : undefined
+          const canLaunchSynteny = canLaunchSyntenyForMate(
+            getSession(self),
+            mateAssembly,
+          )
           return feature
             ? [
                 {
@@ -177,6 +178,14 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               ),
             }),
             getFiltersMenuItem(self),
+            {
+              label: 'Show coverage',
+              type: 'checkbox' as const,
+              checked: self.showCoverage,
+              onClick: () => {
+                self.setShowCoverage(!self.showCoverage)
+              },
+            },
             {
               label: 'Group by mate sample',
               type: 'checkbox' as const,
