@@ -7961,10 +7961,12 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'gallery/celegans_26way',
     // no rowHeight: the slot defaults to 0 (fit-to-display-height), so all 26
-    // species fit the viewport with no scroll
+    // species fit the viewport with no scroll. Long settle: the MAF coverage band
+    // paints a canvas "Loading" placeholder the DOM-based waitForQuiescent can't
+    // see, and the headless (swiftshader) build is slow to resolve it.
     url: '?config=https://jbrowse.org/demos/ce/config.json&session=spec-{"views":[{"assembly":"ce11","loc":"chrI:2998500-3001800","type":"LinearGenomeView","tracks":[{"trackId":"ce11.26way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true}}]}]}',
     readyTimeout: 180000,
-    settleMs: 15000,
+    settleMs: 45000,
     viewportHeight: 500,
   },
   {
