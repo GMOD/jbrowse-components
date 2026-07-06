@@ -1,4 +1,9 @@
-import { MIN_FIT_ROWS, fitGroupMaxRows, reclaimFitRows } from './groupLayout.ts'
+import {
+  MIN_FIT_ROWS,
+  fitGroupMaxRows,
+  nextGroupHeightOverride,
+  reclaimFitRows,
+} from './groupLayout.ts'
 
 test('fitGroupMaxRows: splits the post-overhead height evenly across groups', () => {
   // 1000px height, 2 groups, 50px overhead each => (1000 - 100)/2 = 450px per
@@ -156,4 +161,43 @@ test('reclaimFitRows: no second pass when nothing can move', () => {
       maxRows: 1000,
     }),
   ).toBeUndefined()
+})
+
+// rowHeight 20, displayed 100px (5 rows) throughout unless noted.
+const drag = (o: Partial<Parameters<typeof nextGroupHeightOverride>[0]>) =>
+  nextGroupHeightOverride({
+    dy: 0,
+    rowHeight: 20,
+    displayedPx: 100,
+    existingPx: undefined,
+    fullyShown: false,
+    ...o,
+  })
+
+test('nextGroupHeightOverride: fresh grow-drag on a fully-shown group banks nothing', () => {
+  expect(drag({ dy: 5, fullyShown: true })).toBeUndefined()
+})
+
+test('nextGroupHeightOverride: fresh shrink seeds from the displayed height', () => {
+  expect(drag({ dy: -5, fullyShown: true })).toBe(95)
+  expect(drag({ dy: -5, fullyShown: false })).toBe(95)
+})
+
+test('nextGroupHeightOverride: grows a truncated group past its content', () => {
+  expect(drag({ dy: 5, fullyShown: false })).toBe(105)
+  expect(drag({ dy: 5, existingPx: 110, fullyShown: false })).toBe(115)
+})
+
+test('nextGroupHeightOverride: growing a fully-shown group pins at its content', () => {
+  expect(drag({ dy: 5, existingPx: 110, fullyShown: true })).toBe(100)
+})
+
+test('nextGroupHeightOverride: floors at one row', () => {
+  expect(drag({ dy: -500 })).toBe(20)
+})
+
+test('nextGroupHeightOverride: clamps a stale over-content override to one row of headroom', () => {
+  // existing 500px runs well past the 100px content; base clamps to 100+20 so a
+  // reversing (shrink) drag only walks back one row of dead space, not 400px.
+  expect(drag({ dy: -5, existingPx: 500, fullyShown: true })).toBe(115)
 })

@@ -9,25 +9,8 @@ import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 
-const useStyles = makeStyles()(theme => ({
-  divider: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: 1,
-    background: theme.palette.divider,
-    pointerEvents: 'none',
-    zIndex: 6,
-  },
-  controls: {
-    position: 'absolute',
-    left: 4,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 2,
-    zIndex: 6,
-  },
-  button: {
+const useStyles = makeStyles()(theme => {
+  const chip = {
     display: 'flex',
     alignItems: 'center',
     padding: '0 4px',
@@ -37,18 +20,43 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.background.paper,
     opacity: 0.85,
     borderRadius: 3,
-    whiteSpace: 'nowrap',
-    cursor: 'pointer',
-    border: 'none',
-    userSelect: 'none',
-    '&:hover': {
-      opacity: 1,
+    whiteSpace: 'nowrap' as const,
+    userSelect: 'none' as const,
+  }
+  return {
+    divider: {
+      position: 'absolute' as const,
+      left: 0,
+      right: 0,
+      height: 1,
+      background: theme.palette.divider,
+      pointerEvents: 'none' as const,
+      zIndex: 6,
     },
-  },
-  icon: {
-    fontSize: 14,
-  },
-}))
+    controls: {
+      position: 'absolute' as const,
+      left: 4,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 2,
+      zIndex: 6,
+    },
+    button: {
+      ...chip,
+      cursor: 'pointer',
+      border: 'none',
+      '&:hover': {
+        opacity: 1,
+      },
+    },
+    // Non-interactive header when the pileup is hidden — collapse/expand are
+    // no-ops on a coverage-only stack, so the group name is just a label.
+    label: chip,
+    icon: {
+      fontSize: 14,
+    },
+  }
+})
 
 // Inline section dividers + labels between stacked groups (in-track group-by).
 // Only rendered when grouping is active; ungrouped displays show nothing. The
@@ -64,7 +72,9 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
     return null
   }
   // Grouping is active here, so the coverage band scrolls with its section.
-  const { scrollModel: scroll } = model
+  // With the pileup hidden every group's pileup height is 0, so collapse and
+  // "show all"/"fit to view" have nothing to act on — render plain labels.
+  const { scrollModel: scroll, showPileup } = model
   return (
     <>
       {model.renderSections.map((section, i) => {
@@ -72,6 +82,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         if (!bandOnScreen(top, section.coverageHeight, scroll)) {
           return null
         }
+        const label = section.label || 'ungrouped'
         const collapsed = model.isGroupCollapsed(section.groupKey)
         const hasOverride = model.hasGroupHeightOverride(section.groupKey)
         const truncated = model.isGroupTruncated(section.groupKey)
@@ -82,25 +93,30 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
               className={classes.controls}
               style={{ top: Math.max(0, top) + 1 }}
             >
-              <button
-                type="button"
-                className={classes.button}
-                onClick={() => {
-                  model.toggleGroupCollapsed(section.groupKey)
-                }}
-                title={collapsed ? 'Expand group' : 'Collapse group'}
-              >
-                {collapsed ? (
-                  <ChevronRightIcon className={classes.icon} />
-                ) : (
-                  <ExpandMoreIcon className={classes.icon} />
-                )}
-                {section.label || 'ungrouped'}
-              </button>
+              {showPileup ? (
+                <button
+                  type="button"
+                  className={classes.button}
+                  onClick={() => {
+                    model.toggleGroupCollapsed(section.groupKey)
+                  }}
+                  title={collapsed ? 'Expand group' : 'Collapse group'}
+                >
+                  {collapsed ? (
+                    <ChevronRightIcon className={classes.icon} />
+                  ) : (
+                    <ExpandMoreIcon className={classes.icon} />
+                  )}
+                  {label}
+                </button>
+              ) : (
+                <span className={classes.label}>{label}</span>
+              )}
               {/* Restore a manually-sized group to the fit budget; otherwise a
                   "show all" affordance only when reads were actually clipped, so
-                  the button's presence signals hidden reads. */}
-              {collapsed || (!hasOverride && !truncated) ? null : (
+                  the button's presence signals hidden reads. Gated on showPileup
+                  since both actions resize the (hidden) pileup. */}
+              {!showPileup || collapsed || (!hasOverride && !truncated) ? null : (
                 <button
                   type="button"
                   className={classes.button}

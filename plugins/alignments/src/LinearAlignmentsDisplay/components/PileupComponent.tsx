@@ -327,8 +327,10 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
   model: LinearAlignmentsDisplayModel
 }) {
   // In fit-to-height mode the read height is derived to fill the display, so a
-  // per-group pileup drag has nothing to act on — hide the handles.
-  if (!model.isGrouped || model.fitHeightToDisplay) {
+  // per-group pileup drag has nothing to act on — hide the handles. Likewise
+  // with the pileup hidden (coverage-only stack) every section is height 0, so a
+  // drag would only bank a phantom override + "fit to view" affordance.
+  if (!model.isGrouped || model.fitHeightToDisplay || !model.showPileup) {
     return null
   }
   const { height, scrollModel: scroll } = model

@@ -49,6 +49,7 @@ import {
   groupMaxY,
   layoutGroupsToViewport,
   maxRowsFor,
+  nextGroupHeightOverride,
 } from './groupLayout.ts'
 import {
   anyGroupHasSashimi,
@@ -2154,47 +2155,24 @@ export default function stateModelFactory(
           /**
            * #action
            * Drag a stacked group's pileup band taller/shorter by `dy` px, capping
-           * how many rows that group lays out; one row is the floor.
-           *
-           * The override accumulates continuously across drag frames. It must not
-           * re-seed from the section's displayed `pileupHeight` each frame: that
-           * height is row-snapped (`maxY * rowHeight`) and content-capped, so a
-           * sub-row `dy` rounds away to nothing while a sub-row negative `dy`
-           * snaps off a whole row — the drag stutters and biases toward shrinking.
-           * Instead grow the stored px value directly, seeding from the displayed
-           * height only on the first frame. When the override already runs past
-           * the real content (displayed height < override), clamp back to one row
-           * of headroom so reversing the drag responds immediately.
-           *
-           * A fully-shown group (no hidden reads) has nothing to grow into, so a
-           * downward drag never banks pixels past its content: with no existing
-           * override it's a clean no-op (no spurious "fit to view" affordance),
-           * and with an override it pins at the content height. Shrinking, or
-           * growing a group that still hides reads, adjusts the override as usual.
+           * how many rows that group lays out. The continuous-accumulation policy
+           * (seed once, floor at a row, pin/skip a fully-shown group) lives in the
+           * pure `nextGroupHeightOverride`; this action just gathers the group's
+           * live state and commits the result (undefined = leave on the fit
+           * budget). Pairs with `hasGroupHeightOverride` / `toggleGroupExpanded`.
            */
           resizeGroupHeight(key: string, dy: number) {
-            const rowHeight = self.featureHeight + self.featureSpacing
-            const existing = self.groupMaxHeightOverrides.get(key)
-            const displayed =
-              self.sections.sections.find(s => s.groupKey === key)
-                ?.pileupHeight ?? 0
-            // Dragging taller a group that already shows every read (not
-            // truncated) reveals nothing above its content height.
-            const growFullyShown =
-              dy > 0 && !anyRegionTruncated(self.groupLaidOutMap(key))
-            // Cap such growth at the content height when the group is pinned;
-            // skip the write entirely when it isn't, so a dead override (with
-            // its spurious "fit to view" affordance) never lands.
-            if (existing !== undefined || !growFullyShown) {
-              const base =
-                existing === undefined
-                  ? displayed
-                  : Math.min(existing, displayed + rowHeight)
-              const grown = Math.max(rowHeight, base + dy)
-              self.groupMaxHeightOverrides.set(
-                key,
-                growFullyShown ? Math.min(grown, displayed) : grown,
-              )
+            const next = nextGroupHeightOverride({
+              dy,
+              rowHeight: self.featureHeight + self.featureSpacing,
+              displayedPx:
+                self.sections.sections.find(s => s.groupKey === key)
+                  ?.pileupHeight ?? 0,
+              existingPx: self.groupMaxHeightOverrides.get(key),
+              fullyShown: !anyRegionTruncated(self.groupLaidOutMap(key)),
+            })
+            if (next !== undefined) {
+              self.groupMaxHeightOverrides.set(key, next)
             }
           },
 

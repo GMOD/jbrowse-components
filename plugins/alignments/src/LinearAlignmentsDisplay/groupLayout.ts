@@ -260,3 +260,49 @@ export function anyRegionTruncated(map: Map<number, PileupDataResult>) {
   }
   return false
 }
+
+// The per-group pileup-height override (px) after one drag frame, or `undefined`
+// to leave the group on the shared fit budget (bank no override). The override
+// caps how many rows the group lays out (`maxRowsFor`); a drag accumulates it
+// continuously, `dy` being the per-frame pointer delta (positive = taller).
+//
+// Pure so the drag policy is unit-tested here rather than inferred from the MST
+// action. Three rules, each isolated below:
+//   - Accumulate from the stored px, not the row-snapped displayed height —
+//     re-seeding from `displayed` every frame stutters, since a sub-row `dy`
+//     rounds away against the snap. Seed from `displayed` only on the first
+//     frame (no existing override). When an override already runs past the
+//     content, clamp its base to one row of headroom so a reversing drag
+//     responds immediately instead of eating the dead pixels first.
+//   - Floor at one row.
+//   - A fully-shown group (nothing hidden) can't grow past its content height:
+//     an upward drag pins at `displayed`, and a *fresh* upward drag banks
+//     nothing at all (an override equal to `displayed` is a dead "fit to view"
+//     affordance).
+export function nextGroupHeightOverride({
+  dy,
+  rowHeight,
+  displayedPx,
+  existingPx,
+  fullyShown,
+}: {
+  dy: number
+  rowHeight: number
+  // Height the group's pileup currently occupies, row-snapped (maxY*rowHeight).
+  displayedPx: number
+  // Current override px, or undefined when the group is still on the fit budget.
+  existingPx: number | undefined
+  // Whether every read already shows (no hidden rows to grow into).
+  fullyShown: boolean
+}): number | undefined {
+  const growingFullyShown = dy > 0 && fullyShown
+  const base =
+    existingPx === undefined
+      ? displayedPx
+      : Math.min(existingPx, displayedPx + rowHeight)
+  const grown = Math.max(rowHeight, base + dy)
+  const capped = growingFullyShown ? Math.min(grown, displayedPx) : grown
+  // A fresh grow-drag on a fully-shown group would only pin at its content, so
+  // leave it unset rather than bank a dead override.
+  return existingPx === undefined && growingFullyShown ? undefined : capped
+}
