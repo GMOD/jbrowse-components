@@ -5795,7 +5795,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "PBA15131-nanopore",
-      "name": "Nanopore PBA15131 (6mA rep1)",
+      "name": "Nanopore PBA15131 (native, no-enzyme control)",
       "category": ["Methylation"],
       "assemblyNames": ["hg38"],
       "adapter": {
@@ -5813,7 +5813,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "PBA15156-nanopore",
-      "name": "Nanopore PBA15156 (native)",
+      "name": "Nanopore PBA15156 (6mA rep1)",
       "assemblyNames": ["hg38"],
       "category": ["Methylation"],
       "adapter": {

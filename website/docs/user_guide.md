@@ -48,6 +48,7 @@ title: User guide
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes in a linear synteny view from a jcvi MCScan .blocks file
 - [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
 - [RNA-seq analysis](/docs/tutorials/rnaseq) - Understand what RNA-seq looks like in the genome browser, from spliced reads to splice arcs
+- [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk) - Aggregate single-cell ATAC into per-cell-type coverage BigWigs and load them as one MultiWiggle track
 - [1000 Genomes SVs](/docs/tutorials/sv_multisamples) - Inspect population-level SVs, explore a family trio, and characterize a large chromosomal inversion
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - Load and inspect structural variants from real cancer sequencing data
 - [Synteny visualization](/docs/tutorials/synteny_visualization) - Compare genome assemblies using dotplot and linear synteny views

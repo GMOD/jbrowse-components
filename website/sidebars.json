@@ -31,6 +31,7 @@
         "tutorials/chromhmm",
         "tutorials/display_settings",
         "tutorials/methylation",
+        "tutorials/scatac_pseudobulk",
         "tutorials/introgression",
         "tutorials/analyze_trio",
         "tutorials/protein_structure",

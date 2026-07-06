@@ -35,15 +35,23 @@ const sections = gallerySections
             <div class="grid">
               {s.cards.map(item => {
                 const href = itemHref(item, baseUrl)
+                const src = `${baseUrl}/img/${itemImg(item)}`
+                const openLabel = item.guide
+                  ? 'Open tutorial ↗'
+                  : 'Open in JBrowse ↗'
                 return (
                   <figure class="card">
-                    <a href={href}>
-                      <img
-                        src={`${baseUrl}/img/${itemImg(item)}`}
-                        alt={item.label}
-                        loading="lazy"
-                      />
-                    </a>
+                    <button
+                      type="button"
+                      class="card-img-btn"
+                      data-full={src}
+                      data-label={item.label}
+                      data-href={href}
+                      data-open-label={openLabel}
+                      aria-label={`Enlarge: ${item.label}`}
+                    >
+                      <img src={src} alt={item.label} loading="lazy" />
+                    </button>
                     <figcaption>
                       <a href={href} class="card-title">
                         {item.label}
@@ -72,7 +80,62 @@ const sections = gallerySections
       ))
     }
   </div>
+
+  <div id="lightbox" class="lightbox" hidden>
+    <button type="button" class="lightbox-close" aria-label="Close">×</button>
+    <figure class="lightbox-fig">
+      <img id="lightbox-img" src="" alt="" />
+      <figcaption>
+        <span id="lightbox-caption"></span>
+        <a id="lightbox-link" class="lightbox-open" href=""></a>
+      </figcaption>
+    </figure>
+  </div>
 </BaseLayout>
+
+<script>
+  const lb = document.getElementById('lightbox')!
+  const lbImg = document.getElementById('lightbox-img') as HTMLImageElement
+  const lbCaption = document.getElementById('lightbox-caption')!
+  const lbLink = document.getElementById('lightbox-link') as HTMLAnchorElement
+
+  function openLightbox(btn: HTMLElement) {
+    lbImg.src = btn.dataset.full ?? ''
+    lbImg.alt = btn.dataset.label ?? ''
+    lbCaption.textContent = btn.dataset.label ?? ''
+    lbLink.href = btn.dataset.href ?? ''
+    lbLink.textContent = btn.dataset.openLabel ?? ''
+    lb.hidden = false
+    document.body.style.overflow = 'hidden'
+  }
+
+  function closeLightbox() {
+    lb.hidden = true
+    lbImg.src = ''
+    document.body.style.overflow = ''
+  }
+
+  for (const btn of document.querySelectorAll<HTMLElement>('.card-img-btn')) {
+    btn.addEventListener('click', () => {
+      openLightbox(btn)
+    })
+  }
+
+  // Backdrop or close-button click closes; a click on the image or its
+  // "open" link passes through (the link navigates).
+  lb.addEventListener('click', e => {
+    const target = e.target as HTMLElement
+    if (target === lb || target.classList.contains('lightbox-close')) {
+      closeLightbox()
+    }
+  })
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !lb.hidden) {
+      closeLightbox()
+    }
+  })
+</script>
 
 <style>
   .wide {
@@ -122,11 +185,77 @@ const sections = gallerySections
   .card:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
+  .card-img-btn {
+    display: block;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    cursor: zoom-in;
+  }
   .card img {
     width: 100%;
     height: auto;
     display: block;
     border-bottom: 1px solid var(--color-border);
+  }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.85);
+  }
+  .lightbox[hidden] {
+    display: none;
+  }
+  .lightbox-fig {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 96vw;
+    max-height: 92vh;
+  }
+  .lightbox-fig img {
+    max-width: 96vw;
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  }
+  .lightbox-fig figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.85rem;
+    color: #fff;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+  .lightbox-open {
+    color: #6ab0ff;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 1.25rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #fff;
+    font-size: 2.25rem;
+    line-height: 1;
+    cursor: pointer;
   }
   figcaption {
     padding: 0.75rem 1rem 1rem;

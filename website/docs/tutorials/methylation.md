@@ -108,6 +108,18 @@ JBrowse 2 can also infer methylation from **bisulfite** (or EM-seq) data via
 C-to-T conversion in the read alignment (the `bisulfite` coloring mode) rather
 than from MM/ML tags.
 
+## 6mA base modifications (fiber-seq)
+
+Modification coloring is not limited to 5mC. Fiber-seq and related assays call
+**N6-methyladenine (6mA)**, tagged as `A+a` in the MM/ML tags. JBrowse draws 6mA
+the same as any other modification: set the track's color mode to
+**modifications** and the `A+a` calls paint directly on the reads. The figure
+below uses Oxford Nanopore's
+[HG002 chromatin-accessibility dataset](https://epi2me.nanoporetech.com/chromatin-acc-hg002/),
+comparing an enzyme-treated sample with an untreated control.
+
+<Figure caption="ONT HG002 fiber-seq at the GAPDH promoter in modifications mode: the enzyme-treated sample (top, PAY22766) carries 6mA (A+a) calls that the native no-enzyme control (bottom, PBA15131) does not." src="/img/methylation/chromatin_accessibility_6ma.png" />
+
 ## Choosing between the two approaches
 
 | Approach                         | Best for                                                                                     |

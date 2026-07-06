@@ -123,14 +123,6 @@ export const recentConfigs: readonly SampleLink[] = [
     label: 'GPX1 selenoprotein (UGA→Sec readthrough)',
   },
   {
-    config: 'test_data/arabidopsis_methylation/config.json',
-    label: 'Arabidopsis methylation (ONT 5mC/5hmC)',
-  },
-  {
-    config: 'test_data/arabidopsis_methylation/config_emseq_bisulfite.json',
-    label: 'Arabidopsis methylation (EM-seq bisulfite)',
-  },
-  {
     href: '?config=https://jbrowse.org/ucsc/hg38/config.json&session=spec-{"views":[{"assembly":"hg38","loc":"chr17:43044000-43126000","type":"LinearGenomeView","tracks":["hg38-cactus447way"]}]}',
     label: 'hg38 MAF (447-way)',
   },

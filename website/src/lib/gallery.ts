@@ -22,6 +22,9 @@ export interface GalleryItem {
   // the spec's base capture isn't the state to open live (e.g. a flip demo whose
   // figure flips at capture time).
   session?: string
+  // Absolute external URL (e.g. a Storybook example). For link-only items that
+  // point outside the app; wins over every other destination.
+  href?: string
   // Path under /docs (no base prefix) for items whose best destination is a
   // written walkthrough rather than a live session.
   guide?: string
@@ -52,6 +55,9 @@ export function itemImg(item: GalleryItem) {
 // the spec-derived live session. `baseUrl` is the site base (e.g. /jb2) so guide
 // links resolve under the deployed path.
 export function itemHref(item: GalleryItem, baseUrl: string) {
+  if (item.href) {
+    return item.href
+  }
   if (item.session) {
     return CODE_BASE + item.session
   }
@@ -181,16 +187,17 @@ export const gallerySections: readonly GallerySection[] = [
           'A ~1.5kb GIAB insertion across Nanopore, PacBio, and Illumina reads. Soft clipping on the Illumina reads marks the insertion boundaries the long reads span.',
       },
       {
-        label: 'Paired-end stranded RNA-seq',
-        spec: 'gallery/rnaseq_paired',
+        label: 'RNA-seq splice junctions (ACTB)',
+        img: 'rnaseq/basic.png',
+        guide: 'tutorials/rnaseq',
         description:
-          'Paired-end stranded RNA-seq: strand-colored coverage and reads with splice-junction arcs.',
+          'RNA-seq over ACTB: a coverage histogram, strand-colored splice-junction arcs, the spliced read pileup, and the gene model below.',
       },
       {
-        label: 'Fiber-seq single-molecule methylation (MAGEL2)',
-        spec: 'gallery/fiberseq_magel2',
+        label: 'Fiber-seq 6mA (GAPDH promoter)',
+        spec: 'gallery/fiberseq_gapdh',
         description:
-          'Fiber-seq single-molecule m6A footprints across MAGEL2, each read colored per-base by modification.',
+          'ONT single-molecule fiber-seq (HG002) over the GAPDH promoter, each read colored per-base by its 6mA (A+a) calls in modifications mode.',
       },
       {
         label: 'Direct RNA-seq nanopore modifications (BRCA1)',
@@ -210,24 +217,6 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'Human nanopore reads colored by base-modification (methylation) calls over a chr20 CpG island.',
       },
-      {
-        label: 'COLO829 tumor nanopore methylation',
-        spec: 'methylation/colo829_cram_and_bedmethyl',
-        description:
-          'A CpG island in the COLO829 tumor line: per-base 5mC calls on the nanopore reads, over an aggregated bedMethyl density track.',
-      },
-      {
-        label: 'Arabidopsis methylation (ONT 5mC/5hmC)',
-        spec: 'gallery/arabidopsis_ont',
-        description:
-          'Arabidopsis nanopore reads colored by 5mC/5hmC calls in CHH context.',
-      },
-      {
-        label: 'Arabidopsis methylation (EM-seq bisulfite)',
-        spec: 'gallery/arabidopsis_emseq',
-        description:
-          'Arabidopsis EM-seq reads colored by bisulfite methylation in CHH context.',
-      },
     ],
   },
   {
@@ -241,15 +230,11 @@ export const gallerySections: readonly GallerySection[] = [
           'A 1000 Genomes trio (mother, child, father) coverage beneath the ensemble structural-variant VCF.',
       },
       {
-        label: 'Tetraploid potato multi-sample VCF',
-        spec: 'gallery/potato',
+        label: 'Trio phased VCF (inheritance in the genotype matrix)',
+        img: 'trio-matrix-phased-clean.png',
+        guide: 'tutorials/analyze_trio',
         description:
-          'A tetraploid potato multi-sample VCF rendered as a genotype matrix.',
-      },
-      {
-        label: 'Human trio phased VCF rendering',
-        spec: 'gallery/human_trio_phased',
-        description: 'Phased trio VCF calls from a KHV trio on chr1.',
+          'A phased trio genotype matrix: child, mother, and father each as two haplotype rows, so matching blocks reveal which parental haplotype the child inherited.',
       },
       {
         label: 'HG002 diploid assembly (dipcall hap1 + hap2 vs GRCh38)',
@@ -264,10 +249,8 @@ export const gallerySections: readonly GallerySection[] = [
           'A Manhattan plot with LocusZoom-style LD coloring around the FTO obesity locus.',
       },
       {
-        label: 'GWAS LocusZoom-style LD coloring (SLE, STAT4 locus)',
-        spec: 'gallery/gwas_sle_stat4',
-        description:
-          'An SLE GWAS Manhattan plot with LocusZoom-style LD coloring around the STAT4 locus.',
+        label: 'More LocusZoom-style GWAS examples (Storybook) ↗',
+        href: 'https://jbrowse.org/storybook/lgv/locus-zoom-ld',
       },
     ],
   },
@@ -283,7 +266,7 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Clustered multi-sample copy-number track (1000 genomes)',
-        spec: 'multiwig/cluster_dialog',
+        spec: 'gallery/copynumber_clustered',
         guide: 'user_guides/multiquantitative_track',
         description:
           'Copy-number profiles for many 1000 Genomes individuals as a multi-row density heatmap. The in-app "Cluster by score" workflow reorders rows by signal similarity.',
@@ -299,18 +282,6 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'chromhmm',
         description:
           'Dense chromatin-state annotations from Roadmap Epigenomics (127 epigenomes) in the multi-row feature display.',
-      },
-      {
-        label: 'ChromHMM states (9 ENCODE cell types, β-globin)',
-        spec: 'gallery/chromhmm_encode',
-        description:
-          'ChromHMM chromatin states for 9 ENCODE cell types across the β-globin locus.',
-      },
-      {
-        label: 'ChromHMM states (Roadmap, 127 epigenomes, β-globin)',
-        spec: 'gallery/chromhmm_roadmap',
-        description:
-          'Roadmap Epigenomics ChromHMM states for 127 epigenomes over the β-globin locus, as a dense multi-row heatmap.',
       },
       {
         label: 'Single-cell ATAC by cell type (CATlas, INS locus)',
@@ -354,27 +325,10 @@ export const gallerySections: readonly GallerySection[] = [
           'The enterovirus D polyprotein cleaved into its mature peptides (VP1, 2A, 3C, …), each a stacked row labeled with its product name.',
       },
       {
-        label: 'Human mitochondrion (vertebrate mito code, transl_except stops)',
-        spec: 'gallery/human_mito',
-        description:
-          'The complete human mitochondrial genome — 37 genes and tRNAs — translated with the vertebrate mitochondrial code (transl_table=2).',
-      },
-      {
         label: 'GPX1 selenoprotein (UGA→Sec readthrough)',
         spec: 'gene_track_selenocysteine',
         description:
           'GPX1\'s in-frame UGA is recoded as selenocysteine. With amino-acid lettering on, that codon shows as a "U" on orange instead of a stop.',
-      },
-      {
-        label: 'Human PTEN gene (color by CDS frame)',
-        spec: 'gallery/pten_cds',
-        description: 'The human PTEN gene colored by CDS frame.',
-      },
-      {
-        label: 'Maize transposable elements (LTR subparts)',
-        spec: 'gallery/maize_te',
-        description:
-          'Maize EDTA transposable-element annotations with their LTR subparts.',
       },
     ],
   },
