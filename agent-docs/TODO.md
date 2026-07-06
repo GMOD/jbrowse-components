@@ -15,6 +15,14 @@ redesign options in [OTHER_IDEAS.md](OTHER_IDEAS.md).
 
 See [REQUEST_ABORT_PLAN.md](REQUEST_ABORT_PLAN.md) — proposal, not implemented.
 
+## Config quick-edits mutate shared hydrated nodes
+
+A compensating fix is shipped (evict the dirtied hydration node on delta drop);
+the deeper fix — never mutate the shared base-config node in place — would remove
+the whole bug class. See
+[CONFIG_EDIT_INPLACE_MUTATION.md](CONFIG_EDIT_INPLACE_MUTATION.md) — proposal,
+not implemented.
+
 ## Dotplot edge-zoom jump
 
 Zoomed all the way out, then scrolling to zoom in near the edge of the plot
