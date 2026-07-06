@@ -55,7 +55,14 @@
           "indexType": "CSI",
           "location": { "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi" }
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "hg38-genes-LinearBasicDisplay",
+          "autoHeight": true
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -72,7 +79,14 @@
           "indexType": "CSI",
           "location": { "uri": "https://jbrowse.org/ucsc/panTro6/ncbiRefSeq.gff.gz.csi" }
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "panTro6-genes-LinearBasicDisplay",
+          "autoHeight": true
+        }
+      ]
     },
     {
       "type": "SyntenyTrack",
