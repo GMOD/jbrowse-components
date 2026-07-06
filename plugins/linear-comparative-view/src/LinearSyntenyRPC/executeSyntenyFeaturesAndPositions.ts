@@ -39,6 +39,21 @@ interface SyntenyMate {
   assemblyName: string
 }
 
+// Feature keys read once up front (in the decorate step) so the O(n log n) sort
+// comparator and the projection loop never re-invoke the proxied Feature.get.
+interface DecoratedFeature {
+  f: Feature
+  len: number
+  refName: string
+  start: number
+  end: number
+  strand: number
+  mate: SyntenyMate
+  mateRefName: string
+  mateStart: number
+  id: string
+}
+
 // Synteny-specific feature fields. Feature.get returns `unknown` for these
 // non-standard keys, so the cast is centralized in one typed accessor rather
 // than repeated (and previously diverging) at each call site.
@@ -114,35 +129,55 @@ export async function executeSyntenyFeaturesAndPositions({
       targetAssemblyName: v2.displayedRegions[0]?.assemblyName,
     },
   )
+  // Build the cumBp region indexes first: their refName-keyed maps double as the
+  // visible-refName sets, which let us discard features on refNames not shown in
+  // BOTH views BEFORE the O(n log n) dedupe/decorate/sort. Whole-genome PAF
+  // zoomed to one locus carries millions of off-screen features; filtering here
+  // shrinks the sort input to the visible subset. Behavior-preserving — the
+  // projection loop skipped these anyway (never incremented validCount), so the
+  // featureId→index mapping is unchanged.
+  const v1Index = buildBpRegionIndex(v1)
+  const v2Index = buildBpRegionIndex(v2)
+  const v1RefNames = v1Index.entries
+  const v2RefNames = v2Index.entries
+
+  // Give this synchronous prepare phase (dedupe + decorate + sort) its own
+  // label; otherwise the loading overlay keeps whatever the fetch phase last
+  // showed while a large PAF sorts, which reads as a stuck bar.
+  statusCallback?.('Preparing synteny features')
   const deduped = dedupe(allFeatures, f => f.id())
-  // Emit a deterministic total order so the worker's output never depends on
-  // the adapter's block-arrival order (which varies run-to-run as concurrent
-  // region fetches resolve). Length stays the primary key — small→large so big
-  // ribbons land on top of sub-pixel noise in alpha-over compositing (matches
-  // the standalone ribbon-plot script) — but ties now break on position/mate/id
-  // instead of arrival order. This stabilizes alpha compositing of equal-length
-  // overlapping ribbons, the feature-index→featureId mapping (click/hover
-  // identity), and downstream diagonalize. Decorate-sort reads each feature's
-  // keys once (O(n)) rather than via repeated getters in the O(n log n)
-  // comparator; the decorated records are also what the main loop below
-  // iterates, so refName/start/end/strand/mate aren't re-fetched per feature.
-  const decorated = deduped.map(f => {
+
+  // Decorate with a deterministic total order so the worker's output never
+  // depends on the adapter's block-arrival order (which varies run-to-run as
+  // concurrent region fetches resolve). Length stays the primary key —
+  // small→large so big ribbons land on top of sub-pixel noise in alpha-over
+  // compositing (matches the standalone ribbon-plot script) — but ties break on
+  // position/mate/id instead of arrival order. This stabilizes alpha compositing
+  // of equal-length overlapping ribbons, the feature-index→featureId mapping
+  // (click/hover identity), and downstream diagonalize. The decorated records
+  // are also what the projection loop iterates, so refName/start/end/strand/mate
+  // aren't re-fetched per feature.
+  const decorated: DecoratedFeature[] = []
+  for (const f of deduped) {
+    const refName = f.get('refName')
     const mate = getMate(f)
-    const start = f.get('start')
-    const end = f.get('end')
-    return {
-      f,
-      len: end - start,
-      refName: f.get('refName'),
-      start,
-      end,
-      strand: f.get('strand')!,
-      mate,
-      mateRefName: mate.refName,
-      mateStart: mate.start,
-      id: f.id(),
+    if (v1RefNames.has(refName) && v2RefNames.has(mate.refName)) {
+      const start = f.get('start')
+      const end = f.get('end')
+      decorated.push({
+        f,
+        len: end - start,
+        refName,
+        start,
+        end,
+        strand: f.get('strand')!,
+        mate,
+        mateRefName: mate.refName,
+        mateStart: mate.start,
+        id: f.id(),
+      })
     }
-  })
+  }
   decorated.sort(
     (a, b) =>
       a.len - b.len ||
@@ -152,9 +187,6 @@ export async function executeSyntenyFeaturesAndPositions({
       a.mateStart - b.mateStart ||
       cmpStr(a.id, b.id),
   )
-
-  const v1Index = buildBpRegionIndex(v1)
-  const v2Index = buildBpRegionIndex(v2)
 
   const count = decorated.length
   // cumBp (bpBefore + bpOffset, no padding) is whole-assembly cumulative-bp,
@@ -210,8 +242,6 @@ export async function executeSyntenyFeaturesAndPositions({
   const winCumHi = (v1Offset + viewWidth + bufferPx) * v1.bpPerPx
   const windowSpan = winCumHi - winCumLo
 
-  const v1RefNames = v1Index.entries
-  const v2RefNames = v2Index.entries
   const stopTokenChecker = createStopTokenChecker(stopToken)
   // report() runs the throttled stop-token check itself, so it replaces the
   // per-feature checkStopToken2 while also advancing the bar over whole-genome
@@ -226,12 +256,8 @@ export async function executeSyntenyFeaturesAndPositions({
   for (const d of decorated) {
     report()
     const { f, id, refName, start, end, strand, mate, mateRefName } = d
-    // Whole-genome PAF at low zoom: most features are on refNames not in the
-    // displayed regions of one or both views. Skip before any bpToCumBp
-    // arithmetic.
-    if (!v1RefNames.has(refName) || !v2RefNames.has(mateRefName)) {
-      continue
-    }
+    // Off-refName features (whole-genome PAF at low zoom) were already dropped
+    // during decorate, so every record here projects into both views.
 
     const cigarStr = f.get('CIGAR') as string | undefined
     if (cigarStr) {
