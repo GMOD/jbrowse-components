@@ -71,7 +71,19 @@ it is deferred — see below):
   because none of them touch `trackConfigDeltas` directly.
 - The re-pin is a cheap no-op after the first edit: once a delta exists the
   resolved node is the regenerable merged node, so subsequent edits never touch
-  the base again.
+  the base again. It is in fact *unobservable* after the first edit — `tracksById`
+  resolves from the merged `tracks` getter, so while a delta is active nothing
+  ever hands the frozen base back to the hydration resolver — but the re-pin
+  fires on every write anyway so the rule stays uniform ("a delta write always
+  re-pins") rather than conditional, and so a future reader of the frozen base
+  can't observe a stale node.
+- **Redundant identical saves are skipped.** Two views showing the same track
+  each run `BaseTrackModel`'s persist reaction against the one shared config
+  node, so a single edit calls `updateTrackConfiguration` twice with an
+  identical delta (the config editor can also re-save unchanged). The store
+  branch `comparer.structural`-compares against the existing delta and skips a
+  no-change re-store, so `trackConfigDeltas` identity stays stable and the merged
+  node is not needlessly rehydrated.
 - **Admin edits** stay in-place on the frozen `jbrowse.tracks` array via
   `updateTrackConf`, which replaces the entry's identity and so drops the
   WeakMap cache node naturally — the same invariant reached by a different

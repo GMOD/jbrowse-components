@@ -4,6 +4,7 @@ import {
   mergeTrackConfig,
 } from '@jbrowse/core/util'
 import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import { comparer } from 'mobx'
 
 import { isBaseSession } from './BaseSession.ts'
 import { TracksManagerSessionMixin } from './Tracks.ts'
@@ -279,7 +280,17 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               // content-free delta; skip a no-op write when there's nothing to
               // clear, so the tracks getter doesn't needlessly churn identity
               if (deltaHasChanges(plainBase, delta)) {
-                writeDelta(trackId, delta)
+                // Two views showing the same track each run BaseTrackModel's
+                // persist reaction against the shared config node, so a single
+                // edit calls this twice with an identical delta (and the config
+                // editor can re-save an unchanged config). Skip a
+                // structurally-identical re-store: writing a fresh
+                // trackConfigDeltas object would churn its identity and make the
+                // tracks getter rehydrate a new merged node for no real change.
+                const existing = self.trackConfigDeltas[trackId]
+                if (!existing || !comparer.structural(existing, delta)) {
+                  writeDelta(trackId, delta)
+                }
               } else if (trackId in self.trackConfigDeltas) {
                 writeDelta(trackId, undefined)
               }

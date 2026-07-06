@@ -293,3 +293,19 @@ test('editing a slot back to its base value clears the delta (implicit reset)', 
   expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
   expect(session.isTrackOverride(TRACK_ID)).toBe(false)
 })
+
+test('a redundant identical save does not churn the delta identity', () => {
+  const { rootModel } = getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession
+
+  session.updateTrackConfiguration(editedSnapshot(session))
+  const firstDeltas = session.trackConfigDeltas
+
+  // Two views showing the same track each persist the same snapshot (their
+  // BaseTrackModel reactions both observe the one shared config node); the
+  // config editor can also re-save unchanged. A structurally-identical re-store
+  // must be a no-op — a fresh trackConfigDeltas object would rehydrate a new
+  // merged config node (dropping open display state) for no real change.
+  session.updateTrackConfiguration(editedSnapshot(session))
+  expect(session.trackConfigDeltas).toBe(firstDeltas)
+})
