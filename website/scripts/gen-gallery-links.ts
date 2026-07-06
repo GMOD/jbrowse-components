@@ -23,6 +23,18 @@ const map = Object.fromEntries(
   specs.filter(isUrlSpec).map(spec => [spec.name, spec.url] as const),
 )
 
+// A raw '#' in a session URL is read as a fragment and silently truncates the
+// session (e.g. a "#rrggbb" color in a hand-written spec- string). sessionSpec()
+// encodes it, but raw-string url specs can reintroduce it — fail loudly here.
+for (const [name, url] of Object.entries(map)) {
+  if (url.includes('#')) {
+    console.error(
+      `spec "${name}" url contains a raw '#', which truncates the session as a URL fragment — percent-encode it (%23) or use the sessionSpec() helper`,
+    )
+    process.exit(1)
+  }
+}
+
 const outFile = join(
   dirname(fileURLToPath(import.meta.url)),
   '../src/lib/galleryLinks.generated.ts',

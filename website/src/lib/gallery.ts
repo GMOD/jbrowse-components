@@ -148,8 +148,7 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Breakpoint split view (multi-hop split read)',
-        session:
-          '?config=test_data%2Fbreakpoint%2Fconfig.json&session=share-xeUuLRakik&password=vh0ca',
+        spec: 'gallery/breakpoint_multihop',
         description:
           'A breakpoint split view connecting one split read across more than two locations.',
       },

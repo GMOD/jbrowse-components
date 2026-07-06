@@ -8047,6 +8047,35 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 10000,
   },
+  {
+    mode: 'url',
+    name: 'gallery/breakpoint_multihop',
+    // A single PacBio split read crossing more than two locations, shown as a
+    // multi-panel BreakpointSplitView (chr3 <-> chr6). Declarative like the
+    // SKBR3 breakpoint_split_view card.
+    url: sessionSpec('test_data/breakpoint/config.json', {
+      views: [
+        {
+          type: 'BreakpointSplitView',
+          views: [
+            {
+              assembly: 'hg19',
+              loc: 'chr3:186,693,586-186,703,586',
+              tracks: ['pacbio_hg002_breakpoints', 'pacbio_vcf'],
+            },
+            {
+              assembly: 'hg19',
+              loc: 'chr6:56,751,088-56,761,088',
+              tracks: ['pacbio_hg002_breakpoints', 'pacbio_vcf'],
+            },
+          ],
+        },
+      ],
+    }),
+    readyTimeout: 90000,
+    settleMs: 12000,
+    viewportHeight: 700,
+  },
   // products/jbrowse-img/README.md example images, rendered by the jb2export
   // CLI (see CliSpec above). Ported 1:1 from the old
   // render-comparative-examples.sh so the args stay in sync with the README's
