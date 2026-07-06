@@ -571,51 +571,6 @@ function hpyloriSyntenyWithGenes() {
   })
 }
 
-// Human (hg38) vs marmoset (calJac4) synteny over the syncytin-1 locus, wiring
-// the UCSC hg38->calJac4 liftOver PIF + hg38 RepeatMasker/genes hosted on
-// jbrowse.org/ucsc. Used by the CIGAR-display-mode ("transparent indels") specs.
-const SYNCYTIN_CONFIG = 'test_data/syncytin_synteny/config.json'
-
-// Syncytin-1 (the ERVW-1 gene, i.e. the env of a captured HERV-W provirus) is a
-// domesticated retroviral envelope protein that drives placental
-// syncytiotrophoblast fusion. The HERV-W insertion entered the germline in the
-// catarrhine ancestor (~25-40 Mya, after the split from New World monkeys), so
-// at chr7:92.46-92.48 Mb it is present in human but ABSENT in marmoset — a clean
-// ~7 kb human/catarrhine insertion (verified: the hg38ToCalJac4 PIF shows one
-// 6918 bp query-insertion flanked by aligned sequence). In a human-vs-marmoset
-// synteny view the provirus therefore reads as a gap. "Transparent indels"
-// (cigarMode 'matches') leaves that gap see-through; "Colored indels" ('full')
-// paints an indel wedge over it. hg38 RepeatMasker (LTR17 + HERV17-int) and the
-// ERVW-1 gene annotate the insertion.
-function syncytinSynteny(cigarMode: 'matches' | 'full') {
-  return sessionSpec(SYNCYTIN_CONFIG, {
-    views: [
-      {
-        type: 'LinearSyntenyView',
-        cigarMode,
-        drawCurves: true,
-        // 2-D tracks form: one synteny level between view[0] and view[1].
-        tracks: [['hg38_calJac4_synteny']],
-        views: [
-          {
-            assembly: 'hg38',
-            loc: 'chr7:92,448,000-92,488,000',
-            tracks: ['hg38-genes', 'hg38-rmsk'],
-          },
-          {
-            // the syncytin locus sits inside a human/marmoset inversion, so the
-            // ortholog is reverse-oriented; [rev] flips this panel to straighten
-            // the crossing ribbon.
-            assembly: 'calJac4',
-            loc: 'chr8:65,460,000-65,512,000[rev]',
-            tracks: ['calJac4-genes'],
-          },
-        ],
-      },
-    ],
-  })
-}
-
 // S3-hosted yeast comparison (S. cerevisiae R64 vs the YJM1447 strain), used by
 // the dotplot/synteny CliSpecs below.
 const YEAST =
@@ -968,32 +923,6 @@ const jbrowseImgSpecs: CliSpec[] = [
 ]
 
 export const specs: ScreenshotSpec[] = [
-  // Syncytin-1 (HERV-W env) as a catarrhine-specific insertion: human vs
-  // marmoset synteny with "Transparent indels" on, so the ~7 kb provirus that
-  // is absent in marmoset reads as a see-through gap in the ribbon (with hg38
-  // RepeatMasker + the ERVW-1 gene above it). Its "Colored indels" twin renders
-  // the same locus with the indel painted, for a side-by-side of the setting.
-  {
-    mode: 'url',
-    name: 'synteny_syncytin_transparent',
-    url: syncytinSynteny('matches'),
-    viewportWidth: 1200,
-    viewportHeight: 780,
-    readySelector: '[data-testid="synteny_canvas_done"]',
-    readyTimeout: 60000,
-    settleMs: 5000,
-  },
-  {
-    mode: 'url',
-    name: 'synteny_syncytin_colored',
-    url: syncytinSynteny('full'),
-    viewportWidth: 1200,
-    viewportHeight: 780,
-    readySelector: '[data-testid="synteny_canvas_done"]',
-    readyTimeout: 60000,
-    settleMs: 5000,
-  },
-
   {
     mode: 'url',
     name: 'volvox_alignments',
