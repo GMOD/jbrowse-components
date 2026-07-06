@@ -36,10 +36,17 @@ export interface ClippedSyntenyFeature {
 // high zoom the ribbon lands off-screen and nothing renders. Re-anchoring the
 // block to just its visible slice (accurate coords + a short CIGAR) restores it.
 //
-// `strand` picks the walk direction (matching buildSyntenyGeometry via
-// rev = strand): +1 walks query start->end / target mateStart->mateEnd; -1 walks
-// both from the far end. Within a match op the target maps to the query 1:1 as
-// target(q) = bp2 + (q - bp1) using the op's walk-entry positions (rev cancels).
+// Walk direction MUST match buildSyntenyGeometry, which walks the query (v1)
+// axis forward for BOTH strands (its rev1 is always +1 — k1 is always the low
+// query coord) and flips only the target (v2) axis. So the query walk here is
+// always start->end; only the target counts down for a - strand block, entering
+// at mateEnd. Within a match op the target maps to the query as
+// target(q) = bp2 + (q - bp1) * revTarget, using the op's walk-entry positions.
+//
+// Walking the query backward for - strand (as an earlier version did) mirrors
+// every indel's query position within the window: the trimmed CIGAR is
+// reassembled in file order and re-walked forward by buildSyntenyGeometry, so a
+// deletion lands at its mirror-image position (wrong side of the ribbon).
 export function clipSyntenyFeature(
   cigar: Uint32Array,
   start: number,
@@ -50,8 +57,8 @@ export function clipSyntenyFeature(
   winStart: number,
   winEnd: number,
 ): ClippedSyntenyFeature | undefined {
-  const rev = strand === -1 ? -1 : 1
-  let bp1 = strand === -1 ? end : start
+  const revTarget = strand === -1 ? -1 : 1
+  let bp1 = start
   let bp2 = strand === -1 ? mateEnd : mateStart
   const out: number[] = []
   let qLo = Infinity
@@ -68,10 +75,10 @@ export function clipSyntenyFeature(
     const op = packed & 0xf
     const qAdv = consumesQuery(op) ? len : 0
     const tAdv = consumesTarget(op) ? len : 0
-    const bp1Next = bp1 + qAdv * rev
-    const bp2Next = bp2 + tAdv * rev
-    const opQLo = Math.min(bp1, bp1Next)
-    const opQHi = Math.max(bp1, bp1Next)
+    const bp1Next = bp1 + qAdv
+    const bp2Next = bp2 + tAdv * revTarget
+    const opQLo = bp1
+    const opQHi = bp1Next
     if (opQHi >= winStart && opQLo <= winEnd) {
       if (isMatchOp(op)) {
         const cLo = Math.max(opQLo, winStart)
@@ -80,8 +87,11 @@ export function clipSyntenyFeature(
           out.push(((cHi - cLo) << 4) | op)
           qLo = Math.min(qLo, cLo)
           qHi = Math.max(qHi, cHi)
-          // target(q) = bp2 + (q - bp1) (walk-entry bp1/bp2; rev cancels)
-          extendTarget(bp2 + (cLo - bp1), bp2 + (cHi - bp1))
+          // target(q) = bp2 + (q - bp1) * revTarget (walk-entry bp1/bp2)
+          extendTarget(
+            bp2 + (cLo - bp1) * revTarget,
+            bp2 + (cHi - bp1) * revTarget,
+          )
         }
       } else if (qAdv > 0) {
         // D/N: query-consuming gap (target is a point at bp2)
@@ -103,9 +113,9 @@ export function clipSyntenyFeature(
     }
     bp1 = bp1Next
     bp2 = bp2Next
-    // query is monotonic in the walk direction, so once past the window we can
-    // stop (only after collecting at least one op)
-    if (out.length && (rev === 1 ? bp1 > winEnd : bp1 < winStart)) {
+    // query ascends monotonically, so once past the window we can stop (only
+    // after collecting at least one op)
+    if (out.length && bp1 > winEnd) {
       break
     }
   }

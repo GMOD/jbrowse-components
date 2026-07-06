@@ -29,7 +29,16 @@ test('+ strand: trims flanking match ops and re-anchors mate coords', () => {
   })
 })
 
-test('- strand: walks from the far end, still yields the visible query slice', () => {
+// The query (v1) axis is ALWAYS walked forward — buildSyntenyGeometry's rev1 is
+// +1 regardless of strand; only the target (v2) axis flips. So a - strand block
+// keeps the CIGAR in file order and trims by the same query window as +; only
+// the mate coords count down (target decreases as query increases).
+//
+// Full - strand walk of M100 D50 M150 (query 0..300, target 250..0): the D sits
+// at query [100,150] with target pinned at 150. Window [80,170] keeps that D
+// whole and clips the flanking matches to 20 bp each. The visible target range
+// is 170 (at q=80) down to 130 (at q=170).
+test('- strand: keeps the indel at its true query position, target counts down', () => {
   const c = clipSyntenyFeature(
     cig([100, CIGAR_M], [50, CIGAR_D], [150, CIGAR_M]),
     0,
@@ -40,12 +49,13 @@ test('- strand: walks from the far end, still yields the visible query slice', (
     80,
     170,
   )
-  // query slice is the same window; coords stay ascending (mateStart<mateEnd)
-  expect(c!.start).toBe(80)
-  expect(c!.end).toBe(170)
-  expect(c!.mateStart).toBeLessThan(c!.mateEnd)
-  // only the ops overlapping the window survive
-  expect(c!.cigar.length).toBeLessThan(3)
+  expect(c).toEqual({
+    start: 80,
+    end: 170,
+    mateStart: 130,
+    mateEnd: 170,
+    cigar: cig([20, CIGAR_M], [50, CIGAR_D], [20, CIGAR_M]),
+  })
 })
 
 test('I op (target-consuming) inside the window is kept whole', () => {
