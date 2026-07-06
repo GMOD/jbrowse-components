@@ -1,10 +1,12 @@
 import { isValidElement } from 'react'
 
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { ThemeProvider } from '@mui/material'
+import { fireEvent, render } from '@testing-library/react'
+
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
-import type { PromotableToggleRow } from './PromotableToggleRow.tsx'
-
-type RowProps = Parameters<typeof PromotableToggleRow>[0]
+const theme = createJBrowseTheme()
 
 function makeModel() {
   return {
@@ -65,67 +67,70 @@ function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
   return item
 }
 
-// A promotable row is a `type:'custom'` item whose render() returns a
-// PromotableToggleRow — reading its props (via isValidElement, no cast) lets us
-// exercise the menu→model wiring without mounting the React component (that is
-// covered in PromotableToggleRow.test.tsx).
-function rowProps(
+// A promotable row is a native checkbox item carrying a "default for all"
+// endAdornment (a DefaultForAllAdornment element). Whether it's present drives
+// the showDefault behavior; mounting it lets us click through to the model.
+function endAdornment(model: ReturnType<typeof makeModel>, label: string) {
+  return findByLabel(model, label)?.endAdornment
+}
+
+// Mount the endAdornment and click its checkbox to exercise the promote wiring.
+function clickDefaultForAll(
   model: ReturnType<typeof makeModel>,
   label: string,
-): RowProps {
-  const item = findByLabel(model, label)
-  if (item?.type !== 'custom') {
-    throw new Error(`no ${label} promotable row`)
+) {
+  const adornment = endAdornment(model, label)
+  if (!isValidElement(adornment)) {
+    throw new Error(`no default-for-all control on ${label}`)
   }
-  const node = item.render(() => {})
-  if (!isValidElement<RowProps>(node)) {
-    throw new Error(`${label} did not render an element`)
-  }
-  return node.props
+  const { getByRole } = render(
+    <ThemeProvider theme={theme}>{adornment}</ThemeProvider>,
+  )
+  fireEvent.click(getByRole('checkbox'))
 }
 
 describe('read connections menu', () => {
   test('"View as pairs" row toggles linkedReads on/off', () => {
     const model = makeModel()
     const label = 'View as pairs / link supplementary alignments'
-    rowProps(model, label).onToggle()
+    checkboxByLabel(model, label).onClick()
     expect(model.linkedReads).toBe('normal')
-    rowProps(model, label).onToggle()
+    checkboxByLabel(model, label).onClick()
     expect(model.linkedReads).toBe('off')
   })
 
   test('"Show read arcs" row toggles arc mode on/off', () => {
     const model = makeModel()
-    rowProps(model, 'Show read arcs').onToggle()
+    checkboxByLabel(model, 'Show read arcs').onClick()
     expect(model.readConnections).toBe('arc')
-    rowProps(model, 'Show read arcs').onToggle()
+    checkboxByLabel(model, 'Show read arcs').onClick()
     expect(model.readConnections).toBe('off')
   })
 
   test('"Show read cloud" row toggles samplot mode on/off', () => {
     const model = makeModel()
-    rowProps(model, 'Show read cloud').onToggle()
+    checkboxByLabel(model, 'Show read cloud').onClick()
     expect(model.readConnections).toBe('samplot')
-    rowProps(model, 'Show read cloud').onToggle()
+    checkboxByLabel(model, 'Show read cloud').onClick()
     expect(model.readConnections).toBe('off')
   })
 
   test('arcs and read cloud are mutually exclusive', () => {
     const model = makeModel()
-    rowProps(model, 'Show read arcs').onToggle()
+    checkboxByLabel(model, 'Show read arcs').onClick()
     expect(model.readConnections).toBe('arc')
     // enabling read cloud while arcs are on switches mode (turns arcs off)
-    rowProps(model, 'Show read cloud').onToggle()
+    checkboxByLabel(model, 'Show read cloud').onClick()
     expect(model.readConnections).toBe('samplot')
-    expect(rowProps(model, 'Show read arcs').checked).toBe(false)
+    expect(checkboxByLabel(model, 'Show read arcs').checked).toBe(false)
   })
 
   test('row checked state reflects readConnections', () => {
     const model = makeModel()
-    expect(rowProps(model, 'Show read arcs').checked).toBe(false)
-    expect(rowProps(model, 'Show read cloud').checked).toBe(false)
+    expect(checkboxByLabel(model, 'Show read arcs').checked).toBe(false)
+    expect(checkboxByLabel(model, 'Show read cloud').checked).toBe(false)
     model.readConnections = 'arc'
-    expect(rowProps(model, 'Show read arcs').checked).toBe(true)
+    expect(checkboxByLabel(model, 'Show read arcs').checked).toBe(true)
   })
 })
 
@@ -151,25 +156,24 @@ describe('promote-as-default (default for all) control', () => {
 
   test('default-for-all control is hidden while the mode is off', () => {
     const model = makeModel()
-    expect(rowProps(model, pairs).showDefault).toBe(false)
+    expect(endAdornment(model, pairs)).toBeUndefined()
     // shown once the mode is on (nothing to promote while off)
     model.linkedReads = 'normal'
-    expect(rowProps(model, pairs).showDefault).toBe(true)
+    expect(endAdornment(model, pairs)).toBeDefined()
   })
 
   test('default-for-all promotes the current linked-reads mode', () => {
     const model = makeModel()
     model.linkedReads = 'normal'
-    rowProps(model, pairs).onToggleDefault()
+    clickDefaultForAll(model, pairs)
     expect(model.isLinkedReadsDefault).toBe(true)
   })
 
   test('default-for-all promotes the current read-connections mode', () => {
     const model = makeModel()
     model.readConnections = 'arc'
-    const arcs = rowProps(model, 'Show read arcs')
-    expect(arcs.showDefault).toBe(true)
-    arcs.onToggleDefault()
+    expect(endAdornment(model, 'Show read arcs')).toBeDefined()
+    clickDefaultForAll(model, 'Show read arcs')
     expect(model.isReadConnectionsDefault).toBe(true)
   })
 })

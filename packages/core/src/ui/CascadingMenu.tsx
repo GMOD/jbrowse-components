@@ -267,6 +267,7 @@ function CascadingMenuList({
                 inset={hasIcon && !item.icon}
               />
               <div style={{ flexGrow: 1, minWidth: 10 }} />
+              {item.endAdornment}
               {isCheckOrRadio ? (
                 <MenuItemEndDecoration
                   type={item.type}

@@ -26,6 +26,13 @@ export interface BaseMenuItem {
   helpText?: string
   /** tooltip shown when the item is disabled, in place of helpText */
   disabledHelpText?: string
+  /**
+   * Extra content rendered at the trailing (right) edge of the row, before the
+   * checkbox/radio decoration — e.g. a secondary toggle. The content must
+   * `stopPropagation` on its own click so it doesn't fire the row's onClick or
+   * dismiss the menu.
+   */
+  endAdornment?: React.ReactNode
 }
 
 export interface NormalMenuItem extends BaseMenuItem {
