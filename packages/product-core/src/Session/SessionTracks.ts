@@ -3,7 +3,12 @@ import {
   flattenTrackConfigDelta,
   mergeTrackConfig,
 } from '@jbrowse/core/util'
-import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import {
+  applySnapshot,
+  getSnapshot,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { comparer } from 'mobx'
 
 import { isBaseSession } from './BaseSession.ts'
@@ -14,7 +19,11 @@ import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IAnyType,
+  Instance,
+} from '@jbrowse/mobx-state-tree'
 
 export interface PlainTrackConfig {
   trackId: string
@@ -90,6 +99,16 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
        */
       trackConfigDeltas: types.frozen<Record<string, PlainTrackConfig>>({}),
     })
+    .volatile(() => ({
+      /**
+       * Per-track private working copies (non-admin), keyed by trackId. A plain
+       * Map — not observable, not persisted — mirroring the pluginManager
+       * hydration cache: it holds the live MST config node a shown track's
+       * in-place quick-edits mutate, so the shared frozen base is never touched.
+       * See agent-docs/ADR-032 and CONFIG_WORKING_COPY_PLAN.md.
+       */
+      editableTrackConfigs: new Map<string, IAnyStateTreeNode>(),
+    }))
     .views(self => {
       // Memoize merged configs per (base object, delta value) pair so the tracks
       // getter returns stable object identity across unrelated recomputes. A
@@ -150,6 +169,33 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           )
           return delta && base ? flattenTrackConfigDelta(base, delta) : []
         },
+        /**
+         * #method
+         * A non-admin's private working copy of a track config, created on first
+         * access from the current frozen (base+delta) value and cached by
+         * trackId, so a shown track's in-place quick-edits (setSlot) mutate this
+         * copy and never the shared frozen base node (see ADR-032). Undefined in
+         * admin mode — there the base jbrowse.tracks entry is edited in place.
+         * Called by TrackConfigurationReference during lazy hydration.
+         */
+        getEditableTrackConfig(
+          trackId: string,
+          frozenConfig: unknown,
+          schemaType: IAnyType,
+        ): IAnyStateTreeNode | undefined {
+          if (self.adminMode) {
+            return undefined
+          }
+          const existing = self.editableTrackConfigs.get(trackId)
+          if (existing) {
+            return existing
+          }
+          const node = schemaType.create(frozenConfig, {
+            pluginManager,
+          }) as IAnyStateTreeNode
+          self.editableTrackConfigs.set(trackId, node)
+          return node
+        },
       }
     })
     .actions(self => ({
@@ -209,11 +255,41 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       // the base again and the re-pin is a cheap no-op. Centralizing here makes
       // "a delta can't change without the base being re-pinned" structural — no
       // call site can forget it.
+      // A cleared delta must revert the track's live working copy in place so
+      // open views re-render to the base default. applySnapshot keeps the node
+      // identity (existing observers just update); no-op in admin mode or for a
+      // track that was never edited (no working copy).
+      function revertEditableTrackConfig(trackId: string) {
+        const node = self.editableTrackConfigs.get(trackId)
+        const base = (self.jbrowse.tracks as PlainTrackConfig[]).find(
+          t => t.trackId === trackId,
+        )
+        if (node && base) {
+          applySnapshot(node, base)
+        }
+      }
       function writeDelta(trackId: string, delta: PlainTrackConfig | undefined) {
         self.trackConfigDeltas = delta
           ? { ...self.trackConfigDeltas, [trackId]: delta }
           : withoutDelta(self.trackConfigDeltas, trackId)
         invalidateBaseHydration(trackId)
+        if (!delta) {
+          revertEditableTrackConfig(trackId)
+        }
+      }
+      // Push a *programmatic* update (the config editor's Apply, or any
+      // updateTrackConfiguration not driven by this node's own live edits) into
+      // the working copy. When the node IS the edit source its snapshot already
+      // equals fullConfig, so this skips — which also avoids clobbering an
+      // in-progress live drag.
+      function syncEditableTrackConfig(
+        trackId: string,
+        fullConfig: PlainTrackConfig,
+      ) {
+        const node = self.editableTrackConfigs.get(trackId)
+        if (node && !comparer.structural(getSnapshot(node), fullConfig)) {
+          applySnapshot(node, fullConfig)
+        }
       }
       return {
         /**
@@ -291,6 +367,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
                 if (!existing || !comparer.structural(existing, delta)) {
                   writeDelta(trackId, delta)
                 }
+                syncEditableTrackConfig(trackId, trackConf)
               } else if (trackId in self.trackConfigDeltas) {
                 writeDelta(trackId, undefined)
               }

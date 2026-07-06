@@ -338,8 +338,9 @@ function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
+      const session = getSession(parent)
       let ret: unknown =
-        getSession(parent).tracksById[id] ??
+        session.tracksById[id] ??
         // @ts-expect-error -- schemaType is IAnyType so resolveIdentifier's
         // generic can't narrow. Tree-wide MST identifier lookup; see the
         // function-level JSDoc for why this fallback is required.
@@ -348,15 +349,33 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
         throw new Error(`Could not resolve trackId "${id}"`)
       }
       if (!isStateTreeNode(ret)) {
-        const env = getEnv<{ pluginManager: PluginManager }>(parent)
-        const cache = frozenTrackHydrationCache(env.pluginManager, schemaType)
-        const cached = cache.get(ret)
-        if (cached) {
-          ret = cached
+        // A non-admin session hands back a private, per-track working copy so a
+        // shown track's in-place quick-edits (setSlot) mutate that copy and
+        // never the shared frozen base node (see agent-docs/ADR-032). Admin and
+        // embedded sessions return undefined here and fall through to the frozen
+        // hydration cache (ADR-031) — admin edits the frozen entry in place.
+        const editable = (
+          session as {
+            getEditableTrackConfig?: (
+              trackId: string,
+              frozenConfig: unknown,
+              schemaType: IAnyType,
+            ) => unknown
+          }
+        ).getEditableTrackConfig?.(String(id), ret, schemaType)
+        if (editable) {
+          ret = editable
         } else {
-          const model = schemaType.create(ret, env)
-          cache.set(ret, model)
-          ret = model
+          const env = getEnv<{ pluginManager: PluginManager }>(parent)
+          const cache = frozenTrackHydrationCache(env.pluginManager, schemaType)
+          const cached = cache.get(ret)
+          if (cached) {
+            ret = cached
+          } else {
+            const model = schemaType.create(ret, env)
+            cache.set(ret, model)
+            ret = model
+          }
         }
       }
       return ret
