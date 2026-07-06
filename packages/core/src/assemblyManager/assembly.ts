@@ -9,6 +9,7 @@ import { onBecomeObserved } from 'mobx'
 import { getConf } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
+import { isBlank } from '../util/assemblyConfigUtils.ts'
 import { parseTranslTable } from '../util/geneticCodes.ts'
 import { openLocation } from '../util/io/index.ts'
 
@@ -699,10 +700,9 @@ async function getGeneticCodesFromFile({
   pluginManager: PluginManager
 }): Promise<Record<string, number>> {
   const map: Record<string, number> = {}
-  const uri = location && 'uri' in location ? location.uri : undefined
-  const localPath =
-    location && 'localPath' in location ? location.localPath : undefined
-  if (location && (uri || localPath)) {
+  // skip the config slot's default blank location ({ uri: '' }); a real file
+  // yields the refName -> geneticCodeId map
+  if (location && !isBlank(location)) {
     const text = await openLocation(location, pluginManager).readFile('utf8')
     for (const line of text.split(/\r\n|\r|\n/)) {
       if (line && !line.startsWith('#')) {
