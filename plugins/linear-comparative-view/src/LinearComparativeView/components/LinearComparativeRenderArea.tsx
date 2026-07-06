@@ -2,14 +2,17 @@ import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { ColorByLegend } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
+import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 import LevelSyntenyCanvas from '../../LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 import type { AbstractTrackModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 // The structural surface of the display objects this file consumes. We
 // don't depend on the full BaseDisplayModel typing because `levels` is an
@@ -70,6 +73,10 @@ const LevelSection = observer(function LevelSection({
 }) {
   const { classes } = useStyles()
   const level = model.levels[levelIdx]!
+  const syntenyModel = asSyntenyModel(model)
+  // One legend for the whole view, hosted in the topmost synteny band (the
+  // "helper" area) where the color-coded ribbons it describes are actually drawn
+  const showLegend = levelIdx === 0 && !!syntenyModel?.showColorLegend
 
   return (
     <>
@@ -78,6 +85,14 @@ const LevelSection = observer(function LevelSection({
           <LevelSyntenyCanvas model={level} />
           <Overlays model={model} level={levelIdx} />
         </div>
+        {syntenyModel && showLegend ? (
+          <ColorByLegend
+            colorBy={syntenyModel.colorBy as SyntenyColorBy}
+            onClose={() => {
+              syntenyModel.setShowColorLegend(false)
+            }}
+          />
+        ) : null}
       </div>
       <ResizeHandle
         bar
