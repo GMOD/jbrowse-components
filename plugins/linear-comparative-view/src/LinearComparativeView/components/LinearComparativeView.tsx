@@ -4,7 +4,6 @@ import { observer } from 'mobx-react'
 
 import Header from './Header.tsx'
 import LinearComparativeRenderArea from './LinearComparativeRenderArea.tsx'
-import SyntenyWarnings from './SyntenyWarnings.tsx'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 
@@ -36,7 +35,6 @@ const LinearComparativeView = observer(function LinearComparativeView({
   return (
     <div className={classes.rubberbandContainer}>
       <Header model={model} />
-      <SyntenyWarnings model={model} />
       <MultiLevelRubberband
         model={model}
         ControlComponent={<div className={classes.rubberbandDiv} />}
