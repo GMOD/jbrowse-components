@@ -247,6 +247,8 @@ function emptyCoverageBand(): ReturnType<typeof computeCoverageBand> {
       sashimiCounts: new Uint32Array(0),
     },
     coverageAreaPacked: {
+      coverageBinSize: 1,
+      coverageGpuBinCount: 0,
       coveragePackedBuffer: new ArrayBuffer(0),
       snpPackedBuffer: new ArrayBuffer(0),
       interbasePackedBuffer: new ArrayBuffer(0),

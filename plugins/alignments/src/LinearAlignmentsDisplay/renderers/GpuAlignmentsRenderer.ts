@@ -630,11 +630,12 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       return
     }
 
-    const numCoverageBins = data.coverageDepths.length
+    const numCoverageBins = data.coverageGpuBinCount
     if (numCoverageBins > 0) {
       perfLog(
         `uploadCoverage region=${displayedRegionIndex}`,
         `bins=${numCoverageBins}`,
+        `binSize=${data.coverageBinSize}`,
         `bytes=${fmtBytes(data.coveragePackedBuffer.byteLength)}`,
       )
       uploadCoverageBins(
@@ -644,7 +645,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         numCoverageBins,
       )
       r.maxDepth = data.coverageMaxDepth
-      r.binSize = 1
+      r.binSize = data.coverageBinSize
     }
 
     uploadSnpCoverage(

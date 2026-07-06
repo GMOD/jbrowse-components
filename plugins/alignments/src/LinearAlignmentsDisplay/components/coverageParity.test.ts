@@ -52,6 +52,8 @@ function makeCoverageData(): CoverageUploadData {
     coverageDepths,
     coverageMaxDepth,
     coverageStartPos: COVERAGE_START_OFFSET,
+    coverageBinSize: 1,
+    coverageGpuBinCount: coverageDepths.length,
     coveragePackedBuffer: packCoverageBinsForGpu(
       coverageDepths,
       coverageMaxDepth,

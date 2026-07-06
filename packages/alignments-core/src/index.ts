@@ -100,13 +100,16 @@ export {
   computeSNPCoverage,
   computeVisibleCoverageStats,
   countSnpsAtPosition,
+  downsampleDenseMax,
   downsampleMinMax,
+  downsampleStatsBins,
   findSignificantInBin,
   interbaseDepthAt,
   niceStep,
 } from './coverageDownsampling.ts'
 export type {
   CoverageRegion,
+  CoverageStatsBins,
   CoverageTooltipBin,
   InterbaseArrays,
   MismatchEntry,

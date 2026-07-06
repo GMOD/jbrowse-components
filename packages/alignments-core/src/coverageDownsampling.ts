@@ -80,6 +80,109 @@ export function computeCoverageTicks(
 export interface CoverageRegion {
   coverageDepths: Float32Array
   coverageStartPos: number
+  // Coarse per-bin partial stats (downsampleStatsBins). Present only when the
+  // per-bp array exceeded the bin cap (whole-chromosome scale); when absent the
+  // reducer scans coverageDepths per-bp for exact visible-edge clipping.
+  coverageStatsBinSize?: number
+  coverageStatsMins?: Float32Array
+  coverageStatsMaxs?: Float32Array
+  coverageStatsSums?: Float64Array
+  coverageStatsSumSqs?: Float64Array
+}
+
+interface StatsAcc {
+  min: number
+  max: number
+  sum: number
+  sumSq: number
+  count: number
+}
+
+// Reads the coarse stats sidecar off a region, or undefined when it carries
+// none — below the bin cap (binSize 1, empty arrays) or a per-bp-only source
+// like MAF. The four arrays are emitted as a unit (downsampleStatsBins) and so
+// only ever exist together; checking them together here is what lets the
+// reducer read them with no non-null assertions.
+function readStatsSidecar(cov: CoverageRegion): CoverageStatsBins | undefined {
+  const {
+    coverageStatsBinSize,
+    coverageStatsMins,
+    coverageStatsMaxs,
+    coverageStatsSums,
+    coverageStatsSumSqs,
+  } = cov
+  return coverageStatsBinSize !== undefined &&
+    coverageStatsBinSize > 1 &&
+    coverageStatsMins &&
+    coverageStatsMaxs &&
+    coverageStatsSums &&
+    coverageStatsSumSqs
+    ? {
+        binSize: coverageStatsBinSize,
+        mins: coverageStatsMins,
+        maxs: coverageStatsMaxs,
+        sums: coverageStatsSums,
+        sumSqs: coverageStatsSumSqs,
+      }
+    : undefined
+}
+
+// Fold one block's visible [start,end) into the running accumulator. Large
+// regions carry coarse binned stats (downsampleStatsBins) and reduce over whole
+// bins — O(bins) instead of O(bp), which is what kills the per-bp pan/zoom scan.
+// Bin-granular clipping over-includes at most one partial bin per visible edge,
+// negligible at the zoom where binning engages (binSize << visible span). Small
+// regions scan per-bp for exact clipping (byte-identical to the pre-binning
+// path).
+function accumulateBlockStats(
+  acc: StatsAcc,
+  cov: CoverageRegion,
+  blockStart: number,
+  blockEnd: number,
+) {
+  const { coverageStartPos } = cov
+  const n = cov.coverageDepths.length
+  const sidecar = readStatsSidecar(cov)
+  if (sidecar) {
+    const { binSize, mins, maxs, sums, sumSqs } = sidecar
+    const startBin = Math.max(
+      0,
+      Math.floor((blockStart - coverageStartPos) / binSize),
+    )
+    const endBin = Math.min(
+      maxs.length,
+      Math.ceil((blockEnd - coverageStartPos) / binSize),
+    )
+    for (let b = startBin; b < endBin; b++) {
+      if (mins[b]! < acc.min) {
+        acc.min = mins[b]!
+      }
+      if (maxs[b]! > acc.max) {
+        acc.max = maxs[b]!
+      }
+      acc.sum += sums[b]!
+      acc.sumSq += sumSqs[b]!
+      // bp this bin covers: binSize, except the ragged last bin (clamped to n).
+      // Added per bin, beside its own sum, so count spans exactly the bp summed
+      // — it only feeds mean/stdDev (localsd autoscale).
+      acc.count += Math.min((b + 1) * binSize, n) - b * binSize
+    }
+  } else {
+    const startIdx = Math.max(0, Math.floor(blockStart - coverageStartPos))
+    const endIdx = Math.min(n, Math.ceil(blockEnd - coverageStartPos))
+    for (let i = startIdx; i < endIdx; i++) {
+      const d = cov.coverageDepths[i]!
+      if (d < acc.min) {
+        acc.min = d
+      }
+      if (d > acc.max) {
+        acc.max = d
+      }
+      acc.sum += d
+      acc.sumSq += d * d
+      acc.count++
+    }
+  }
 }
 
 export function computeVisibleCoverageStats<
@@ -88,40 +191,30 @@ export function computeVisibleCoverageStats<
   visibleBlocks: B[],
   getCoverageForBlock: (block: B) => CoverageRegion | undefined,
 ): ScoreStats | undefined {
-  let min = Infinity
-  let max = -Infinity
-  let sum = 0
-  let sumSq = 0
-  let count = 0
+  const acc: StatsAcc = {
+    min: Infinity,
+    max: -Infinity,
+    sum: 0,
+    sumSq: 0,
+    count: 0,
+  }
   for (const block of visibleBlocks) {
     const cov = getCoverageForBlock(block)
-    if (!cov) {
-      continue
-    }
-    const startBin = Math.max(0, Math.floor(block.start - cov.coverageStartPos))
-    const endBin = Math.min(
-      cov.coverageDepths.length,
-      Math.ceil(block.end - cov.coverageStartPos),
-    )
-    for (let i = startBin; i < endBin; i++) {
-      const d = cov.coverageDepths[i]!
-      if (d < min) {
-        min = d
-      }
-      if (d > max) {
-        max = d
-      }
-      sum += d
-      sumSq += d * d
-      count++
+    if (cov) {
+      accumulateBlockStats(acc, cov, block.start, block.end)
     }
   }
-  if (count === 0 || !Number.isFinite(max)) {
+  if (acc.count === 0 || !Number.isFinite(acc.max)) {
     return undefined
   }
-  const mean = sum / count
-  const stdDev = Math.sqrt(Math.max(0, sumSq / count - mean * mean))
-  return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
+  const mean = acc.sum / acc.count
+  const stdDev = Math.sqrt(Math.max(0, acc.sumSq / acc.count - mean * mean))
+  return {
+    scoreMin: acc.min,
+    scoreMax: acc.max,
+    scoreMean: mean,
+    scoreStdDev: stdDev,
+  }
 }
 
 export interface DownsampledBins {
@@ -208,6 +301,105 @@ export function downsampleMinMax(
     maxs: maxs.subarray(0, count),
     count,
   }
+}
+
+// Reduce a per-bp depth array to at most `maxBins` DENSE bins, each holding the
+// MAX depth over its bp span (peak-preserving, like a wiggle bar at low zoom).
+// Returns the input verbatim with binSize 1 when it already fits, so the
+// zoomed-in path is byte-identical to per-bp. Unlike `downsampleMinMax` (sparse,
+// skips empty bins, carries min+max) this stays dense and index-addressable —
+// bin b covers [startPos + b*binSize, startPos + (b+1)*binSize) — which is what
+// the single `binSize` GPU uniform and any bin = floor((pos-start)/binSize)
+// lookup need. Bin-by-bin (not a per-bp divide) to stay a tight typed-array loop.
+export function downsampleDenseMax(depths: Float32Array, maxBins: number) {
+  const n = depths.length
+  if (n <= maxBins) {
+    return { depths, binSize: 1 }
+  }
+  const binSize = Math.ceil(n / maxBins)
+  const numBins = Math.ceil(n / binSize)
+  const out = new Float32Array(numBins)
+  for (let b = 0; b < numBins; b++) {
+    const from = b * binSize
+    const to = Math.min(from + binSize, n)
+    let hi = 0
+    for (let i = from; i < to; i++) {
+      const d = depths[i]!
+      if (d > hi) {
+        hi = d
+      }
+    }
+    out[b] = hi
+  }
+  return { depths: out, binSize }
+}
+
+export interface CoverageStatsBins {
+  binSize: number
+  // Per-bin partial stats over the per-bp depths. `count` isn't stored: bin b
+  // holds binSize bp except the last (a ragged tail), which the reducer derives
+  // from the per-bp array length it already holds. sums/sumSqs are Float64 —
+  // the per-bp path accumulates in JS numbers (f64) too, so this matches its
+  // precision.
+  mins: Float32Array
+  maxs: Float32Array
+  sums: Float64Array
+  sumSqs: Float64Array
+}
+
+// Coarse per-bin partial stats (min/max/sum/sumSq) over per-bp depths, so the
+// main thread's visible-range autoscale reduce is O(bins) not O(bp). At
+// whole-chromosome scale the per-bp array is tens of millions of entries and a
+// full scan on every coarse-block change (~500ms during pan) is the coverage
+// band's pan/zoom jank. Returns empty arrays (binSize 1) when the per-bp array
+// already fits `maxBins`: the main thread then scans per-bp for exact
+// visible-edge clipping — cheap at that zoom, and byte-identical to the old
+// path. Mirrors downsampleDenseMax's shape (same cap, same binSize formula) so
+// the stats bins and the GPU depth bars align bin-for-bin.
+export function downsampleStatsBins(
+  depths: Float32Array,
+  maxBins: number,
+): CoverageStatsBins {
+  const n = depths.length
+  if (n <= maxBins) {
+    return {
+      binSize: 1,
+      mins: new Float32Array(0),
+      maxs: new Float32Array(0),
+      sums: new Float64Array(0),
+      sumSqs: new Float64Array(0),
+    }
+  }
+  const binSize = Math.ceil(n / maxBins)
+  const numBins = Math.ceil(n / binSize)
+  const mins = new Float32Array(numBins)
+  const maxs = new Float32Array(numBins)
+  const sums = new Float64Array(numBins)
+  const sumSqs = new Float64Array(numBins)
+  for (let b = 0; b < numBins; b++) {
+    const from = b * binSize
+    const to = Math.min(from + binSize, n)
+    let lo = Infinity
+    let hi = 0
+    let sum = 0
+    let sumSq = 0
+    for (let i = from; i < to; i++) {
+      const d = depths[i]!
+      if (d < lo) {
+        lo = d
+      }
+      if (d > hi) {
+        hi = d
+      }
+      sum += d
+      sumSq += d * d
+    }
+    mins[b] = lo === Infinity ? 0 : lo
+    maxs[b] = hi
+    sums[b] = sum
+    sumSqs[b] = sumSq
+  }
+  return { binSize, mins, maxs, sums, sumSqs }
 }
 
 export interface CoverageTooltipBin {

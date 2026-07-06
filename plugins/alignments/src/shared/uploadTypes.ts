@@ -58,6 +58,12 @@ export interface CoverageUploadData {
   coverageDepths: Float32Array
   coverageMaxDepth: number
   coverageStartPos: number
+  // Width in bp of each record in coveragePackedBuffer, and the number of
+  // records in it. Decoupled from coverageDepths.length: the GPU depth bars are
+  // downsampled to a fixed bin cap (packCoverageArea) so the buffer tracks
+  // screen pixels, while coverageDepths stays per-bp for hit-test / stats.
+  coverageBinSize: number
+  coverageGpuBinCount: number
   coveragePackedBuffer: ArrayBuffer
   snpPositions: Uint32Array
   // SNP yOffsets/heights are fractions of THIS position's coverage bar.

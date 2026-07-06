@@ -134,8 +134,24 @@ export interface PileupDataResult {
   coverageRevDepths: Float32Array
   coverageMaxDepth: number
   coverageStartPos: number // absolute genomic bp where coverage depths[0] begins
-  // Pre-packed GPU buffer for PASS_COVERAGE (worker-built, zero-offset
-  // positions). Main thread uploads directly without re-packing.
+  // Coarse per-bin partial stats (downsampleStatsBins) covering the same span as
+  // coverageDepths. Empty with binSize 1 below the cap; populated at whole-
+  // chromosome scale so the main-thread autoscale reduce is O(bins) not O(bp)
+  // (kills the coverage-band pan/zoom scan). coverageDepths above stays per-bp
+  // for hit-test / tooltip. bin b spans [coverageStartPos + b*binSize, +binSize).
+  coverageStatsBinSize: number
+  coverageStatsMins: Float32Array
+  coverageStatsMaxs: Float32Array
+  coverageStatsSums: Float64Array
+  coverageStatsSumSqs: Float64Array
+  // Pre-packed GPU buffer for PASS_COVERAGE (worker-built). Its depth bars are
+  // downsampled to a fixed bin cap so its record count (coverageGpuBinCount)
+  // tracks screen pixels, not region width — otherwise it overflows the GPU
+  // device limit at whole-chromosome scale. coverageBinSize is each bar's width
+  // in bp (1 = per-bp), fed to the shader's binSize uniform. coverageDepths
+  // above stays per-bp for hit-test / stats. Main thread uploads directly.
+  coverageBinSize: number
+  coverageGpuBinCount: number
   coveragePackedBuffer: ArrayBuffer
 
   // SNP coverage data - absolute genomic coordinates.

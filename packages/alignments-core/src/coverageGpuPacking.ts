@@ -35,12 +35,18 @@ import type { computeInterbaseCoverage } from './interbaseCoverage.ts'
 // Layout per bin: [position(u32), normalizedDepth(f32)] = 8 bytes.
 // Matches alignments plugin coverage.slang Instance. Position is absolute
 // genomic uint32 (exact up to 4 Gbp); shader uses hp-math for clip-space
-// conversion.
+// conversion. `binSize` is the bin width in bp: bin i spans
+// [startOffset + i*binSize, startOffset + (i+1)*binSize) and the shader draws
+// the bar that wide off the matching `binSize` uniform. It is 1 for per-bp
+// coverage; the worker downsamples to a wider binSize at whole-chromosome scale
+// (see packCoverageArea) so this buffer's record count tracks screen pixels
+// rather than base pairs — otherwise it overflows the GPU device limit.
 export function packCoverageBinsForGpu(
   depths: Float32Array,
   maxDepth: number,
   startOffset: number,
   binCount: number,
+  binSize = 1,
 ) {
   if (binCount === 0 || maxDepth <= 0) {
     return new ArrayBuffer(0)
@@ -50,7 +56,7 @@ export function packCoverageBinsForGpu(
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < binCount; i++) {
     const o = i * COVERAGE_STRIDE
-    u32[o + COVERAGE_FIELD.position] = startOffset + i
+    u32[o + COVERAGE_FIELD.position] = startOffset + i * binSize
     f32[o + COVERAGE_FIELD.depth] = (depths[i] ?? 0) / maxDepth
   }
   return buffer
