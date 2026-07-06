@@ -26,6 +26,9 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   // Render ribbons as bezier curves rather than straight chords. Reads much
   // better at whole-genome scale where straight crossings stack into noise.
   drawCurves?: boolean
+  // CIGAR display mode: 'full' colors indel wedges, 'matches' leaves indels
+  // see-through (transparent), 'off' draws blocks only.
+  cigarMode?: 'off' | 'matches' | 'full'
   // Per-feature opacity in [0,1]. The default (0.2) is tuned for dense
   // unfiltered hairballs; whole-genome views with minAlignmentLength set
   // can use a higher value (~0.4) for stronger color.
