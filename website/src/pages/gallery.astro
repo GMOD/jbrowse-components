@@ -1,17 +1,17 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { baseUrl } from '../lib/base-url.ts'
-import { gallerySections, itemHref } from '../lib/gallery.ts'
+import { gallerySections, itemHref, itemImg } from '../lib/gallery.ts'
 import page from '../styles/page.module.css'
 
 // Sections shown as screenshot cards vs. compact link lists: an item appears in
-// the card grid when it has an image, otherwise in the "more examples" list.
+// the card grid when it has a figure, otherwise in the "more examples" list.
 // `demoOnly` items (entry points / hubs) are shown only on the demos page.
 const sections = gallerySections
   .map(s => ({
     ...s,
-    cards: s.items.filter(i => i.img && !i.demoOnly),
-    links: s.items.filter(i => !i.img && !i.demoOnly),
+    cards: s.items.filter(i => itemImg(i) && !i.demoOnly),
+    links: s.items.filter(i => !itemImg(i) && !i.demoOnly),
   }))
   .filter(s => s.cards.length > 0 || s.links.length > 0)
 ---
@@ -45,7 +45,7 @@ const sections = gallerySections
                   <figure class="card">
                     <a href={href}>
                       <img
-                        src={`${baseUrl}/img/${item.img}`}
+                        src={`${baseUrl}/img/${itemImg(item)}`}
                         alt={item.label}
                         loading="lazy"
                       />

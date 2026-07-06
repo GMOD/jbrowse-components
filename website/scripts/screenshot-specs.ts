@@ -7811,6 +7811,33 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 10000,
   },
+  {
+    mode: 'url',
+    name: 'chromhmm',
+    // Roadmap 127-epigenome ChromHMM chromatin states as a multi-row feature
+    // heatmap over a ~900kb window on chr11, with the RefSeq gene track above
+    // for context. Rebuilt from the old server-side share link as a
+    // self-contained sessionSpec so the figure and its gallery live link come
+    // from this one spec.
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr11:5,875,140-6,784,158',
+      tracks: [
+        'ncbi_gff_hg19',
+        {
+          trackId: 'roadmap_chromhmm_multirow_hg19',
+          displaySnapshot: {
+            type: 'LinearMultiRowFeatureDisplay',
+            height: 480,
+          },
+        },
+      ],
+    }),
+    readyText: 'ChromHMM',
+    readyTimeout: 60000,
+    settleMs: 8000,
+    viewportHeight: 700,
+  },
   // products/jbrowse-img/README.md example images, rendered by the jb2export
   // CLI (see CliSpec above). Ported 1:1 from the old
   // render-comparative-examples.sh so the args stay in sync with the README's

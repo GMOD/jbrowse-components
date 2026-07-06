@@ -13,6 +13,8 @@
     "check-sidebar": "node --experimental-strip-types scripts/check-sidebar.ts",
     "check-links": "node --experimental-strip-types scripts/check-links.ts",
     "generate-screenshots": "node --experimental-strip-types scripts/generate-screenshots.ts",
+    "gen:gallery-links": "node --experimental-strip-types scripts/gen-gallery-links.ts",
+    "gen:gallery-links-check": "node --experimental-strip-types scripts/gen-gallery-links.ts --check",
     "review-screenshots-web": "node --experimental-strip-types scripts/review-screenshots-web.ts",
     "audit-figures": "node --experimental-strip-types scripts/audit-figures.ts"
   },
