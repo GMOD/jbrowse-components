@@ -1,5 +1,4 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { ColorBySwatch } from '@jbrowse/synteny-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
@@ -104,20 +103,8 @@ const ColorBySelector = observer(function ColorBySelector({
       menuItems={[
         ...modes.map(({ group, label, value, helpText }) => ({
           label: (
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                width: '100%',
-                justifyContent: 'space-between',
-              }}
-            >
-              <span style={{ display: 'inline-flex', gap: 8 }}>
-                <span style={{ opacity: 0.55, minWidth: 100 }}>{group}</span>
-                <span>{label}</span>
-              </span>
-              <ColorBySwatch colorBy={value} />
+            <span>
+              <span style={{ opacity: 0.55 }}>{group}</span> {label}
             </span>
           ),
           type: 'radio' as const,

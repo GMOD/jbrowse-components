@@ -5,7 +5,7 @@ import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
-import { Divider, ToggleButton } from '@mui/material'
+import { ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
@@ -166,7 +166,6 @@ const Header = observer(function Header({
 
       {syntenyModel ? (
         <>
-          <Divider orientation="vertical" flexItem />
           <ColorBySelector model={syntenyModel} />
           <SyntenySettingsPopover model={syntenyModel} />
         </>
