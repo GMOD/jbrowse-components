@@ -8129,25 +8129,26 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gallery/directrna_brca1',
-    // narrowed from a 200kb window to the BRCA1 gene body (~82kb) so the
-    // spliced direct-RNA long reads finish loading within the settle window —
-    // the wider view was still showing the loading overlay at capture. Longer
-    // settle for the modification-tag fetch on top of the alignment fetch.
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"17:43044000-43126000","type":"LinearGenomeView","tracks":["NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted"]}]}',
+    // BRCA1 gene body. Direct-RNA over an expressed gene fetches ~23MB here, past
+    // the default alignments byte cap (which showed a "too much data / force
+    // load" banner instead of reads), so raise userByteSizeLimit. colorBy
+    // modifications draws the per-base RNA modification calls. Long settle for
+    // the large fetch + modification-tag read.
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"17:43044000-43126000","type":"LinearGenomeView","tracks":[{"trackId":"NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"modifications"},"userByteSizeLimit":100000000}}]}]}',
     readyTimeout: 120000,
-    settleMs: 25000,
+    settleMs: 35000,
     viewportHeight: 700,
   },
   {
     mode: 'url',
     name: 'gallery/hg002_dipcall',
-    // chr1:15.0Mb is mid-contig for both haplotype assemblies (one BAM record
+    // chr1:18.0Mb is mid-contig for both haplotype assemblies (one BAM record
     // each, so one row each — 16.9Mb sat on a hap2 contig boundary that split
-    // the maternal haplotype into two rows). Dense het calls here (GT 0|1) show
-    // as mismatches on the hap2 row but not hap1, so the two haplotype
-    // assemblies visibly differ. Short per-track height keeps the single-row
-    // assembly tracks compact (coverage is off in the track config).
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:15000000-15020000","type":"LinearGenomeView","tracks":["hg002_dipcall_dip_vcf_t2t",{"trackId":"hg002_dipcall_hap1_t2t","displaySnapshot":{"type":"LinearAlignmentsDisplay","height":80}},{"trackId":"hg002_dipcall_hap2_t2t","displaySnapshot":{"type":"LinearAlignmentsDisplay","height":80}}]}]}',
+    // the maternal haplotype into two rows). Here both rows carry mismatches:
+    // homozygous calls differ from the reference on both haplotypes, and a few
+    // het calls appear on one row only, showing where the two assemblies differ.
+    // Short per-track height keeps the single-row tracks compact (coverage off).
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:18000000-18020000","type":"LinearGenomeView","tracks":["hg002_dipcall_dip_vcf_t2t",{"trackId":"hg002_dipcall_hap1_t2t","displaySnapshot":{"type":"LinearAlignmentsDisplay","height":80}},{"trackId":"hg002_dipcall_hap2_t2t","displaySnapshot":{"type":"LinearAlignmentsDisplay","height":80}}]}]}',
     readyTimeout: 120000,
     settleMs: 15000,
     viewportHeight: 450,
