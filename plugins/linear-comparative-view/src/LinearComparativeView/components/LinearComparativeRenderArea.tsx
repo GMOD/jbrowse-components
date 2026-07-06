@@ -88,6 +88,7 @@ const LevelSection = observer(function LevelSection({
         {syntenyModel && showLegend ? (
           <ColorByLegend
             colorBy={syntenyModel.colorBy as SyntenyColorBy}
+            alpha={syntenyModel.alpha}
             onClose={() => {
               syntenyModel.setShowColorLegend(false)
             }}

@@ -23,7 +23,9 @@ test('continuous modes get a gradient ramp with bounded domain labels', () => {
   }
 })
 
-test('default/strand modes show labeled chips including CIGAR ops', () => {
+// The rare N (skip) op is intentionally not a chip — it only appears in
+// spliced alignments, so it would be dead weight on virtually every track.
+test('default/strand modes show labeled chips including CIGAR indels', () => {
   const def = getColorBySwatch('default')
   expect(def?.kind).toBe('chips')
   if (def?.kind === 'chips') {
@@ -31,7 +33,6 @@ test('default/strand modes show labeled chips including CIGAR ops', () => {
       'match',
       'insertion',
       'deletion',
-      'skip',
     ])
   }
   const strand = getColorBySwatch('strand')
@@ -40,7 +41,7 @@ test('default/strand modes show labeled chips including CIGAR ops', () => {
       'forward',
       'reverse',
       'insertion',
-      'del/skip',
+      'deletion',
     ])
   }
 })

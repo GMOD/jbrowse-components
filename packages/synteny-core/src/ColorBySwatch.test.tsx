@@ -12,8 +12,9 @@ test('renders a gradient swatch for a continuous mode', () => {
 
 test('renders a color chip per op for a structural mode', () => {
   const { container } = render(<ColorBySwatch colorBy="default" />)
-  // match/insertion/deletion/skip, each a titled swatch square
-  expect(container.querySelectorAll('span[title]')).toHaveLength(4)
+  // match/insertion/deletion, each a titled swatch square (the rare skip op
+  // isn't shown)
+  expect(container.querySelectorAll('span[title]')).toHaveLength(3)
 })
 
 test('renders empty for a per-name categorical mode', () => {

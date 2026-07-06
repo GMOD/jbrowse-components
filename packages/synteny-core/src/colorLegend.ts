@@ -62,20 +62,22 @@ export type ColorBySwatchSpec =
 const { cigarColors: defaultCigar } = colorSchemes.default
 const { posColor, negColor, cigarColors: strandCigar } = colorSchemes.strand
 
-// default/strand draw block colors plus CIGAR ops; enumerate every color those
-// modes can paint so the legend matches the canvas. Derived from the shared
-// scheme constants so they can't drift from the renderer.
+// default/strand draw block colors plus CIGAR ops; enumerate the colors those
+// modes paint on realistic data so the legend matches the canvas. Derived from
+// the shared scheme constants so they can't drift from the renderer. The N
+// (skip) op is intentionally omitted — it only appears in spliced/intron-aware
+// alignments, so a "skip" chip is dead weight on virtually every synteny track
+// (its color still renders correctly if such an op does occur).
 const DEFAULT_CHIPS: ColorChip[] = [
   { color: defaultCigar.M, label: 'match' },
   { color: defaultCigar.I, label: 'insertion' },
   { color: defaultCigar.D, label: 'deletion' },
-  { color: defaultCigar.N, label: 'skip' },
 ]
 const STRAND_CHIPS: ColorChip[] = [
   { color: posColor, label: 'forward' },
   { color: negColor, label: 'reverse' },
   { color: strandCigar.I, label: 'insertion' },
-  { color: strandCigar.D, label: 'del/skip' },
+  { color: strandCigar.D, label: 'deletion' },
 ]
 
 // Point-based views (dotplot) paint each alignment a single flat color and never

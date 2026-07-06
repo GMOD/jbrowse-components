@@ -16,14 +16,25 @@ test('shows the mode title and gradient, and fires onClose', () => {
 })
 
 test('default mode lists CIGAR-op chips with labels', () => {
-  const { getByText } = render(
+  const { getByText, queryByText } = render(
     <ColorByLegend colorBy="default" onClose={() => {}} />,
   )
   getByText('Default')
   getByText('match')
   getByText('insertion')
   getByText('deletion')
-  getByText('skip')
+  // the rare N (skip) op is not shown
+  expect(queryByText('skip')).toBeNull()
+})
+
+test('chips blend over white by the ribbon alpha to match the canvas', () => {
+  const { container } = render(
+    <ColorByLegend colorBy="default" alpha={0.2} onClose={() => {}} />,
+  )
+  // #f00 match at alpha 0.2 over white -> rgb(255,204,204) (salmon), the same
+  // color the ribbon paints, not full-saturation red
+  const chip = container.querySelector('span[style*="rgb(255, 204, 204)"]')
+  expect(chip).toBeTruthy()
 })
 
 test('per-name modes show a note instead of a gradient', () => {

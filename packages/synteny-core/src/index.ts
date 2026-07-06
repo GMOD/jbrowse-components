@@ -15,6 +15,7 @@ export {
 } from './renameRegionsForAdapter.ts'
 export {
   applyAlpha,
+  blendOverWhite,
   colorSchemes,
   defaultCigarColors,
   getQueryColor,

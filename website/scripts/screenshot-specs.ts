@@ -184,8 +184,23 @@ export interface EmbeddedSpec extends CommonSpecFields {
   settleMs?: number
 }
 
+// Mode 5: stack already-rendered PNGs into one combined figure. Each `parts`
+// entry is another spec's name; the generator reads those specs' committed
+// static/img/<name>.png files and `convert -append`s them (top to bottom) into
+// <name>.png. It runs after the browser/cli specs so the parts are freshly
+// rendered first. Use this to assemble a before/after figure from two
+// independent DECLARATIVE specs (e.g. one session per setting) rather than an
+// imperative `stages` capture that drives the menu — the combined image then
+// can't drift from either state, and each state stays an openable live link.
+export interface ComposeSpec {
+  mode: 'compose'
+  name: string
+  parts: string[] // spec names whose static/img PNGs are stacked, top to bottom
+  diffThreshold?: number
+}
+
 export type BrowserScreenshotSpec = LGVSpec | SessionUrlSpec | EmbeddedSpec
-export type ScreenshotSpec = BrowserScreenshotSpec | CliSpec
+export type ScreenshotSpec = BrowserScreenshotSpec | CliSpec | ComposeSpec
 
 const VOLVOX = 'test_data/volvox/config.json'
 // volvox_sv_cram's adapter, reused to build the two strand-split session tracks
@@ -588,6 +603,9 @@ function hg38ChimpSynteny(cigarMode: 'matches' | 'full') {
         type: 'LinearSyntenyView',
         cigarMode,
         drawCurves: true,
+        // the floating color legend is redundant here — the caption names the
+        // colors, and in the transparent panel the indel chips wouldn't apply
+        showColorLegend: false,
         tracks: [['hg38_panTro6_synteny']],
         views: [
           {
@@ -958,51 +976,39 @@ const jbrowseImgSpecs: CliSpec[] = [
 ]
 
 export const specs: ScreenshotSpec[] = [
-  // Human vs chimp synteny (hosted liftOver chain, zoomed to LMNB2). Two stages
-  // stacked (the generator -appends them): the loaded view (colored indels) on
-  // top, then the same view after toggling the hamburger's "CIGAR display mode"
-  // to Transparent indels below. One automated before/after figure — no manual
-  // convert -append — that also guards the oversized-block viewport clip (a
-  // chromosome-scale block rendering at high zoom instead of a blank canvas).
+  // Human vs chimp synteny (hosted liftOver chain, zoomed to LMNB2). The two
+  // CIGAR display modes are captured as independent DECLARATIVE sessions (the
+  // cigarMode is baked into each session, no menu-driving) then stacked by the
+  // `synteny_human_chimp_cigar_modes` compose spec below. Each also guards the
+  // oversized-block viewport clip — a chromosome-scale block must render at high
+  // zoom instead of a blank canvas.
   {
     mode: 'url',
-    name: 'synteny_human_chimp_cigar_modes',
+    name: 'synteny_human_chimp_colored',
     url: hg38ChimpSynteny('full'),
     viewportWidth: 1200,
-    viewportHeight: 510,
+    viewportHeight: 470,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
     settleMs: 5000,
-    stages: [
-      // frame 1: as loaded — colored indels
-      {},
-      // frame 2: toggle the view's "CIGAR display mode" -> Transparent indels;
-      // the menu closes on click and the ribbon refetches, so the frame shows
-      // the clean transparent-indels view
-      {
-        actions: [
-          // the synteny CIGAR-mode control lives on the comparative view's
-          // "View options" header button (aria-label), not the app-core view menu
-          { type: 'click', selector: '[aria-label="View options"]' },
-          ...menuCascade(['CIGAR display mode', 'Transparent indels']),
-          { type: 'click', text: 'Transparent indels' },
-          { type: 'waitForText', text: 'Transparent indels', hidden: true },
-          { type: 'delay', ms: 8000 },
-        ],
-      },
-    ],
   },
-  // Rendered only to supply the "Transparent indels" live link for the combined
-  // figure above (its image isn't embedded); also a second clip regression guard.
   {
     mode: 'url',
     name: 'synteny_human_chimp_transparent',
     url: hg38ChimpSynteny('matches'),
     viewportWidth: 1200,
-    viewportHeight: 720,
+    viewportHeight: 470,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
     settleMs: 5000,
+  },
+  // Stacks the two declarative captures into one before/after figure. Both
+  // panels stay openable live (the doc <Figure links=> points at the two specs
+  // above), and neither the image nor the links can drift from the real states.
+  {
+    mode: 'compose',
+    name: 'synteny_human_chimp_cigar_modes',
+    parts: ['synteny_human_chimp_colored', 'synteny_human_chimp_transparent'],
   },
 
   {

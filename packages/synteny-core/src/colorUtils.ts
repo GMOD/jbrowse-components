@@ -1,6 +1,7 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import {
   alpha as setAlpha,
+  cssColorToRgb,
   formatHEXA,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
@@ -89,4 +90,22 @@ export function applyAlpha(color: string, a: number) {
     return color
   }
   return formatHEXA(setAlpha(parseCssColor(color), a))
+}
+
+/**
+ * #api
+ * Composite a CSS color over white by `a`, returning an opaque `rgb(...)`. The
+ * synteny canvas draws every ribbon at the view's global alpha over the white
+ * page (shadeFill in syntenyTypes.slang / resolveInstanceFill in the Canvas2D
+ * renderer), so a full-saturation legend swatch reads wrong — a red match ribbon
+ * shows as salmon, a blue deletion as pale blue. Blending the legend chip the
+ * same way keeps the key matched to what's actually on screen.
+ */
+export function blendOverWhite(color: string, a: number) {
+  if (a >= 1) {
+    return color
+  }
+  const [r, g, b] = cssColorToRgb(color)
+  const mix = (c: number) => Math.round(c * a + 255 * (1 - a))
+  return `rgb(${mix(r)},${mix(g)},${mix(b)})`
 }

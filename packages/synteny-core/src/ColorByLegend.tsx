@@ -3,6 +3,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Tooltip } from '@mui/material'
 
 import { colorByShortLabel, getColorBySwatch } from './colorLegend.ts'
+import { blendOverWhite } from './colorUtils.ts'
 
 import type { SyntenyColorBy } from './colorUtils.ts'
 
@@ -87,10 +88,14 @@ const useStyles = makeStyles()(theme => ({
 export function ColorByLegend({
   colorBy,
   drawsCigar = true,
+  alpha = 1,
   onClose,
 }: {
   colorBy: SyntenyColorBy
   drawsCigar?: boolean
+  // the view's global ribbon alpha — chips are blended over white by it so the
+  // key matches the on-screen (alpha-composited) ribbon colors
+  alpha?: number
   onClose: () => void
 }) {
   const { classes } = useStyles()
@@ -128,7 +133,7 @@ export function ColorByLegend({
             <span key={chip.label} className={classes.chipRow}>
               <span
                 className={classes.chipBox}
-                style={{ background: chip.color }}
+                style={{ background: blendOverWhite(chip.color, alpha) }}
               />
               {chip.label}
             </span>

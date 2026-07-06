@@ -55,7 +55,7 @@ The view's hamburger menu controls how the ribbons are drawn:
 - **Square view** — equalize the horizontal scale of the two panels
 - **Add assembly row** — compare three or more assemblies stacked vertically
 
-<Figure caption="Human (hg38) vs chimp (panTro6) at LMNB2, loaded from a UCSC liftOver chain. Top: 'Colored indels' paints the three human/chimp indels over the match ribbon (yellow insertions, blue deletion). Bottom: 'Transparent indels' leaves the same indels as see-through gaps." src="/img/synteny_human_chimp_cigar_modes.png" links="Colored indels=synteny_human_chimp_cigar_modes,Transparent indels=synteny_human_chimp_transparent" />
+<Figure caption="Human (hg38) vs chimp (panTro6) at LMNB2, loaded from a UCSC liftOver chain. Top: 'Colored indels' paints the three human/chimp indels over the match ribbon (yellow insertions, blue deletion). Bottom: 'Transparent indels' leaves the same indels as see-through gaps." src="/img/synteny_human_chimp_cigar_modes.png" links="Colored indels=synteny_human_chimp_colored,Transparent indels=synteny_human_chimp_transparent" />
 
 ## See also
 

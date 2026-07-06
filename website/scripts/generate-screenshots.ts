@@ -45,6 +45,7 @@ import type {
   Annotation,
   BrowserScreenshotSpec,
   CliSpec,
+  ComposeSpec,
   EmbeddedSpec,
   ScreenshotAction,
   ScreenshotSpec,
@@ -579,6 +580,31 @@ async function captureCliSpec(spec: CliSpec) {
   })
 }
 
+// Stack the committed PNGs of `spec.parts` into one figure (top to bottom) with
+// the same `convert -append` a `stages` capture uses. Runs after the render
+// pool so the parts are already fresh on disk; a filter that targets only the
+// compose spec recomposes from the committed parts.
+async function captureComposeSpec(spec: ComposeSpec) {
+  const partPaths = spec.parts.map(p => path.join(outDir, `${p}.png`))
+  const missing = spec.parts.filter(
+    (_, i) => !fs.existsSync(partPaths[i]!),
+  )
+  if (missing.length > 0) {
+    throw new Error(`missing part image(s): ${missing.join(', ')}`)
+  }
+  const renderPath = path.join(
+    os.tmpdir(),
+    `jb-compose-${process.pid}-${spec.name}.png`,
+  )
+  execFileSync('convert', [...partPaths, '-append', renderPath])
+  optimizePng(renderPath)
+  const outputPath = path.join(outDir, `${spec.name}.png`)
+  commitScreenshot(renderPath, outputPath, spec.name, {
+    force,
+    diffThreshold: spec.diffThreshold ?? diffThreshold,
+  })
+}
+
 // Print a titled, ===-barred block of lines to stderr (failure/flaky summaries).
 function printReport(title: string, lines: string[]) {
   const bar = '='.repeat(60)
@@ -754,7 +780,7 @@ async function main() {
   }
 
   async function runSpec(spec: ScreenshotSpec) {
-    if (spec.curated) {
+    if (spec.mode !== 'compose' && spec.curated) {
       console.log(
         `${progress()} ⊘ ${spec.name} (curated, keeping committed image)`,
       )
@@ -762,7 +788,9 @@ async function main() {
     }
     console.log(`${progress()} → ${spec.name}`)
     try {
-      if (spec.mode === 'cli') {
+      if (spec.mode === 'compose') {
+        await captureComposeSpec(spec)
+      } else if (spec.mode === 'cli') {
         await (check ? checkCliSpec(spec) : captureCliSpec(spec))
       } else if (check) {
         await checkSpec(spec)
@@ -781,8 +809,17 @@ async function main() {
   console.log(`Running with concurrency ${CONCURRENCY}`)
 
   try {
+    // Compose specs stack other specs' committed PNGs, so they must run after
+    // the render pool has refreshed those parts — split them into a second,
+    // sequential pass. --check doesn't write committed files, so a deterministic
+    // append has nothing to verify; skip compose specs there.
+    const renderSpecs = filteredSpecs.filter(s => s.mode !== 'compose')
+    const composeSpecs = check
+      ? []
+      : filteredSpecs.filter(s => s.mode === 'compose')
+
     // Pool: keep CONCURRENCY browsers running at once
-    const queue = [...filteredSpecs]
+    const queue = [...renderSpecs]
     const workers = Array.from({ length: CONCURRENCY }, async () => {
       while (queue.length > 0) {
         const spec = queue.shift()!
@@ -790,6 +827,10 @@ async function main() {
       }
     })
     await Promise.all(workers)
+
+    for (const spec of composeSpecs) {
+      await runSpec(spec)
+    }
   } finally {
     server?.close()
   }
