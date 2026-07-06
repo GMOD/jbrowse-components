@@ -10,14 +10,9 @@ import { parsePAFLine } from '../util.ts'
 
 import type { AllVsAllPAFAdapterConfig } from './configSchema.ts'
 import type { PAFRecord } from '../PAFAdapter/util.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-
-interface PAFOptions extends BaseOptions {
-  config?: AnyConfigurationModel
-}
 
 const SEP = '#'
 
@@ -136,7 +131,7 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     return [...set]
   }
 
-  getFeatures(query: Region, opts: PAFOptions = {}) {
+  getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const pafRecords = await this.setup(opts)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query

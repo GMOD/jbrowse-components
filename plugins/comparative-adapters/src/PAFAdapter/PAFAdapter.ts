@@ -9,14 +9,9 @@ import { getAssemblyNamesFromConf, parsePAFLine } from '../util.ts'
 import { getWeightedMeans, makeSyntenyFeature } from './util.ts'
 
 import type { PAFRecord } from './util.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-
-interface PAFOptions extends BaseOptions {
-  config?: AnyConfigurationModel
-}
 
 export default class PAFAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<PAFRecord[]>
@@ -73,7 +68,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return []
   }
 
-  getFeatures(query: Region, opts: PAFOptions = {}) {
+  getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const pafRecords = await this.setup(opts)
 

@@ -10,15 +10,10 @@ import { getAssemblyNamesFromConf, pafIdentity, parsePAFLine } from '../util.ts'
 
 import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 import type { FileLocation, Region } from '@jbrowse/core/util/types'
-
-interface PAFOptions extends BaseOptions {
-  config?: AnyConfigurationModel
-}
 
 // PIF format indexes lines by perspective:
 // - 'q' prefix: indexed by query coordinates, drawn when viewing the query
@@ -122,7 +117,7 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
     return this.coarseTierAvailable
   }
 
-  getFeatures(query: Region, opts: PAFOptions = {}) {
+  getFeatures(query: Region, opts: BaseOptions = {}) {
     const { statusCallback = () => {} } = opts
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
