@@ -59,86 +59,56 @@ never enforced, and make the enforcement structural:
 > function of `frozen base + delta`**, resolved on read. Corollary: a hydration
 > cache entry is always a faithful, pristine mirror of its frozen source.
 
-Enforcement, given that in-place mutation of the resolved node stays (removing
-it is deferred — see below):
+The base is made immutable **by construction** (Option B below, now shipped), so
+there is nothing to guard: no eviction, no re-pin, no "keep the mirror pristine"
+gymnastics. The mechanism:
 
-- **Every write to `trackConfigDeltas` goes through one choke point**
-  (`writeDelta` in `SessionTracks.ts`) that sets/clears the delta **and** re-pins
-  that track's base hydration (`PluginManager.invalidateTrackConfigHydration`,
-  which drops the stale cache node so the next read re-hydrates clean from the
-  untouched frozen object). A delta cannot change without the base being
-  re-pinned — the store, implicit-reset, and reset paths can't forget it,
-  because none of them touch `trackConfigDeltas` directly.
-- The re-pin is a cheap no-op after the first edit: once a delta exists the
-  resolved node is the regenerable merged node, so subsequent edits never touch
-  the base again. It is in fact *unobservable* after the first edit — `tracksById`
-  resolves from the merged `tracks` getter, so while a delta is active nothing
-  ever hands the frozen base back to the hydration resolver — but the re-pin
-  fires on every write anyway so the rule stays uniform ("a delta write always
-  re-pins") rather than conditional, and so a future reader of the frozen base
-  can't observe a stale node.
-- **Redundant identical saves are skipped.** Two views showing the same track
-  each run `BaseTrackModel`'s persist reaction against the one shared config
-  node, so a single edit calls `updateTrackConfiguration` twice with an
-  identical delta (the config editor can also re-save unchanged). The store
-  branch `comparer.structural`-compares against the existing delta and skips a
-  no-change re-store, so `trackConfigDeltas` identity stays stable and the merged
-  node is not needlessly rehydrated.
-- **Admin edits** stay in-place on the frozen `jbrowse.tracks` array via
-  `updateTrackConf`, which replaces the entry's identity and so drops the
-  WeakMap cache node naturally — the same invariant reached by a different
-  mechanism, no explicit invalidation needed.
+- **A non-admin resolves each shown track to a private working copy.**
+  `TrackConfigurationReference.get()` asks the session for
+  `getEditableTrackConfig(trackId, frozen, schemaType)` (SessionTracks.ts): a
+  per-track MST node, seeded once from the current `base + delta`, cached by
+  trackId in a session-owned (volatile, non-persisted) `Map`. In-place quick
+  edits (`setSlot`) mutate **that** copy; the frozen `jbrowse.tracks` node is
+  never handed out to a non-admin and so is never mutated. The delta is still
+  computed the same way (`diffTrackConfig(base, workingCopy)` via
+  `updateTrackConfiguration`), from a node that was never the base.
+- **Reset reverts the working copy in place** (`applySnapshot(node, base)`),
+  keeping node identity so open views just re-render.
+- **Admin/embedded are unchanged.** `getEditableTrackConfig` returns undefined in
+  admin mode, so the resolver falls through to the frozen hydration cache
+  (ADR-031); admin edits the frozen entry in place, replacing its identity.
 
-The debounced reaction stays. Within its sub-400ms window the base node is
-intentionally the live-edit surface (immediate visual feedback while dragging a
-slider); the re-pin happens when the delta is stored, so the cache is pristine
-again by the next resolve.
+Because the base is never dirtied, `PluginManager.invalidateTrackConfigHydration`
+and the `writeDelta` re-pin were **deleted**, and the outer
+`trackConfigHydrationCache` reverted from a `Map` to a `WeakMap` (ADR-031).
 
-### Consequence for ADR-031
+The debounced `BaseTrackModel` reaction stays — it is the idiomatic MST way to
+persist a node's edits (now a *stable* working copy, not the shared base). Its
+`comparer.structural` guard remains (the admin path still replaces the node on
+each write), as does the store-branch idempotency skip (two views of one track
+run two persist reactions against the one shared working copy).
 
-ADR-031's "no manual cache invalidation or teardown hook needed" held only
-before in-place non-admin edits existed. To let `invalidateTrackConfigHydration`
-iterate the per-type sub-caches, the **outer** level of
-`trackConfigHydrationCache` is a `Map` (not a `WeakMap`); its keys are the
-registered config schemas, a bounded set already held for the PluginManager's
-lifetime, so this adds no retention. The inner level — keyed by 10k+ frozen
-configs that must stay GC-eligible — stays a `WeakMap`.
+## Rejected: route every edit through a delta API (Option A)
 
-## Deferred: never mutate the base node at all (the structural end state)
-
-The invariant above is enforced by *evicting* the one node that can violate it.
-The stronger form — making it impossible to mutate the base node in the first
-place — was evaluated and deferred. Both shapes are larger and riskier than the
-eviction, and neither is free:
-
-- **Option A — route every edit through a session delta API.** ~160 `setSlot`
-  sites, all on detached *display*-config subtrees. Because the node is detached
-  and edits are display-scoped, each site would have to reconstruct a nested
-  `displays[displayId].slot` delta path, or still mutate a working-copy node and
-  diff it — reintroducing "a node to mutate." It discards the elegant
-  whole-snapshot diff that currently handles display-nesting for free. Large
-  surface, real regression risk on app-wide config code.
-
-- **Option B — session-owned working-copy node.** Resolve a shown editable
-  track to a per-track working copy (a clone of `base + delta`) instead of the
-  base cache node, keyed in a session-owned map; the base cache stays pristine by
-  construction. Cleaner target, but adds machinery, changes the node-identity
-  model for every shown track (risk to any identity-based assumption), and still
-  needs the working copy regenerated on reset — it is not hook-free either.
-
-Neither prize (removing a bug class already closed by the choke point; possibly
-deleting the reaction + its `comparer.structural` churn workaround) justifies
-churning load-bearing config code today.
+The alternative — make the ~160 `setSlot` call sites write delta data directly,
+deleting the reaction — was rejected. The sites are all on detached
+*display*-config subtrees, so each would reconstruct a nested
+`displays[displayId].slot` delta path (or still mutate a node and diff it,
+reintroducing a node to mutate), discarding the whole-snapshot diff that handles
+display-nesting for free. Large surface, poor cost/benefit versus the working
+copy, which fixes the same bug class with no edit-site changes.
 
 ## Revisit if
 
-- The incremental migration toward "config = immutable base + functional
-  overlay" continues (it already removed the override-property layer for deltas +
-  `getConfResolved`, collapsed slots to bare value props, and added
-  `stripDefault`). When the edit path no longer needs a mutable MST node —
-  i.e. slot writes compute delta data directly — adopt **Option B**, drop the
-  eviction, and delete the debounced `reaction`. That is the natural end state
-  this ADR is a waypoint toward, not a permanent design.
+- You want to delete the persist `reaction` entirely. The remaining step is to
+  stop storing `trackConfigDeltas` as the live source and instead **derive** it
+  from the working copies: the working-copy nodes become the sole live edit
+  state, `getTrackConfigChanges`/`isTrackOverride` diff them on demand (already
+  reactive — they read the node), and a snapshot processor converts working
+  copies ↔ persisted deltas on save/load. That removes the reaction and both
+  `comparer.structural` guards, but re-plumbs every delta consumer and the
+  persistence round-trip (unshown-but-edited tracks included), so it is a
+  larger, separate change — see CONFIG_WORKING_COPY_PLAN.md.
 - `CustomReferenceType` in the mobx-state-tree fork grows its own
-  memoization/invalidation. Re-examine whether the eviction is still the right
-  place to re-pin the mirror, or whether the fork's cache should own it.
+  memoization/invalidation. Re-examine whether `getEditableTrackConfig`'s
+  session-owned cache should move into the fork's reference cache.

@@ -234,31 +234,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         addTrackConf: superAddTrackConf,
         deleteTrackConf: superDeleteTrackConf,
       } = self
-      // Re-pin a track's base config to its pristine frozen source in the
-      // hydration cache. No-op for embedded/product-core, whose MST-node bases
-      // were never put in the cache.
-      function invalidateBaseHydration(trackId: string) {
-        const base = (self.jbrowse.tracks as PlainTrackConfig[]).find(
-          t => t.trackId === trackId,
-        )
-        if (base) {
-          pluginManager.invalidateTrackConfigHydration(base)
-        }
-      }
-      // The single choke point for every trackConfigDeltas write (pass undefined
-      // to clear). A delta only ever changes right after an in-place `setSlot`;
-      // for a track with no delta yet, that setSlot mutated the base config's
-      // shared hydrated MST node (the pre-delta resolved node). Re-pin that node
-      // on every delta write so the hydration cache stays a faithful mirror of
-      // jbrowse.tracks — the invariant in ADR-032. Once a delta exists the
-      // resolved node is the regenerable merged node, so later edits never touch
-      // the base again and the re-pin is a cheap no-op. Centralizing here makes
-      // "a delta can't change without the base being re-pinned" structural — no
-      // call site can forget it.
-      // A cleared delta must revert the track's live working copy in place so
-      // open views re-render to the base default. applySnapshot keeps the node
-      // identity (existing observers just update); no-op in admin mode or for a
-      // track that was never edited (no working copy).
+      // A cleared delta reverts the track's live working copy to the base in
+      // place, so an open view re-renders to the default. applySnapshot keeps
+      // the node identity (existing observers just update); no-op in admin mode
+      // or for a track that was never edited (no working copy).
       function revertEditableTrackConfig(trackId: string) {
         const node = self.editableTrackConfigs.get(trackId)
         const base = (self.jbrowse.tracks as PlainTrackConfig[]).find(
@@ -268,11 +247,11 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           applySnapshot(node, base)
         }
       }
+      // Single writer for trackConfigDeltas (pass undefined to clear).
       function writeDelta(trackId: string, delta: PlainTrackConfig | undefined) {
         self.trackConfigDeltas = delta
           ? { ...self.trackConfigDeltas, [trackId]: delta }
           : withoutDelta(self.trackConfigDeltas, trackId)
-        invalidateBaseHydration(trackId)
         if (!delta) {
           revertEditableTrackConfig(trackId)
         }

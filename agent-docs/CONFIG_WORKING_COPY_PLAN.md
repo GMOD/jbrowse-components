@@ -46,28 +46,35 @@ reaction untouched (still persists via `updateTrackConfiguration`).
   returns undefined (admin/embedded).
 
 Result: non-admin edits mutate the working copy; the frozen base is never
-dirtied. `invalidateTrackConfigHydration` becomes a no-op for non-admin (nothing
-populates that cache), but is left in place until Phase 3.
+dirtied. Status: **DONE (9f20c072d5)**. `programmatic` updateTrackConfiguration
+calls (not driven by the working copy's own edits) are synced into the copy via
+`syncEditableTrackConfig`.
 
-Identity note: the working copy is now **stable across edits** (was: a new merged
+Identity note: the working copy is **stable across edits** (was: a new merged
 node per delta change). Reactions key on content (`comparer.structural`), not
 identity, so this is fine; verified against the hydration/identity tests.
 
-## Phase 2 — one persist listener per working copy (drop the per-model reaction)
+## Phase 3 — delete the now-dead invalidation machinery — DONE
 
-- Set up a single `onPatch`/reaction on each working copy when created (session
-  side), driving `updateTrackConfiguration`. Remove `BaseTrackModel`'s
-  `afterAttach` reaction.
-- With exactly one writer per trackId: remove the store-branch idempotency
-  `comparer.structural` guard (two views no longer double-fire) and the reaction's
-  own loop-guard `comparer.structural` (no re-fire — the working copy isn't
-  recreated on delta change).
+Base is never dirtied, so removed `PluginManager.invalidateTrackConfigHydration`,
+`SessionTracks.invalidateBaseHydration`, and the `writeDelta` re-pin; reverted
+the outer `trackConfigHydrationCache` to a `WeakMap`; updated ADR-031/032.
 
-## Phase 3 — cleanup
+## Phase 2 — drop the persist reaction — RECONSIDERED, not done
 
-- Remove `invalidateTrackConfigHydration` + the `writeDelta` re-pin (base is never
-  dirtied); outer `trackConfigHydrationCache` can revert to a `WeakMap`.
-- Fold ADR-032's "deferred" section into "done"; update ADR-031.
+Moving the persist reaction off `BaseTrackModel` was evaluated and **not done**:
+the reaction is the idiomatic MST way to persist a node's edits and it must stay
+for the **admin** path (which replaces the node each write and needs the
+re-resolving-reference reaction + its `comparer.structural`). Splitting it into
+"admin reaction + per-working-copy reaction" is two systems, not simpler, and
+setting a reaction up inside the resolver-called factory is an impurity smell.
+So the unified reaction + the store-branch idempotency skip stay.
+
+The **only** way to truly delete the reaction is to stop storing
+`trackConfigDeltas` as the live source and derive it from the working copies (a
+snapshot processor round-trips copies ↔ deltas on save/load). That re-plumbs
+every delta consumer and is a larger, separate change — recorded in ADR-032
+"Revisit if", not pursued here.
 
 ## Guardrails (keep green every phase)
 
