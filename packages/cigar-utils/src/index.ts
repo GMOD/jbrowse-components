@@ -3,6 +3,7 @@ export {
   CIGAR_EQ,
   CIGAR_H,
   CIGAR_I,
+  CIGAR_INDEL_MASK,
   CIGAR_M,
   CIGAR_M_EQ_MASK,
   CIGAR_N,

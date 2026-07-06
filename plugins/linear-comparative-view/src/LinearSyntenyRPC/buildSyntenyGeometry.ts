@@ -1,4 +1,4 @@
-import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/cigar-utils'
+import { CIGAR_D, CIGAR_I, CIGAR_INDEL_MASK, CIGAR_N } from '@jbrowse/cigar-utils'
 import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 
 import { writeHiLo } from './hpMathSplit.ts'
@@ -58,6 +58,17 @@ export const MIN_CIGAR_PX_WIDTH = 2
 // buffer must be >= this or it would silently drop features this stage wants to
 // emit geometry for (defeating the pan buffer on views narrower than 2*this).
 export const PAN_BUFFER_PX = 2000
+
+// Colored-indel instance kind for an I/D/N op; undefined for any match op.
+function indelKind(op: number) {
+  return op === CIGAR_I
+    ? KIND_CIGAR_I
+    : op === CIGAR_D
+      ? KIND_CIGAR_D
+      : op === CIGAR_N
+        ? KIND_CIGAR_N
+        : undefined
+}
 
 export function buildSyntenyGeometry({
   p11_cumBp,
@@ -232,18 +243,61 @@ export function buildSyntenyGeometry({
     }
   }
 
-  // Emit whole-polygon instances. Always KIND_BASE (visible) — the base block
-  // provides continuous gapless match-color coverage; only indel quads are
-  // drawn on top. KIND_BASE_HIDDEN is gone: hiding the base block required
-  // perfect tiling of CIGAR quads, which broke at sub-pixel FP boundaries.
+  // A CIGAR feature is "tiled": pass 2 paints it one quad per match segment
+  // rather than pass 1 laying down one full-span base. Only transparent-indels
+  // mode tiles — see cigarSegmentKind.
+  function isTiled(i: number) {
+    return drawCIGARMatchesOnly && !!willDrawCigarArr[i]
+  }
+
+  // The instance kind a rendered CIGAR segment contributes, or undefined to
+  // skip it. The two display modes are exact complements:
+  //   colored indels             -> paint indels colored; matches ride the
+  //                                  full-span base from pass 1
+  //   transparent (matchesOnly)  -> paint matches as base color; indels left
+  //                                  unpainted (see-through)
+  // No seam results from tiling matches: KIND_BASE_HIDDEN was dropped because
+  // *seamless* coverage needed every quad to tile perfectly (sub-pixel FP gaps
+  // showed as stripes), whereas match segments only ever abut across a real
+  // (>1px) indel — exactly where a gap is wanted.
+  function cigarSegmentKind(op: number) {
+    const isIndel = ((1 << op) & CIGAR_INDEL_MASK) !== 0
+    // transparent: base color on matches only (indels stay see-through).
+    // colored: indelKind per indel (undefined on matches -> pass-1 base covers).
+    const transparentKind = isIndel ? undefined : KIND_BASE
+    return drawCIGARMatchesOnly ? transparentKind : indelKind(op)
+  }
+
+  // A rendered segment is off-screen when both axes fall outside the pan
+  // buffer. cumBp -> screen px, then compared to the emit window.
+  function segmentOffScreen(
+    bp1Start: number,
+    bp1End: number,
+    bp2Start: number,
+    bp2End: number,
+  ) {
+    const topMin = Math.min(bp1Start, bp1End) * bpPerPxInv0 - viewOff0
+    const topMax = Math.max(bp1Start, bp1End) * bpPerPxInv0 - viewOff0
+    const botMin = Math.min(bp2Start, bp2End) * bpPerPxInv1 - viewOff1
+    const botMax = Math.max(bp2Start, bp2End) * bpPerPxInv1 - viewOff1
+    return (
+      (topMax < emitLeft || topMin > emitRight) &&
+      (botMax < emitLeft || botMin > emitRight)
+    )
+  }
+
+  // Pass 1: one full-span KIND_BASE trapezoid per feature for gapless
+  // match-color coverage. Tiled features skip it — pass 2 lays their base down
+  // per match segment so the intervening indels stay see-through.
   function emitNonCigarFeature(i: number) {
     const x11 = p11_cumBp[i]!
     const x12 = p12_cumBp[i]!
     const x21 = p21_cumBp[i]!
     const x22 = p22_cumBp[i]!
-    const willDrawCigar = willDrawCigarArr[i]!
-    addInstance(x11, x12, x22, x21, KIND_BASE, i, alignmentLengths[i]!)
-    if (!willDrawCigar && drawLocationMarkers) {
+    if (!isTiled(i)) {
+      addInstance(x11, x12, x22, x21, KIND_BASE, i, alignmentLengths[i]!)
+    }
+    if (!willDrawCigarArr[i] && drawLocationMarkers) {
       addLocationMarkers(x11, x12, x22, x21, i, alignmentLengths[i]!)
     }
   }
@@ -252,8 +306,8 @@ export function buildSyntenyGeometry({
     emitNonCigarFeature(i)
   }
 
-  // Second loop: indel quads only. The base block (KIND_BASE) provides match
-  // color; only CIGAR_I/D/N quads need to be drawn on top.
+  // Pass 2: per-segment CIGAR quads on top of pass 1. cigarSegmentKind decides
+  // which segments draw and as what (colored indels vs. base-tiled matches).
   for (let i = 0; i < featureCount; i++) {
     if (!willDrawCigarArr[i]) {
       continue
@@ -280,28 +334,9 @@ export function buildSyntenyGeometry({
       rev1,
       rev2,
       (resolvedOp, segBp1Start, segBp1End, segBp2Start, segBp2End) => {
-        const topMin = Math.min(segBp1Start, segBp1End) * bpPerPxInv0 - viewOff0
-        const topMax = Math.max(segBp1Start, segBp1End) * bpPerPxInv0 - viewOff0
-        const botMin = Math.min(segBp2Start, segBp2End) * bpPerPxInv1 - viewOff1
-        const botMax = Math.max(segBp2Start, segBp2End) * bpPerPxInv1 - viewOff1
-        const offScreen =
-          (topMax < emitLeft || topMin > emitRight) &&
-          (botMax < emitLeft || botMin > emitRight)
-
-        if (!offScreen) {
-          const isIndel =
-            resolvedOp === CIGAR_I ||
-            resolvedOp === CIGAR_D ||
-            resolvedOp === CIGAR_N
-          // Only emit indel quads; match segments are covered by the base
-          // block. drawCIGARMatchesOnly suppresses indels entirely.
-          if (isIndel && !drawCIGARMatchesOnly) {
-            const kind =
-              resolvedOp === CIGAR_I
-                ? KIND_CIGAR_I
-                : resolvedOp === CIGAR_D
-                  ? KIND_CIGAR_D
-                  : KIND_CIGAR_N
+        if (!segmentOffScreen(segBp1Start, segBp1End, segBp2Start, segBp2End)) {
+          const kind = cigarSegmentKind(resolvedOp)
+          if (kind !== undefined) {
             addInstance(
               segBp1Start,
               segBp1End,
@@ -312,7 +347,6 @@ export function buildSyntenyGeometry({
               alignmentLength,
             )
           }
-
           if (drawLocationMarkers) {
             addLocationMarkers(
               segBp1Start,
