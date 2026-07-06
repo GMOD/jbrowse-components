@@ -15,6 +15,7 @@ import {
   PAN_BUFFER_PX,
   buildSyntenyGeometry,
 } from './buildSyntenyGeometry.ts'
+import { clipLargeBlockToWindow } from './clipSyntenyFeature.ts'
 
 import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
@@ -24,6 +25,12 @@ import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const EMPTY_CIGAR = new Uint32Array(0)
+
+// Clip a CIGAR block to the viewport only when it is at least this many times
+// wider than the visible window. A whole liftOver chain is 100-1000x; a normal
+// alignment is <= 1x, so this leaves the well-trodden path untouched (only
+// pathologically large blocks, which otherwise fail to render, are re-anchored).
+const CLIP_SPAN_RATIO = 4
 
 interface SyntenyMate {
   start: number
@@ -195,6 +202,14 @@ export async function executeSyntenyFeaturesAndPositions({
   const offScreenLeftBound = -bufferPx
   const offScreenRightBound = viewWidth + bufferPx
 
+  // Visible v1 window in whole-assembly cumBp (screenX 0..width, plus the pan
+  // buffer). Used to re-anchor oversized CIGAR blocks; within one region cumBp
+  // spans equal local-bp spans, so this drives both the size test and the
+  // per-region local window below.
+  const winCumLo = (v1Offset - bufferPx) * v1.bpPerPx
+  const winCumHi = (v1Offset + viewWidth + bufferPx) * v1.bpPerPx
+  const windowSpan = winCumHi - winCumLo
+
   const v1RefNames = v1Index.entries
   const v2RefNames = v2Index.entries
   const stopTokenChecker = createStopTokenChecker(stopToken)
@@ -218,13 +233,44 @@ export async function executeSyntenyFeaturesAndPositions({
       continue
     }
 
-    const f1s = strand === -1 ? end : start
-    const f1e = strand === -1 ? start : end
+    const cigarStr = f.get('CIGAR') as string | undefined
+    if (cigarStr) {
+      hasCigar = true
+    }
+
+    // A single alignment block can be a whole liftOver chain (tens of Mb). Its
+    // base ribbon is one linear trapezoid across that span, which cannot follow
+    // megabases of indels, so at high zoom nothing renders. Re-anchor such a
+    // block to just its visible slice (accurate coords + a short CIGAR); normal
+    // blocks are left untouched. The detail panel + min-length cull still see
+    // the original block extent (starts/ends below); only geometry is clipped.
+    const clip = clipLargeBlockToWindow({
+      v1Index,
+      refName,
+      start,
+      end,
+      mateStart: mate.start,
+      mateEnd: mate.end,
+      strand,
+      cigar: cigarStr,
+      winCumLo,
+      winCumHi,
+      windowSpan,
+      spanRatio: CLIP_SPAN_RATIO,
+    })
+    const fStart = clip?.start ?? start
+    const fEnd = clip?.end ?? end
+    const mStart = clip?.mateStart ?? mate.start
+    const mEnd = clip?.mateEnd ?? mate.end
+    const clippedCigar = clip?.cigar
+
+    const f1s = strand === -1 ? fEnd : fStart
+    const f1e = strand === -1 ? fStart : fEnd
 
     const p11 = bpToCumBp(v1Index, refName, f1s)
     const p12 = bpToCumBp(v1Index, refName, f1e)
-    const p21 = bpToCumBp(v2Index, mateRefName, mate.start)
-    const p22 = bpToCumBp(v2Index, mateRefName, mate.end)
+    const p21 = bpToCumBp(v2Index, mateRefName, mStart)
+    const p22 = bpToCumBp(v2Index, mateRefName, mEnd)
 
     if (
       p11 === undefined ||
@@ -279,18 +325,18 @@ export async function executeSyntenyFeaturesAndPositions({
     // willDrawCigar predicate in buildSyntenyGeometry via the shared
     // MIN_CIGAR_PX_WIDTH — drawCIGAR off or alignment narrower than that means
     // the visitor never fires, and addLocationMarkers operates on bp coords
-    // without needing the CIGAR.
-    const cigarStr = f.get('CIGAR') as string | undefined
-    if (cigarStr) {
-      hasCigar = true
-    }
+    // without needing the CIGAR. A clipped block already carries its (short)
+    // visible-slice CIGAR from the re-anchor above.
     const widthPx0 = topMaxX - topMinX
     const widthPx1 = botMaxX - botMinX
     const willNeedCigar =
       !!cigarStr &&
       drawCIGAR &&
       Math.max(widthPx0, widthPx1) >= MIN_CIGAR_PX_WIDTH
-    parsedCigars.push(willNeedCigar ? parseCigar2Typed(cigarStr) : EMPTY_CIGAR)
+    parsedCigars.push(
+      clippedCigar ??
+        (willNeedCigar ? parseCigar2Typed(cigarStr) : EMPTY_CIGAR),
+    )
 
     validCount++
   }
