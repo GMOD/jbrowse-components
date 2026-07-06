@@ -8024,6 +8024,27 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 15000,
     viewportHeight: 600,
   },
+  {
+    mode: 'url',
+    name: 'gallery/chromhmm_roadmap',
+    // Roadmap 127-epigenome ChromHMM over the β-globin locus — the dense
+    // multi-row heatmap paired with the 9-cell-type ENCODE card at the same locus
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":[{"trackId":"roadmap_chromhmm_multirow_hg19","displaySnapshot":{"type":"LinearMultiRowFeatureDisplay","height":480}}]}]}',
+    readyTimeout: 90000,
+    settleMs: 12000,
+    viewportHeight: 700,
+  },
+  {
+    mode: 'url',
+    name: 'gallery/hg19_vs_hg38',
+    // config's DotplotView defaultSession has empty displayedRegions, so open an
+    // explicit whole-genome dotplot over the liftOver chain. Both assemblies'
+    // chrom.sizes + the chain load from UCSC (see the config).
+    url: '?config=test_data%2Fhg19_vs_hg38%2Fconfig.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"hg38"},{"assembly":"hg19"}],"tracks":["hg19ToHg38.over.chain.gz-1645073157673"]}]}',
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 10000,
+  },
   // products/jbrowse-img/README.md example images, rendered by the jb2export
   // CLI (see CliSpec above). Ported 1:1 from the old
   // render-comparative-examples.sh so the args stay in sync with the README's

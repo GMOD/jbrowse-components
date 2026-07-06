@@ -169,5 +169,7 @@ export const specSessionUrls: Record<string, string> = {
   "gallery/arabidopsis_ont": "?config=test_data%2Farabidopsis_methylation%2Fconfig.json",
   "gallery/arabidopsis_emseq": "?config=test_data%2Farabidopsis_methylation%2Fconfig_emseq_bisulfite.json",
   "gallery/maize_te": "?config=test_data%2Fmaize_te%2Fconfig.json",
-  "gallery/potato": "?config=https://jbrowse.org/genomes/potato/config.json&session=spec-{\"views\":[{\"type\":\"LinearGenomeView\",\"assembly\":\"Stuberosum_448_v4.03\",\"loc\":\"ST4.03ch01:23,700,000-26,100,000\",\"tracks\":[{\"trackId\":\"tetraploid_vcf\",\"displaySnapshot\":{\"type\":\"LinearVariantMatrixDisplay\"}}]}]}"
+  "gallery/potato": "?config=https://jbrowse.org/genomes/potato/config.json&session=spec-{\"views\":[{\"type\":\"LinearGenomeView\",\"assembly\":\"Stuberosum_448_v4.03\",\"loc\":\"ST4.03ch01:23,700,000-26,100,000\",\"tracks\":[{\"trackId\":\"tetraploid_vcf\",\"displaySnapshot\":{\"type\":\"LinearVariantMatrixDisplay\"}}]}]}",
+  "gallery/chromhmm_roadmap": "?config=test_data%2Fconfig_demo.json&session=spec-{\"views\":[{\"assembly\":\"hg19\",\"loc\":\"11:5200000-5400000\",\"type\":\"LinearGenomeView\",\"tracks\":[{\"trackId\":\"roadmap_chromhmm_multirow_hg19\",\"displaySnapshot\":{\"type\":\"LinearMultiRowFeatureDisplay\",\"height\":480}}]}]}",
+  "gallery/hg19_vs_hg38": "?config=test_data%2Fhg19_vs_hg38%2Fconfig.json&session=spec-{\"views\":[{\"type\":\"DotplotView\",\"views\":[{\"assembly\":\"hg38\"},{\"assembly\":\"hg19\"}],\"tracks\":[\"hg19ToHg38.over.chain.gz-1645073157673\"]}]}"
 }

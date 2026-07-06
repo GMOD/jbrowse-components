@@ -8,7 +8,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "hg19.chrom.sizes",
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes",
             "locationType": "UriLocation"
           }
         }

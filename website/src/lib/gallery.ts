@@ -111,6 +111,11 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'Whole-genome dotplot of two yeast strains (R64 vs YJM1447): the diagonal traces collinear sequence, off-diagonal dots mark rearrangements.',
       },
+      {
+        label: 'hg19 vs hg38 liftover',
+        spec: 'gallery/hg19_vs_hg38',
+        description: 'A whole-genome dotplot of the hg19→hg38 liftOver chains.',
+      },
     ],
   },
   {
@@ -301,6 +306,12 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'gallery/chromhmm_encode',
         description:
           'ChromHMM chromatin states for 9 ENCODE cell types across the β-globin locus.',
+      },
+      {
+        label: 'ChromHMM states (Roadmap, 127 epigenomes, β-globin)',
+        spec: 'gallery/chromhmm_roadmap',
+        description:
+          'Roadmap Epigenomics ChromHMM states for 127 epigenomes over the β-globin locus, as a dense multi-row heatmap.',
       },
       {
         label: 'Single-cell ATAC by cell type (CATlas, INS locus)',
