@@ -599,15 +599,12 @@ function syncytinSynteny(cigarMode: 'matches' | 'full') {
         views: [
           {
             assembly: 'hg38',
-            loc: 'chr7:92,460,000-92,482,000',
+            loc: 'chr7:92,448,000-92,488,000',
             tracks: ['hg38-genes', 'hg38-rmsk'],
           },
           {
-            // marmoset coords co-increase with hg38 across this block, so the
-            // ribbon is uncrossed without a [rev]; add [rev] if a render shows
-            // it crossing.
             assembly: 'calJac4',
-            loc: 'chr8:64,691,000-64,710,000',
+            loc: 'chr8:64,676,000-64,720,000',
             tracks: ['calJac4-genes'],
           },
         ],
@@ -979,8 +976,9 @@ export const specs: ScreenshotSpec[] = [
     url: syncytinSynteny('matches'),
     viewportWidth: 1200,
     viewportHeight: 780,
-    readyText: 'chr7',
-    settleMs: 10000,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 5000,
   },
   {
     mode: 'url',
@@ -988,8 +986,9 @@ export const specs: ScreenshotSpec[] = [
     url: syncytinSynteny('full'),
     viewportWidth: 1200,
     viewportHeight: 780,
-    readyText: 'chr7',
-    settleMs: 10000,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 5000,
   },
 
   {
@@ -2109,7 +2108,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           tracks: ['grape_peach_synteny_mcscan'],
-          drawCurves: true,
+          drawCurves: false,
           colorBy: 'query',
           // higher alpha + a taller synteny band give the ribbons room to read,
           // and autoDiagonalize reorders the panels into clean diagonals
@@ -2162,7 +2161,7 @@ export const specs: ScreenshotSpec[] = [
               { assembly: 'grape' },
             ],
             tracks: [['peach_cacao_blocks'], ['grape_cacao_blocks']],
-            drawCurves: true,
+            drawCurves: false,
             colorBy: 'reference',
             autoDiagonalize: true,
             showColorLegend: false,
@@ -2197,7 +2196,7 @@ export const specs: ScreenshotSpec[] = [
             ],
             // one all-vs-all track backs every band (lists all four assemblies)
             tracks: [['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava']],
-            drawCurves: true,
+            drawCurves: false,
             colorBy: 'default',
             // drop short minimap2 alignments so the shared backbone reads as
             // clean ribbons instead of a dense noise band
@@ -2354,7 +2353,7 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearSyntenyView',
           tracks: ['hs1ToMm39.over.chain.pif'],
           minAlignmentLength: 500000,
-          drawCurves: true,
+          drawCurves: false,
           autoDiagonalize: true,
           colorBy: 'query',
           alpha: 0.4,
@@ -4972,7 +4971,7 @@ export const specs: ScreenshotSpec[] = [
           // the connections read clearly (reviewer). Renders against the local
           // build (cgiabUrl is now a bare ?config= url) so drawCurves is honored
           // — the published jb2/latest release predates it.
-          drawCurves: true,
+          drawCurves: false,
           // taller synteny band (LinearSyntenyViewHelper.height, default 100) so
           // the ribbons have room to spread out (reviewer). NB the launch init
           // handler consumes `levelHeights`, not a `levels` snapshot — the

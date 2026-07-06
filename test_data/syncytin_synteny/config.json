@@ -92,19 +92,13 @@
     {
       "type": "SyntenyTrack",
       "trackId": "hg38_calJac4_synteny",
-      "name": "Human vs Marmoset (UCSC liftOver)",
+      "name": "Human vs Marmoset (UCSC liftOver, syncytin locus)",
       "assemblyNames": ["hg38", "calJac4"],
       "adapter": {
-        "type": "PairwiseIndexedPAFAdapter",
-        "targetAssembly": "hg38",
-        "queryAssembly": "calJac4",
-        "pifGzLocation": {
-          "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCalJac4.over.pif.gz"
-        },
-        "index": {
-          "indexType": "CSI",
-          "location": { "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCalJac4.over.pif.gz.csi" }
-        }
+        "type": "PAFAdapter",
+        "uri": "syncytin.paf",
+        "queryAssembly": "hg38",
+        "targetAssembly": "calJac4"
       }
     }
   ]
