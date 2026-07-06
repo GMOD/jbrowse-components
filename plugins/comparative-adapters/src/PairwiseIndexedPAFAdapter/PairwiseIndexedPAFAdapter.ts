@@ -45,9 +45,10 @@ export function pickPifPrefix({
   lodMode?: BaseOptions['lodMode']
 }) {
   const fineLetter = flip ? 'q' : 't'
-  const auto = bpPerPx !== undefined && bpPerPx >= threshold && hasCoarseTier
+  const zoomedOut = bpPerPx !== undefined && bpPerPx >= threshold
   const useCoarse =
-    hasCoarseTier && (lodMode === 'coarse' || (lodMode === 'auto' && auto))
+    hasCoarseTier &&
+    (lodMode === 'coarse' || (lodMode === 'auto' && zoomedOut))
   return useCoarse ? fineLetter.toUpperCase() : fineLetter
 }
 
@@ -111,11 +112,13 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
   // Cache whether the file contains an uppercase T/Q coarse tier. Checked
   // once via the tabix refname list.
   private async hasCoarseTier(opts?: BaseOptions): Promise<boolean> {
-    if (!this.coarseTierAvailable) {
-      this.coarseTierAvailable = this.pif
-        .getReferenceSequenceNames(opts)
-        .then(names => names.some(n => n.startsWith('T') || n.startsWith('Q')))
-    }
+    this.coarseTierAvailable ??= this.pif
+      .getReferenceSequenceNames(opts)
+      .then(names => names.some(n => n.startsWith('T') || n.startsWith('Q')))
+      .catch((e: unknown) => {
+        this.coarseTierAvailable = undefined
+        throw e
+      })
     return this.coarseTierAvailable
   }
 
@@ -140,15 +143,16 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
         lodMode: opts.lodMode,
       })
 
-      // Surface the resolved tier so the user can see auto-fallback / coarse
-      // degradation in the status bar without needing to inspect network calls.
+      // Surface the resolved tier in the download label so the user can see
+      // auto-fallback / coarse degradation in the status bar without needing to
+      // inspect network calls.
       const isCoarse = letter === letter.toUpperCase()
-      statusCallback(`Loading ${isCoarse ? 'coarse' : 'fine'} tier`)
 
       // The "other" assembly is the mate
       const mateAssemblyName = assemblyNames[flip ? 1 : 0]
 
-      await updateStatus('Downloading features', statusCallback, () =>
+      const label = `Downloading ${isCoarse ? 'coarse' : 'fine'} features`
+      await updateStatus(label, statusCallback, () =>
         this.pif.getLines(letter + query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
             const r = parsePAFLine(line)
