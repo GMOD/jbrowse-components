@@ -57,6 +57,17 @@ The view's hamburger menu controls how the ribbons are drawn:
 
 <Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes and track labels in 'offset' mode. A full-length ~6 kb L1HS (the youngest, human-specific LINE-1 subfamily) inserted in the human lineage: it is absent at the orthologous chimp intron, which retains only the shared L1ME3A and MER21C flanks. Top ('Colored indels') paints the insertion; bottom ('Transparent indels') leaves it as a see-through gap. RepeatMasker names the element at the indel." src="/img/synteny_human_chimp_cigar_modes.png" links="Colored indels=synteny_human_chimp_colored,Transparent indels=synteny_human_chimp_transparent" />
 
+### More lineage-specific insertions
+
+The same human/chimp synteny plus RepeatMasker resolves other transposons that
+inserted in the human lineage — each is a gap in the alignment with the element
+named at the indel. The RB1 case above is a LINE-1; a full-length SVA and a
+short Alu look the same way at different scales:
+
+<Figure caption="A human-specific SVA_F (~2 kb) in an intron of VAPB: present in human, absent at the orthologous chimp intron, between conserved AluSz6 and UCON33 anchors." src="/img/synteny_te_vapb_sva.png" />
+
+<Figure caption="A human-specific AluYb8 (~0.3 kb) in PICALM, inserted downstream of a conserved AluY that is present in both species — a small insertion still reads clearly as an indel." src="/img/synteny_te_picalm_alu.png" />
+
 ## See also
 
 - [Dotplot view](/docs/user_guides/dotplot_view) — whole-genome synteny overview

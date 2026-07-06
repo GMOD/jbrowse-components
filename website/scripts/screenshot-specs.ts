@@ -601,6 +601,26 @@ const RB1_L1_LOCUS = {
   panTro6: 'chr13:29,451,800-29,457,000',
 }
 
+// VAPB (ALS8 / spinal muscular atrophy gene): a full-length ~2 kb SVA_F — a
+// composite, human-specific retrotransposon — inserted in the human lineage
+// between a conserved AluSz6 and a conserved UCON33 element; the orthologous
+// chimp interval runs AluSz6 -> UCON33 with no SVA (zero SVA anywhere in chimp
+// VAPB). RepeatMasker names it SVA_F at the insertion.
+const VAPB_SVA_LOCUS = {
+  hg38: 'chr20:58,411,800-58,416,500',
+  panTro6: 'chr20:58,048,700-58,051,800',
+}
+
+// PICALM (Alzheimer's-associated): a ~0.3 kb AluYb8 — a young, human-specific Alu
+// subfamily and the commonest kind of human-specific mobile-element insertion —
+// dropped in downstream of a conserved AluY; the orthologous chimp interval keeps
+// the AluY but has no AluYb8 (none anywhere in chimp PICALM). Shows that even a
+// small lineage-specific insertion reads clearly as an indel.
+const PICALM_ALU_LOCUS = {
+  hg38: 'chr11:85,980,700-85,983,300',
+  panTro6: 'chr11:81,730,000-81,732,500',
+}
+
 // A hosted liftOver chain is one chromosome-scale block; drawn zoomed in it
 // exercises the oversized-block viewport clip (the worker trims the block to the
 // visible slice, else the ribbon would vanish). "Transparent indels" (cigarMode
@@ -609,7 +629,14 @@ const RB1_L1_LOCUS = {
 function hg38ChimpSynteny(
   cigarMode: 'matches' | 'full',
   locus: { hg38: string; panTro6: string } = RB1_L1_LOCUS,
+  // squeeze the gene rows to one thin lane per feature — for isoform-dense loci
+  // (e.g. PICALM) whose full transcript stack would otherwise dwarf the ribbon
+  geneDisplayMode?: 'superCompact',
 ) {
+  const genes = (id: string) =>
+    geneDisplayMode
+      ? { trackId: id, displaySnapshot: { displayMode: geneDisplayMode } }
+      : id
   return sessionSpec(HG38_PANTRO6_CONFIG, {
     views: [
       {
@@ -626,14 +653,14 @@ function hg38ChimpSynteny(
             loc: locus.hg38,
             // RepeatMasker last so it sits against the synteny band, where its
             // elements line up with the indels
-            tracks: ['hg38-genes', 'hg38-rmsk'],
+            tracks: [genes('hg38-genes'), 'hg38-rmsk'],
             trackLabels: 'offset',
           },
           {
             assembly: 'panTro6',
             loc: locus.panTro6,
             // RepeatMasker first so it sits against the synteny band above it
-            tracks: ['panTro6-rmsk', 'panTro6-genes'],
+            tracks: ['panTro6-rmsk', genes('panTro6-genes')],
             trackLabels: 'offset',
           },
         ],
@@ -1027,6 +1054,30 @@ export const specs: ScreenshotSpec[] = [
     mode: 'compose',
     name: 'synteny_human_chimp_cigar_modes',
     parts: ['synteny_human_chimp_colored', 'synteny_human_chimp_transparent'],
+  },
+  // Second human-specific-TE example: an SVA_F retrotransposon inserted in VAPB.
+  {
+    mode: 'url',
+    name: 'synteny_te_vapb_sva',
+    url: hg38ChimpSynteny('full', VAPB_SVA_LOCUS),
+    viewportWidth: 1200,
+    viewportHeight: 730,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+  // Third human-specific-TE example: a small AluYb8 insertion in PICALM.
+  // PICALM has many RefSeq isoforms — superCompact keeps the gene lanes from
+  // dwarfing the ~0.3 kb insertion.
+  {
+    mode: 'url',
+    name: 'synteny_te_picalm_alu',
+    url: hg38ChimpSynteny('full', PICALM_ALU_LOCUS, 'superCompact'),
+    viewportWidth: 1200,
+    viewportHeight: 730,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 12000,
   },
 
   {
