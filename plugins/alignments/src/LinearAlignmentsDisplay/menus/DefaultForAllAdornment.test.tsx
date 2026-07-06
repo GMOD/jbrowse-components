@@ -27,7 +27,7 @@ describe('DefaultForAllAdornment', () => {
 
   it('reflects the promoted state', () => {
     const { getByRole } = renderAdornment(true)
-    expect((getByRole('checkbox') as HTMLInputElement).checked).toBe(true)
+    expect(getByRole('checkbox').getAttribute('aria-checked')).toBe('true')
   })
 
   it('toggling calls onToggleDefault', () => {

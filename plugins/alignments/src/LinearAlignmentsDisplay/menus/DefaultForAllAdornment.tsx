@@ -1,15 +1,23 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Checkbox, Typography } from '@mui/material'
+import CheckBoxIcon from '@mui/icons-material/CheckBox'
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
+import { Typography } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
   root: {
     display: 'flex',
     alignItems: 'center',
+    gap: theme.spacing(0.5),
+    cursor: 'pointer',
   },
-  // trim MUI Checkbox's default padding so its 24px icon lines up with the
-  // native checkbox/radio decoration that follows it on the same row
-  checkbox: {
-    padding: theme.spacing(0.5),
+  // Mirror MenuItemEndDecoration exactly (padding:0, margin:0, height:16 around a
+  // default-size icon) so this box lines up pixel-for-pixel with the native
+  // value check that follows it on the same row — a MUI Checkbox centers its
+  // icon differently and rode ~2px high.
+  iconBox: {
+    padding: 0,
+    margin: 0,
+    height: 16,
   },
 }))
 
@@ -27,23 +35,29 @@ export function DefaultForAllAdornment({
   const { classes } = useStyles()
   return (
     <span
+      role="checkbox"
+      aria-checked={isDefault}
+      aria-label="default for all tracks"
+      tabIndex={0}
       className={classes.root}
       onClick={e => {
         e.stopPropagation()
+        onToggleDefault()
+      }}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          onToggleDefault()
+        }
       }}
     >
       <Typography variant="caption" color="textSecondary">
         default for all
       </Typography>
-      <Checkbox
-        // neutral (non-primary) color matches the native decoration beside it
-        color="default"
-        className={classes.checkbox}
-        checked={isDefault}
-        onChange={() => {
-          onToggleDefault()
-        }}
-      />
+      <span className={classes.iconBox}>
+        {isDefault ? <CheckBoxIcon /> : <CheckBoxOutlineBlankIcon color="action" />}
+      </span>
     </span>
   )
 }

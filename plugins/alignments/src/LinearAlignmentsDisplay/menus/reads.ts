@@ -4,6 +4,7 @@ import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { checkboxItem } from './menuHelpers.ts'
+import { promotableToggleItem } from './promotableToggleItem.tsx'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -56,16 +57,17 @@ export function getReadsMenuItem(model: ReadsModel) {
       checkboxItem('Show mismatches', model.showMismatches, () => {
         model.setShowMismatches(!model.showMismatches)
       }),
-      checkboxItem('Show soft clipping', model.showSoftClipping, () => {
-        model.toggleSoftClipping()
-      }),
-      checkboxItem(
-        'Show soft clipping by default on all alignments tracks',
-        model.isShowSoftClippingDefault,
-        () => {
+      promotableToggleItem({
+        label: 'Show soft clipping',
+        checked: model.showSoftClipping,
+        onToggle: () => {
+          model.toggleSoftClipping()
+        },
+        isDefault: model.isShowSoftClippingDefault,
+        onToggleDefault: () => {
           model.setShowSoftClippingDefault(!model.isShowSoftClippingDefault)
         },
-      ),
+      }),
       {
         label: 'Advanced',
         type: 'subMenu' as const,
