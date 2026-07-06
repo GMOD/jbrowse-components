@@ -45,7 +45,12 @@ jobs:
           MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
           MASTODON_INSTANCE: https://genomic.social
           NEWSLETTER_LAMBDA: jbrowse-newsletter-send
+          # Pass inputs via env, not ${{ }} interpolation, so a tag value
+          # cannot inject shell commands into the run script.
+          INPUT_TAG: ${{ inputs.tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          node scripts/announce.mjs \
-            ${{ inputs.tag && format('--tag {0}', inputs.tag) || '' }} \
-            ${{ inputs.dry_run && '--dry-run' || '' }}
+          args=()
+          [ -n "$INPUT_TAG" ] && args+=(--tag "$INPUT_TAG")
+          [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
+          node scripts/announce.mjs "${args[@]}"
