@@ -2,6 +2,15 @@
 title: JBrowse web quick start
 ---
 
+This guide sets up a self-hosted JBrowse web instance: you'll use the `@jbrowse/cli`
+command-line tool to download JBrowse, add an assembly and tracks, and serve the
+result as a static site. It's the right path if you want a genome browser you host
+and share via a URL.
+
+Prefer to skip the command line and web server? [JBrowse desktop](/docs/quickstart_desktop)
+opens local files straight from a GUI. Adding a genome view to your own web app
+instead? See [embedded components](/docs/embedded_components).
+
 ## TLDR
 
 - Install Node.js 18+, samtools, tabix

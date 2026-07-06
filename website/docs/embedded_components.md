@@ -11,7 +11,7 @@ tag into any page — no build step required.
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | One linear genome view                            | [`@jbrowse/react-linear-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2) — [examples](https://jbrowse.org/storybook/lgv/)     |
 | One circular genome view (e.g. SV chord diagrams) | [`@jbrowse/react-circular-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2) — [examples](https://jbrowse.org/storybook/cgv/) |
-| Complete app (multiple view types, synteny, etc)  | [`@jbrowse/@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2) — [examples](https://jbrowse.org/storybook/app/)                          |
+| Complete app (multiple view types, synteny, etc)  | [`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2) — [examples](https://jbrowse.org/storybook/app/)                          |
 
 Tutorial on using `<script>` tag -
 [Embedding tutorial](/docs/tutorials/embed_linear_genome_view)

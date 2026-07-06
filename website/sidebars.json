@@ -62,6 +62,8 @@
         },
         "tutorials/embed_linear_genome_view",
         "embedded_components",
+        "initializing_views",
+        "urlparams",
         "jbrowse_jupyter",
         "jbrowser"
       ]
@@ -104,8 +106,6 @@
     },
     "cli",
     "jbrowse-img",
-    "initializing_views",
-    "urlparams",
     "faq"
   ]
 }
