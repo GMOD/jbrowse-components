@@ -20,14 +20,8 @@ const sections = gallerySections
   title="JBrowse 2 Visualizations Gallery"
   description="A gallery of genome visualizations built with JBrowse 2, including synteny, structural variants, alignments, methylation, and Hi-C contact matrices."
 >
-  <div class={page.content}>
+  <div class={`${page.content} wide`}>
     <h1>JBrowse 2 visualizations gallery</h1>
-    <p>
-      Examples of the visualizations JBrowse 2 has to offer. Every item links to
-      a live session you can open and explore in the app — see the{' '}
-      <a href={`${baseUrl}/demos/`}>demos page</a> for the same examples as a compact
-      link list, plus conference and workshop material.
-    </p>
 
     <nav class="toc">
       {sections.map(s => <a href={`#${s.id}`}>{s.title}</a>)}
@@ -81,6 +75,10 @@ const sections = gallerySections
 </BaseLayout>
 
 <style>
+  .wide {
+    max-width: 1100px;
+  }
+
   h1 {
     font-size: 2rem;
     font-weight: 400;
@@ -109,8 +107,8 @@ const sections = gallerySections
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
   }
   .card {
     margin: 0;
