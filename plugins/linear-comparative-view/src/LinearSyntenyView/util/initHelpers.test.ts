@@ -20,6 +20,9 @@ function makeModel() {
     setDrawCurves: (v: boolean) => {
       calls.drawCurves = v
     },
+    setCigarMode: (v: string) => {
+      calls.cigarMode = v
+    },
     setAlpha: (v: number) => {
       calls.alpha = v
     },
@@ -53,6 +56,21 @@ describe('applyInitSettings', () => {
       colorBy: 'reference',
     })
     expect(model.calls.colorBy).toBe('reference')
+  })
+
+  test('applies cigarMode when set (session-authorable transparent indels)', () => {
+    const model = makeModel()
+    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
+      views: [],
+      cigarMode: 'matches',
+    })
+    expect(model.calls.cigarMode).toBe('matches')
+  })
+
+  test('leaves cigarMode untouched when omitted', () => {
+    const model = makeModel()
+    applyInitSettings(model as unknown as LinearSyntenyViewModel, { views: [] })
+    expect('cigarMode' in model.calls).toBe(false)
   })
 })
 

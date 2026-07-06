@@ -18,6 +18,9 @@ export interface LaunchLinearSyntenyViewArgs extends SyntenyViewSharedInit {
   levelHeights?: number[]
   drawCurves?: boolean
   alpha?: number
+  // CIGAR display mode: 'full' colors indel wedges, 'matches' leaves indels
+  // see-through (transparent), 'off' draws blocks only.
+  cigarMode?: 'off' | 'matches' | 'full'
 }
 
 declare module '@jbrowse/core/PluginManager' {
