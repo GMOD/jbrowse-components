@@ -335,6 +335,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           )
           const type = track.type
           if (type === 'AlignmentsTrack') {
+            // Paired-vs-split is decided per track-match here (any PAIRED flag
+            // ⇒ treat the whole match as paired). Consequence: a paired read
+            // that is ALSO SA-split has its split junctions drawn with the
+            // paired endpoint rule (both 3' edges, no 5'-leading foldback) in
+            // AlignmentConnections. The alignments-track linked-read overlay
+            // resolves this per-connection instead (readGroupConnections emits
+            // both the split junctions and the mate link). Unifying would mean
+            // porting sub-read chaining into this match resolution.
             const paired = hasPairedReads(allFeatures)
             const matched = paired
               ? getBadlyPairedAlignments(allFeatures)
