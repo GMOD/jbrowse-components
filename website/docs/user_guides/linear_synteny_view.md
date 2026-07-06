@@ -47,10 +47,15 @@ The view's hamburger menu controls how the ribbons are drawn:
 
 - **Show curved lines** — draw ribbons as bezier curves instead of straight
   connectors
+- **CIGAR display mode** — how per-base insertions and deletions inside each
+  alignment are shown: **Colored indels** paints them, **Transparent indels**
+  leaves them as see-through gaps in the ribbon, and **None** draws blocks only
 - **Show location markers** — vertical guides marking each alignment's endpoints
 - **Show all regions** — fit both whole assemblies into view
 - **Square view** — equalize the horizontal scale of the two panels
 - **Add assembly row** — compare three or more assemblies stacked vertically
+
+<Figure caption="Human (hg38) vs chimp (panTro6) at LMNB2, loaded from a UCSC liftOver chain. Top: 'Colored indels' paints the three human/chimp indels over the match ribbon (yellow insertions, blue deletion). Bottom: 'Transparent indels' leaves the same indels as see-through gaps." src="/img/synteny_human_chimp_cigar_modes.png" links="Colored indels=synteny_human_chimp_colored,Transparent indels=synteny_human_chimp_transparent" />
 
 ## See also
 

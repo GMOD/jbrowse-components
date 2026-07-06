@@ -71,15 +71,32 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       const rawSrc = attrs.src ?? ''
       const src = base && rawSrc.startsWith('/') ? `${base}${rawSrc}` : rawSrc
       const caption = escapeHtml(attrs.caption ?? '')
+      const altText = caption.replaceAll('"', '&quot;')
+      const img = `<img src="${src}" alt="${altText}"/>`
+      const a = (url: string, inner: string) =>
+        `<a href="${url}" target="_blank" rel="noopener noreferrer">${inner}</a>`
+
+      // `links="Label=spec,Label=spec"` opens several live views from one figure
+      // (e.g. a stacked before/after image) — each spec name resolves to its
+      // screenshot-spec session, so the links can't drift from the figure.
+      const multi = (attrs.links ?? '')
+        .split(',')
+        .map(p => p.trim())
+        .filter(Boolean)
+        .map(p => {
+          const [label, spec] = p.split('=').map(s => s.trim())
+          return { label: label ?? '', url: screenshotLiveUrls[spec ?? ''] }
+        })
+        .filter((l): l is { label: string; url: string } => !!l.url)
+
       // explicit link= wins; otherwise auto-link screenshots that came from a
       // screenshot-spec session
       const liveUrl = attrs.link ?? liveUrlByImg.get(rawSrc)
-      const altText = caption.replaceAll('"', '&quot;')
-      const img = `<img src="${src}" alt="${altText}"/>`
-      if (liveUrl) {
-        const a = (inner: string) =>
-          `<a href="${liveUrl}" target="_blank" rel="noopener noreferrer">${inner}</a>`
-        node.value = `<figure>${a(img)}<figcaption>${caption} ${a('Open this view in JBrowse ↗')}</figcaption></figure>`
+      if (multi.length) {
+        const linkHtml = multi.map(l => a(l.url, `${l.label} ↗`)).join(' · ')
+        node.value = `<figure>${a(multi[0]!.url, img)}<figcaption>${caption} Open in JBrowse: ${linkHtml}</figcaption></figure>`
+      } else if (liveUrl) {
+        node.value = `<figure>${a(liveUrl, img)}<figcaption>${caption} ${a(liveUrl, 'Open this view in JBrowse ↗')}</figcaption></figure>`
       } else {
         node.value = `<figure>${img}<figcaption>${caption}</figcaption></figure>`
       }
