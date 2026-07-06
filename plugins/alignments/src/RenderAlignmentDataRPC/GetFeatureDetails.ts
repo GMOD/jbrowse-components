@@ -1,7 +1,6 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
@@ -31,13 +30,14 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
 
     const region = regions[0]!
 
-    const dataAdapter = (
-      await getAdapter(this.pluginManager, sessionId, adapterConfig)
-    ).dataAdapter as BaseFeatureDataAdapter
+    const dataAdapter = await getFeatureAdapter({
+      pluginManager: this.pluginManager,
+      sessionId,
+      adapterConfig,
+      sequenceAdapter,
+    })
 
-    dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
-
-    const features = await dataAdapter.getFeaturesArray(region, {})
+    const features = (await dataAdapter?.getFeaturesArray(region, {})) ?? []
 
     return {
       feature: features.find(f => f.id() === featureId)?.toJSON(),

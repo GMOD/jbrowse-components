@@ -82,6 +82,20 @@ type RefNameMapAssembly = Pick<
   | 'getCanonicalRefName'
 >
 
+/**
+ * The assembly's reference-sequence adapter config as a plain snapshot, or
+ * undefined if the assembly (or its config) isn't available. Snapshotted
+ * because MST nodes can't be assigned into another tree or sent over RPC.
+ * configuration is a safeReference, so it's either a live node (getSnapshot is
+ * safe) or undefined (?. handles it).
+ */
+export function getSequenceAdapterConfig(
+  assembly?: Pick<Assembly, 'configuration'>,
+): Record<string, unknown> | undefined {
+  const adapter = assembly?.configuration?.sequence?.adapter
+  return adapter ? getSnapshot(adapter) : undefined
+}
+
 async function loadRefNameMap(
   assembly: RefNameMapAssembly,
   adapterConfig: unknown,
@@ -102,12 +116,8 @@ async function loadRefNameMap(
 
   // pass the assembly's sequence adapter config (as a snapshot, since MST
   // objects can't be assigned elsewhere) so BAM/CRAM adapters can cache it for
-  // later use when fetching features. configuration is a safeReference, so it's
-  // either a live node (getSnapshot is safe) or undefined (?. handles it)
-  const adapter = assembly.configuration?.sequence?.adapter
-  const sequenceAdapter: Record<string, unknown> | undefined = adapter
-    ? getSnapshot(adapter)
-    : undefined
+  // later use when fetching features
+  const sequenceAdapter = getSequenceAdapterConfig(assembly)
 
   const refNames = await assembly.rpcManager.call(
     sessionId,

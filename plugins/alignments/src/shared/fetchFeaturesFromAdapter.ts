@@ -1,4 +1,4 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   checkStopToken2,
   createStopTokenChecker,
@@ -8,10 +8,7 @@ import { toArray } from 'rxjs/operators'
 
 import type { FilterBy } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -42,11 +39,17 @@ export async function fetchFeaturesFromAdapter({
 }) {
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
-  const dataAdapter = (
-    await getAdapter(pluginManager, sessionId, adapterConfig)
-  ).dataAdapter as BaseFeatureDataAdapter
-
-  dataAdapter.setSequenceAdapterConfig(sequenceAdapter)
+  const dataAdapter = await getFeatureAdapter({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+    sequenceAdapter,
+  })
+  if (!dataAdapter) {
+    throw new Error(
+      `adapter "${adapterConfig.type}" is not a feature adapter`,
+    )
+  }
 
   const fetchOpts: BaseOptions & { filterBy?: FilterBy } = {
     stopToken,

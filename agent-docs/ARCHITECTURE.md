@@ -278,6 +278,32 @@ include `cellData`, `sampleInfo`, or any getter that reads them.
 See `plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md` for the
 overridable hook list and test-file mapping.
 
+### Sequence-adapter injection is instance-primed and order-dependent
+
+BAM/CRAM decode against the reference (CRAM to reconstruct bases, BAM to compute
+mismatches without an MD tag), but a track's adapter config doesn't carry the
+reference — it belongs to the assembly. So the assembly's sequence adapter
+config rides **alongside** `adapterConfig` as a sibling RPC arg (never spliced
+into it) and is stashed on the resolved adapter instance via
+`setSequenceAdapterConfig`; the adapter lazily builds it through `getSubAdapter`
+on first `getSequenceAdapter()`. Client side, `getSequenceAdapterConfig(assembly)`
+(in `assemblyManager/assembly.ts`) produces the snapshot; worker side,
+`getFeatureAdapter()` (in `data_adapters/getFeatureAdapter.ts`) is the shared
+prologue that resolves the feature adapter and primes it in one step.
+
+The subtlety: **the adapter cache (`dataAdapterCache`) keys on `adapterConfig`
+alone, not on the sequence adapter.** So the *first* RPC to resolve a given
+adapter primes its sequence config for the lifetime of that cached instance
+(`setSequenceAdapterConfig` is set-once). This is why `CoreGetRefNames` — usually
+the first call for a track — passes it, and why every reference-needing fetch
+(render, feature details) also passes it rather than relying on ordering. A fetch
+that legitimately doesn't need the reference (e.g. `PileupGetGlobalValueForTag`,
+which reads BAM tags directly) omits it. **Invariant: any feature RPC that
+decodes against the reference must pass `sequenceAdapter`** — don't assume a
+prior call primed the instance, and note that `setSequenceAdapterConfig` does
+**not** propagate through wrapper adapters (there is no wrapper-over-BAM/CRAM
+today; if one is reintroduced, plumb inheritance through `getSubAdapter`).
+
 ## Status / progress reporting
 
 One out-of-band channel carries loading status from workers to the loading UI:

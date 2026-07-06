@@ -39,16 +39,16 @@ export class BaseAdapter<
   }
 
   /**
-   * Sets the sequence adapter configuration for adapters that need reference
-   * sequence data (e.g., CRAM adapters). Wrapper adapters like
-   * SNPCoverageAdapter can override this to propagate to their subadapters.
-   *
-   * No-op if a sequence adapter config is already set or the argument is
-   * undefined, so callers don't need to guard.
+   * Stashes the reference-sequence adapter config for adapters that decode
+   * against the reference (e.g. BAM/CRAM). Set once and never cleared: the
+   * adapter is cached per adapterConfig (dataAdapterCache), so a given instance
+   * maps to a single, stable sequence adapter, and an `undefined` from a later
+   * caller must not wipe a config an earlier one already primed. Callers don't
+   * need to guard.
    */
   setSequenceAdapterConfig(config: Record<string, unknown> | undefined) {
-    if (config && !this.sequenceAdapterConfig) {
-      this.sequenceAdapterConfig = config
+    if (config) {
+      this.sequenceAdapterConfig ??= config
     }
   }
 

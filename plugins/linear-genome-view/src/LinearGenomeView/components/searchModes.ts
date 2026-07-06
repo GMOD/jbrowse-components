@@ -1,5 +1,5 @@
+import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 export interface SequenceSearchModel {
   assemblyNames: string[]
@@ -24,8 +24,8 @@ export function addReferenceScanTrack(
   const session = getSession(model)
   const assemblyName = model.assemblyNames[0]!
   if (isSessionWithAddTracks(session)) {
-    const sequenceAdapter = getSnapshot(
-      session.assemblyManager.get(assemblyName)?.configuration.sequence.adapter,
+    const sequenceAdapter = getSequenceAdapterConfig(
+      session.assemblyManager.get(assemblyName),
     )
     session.addTrackConf({
       trackId: args.trackId,

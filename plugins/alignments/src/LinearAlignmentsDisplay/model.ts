@@ -5,6 +5,7 @@ import {
   computeCoverageTicks,
   computeVisibleCoverageStats,
 } from '@jbrowse/alignments-core'
+import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import {
   ConfigurationReference,
   areSlotsAtSessionDefault,
@@ -23,12 +24,7 @@ import {
   measureText,
   openFeatureWidget,
 } from '@jbrowse/core/util'
-import {
-  addDisposer,
-  getSnapshot,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
@@ -142,18 +138,12 @@ export type { InsertionType } from './constants.ts'
 
 export type { Region } from '@jbrowse/core/util'
 
-function getSequenceAdapter(
-  session: AbstractSessionModel,
-  region: Region,
-): Record<string, unknown> | undefined {
-  const assembly = region.assemblyName
-    ? session.assemblyManager.get(region.assemblyName)
-    : undefined
-  const sequenceAdapterConfig = assembly?.configuration?.sequence?.adapter
-  if (!sequenceAdapterConfig) {
-    return undefined
-  }
-  return getSnapshot(sequenceAdapterConfig)
+function getSequenceAdapter(session: AbstractSessionModel, region: Region) {
+  return getSequenceAdapterConfig(
+    region.assemblyName
+      ? session.assemblyManager.get(region.assemblyName)
+      : undefined,
+  )
 }
 
 interface FetchFeatureDetailsSelf {

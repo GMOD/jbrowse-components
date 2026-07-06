@@ -1,7 +1,6 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -29,13 +28,16 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
   async execute(args: GetGlobalValueForTagArgs, _rpcDriver: string) {
     const { sessionId, adapterConfig, regions, tag, stopToken } = args
 
-    const dataAdapter = (
-      await getAdapter(this.pluginManager, sessionId, adapterConfig)
-    ).dataAdapter as BaseFeatureDataAdapter
+    const dataAdapter = await getFeatureAdapter({
+      pluginManager: this.pluginManager,
+      sessionId,
+      adapterConfig,
+    })
 
     const tagValues = new Set<string>()
     for (const region of regions) {
-      const features = await dataAdapter.getFeaturesArray(region, { stopToken })
+      const features =
+        (await dataAdapter?.getFeaturesArray(region, { stopToken })) ?? []
       for (const feature of features) {
         // Mirror extractFeatureTagValue's source order (tags object, else the
         // bare field) so every value the render path can color by is discovered
