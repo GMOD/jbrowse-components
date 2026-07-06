@@ -142,18 +142,23 @@ float4 fs_main(VsOut fragIn) : SV_Target {
 
   float edge0 = lerp(fragIn.corners.x, fragIn.corners.w, s);
   float edge1 = lerp(fragIn.corners.y, fragIn.corners.z, s);
-  float xL = min(edge0, edge1);
-  float xR = max(edge0, edge1);
 
-  // Local centerline slope dx/dy at this t from analytic bezier derivatives.
-  float topMid = (fragIn.corners.x + fragIn.corners.y) * 0.5;
-  float botMid = (fragIn.corners.z + fragIn.corners.w) * 0.5;
-  float dxdt = (botMid - topMid) * sBlendDeriv(t);
+  // Each edge's OWN slope dx/dy at this t (analytic bezier derivatives). Per-edge
+  // rather than a shared centerline slope: where the ribbon changes width /
+  // bends, the two edges diverge in slope, and using each edge's own slope keeps
+  // the perpendicular coverage transition crisp (see perpCoverage).
   float dydt = h * yCurveDeriv(t);
-  float slope = dxdt / max(abs(dydt), 1e-4);
-  float perpFactor = sqrt(1.0 + slope * slope);
+  float sd = sBlendDeriv(t);
+  float slope0 = (fragIn.corners.w - fragIn.corners.x) * sd / max(abs(dydt), 1e-4);
+  float slope1 = (fragIn.corners.z - fragIn.corners.y) * sd / max(abs(dydt), 1e-4);
+  float pf0 = sqrt(1.0 + slope0 * slope0);
+  float pf1 = sqrt(1.0 + slope1 * slope1);
 
-  float coverage = fillCoverage(fragIn.localPos, xL, xR, perpFactor,
+  if (DEBUG_FILL_VIZ) {
+    return debugFillViz(fragIn.localPos, edge0, edge1, pf0, pf1);
+  }
+
+  float coverage = fillCoverage(fragIn.localPos, edge0, edge1, pf0, pf1,
                                 fragIn.isCigar, fragIn.isMarker, h,
                                 u.fadeThinAlignments);
   if (coverage <= 0.0) { discard; }

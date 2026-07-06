@@ -125,46 +125,86 @@ public float4 screenToClip(float2 screen, float2 resolution) {
   return float4(clip.x, -clip.y, 0.0, 1.0);
 }
 
-// Analytic coverage for a fill fragment. `localPos.x` is screen X, `localPos.y`
-// is the vertical offset from yTop. `(xL,xR)` are the ribbon edges at this y and
-// `perpFactor` the slope foreshortening. BASE ribbons and CIGAR indel tiles
-// share this smoothstep-over-fwidth(perpDist) AA so both trace the smooth
-// analytic bezier edge with antialiased (not stair-stepped) sides; only the
-// density width-fade differs.
-public float fillCoverage(float2 localPos, float xL, float xR,
-                          float perpFactor, float isCigar, float isMarker,
-                          float h, float fadeThinAlignments) {
-  float xC = (xL + xR) * 0.5;
-  float perpDist = (localPos.x - xC) / perpFactor;
-  // 0.5px half-width floor (1px minimum footprint) so a sub-pixel ribbon stays a
-  // locatable, rasterizable band rather than dropping between sample points.
-  // Wide ribbons (halfWidth > floor) are unaffected.
-  float halfPerpW = max((xR - xL) / (2.0 * perpFactor), 0.5);
-  // Density-honest sub-pixel fade, BASE ribbons only. A thin BASE ribbon's
-  // opacity scales with its perpendicular (visual) width so a lone thin
-  // alignment fades gently and a whole-genome tangle stops reading as hard
-  // full-opacity lines — dense overlaps still accumulate via alpha blend. Using
-  // perpendicular width (the same metric as halfPerpW, not horizontal span)
-  // means steep diagonal ribbons — the crossing-line hairball of rearranged
-  // genomes — fade by their true thinness rather than escaping via a wide
-  // x-span. Ribbons ≥1px wide saturate widthFade at 1 and are unaffected.
-  // SYNC: Canvas2DSyntenyRenderer's sub-pixel branch (entered only for
-  // near-vertical ribbons, where perpFactor≈1) scales its centerline stroke
-  // alpha by the equivalent max(width, WIDTH_FADE_FLOOR).
-  // CIGAR indel tiles and zero-width markers skip the fade (widthFade=1): indels
-  // are zoomed-in detail that should stay solid, markers are crisp 1px ticks.
-  // The fade is also opt-out for BASE (fadeThinAlignments) because a genuinely
-  // sparse whole-genome comparison (e.g. distant-species synteny) can have every
-  // real alignment sub-pixel, and the fade would wash the view out rather than
-  // declutter it, with no UI way to recover full opacity otherwise.
+// TEMPORARY debug visualization toggle. When true, the fill fragment outputs a
+// diagnostic RGB (via debugFillViz) instead of the ribbon color, to trace the
+// residual boundary fuzz on curved ribbons. Set false / remove before shipping.
+public static const bool DEBUG_FILL_VIZ = false;
+
+// Perpendicular coverage cx for a fill fragment. `edge0`/`edge1` are the two
+// ribbon edges at this y (screen X); `pf0`/`pf1` are EACH edge's own slope
+// foreshortening (sqrt(1+slope²) of that edge's tangent, not the centerline's).
+//
+// Using per-edge slopes is the fix for boundary fuzz on curved ribbons: the old
+// model measured distance from the centerline with one shared perpFactor, but
+// where the two edges diverge in slope — a width-changing / concave-neck region
+// — that shared slope is wrong for both edges, so the smoothstep transition
+// smeared across many px (visibly fuzzy in transparent mode; hidden behind the
+// opaque base in colored mode). Measuring each edge's own signed perpendicular
+// distance keeps the transition ~1px on both edges regardless of curvature.
+float perpCoverage(float2 localPos, float edge0, float edge1,
+                   float pf0, float pf1, float isCigar, float isMarker,
+                   float fadeThinAlignments) {
+  float xL = min(edge0, edge1);
+  float xR = max(edge0, edge1);
+  float pfL = (edge0 <= edge1) ? pf0 : pf1;
+  float pfR = (edge0 <= edge1) ? pf1 : pf0;
+  // Signed perpendicular distance (screen px) inward from each edge.
+  float dL = (localPos.x - xL) / pfL;
+  float dR = (xR - localPos.x) / pfR;
+  // Perpendicular (visual) width, averaging the two edge foreshortenings.
+  float perpW = (xR - xL) / (0.5 * (pfL + pfR));
+  // 1px minimum footprint: push both edges outward for a sub-pixel-thin ribbon
+  // so it stays a locatable ~1px band rather than dropping between samples.
+  // Wide ribbons (perpW >= 1) are unaffected.
+  float expand = max(0.5 - 0.5 * perpW, 0.0);
+  dL += expand;
+  dR += expand;
+  // Density-honest sub-pixel fade, BASE ribbons only: a lone thin alignment
+  // fades by its perpendicular width so a whole-genome tangle declutters instead
+  // of reading as hard full-opacity lines; dense overlaps still accumulate via
+  // alpha blend. CIGAR indel tiles and zero-width markers skip it (widthFade=1);
+  // BASE opts out via fadeThinAlignments so a genuinely sparse whole-genome
+  // comparison isn't washed out.
+  // SYNC: Canvas2DSyntenyRenderer's sub-pixel branch scales its centerline
+  // stroke alpha by the equivalent max(perpW, WIDTH_FADE_FLOOR).
   float widthFade =
     (isCigar > 0.5 || isMarker > 0.5 || fadeThinAlignments < 0.5)
       ? 1.0
-      : clamp((xR - xL) / perpFactor, WIDTH_FADE_FLOOR, 1.0);
-  float aaPerp = max(fwidth(perpDist), 1e-4);
-  float cx = (1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
-                               halfPerpW + aaPerp * 0.5,
-                               abs(perpDist))) * widthFade;
+      : clamp(perpW, WIDTH_FADE_FLOOR, 1.0);
+  // Per-edge AA, ~1px each (fwidth of a true perpendicular distance ≈ 1),
+  // clamped to keep any residual derivative spike bounded.
+  float aaL = clamp(fwidth(dL), 1e-4, 1.5);
+  float aaR = clamp(fwidth(dR), 1e-4, 1.5);
+  return smoothstep(-aaL * 0.5, aaL * 0.5, dL)
+       * smoothstep(-aaR * 0.5, aaR * 0.5, dR) * widthFade;
+}
+
+// Diagnostic for one fill fragment. Paints ONLY the coverage transition zone
+// (0.03 < cx < 0.97) solid RED, so the red band's on-screen width IS the fuzz
+// width in px — a thin red line => crisp edge; a wide red band => the coverage
+// transition is geometrically smeared there. The ribbon interior (cx≈1) is a
+// faint gray for context; pad-overdraw and gaps (cx≈0) are transparent so they
+// can't inflate the apparent band.
+public float4 debugFillViz(float2 localPos, float edge0, float edge1,
+                           float pf0, float pf1) {
+  float cx = perpCoverage(localPos, edge0, edge1, pf0, pf1, 0.0, 0.0, 0.0);
+  float band = step(0.03, cx) * step(cx, 0.97);
+  float interior = step(0.97, cx);
+  float3 col = band > 0.5 ? float3(1.0, 0.0, 0.0) : float3(0.8, 0.8, 0.8);
+  return float4(col, band * 0.95 + interior * 0.3);
+}
+
+// Analytic coverage for a fill fragment. `localPos.x` is screen X, `localPos.y`
+// is the vertical offset from yTop. `edge0`/`edge1` are the ribbon edges at this
+// y and `pf0`/`pf1` each edge's slope foreshortening. BASE ribbons and CIGAR
+// indel tiles share this analytic per-edge AA so both trace the smooth analytic
+// bezier edges with antialiased (not stair-stepped) sides; only the density
+// width-fade differs.
+public float fillCoverage(float2 localPos, float edge0, float edge1,
+                          float pf0, float pf1, float isCigar, float isMarker,
+                          float h, float fadeThinAlignments) {
+  float cx = perpCoverage(localPos, edge0, edge1, pf0, pf1, isCigar, isMarker,
+                          fadeThinAlignments);
   float ay = max(fwidth(localPos.y), 1e-4) * 0.5;
   float cy = smoothstep(-ay, ay, localPos.y)
            - smoothstep(h - ay, h + ay, localPos.y);

@@ -97,16 +97,21 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // (bowtie) ribbons uniformly.
   float edge0 = lerp(fragIn.corners.x, fragIn.corners.w, t);  // c.x1 → c.x4
   float edge1 = lerp(fragIn.corners.y, fragIn.corners.z, t);  // c.x2 → c.x3
-  float xL = min(edge0, edge1);
-  float xR = max(edge0, edge1);
 
-  // Centerline slope dx/dy — constant across the instance for straight lines.
-  float topMid = (fragIn.corners.x + fragIn.corners.y) * 0.5;
-  float botMid = (fragIn.corners.z + fragIn.corners.w) * 0.5;
-  float slope = (botMid - topMid) / h;
-  float perpFactor = sqrt(1.0 + slope * slope);
+  // Each edge's OWN slope dx/dy — constant along a straight edge. Per-edge
+  // rather than a shared centerline slope so a width-changing (trapezoidal)
+  // ribbon keeps a crisp perpendicular transition on both edges (see
+  // perpCoverage).
+  float slope0 = (fragIn.corners.w - fragIn.corners.x) / h;
+  float slope1 = (fragIn.corners.z - fragIn.corners.y) / h;
+  float pf0 = sqrt(1.0 + slope0 * slope0);
+  float pf1 = sqrt(1.0 + slope1 * slope1);
 
-  float coverage = fillCoverage(fragIn.localPos, xL, xR, perpFactor,
+  if (DEBUG_FILL_VIZ) {
+    return debugFillViz(fragIn.localPos, edge0, edge1, pf0, pf1);
+  }
+
+  float coverage = fillCoverage(fragIn.localPos, edge0, edge1, pf0, pf1,
                                 fragIn.isCigar, fragIn.isMarker, h,
                                 u.fadeThinAlignments);
   if (coverage <= 0.0) { discard; }
