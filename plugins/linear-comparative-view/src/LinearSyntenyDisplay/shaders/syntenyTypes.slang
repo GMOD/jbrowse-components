@@ -125,11 +125,6 @@ public float4 screenToClip(float2 screen, float2 resolution) {
   return float4(clip.x, -clip.y, 0.0, 1.0);
 }
 
-// TEMPORARY debug visualization toggle. When true, the fill fragment outputs a
-// diagnostic RGB (via debugFillViz) instead of the ribbon color, to trace the
-// residual boundary fuzz on curved ribbons. Set false / remove before shipping.
-public static const bool DEBUG_FILL_VIZ = false;
-
 // Perpendicular coverage cx for a fill fragment. `edge0`/`edge1` are the two
 // ribbon edges at this y (screen X); `pf0`/`pf1` are EACH edge's own slope
 // foreshortening (sqrt(1+slope²) of that edge's tangent, not the centerline's).
@@ -177,21 +172,6 @@ float perpCoverage(float2 localPos, float edge0, float edge1,
   float aaR = clamp(fwidth(dR), 1e-4, 1.5);
   return smoothstep(-aaL * 0.5, aaL * 0.5, dL)
        * smoothstep(-aaR * 0.5, aaR * 0.5, dR) * widthFade;
-}
-
-// Diagnostic for one fill fragment. Paints ONLY the coverage transition zone
-// (0.03 < cx < 0.97) solid RED, so the red band's on-screen width IS the fuzz
-// width in px — a thin red line => crisp edge; a wide red band => the coverage
-// transition is geometrically smeared there. The ribbon interior (cx≈1) is a
-// faint gray for context; pad-overdraw and gaps (cx≈0) are transparent so they
-// can't inflate the apparent band.
-public float4 debugFillViz(float2 localPos, float edge0, float edge1,
-                           float pf0, float pf1) {
-  float cx = perpCoverage(localPos, edge0, edge1, pf0, pf1, 0.0, 0.0, 0.0);
-  float band = step(0.03, cx) * step(cx, 0.97);
-  float interior = step(0.97, cx);
-  float3 col = band > 0.5 ? float3(1.0, 0.0, 0.0) : float3(0.8, 0.8, 0.8);
-  return float4(col, band * 0.95 + interior * 0.3);
 }
 
 // Analytic coverage for a fill fragment. `localPos.x` is screen X, `localPos.y`

@@ -107,10 +107,6 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float pf0 = sqrt(1.0 + slope0 * slope0);
   float pf1 = sqrt(1.0 + slope1 * slope1);
 
-  if (DEBUG_FILL_VIZ) {
-    return debugFillViz(fragIn.localPos, edge0, edge1, pf0, pf1);
-  }
-
   float coverage = fillCoverage(fragIn.localPos, edge0, edge1, pf0, pf1,
                                 fragIn.isCigar, fragIn.isMarker, h,
                                 u.fadeThinAlignments);
