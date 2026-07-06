@@ -1,5 +1,4 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
-import { getEnv } from '@jbrowse/core/util'
 
 import { findPosInCigar } from './findPosInCigar.ts'
 
@@ -29,22 +28,17 @@ export function getMate(feature: Feature) {
   return feature.get('mate') as SyntenyMate
 }
 
-// A synteny view can only be launched against an assembly we can actually get:
-// one already in the assembly manager, or one a Core-handleUnrecognizedAssembly
-// handler (e.g. a connection plugin) resolves on demand when the view opens. A
-// one-vs-all mate is just a sample label with neither, so the launch option
-// stays hidden for it.
+// A synteny view can be launched against any assembly the track spans, i.e. one
+// of the track's declared assemblyNames. This is static config, so it holds
+// whether or not the assembly is loaded yet — an unloaded one resolves on demand
+// (e.g. via a connection) when the view opens. A one-vs-all mate that is only a
+// PanSN sample label rather than a listed assembly is absent from assemblyNames,
+// so the launch option stays hidden for it.
 export function canLaunchSyntenyForMate(
-  session: AbstractSessionModel,
+  trackAssemblyNames: string[],
   mateAssembly: string | undefined,
 ) {
-  return (
-    mateAssembly !== undefined &&
-    (session.assemblyManager.assemblyNamesList.includes(mateAssembly) ||
-      getEnv(session).pluginManager.extensionPoints.has(
-        'Core-handleUnrecognizedAssembly',
-      ))
-  )
+  return mateAssembly !== undefined && trackAssemblyNames.includes(mateAssembly)
 }
 
 // The visible content block overlapping the clicked feature, used to clip the

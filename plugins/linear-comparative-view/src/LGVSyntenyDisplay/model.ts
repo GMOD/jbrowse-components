@@ -104,7 +104,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             ? getMate(feature).assemblyName
             : undefined
           const canLaunchSynteny = canLaunchSyntenyForMate(
-            getSession(self),
+            getConf(getContainingTrack(self), 'assemblyNames'),
             mateAssembly,
           )
           return feature
