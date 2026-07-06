@@ -29,6 +29,13 @@ export interface PileupArc {
   label: string
 }
 
+// Stable React key / selection identity for a bezier arc, shared by the live
+// overlay and the SVG export so the two can't key differently (mirrors
+// sashimiArcKey).
+export function bezierArcKey(arc: Pick<PileupArc, 'id1' | 'id2'>) {
+  return `${arc.id1}:${arc.id2}`
+}
+
 // Enumerate the linked pairs of a laid-out region map: the scroll- and
 // pan-invariant half of the overlay. Only the read grouping + connection
 // resolution live here, so a model getter can memoize it (recompute on relayout

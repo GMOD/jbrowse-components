@@ -4,6 +4,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { computePileupBezierArcsFromModel } from './pileupBezierArcs.ts'
+import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -60,7 +61,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
       }}
     >
       {arcs.map(arc => {
-        const arcId = `${arc.id1}:${arc.id2}`
+        const arcId = bezierArcKey(arc)
         const isSelected = arcId === selectedArcId
         return (
           <path

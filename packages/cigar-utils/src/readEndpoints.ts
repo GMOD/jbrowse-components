@@ -16,3 +16,36 @@ export function readTrailingBp(strand: number, start: number, end: number) {
 export function readLeadingBp(strand: number, start: number, end: number) {
   return strand === -1 ? end : start
 }
+
+// The two absolute-bp endpoints of a resolved connection, given each segment's
+// strand and genomic [start, end]. Endpoint 1 is always its segment's read-
+// trailing (3') edge. Endpoint 2 is the next segment's read-leading (5') edge
+// for a split junction (so a fwd→rev inversion lands on the breakpoint, not the
+// far edge of the reverse segment), or the mate's read-trailing (3') edge for a
+// pair. This is the single endpoint rule shared by every connector renderer —
+// the alignments linked-read overlay + coverage arcs and breakpoint-split-view's
+// AlignmentConnections — so it can't drift between them.
+export function connectionEndpointBps({
+  s1,
+  start1,
+  end1,
+  s2,
+  start2,
+  end2,
+  isSplit,
+}: {
+  s1: number
+  start1: number
+  end1: number
+  s2: number
+  start2: number
+  end2: number
+  isSplit: boolean
+}) {
+  return {
+    bp1: readTrailingBp(s1, start1, end1),
+    bp2: isSplit
+      ? readLeadingBp(s2, start2, end2)
+      : readTrailingBp(s2, start2, end2),
+  }
+}

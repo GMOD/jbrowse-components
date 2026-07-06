@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react'
 
 import { computePileupBezierArcsFromModel } from './pileupBezierArcs.ts'
+import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -19,7 +20,7 @@ const PileupBezierArcsSvg = observer(function PileupBezierArcsSvg({
     <g style={{ pointerEvents: 'none' }}>
       {arcs.map(arc => (
         <path
-          key={`${arc.id1}:${arc.id2}`}
+          key={bezierArcKey(arc)}
           d={arc.d}
           stroke={arc.stroke}
           strokeWidth={1.5}

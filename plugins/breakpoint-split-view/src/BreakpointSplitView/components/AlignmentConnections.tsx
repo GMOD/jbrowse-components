@@ -1,4 +1,4 @@
-import { readLeadingBp, readTrailingBp } from '@jbrowse/cigar-utils'
+import { connectionEndpointBps } from '@jbrowse/cigar-utils'
 import { bezierConnectorPath, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -68,10 +68,15 @@ const AlignmentConnections = observer(function AlignmentConnections({
       // First endpoint: this segment's read-trailing (3') edge. Second: the
       // mate's 3' edge for a pair, or the next segment's read-leading (5') edge
       // for a split junction (shared rule — see @jbrowse/cigar-utils).
-      const p1 = readTrailingBp(s1, c1[LEFT], c1[RIGHT])
-      const p2 = hasPaired
-        ? readTrailingBp(s2, c2[LEFT], c2[RIGHT])
-        : readLeadingBp(s2, c2[LEFT], c2[RIGHT])
+      const { bp1: p1, bp2: p2 } = connectionEndpointBps({
+        s1,
+        start1: c1[LEFT],
+        end1: c1[RIGHT],
+        s2,
+        start2: c2[LEFT],
+        end2: c2[RIGHT],
+        isSplit: !hasPaired,
+      })
       const x1 = getX(level1, f1ref, p1)
       const x2 = getX(level2, f2ref, p2)
       if (x1 == null || x2 == null) {

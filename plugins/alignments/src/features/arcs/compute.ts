@@ -6,8 +6,8 @@ import {
   splitInversion,
 } from '@jbrowse/alignments-core'
 import {
+  connectionEndpointBps,
   featurizeSA,
-  readLeadingBp,
   readTrailingBp,
 } from '@jbrowse/cigar-utils'
 
@@ -454,12 +454,21 @@ function unpairedChainArcs(
     const a1 = chain[j]!
     const a2 = chain[j + 1]!
     if ((a1.onScreen && a2.onScreen) || drawLongRange) {
+      const { bp1, bp2 } = connectionEndpointBps({
+        s1: a1.strand,
+        start1: a1.start,
+        end1: a1.end,
+        s2: a2.strand,
+        start2: a2.start,
+        end2: a2.end,
+        isSplit: true,
+      })
       arcs.push({
         p1Ref: a1.refName,
-        p1Bp: readTrailingBp(a1.strand, a1.start, a1.end),
+        p1Bp: bp1,
         p1Strand: a1.strand,
         p2Ref: a2.refName,
-        p2Bp: readLeadingBp(a2.strand, a2.start, a2.end),
+        p2Bp: bp2,
         p2Strand: a2.strand,
         pairOrientationNum: undefined,
         tlen: undefined,

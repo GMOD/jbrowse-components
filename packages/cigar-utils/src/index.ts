@@ -37,7 +37,11 @@ export type { CigarOpsVisitor } from './cigarOpsVisitor.ts'
 export { cigarToMismatches2 } from './cigarToMismatches2.ts'
 export { mdToMismatches2 } from './mdToMismatches2.ts'
 export { getNextRefPos } from './getNextRefPos.ts'
-export { readLeadingBp, readTrailingBp } from './readEndpoints.ts'
+export {
+  connectionEndpointBps,
+  readLeadingBp,
+  readTrailingBp,
+} from './readEndpoints.ts'
 export {
   featurizeSA,
   getClip,
