@@ -2,7 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { ColorByLegend } from '@jbrowse/synteny-core'
+import { ColorByLegend, coerceColorBy } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
@@ -12,7 +12,6 @@ import LevelSyntenyCanvas from '../../LinearSyntenyViewHelper/LevelSyntenyCanvas
 import type { LinearComparativeViewModel } from '../model.ts'
 import type { AbstractTrackModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 // The structural surface of the display objects this file consumes. We
 // don't depend on the full BaseDisplayModel typing because `levels` is an
@@ -87,7 +86,8 @@ const LevelSection = observer(function LevelSection({
         </div>
         {syntenyModel && showLegend ? (
           <ColorByLegend
-            colorBy={syntenyModel.colorBy as SyntenyColorBy}
+            colorBy={coerceColorBy(syntenyModel.colorBy)}
+            cigarOps={syntenyModel.presentCigarKinds}
             alpha={syntenyModel.alpha}
             onClose={() => {
               syntenyModel.setShowColorLegend(false)

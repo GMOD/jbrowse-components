@@ -2,9 +2,15 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { NO_CIGAR_OPS, coerceColorBy } from '@jbrowse/synteny-core'
 
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
-import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
+import {
+  KIND_CIGAR_D,
+  KIND_CIGAR_I,
+  KIND_CIGAR_N,
+  computeSyntenyColors,
+} from '../LinearSyntenyRPC/syntenyColors.ts'
 import { syntenyFetchRegions } from '../LinearSyntenyRPC/syntenyFetchWindow.ts'
 import { getCigarOpAtInstance, getTooltip } from './components/util.ts'
 
@@ -13,7 +19,7 @@ import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.t
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { CigarOpPresence, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export interface SyntenyFeatureData {
   strands: Int8Array
@@ -240,6 +246,35 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * Which CIGAR indel ops are actually painted in the current geometry.
+       * The worker only emits an indel instance for an op wide enough to draw
+       * (sub-pixel indels are dropped), so a `true` here means a visible-width
+       * op of that kind is on screen. The legend keys its indel chips off this
+       * rather than the coarse "file has any CIGAR" flag, so whole-genome zoom
+       * (every indel sub-pixel) shows no dead insertion/deletion swatch.
+       */
+      get presentCigarKinds(): CigarOpPresence {
+        const { instanceData } = self
+        let I = false
+        let D = false
+        let N = false
+        if (instanceData) {
+          const { kinds, instanceCount } = instanceData
+          for (let i = 0; i < instanceCount && !(I && D && N); i++) {
+            const k = kinds[i]!
+            if (k === KIND_CIGAR_I) {
+              I = true
+            } else if (k === KIND_CIGAR_D) {
+              D = true
+            } else if (k === KIND_CIGAR_N) {
+              N = true
+            }
+          }
+        }
+        return I || D || N ? { I, D, N } : NO_CIGAR_OPS
+      },
+      /**
+       * #getter
        * Warnings surfaced in the view header. Flags a likely reversed assembly
        * row order, detected once at view load (only when the two assemblies have
        * distinct chromosome names).
@@ -329,7 +364,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * stays consistent across levels. Every other mode passes through.
        */
       get effectiveColorBy(): SyntenyColorBy {
-        const colorBy = this.view.colorBy as SyntenyColorBy
+        const colorBy = coerceColorBy(this.view.colorBy)
         if (colorBy === 'reference') {
           const { anchorAssemblyName: anchor, views } = this.view
           // this level draws between views[level] (query) and views[level+1]

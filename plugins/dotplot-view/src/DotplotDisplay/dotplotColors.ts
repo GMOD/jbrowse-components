@@ -6,11 +6,7 @@ import {
   packAbgr,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
-import {
-  continuousRampConfig,
-  divergingIdentityRgb,
-  hashString,
-} from '@jbrowse/synteny-core'
+import { continuousRampConfig, hashString } from '@jbrowse/synteny-core'
 
 import type { DotplotRpcData } from './types.ts'
 import type { Rgb, SyntenyColorBy } from '@jbrowse/synteny-core'
@@ -117,10 +113,6 @@ export function createDotplotColorFunction(
       return nameColorFn(alpha, (d, i) => d.mateRefNames[i]!)
     case 'identity':
       return rampConfigColorFn(data.identities, 'identity', alpha)
-    // Diverging LUT is indexed by identity directly; the pivot remap is inside
-    // divergingIdentityRgb, so its normalization max is 1.
-    case 'identityDiverging':
-      return rampColorFn(data.identities, divergingIdentityRgb, 1, alpha)
     case 'meanQueryIdentity':
       return rampConfigColorFn(data.meanIdentities, 'meanQueryIdentity', alpha)
     case 'meanQueryMappingQuality':

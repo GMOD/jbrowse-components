@@ -24,12 +24,6 @@ const COLOR_BY_OPTIONS: readonly {
       'Color alignments by per-alignment sequence identity on a perceptually-uniform viridis scale: low identity is dark purple, high identity is bright yellow. Useful for distinguishing divergent vs. conserved regions.',
   },
   {
-    value: 'identityDiverging',
-    label: 'Identity (diverging)',
-    helpText:
-      'Per-alignment identity on a colorblind-safe diverging scale pivoted near 90%: divergent regions read warm/red, conserved regions cool/blue. Expands the high-identity range where alignments cluster.',
-  },
-  {
     value: 'meanQueryIdentity',
     label: 'Mean query identity',
     helpText:

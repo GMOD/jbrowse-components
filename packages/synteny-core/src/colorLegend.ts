@@ -1,4 +1,4 @@
-import { continuousRampConfig, divergingIdentityRgb } from './colorRamps.ts'
+import { continuousRampConfig } from './colorRamps.ts'
 import { colorSchemes } from './colorUtils.ts'
 
 import type { Rgb } from './colorRamps.ts'
@@ -46,6 +46,24 @@ export interface ColorChip {
   label: string
 }
 
+// Which CIGAR indel ops are actually painted in the current geometry. The
+// ribbon legend keys chip colors to what's on screen, so it lists an indel
+// chip only when a visible-width op of that kind exists — the worker already
+// drops sub-pixel indels, so at whole-genome zoom this is all-false and the
+// legend shows just the match/strand chips instead of dead "insertion"/
+// "deletion" swatches for detail the eye can't find.
+export interface CigarOpPresence {
+  I: boolean
+  D: boolean
+  N: boolean
+}
+
+// Static menu preview / default legend: the two indel ops a typical alignment
+// carries. N (skip) is opt-in — it only appears in spliced alignments, so the
+// preview omits it while the data-driven legend still surfaces it when present.
+export const DEFAULT_CIGAR_OPS: CigarOpPresence = { I: true, D: true, N: false }
+export const NO_CIGAR_OPS: CigarOpPresence = { I: false, D: false, N: false }
+
 // A continuous mode maps to a gradient ramp with domain labels; the structural
 // modes (default/strand) map to a set of discrete labeled chips — including the
 // CIGAR indel colors those modes overlay, which a single swatch can't convey.
@@ -62,23 +80,25 @@ export type ColorBySwatchSpec =
 const { cigarColors: defaultCigar } = colorSchemes.default
 const { posColor, negColor, cigarColors: strandCigar } = colorSchemes.strand
 
-// default/strand draw block colors plus CIGAR ops; enumerate the colors those
-// modes paint on realistic data so the legend matches the canvas. Derived from
-// the shared scheme constants so they can't drift from the renderer. The N
-// (skip) op is intentionally omitted — it only appears in spliced/intron-aware
-// alignments, so a "skip" chip is dead weight on virtually every synteny track
-// (its color still renders correctly if such an op does occur).
-const DEFAULT_CHIPS: ColorChip[] = [
-  { color: defaultCigar.M, label: 'match' },
-  { color: defaultCigar.I, label: 'insertion' },
-  { color: defaultCigar.D, label: 'deletion' },
-]
-const STRAND_CHIPS: ColorChip[] = [
-  { color: posColor, label: 'forward' },
-  { color: negColor, label: 'reverse' },
-  { color: strandCigar.I, label: 'insertion' },
-  { color: strandCigar.D, label: 'deletion' },
-]
+// default/strand draw block colors plus the CIGAR indel ops present on screen.
+// One chip per present op, drawn from the active scheme's colors so they can't
+// drift from the renderer.
+function indelChips(
+  cigar: { I: string; D: string; N: string },
+  ops: CigarOpPresence,
+): ColorChip[] {
+  const chips: ColorChip[] = []
+  if (ops.I) {
+    chips.push({ color: cigar.I, label: 'insertion' })
+  }
+  if (ops.D) {
+    chips.push({ color: cigar.D, label: 'deletion' })
+  }
+  if (ops.N) {
+    chips.push({ color: cigar.N, label: 'skip' })
+  }
+  return chips
+}
 
 // Point-based views (dotplot) paint each alignment a single flat color and never
 // draw CIGAR ops, so their default/strand legends drop the indel chips the
@@ -100,7 +120,6 @@ export const colorByShortLabel: Record<SyntenyColorBy, string> = {
   target: 'Target name',
   reference: 'Reference name',
   identity: 'Identity',
-  identityDiverging: 'Identity (diverging)',
   meanQueryIdentity: 'Mean query identity',
   meanQueryMappingQuality: 'Mean query MAPQ',
   mappingQuality: 'Mapping quality',
@@ -109,11 +128,15 @@ export const colorByShortLabel: Record<SyntenyColorBy, string> = {
 // Legend spec for a color-by mode: a gradient ramp for continuous modes, or a
 // set of labeled chips for the structural modes. Returns undefined for the
 // per-name categorical modes (query/target), which have no fixed legend.
-// `drawsCigar` is true for the ribbon-based synteny view (which paints CIGAR
-// ops); the point-based dotplot passes false to omit the indel chips.
+// `pointBased` is true for the dotplot (flat points, no CIGAR); `cigarOps`
+// selects which indel chips the ribbon legend shows — the caller passes the
+// ops actually drawn on screen, defaulting to the static I+D menu preview.
 export function getColorBySwatch(
   colorBy: SyntenyColorBy,
-  { drawsCigar = true }: { drawsCigar?: boolean } = {},
+  {
+    pointBased = false,
+    cigarOps = DEFAULT_CIGAR_OPS,
+  }: { pointBased?: boolean; cigarOps?: CigarOpPresence } = {},
 ): ColorBySwatchSpec | undefined {
   switch (colorBy) {
     case 'identity':
@@ -127,17 +150,26 @@ export function getColorBySwatch(
         'weak',
         'strong',
       )
-    case 'identityDiverging':
-      return ramp(t => divergingIdentityRgb(t), 'divergent', 'conserved')
     case 'strand':
       return {
         kind: 'chips',
-        chips: drawsCigar ? STRAND_CHIPS : DOTPLOT_STRAND_CHIPS,
+        chips: pointBased
+          ? DOTPLOT_STRAND_CHIPS
+          : [
+              { color: posColor, label: 'forward' },
+              { color: negColor, label: 'reverse' },
+              ...indelChips(strandCigar, cigarOps),
+            ],
       }
     case 'default':
       return {
         kind: 'chips',
-        chips: drawsCigar ? DEFAULT_CHIPS : DOTPLOT_DEFAULT_CHIPS,
+        chips: pointBased
+          ? DOTPLOT_DEFAULT_CHIPS
+          : [
+              { color: defaultCigar.M, label: 'match' },
+              ...indelChips(defaultCigar, cigarOps),
+            ],
       }
     case 'query':
     case 'target':

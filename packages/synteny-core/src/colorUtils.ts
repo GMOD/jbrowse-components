@@ -76,10 +76,37 @@ export type SyntenyColorBy =
   | 'target'
   | 'reference'
   | 'identity'
-  | 'identityDiverging'
   | 'meanQueryIdentity'
   | 'meanQueryMappingQuality'
   | 'mappingQuality'
+
+const syntenyColorByValues = new Set<string>([
+  'default',
+  'strand',
+  'query',
+  'target',
+  'reference',
+  'identity',
+  'meanQueryIdentity',
+  'meanQueryMappingQuality',
+  'mappingQuality',
+])
+
+/**
+ * #api
+ * Coerce a persisted colorBy string (stored as plain `types.string` for
+ * snapshot-compat) to a valid `SyntenyColorBy`. Unknown values fall back to
+ * 'default'; the retired 'identityDiverging' mode maps to 'identity' so old
+ * saved sessions keep rendering instead of hitting an unhandled switch case.
+ */
+export function coerceColorBy(value: string | undefined): SyntenyColorBy {
+  if (value === 'identityDiverging') {
+    return 'identity'
+  }
+  return value !== undefined && syntenyColorByValues.has(value)
+    ? (value as SyntenyColorBy)
+    : 'default'
+}
 
 /**
  * #api

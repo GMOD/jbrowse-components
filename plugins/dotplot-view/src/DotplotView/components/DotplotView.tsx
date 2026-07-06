@@ -1,7 +1,11 @@
 import { ErrorBanner, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
 import { useRenderingBackend } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { ColorByLegend, DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
+import {
+  ColorByLegend,
+  DiagonalizeLoadingScreen,
+  coerceColorBy,
+} from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { HorizontalAxis, VerticalAxis } from './Axes.tsx'
@@ -15,7 +19,6 @@ import { useDotplotInteraction } from './useDotplotInteraction.ts'
 import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
 
 import type { DotplotViewModel } from '../model.ts'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 const useStyles = makeStyles()(theme => ({
   spacer: {
@@ -81,8 +84,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
 }) {
   const { classes } = useStyles()
   const interaction = useDotplotInteraction(model)
-  const colorBy = (model.dotplotDisplays[0]?.colorBy ??
-    'default') as SyntenyColorBy
+  const colorBy = coerceColorBy(model.dotplotDisplays[0]?.colorBy)
   return (
     <div>
       <Header model={model} selection={interaction.selection} />
@@ -98,7 +100,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
         {model.showColorLegend ? (
           <ColorByLegend
             colorBy={colorBy}
-            drawsCigar={false}
+            pointBased
             onClose={() => {
               model.setShowColorLegend(false)
             }}

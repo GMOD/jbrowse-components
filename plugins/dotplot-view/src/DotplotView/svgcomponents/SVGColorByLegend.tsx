@@ -23,7 +23,7 @@ export function SVGColorByLegend({
   viewWidth: number
 }) {
   const theme = useTheme()
-  const swatch = getColorBySwatch(colorBy, { drawsCigar: false })
+  const swatch = getColorBySwatch(colorBy, { pointBased: true })
   const title = colorByShortLabel[colorBy]
   const text = theme.palette.text.primary
   const gradientId = `colorby-ramp-${colorBy}`

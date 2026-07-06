@@ -1,10 +1,8 @@
-import { CIGAR_D, CIGAR_I, CIGAR_N } from '@jbrowse/cigar-utils'
 import { category10 } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import {
   colorSchemes,
   continuousRampConfig,
-  divergingIdentityRgb,
   hashString,
 } from '@jbrowse/synteny-core'
 
@@ -55,14 +53,12 @@ function buildLut(toRgb: (norm: number) => readonly [number, number, number]) {
   return lut
 }
 
+// identity + meanQueryIdentity share the viridis ramp; mappingQuality +
+// meanQueryMappingQuality share cividis. Each colormap is baked once over the
+// normalized [0,1] domain — the per-mode maxValue is applied at lookup, so the
+// raw (0..60) and pre-normalized mapq modes reuse the single cividis LUT.
 const IDENTITY_LUT = buildLut(continuousRampConfig.identity.toRgb)
-const MEAN_MAPQ_LUT = buildLut(
-  continuousRampConfig.meanQueryMappingQuality.toRgb,
-)
 const MAPQ_LUT = buildLut(continuousRampConfig.mappingQuality.toRgb)
-// Diverging LUT is indexed by identity directly (0..1) since the pivot remap
-// inside divergingIdentityRgb is non-linear — bin i encodes identity i/255.
-const IDENTITY_DIVERGING_LUT = buildLut(divergingIdentityRgb)
 
 function lutLookup(lut: Uint32Array, value: number, max = 1) {
   if (value < 0) {
@@ -89,12 +85,10 @@ function createColorFunction(
   switch (colorBy) {
     case 'identity':
       return index => lutLookup(IDENTITY_LUT, d.identities[index]!)
-    case 'identityDiverging':
-      return index => lutLookup(IDENTITY_DIVERGING_LUT, d.identities[index]!)
     case 'meanQueryIdentity':
       return index => lutLookup(IDENTITY_LUT, d.meanIdentities[index]!)
     case 'meanQueryMappingQuality':
-      return index => lutLookup(MEAN_MAPQ_LUT, d.meanScores[index]!)
+      return index => lutLookup(MAPQ_LUT, d.meanScores[index]!)
     case 'mappingQuality':
       return index =>
         lutLookup(
@@ -133,22 +127,16 @@ function nameColorFunction(names: readonly string[]) {
   }
 }
 
+// I/D/N indel colors for the active scheme (strand recolors N/D purple). Both
+// schemes always define I/D/N, so these are unconditional.
 function buildIndelColors(colorBy: SyntenyColorBy) {
-  const scheme =
+  const { cigarColors } =
     colorBy === 'strand' ? colorSchemes.strand : colorSchemes.default
-  const cigarColors = scheme.cigarColors
-  const indelColors: Partial<Record<number, number>> = {}
-  for (const [op, key] of [
-    [CIGAR_I, 'I'],
-    [CIGAR_D, 'D'],
-    [CIGAR_N, 'N'],
-  ] as const) {
-    const color = cigarColors[key as keyof typeof cigarColors]
-    if (color) {
-      indelColors[op] = cssColorToABGR(color)
-    }
+  return {
+    I: cssColorToABGR(cigarColors.I),
+    D: cssColorToABGR(cigarColors.D),
+    N: cssColorToABGR(cigarColors.N),
   }
-  return indelColors
 }
 
 interface InstanceInputs {
@@ -174,10 +162,7 @@ export function computeSyntenyColors({
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData
   const colorFn = createColorFunction(colorBy, featureData)
-  const indelColors = buildIndelColors(colorBy)
-  const colorI = indelColors[CIGAR_I] ?? DEFAULT_COLOR
-  const colorD = indelColors[CIGAR_D] ?? DEFAULT_COLOR
-  const colorN = indelColors[CIGAR_N] ?? DEFAULT_COLOR
+  const { I: colorI, D: colorD, N: colorN } = buildIndelColors(colorBy)
   const { identities } = featureData
   const out = new Uint32Array(instanceCount)
 

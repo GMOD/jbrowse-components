@@ -2,6 +2,7 @@ import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getEnv, getSession } from '@jbrowse/core/util'
+import { coerceColorBy } from '@jbrowse/synteny-core'
 import { when } from 'mobx'
 
 import { SVGColorByLegend } from './SVGColorByLegend.tsx'
@@ -9,7 +10,6 @@ import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
 import DotplotGrid from '../components/DotplotGrid.tsx'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../model.ts'
-import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 // render the dotplot view to an SVG string
 export async function renderToSvg(
@@ -22,9 +22,11 @@ export async function renderToSvg(
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
   const { width, borderX, viewWidth, viewHeight, tracks, height } = model
-  const legendColorBy = model.showColorLegend
-    ? (model.dotplotDisplays[0]?.colorBy as SyntenyColorBy | undefined)
-    : undefined
+  const display = model.dotplotDisplays[0]
+  const legendColorBy =
+    model.showColorLegend && display
+      ? coerceColorBy(display.colorBy)
+      : undefined
   const displayResults = await Promise.all(
     tracks.map(async track => {
       const display = track.displays[0]

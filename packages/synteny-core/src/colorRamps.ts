@@ -92,36 +92,3 @@ export const continuousRampConfig: Record<
   meanQueryMappingQuality: { toRgb: cividisRgb, maxValue: 1 },
   mappingQuality: { toRgb: cividisRgb, maxValue: 60 },
 }
-
-// ColorBrewer RdYlBu diverging endpoints + midpoint. RdYlBu is in the
-// colorblind-safe diverging set — a strict improvement over the sequential
-// red→green identity ramp, which is the worst possible pairing for the ~8% of
-// males with red-green color vision deficiency.
-const RD_YL_BU: readonly Rgb[] = [
-  [165, 0, 38], // 0.0 deep red   (most divergent)
-  [244, 109, 67],
-  [254, 224, 144],
-  [224, 243, 248],
-  [69, 117, 180], // 1.0 deep blue (most conserved)
-]
-
-// Default pivot for the diverging identity ramp. Synteny alignments between
-// related assemblies cluster tightly above ~90% identity, so a plain linear
-// ramp wastes most of its range on an empty low end. Splitting at the pivot
-// gives the divergent tail (< pivot) the full red→yellow sweep and the
-// conserved bulk (>= pivot) the yellow→blue sweep, expanding the part users
-// actually care about.
-export const DEFAULT_IDENTITY_PIVOT = 0.9
-
-// identity (0..1) → diverging RdYlBu RGB, pivoted so divergent regions read
-// warm/red and conserved regions read cool/blue.
-export function divergingIdentityRgb(
-  identity: number,
-  pivot = DEFAULT_IDENTITY_PIVOT,
-): Rgb {
-  const norm =
-    identity < pivot
-      ? 0.5 * (identity / pivot)
-      : 0.5 + 0.5 * ((identity - pivot) / (1 - pivot))
-  return sampleStops(RD_YL_BU, norm)
-}

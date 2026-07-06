@@ -16,6 +16,7 @@ export {
 export {
   applyAlpha,
   blendOverWhite,
+  coerceColorBy,
   colorSchemes,
   defaultCigarColors,
   getQueryColor,
@@ -23,16 +24,20 @@ export {
   strandCigarColors,
 } from './colorUtils.ts'
 export type { ColorScheme, SyntenyColorBy } from './colorUtils.ts'
-export {
-  DEFAULT_IDENTITY_PIVOT,
-  continuousRampConfig,
-  divergingIdentityRgb,
-} from './colorRamps.ts'
+export { continuousRampConfig } from './colorRamps.ts'
 export type { Rgb } from './colorRamps.ts'
 export { ColorBySwatch } from './ColorBySwatch.tsx'
 export { ColorByLegend } from './ColorByLegend.tsx'
-export { colorByShortLabel, getColorBySwatch } from './colorLegend.ts'
-export type { ColorBySwatchSpec, GradientStop } from './colorLegend.ts'
+export {
+  NO_CIGAR_OPS,
+  colorByShortLabel,
+  getColorBySwatch,
+} from './colorLegend.ts'
+export type {
+  CigarOpPresence,
+  ColorBySwatchSpec,
+  GradientStop,
+} from './colorLegend.ts'
 export type { SyntenyViewSharedInit } from './SyntenyViewInit.ts'
 export { launchSyntenyView } from './launchSyntenyView.ts'
 export { default as SliderTooltip } from './SliderTooltip.tsx'

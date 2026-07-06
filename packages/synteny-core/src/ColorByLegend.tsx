@@ -5,6 +5,7 @@ import { IconButton, Tooltip } from '@mui/material'
 import { colorByShortLabel, getColorBySwatch } from './colorLegend.ts'
 import { blendOverWhite } from './colorUtils.ts'
 
+import type { CigarOpPresence } from './colorLegend.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -87,19 +88,24 @@ const useStyles = makeStyles()(theme => ({
 // the plugin gates visibility on its own model flag and supplies onClose.
 export function ColorByLegend({
   colorBy,
-  drawsCigar = true,
+  pointBased = false,
+  cigarOps,
   alpha = 1,
   onClose,
 }: {
   colorBy: SyntenyColorBy
-  drawsCigar?: boolean
+  // dotplot draws flat points, never CIGAR ops
+  pointBased?: boolean
+  // which indel ops are actually drawn on screen; the ribbon view passes its
+  // model-derived presence so the legend only lists indels the eye can find
+  cigarOps?: CigarOpPresence
   // the view's global ribbon alpha — chips are blended over white by it so the
   // key matches the on-screen (alpha-composited) ribbon colors
   alpha?: number
   onClose: () => void
 }) {
   const { classes } = useStyles()
-  const swatch = getColorBySwatch(colorBy, { drawsCigar })
+  const swatch = getColorBySwatch(colorBy, { pointBased, cigarOps })
   return (
     <div className={classes.root} data-testid="color-by-legend">
       <div className={classes.header}>

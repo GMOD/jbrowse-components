@@ -27,6 +27,19 @@ test('default mode lists CIGAR-op chips with labels', () => {
   expect(queryByText('skip')).toBeNull()
 })
 
+test('cigarOps hides indel chips when no indel is drawn on screen', () => {
+  const { getByText, queryByText } = render(
+    <ColorByLegend
+      colorBy="default"
+      cigarOps={{ I: false, D: false, N: false }}
+      onClose={() => {}}
+    />,
+  )
+  getByText('match')
+  expect(queryByText('insertion')).toBeNull()
+  expect(queryByText('deletion')).toBeNull()
+})
+
 test('chips blend over white by the ribbon alpha to match the canvas', () => {
   const { container } = render(
     <ColorByLegend colorBy="default" alpha={0.2} onClose={() => {}} />,

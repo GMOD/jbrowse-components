@@ -6,6 +6,7 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
+  coerceColorBy,
   createStopTokenRotation,
   detectDisplayAssembliesSwapped,
   renameRegionsForAdapter,
@@ -19,7 +20,7 @@ import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
 import type { Region } from '@jbrowse/core/util'
-import type { BpIndexViewSnap, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
 const RPC_DEBOUNCE_MS = 1000
 
@@ -132,11 +133,7 @@ export function doAfterAttach(
         self.setGeometry(
           buildLineSegments(
             rpcData,
-            createDotplotColorFunction(
-              colorBy as SyntenyColorBy,
-              alpha,
-              rpcData,
-            ),
+            createDotplotColorFunction(coerceColorBy(colorBy), alpha, rpcData),
             drawCigar,
             minAlignmentLength,
             hview.bpPerPx,
