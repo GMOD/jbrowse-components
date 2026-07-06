@@ -603,8 +603,11 @@ function syncytinSynteny(cigarMode: 'matches' | 'full') {
             tracks: ['hg38-genes', 'hg38-rmsk'],
           },
           {
+            // the syncytin locus sits inside a human/marmoset inversion, so the
+            // ortholog is reverse-oriented; [rev] flips this panel to straighten
+            // the crossing ribbon.
             assembly: 'calJac4',
-            loc: 'chr8:64,676,000-64,720,000',
+            loc: 'chr8:65,460,000-65,512,000[rev]',
             tracks: ['calJac4-genes'],
           },
         ],
@@ -7916,7 +7919,7 @@ export const specs: ScreenshotSpec[] = [
     url: '?config=test_data%2Fsars-cov2%2Fconfig.json&session=spec-{"views":[{"assembly":"Wuhan-Hu-1","loc":"NC_045512.2:266-21555","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_genes_with_mature_peptides"]}]}',
     readyTimeout: 60000,
     settleMs: 6000,
-    viewportHeight: 420,
+    viewportHeight: 600,
   },
   {
     mode: 'url',

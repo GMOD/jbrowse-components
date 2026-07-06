@@ -44,8 +44,12 @@
       "type": "FeatureTrack",
       "trackId": "hg38-genes",
       "name": "NCBI RefSeq genes",
-      "assemblyNames": ["hg38"],
-      "category": ["Genes"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Genes"
+      ],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -53,7 +57,9 @@
         },
         "index": {
           "indexType": "CSI",
-          "location": { "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi" }
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi"
+          }
         }
       }
     },
@@ -61,14 +67,22 @@
       "type": "FeatureTrack",
       "trackId": "hg38-rmsk",
       "name": "RepeatMasker",
-      "assemblyNames": ["hg38"],
-      "category": ["Repeats"],
+      "assemblyNames": [
+        "hg38"
+      ],
+      "category": [
+        "Repeats"
+      ],
       "adapter": {
         "type": "BedTabixAdapter",
-        "bedGzLocation": { "uri": "https://jbrowse.org/ucsc/hg38/rmsk.bed.gz" },
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/rmsk.bed.gz"
+        },
         "index": {
           "indexType": "CSI",
-          "location": { "uri": "https://jbrowse.org/ucsc/hg38/rmsk.bed.gz.csi" }
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/rmsk.bed.gz.csi"
+          }
         }
       }
     },
@@ -76,8 +90,12 @@
       "type": "FeatureTrack",
       "trackId": "calJac4-genes",
       "name": "NCBI RefSeq genes",
-      "assemblyNames": ["calJac4"],
-      "category": ["Genes"],
+      "assemblyNames": [
+        "calJac4"
+      ],
+      "category": [
+        "Genes"
+      ],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -85,7 +103,9 @@
         },
         "index": {
           "indexType": "CSI",
-          "location": { "uri": "https://jbrowse.org/ucsc/calJac4/ncbiRefSeqCurated.gff.gz.csi" }
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/calJac4/ncbiRefSeqCurated.gff.gz.csi"
+          }
         }
       }
     },
@@ -93,12 +113,18 @@
       "type": "SyntenyTrack",
       "trackId": "hg38_calJac4_synteny",
       "name": "Human vs Marmoset (UCSC liftOver, syncytin locus)",
-      "assemblyNames": ["hg38", "calJac4"],
+      "assemblyNames": [
+        "hg38",
+        "calJac4"
+      ],
       "adapter": {
-        "type": "PAFAdapter",
-        "uri": "syncytin.paf",
-        "queryAssembly": "hg38",
-        "targetAssembly": "calJac4"
+        "type": "PairwiseIndexedPAFAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCalJac4.over.pif.gz",
+        "csi": true,
+        "assemblyNames": [
+          "calJac4",
+          "hg38"
+        ]
       }
     }
   ]
