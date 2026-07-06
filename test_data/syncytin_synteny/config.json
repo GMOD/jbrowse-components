@@ -1,0 +1,111 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "displayName": "Human (hg38)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt"
+        }
+      }
+    },
+    {
+      "name": "calJac4",
+      "displayName": "Marmoset (calJac4)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "calJac4-refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/calJac4/bigZips/calJac4.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/goldenPath/calJac4/bigZips/calJac4.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/calJac4/bigZips/calJac4.chromAlias.txt"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38-genes",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["hg38"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": { "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi" }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38-rmsk",
+      "name": "RepeatMasker",
+      "assemblyNames": ["hg38"],
+      "category": ["Repeats"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": { "uri": "https://jbrowse.org/ucsc/hg38/rmsk.bed.gz" },
+        "index": {
+          "indexType": "CSI",
+          "location": { "uri": "https://jbrowse.org/ucsc/hg38/rmsk.bed.gz.csi" }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "calJac4-genes",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["calJac4"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/calJac4/ncbiRefSeqCurated.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": { "uri": "https://jbrowse.org/ucsc/calJac4/ncbiRefSeqCurated.gff.gz.csi" }
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hg38_calJac4_synteny",
+      "name": "Human vs Marmoset (UCSC liftOver)",
+      "assemblyNames": ["hg38", "calJac4"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "targetAssembly": "hg38",
+        "queryAssembly": "calJac4",
+        "pifGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCalJac4.over.pif.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": { "uri": "https://jbrowse.org/ucsc/hg38/liftOver/hg38ToCalJac4.over.pif.gz.csi" }
+        }
+      }
+    }
+  ]
+}
