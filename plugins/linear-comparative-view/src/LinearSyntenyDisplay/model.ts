@@ -5,6 +5,7 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { syntenyFetchRegions } from '../LinearSyntenyRPC/syntenyFetchWindow.ts'
 import { getCigarOpAtInstance, getTooltip } from './components/util.ts'
 
 import type { ClickCoord } from './components/util.ts'
@@ -400,6 +401,31 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const connected = this.connectedViews
         return connected
           ? `${bucketBpPerPx(connected.v0.bpPerPx)}_${bucketBpPerPx(connected.v1.bpPerPx)}`
+          : undefined
+      },
+      /**
+       * #getter
+       * Stable key over the *snapped* fetch window of both connected views. The
+       * fetch autorun tracks this so a scroll/zoom that moves the snapped window
+       * refetches, while a sub-buffer pan (identical snapped window) does not —
+       * a MobX computed only notifies when its string output changes. Mirrors
+       * the window syntenyFetchRegions hands the worker.
+       */
+      get fetchRegionsKey() {
+        const connected = this.connectedViews
+        return connected
+          ? [connected.v0, connected.v1]
+              .map(v =>
+                syntenyFetchRegions({
+                  visibleRegions: v.visibleRegions,
+                  displayedRegions: v.displayedRegions,
+                  width: v.width,
+                  bpPerPx: v.bpPerPx,
+                })
+                  .map(r => `${r.refName}:${r.start}-${r.end}`)
+                  .join(','),
+              )
+              .join('_')
           : undefined
       },
       /**

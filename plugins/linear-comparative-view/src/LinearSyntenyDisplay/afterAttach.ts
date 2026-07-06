@@ -12,6 +12,8 @@ import {
 } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
+import { syntenyFetchRegions } from '../LinearSyntenyRPC/syntenyFetchWindow.ts'
+
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 
@@ -42,18 +44,21 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // Tracked deps that SHOULD trigger refetch when changed:
         //   - displayedRegions (per view) — region set drives cumBp output
         //   - adapterConfig and CIGAR drawing options
-        //   - bpPerPxBucketKey — the log2 zoom bucket of both views. The
-        //     worker's viewport cull is sized in px at fetch-time, so zooming
-        //     out by ~2x leaves features missing beyond the previous cull
-        //     window. The bucket is a computed getter (compares its string
-        //     output), so tracking it here refetches once per half-decade
-        //     rather than on every settled zoom within a bucket.
-        // Not tracked: raw `bpPerPx`, `offsetPx`, `width`,
-        // `minimumBlockWidth`. Scroll moves are
-        // absorbed by the worker's 50% px buffer.
+        //   - fetchRegionsKey — the snapped visible window + pan buffer of both
+        //     views. Scoping the indexed fetch to this makes scroll/zoom past
+        //     the buffer refetch the newly-visible slice; sub-buffer pans keep
+        //     the same snapped window so the computed doesn't refire.
+        //   - bpPerPxBucketKey — the log2 zoom bucket of both views. Still
+        //     needed for the small-region case, where fetchRegions is clamped
+        //     to the whole (zoom-independent) region: without this, zooming out
+        //     would not refetch and the worker's stale px cull would leave
+        //     newly-visible features unemitted.
+        // Not tracked: raw `bpPerPx`, `offsetPx`, `width`, `minimumBlockWidth`.
+        // Sub-buffer scroll moves are absorbed by the worker's px buffer.
         for (const v of connectedViews) {
           void v.displayedRegions
         }
+        void self.fetchRegionsKey
         void self.bpPerPxBucketKey
         const adapterConfig = self.adapterConfig
         const {
@@ -71,6 +76,15 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             bpPerPx: v.bpPerPx,
             offsetPx: v.offsetPx,
             displayedRegions: v.displayedRegions,
+            // Visible window + pan buffer the worker scopes its fetch to. Read
+            // untracked (like offsetPx) — fetchRegionsKey above is what decides
+            // when to refetch, so raw viewport churn never refires this autorun.
+            fetchRegions: syntenyFetchRegions({
+              visibleRegions: v.visibleRegions,
+              displayedRegions: v.displayedRegions,
+              width: v.width,
+              bpPerPx: v.bpPerPx,
+            }),
             minimumBlockWidth: v.minimumBlockWidth,
             width: v.width,
           })),
@@ -98,6 +112,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               sessionId,
               adapterConfig,
               regions: snap.displayedRegions,
+            }),
+            // fetchRegions queries the adapter too, so rename it into the same
+            // adapter namespace as displayedRegions.
+            fetchRegions: await renameRegionsForAdapter({
+              assemblyManager,
+              sessionId,
+              adapterConfig,
+              regions: snap.fetchRegions,
             }),
           })
           const result = await getSession(self).rpcManager.call(

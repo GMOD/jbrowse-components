@@ -12,10 +12,10 @@ import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
 
 import {
   MIN_CIGAR_PX_WIDTH,
-  PAN_BUFFER_PX,
   buildSyntenyGeometry,
 } from './buildSyntenyGeometry.ts'
 import { clipLargeBlockToWindow } from './clipSyntenyFeature.ts'
+import { syntenyPanBufferPx } from './syntenyFetchWindow.ts'
 
 import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
@@ -69,7 +69,12 @@ export interface SyntenyViewSnap {
   minimumBlockWidth: number
   width: number
   offsetPx: number
+  // The whole concatenated genome, spanning the full cumBp coordinate axis.
   displayedRegions: Region[]
+  // The visible window + pan buffer, clamped to displayedRegions. The indexed
+  // fetch is scoped to this (a superset of the worker's cull window) so a
+  // whole-genome PAF zoomed to one locus fetches only the on-screen slice.
+  fetchRegions: Region[]
 }
 
 export interface SyntenyRpcResult extends SyntenyFeatureData {
@@ -116,9 +121,19 @@ export async function executeSyntenyFeaturesAndPositions({
 
   const bpPerPx = v1.bpPerPx
   // forward statusCallback so the adapter's determinate download + parse phases
-  // drive the bar; the loading overlay shows a plain "Loading" label otherwise
+  // drive the bar; the loading overlay shows a plain "Loading" label otherwise.
+  // fetchRegions is the visible window + pan buffer (a superset of the cull
+  // window below), so an indexed adapter downloads only the on-screen slice
+  // while the cumBp index below still spans the whole displayedRegions.
+  //
+  // The query is on v1 (the query axis) only — as it always has been, when it
+  // spanned the whole genome. Scoping it therefore drops one class the old
+  // whole-genome fetch happened to include: an alignment whose query coords sit
+  // outside this window but whose mate is on-screen in v2. That is inherent to a
+  // single-axis fetch; a two-axis fetch can't dedupe q- against t-perspective
+  // rows (PIF gives them distinct file offsets, hence distinct feature ids).
   const allFeatures = await dataAdapter.getFeaturesInMultipleRegionsArray(
-    v1.displayedRegions,
+    v1.fetchRegions,
     {
       stopToken,
       bpPerPx,
@@ -227,10 +242,11 @@ export async function executeSyntenyFeaturesAndPositions({
   const v2Offset = v2.offsetPx
   const bpPerPxInv1 = 1 / v1.bpPerPx
   const bpPerPxInv2 = 1 / v2.bpPerPx
-  // At least PAN_BUFFER_PX so this whole-feature cull never drops a feature
-  // buildSyntenyGeometry would emit geometry for; the 50%-of-width term keeps a
-  // larger pan buffer on wide views.
-  const bufferPx = Math.max(viewWidth * 0.5, PAN_BUFFER_PX)
+  // Shared with the main-thread fetch window (syntenyFetchRegions) and >= the
+  // PAN_BUFFER_PX emit cull in buildSyntenyGeometry, so this whole-feature cull
+  // never drops a feature the geometry stage would emit, and the scoped fetch
+  // never omits a feature this cull would keep.
+  const bufferPx = syntenyPanBufferPx(viewWidth)
   const offScreenLeftBound = -bufferPx
   const offScreenRightBound = viewWidth + bufferPx
 

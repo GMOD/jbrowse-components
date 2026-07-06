@@ -9,6 +9,7 @@ import {
   KIND_CIGAR_N,
   KIND_MARKER,
 } from './syntenyColors.ts'
+import { PAN_BUFFER_PX } from './syntenyFetchWindow.ts'
 
 // Worker-side geometry. `colors` is injected by the main thread (computedColors
 // in the display model) and is the only field SyntenyInstanceData adds. Keeps
@@ -52,12 +53,6 @@ export type SyntenyInstanceData = SyntenyGeometry & { colors: Uint32Array }
 // redundantly hides detail on small-but-visible blocks — the "1px details are
 // interesting" frission this view is meant to preserve.
 export const MIN_CIGAR_PX_WIDTH = 2
-
-// Off-screen px kept on each side so panning reveals ribbons without a refetch.
-// executeSyntenyFeaturesAndPositions culls whole features first, so its cull
-// buffer must be >= this or it would silently drop features this stage wants to
-// emit geometry for (defeating the pan buffer on views narrower than 2*this).
-export const PAN_BUFFER_PX = 2000
 
 // Colored-indel instance kind for an I/D/N op; undefined for any match op.
 function indelKind(op: number) {
