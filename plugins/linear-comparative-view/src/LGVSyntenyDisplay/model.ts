@@ -187,6 +187,14 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
               },
             },
             {
+              label: 'Lay out large features first',
+              type: 'checkbox' as const,
+              checked: self.largeFeaturesFirst,
+              onClick: () => {
+                self.setLargeFeaturesFirst(!self.largeFeaturesFirst)
+              },
+            },
+            {
               label: 'Group by mate sample',
               type: 'checkbox' as const,
               checked: groupedByMate,

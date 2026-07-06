@@ -256,6 +256,18 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Lay out the widest features in the lowest pileup rows instead of by
+       * genomic start, so large alignments cluster at the top rather than
+       * interleaving with small ones. Off by default; LGVSyntenyDisplay turns
+       * it on. Ignored while an explicit `sortedBy` position sort is active.
+       */
+      largeFeaturesFirst: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Lay out large features first, in the lowest pileup rows',
+      },
+      /**
+       * #slot
        * null = auto: outline is drawn only in chain/linked-read modes. Set
        * true/false to force it on or off regardless of mode.
        */

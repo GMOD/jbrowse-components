@@ -813,6 +813,16 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Lay out the widest features in the lowest pileup rows (main-thread
+         * tier-2 relayout via laidOutPileupMap). LGVSyntenyDisplay defaults it
+         * on. Ignored while an explicit `sortedBy` position sort is active.
+         */
+        get largeFeaturesFirst(): boolean {
+          return getConf(self, 'largeFeaturesFirst')
+        },
+
+        /**
+         * #getter
          * In-track stacked grouping dimension (undefined = ungrouped). Falls
          * back to the `groupBy` config slot, so a track can be pre-grouped
          * declaratively. Sent to the worker via rpcProps; the worker partitions
@@ -1031,6 +1041,7 @@ export default function stateModelFactory(
             isChainMode: self.isChainMode,
             sortedBy: this.sortedBy,
             showSoftClipping: self.showSoftClipping,
+            largeFeaturesFirst: this.largeFeaturesFirst,
             regions: self.loadedRegions,
             showLinkedReadLines: self.showLinkedReadLines,
             colorBy: this.colorBy,
@@ -1646,6 +1657,12 @@ export default function stateModelFactory(
             sortTag: this.sortTag,
             groupBy: self.groupBy,
             showSoftClipping: self.showSoftClipping,
+            // showCoverage is here (not just renderState) because the worker
+            // skips the entire coverage-band pipeline — including the per-bp GPU
+            // depth buffer that overflows the device limit at whole-chromosome
+            // scale — when the band is off. So toggling it refetches. The
+            // pileup's low-frequency fade is unaffected (see runCoveragePipeline).
+            showCoverage: self.showCoverage,
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
             linkedReads: self.linkedReads,
@@ -2096,6 +2113,13 @@ export default function stateModelFactory(
            */
           clearSortedBy() {
             self.configuration.setSlot('sortedBy', null)
+          },
+
+          /**
+           * #action
+           */
+          setLargeFeaturesFirst(flag: boolean) {
+            self.configuration.setSlot('largeFeaturesFirst', flag)
           },
 
           /**

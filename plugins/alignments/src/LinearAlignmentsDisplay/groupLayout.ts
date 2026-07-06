@@ -35,6 +35,7 @@ export interface GroupLayoutContext {
   isChainMode: boolean
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean
+  largeFeaturesFirst: boolean
   // Region bounds by displayed-region index, so multi-region layout can locate
   // the sort position's region and detect the single-refName case.
   regions: ReadonlyMap<number, RegionBounds>
@@ -67,6 +68,7 @@ export function buildLaidOutByGroup(
           showSoftClipping: ctx.showSoftClipping,
           regions: ctx.regions,
           maxRows: cap,
+          largeFeaturesFirst: ctx.largeFeaturesFirst,
         })
     const withLines = ctx.showLinkedReadLines
       ? attachLinkedReadLines(base)

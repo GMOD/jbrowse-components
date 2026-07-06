@@ -86,6 +86,17 @@ function configSchemaF(pluginManager: PluginManager) {
         defaultValue: false,
         description: 'Draw the coverage histogram band',
       },
+      /**
+       * #slot
+       * Synteny lays large alignments out first so big syntenic blocks cluster
+       * at the top instead of interleaving with small ones; overrides the base
+       * alignments display's `largeFeaturesFirst` default of `false`.
+       */
+      largeFeaturesFirst: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Lay out large features first, in the lowest pileup rows',
+      },
     },
     {
       /**

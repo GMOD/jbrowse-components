@@ -337,6 +337,52 @@ describe('computeLayout', () => {
   })
 })
 
+describe('computeLayout largeFeaturesFirst', () => {
+  // A small read starts before a large one that overlaps it. Default (genomic
+  // start) order puts the small read in row 0 and the large one in row 1;
+  // largest-first flips that so the wide feature takes the lowest row.
+  const data = () =>
+    makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 0, end: 10 }, // id0 small
+        { start: 5, end: 100 }, // id1 large, overlaps id0
+      ],
+    })
+
+  test('default order places the small read first (row 0)', () => {
+    const { readYs, maxY } = computeLayout(data())
+    expect(readYs[0]).toBe(0)
+    expect(readYs[1]).toBe(1)
+    expect(maxY).toBe(2)
+  })
+
+  test('largest-first places the wide read in the lowest row', () => {
+    const { readYs, maxY } = computeLayout(data(), false, undefined, true)
+    expect(readYs[1]).toBe(0) // large
+    expect(readYs[0]).toBe(1) // small
+    expect(maxY).toBe(2)
+  })
+
+  test('a small non-overlapping read fills the gap beside the wide read', () => {
+    // Wide read [0,100] in row 0; two small reads to its "side" can't fit (they
+    // overlap it) so they stack, but a read past its end shares row 0.
+    const d = makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 10, end: 20 }, // id0 small, overlaps wide
+        { start: 0, end: 100 }, // id1 wide
+        { start: 150, end: 200 }, // id2 small, past the wide read's end
+      ],
+    })
+    const { readYs, maxY } = computeLayout(d, false, undefined, true)
+    expect(readYs[1]).toBe(0) // wide read first, row 0
+    expect(readYs[2]).toBe(0) // non-overlapping small fills row 0 gap
+    expect(readYs[0]).toBe(1) // overlapping small stacks above
+    expect(maxY).toBe(2)
+  })
+})
+
 // Above LAYOUT_HEAP_MIN_READS, computeLayout switches from the placeRect
 // row-scan to the interval-partitioning heaps. The two paths must produce an
 // identical first-fit-lowest-row layout. The small-input tests above pin the
@@ -810,6 +856,56 @@ describe('computeMultiRegionLayout', () => {
     // ascending base order A < C < T, each on its own row (all collide at 250)
     expect(rowMap.get('b1')).toBeLessThan(rowMap.get('b2')!)
     expect(rowMap.get('b2')).toBeLessThan(rowMap.get('b0')!)
+  })
+
+  test('largeFeaturesFirst orders by unioned extent across regions', () => {
+    // A wide boundary-spanning read (id0, present in both regions) plus a small
+    // read in region 0 that starts earlier. Largest-first must place the wide
+    // read's row below the small one despite the small one's earlier start.
+    const r1 = makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 0, end: 100 }, // id0 wide, spans into r2
+        { start: 5, end: 15 }, // id1 small, overlaps id0
+      ],
+    })
+    const r2 = makePileupData({
+      regionStart: 100,
+      reads: [{ start: 100, end: 200 }], // id0 again (same featureId)
+    })
+    const { rowMap } = computeMultiRegionLayout({
+      entries: [
+        [0, r1],
+        [1, r2],
+      ],
+      largeFeaturesFirst: true,
+    })
+    expect(rowMap.get('id0')).toBe(0)
+    expect(rowMap.get('id1')).toBe(1)
+  })
+
+  test('an active position sort wins over largeFeaturesFirst', () => {
+    // Both flags set: the basePair sort at 250 orders the overlapping reads,
+    // largeFeaturesFirst is ignored (see buildLaidOutPileupMap precedence).
+    const exon = makePileupData({
+      regionStart: 200,
+      sortPos: 250,
+      reads: [
+        { start: 240, end: 400, baseAtSortPos: 'T' }, // widest, but sorts last
+        { start: 245, end: 265, baseAtSortPos: 'A' },
+        { start: 248, end: 268, baseAtSortPos: 'C' },
+      ],
+    })
+    const { rowMap } = computeMultiRegionLayout({
+      entries: [[0, exon]],
+      regions: new Map([[0, chr1(200, 300)]]),
+      sortedBy: { type: 'basePair', pos: 250, refName: 'chr1', assemblyName: 'a' },
+      largeFeaturesFirst: true,
+    })
+    // ascending base order A < C < T — the wide 'T' read still sorts last,
+    // proving the position sort took precedence over extent order.
+    expect(rowMap.get('id1')).toBeLessThan(rowMap.get('id2')!)
+    expect(rowMap.get('id2')).toBeLessThan(rowMap.get('id0')!)
   })
 
   test('expands read extents by soft clips across regions', () => {

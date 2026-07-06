@@ -9,6 +9,8 @@ import {
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
+import { checkboxItem } from './menuHelpers.ts'
+
 import type { SortedBy } from '../../shared/types.ts'
 import type { GroupByModel } from '../dialogs/GroupByDialog.tsx'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -21,6 +23,8 @@ interface SortByModel {
   sortedBy?: SortedBy
   setSortedBy: (type: string, tag?: string) => void
   clearSortedBy: () => void
+  largeFeaturesFirst: boolean
+  setLargeFeaturesFirst: (flag: boolean) => void
 }
 
 // Keys double as the membership set for the "Base pair" radio: a sort on any of
@@ -89,6 +93,19 @@ export function getSortByMenuItem(model: SortByModel) {
           model.clearSortedBy()
         },
       },
+      checkboxItem(
+        'Lay out large features first',
+        model.largeFeaturesFirst,
+        () => {
+          model.setLargeFeaturesFirst(!model.largeFeaturesFirst)
+        },
+        {
+          helpText:
+            'Place the widest features in the lowest rows instead of by ' +
+            'genomic start (ignored while a position sort is active)',
+          disabled: !!model.sortedBy,
+        },
+      ),
     ],
   }
 }

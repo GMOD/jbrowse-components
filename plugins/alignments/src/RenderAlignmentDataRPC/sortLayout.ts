@@ -299,6 +299,30 @@ function buildSoftclipOrder(
   return order
 }
 
+// Placement order that puts the widest features first — by on-screen extent
+// (soft-clip aware), genomic start as a deterministic tiebreak. Placed
+// first-fit-lowest-row, the widest features take the lowest rows so large
+// alignments cluster at the top instead of interleaving with small ones (the
+// LGVSyntenyDisplay default). Not start-monotone, so the placement loop uses the
+// row-scan rather than the interval-partitioning fast path.
+function buildLargeFirstOrder(
+  data: PileupDataResult,
+  expansions: Map<number, { start: number; end: number }> | undefined,
+  numReads: number,
+) {
+  const order: number[] = []
+  for (let i = 0; i < numReads; i++) {
+    order.push(i)
+  }
+  order.sort((a, b) => {
+    const ea = readExtent(data, a, expansions)
+    const eb = readExtent(data, b, expansions)
+    const byExtent = eb.end - eb.start - (ea.end - ea.start)
+    return byExtent !== 0 ? byExtent : ea.start - eb.start
+  })
+  return order
+}
+
 /**
  * First-fit-lowest-row pileup layout via interval-partitioning min-heaps:
  * O(reads * log depth) instead of the placeRect row-scan's O(reads * depth).
@@ -367,6 +391,7 @@ export function computeLayout(
   data: PileupDataResult,
   showSoftClipping?: boolean,
   maxRows = Number.POSITIVE_INFINITY,
+  largeFeaturesFirst?: boolean,
 ) {
   const numReads = data.readIds.length
   const expansions = showSoftClipping
@@ -375,14 +400,17 @@ export function computeLayout(
 
   const readYs = new Uint16Array(numReads)
 
-  // Soft-clip layout sorts by expanded left edge; plain pileup is already in
-  // genomic (start) order from the worker. Either way the placement loop sees
-  // non-decreasing starts, so the interval-partitioning fast path applies.
-  const order = showSoftClipping
-    ? buildSoftclipOrder(data, expansions, numReads)
-    : undefined
+  // Largest-first sorts by extent (not start); soft-clip sorts by expanded left
+  // edge; plain pileup is already in genomic (start) order from the worker. The
+  // start-monotone cases can use the interval-partitioning fast path below;
+  // largest-first can't (its order isn't start-sorted).
+  const order = largeFeaturesFirst
+    ? buildLargeFirstOrder(data, expansions, numReads)
+    : showSoftClipping
+      ? buildSoftclipOrder(data, expansions, numReads)
+      : undefined
 
-  if (numReads >= LAYOUT_HEAP_MIN_READS) {
+  if (!largeFeaturesFirst && numReads >= LAYOUT_HEAP_MIN_READS) {
     const fast = partitionStartSorted(data, order, expansions, maxRows, readYs)
     if (fast) {
       return { readYs, maxY: fast.maxY, truncated: fast.truncated }
@@ -481,12 +509,14 @@ export function computeMultiRegionLayout({
   sortedBy,
   showSoftClipping,
   maxRows = Number.POSITIVE_INFINITY,
+  largeFeaturesFirst,
 }: {
   entries: [number, PileupDataResult][]
   regions?: ReadonlyMap<number, RegionBounds>
   sortedBy?: SortedBy
   showSoftClipping?: boolean
   maxRows?: number
+  largeFeaturesFirst?: boolean
 }) {
   // Union extent per read (keyed by featureId) across every region it appears
   // in, including soft-clip expansion. A read spanning a boundary is clamped to
@@ -520,6 +550,7 @@ export function computeMultiRegionLayout({
   const commonRefName = refNames.length === 1 ? refNames[0] : undefined
 
   let placementOrder = orderedIds
+  let sortApplied = false
   if (sortedBy && regions && commonRefName === sortedBy.refName) {
     const sortPos = sortedBy.pos
     // The region — and thus the data arrays — containing the sort position.
@@ -546,7 +577,19 @@ export function computeMultiRegionLayout({
         ...overlappingIds,
         ...orderedIds.filter(id => !overlappingSet.has(id)),
       ]
+      sortApplied = true
     }
+  }
+
+  // Largest-first only when no explicit position sort took effect (that sort
+  // wins). Sorts the deduped ids by unioned on-screen extent, descending.
+  if (!sortApplied && largeFeaturesFirst) {
+    placementOrder = [...orderedIds].sort((a, b) => {
+      const ea = extents.get(a)!
+      const eb = extents.get(b)!
+      const byExtent = eb.end - eb.start - (ea.end - ea.start)
+      return byExtent !== 0 ? byExtent : ea.start - eb.start
+    })
   }
 
   const rowMap = new Map<string, number>()
@@ -649,12 +692,14 @@ export function buildLaidOutPileupMap({
   showSoftClipping,
   regions,
   maxRows = Number.POSITIVE_INFINITY,
+  largeFeaturesFirst,
 }: {
   dataMap: ReadonlyMap<number, PileupDataResult>
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean | undefined
   regions?: ReadonlyMap<number, RegionBounds>
   maxRows?: number
+  largeFeaturesFirst?: boolean
 }): Map<number, PileupDataResult> {
   const out = new Map<number, PileupDataResult>()
   const withReads: [number, PileupDataResult][] = []
@@ -672,7 +717,7 @@ export function buildLaidOutPileupMap({
     const [idx, data] = withReads[0]!
     const { readYs, maxY, truncated } = sortedBy
       ? computeSortedLayout(data, sortedBy, showSoftClipping, maxRows)
-      : computeLayout(data, showSoftClipping, maxRows)
+      : computeLayout(data, showSoftClipping, maxRows, largeFeaturesFirst)
     out.set(idx, cloneWithLayout(data, readYs, maxY, truncated))
   } else {
     const { rowMap, maxY, truncated } = computeMultiRegionLayout({
@@ -681,6 +726,7 @@ export function buildLaidOutPileupMap({
       sortedBy,
       showSoftClipping,
       maxRows,
+      largeFeaturesFirst,
     })
     for (const [idx, data] of withReads) {
       const numReads = data.readIds.length

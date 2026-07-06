@@ -30,6 +30,13 @@ export interface RenderAlignmentDataArgs {
   // invalidate the fetched data — main-thread layout re-runs instead.
   sortTag?: string
   showSoftClipping?: boolean
+  // Tier-1 refetch (in rpcProps): when the coverage band is off — the
+  // LGVSyntenyDisplay default — the worker skips every band computation and
+  // returns an empty coverage depth array, avoiding the ~regionWidth×8-byte
+  // per-bp GPU buffer that overflows the device limit at whole-chromosome scale.
+  // The pileup's low-frequency mismatch/indel fade is unaffected (frequencies
+  // are computed from the full depth sweep regardless). Defaults true.
+  showCoverage?: boolean
   // In-track stacked grouping. When set, the worker partitions the single fetch
   // into N ordered groups and returns one PileupDataResult per group. Pileup
   // mode only — ignored in chain mode (linkedReads !== 'off'). Tier-1 refetch
