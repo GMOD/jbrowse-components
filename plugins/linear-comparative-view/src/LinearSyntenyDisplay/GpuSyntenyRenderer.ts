@@ -2,7 +2,10 @@ import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import { interleaveInstances } from './instanceInterleave.ts'
+import {
+  interleaveInstances,
+  patchInstanceColors,
+} from './instanceInterleave.ts'
 import * as syntenyEdgeCurveShader from './shaders/syntenyEdgeCurve.generated.ts'
 import * as syntenyEdgeStraightShader from './shaders/syntenyEdgeStraight.generated.ts'
 import * as syntenyFillCurveShader from './shaders/syntenyFillCurve.generated.ts'
@@ -73,9 +76,19 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
   private cache = new SyntenyGeometryCache()
   // Which fill pass each region's GPU buffer is currently uploaded against.
   // Only one of {STRAIGHT, CURVE} lives on the GPU per region at a time;
-  // flipping `drawCurves` re-interleaves and re-uploads on the next render.
-  // Trades a one-frame upload stall on toggle for ~½ steady-state GPU memory.
+  // flipping `drawCurves` re-uploads on the next render (reusing the packed
+  // buffer — see interleaveCache). Trades a one-frame upload stall on toggle
+  // for ~½ steady-state GPU memory.
   private uploadedPass = new Map<number, string>()
+  // Packed interleaved buffer per region, reused across re-uploads that don't
+  // change geometry. `geomToken` is one of the geometry arrays (all replaced
+  // atomically on RPC refetch); while it holds, a colorBy/opacity toggle only
+  // patches the color lane and a drawCurves toggle reuses the bytes verbatim,
+  // instead of re-interleaving all 12 lanes.
+  private interleaveCache = new Map<
+    number,
+    { geomToken: Float32Array; colors: Uint32Array; buf: ArrayBuffer }
+  >()
   private pickCtx: CanvasRenderingContext2D | undefined
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
@@ -101,6 +114,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
   deleteGeometry(key: number) {
     this.cache.delete(key)
     this.uploadedPass.delete(key)
+    this.interleaveCache.delete(key)
     this.hal.deleteRegion(key)
   }
 
@@ -147,10 +161,31 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     this.hal.uploadBuffer(
       key,
       passId,
-      interleaveInstances(data),
+      this.getInterleaved(key, data),
       data.instanceCount,
     )
     this.uploadedPass.set(key, passId)
+  }
+
+  // Packed instance bytes for a region, reusing the cached buffer when the
+  // geometry is unchanged. A recolor (new `colors`, same geometry arrays)
+  // patches only the color lane; a drawCurves toggle returns the bytes as-is.
+  private getInterleaved(key: number, data: SyntenyInstanceData): ArrayBuffer {
+    const cached = this.interleaveCache.get(key)
+    if (cached?.geomToken === data.bp1Hi) {
+      if (cached.colors !== data.colors) {
+        patchInstanceColors(cached.buf, data.colors)
+        cached.colors = data.colors
+      }
+      return cached.buf
+    }
+    const buf = interleaveInstances(data)
+    this.interleaveCache.set(key, {
+      geomToken: data.bp1Hi,
+      colors: data.colors,
+      buf,
+    })
+    return buf
   }
 
   pick(x: number, y: number, state: SyntenyRenderState) {
@@ -173,6 +208,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
 
   dispose() {
     this.cache.clear()
+    this.interleaveCache.clear()
     this.hal.dispose()
   }
 

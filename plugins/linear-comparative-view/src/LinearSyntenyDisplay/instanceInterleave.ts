@@ -50,3 +50,16 @@ export function interleaveInstances(data: SyntenyInstanceData) {
   }
   return buf
 }
+
+// Overwrite only the per-instance color lane of an already-interleaved buffer.
+// A colorBy / opacityByIdentity toggle produces new `colors` over unchanged
+// geometry, so patching the single 4-byte color field per instance skips
+// re-packing the other 11 lanes. The GPU re-upload still happens (the HAL has
+// no partial-buffer update), but the dominant CPU interleave is avoided.
+// SYNC: the color write mirrors interleaveInstances exactly.
+export function patchInstanceColors(buf: ArrayBuffer, colors: Uint32Array) {
+  const u32 = new Uint32Array(buf)
+  for (let i = 0, n = colors.length; i < n; i++) {
+    u32[i * INSTANCE_STRIDE_F32 + FIELD_OFFSET_F32.color] = colors[i]!
+  }
+}
