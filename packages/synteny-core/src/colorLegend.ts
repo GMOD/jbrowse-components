@@ -46,23 +46,23 @@ export interface ColorChip {
   label: string
 }
 
-// Which CIGAR indel ops are actually painted in the current geometry. The
-// ribbon legend keys chip colors to what's on screen, so it lists an indel
-// chip only when a visible-width op of that kind exists — the worker already
-// drops sub-pixel indels, so at whole-genome zoom this is all-false and the
-// legend shows just the match/strand chips instead of dead "insertion"/
-// "deletion" swatches for detail the eye can't find.
-export interface CigarOpPresence {
-  I: boolean
-  D: boolean
-  N: boolean
-}
+// Bitmask over the CIGAR indel ops actually painted in the current geometry —
+// a set, so views union it with a single `|`. The ribbon legend keys chip
+// colors to what's on screen and lists an indel chip only when its bit is set;
+// the worker already drops sub-pixel indels, so at whole-genome zoom this is 0
+// and the legend shows just the match/strand chips instead of dead "insertion"/
+// "deletion" swatches for detail the eye can't find. Bits are independent of
+// the renderer's KIND_* numbering; the producer maps kinds to them.
+export type CigarOpMask = number
+export const CIGAR_OP_I = 1
+export const CIGAR_OP_D = 2
+export const CIGAR_OP_N = 4
 
 // Static menu preview / default legend: the two indel ops a typical alignment
 // carries. N (skip) is opt-in — it only appears in spliced alignments, so the
 // preview omits it while the data-driven legend still surfaces it when present.
-export const DEFAULT_CIGAR_OPS: CigarOpPresence = { I: true, D: true, N: false }
-export const NO_CIGAR_OPS: CigarOpPresence = { I: false, D: false, N: false }
+export const NO_CIGAR_OPS: CigarOpMask = 0
+export const DEFAULT_CIGAR_OPS: CigarOpMask = CIGAR_OP_I | CIGAR_OP_D
 
 // A continuous mode maps to a gradient ramp with domain labels; the structural
 // modes (default/strand) map to a set of discrete labeled chips — including the
@@ -81,20 +81,20 @@ const { cigarColors: defaultCigar } = colorSchemes.default
 const { posColor, negColor, cigarColors: strandCigar } = colorSchemes.strand
 
 // default/strand draw block colors plus the CIGAR indel ops present on screen.
-// One chip per present op, drawn from the active scheme's colors so they can't
+// One chip per set op bit, drawn from the active scheme's colors so they can't
 // drift from the renderer.
 function indelChips(
   cigar: { I: string; D: string; N: string },
-  ops: CigarOpPresence,
+  ops: CigarOpMask,
 ): ColorChip[] {
   const chips: ColorChip[] = []
-  if (ops.I) {
+  if (ops & CIGAR_OP_I) {
     chips.push({ color: cigar.I, label: 'insertion' })
   }
-  if (ops.D) {
+  if (ops & CIGAR_OP_D) {
     chips.push({ color: cigar.D, label: 'deletion' })
   }
-  if (ops.N) {
+  if (ops & CIGAR_OP_N) {
     chips.push({ color: cigar.N, label: 'skip' })
   }
   return chips
@@ -123,7 +123,7 @@ export function getColorBySwatch(
   {
     pointBased = false,
     cigarOps = DEFAULT_CIGAR_OPS,
-  }: { pointBased?: boolean; cigarOps?: CigarOpPresence } = {},
+  }: { pointBased?: boolean; cigarOps?: CigarOpMask } = {},
 ): ColorBySwatchSpec | undefined {
   // dotplot paints flat points and never draws CIGAR ops
   const ops = pointBased ? NO_CIGAR_OPS : cigarOps

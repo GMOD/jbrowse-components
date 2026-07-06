@@ -24,7 +24,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { CigarOpPresence, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { CigarOpMask, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 const DEFAULT_OVERDRAW_PX = 1000
 
@@ -231,13 +231,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * actually drawn on screen. The floating legend lists an indel chip only
        * when a visible-width op of that kind is painted somewhere in the view.
        */
-      get presentCigarKinds(): CigarOpPresence {
-        const displays = self.levels.flatMap(l => l.linearSyntenyDisplays)
-        return {
-          I: displays.some(d => d.presentCigarKinds.I),
-          D: displays.some(d => d.presentCigarKinds.D),
-          N: displays.some(d => d.presentCigarKinds.N),
-        }
+      get presentCigarKinds(): CigarOpMask {
+        return self.levels
+          .flatMap(l => l.linearSyntenyDisplays)
+          .reduce((mask, d) => mask | d.presentCigarKinds, 0)
       },
       /**
        * #getter

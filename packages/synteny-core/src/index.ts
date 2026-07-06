@@ -29,12 +29,15 @@ export type { Rgb } from './colorRamps.ts'
 export { ColorBySwatch } from './ColorBySwatch.tsx'
 export { ColorByLegend } from './ColorByLegend.tsx'
 export {
+  CIGAR_OP_D,
+  CIGAR_OP_I,
+  CIGAR_OP_N,
   NO_CIGAR_OPS,
   colorByShortLabel,
   getColorBySwatch,
 } from './colorLegend.ts'
 export type {
-  CigarOpPresence,
+  CigarOpMask,
   ColorBySwatchSpec,
   GradientStop,
 } from './colorLegend.ts'

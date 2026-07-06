@@ -1,6 +1,7 @@
 import { fireEvent, render } from '@testing-library/react'
 
 import { ColorByLegend } from './ColorByLegend.tsx'
+import { NO_CIGAR_OPS } from './colorLegend.ts'
 
 test('shows the mode title and gradient, and fires onClose', () => {
   const onClose = jest.fn()
@@ -29,11 +30,7 @@ test('default mode lists CIGAR-op chips with labels', () => {
 
 test('cigarOps hides indel chips when no indel is drawn on screen', () => {
   const { getByText, queryByText } = render(
-    <ColorByLegend
-      colorBy="default"
-      cigarOps={{ I: false, D: false, N: false }}
-      onClose={() => {}}
-    />,
+    <ColorByLegend colorBy="default" cigarOps={NO_CIGAR_OPS} onClose={() => {}} />,
   )
   getByText('match')
   expect(queryByText('insertion')).toBeNull()

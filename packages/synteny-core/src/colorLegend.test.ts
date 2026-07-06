@@ -1,4 +1,10 @@
-import { getColorBySwatch } from './colorLegend.ts'
+import {
+  CIGAR_OP_D,
+  CIGAR_OP_I,
+  CIGAR_OP_N,
+  NO_CIGAR_OPS,
+  getColorBySwatch,
+} from './colorLegend.ts'
 
 test('continuous modes get a gradient ramp with bounded domain labels', () => {
   const identity = getColorBySwatch('identity')
@@ -42,20 +48,16 @@ test('default/strand modes show labeled chips including CIGAR indels', () => {
 // painted on screen: no indels -> just the block/strand chips; N present ->
 // a "skip" chip appears (unlike the static preview, which omits it).
 test('cigarOps drives which indel chips the legend shows', () => {
-  const none = getColorBySwatch('default', {
-    cigarOps: { I: false, D: false, N: false },
-  })
+  const none = getColorBySwatch('default', { cigarOps: NO_CIGAR_OPS })
   if (none?.kind === 'chips') {
     expect(none.chips.map(c => c.label)).toEqual(['match'])
   }
-  const insertionOnly = getColorBySwatch('default', {
-    cigarOps: { I: true, D: false, N: false },
-  })
+  const insertionOnly = getColorBySwatch('default', { cigarOps: CIGAR_OP_I })
   if (insertionOnly?.kind === 'chips') {
     expect(insertionOnly.chips.map(c => c.label)).toEqual(['match', 'insertion'])
   }
   const withSkip = getColorBySwatch('strand', {
-    cigarOps: { I: false, D: true, N: true },
+    cigarOps: CIGAR_OP_D | CIGAR_OP_N,
   })
   if (withSkip?.kind === 'chips') {
     expect(withSkip.chips.map(c => c.label)).toEqual([

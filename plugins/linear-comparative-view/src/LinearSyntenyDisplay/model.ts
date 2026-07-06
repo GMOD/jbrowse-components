@@ -15,7 +15,7 @@ import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.t
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { CigarOpPresence, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { CigarOpMask, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export interface SyntenyFeatureData {
   strands: Int8Array
@@ -241,12 +241,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #getter
        * Which CIGAR indel ops are actually painted in the current geometry.
        * The worker only emits an indel instance for an op wide enough to draw
-       * (sub-pixel indels are dropped), so a `true` here means a visible-width
-       * op of that kind is on screen. The legend keys its indel chips off this
+       * (sub-pixel indels are dropped), so a set bit means a visible-width op
+       * of that kind is on screen. The legend keys its indel chips off this
        * rather than the coarse "file has any CIGAR" flag, so whole-genome zoom
        * (every indel sub-pixel) shows no dead insertion/deletion swatch.
        */
-      get presentCigarKinds(): CigarOpPresence {
+      get presentCigarKinds(): CigarOpMask {
         const { instanceData } = self
         return instanceData
           ? computePresentCigarKinds(
