@@ -587,9 +587,10 @@ export function hideTrackGeneric(self: GenericView, trackId: string) {
   const t = self.tracks.find(t => t.configuration.trackId === trackId)
   if (t) {
     self.tracks.remove(t)
-    // drop per-track session caches once no other open view holds the track
+    // drop the persisted connection-track config if no other view holds it
+    // (persisted → guards saved-session size; the volatile working-copy cache
+    // in SessionTracks is deliberately not pruned, see editableTrackConfigs)
     getSession(self).pruneConnectionTrackConfig?.(trackId)
-    getSession(self).pruneEditableTrackConfig?.(trackId)
     return true
   }
   return false

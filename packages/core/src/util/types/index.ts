@@ -203,7 +203,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   breakConnection?: (arg: AnyConfigurationModel) => void
   captureConnectionTrack?: (trackId: string) => void
   pruneConnectionTrackConfig?: (trackId: string) => void
-  pruneEditableTrackConfig?: (trackId: string) => void
   hydrateConnection?: (connectionId: string) => void
   adminMode?: boolean
   showWidget?: (widget: unknown) => void

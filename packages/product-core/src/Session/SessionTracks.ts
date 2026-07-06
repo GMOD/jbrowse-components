@@ -106,6 +106,13 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
        * hydration cache: it holds the live MST config node a shown track's
        * in-place quick-edits mutate, so the shared frozen base is never touched.
        * See agent-docs/ADR-032 and CONFIG_WORKING_COPY_PLAN.md.
+       *
+       * Not evicted: it's a pure memoization cache, bounded by the count of
+       * distinct tracks shown this session (each entry a lazily-hydrated config
+       * node), holding no authoritative state — the persisted delta is the
+       * source of truth, and reset/programmatic edits keep a retained copy in
+       * sync. Retention is volatile RAM only (never serialized), so it's not
+       * worth a reference-counted prune at every track-removal path.
        */
       editableTrackConfigs: new Map<string, IAnyStateTreeNode>(),
     }))
@@ -392,26 +399,6 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         resetTrackConfiguration(trackId: string) {
           if (trackId in self.trackConfigDeltas) {
             writeDelta(trackId, undefined)
-          }
-        },
-
-        /**
-         * #action
-         * Drop a track's private working copy once no open view still shows it,
-         * so the session-owned cache doesn't accumulate closed tracks. Lossless:
-         * the delta persists in trackConfigDeltas, so a re-shown track re-seeds
-         * its working copy from base+delta. Called from hideTrackGeneric; mirrors
-         * pruneConnectionTrackConfig.
-         */
-        pruneEditableTrackConfig(trackId: string) {
-          // has() is not for delete-safety (delete of a missing key is a no-op)
-          // — it short-circuits the getReferring() whole-tree walk when there's
-          // no working copy to drop, i.e. every admin-mode hide.
-          if (
-            self.editableTrackConfigs.has(trackId) &&
-            self.getReferring(trackId).length === 0
-          ) {
-            self.editableTrackConfigs.delete(trackId)
           }
         },
 
