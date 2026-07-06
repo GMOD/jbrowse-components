@@ -36,6 +36,8 @@ const PointSizeSlider = observer(function PointSizeSlider({
         max={max}
         step={step}
         size="small"
+        aria-label="point size"
+        data-testid="point-size-slider"
         valueLabelDisplay="auto"
         valueLabelFormat={(v: number) => `${v}${unit}`}
         onChange={v => {

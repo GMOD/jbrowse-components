@@ -187,6 +187,26 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         addTrackConf: superAddTrackConf,
         deleteTrackConf: superDeleteTrackConf,
       } = self
+      // A non-admin quick-edit (a track-menu `setSlot`) mutates the shared
+      // hydrated MST node of the base track config in place. When that track's
+      // delta is later dropped, the `tracks` getter returns the base by
+      // identity again and TrackConfigurationReference's hydration cache would
+      // hand back the stale, still-mutated node — so a "reset to default"
+      // visibly reverts to the last edited value. Dropping the cache entry
+      // forces a clean re-hydration from the untouched frozen config, the
+      // analog of the admin path getting a fresh node by replacing the frozen
+      // entry outright. No-op for embedded/product-core, whose MST-node bases
+      // were never put in the hydration cache.
+      function invalidateBaseHydration(trackId: string) {
+        const base = (self.jbrowse.tracks as PlainTrackConfig[]).find(
+          t => t.trackId === trackId,
+        )
+        if (base) {
+          const schema = pluginManager.getTrackType(base.type as string)
+            .configSchema
+          pluginManager.trackConfigHydrationCache.get(schema)?.delete(base)
+        }
+      }
       return {
         /**
          * #action
@@ -261,6 +281,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
                   self.trackConfigDeltas,
                   trackId,
                 )
+                invalidateBaseHydration(trackId)
               }
             } else if (sessionIdx !== -1) {
               // a user-added session track (no admin base): edit it in place. A
@@ -307,6 +328,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               self.trackConfigDeltas,
               trackId,
             )
+            invalidateBaseHydration(trackId)
           }
         },
 

@@ -227,6 +227,44 @@ test('reset discards the delta and reverts an open track in place', () => {
   expect(readConfObject(openTrack().configuration, 'name')).toBe(originalName)
 })
 
+test('reset reverts a live in-place setSlot edit (stale hydration node not reused)', () => {
+  // Regression: a live track-menu setSlot mutates the base config's shared
+  // hydrated MST node in place. Storing the delta rehydrates a fresh (merged)
+  // node, but dropping the delta on reset made the `tracks` getter return the
+  // base by identity again — and the hydration cache handed back the still-
+  // mutated node, so the reset visibly reverted to the edited value. Distinct
+  // from the snapshot-driven reset test above: only an in-place setSlot dirties
+  // the cached base node, so that test never exercised this path.
+  const { rootModel } = getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession
+  const view = session.views[0]!
+  const originalName = readConfObject(
+    session.tracks.find(t => t.trackId === TRACK_ID)!,
+    'name',
+  )
+
+  view.showTrack(TRACK_ID)
+  const openTrack = () =>
+    view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
+  const openConfig = () =>
+    openTrack().configuration as AnyConfigurationModel & {
+      setSlot: (slot: string, value: unknown) => void
+    }
+
+  // mutate the resolved config in place (what the track-menu slider does), then
+  // persist exactly as BaseTrackModel's debounced reaction would
+  openConfig().setSlot('name', 'Edited name')
+  session.updateTrackConfiguration(
+    getSnapshot(openConfig()) as unknown as PlainConfig,
+  )
+  expect(readConfObject(openConfig(), 'name')).toBe('Edited name')
+
+  session.resetTrackConfiguration(TRACK_ID)
+
+  expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
+  expect(readConfObject(openConfig(), 'name')).toBe(originalName)
+})
+
 test('a save identical to the base stores no delta (no spurious override)', () => {
   const { rootModel } = getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
