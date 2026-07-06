@@ -397,6 +397,26 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
+         * Drop a track's private working copy once no open view still shows it,
+         * so the session-owned cache doesn't accumulate closed tracks. Lossless:
+         * the delta persists in trackConfigDeltas, so a re-shown track re-seeds
+         * its working copy from base+delta. Called from hideTrackGeneric; mirrors
+         * pruneConnectionTrackConfig.
+         */
+        pruneEditableTrackConfig(trackId: string) {
+          // has() is not for delete-safety (delete of a missing key is a no-op)
+          // — it short-circuits the getReferring() whole-tree walk when there's
+          // no working copy to drop, i.e. every admin-mode hide.
+          if (
+            self.editableTrackConfigs.has(trackId) &&
+            self.getReferring(trackId).length === 0
+          ) {
+            self.editableTrackConfigs.delete(trackId)
+          }
+        },
+
+        /**
+         * #action
          */
         deleteTrackConf(trackConf: AnyConfigurationModel) {
           superDeleteTrackConf(trackConf)

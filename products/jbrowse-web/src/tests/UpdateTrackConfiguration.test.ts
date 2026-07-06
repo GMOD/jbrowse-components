@@ -14,6 +14,7 @@ interface PlainConfig {
 
 interface TestView {
   showTrack: (id: string) => void
+  hideTrack: (id: string) => void
   tracks: { configuration: AnyConfigurationModel }[]
 }
 
@@ -23,6 +24,7 @@ interface TestSession {
   tracks: AnyConfigurationModel[]
   sessionTracks: AnyConfigurationModel[]
   trackConfigDeltas: Record<string, PlainConfig>
+  editableTrackConfigs: Map<string, unknown>
   updateTrackConfiguration: (snap: PlainConfig) => void
   resetTrackConfiguration: (trackId: string) => void
   isTrackOverride: (trackId: string) => boolean
@@ -342,4 +344,28 @@ test('a live setSlot edit persists as a delta via the reaction (non-admin)', () 
   } finally {
     jest.useRealTimers()
   }
+})
+
+test('hiding a track prunes its working copy; re-show re-seeds from the delta', () => {
+  const { rootModel } = getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession
+  const view = session.views[0]!
+
+  view.showTrack(TRACK_ID)
+  session.updateTrackConfiguration(editedSnapshot(session))
+  // the shown track materialized a working copy
+  expect(session.editableTrackConfigs.has(TRACK_ID)).toBe(true)
+
+  view.hideTrack(TRACK_ID)
+  // no open view references it anymore, so the working copy is dropped
+  expect(session.editableTrackConfigs.has(TRACK_ID)).toBe(false)
+
+  // lossless: the delta persisted, so re-showing re-seeds the copy from
+  // base+delta and the edit is still there
+  view.showTrack(TRACK_ID)
+  const reopened = view.tracks.find(
+    t => t.configuration.trackId === TRACK_ID,
+  )!.configuration
+  expect(session.isTrackOverride(TRACK_ID)).toBe(true)
+  expect(readConfObject(reopened, 'name')).toBe('Edited name')
 })
