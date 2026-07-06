@@ -80,28 +80,24 @@ export function clipSyntenyFeature(
     const opQLo = bp1
     const opQHi = bp1Next
     if (opQHi >= winStart && opQLo <= winEnd) {
-      if (isMatchOp(op)) {
+      if (qAdv > 0) {
+        // Query-consuming op (match or D/N): trim to the window in query space.
         const cLo = Math.max(opQLo, winStart)
         const cHi = Math.min(opQHi, winEnd)
         if (cHi > cLo) {
           out.push(((cHi - cLo) << 4) | op)
           qLo = Math.min(qLo, cLo)
           qHi = Math.max(qHi, cHi)
-          // target(q) = bp2 + (q - bp1) * revTarget (walk-entry bp1/bp2)
-          extendTarget(
-            bp2 + (cLo - bp1) * revTarget,
-            bp2 + (cHi - bp1) * revTarget,
-          )
-        }
-      } else if (qAdv > 0) {
-        // D/N: query-consuming gap (target is a point at bp2)
-        const cLo = Math.max(opQLo, winStart)
-        const cHi = Math.min(opQHi, winEnd)
-        if (cHi > cLo) {
-          out.push(((cHi - cLo) << 4) | op)
-          qLo = Math.min(qLo, cLo)
-          qHi = Math.max(qHi, cHi)
-          extendTarget(bp2, bp2)
+          if (isMatchOp(op)) {
+            // matches map target 1:1: target(q) = bp2 + (q - bp1) * revTarget
+            extendTarget(
+              bp2 + (cLo - bp1) * revTarget,
+              bp2 + (cHi - bp1) * revTarget,
+            )
+          } else {
+            // D/N consume no target, so it stays a point at bp2
+            extendTarget(bp2, bp2)
+          }
         }
       } else if (bp1 >= winStart && bp1 <= winEnd) {
         // I: target-consuming gap at a single query position; keep it whole
@@ -170,8 +166,18 @@ export function clipLargeBlockToWindow({
   if (!r0 || r0.region.reversed) {
     return undefined
   }
-  const winStart = winCumLo - r0.bpBefore + r0.region.start
-  const winEnd = winCumHi - r0.bpBefore + r0.region.start
+  // Snap the window to integer bp (widen outward). winCumLo/Hi are
+  // pixel-derived (offsetPx * bpPerPx), so they carry a sub-bp fraction. The
+  // window is only a coarse "which ops to include" bound, but the clip trims
+  // the boundary match op to start exactly at winStart — a fractional winStart
+  // makes the whole re-anchored block's coords fractional (the op lengths stay
+  // integer), rigidly shifting every tile/indel off the true integer-bp grid by
+  // that fraction. At several px/bp that reads as indels landing mid-basepair,
+  // misaligned vs the exact-bp LGVSyntenyDisplay. Flooring/ceiling keeps the
+  // clipped block on the alignment's integer grid; the <1bp widening is well
+  // inside the pan buffer.
+  const winStart = Math.floor(winCumLo - r0.bpBefore + r0.region.start)
+  const winEnd = Math.ceil(winCumHi - r0.bpBefore + r0.region.start)
   return clipSyntenyFeature(
     parseCigar2Typed(cigar),
     start,
