@@ -86,29 +86,6 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
   return highestRpcSessionId
 }
 
-/**
- * given an MST node, get the renderprops of the first parent container that
- * has renderProps
- * @param node -
- * @returns renderprops, or empty object if none found
- */
-export function getParentRenderProps(node: IAnyStateTreeNode) {
-  interface NodeWithRenderProps extends IAnyStateTreeNode {
-    renderProps: () => Record<string, unknown>
-  }
-  for (
-    let currentNode = getParent<IAnyStateTreeNode>(node);
-    !isRoot(currentNode);
-    currentNode = getParent<IAnyStateTreeNode>(currentNode)
-  ) {
-    if ('renderProps' in currentNode) {
-      return (currentNode as NodeWithRenderProps).renderProps()
-    }
-  }
-
-  return {}
-}
-
 export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 

@@ -30,7 +30,6 @@ import {
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import {
-  getParentRenderProps,
   hideTrackGeneric,
   showTrackGeneric,
   toggleTrackGeneric,
@@ -851,17 +850,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get displayedRegionsTotalPx() {
         return self.bpPerPx === 0 ? 0 : this.totalBp / self.bpPerPx
-      },
-
-      /**
-       * #method
-       */
-      renderProps() {
-        return {
-          ...getParentRenderProps(self),
-          bpPerPx: self.bpPerPx,
-          colorByCDS: self.colorByCDS,
-        }
       },
 
       /**

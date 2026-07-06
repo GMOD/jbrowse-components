@@ -1,5 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
 import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { SerializableThemeArgs } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AssertSessionModel } from '@jbrowse/product-core'
 
@@ -74,19 +75,24 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      // Resolved MUI theme from the config `theme` slot, mirroring the
-      // product's ThemeProvider. Lets headless/RPC consumers derive
-      // theme-dependent state without a mounted component.
-      get theme() {
-        return createJBrowseTheme(getConf(self, 'theme'))
+      // Serializable theme description (the canonical `themeOptions` contract
+      // shared with the app-core/web sessions), safe to cross the RPC worker
+      // boundary. There is no theme switching here, so the active theme is
+      // always 'default'.
+      get themeOptions(): SerializableThemeArgs {
+        return {
+          configTheme: getConf(self, 'theme'),
+          themeName: 'default',
+        }
       },
       /**
-       * #method
+       * #getter
        */
-      renderProps() {
-        return {
-          theme: getConf(self, 'theme'),
-        }
+      // Resolved MUI theme, mirroring the product's ThemeProvider. Lets
+      // headless/RPC consumers derive theme-dependent state without a mounted
+      // component.
+      get theme() {
+        return createJBrowseThemeFromArgs(this.themeOptions)
       },
     }))
     .actions(self => ({

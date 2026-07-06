@@ -5,12 +5,10 @@ import { getParent, hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { getConf } from '../../configuration/index.ts'
 import {
   getContainingTrack,
-  getContainingView,
   getEnv,
   statusFraction,
   statusMessageText,
 } from '../../util/index.ts'
-import { getParentRenderProps } from '../../util/tracks.ts'
 import { ElementId } from '../../util/types/mst.ts'
 
 import type { MenuItem } from '../../ui/index.ts'
@@ -143,19 +141,6 @@ function stateModelFactory() {
       },
     }))
     .views(self => ({
-      /**
-       * #method
-       * the react props that are passed to the Renderer when data
-       * is rendered in this display. these are serialized and sent to the
-       * worker for server-side rendering
-       */
-      renderProps() {
-        return {
-          ...getParentRenderProps(self),
-          notReady: self.isMinimized || getContainingView(self).minimized,
-          rpcDriverName: self.effectiveRpcDriverName,
-        }
-      },
       /**
        * #method
        * props passed to the renderer's React "Rendering" component.

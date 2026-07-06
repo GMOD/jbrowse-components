@@ -12,7 +12,6 @@ import {
 import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
-  getParentRenderProps,
   hideTrackGeneric,
   showTrackGeneric,
   toggleTrackGeneric,
@@ -434,16 +433,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         get views() {
           return [self.hview, self.vview]
-        },
-
-        /**
-         * #method
-         */
-        renderProps() {
-          return {
-            ...getParentRenderProps(self),
-            drawCigar: self.drawCigar,
-          }
         },
 
         /**
