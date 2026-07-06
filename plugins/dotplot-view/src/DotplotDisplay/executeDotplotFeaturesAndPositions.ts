@@ -1,14 +1,11 @@
 import { parseCigar2 } from '@jbrowse/alignments-core'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
@@ -63,8 +60,11 @@ export async function executeDotplotFeaturesAndPositions({
   lodMode?: BaseOptions['lodMode']
   statusCallback?: StatusCallback
 }) {
-  const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
-  const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
 
   const rawFeatures = await dataAdapter.getFeaturesInMultipleRegionsArray(
     regions,

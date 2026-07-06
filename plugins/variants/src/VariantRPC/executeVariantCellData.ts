@@ -1,5 +1,5 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 
@@ -24,7 +24,6 @@ import type {
   VariantFeatureInfo,
 } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -252,13 +251,11 @@ export async function executeVariantCellData({
       }))
     : undefined
 
-  const { dataAdapter } = await getAdapter(
+  const adapter = await getFeatureAdapterOrThrow({
     pluginManager,
     sessionId,
     adapterConfig,
-  )
-
-  const adapter = dataAdapter as BaseFeatureDataAdapter
+  })
 
   const rawFeatures = await updateStatus(
     'Loading features',

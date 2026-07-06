@@ -1,4 +1,4 @@
-import { getFeatureAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   checkStopToken2,
   createStopTokenChecker,
@@ -39,17 +39,12 @@ export async function fetchFeaturesFromAdapter({
 }) {
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
-  const dataAdapter = await getFeatureAdapter({
+  const dataAdapter = await getFeatureAdapterOrThrow({
     pluginManager,
     sessionId,
     adapterConfig,
     sequenceAdapter,
   })
-  if (!dataAdapter) {
-    throw new Error(
-      `adapter "${adapterConfig.type}" is not a feature adapter`,
-    )
-  }
 
   const fetchOpts: BaseOptions & { filterBy?: FilterBy } = {
     stopToken,

@@ -1,9 +1,8 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 
 // Fetches reference sequence over [regionStart, regionEnd], extending up to
@@ -42,9 +41,11 @@ export async function fetchReferenceSequence({
       seqFetchEnd = e
     }
   }
-  const seqAdapter = (
-    await getAdapter(pluginManager, sessionId, sequenceAdapter)
-  ).dataAdapter as BaseFeatureDataAdapter
+  const seqAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig: sequenceAdapter,
+  })
   const seqFeats = await firstValueFrom(
     seqAdapter
       .getFeatures({

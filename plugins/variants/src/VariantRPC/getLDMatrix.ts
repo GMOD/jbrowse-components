@@ -1,4 +1,4 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import {
@@ -15,7 +15,6 @@ import { GENOTYPE_SPLITTER as SPLITTER } from '../shared/constants.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken, StopTokenChecker } from '@jbrowse/core/util/stopToken'
 const SLASH_CODE = 47 // '/'
@@ -559,8 +558,11 @@ export async function getLDMatrix({
     statusCallback,
   } = args
   const stopTokenCheck = createStopTokenChecker(stopToken)
-  const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
-  const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
 
   // Get all samples from adapter
   const sources = await dataAdapter.getSources(regions)

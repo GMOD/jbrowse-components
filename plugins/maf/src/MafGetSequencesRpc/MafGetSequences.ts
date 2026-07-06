@@ -1,11 +1,10 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
 import { processFeaturesToFasta } from '../util/processFeaturesToFasta.ts'
 
 import type { BaseMafRpcArgs, Sample } from '../types.ts'
 import type { FastaResult } from '../util/processFeaturesToFasta.ts'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -41,9 +40,11 @@ export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRe
       showAllLetters,
       includeInsertions,
     } = deserializedArgs
-    const dataAdapter = (
-      await getAdapter(this.pluginManager, sessionId, adapterConfig)
-    ).dataAdapter as BaseFeatureDataAdapter
+    const dataAdapter = await getFeatureAdapterOrThrow({
+      pluginManager: this.pluginManager,
+      sessionId,
+      adapterConfig,
+    })
 
     const features = await dataAdapter.getFeaturesArray(
       regions[0]!,

@@ -1,4 +1,4 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { revcom, revlist } from '@jbrowse/core/util'
 import {
   convertCodingSequenceToPeptides,
@@ -18,7 +18,6 @@ import { getSubfeatures, isCDS } from '../util.ts'
 
 import type { PeptideData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { GeneticCode } from '@jbrowse/core/util/geneticCodes'
 
@@ -35,14 +34,14 @@ async function fetchSequence(
 ) {
   const { sessionId, sequenceAdapter } = props
   try {
-    const { dataAdapter } = await getAdapter(
+    const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager,
       sessionId,
-      sequenceAdapter,
-    )
+      adapterConfig: sequenceAdapter,
+    })
 
     const feats = await firstValueFrom(
-      (dataAdapter as BaseFeatureDataAdapter)
+      dataAdapter
         .getFeatures({
           ...region,
           refName: region.originalRefName ?? region.refName,

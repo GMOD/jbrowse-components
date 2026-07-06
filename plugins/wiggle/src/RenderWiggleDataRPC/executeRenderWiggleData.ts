@@ -1,4 +1,4 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
@@ -103,9 +103,11 @@ export async function executeRenderWiggleData({
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
-  const dataAdapter = (
-    await getAdapter(pluginManager, sessionId, adapterConfig)
-  ).dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
 
   // statusCallback/stopToken let the adapter report determinate download progress
   // (e.g. BigWig block fetches) and stay interruptible mid-fetch

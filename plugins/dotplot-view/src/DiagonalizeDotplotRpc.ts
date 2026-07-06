@@ -1,4 +1,4 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { dedupe } from '@jbrowse/core/util'
 import {
@@ -8,7 +8,6 @@ import {
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { extractAlignmentData } from '@jbrowse/synteny-core'
 
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -58,15 +57,13 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     checkStopToken(stopToken)
     statusCallback?.('Fetching features')
 
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
+    const dataAdapter = await getFeatureAdapterOrThrow({
+      pluginManager: this.pluginManager,
       sessionId,
       adapterConfig,
-    )
+    })
     const feats = dedupe(
-      await (
-        dataAdapter as BaseFeatureDataAdapter
-      ).getFeaturesInMultipleRegionsArray(referenceRegions, {
+      await dataAdapter.getFeaturesInMultipleRegionsArray(referenceRegions, {
         sessionId,
         stopToken,
         statusCallback,

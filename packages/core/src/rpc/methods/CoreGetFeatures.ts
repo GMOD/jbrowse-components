@@ -1,11 +1,10 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
+import { getFeatureAdapterOrThrow } from '../../data_adapters/getFeatureAdapter.ts'
 import RpcMethodTypeWithRenameRegions from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegions.ts'
 import SimpleFeature from '../../util/simpleFeature.ts'
 
-import type { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import type { Region } from '../../util/index.ts'
 import type { StatusCallback } from '../../util/progress.ts'
 import type { SimpleFeatureSerialized } from '../../util/simpleFeature.ts'
@@ -48,9 +47,11 @@ export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions {
       opts,
     } = await this.deserializeArguments(args, rpcDriver)
 
-    const dataAdapter = (
-      await getAdapter(this.pluginManager, sessionId, adapterConfig)
-    ).dataAdapter as BaseFeatureDataAdapter
+    const dataAdapter = await getFeatureAdapterOrThrow({
+      pluginManager: this.pluginManager,
+      sessionId,
+      adapterConfig,
+    })
 
     const r = await firstValueFrom(
       dataAdapter

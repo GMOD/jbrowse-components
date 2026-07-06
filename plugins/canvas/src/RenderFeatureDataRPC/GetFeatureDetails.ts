@@ -1,8 +1,7 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithRenameRegion from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegion'
 
 import type { GetFeatureDetailsArgs } from './rpcTypes.ts'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export default class GetFeatureDetails extends RpcMethodTypeWithRenameRegion {
   name = 'GetCanvasFeatureDetails'
@@ -10,9 +9,11 @@ export default class GetFeatureDetails extends RpcMethodTypeWithRenameRegion {
   async execute(args: GetFeatureDetailsArgs, _rpcDriver: string) {
     const { sessionId, adapterConfig, featureId, region } = args
 
-    const dataAdapter = (
-      await getAdapter(this.pluginManager, sessionId, adapterConfig)
-    ).dataAdapter as BaseFeatureDataAdapter
+    const dataAdapter = await getFeatureAdapterOrThrow({
+      pluginManager: this.pluginManager,
+      sessionId,
+      adapterConfig,
+    })
 
     const featuresArray = await dataAdapter.getFeaturesArray(region)
 

@@ -1,4 +1,4 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { groupBy, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
@@ -104,9 +104,11 @@ export async function executeRenderMultiWiggleData({
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
-  const dataAdapter = (
-    await getAdapter(pluginManager, sessionId, adapterConfig)
-  ).dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
 
   const perSource = await updateStatus(
     'Loading wiggle data',

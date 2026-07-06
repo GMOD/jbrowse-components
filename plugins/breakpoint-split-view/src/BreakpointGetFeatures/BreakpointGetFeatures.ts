@@ -1,9 +1,8 @@
 import { getClip } from '@jbrowse/cigar-utils'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -94,9 +93,11 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
       opts,
     } = await this.deserializeArguments(args, rpcDriver)
 
-    const dataAdapter = (
-      await getAdapter(this.pluginManager, sessionId, adapterConfig)
-    ).dataAdapter as BaseFeatureDataAdapter
+    const dataAdapter = await getFeatureAdapterOrThrow({
+      pluginManager: this.pluginManager,
+      sessionId,
+      adapterConfig,
+    })
 
     const features = await dataAdapter.getFeaturesInMultipleRegionsArray(
       regions,

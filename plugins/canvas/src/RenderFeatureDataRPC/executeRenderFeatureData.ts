@@ -1,4 +1,4 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
@@ -21,7 +21,6 @@ import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 import type { FeatureDataResult, RenderFeatureDataArgs } from './rpcTypes.ts'
 import type { FeatureLayout, PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 
 export async function executeRenderFeatureData({
@@ -58,9 +57,11 @@ export async function executeRenderFeatureData({
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
-  const dataAdapter = (
-    await getAdapter(pluginManager, sessionId, adapterConfig)
-  ).dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
 
   // Stage 1 (cheap): index-only byte estimate, before any feature download. An
   // over-budget region short-circuits here, so a whole-genome fan-out never

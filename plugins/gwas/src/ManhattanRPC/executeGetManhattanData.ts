@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { rpcResult } from '@jbrowse/core/util/librpc'
@@ -14,7 +15,6 @@ import { makeLdEvaluator } from './makeLdEvaluator.ts'
 import type { LDRecordSource } from './ldToIndex.ts'
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
 // Pure reducer: features → ManhattanRpcResult. Extracted so it can be unit-
@@ -120,9 +120,11 @@ export async function executeGetManhattanData({
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
-  const dataAdapter = (
-    await getAdapter(pluginManager, sessionId, adapterConfig)
-  ).dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
 
   const features = await updateStatus('Loading GWAS data', statusCallback, () =>
     dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),

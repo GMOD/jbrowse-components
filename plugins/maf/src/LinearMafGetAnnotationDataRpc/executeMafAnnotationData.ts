@@ -1,10 +1,9 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type { MafFrameRecord } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -44,12 +43,11 @@ export async function executeMafAnnotationData({
 }): Promise<LinearMafGetAnnotationDataResult> {
   const { regions, adapterConfig, sessionId, stopToken } = args
   const region = regions[0]!
-  const { dataAdapter } = await getAdapter(
+  const adapter = await getFeatureAdapterOrThrow({
     pluginManager,
     sessionId,
     adapterConfig,
-  )
-  const adapter = dataAdapter as BaseFeatureDataAdapter
+  })
 
   const records: MafFrameRecord[] = []
   await subscribeToObservable(adapter.getFeatures(region, { stopToken }), f => {

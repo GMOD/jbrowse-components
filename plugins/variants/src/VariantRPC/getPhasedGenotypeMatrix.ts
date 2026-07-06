@@ -1,4 +1,4 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
@@ -6,7 +6,6 @@ import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAl
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type {
   LastStopTokenCheck,
@@ -44,8 +43,11 @@ export async function getPhasedGenotypeMatrix({
     sampleInfo,
     statusCallback,
   } = args
-  const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
-  const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
 
   // Hoist per-source key resolution and max ploidy out of the feature loop.
   // Build per-source resolved entries first; row buffers are pre-sized to

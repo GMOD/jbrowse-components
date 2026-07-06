@@ -1,4 +1,4 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
@@ -8,7 +8,6 @@ import type { Source } from '../shared/types.ts'
 import type { GenotypeCallback } from '@gmod/vcf'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type {
   Feature,
@@ -53,8 +52,11 @@ export async function getGenotypeMatrix({
     stopTokenCheck,
     statusCallback,
   } = args
-  const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
-  const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
 
   // Hoist sample-key resolution out of the per-feature loop. Per (source ×
   // feature) the previous code recomputed `sampleName ?? name`, constant per

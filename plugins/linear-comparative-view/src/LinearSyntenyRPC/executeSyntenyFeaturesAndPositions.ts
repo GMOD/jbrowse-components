@@ -1,5 +1,5 @@
 import { parseCigar2Typed } from '@jbrowse/alignments-core'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   cmpStr,
   createProgressReporter,
@@ -19,10 +19,7 @@ import {
 import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -86,9 +83,11 @@ export async function executeSyntenyFeaturesAndPositions({
   lodMode?: BaseOptions['lodMode']
   statusCallback?: StatusCallback
 }) {
-  const dataAdapter = (
-    await getAdapter(pluginManager, sessionId, adapterConfig)
-  ).dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
 
   const v1 = queryView
   const v2 = targetView

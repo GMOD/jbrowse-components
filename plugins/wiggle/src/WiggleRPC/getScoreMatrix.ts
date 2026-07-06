@@ -1,10 +1,9 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { groupBy } from '@jbrowse/core/util'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export async function getScoreMatrix({
   pluginManager,
@@ -21,8 +20,11 @@ export async function getScoreMatrix({
     bpPerPx,
     stopTokenCheck,
   } = args
-  const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
-  const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
 
   const r0 = regions[0]!
   const r0len = r0.end - r0.start

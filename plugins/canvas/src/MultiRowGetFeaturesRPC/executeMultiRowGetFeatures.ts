@@ -1,4 +1,4 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 import {
@@ -10,7 +10,6 @@ import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
 
 import type { MultiRowGetFeaturesArgs } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export async function executeMultiRowGetFeatures({
   pluginManager,
@@ -30,9 +29,11 @@ export async function executeMultiRowGetFeatures({
   } = args
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
-  const dataAdapter = (
-    await getAdapter(pluginManager, sessionId, adapterConfig)
-  ).dataAdapter as BaseFeatureDataAdapter
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  })
 
   const features = await updateStatus('Fetching features', statusCallback, () =>
     dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
