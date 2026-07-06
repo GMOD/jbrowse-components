@@ -2236,6 +2236,9 @@ export const specs: ScreenshotSpec[] = [
             tracks: [['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava']],
             drawCurves: false,
             colorBy: 'default',
+            // legend would read just "match" here (whole-genome zoom drops the
+            // sub-pixel indels, and default red is self-evident) — hide it
+            showColorLegend: false,
             // drop short minimap2 alignments so the shared backbone reads as
             // clean ribbons instead of a dense noise band
             minAlignmentLength: 10000,
