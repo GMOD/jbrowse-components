@@ -79,6 +79,9 @@ test('getFeatures returns nothing for an unknown assembly even when its refName 
   const adapter = makeAdapter()
   // 'chr1' is a grape (target) refName; an unknown assembly must not borrow
   // target-side features just because the refName happens to match.
+  // the adapter console.warns when it can't find the assembly, which is
+  // expected here since 'unknown' is intentionally not one of its assemblies
+  const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const features = adapter.getFeatures({
     refName: 'chr1',
     start: 0,
@@ -87,6 +90,7 @@ test('getFeatures returns nothing for an unknown assembly even when its refName 
   })
   const fa = await firstValueFrom(features.pipe(toArray()))
   expect(fa.length).toBe(0)
+  consoleWarn.mockRestore()
 })
 
 test('getRefNames returns query ref names for query assembly', async () => {

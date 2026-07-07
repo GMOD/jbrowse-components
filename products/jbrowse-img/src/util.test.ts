@@ -51,12 +51,18 @@ describe('convert', () => {
   })
 
   test('a nonzero exit code is surfaced', () => {
+    // convert() console.errors any non-empty stderr before throwing on the
+    // nonzero status, so a console.error here is expected
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
     mockSpawnSync.mockReturnValue(
       result({ status: 1, stderr: Buffer.from('boom') }),
     )
     expect(() => {
       convert('<svg/>', { out: 'out.png' })
     }).toThrow(/exited with/)
+    consoleError.mockRestore()
   })
 
   test('a successful conversion does not throw', () => {

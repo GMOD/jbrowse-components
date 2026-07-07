@@ -163,6 +163,20 @@ describe('tracksById hydration', () => {
 })
 
 describe('connection track persistence', () => {
+  // hydrateConnection (below) replays connect() on a config with no
+  // assemblyNames; connect() catches the resulting error and reports it via
+  // session.notifyError, but also console.errors it along the way. The
+  // rejection resolves asynchronously (after a dynamic import), possibly
+  // after the test body returns, so the spy stays installed for the whole
+  // describe block rather than a single test.
+  let consoleError: jest.SpyInstance
+  beforeAll(() => {
+    consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
+  afterAll(() => {
+    consoleError.mockRestore()
+  })
+
   const assembly = {
     name: 'assembly1',
     sequence: {
