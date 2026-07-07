@@ -39,12 +39,6 @@ const useStyles = makeStyles()({
   mr: {
     marginRight: '0.5em',
   },
-  image: {
-    maxWidth: '100%',
-    maxHeight: 150,
-    objectFit: 'contain',
-    marginTop: '0.5em',
-  },
 })
 
 const PluginCard = observer(function PluginCard({
@@ -94,14 +88,6 @@ const PluginCard = observer(function PluginCard({
         </div>
         <Typography className={classes.bold}>Description:</Typography>
         <Typography>{description}</Typography>
-        {plugin.image ? (
-          <img
-            className={classes.image}
-            src={plugin.image}
-            alt={`${plugin.name} screenshot`}
-            loading="lazy"
-          />
-        ) : null}
         {resolved.compatible ? null : (
           <Typography color="error">
             Not compatible with this version of JBrowse (requires JBrowse{' '}

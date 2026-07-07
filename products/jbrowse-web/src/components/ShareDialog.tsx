@@ -140,7 +140,6 @@ const ShareDialog = observer(function ShareDialog({
         </DialogContent>
         <DialogActions>
           <Button
-            variant="contained"
             startIcon={<BookmarkAddIcon />}
             disabled={disabled}
             onClick={event => {
@@ -158,7 +157,6 @@ const ShareDialog = observer(function ShareDialog({
           </Button>
 
           <Button
-            variant="contained"
             startIcon={<ContentCopyIcon />}
             disabled={disabled}
             onClick={async () => {
@@ -173,7 +171,6 @@ const ShareDialog = observer(function ShareDialog({
           </Button>
 
           <Button
-            variant="contained"
             onClick={() => {
               handleClose()
             }}
