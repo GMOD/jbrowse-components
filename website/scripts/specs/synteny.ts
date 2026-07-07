@@ -232,7 +232,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 1000,
     viewportHeight: 500,
-    crop: { x: 0, y: 0, width: 1500, height: 470 },
+    // crop to the left "Quick start" column; the right-hand "Synteny dataset to
+    // display between row 1 and 2" panel is auto-handled by the quick-start path
+    // and only adds noise, so it's cropped out
+    crop: { x: 0, y: 0, width: 720, height: 470 },
     actions: [
       { type: 'click', text: 'Add' },
       { type: 'waitForText', text: 'Linear synteny view' },
@@ -263,10 +266,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
           { type: 'box', anchor: { selector: 'li[data-value="ecoli_ava"]' } },
           {
             type: 'text',
-            text: 'Open Quick start and pick your all-vs-all track',
-            x: 130,
-            y: 345,
-            maxWidth: 430,
+            text: 'Pick your all-vs-all track',
+            x: 400,
+            y: 130,
+            maxWidth: 300,
           },
         ],
       },
@@ -285,10 +288,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
           },
           {
             type: 'text',
-            text: 'Every assembly in the track becomes a row — the one all-vs-all track backs every band',
-            x: 520,
-            y: 340,
-            maxWidth: 470,
+            text: 'Every assembly becomes a row, then Launch',
+            x: 400,
+            y: 200,
+            maxWidth: 300,
           },
           { type: 'circle', text: '3', anchor: { text: 'Launch' }, dx: 58 },
           { type: 'box', anchor: { text: 'Launch' } },

@@ -2055,6 +2055,10 @@ export default function baseStateModelFactory(
               self,
               autorun(
                 () => {
+                  const view = getContainingView(self) as LinearGenomeViewModel
+                  if (!view.initialized) {
+                    return
+                  }
                   if (self.scrollTop > self.scrollableHeight) {
                     self.setScrollTop(self.scrollableHeight)
                   }

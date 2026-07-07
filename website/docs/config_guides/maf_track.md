@@ -10,7 +10,7 @@ A MAF track shows a multiple alignment of several species against a reference
 genome: one row per aligned species, with a coverage summary on top. JBrowse
 reads three formats, all configured as a `MafTrack` with a `LinearMafDisplay`.
 
-<Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way multiz alignment (C. elegans and related nematodes): the coverage band on top, then one row per species ordered by the guide tree in the left sidebar, with positions where a species differs from the reference drawn as colored marks."/>
+<Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way multiz alignment (C. elegans and related nematodes), with the ce11 NCBI RefSeq gene lane on top for context: the coverage band, then one row per species ordered by the guide tree in the left sidebar, with positions where a species differs from the reference drawn as colored marks. The conserved alignment blocks line up with the coding exons above."/>
 
 ## Adapters
 

@@ -1,7 +1,10 @@
 import { getContextMenuItems } from './contextMenu.ts'
 
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
-import type { CigarHitResult, ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type {
+  CigarHitResult,
+  ResolvedBlock,
+} from '../../shared/hitTestTypes.ts'
 import type { FilterBy } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 

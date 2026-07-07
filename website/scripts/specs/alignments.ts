@@ -822,35 +822,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 700,
   },
 
-  // Zoomed to 1 kb so reads resolve individually. Default feature height (not
-  // compact) keeps each read and its teal per-read splice connector distinct.
-  {
-    mode: 'url',
-    name: 'rnaseq/reads_zoomed',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg19',
-      loc: 'chr7:5,568,000-5,569,000',
-      trackLabels: 'offset',
-      tracks: [
-        'ncbi_gff_hg19',
-        {
-          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            coverageHeight: 100,
-            height: 460,
-            maxHeight: 2000,
-            minSashimiScore: 3,
-          },
-        },
-      ],
-    }),
-    readyText: 'ACTB',
-    readyTimeout: 60000,
-    settleMs: 15000,
-    viewportHeight: 700,
-  },
-
   // Tighter window on a few spliced reads: the grey exon-aligned ends joined by a
   // thin teal line across the skipped intron, the per-read connector the "Looking
   // at a specific read" section describes.

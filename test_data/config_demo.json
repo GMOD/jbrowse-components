@@ -1083,7 +1083,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "hg002_dipcall_hap1_t2t",
-      "name": "HG002 dipcall hap1 (T2T-Q100 assembly vs GRCh38)",
+      "name": "HG002 dipcall hap1",
       "description": "Whole de novo assembly contigs aligned to GRCh38; single BAM records span entire chromosomes. Source: GIAB AshkenazimTrio dipcall_output",
       "assemblyNames": ["hg38"],
       "category": ["Assembly alignments"],
@@ -1112,7 +1112,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "hg002_dipcall_hap2_t2t",
-      "name": "HG002 dipcall hap2 (T2T-Q100 assembly vs GRCh38)",
+      "name": "HG002 dipcall hap2",
       "description": "Whole de novo assembly contigs aligned to GRCh38; single BAM records span entire chromosomes. Source: GIAB AshkenazimTrio dipcall_output",
       "assemblyNames": ["hg38"],
       "category": ["Assembly alignments"],
@@ -1141,7 +1141,7 @@
     {
       "type": "VariantTrack",
       "trackId": "hg002_dipcall_dip_vcf_t2t",
-      "name": "HG002 dipcall variant calls (T2T-Q100 assembly vs GRCh38)",
+      "name": "HG002 dipcall variant calls",
       "description": "Diploid small + structural variant calls derived from the hap1/hap2 assembly-to-GRCh38 alignments. Source: GIAB AshkenazimTrio dipcall_output",
       "assemblyNames": ["hg38"],
       "category": ["Assembly alignments"],

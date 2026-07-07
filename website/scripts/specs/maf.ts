@@ -63,20 +63,34 @@ export const mafSpecs: ScreenshotSpec[] = [
     // slow to fetch + render, so the settle is long.
     mode: 'url',
     name: 'maf_track',
-    url: lgvSession(CE_MAF, {
-      // zoomed out further: wider window so the per-species
-      // mismatch columns read as a conservation pattern, not just a handful
-      // of bases
-      assembly: 'ce11',
-      loc: 'chrI:3,000,648-3,001,368',
-      tracks: [
+    url: sessionSpec(CE_MAF, {
+      // gene context above the alignment: the ce11 RefSeq gene lane so the
+      // conserved coding blocks line up with the per-species mismatch columns
+      sessionTracks: [CE11_GENE_TRACK],
+      views: [
         {
-          trackId: 'ce11.26way',
-          // fit-to-display-height is the default; rows fill heightOverride
-          displaySnapshot: {
-            type: 'LinearMafDisplay',
-            heightOverride: 360,
-          },
+          type: 'LinearGenomeView',
+          assembly: 'ce11',
+          // wider window (~3.5kb) so the per-species mismatch columns read as a
+          // conservation pattern under the genes, not just a handful of bases
+          loc: 'chrI:2,998,300-3,001,800',
+          tracks: [
+            {
+              trackId: 'ce11_ncbi_refseq',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                displayMode: 'compact',
+              },
+            },
+            {
+              trackId: 'ce11.26way',
+              // fit-to-display-height is the default; rows fill heightOverride
+              displaySnapshot: {
+                type: 'LinearMafDisplay',
+                heightOverride: 360,
+              },
+            },
+          ],
         },
       ],
     }),

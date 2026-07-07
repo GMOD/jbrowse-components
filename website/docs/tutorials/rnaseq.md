@@ -22,13 +22,6 @@ gene annotation (an NCBI GFF) sits above it.
 
 <Figure caption="RNA-seq reads over ACTB: the coverage histogram (top), strand-colored splice arcs, the spliced read pileup, and the NCBI RefSeq gene model." src="/img/rnaseq/basic.png" />
 
-## Zooming in on the reads
-
-Zoom in to resolve the individual reads. Each grey box is one read, and each
-read corresponds to a fragment of RNA.
-
-<Figure caption="Zoomed to 1 kb, individual reads resolve. Grey boxes are reads; thin teal lines are the per-read splice connectors across skipped introns." src="/img/rnaseq/reads_zoomed.png" />
-
 ## Read depth reflects expression level
 
 The more reads that stack up over a region, the more highly expressed it is. The
@@ -68,9 +61,9 @@ forward-strand splice events, blue arcs are reverse-strand.
 ## Looking at a specific read
 
 With compact display off, each spliced read draws its two exon-aligned ends as
-grey boxes joined by a thin **teal** line across the skipped intron — the same
-per-read connector seen zoomed in above, and distinct from the red/blue splice
-arcs, which are colored by strand. Mouse over any read to inspect it.
+grey boxes joined by a thin **teal** line across the skipped intron — a per-read
+connector distinct from the red/blue splice arcs, which are colored by strand.
+Mouse over any read to inspect it.
 
 <Figure caption="A tighter window on a few spliced reads. Each read's exon-aligned ends (grey) are joined by a thin teal line spanning the intron it skips." src="/img/rnaseq/single_read.png" />
 

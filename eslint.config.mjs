@@ -25,6 +25,7 @@ export default defineConfig(
       'config/jest',
       'infrastructure',
       'jest.config.js',
+      'website/scripts/flip-review.mjs',
       'products/jbrowse-web/browser-tests/memsticky.ts',
       'products/jbrowse-web/browser-tests/memprofile.ts',
       'babel.config.cjs',
