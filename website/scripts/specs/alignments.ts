@@ -480,7 +480,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dx: -360,
         dy: -10,
         maxWidth: 360,
-        text: 'Color by modifications: called 5mC at MM-tag positions.',
+        text: 'Modifications mode: marks only the bases the basecaller flagged as modified (the MM/ML tags) — here, called 5mC.',
       },
       {
         type: 'text',
@@ -491,7 +491,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dx: -360,
         dy: -10,
         maxWidth: 360,
-        text: 'Color by methylation: unmethylated CpGs paint blue, surfacing hypomethylated regions like this island.',
+        text: 'Methylation mode: scores every CpG on each read — red = methylated, blue = unmethylated — so this hypomethylated CpG island reads as a blue block.',
       },
     ],
   },
