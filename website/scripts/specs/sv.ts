@@ -1100,6 +1100,9 @@ export const svSpecs: ScreenshotSpec[] = [
                 minScore: -2,
                 maxScore: 2,
                 height: 160,
+                // horizontal gridlines behind the scatter so the log2=0 baseline
+                // and the ±1 copy-number steps are readable (reviewer)
+                displayCrossHatches: true,
               },
             },
             {
@@ -1416,6 +1419,9 @@ export const svSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr17',
+          // overlay the long track names on the tracks instead of a dedicated
+          // label row (reviewer)
+          trackLabels: 'offset',
           tracks: [
             {
               trackId: 'hg008_cnv_indexcov',
@@ -1442,6 +1448,9 @@ export const svSpecs: ScreenshotSpec[] = [
                 minScore: -2,
                 maxScore: 2,
                 height: 140,
+                // horizontal gridlines behind the scatter so the log2=0
+                // baseline and the ±1 copy-number steps are readable (reviewer)
+                displayCrossHatches: true,
               },
             },
             {
@@ -1618,6 +1627,9 @@ export const svSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr18:1-80,373,285',
+          // overlay the long track names on the tracks instead of a dedicated
+          // label row (reviewer)
+          trackLabels: 'offset',
           tracks: [
             {
               trackId: 'hg008_log2ratio',
@@ -1658,7 +1670,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr18',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 520,
+    viewportHeight: 640,
     settleMs: 20000,
   },
 
