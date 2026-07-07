@@ -7,6 +7,8 @@ export const VERTS_PER_INSTANCE = 6
 
 export const ARC_MARKER_PX = 5
 
+export const ARC_MARKER_HEIGHT_MARGIN = 8
+
 export const UNIFORMS_SIZE_BYTES = 336
 
 // Indices into a Float32Array / Uint32Array view over the uniform buffer.

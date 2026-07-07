@@ -14,8 +14,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 //
 // Loops `model.renderSections` so every group's pairs get arcs, not just the
 // first; each section supplies its own `topOffset` (pileup band top) and
-// `viewportH` (band height, via the shared `sectionBandBottom`), mirroring how
-// `computeVisibleLabels`/`computeHighlightBoxes` clip per section.
+// `viewportBottom` (band bottom, via the shared `sectionBandBottom`), mirroring
+// how `computeVisibleLabels`/`computeHighlightBoxes` clip per section.
 export function computePileupBezierArcsFromModel(
   model: LinearAlignmentsDisplayModel,
   view: LinearGenomeViewModel,
@@ -42,7 +42,7 @@ export function computePileupBezierArcsFromModel(
         featureSpacing: model.featureSpacing,
         pileupTopOffset: sec.topOffset,
         scrollTop,
-        viewportH: bottom - sec.topOffset,
+        viewportBottom: bottom,
       }),
     )
   }

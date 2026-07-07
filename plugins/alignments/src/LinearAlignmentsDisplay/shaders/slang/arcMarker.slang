@@ -6,7 +6,7 @@
 // Y-scale uniforms (arcsYLog / arcsYDomainBp / covOffset / pairedArcsDown) and
 // the |tlen| → destY formula must stay byte-identical to arc.slang's flat path.
 //! targets: wgsl, glsl
-//! export-consts: ARC_MARKER_PX
+//! export-consts: ARC_MARKER_PX, ARC_MARKER_HEIGHT_MARGIN
 
 import alignmentsUniforms;
 import hpmath;

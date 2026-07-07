@@ -2,7 +2,6 @@ import {
   PASS_ARC,
   PASS_ARC_LINE,
   PASS_ARC_MARKER,
-  flatArcMarkerCount,
   packArcLines,
   packArcMarkers,
   packArcs,
@@ -24,12 +23,12 @@ export function uploadArcs(
       data.numArcs,
     )
   }
-  const markerCount = flatArcMarkerCount(data)
+  const { buffer: markerBuffer, count: markerCount } = packArcMarkers(data)
   if (markerCount > 0) {
     hal.uploadBuffer(
       displayedRegionIndex,
       PASS_ARC_MARKER,
-      packArcMarkers(data, markerCount),
+      markerBuffer,
       markerCount,
     )
   }

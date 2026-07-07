@@ -55,38 +55,35 @@ export function packArcLines(data: ArcsUploadData): ArrayBuffer {
 }
 
 // Two endpoint-square markers per flat (samplot) arc — one at each end. Regular
-// curved arcs carry no markers (their endpoints sit on the baseline).
-export function flatArcMarkerCount(data: ArcsUploadData) {
-  let n = 0
-  for (let i = 0; i < data.numArcs; i++) {
-    if (isFlatArcShape(data.arcShapeTypes[i]!)) {
-      n += 2
-    }
-  }
-  return n
-}
-
-export function packArcMarkers(
-  data: ArcsUploadData,
-  count: number,
-): ArrayBuffer {
-  const position = new Uint32Array(count)
-  const colorType = new Uint8Array(count)
-  const yBp = new Uint32Array(count)
-  let j = 0
+// curved arcs carry no markers (their endpoints sit on the baseline). Allocates
+// the worst case (2 per arc) and fills+counts in a single pass; `packInstances`
+// only reads the first `count` entries, so the tail is ignored. `count` is 0
+// when no arc is flat, so the caller skips the upload entirely.
+export function packArcMarkers(data: ArcsUploadData): {
+  buffer: ArrayBuffer
+  count: number
+} {
+  const maxCount = data.numArcs * 2
+  const position = new Uint32Array(maxCount)
+  const colorType = new Uint8Array(maxCount)
+  const yBp = new Uint32Array(maxCount)
+  let count = 0
   for (let i = 0; i < data.numArcs; i++) {
     if (isFlatArcShape(data.arcShapeTypes[i]!)) {
       const c = data.arcColorTypes[i]!
       const y = data.arcYBp[i]!
-      position[j] = data.arcX1[i]!
-      colorType[j] = c
-      yBp[j] = y
-      j++
-      position[j] = data.arcX2[i]!
-      colorType[j] = c
-      yBp[j] = y
-      j++
+      position[count] = data.arcX1[i]!
+      colorType[count] = c
+      yBp[count] = y
+      count++
+      position[count] = data.arcX2[i]!
+      colorType[count] = c
+      yBp[count] = y
+      count++
     }
   }
-  return arcMarkerShader.packInstances({ position, colorType, yBp }, count)
+  return {
+    buffer: arcMarkerShader.packInstances({ position, colorType, yBp }, count),
+    count,
+  }
 }

@@ -148,29 +148,14 @@ function insertSizeColor(tlen: number, stats: InsertSizeStats | undefined) {
 // flat lines color the same as arcs — red/green/teal/navy by insert size +
 // orientation.
 function getArcColorType(args: {
+  arc: PendingArc
   colorByType: ArcColorByType
   hasPaired: boolean
-  isSplit: boolean
   longRange: boolean
   largeInsert: boolean
-  pairOrientationNum: number
-  tlen: number
-  p1Strand: number
-  p2Strand: number
   stats: InsertSizeStats | undefined
 }) {
-  const {
-    colorByType,
-    hasPaired,
-    isSplit,
-    longRange,
-    largeInsert,
-    pairOrientationNum,
-    tlen,
-    p1Strand,
-    p2Strand,
-    stats,
-  } = args
+  const { arc, colorByType, hasPaired, longRange, largeInsert, stats } = args
 
   // A split-read junction carries no pair semantics (no template length, no
   // pair orientation), so it colors by its own segment strands — opposite
@@ -181,17 +166,17 @@ function getArcColorType(args: {
   // override below because that is a paired-insert concept: a wide inversion
   // breakpoint (large genomic gap) must keep its inversion color, not get
   // repainted long-insert just because its span clears the pair thresholds.
-  if (!hasPaired || isSplit) {
+  if (!hasPaired || arc.isSplit) {
     return colorByType === 'insertSize'
       ? COLOR_DEFAULT
-      : unpairedOrientationColor(p1Strand, p2Strand)
+      : unpairedOrientationColor(arc.p1Strand, arc.p2Strand)
   }
   // Long-range, large-insert pairs always paint as long-insert.
   if (longRange && largeInsert) {
     return COLOR_LONG_INSERT
   }
-  const orient = orientationColor(pairOrientationNum)
-  const insert = insertSizeColor(tlen, stats)
+  const orient = orientationColor(arc.pairOrientationNum)
+  const insert = insertSizeColor(arc.tlen, stats)
   switch (colorByType) {
     case 'insertSize':
       return insert
@@ -234,17 +219,32 @@ export interface ComputedLine {
   colorType: number
 }
 
-interface PendingArc {
+interface PendingArcEndpoints {
   p1Ref: string
   p1Bp: number
   p1Strand: number
   p2Ref: string
   p2Bp: number
   p2Strand: number
-  pairOrientationNum: number | undefined
-  tlen: number | undefined
-  isSplit: boolean
 }
+
+// A split-read junction between two segments of a single read: it carries no
+// pair orientation / template length (those are pair concepts), so a discriminated
+// union on `isSplit` lets the non-split arm prove `pairOrientationNum`/`tlen`
+// are present rather than coercing `undefined` away downstream.
+interface SplitPendingArc extends PendingArcEndpoints {
+  isSplit: true
+}
+
+// A mate link between the two reads of a pair: sourced from the primary's
+// orientation + template length.
+interface PairedPendingArc extends PendingArcEndpoints {
+  isSplit: false
+  pairOrientationNum: number
+  tlen: number
+}
+
+type PendingArc = SplitPendingArc | PairedPendingArc
 
 // Deterministic 0..1 hash from arc endpoints — gives each pair a stable jitter
 // offset regardless of fetch/render order, so snapshot tests don't flake.
@@ -377,7 +377,7 @@ function mateArc(entry: ReadEntry): PendingArc {
     p2Bp: data.readNextPositions?.[readIdx] ?? 0,
     p2Strand: flags & SAM_FLAG_MATE_REVERSE ? -1 : 1,
     pairOrientationNum: data.readPairOrientations[readIdx]!,
-    tlen: data.readInsertSizes[readIdx],
+    tlen: data.readInsertSizes[readIdx]!,
     isSplit: false,
   }
 }
@@ -470,8 +470,6 @@ function unpairedChainArcs(
         p2Ref: a2.refName,
         p2Bp: bp2,
         p2Strand: a2.strand,
-        pairOrientationNum: undefined,
-        tlen: undefined,
         isSplit: true,
       })
     }
@@ -489,19 +487,22 @@ function unpairedChainArcs(
 function pendingArcFromConnection(c: ReadConnection<ReadEntry>): PendingArc {
   const { e1, e2, isSplit } = c
   const { bp1, s1, bp2, s2 } = connectionEndpoints(c)
-  return {
+  const endpoints = {
     p1Ref: e1.refName,
     p1Bp: bp1,
     p1Strand: s1,
     p2Ref: e2.refName,
     p2Bp: bp2,
     p2Strand: s2,
-    pairOrientationNum: isSplit
-      ? undefined
-      : e1.data.readPairOrientations[e1.readIdx],
-    tlen: isSplit ? undefined : e1.data.readInsertSizes[e1.readIdx],
-    isSplit,
   }
+  return isSplit
+    ? { ...endpoints, isSplit: true }
+    : {
+        ...endpoints,
+        isSplit: false,
+        pairOrientationNum: e1.data.readPairOrientations[e1.readIdx]!,
+        tlen: e1.data.readInsertSizes[e1.readIdx]!,
+      }
 }
 
 function collectPendingArcs(
@@ -560,17 +561,8 @@ export function computeArcsFromPileupData(
   const arcs: ComputedArc[] = []
   const lines: ComputedLine[] = []
 
-  for (const {
-    p1Ref,
-    p1Bp,
-    p1Strand,
-    p2Ref,
-    p2Bp,
-    p2Strand,
-    pairOrientationNum,
-    tlen,
-    isSplit,
-  } of pendingArcs) {
+  for (const arc of pendingArcs) {
+    const { p1Ref, p1Bp, p2Ref, p2Bp } = arc
     // Interchromosomal: never an arc — drop a tick on each endpoint, always
     // painted the single dedicated interchromosomal color. Insert size,
     // long-range distance, and pair orientation are all meaningless across refs
@@ -588,7 +580,12 @@ export function computeArcsFromPileupData(
     }
 
     // Samplot suppresses the modal-insert FR pairs so SV signals stand out.
-    if (samplot && isConcordantFRPair(pairOrientationNum, tlen, stats)) {
+    // Split junctions have no template length, so they never qualify.
+    if (
+      samplot &&
+      !arc.isSplit &&
+      isConcordantFRPair(arc.pairOrientationNum, arc.tlen, stats)
+    ) {
       continue
     }
 
@@ -603,22 +600,18 @@ export function computeArcsFromPileupData(
     // the rounded arc. (drawLongRange only gates connections to mates that
     // aren't loaded in the current view; see the single-entry branch above.)
     const colorType = getArcColorType({
+      arc,
       colorByType,
       hasPaired,
-      isSplit,
       longRange,
       largeInsert,
-      pairOrientationNum: pairOrientationNum ?? 0,
-      tlen: tlen ?? 0,
-      p1Strand,
-      p2Strand,
       stats,
     })
     const { shapeType, yBp } = computeArcShape({
       samplot,
-      isSplit,
+      isSplit: arc.isSplit,
       absrad,
-      tlen,
+      tlen: arc.isSplit ? undefined : arc.tlen,
       p1Bp,
       p2Bp,
     })

@@ -7,16 +7,17 @@ import { computePileupBezierArcsFromModel } from './pileupBezierArcs.ts'
 import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
+import type { PileupArc } from '../../features/linkedReads/computeOverlay.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+// Takes the whole arc rather than positional (label, id1, id2) so the two ids
+// can't be transposed at the call site.
 function arcTooltip(
   model: LinearAlignmentsDisplayModel,
-  label: string,
-  id1: string,
-  id2: string,
+  arc: Pick<PileupArc, 'label' | 'id1' | 'id2'>,
 ) {
   const parts: string[] = []
-  for (const id of [id1, id2]) {
+  for (const id of [arc.id1, arc.id2]) {
     const info = model.getFeatureInfoById(id)
     if (info) {
       parts.push(
@@ -24,7 +25,7 @@ function arcTooltip(
       )
     }
   }
-  return parts.length > 0 ? `${label}: ${parts.join(' → ')}` : label
+  return parts.length > 0 ? `${arc.label}: ${parts.join(' → ')}` : arc.label
 }
 
 const PileupBezierOverlay = observer(function PileupBezierOverlay({
@@ -74,7 +75,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
             fill="none"
             style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
             onMouseEnter={() => {
-              const tooltip = arcTooltip(model, arc.label, arc.id1, arc.id2)
+              const tooltip = arcTooltip(model, arc)
               if (tooltip) {
                 model.setMouseoverExtraInformation(tooltip)
               }

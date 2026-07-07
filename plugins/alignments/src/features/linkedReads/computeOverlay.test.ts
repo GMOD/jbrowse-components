@@ -54,7 +54,7 @@ const baseOpts = {
   featureSpacing: 2,
   pileupTopOffset: 0,
   scrollTop: 0,
-  viewportH: 1000,
+  viewportBottom: 1000,
 }
 
 // Parse `M sx1 sy1 C cp1x cp1y cp2x cp2y sx2 sy2`.

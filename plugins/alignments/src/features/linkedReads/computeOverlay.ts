@@ -55,7 +55,8 @@ interface Opts {
   featureSpacing: number
   pileupTopOffset: number
   scrollTop: number
-  viewportH: number
+  // Screen-y of this section's band bottom — the visibility cull's lower edge.
+  viewportBottom: number
 }
 
 // Bezier curves for aberrant pairs, plus straight `M..L..` paths for
@@ -72,7 +73,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     featureSpacing,
     pileupTopOffset,
     scrollTop,
-    viewportH,
+    viewportBottom,
   } = opts
 
   const rowH = featureHeight + featureSpacing
@@ -107,7 +108,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     const sy1 = readScreenY(e1)
     const sy2 = readScreenY(e2)
 
-    if (!arcIsVisible(sy1, sy2, pileupTopOffset + viewportH)) {
+    if (!arcIsVisible(sy1, sy2, viewportBottom)) {
       continue
     }
 
