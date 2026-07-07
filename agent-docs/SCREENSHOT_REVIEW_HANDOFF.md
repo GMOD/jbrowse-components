@@ -88,7 +88,42 @@ done
 - **UNCHANGED** = the real backlog. Even then, read the *whole* note: often one
   sub-part is stale (BAF whiskers) while another is open (trackLabels/height).
 
-### Done this session (2026-07-06, webgl-poc, scoped commits)
+### Hosted-track source: `~/src/jb2hubs/ucsc2jbrowse`
+UCSC→JBrowse conversions, hosted at `https://jbrowse.org/ucsc/<asm>/<file>`
+(relative track paths in `configs/<asm>.json` resolve there) plus some direct
+UCSC URLs (`https://hgdownload.soe.ucsc.edu/gbdb/<asm>/...`). This is where to
+find CpG-island / ClinVar / gene / repeat tracks for any UCSC assembly. Recipe:
+`python3 -c "import json; d=json.load(open('configs/hg38.json')); ..."` to pull a
+track's adapter, then verify the URL with `curl -sI`. Confirmed-good URLs added
+this session:
+- ClinVar CNVs (SVs): `https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb`
+  (BigBed; autoSql fields incl. `clinSign`, `type`, `_varLen`, `_starCount`)
+- CpG islands hg38: `https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz` (+`.csi`);
+  config_demo also already has `cpgisland_ucsc_hg38` (UCSCAdapter)
+- ce11 NCBI RefSeq: `https://jbrowse.org/ucsc/ce11/ncbiRefSeqCurated.gff.gz`
+  (+`.csi`, index type CSI not TBI; chrom names chrI/chrII match the maf refnames)
+- MANE Select hg38 (in config_demo as `MANE.GRCh38.v1.4.refseq`; or the BigBed at
+  ftp.ncbi.nlm.nih.gov). Cleanest gene track for hg38 (one transcript/gene).
+
+Reusable spec consts now in `specs/maf.ts`: `HG38_MANE_TRACK`, `CE11_GENE_TRACK`.
+To add an out-of-config track, switch the spec from `lgvSession` to `sessionSpec`
+with `sessionTracks: [...]`. If an over-dense track needs thinning, use
+`jexlFiltersSetting: ["jexl:...", ...]` on its display snapshot (ANDed) — e.g.
+ClinVar at 1q21.1 filtered to `clinSign=='Pathogenic'` AND length `<2000000`.
+
+### Done this session — part 2 (data tracks + app UI, webgl-poc)
+- `variants/consequence_impact_sv` — ClinVar CNV session track, jexl-filtered to
+  2 pathogenic candidates (4be0092f92)
+- `methylation/colo829_cram_and_bedmethyl` — CpG-island track + window moved onto
+  an actual island; `chromatin_accessibility_6ma` — MANE + CpG island + taller;
+  `gallery/nanopore_methylation` — CpG-island track (4001fe0141, ce70d7a0bc)
+- `maf_color_by_chromosome` + `maf_codon_tooltip` — ce11 RefSeq gene track (codon
+  one also widened) (2779071137, eba61104a4)
+- **app UI**: PluginCard drops the per-plugin screenshot `<img>`; ShareDialog
+  buttons reverted to default text variant to match origin/main (1ea7487fba +
+  screenshots 2c7b72fcdd). Needed a `pnpm build` in products/jbrowse-web.
+
+### Done this session — part 1 (2026-07-06, webgl-poc, scoped commits)
 - `lgv_usage_guide` drop drag-to-reorder callout; `linear_align_ctx_menu` arrow
   off the text box; `multiwig/addtrack` box the dropdown option (commit 8756873890)
 - sv_cgiab `driver_smad4_loh` (trackLabels:offset + taller), `driver_chr17_loh`
