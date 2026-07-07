@@ -4,6 +4,7 @@ import {
   getConfigurationSchemaDefinition,
   isSlotDefinitionEntry,
 } from './util.ts'
+import { deepEqual } from '../util/deepEqual.ts'
 import { getSession } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 
@@ -31,26 +32,16 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  *   - Sentinel (`displayMode`): `defaultValue` is a dedicated `'inherit'` member
  *     (CSS `inherit`) and `promotedBase` is what it resolves to (CSS `initial`),
  *     freeing every real value — base included — to be pinned.
+ *
+ * Every comparison below (pinned / at-default / at-promoted-default) uses
+ * `deepEqual`, not `===`: needed once a promotable slot is `frozen`
+ * (object-valued, e.g. alignments `colorBy`), where a fresh MST-reconstructed
+ * value is never `===` the stored default.
  */
 
 export type PromotableDisplay = IAnyStateTreeNode & {
   type: string
   configuration: AnyConfigurationModel
-}
-
-/**
- * Identity for primitives, structural (stringify) for objects/arrays. Mirrors
- * the fork's `stripDefault` comparison, so "at the slot default / at the
- * promoted default" agrees with what actually persists to the snapshot — needed
- * once a promotable slot is `frozen` (object-valued, e.g. alignments `colorBy`),
- * where a fresh MST-reconstructed value is never `===` the stored default.
- */
-function sameValue(a: unknown, b: unknown): boolean {
-  return a === b
-    ? true
-    : typeof a === 'object' && a !== null && typeof b === 'object' && b !== null
-      ? JSON.stringify(a) === JSON.stringify(b)
-      : false
 }
 
 // The names of every promotable slot on a display's config schema (includes
@@ -75,7 +66,7 @@ function promotedUsable(def: ConfigSlotDefinition, promoted: unknown): boolean {
   }
   // a sentinel slot's own `defaultValue` (its `'inherit'` member) is never a
   // real value to inherit — only `promotedBase` and the other members are
-  if (promotedBase !== undefined && sameValue(promoted, defaultValue)) {
+  if (promotedBase !== undefined && deepEqual(promoted, defaultValue)) {
     return false
   }
   if (type === 'stringEnum' && model) {
@@ -93,6 +84,13 @@ function promotedUsable(def: ConfigSlotDefinition, promoted: unknown): boolean {
       promoted !== null &&
       Array.isArray(promoted) === Array.isArray(defaultValue)
     )
+  }
+  // `maybeNumber` is the only slot type allowed a `defaultValue` of `undefined`
+  // (its "unset" state — see ConfigSlot); `typeof promoted === typeof undefined`
+  // would reject every real value, so validate against its actual value type
+  // (a number) instead.
+  if (defaultValue === undefined) {
+    return typeof promoted === 'number'
   }
   return typeof promoted === typeof defaultValue
 }
@@ -117,7 +115,7 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
   const base = def.promotedBase ?? def.defaultValue
   const own = getConf(self, slot)
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  const pinned = !sameValue(own, def.defaultValue)
+  const pinned = !deepEqual(own, def.defaultValue)
   const inherited = promotedUsable(def, promoted) ? promoted : base
   const value = pinned ? own : inherited
   return { base, pinned, promoted, inherited, value }
@@ -171,7 +169,7 @@ export function areSlotsAtSessionDefault(
 ): boolean {
   return slots.every(slot => {
     const { promoted, value } = resolveSlot(self, slot)
-    return promoted !== undefined && sameValue(value, promoted)
+    return promoted !== undefined && deepEqual(value, promoted)
   })
 }
 
@@ -212,7 +210,7 @@ export function isSlotValueSessionDefault(
   slot: string,
   value: unknown,
 ): boolean {
-  return sameValue(resolveSlot(self, slot).promoted, value)
+  return deepEqual(resolveSlot(self, slot).promoted, value)
 }
 
 /**
@@ -244,7 +242,7 @@ export function displaySessionDefaultChanges(
 ): TrackConfigChange[] {
   return promotableSlots(self).flatMap(slot => {
     const { base, pinned, value } = resolveSlot(self, slot)
-    return !pinned && !sameValue(value, base)
+    return !pinned && !deepEqual(value, base)
       ? [{ path: [slot], from: base, to: value } as TrackConfigChange]
       : []
   })

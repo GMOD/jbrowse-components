@@ -97,6 +97,7 @@ interface SlotResolution {
   base: unknown      // value an un-pinned track shows with nothing promoted
   pinned: boolean    // track holds its own value rather than inheriting
   promoted: unknown  // raw session-wide promoted default, if any
+  inherited: unknown // what an un-pinned track resolves to: promoted if usable, else base
   value: unknown     // final cascaded value (never a slot's inherit sentinel)
 }
 
@@ -105,9 +106,10 @@ function resolveSlot(self, slot): SlotResolution {
   const base = def.promotedBase ?? def.defaultValue
   const own = getConf(self, slot)
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  const pinned = own !== def.defaultValue
-  const value = pinned ? own : promotedUsable(def, promoted) ? promoted : base
-  return { base, pinned, promoted, value }
+  const pinned = !deepEqual(own, def.defaultValue)
+  const inherited = promotedUsable(def, promoted) ? promoted : base
+  const value = pinned ? own : inherited
+  return { base, pinned, promoted, inherited, value }
 }
 ```
 
@@ -126,10 +128,20 @@ sentinel, so the display getter needs no post-guard:
 | --- | --- | --- |
 | `getConfResolved(self, slot)` | `.value` | the display's own value getter |
 | `isSlotPinned(self, slot)` | `.pinned` | "Follow default" reset item visibility |
-| `areSlotsAtSessionDefault(self, slots)` | `promoted !== undefined && value === promoted` | "make default" checkbox tick |
-| `toggleSlotsSessionDefault(self, slots)` | promotes `.value` / clears | "make default" checkbox click |
+| `getSlotInheritedValue(self, slot)` | `.inherited` | labels the "Default (X)" entry with what un-pinning would resolve to |
+| `areSlotsAtSessionDefault(self, slots)` | `promoted !== undefined && value === promoted` for every slot | "make default" checkbox tick (value-dependent: "promote whatever is current") |
+| `setSlotsSessionDefault(self, slots, promote)` | promotes each slot's `.value`, or clears | "make default" checkbox click |
+| `isSlotValueSessionDefault(self, slot, value)` | `promoted === value` | per-value pin tick (independent of the track's own value) |
+| `setSlotValueSessionDefault(self, slot, value, on)` | promotes `value` specifically, or clears | per-value pin click — pairs with `isSlotValueSessionDefault` |
 | `displaySessionDefaultChanges(self)` | `!pinned && value !== base` | track-selector badge diff |
 | `clearDisplaySessionDefaults(self)` | — | badge "clear default" |
+
+`areSlotsAtSessionDefault`/`setSlotsSessionDefault` are the **value-dependent**
+pair used by a submenu's "make default" checkbox (promote whatever this track is
+currently showing). `isSlotValueSessionDefault`/`setSlotValueSessionDefault` are
+the **per-value** pair behind `makeSessionDefaultControl` (see "UI surface"
+below) — always-visible pins on a specific on-value, independent of what the
+track currently shows.
 
 `areSlotsAtSessionDefault` / `toggleSlotsSessionDefault` take a **slot group** so
 several slots move behind one menu item (alignments' `featureHeight` +

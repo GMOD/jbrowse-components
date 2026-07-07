@@ -33,6 +33,8 @@
  * silently changing which display opens by default.
  */
 
+import { deepEqual } from './deepEqual.ts'
+
 type Json =
   | string
   | number
@@ -56,23 +58,6 @@ function isDisplayArray(v: Json): v is JsonObject[] {
     v.length > 0 &&
     v.every(e => isPlainObject(e) && typeof e.displayId === 'string')
   )
-}
-
-function deepEqual(a: Json, b: Json): boolean {
-  if (a === b) {
-    return true
-  }
-  if (Array.isArray(a) && Array.isArray(b)) {
-    return a.length === b.length && a.every((x, i) => deepEqual(x, b[i]))
-  }
-  if (isPlainObject(a) && isPlainObject(b)) {
-    const ak = Object.keys(a)
-    const bk = Object.keys(b)
-    return (
-      ak.length === bk.length && ak.every(k => k in b && deepEqual(a[k], b[k]))
-    )
-  }
-  return false
 }
 
 // Sentinel returned by diffValue when a value is unchanged, so callers can tell
