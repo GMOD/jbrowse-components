@@ -1,9 +1,10 @@
 Toggle the view's orientation imperatively — useful for custom toolbar buttons
-or keyboard shortcuts. The view exposes a `horizontallyFlip()` action on
-`session.view`:
+or keyboard shortcuts. The view exposes a
+[`horizontallyFlip()`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-horizontallyflip)
+action on `session.view`, reachable via a `ref` on `<LinearGenomeView>`:
 
 ```js
-state.session.view.horizontallyFlip()
+ref.current?.session.view.horizontallyFlip()
 ```
 
 For opening already-flipped, append `[rev]` to a

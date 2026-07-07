@@ -1,15 +1,13 @@
-import { useState } from 'react'
+import { useRef } from 'react'
 
 import {
-  JBrowseLinearGenomeView,
-  createViewState,
+  LinearGenomeView,
+  type ViewModel,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'volvox',
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'volvox_refseq',
     adapter: {
       type: 'TwoBitAdapter',
       twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
@@ -44,9 +42,7 @@ const bookmarks = [
 ]
 
 export default function App() {
-  const [state] = useState(() =>
-    createViewState({ assembly, tracks, location: 'ctgA:1,000..5,000' }),
-  )
+  const ref = useRef<ViewModel>(null)
   return (
     <div>
       <div style={{ marginBottom: 8 }}>
@@ -55,16 +51,23 @@ export default function App() {
             key={b.loc}
             style={{ marginRight: 8 }}
             onClick={() => {
-              state.session.view.navToLocString(b.loc).catch((e: unknown) => {
-                console.error(e)
-              })
+              ref.current?.session.view
+                .navToLocString(b.loc)
+                .catch((e: unknown) => {
+                  console.error(e)
+                })
             }}
           >
             {b.label}
           </button>
         ))}
       </div>
-      <JBrowseLinearGenomeView viewState={state} />
+      <LinearGenomeView
+        ref={ref}
+        assembly={assembly}
+        tracks={tracks}
+        init={{ loc: 'ctgA:1,000..5,000' }}
+      />
     </div>
   )
 }

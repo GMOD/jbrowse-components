@@ -43,6 +43,7 @@ export { default as SanitizedHTML } from './SanitizedHTML.tsx'
 export { default as BaseTooltip } from './BaseTooltip.tsx'
 export { default as PluggableComponent } from './PluggableComponent.tsx'
 export type * from './MenuTypes.ts'
+export { pushLaunchViewMenuItem } from './launchViewMenu.ts'
 export {
   type CompactableDisplay,
   type Compactness,

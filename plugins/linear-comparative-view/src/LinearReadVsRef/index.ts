@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import AddIcon from '@mui/icons-material/Add'
 
@@ -27,27 +28,24 @@ export default function LinearReadVsRefMenuItemF(pm: PluginManager) {
             contextMenuItems() {
               const feature = self.contextMenuFeature
               const track = getContainingTrack(self)
-              return [
-                ...superContextMenuItems(),
-                ...(feature
-                  ? [
+              const items = superContextMenuItems()
+              if (feature) {
+                pushLaunchViewMenuItem(items, {
+                  label: 'Linear read vs ref',
+                  icon: AddIcon,
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      ReadVsRefDialog,
                       {
-                        label: 'Linear read vs ref',
-                        icon: AddIcon,
-                        onClick: () => {
-                          getSession(self).queueDialog(handleClose => [
-                            ReadVsRefDialog,
-                            {
-                              track,
-                              feature,
-                              handleClose,
-                            },
-                          ])
-                        },
+                        track,
+                        feature,
+                        handleClose,
                       },
-                    ]
-                  : []),
-              ]
+                    ])
+                  },
+                })
+              }
+              return items
             },
           },
         }

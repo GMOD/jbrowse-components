@@ -3,6 +3,7 @@ import {
   CE_MAF_FRAMES,
   HG38_470WAY,
   HG38_470WAY_30,
+  HG38_NCBI_GENE_TRACK,
   cascadeBoxes,
   lgvSession,
   menuCascade,
@@ -29,6 +30,10 @@ const HG38_MANE_TRACK = {
     },
   },
 }
+
+// maf_470way swaps in HG38_NCBI_GENE_TRACK (jbrowse.org/ucsc/hg38 hub build)
+// below, in place of the MANE bigBed — per reviewer ask. Same chr-named
+// refnames resolved via the 470way config's refNameAliases.
 
 // ce11 NCBI RefSeq (curated) genes as a session track (hosted at jbrowse.org/ucsc,
 // generated from UCSC), so the C. elegans maf figures carry gene context. Chrom
@@ -265,7 +270,7 @@ export const mafSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'maf_470way',
     url: sessionSpec(HG38_470WAY, {
-      sessionTracks: [HG38_MANE_TRACK],
+      sessionTracks: [HG38_NCBI_GENE_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -273,9 +278,16 @@ export const mafSpecs: ScreenshotSpec[] = [
           loc: '12:6,534,400-6,538,500',
           trackLabels: 'offset',
           tracks: [
-            // MANE gene track on top: the exon/CDS structure of GAPDH lines up
-            // with the conserved (blue) coding bands in the heatmap below
-            'mane_hg38',
+            // NCBI RefSeq gene track on top (longest-coding transcript only):
+            // the exon/CDS structure of GAPDH lines up with the conserved
+            // (blue) coding bands in the heatmap below
+            {
+              trackId: 'ncbi_genes_hg38_ucsc',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                geneGlyphMode: 'longestCoding',
+              },
+            },
             {
               trackId: 'hg38.multiz470way',
               // fit-to-display-height: the `height` config slot pins the whole

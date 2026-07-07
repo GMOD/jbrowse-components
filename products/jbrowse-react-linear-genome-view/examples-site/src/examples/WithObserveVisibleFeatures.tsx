@@ -16,8 +16,6 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 const assembly = {
   name: 'volvox',
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'volvox_refseq',
     adapter: {
       type: 'TwoBitAdapter',
       twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },

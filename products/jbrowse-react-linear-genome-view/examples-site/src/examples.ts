@@ -44,22 +44,6 @@ export const examples: ExampleMeta[] = [
     group: 'Getting started',
   },
   {
-    slug: 'managed',
-    name: 'Managed',
-    title: 'Managed (LinearGenomeView)',
-    description:
-      'The managed LinearGenomeView component owns the engine — props are initial values, no createViewState ceremony.',
-    group: 'Getting started',
-  },
-  {
-    slug: 'managed-imperative-escape',
-    name: 'ManagedWithImperativeEscape',
-    title: 'Managed with imperative escape hatch',
-    description:
-      'Use the managed component but grab the underlying view model imperatively for advanced control.',
-    group: 'Getting started',
-  },
-  {
     slug: 'disable-add-track',
     name: 'DisableAddTrack',
     title: 'DisableAddTrack',

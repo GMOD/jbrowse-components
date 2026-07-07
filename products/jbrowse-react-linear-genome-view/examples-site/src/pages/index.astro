@@ -1,21 +1,139 @@
 ---
+import { Code } from 'astro:components'
+
+import Example from '../examples/WithInit.tsx'
+import code from '../examples/WithInit.tsx?raw'
 import { examples } from '../examples.ts'
 import Shell from '../layouts/Shell.astro'
-import Gallery from '../layouts/Gallery.astro'
 import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
+
+const pmCommands = {
+  yarn: 'yarn add @jbrowse/react-linear-genome-view2',
+  npm: 'npm install @jbrowse/react-linear-genome-view2 --legacy-peer-deps',
+  pnpm: 'pnpm add @jbrowse/react-linear-genome-view2',
+}
 ---
 
 <Shell
-  title="Examples"
+  title="Getting started"
   componentLabel={componentLabel}
   examples={examples}
   mainMaxWidth={mainMaxWidth}
 >
   <h1>JBrowse Linear Genome View</h1>
-  <p class="intro">
-    Live examples of the <code>@jbrowse/react-linear-genome-view2</code> React
-    component. Each page documents one pattern, renders the component, and shows
-    its full source. Browse by category in the sidebar.
+  <p class="lead">
+    <code>@jbrowse/react-linear-genome-view2</code> is a React component that embeds
+    a full linear genome browser — tracks, search, zoom/pan, and track selection —
+    in your app. This page covers the basics; browse the pattern-by-pattern
+    examples in the sidebar for specific features (custom themes, session
+    persistence, plugins, and more).
   </p>
-  <Gallery examples={examples} />
+
+  <div class="doc">
+    <h2>Install</h2>
+    <div class="pm-tabs">
+      <input type="radio" name="pm" id="pm-yarn" class="pm-radio" checked />
+      <input type="radio" name="pm" id="pm-npm" class="pm-radio" />
+      <input type="radio" name="pm" id="pm-pnpm" class="pm-radio" />
+      <div class="pm-tabs-list">
+        <label for="pm-yarn">yarn</label>
+        <label for="pm-npm">npm</label>
+        <label for="pm-pnpm">pnpm</label>
+      </div>
+      <div class="pm-tabs-panels">
+        <div class="pm-panel pm-panel-yarn">
+          <Code code={pmCommands.yarn} lang="bash" />
+        </div>
+        <div class="pm-panel pm-panel-npm">
+          <Code code={pmCommands.npm} lang="bash" />
+        </div>
+        <div class="pm-panel pm-panel-pnpm">
+          <Code code={pmCommands.pnpm} lang="bash" />
+        </div>
+      </div>
+    </div>
+    <p>
+      <code>--legacy-peer-deps</code> silences npm's peer-dep warnings; yarn and
+      pnpm don't need it.
+    </p>
+
+    <h2>Usage</h2>
+    <p>
+      The declarative <code>LinearGenomeView</code> component takes an{' '}
+      <code>assembly</code> and <code>tracks</code> as props (see the{' '}
+      <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a> for
+      the full assembly/track config shape), plus an <code>init</code> for the
+      starting location and which tracks to show — no separate view-state setup
+      needed. Adapters accept a plain <code>uri</code> shorthand too: JBrowse
+      derives the index file (e.g.{' '}
+      <a href="https://jbrowse.org/jb2/docs/config/bamadapter/"><code>.bam.bai</code></a>,{' '}
+      <a href="https://jbrowse.org/jb2/docs/config/gff3tabixadapter/"><code>.gff3.gz.tbi</code></a>)
+      from it automatically.
+    </p>
+    <p>
+      The component uses{' '}
+      <a href="https://fonts.google.com/specimen/Roboto">Roboto</a> when
+      available; add{' '}
+      <a href="https://www.npmjs.com/package/@fontsource/roboto"><code>@fontsource/roboto</code></a>{' '}
+      to pull it in.
+    </p>
+    <p>
+      For the full embedding guide, see the{' '}
+      <a href="https://jbrowse.org/jb2/docs/embedded_components/">embedded components docs</a>.
+    </p>
+  </div>
+
+  <h2>Live demo</h2>
+  <div class="demo"><Example client:only="react" /></div>
+
+  <h2>Source</h2>
+  <Code code={code} lang="tsx" />
 </Shell>
+
+<style>
+  .pm-tabs {
+    margin-bottom: 12px;
+  }
+  .pm-radio {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .pm-tabs-list {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pm-tabs-list label {
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    user-select: none;
+  }
+  .pm-panel {
+    display: none;
+    margin-top: 12px;
+  }
+  #pm-yarn:checked ~ .pm-tabs-panels .pm-panel-yarn,
+  #pm-npm:checked ~ .pm-tabs-panels .pm-panel-npm,
+  #pm-pnpm:checked ~ .pm-tabs-panels .pm-panel-pnpm {
+    display: block;
+  }
+  #pm-yarn:checked ~ .pm-tabs-list label[for='pm-yarn'],
+  #pm-npm:checked ~ .pm-tabs-list label[for='pm-npm'],
+  #pm-pnpm:checked ~ .pm-tabs-list label[for='pm-pnpm'] {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  #pm-yarn:focus-visible ~ .pm-tabs-list label[for='pm-yarn'],
+  #pm-npm:focus-visible ~ .pm-tabs-list label[for='pm-npm'],
+  #pm-pnpm:focus-visible ~ .pm-tabs-list label[for='pm-pnpm'] {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+</style>

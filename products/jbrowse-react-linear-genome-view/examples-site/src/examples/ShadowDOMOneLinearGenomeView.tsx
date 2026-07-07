@@ -14,8 +14,6 @@ import type { EmotionCache } from '@emotion/cache'
 const assembly = {
   name: 'volvox',
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'volvox_refseq',
     adapter: {
       type: 'TwoBitAdapter',
       twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },

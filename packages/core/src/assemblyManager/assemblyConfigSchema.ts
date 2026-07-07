@@ -29,6 +29,22 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  *
+ * #example shorthand-sequence
+ * `sequence.type` and `sequence.trackId` are boilerplate that can be omitted —
+ * they're always `'ReferenceSequenceTrack'` and a name derived from the
+ * assembly's `name`, respectively — leaving just the adapter:
+ * ```js
+ * {
+ *   name: 'hg38',
+ *   sequence: {
+ *     adapter: {
+ *       type: 'BgzipFastaAdapter',
+ *       uri: 'https://example.com/hg38.fa.gz',
+ *     },
+ *   },
+ * }
+ * ```
+ *
  * #example with-refname-aliases-and-cytobands
  * Adds `refNameAliases` (so `chr1` and `1` resolve to the same sequence) and
  * `cytobands` (ideogram banding), each fetched from its own adapter:
@@ -218,6 +234,21 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
        * human-readable label, set the "displayName" config slot instead
        */
       explicitIdentifier: 'name',
+      preProcessSnapshot: snap => {
+        const { sequence, name } = snap
+        // allow sequence.type/trackId to be omitted, since they are always
+        // 'ReferenceSequenceTrack' and a name derived from the assembly name
+        return sequence && typeof sequence === 'object' && !('type' in sequence)
+          ? {
+              ...snap,
+              sequence: {
+                type: 'ReferenceSequenceTrack',
+                trackId: `${name}-ReferenceSequenceTrack`,
+                ...sequence,
+              },
+            }
+          : snap
+      },
     },
   )
 }

@@ -41,7 +41,7 @@ scroll normally instead.
 Click and drag up or down on the drag handle on the track labels (indicated by
 six vertical dots) to reorder tracks.
 
-<Figure caption="The main linear genome view controls, labeled in place: the Add menu opens new views, the track selector button opens the track list, the pan buttons scroll left/right, the zoom buttons and slider zoom the view, the search box accepts regions or feature names, and each track can be reordered by its drag handle or configured from its track menu." src="/img/lgv_usage_guide.png" />
+<Figure caption="The main linear genome view controls, labeled in place: the track selector button opens the track list, the scroll-zoom toggle lets the mouse wheel zoom the view, the pan buttons scroll left/right, the zoom buttons and slider zoom the view, the search box accepts regions or feature names, and each track can be reordered by its drag handle or configured from its track menu." src="/img/lgv_usage_guide.png" />
 
 ### Reordering views
 

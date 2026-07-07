@@ -12,6 +12,7 @@ export interface ReadVsRefSpec {
   viewSpec: {
     type: 'LinearSyntenyView'
     displayName: string
+    showColorLegend: boolean
     views: unknown[]
     viewTrackConfigs: unknown[]
     tracks: unknown[]
@@ -98,6 +99,7 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
     viewSpec: {
       type: 'LinearSyntenyView',
       displayName: `${shortName} vs ${trackAssembly}`,
+      showColorLegend: false,
       views: [
         {
           type: 'LinearGenomeView',
@@ -171,10 +173,17 @@ function buildSequenceTrack(
       {
         id: `${rand()}`,
         type: 'LinearReferenceSequenceDisplay',
-        showReverse: true,
-        showTranslation: false,
         height: 35,
-        configuration: `${trackId}-LinearReferenceSequenceDisplay`,
+        // Inline config (not just a displayId string) so showReverse/
+        // showTranslation actually override the config-schema defaults —
+        // a bare id here resolves to the track's auto-injected stub display
+        // config, which ignores sibling snapshot fields.
+        configuration: {
+          type: 'LinearReferenceSequenceDisplay',
+          displayId: `${trackId}-LinearReferenceSequenceDisplay`,
+          showReverse: false,
+          showTranslation: false,
+        },
       },
     ],
   }

@@ -21,8 +21,6 @@ const assembly = {
   name: 'hg19',
   aliases: ['GRCh37'],
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'hg19_refseq',
     adapter: {
       type: 'BgzipFastaAdapter',
       uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',

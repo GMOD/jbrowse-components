@@ -1,3 +1,4 @@
+import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@mui/icons-material/Add'
 
 import { onClick } from './DotplotReadVsRef.ts'
@@ -22,20 +23,17 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
               views: {
                 contextMenuItems() {
                   const feature = self.contextMenuFeature
-                  return [
-                    ...superContextMenuItems(),
-                    ...(feature
-                      ? [
-                          {
-                            label: 'Dotplot of read vs ref',
-                            icon: AddIcon,
-                            onClick: () => {
-                              onClick(feature, self)
-                            },
-                          },
-                        ]
-                      : []),
-                  ]
+                  const items = superContextMenuItems()
+                  if (feature) {
+                    pushLaunchViewMenuItem(items, {
+                      label: 'Dotplot of read vs ref',
+                      icon: AddIcon,
+                      onClick: () => {
+                        onClick(feature, self)
+                      },
+                    })
+                  }
+                  return items
                 },
               },
             }

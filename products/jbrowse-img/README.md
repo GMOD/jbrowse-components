@@ -519,7 +519,7 @@ jb2export synteny \
   --fasta https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa --loc I \
   --fasta2 https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa --loc2 NC_001133.9 \
   --paf https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf \
-  --drawCurves --out synteny.png
+  --drawCurves --levelHeights 150 --out synteny.png
 ```
 
 ![Linear synteny ribbon between YJM1447 chr I and R64 chr I](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/yeast_synteny.png)

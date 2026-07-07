@@ -556,19 +556,17 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 5000,
     // Each label sits in the clear band immediately next to the control it names,
     // with a SHORT arrow into it (minimize arrow length, place text next
-    // to its target, don't pile every pill at the top). Three tiers track the
-    // three real control rows: the dark app bar (Add), the clear strip just above
-    // the navigation toolbar (track selector / pan / search / zoom, controls at
+    // to its target, don't pile every pill at the top). Two tiers track the
+    // two real control rows: the clear strip just above the navigation toolbar
+    // (track selector / scroll-zoom toggle / pan / search / zoom, controls at
     // y~122), and the ruler strip just above the track header (drag handle + track
     // menu, controls at y~178). Arrow heads are anchored so they track the real
     // element; pill/tail coords are absolute viewport CSS px (1500x800 capture)
-    // tuned to the live control positions. Scroll-to-zoom has its own figure
-    // (scroll_zoom_toggle) just above this in the docs, so it's omitted here.
+    // tuned to the live control positions. The "Add view" app-bar callout was
+    // dropped (reviewer) in favor of pointing out the scroll-zoom toggle here too
+    // — scroll_zoom_toggle (just above this in the docs) is still the dedicated
+    // close-up figure for that control.
     annotations: [
-      // app-bar tier: Add menu (control at ~108,24)
-      { type: 'text', text: 'Add view', x: 160, y: 28, fontSize: 16 },
-      { type: 'arrow', from: { x: 156, y: 24 }, anchor: { text: 'Add' } },
-
       // toolbar tier: labels in the clear strip at y~62, short arrows down into
       // the navigation controls at y~122
       {
@@ -582,6 +580,20 @@ export const uiSpecs: ScreenshotSpec[] = [
         type: 'arrow',
         from: { x: 40, y: 70 },
         anchor: { selector: 'button[title="Open track selector"]' },
+      },
+      {
+        type: 'text',
+        text: 'Toggle scroll-zoom',
+        x: 200,
+        y: 62,
+        fontSize: 16,
+      },
+      {
+        type: 'arrow',
+        from: { x: 220, y: 70 },
+        anchor: {
+          selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
+        },
       },
       { type: 'text', text: 'Pan', x: 545, y: 62, fontSize: 16 },
       {

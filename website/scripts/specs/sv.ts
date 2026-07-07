@@ -314,6 +314,7 @@ export const svSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: '1:39,658,200-39,661,800',
+          trackLabels: 'offset',
           tracks: [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
@@ -340,8 +341,9 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    // taller window so the enlarged pileup + the feature-details sidebar fit
-    viewportHeight: 1600,
+    // taller window so the enlarged pileup + the feature-details sidebar fit,
+    // plus headroom for the annotation callouts pushed down off the pileup
+    viewportHeight: 1850,
     settleMs: 30000,
     // click the HGSV_2721 variant's floating feature label (stable per-feature
     // testid) to open its feature details
@@ -366,7 +368,7 @@ export const svSpecs: ScreenshotSpec[] = [
         // the CPX_TYPE field, so the connector to it is short
         type: 'text',
         x: 640,
-        y: 760,
+        y: 840,
         text: 'Annotated as "INVdup" (inverted duplication)',
         fontSize: 26,
         maxWidth: 360,
@@ -374,14 +376,14 @@ export const svSpecs: ScreenshotSpec[] = [
       {
         // tail at the callout's right edge, head anchored on the CPX_TYPE field
         type: 'arrow',
-        from: { x: 1015, y: 770 },
+        from: { x: 1015, y: 850 },
         anchor: { text: 'CPX_TYPE' },
       },
       {
         // inversion evidence
         type: 'text',
         x: 60,
-        y: 440,
+        y: 520,
         text: 'Green (LL), navy (RR), and magenta split reads flag the inverted segment.',
         maxWidth: 470,
       },
@@ -389,7 +391,7 @@ export const svSpecs: ScreenshotSpec[] = [
         // duplication evidence, stacked below with a gap
         type: 'text',
         x: 60,
-        y: 610,
+        y: 690,
         text: 'Elevated coverage and arcs mark the duplicated copy.',
         maxWidth: 470,
       },

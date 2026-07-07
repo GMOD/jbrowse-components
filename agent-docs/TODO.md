@@ -50,6 +50,34 @@ look at wakhan, pycnv
 
 ## more typescript improvements to cascadingmenu
 
-## add extra large text svg mode
+## add extra large text svg mode for pub ready figures
 
-## add linearalignmentsdisplay to bamadapter related config autogen
+
+
+## add dynamic nextstrain or more nextstrain demos
+
+
+
+## deploy example-site to branch
+
+# dotplot
+
+in plugins/dotplot-view we have the idea of allocating space for refname labels. but in the hg19
+  vs hg38 screenshot that we have in generate-screenshots the margins for refname labels on the axes
+  are quite large maybe even oversized. can you check
+
+## audit context menu code for e.g. alignments
+
+## follow ups
+
+
+- jbrowse-react-circular-genome-view's examples-site has the same verbose pattern in 4 files (Volvox.tsx, Managed.tsx, ShowTrack.tsx, Human.tsx) — worth the same cleanup for consistency across products.
+- website/docs/tutorials/embed_linear_genome_view.md (the main "embedding" tutorial, not examples-site) still shows the old verbose form — likely the highest-traffic doc a new user reads, so it's the most valuable one to update even though it's outside what you scoped today.
+- Push the shorthand one step further: refNameAliases/cytobands still require the full { adapter: { type: 'RefNameAliasAdapter', uri: '...' } } wrapper — a refNameAliases: { uri: '...' } shorthand (defaulting adapter.type) would trim that the same way, and it's the same preProcessSnapshot idiom already in place there.
+- The riskier "auto-detect adapter type from extension" idea we discussed and deferred (fasta: 'foo.fa.gz' → infer BgzipFastaAdapter) is still on the table if you want maximal terseness, but I'd only do it if you're fine with implicit magic.
+3
+
+## occasionally mouseover on gene glyph does not show cursor pointer with mouseover shading
+
+
+## only show 6ma methylation in chromatin_accessibility_6ma

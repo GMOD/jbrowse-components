@@ -11,8 +11,6 @@ import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 const assembly = {
   name: 'GRCh38',
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'GRCh38-ReferenceSequenceTrack',
     adapter: {
       type: 'BgzipFastaAdapter',
       uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',

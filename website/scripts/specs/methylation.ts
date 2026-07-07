@@ -1,4 +1,9 @@
-import { DEMO_CONFIG, lgvSession } from '../screenshot-spec-helpers.ts'
+import {
+  DEMO_CONFIG,
+  HG38_GENCODE_PROMOTER_TRACK,
+  lgvSession,
+  sessionSpec,
+} from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -60,36 +65,70 @@ export const methylationSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'methylation/chromatin_accessibility_6ma',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr12:6,533,000-6,536,000',
-      tracks: [
-        // gene + CpG-island context so the 6mA accessibility signal reads
-        // against the GAPDH promoter / TSS (reviewer: add gene + promoter track)
-        'MANE.GRCh38.v1.4.refseq',
-        'cpgisland_ucsc_hg38',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [HG38_GENCODE_PROMOTER_TRACK],
+      views: [
         {
-          trackId: 'PAY22766-nanopore',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            colorBy: { type: 'modifications' },
-            height: 200,
-          },
-        },
-        {
-          trackId: 'PBA15131-nanopore',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            colorBy: { type: 'modifications' },
-            height: 200,
-          },
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          // wider than just the promoter (was 6,533,000-6,536,000) so the
+          // gene body + flanking regions are visible too — the 6mA peak only
+          // reads as significant in contrast with a flatter background either
+          // side (reviewer: too tight, no context to judge significance)
+          loc: 'chr12:6,528,000-6,543,000',
+          tracks: [
+            // NCBI RefSeq gene (not MANE, longest-coding transcript only) +
+            // GENCODE promoter-window context so the 6mA accessibility signal
+            // reads against the GAPDH promoter/TSS (reviewer: swap MANE for a
+            // plain NCBI track, drop the CpG island — not relevant to
+            // fiber-seq accessibility — add promoter windows instead). The
+            // jbrowse.org/ucsc/hg38 hub gene track has unlabeled
+            // pseudogene/silent_region entries upstream of GAPDH in this
+            // window, so this uses the already-local, cleanly labeled RefSeq
+            // track instead (same one gallery/fiberseq_gapdh uses at this
+            // same locus).
+            {
+              trackId: 'ncbi_refseq_109_hg38_latest',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                geneGlyphMode: 'longestCoding',
+              },
+            },
+            'gencode_promoter_hg38_ucsc',
+            {
+              trackId: 'PAY22766-nanopore',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                colorBy: { type: 'modifications' },
+                // compact pileup: displayMode isn't a real slot on this
+                // display (that's the shared canvas base schema) — fixed
+                // heightMode + a small featureHeight/featureSpacing is the
+                // actual compact-row setting
+                heightMode: 'fixed',
+                featureHeight: 3,
+                featureSpacing: 0,
+                // reviewer: label the modification-type swatches (6mA calls)
+                showLegend: true,
+              },
+            },
+            {
+              trackId: 'PBA15131-nanopore',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                colorBy: { type: 'modifications' },
+                heightMode: 'fixed',
+                featureHeight: 3,
+                featureSpacing: 0,
+              },
+            },
+          ],
         },
       ],
     }),
     readyTimeout: 120000,
     settleMs: 20000,
-    // taller so both the enzyme-treated and control alignment tracks fit below
-    // the added gene + CpG-island context tracks
-    viewportHeight: 740,
+    // taller so both alignment tracks' full pileup (compact mode still stacks
+    // many rows for this depth) fit below the gene + promoter context tracks
+    viewportHeight: 1000,
   },
 ]

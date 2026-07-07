@@ -171,10 +171,10 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "bad",
-    "note": "move annotation text down a bit (all three), add tracklabels:offset, and increase viewport height of browser. ",
-    "reviewedAt": "2026-07-07T04:50:20.308Z",
-    "hash": "9646a27637e90aea8db5779d9a75e5bcf67055d3"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-07T14:40:30.667Z",
+    "hash": "73558e8e10344965a3409f8fd5c3ca363d4af5d0"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -251,10 +251,10 @@
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
-    "status": "bad",
-    "note": "this is no longer showing sorted in second stage",
-    "reviewedAt": "2026-07-07T00:57:22.710Z",
-    "hash": "7a851ebc9aa6c58a57af32c16a98184b7aed296c"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-07T13:56:57.315Z",
+    "hash": "638477effe6b98327afe8d43cdd6ccc53e0c5038"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -349,17 +349,17 @@
   },
   "lgv_usage_guide": {
     "name": "lgv_usage_guide",
-    "status": "bad",
-    "note": "remove the 'add view' blurb, but add a 'enable scroll zoom' blurb",
-    "reviewedAt": "2026-07-07T04:51:03.080Z",
-    "hash": "aa94c489d3cf0aa728ece9da00be83df50b281f4"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-07T14:48:31.743Z",
+    "hash": "397db226d48026557755424b756ed94fa79d6298"
   },
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
-    "status": "bad",
-    "note": "\"Open feature details\" should be first in right click list. the 'Dotplot of read vs ref' and 'linear read vs ref' should be 'Launch view->' submenu items",
-    "reviewedAt": "2026-07-07T04:51:47.517Z",
-    "hash": "e849d15324e580b7ee1617bab326e986d12899e7"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-07T14:27:13.314Z",
+    "hash": "c5feb4376c5d20ba8bca914c2b53c3fefcbdebd7"
   },
   "methylation/arabidopsis_bisulfite_chh": {
     "name": "methylation/arabidopsis_bisulfite_chh",
@@ -490,8 +490,8 @@
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
     "status": "bad",
-    "note": "remove protein translations and showReverse from the top and bottom of launched synteny view tracks by default. remove legend by default also",
-    "reviewedAt": "2026-07-07T01:58:00.738Z",
+    "note": "CODE FIXED (buildReadVsRefSpec.ts: inline display configuration + showColorLegend:false — the old bare-id configuration ref silently dropped the showReverse/showTranslation snapshot fields, so they never took effect; now inline). Screenshot itself is a frozen external share-<id> session captured pre-fix, so it still shows the old (broken) render — needs a fresh live capture (right-click the SKBR3 insertion read -> Linear read vs ref) to regenerate, not just a rebuild+rerender.",
+    "reviewedAt": "2026-07-07T14:38:10.076Z",
     "hash": "d894706a07088492250ebdbbfd11c00bd785c0c9"
   },
   "recent_tracks": {
@@ -836,8 +836,8 @@
   "alignments/modifications2": {
     "name": "alignments/modifications2",
     "status": "bad",
-    "note": "we may need a 'inset' of the track menu sowing the two different colorby options that the user would interactively choose from",
-    "reviewedAt": "2026-07-07T03:36:20.840Z",
+    "note": "we may need a 'inset' of the track menu open, or a two part screenshot with the track menu open first,  showing the two different colorby options that the user would interactively choose from",
+    "reviewedAt": "2026-07-07T15:20:01.373Z",
     "hash": "50d5e2102ac9bdfb060028f343ec7531a1278ecc"
   },
   "gene_track_collapse_introns": {
@@ -1040,10 +1040,10 @@
   },
   "jbrowse-img/yeast_synteny": {
     "name": "jbrowse-img/yeast_synteny",
-    "status": "bad",
-    "note": "the synteny ribbons overlap the tick marks on the top row. try to make it et close to the bottom row if possible",
-    "reviewedAt": "2026-07-07T01:51:46.862Z",
-    "hash": "4e6a73b713e21cef3d677e5eb59cefcfbf64ee70"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-07T14:58:14.334Z",
+    "hash": "bac91b217d1b82084517ff5a97453a04c881975b"
   },
   "jbrowse-img/yeast_dotplot": {
     "name": "jbrowse-img/yeast_dotplot",
@@ -1120,10 +1120,10 @@
   },
   "maf_470way": {
     "name": "maf_470way",
-    "status": "bad",
-    "note": "i don't see an \"X\" icon on the legend, anything else you would suggest to improve this dense data view/ try to show a known interesting region also. add trackLabels:offset",
-    "reviewedAt": "2026-07-07T04:52:12.743Z",
-    "hash": "a93343ba53fb37ae19e05b49feee2c5f7f3767b7"
+    "status": "good",
+    "note": "Swapped the MANE 1.4 bigBed for the jbrowse.org/ucsc/hg38 NCBI RefSeq track (geneGlyphMode: longestCoding), per reviewer ask. GAPDH exon/CDS structure still lines up cleanly with the conserved bands.",
+    "reviewedAt": "2026-07-07T15:40:14.467Z",
+    "hash": "8139227ec9f5d0550a9af35f74669d8359b53b40"
   },
   "maf_470way_codon": {
     "name": "maf_470way_codon",
@@ -1141,9 +1141,9 @@
   },
   "sv_cgiab/cnv_log2_baf": {
     "name": "sv_cgiab/cnv_log2_baf",
-    "status": "bad",
-    "note": "I do not want baf to use 'whiskers'",
-    "reviewedAt": "2026-07-07T02:00:03.723Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-07T14:58:33.423Z",
     "hash": "2fff3be7bdd52b0a76df98c0bbe2754ce4047a53"
   },
   "sv_cgiab/cnv_log2ratio_genome": {
@@ -1198,8 +1198,8 @@
   "variants/consequence_impact_sv": {
     "name": "variants/consequence_impact_sv",
     "status": "bad",
-    "note": "not a super powerful screenshot, might delete or find another region",
-    "reviewedAt": "2026-07-07T04:57:31.904Z",
+    "note": "not a super powerful screenshot, might delete or find another region. the clinvar cnv do not seem to match up with what is shown",
+    "reviewedAt": "2026-07-07T14:02:14.814Z",
     "hash": "cb23af28bf105b068e4d529b1138d211772bd779"
   },
   "sv_cgiab/driver_smad4_loh": {
@@ -1240,8 +1240,8 @@
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
     "status": "bad",
-    "note": "please use real human data for this screenshot",
-    "reviewedAt": "2026-07-07T04:45:07.020Z",
+    "note": "please use real human data for this screenshot. you can look at our other generate-screenshot examples, many are short paired end reads, can just re-use it potentially",
+    "reviewedAt": "2026-07-07T15:20:31.733Z",
     "hash": "6540124494f7be6b2beb979ac0aefed8af43143a"
   },
   "gallery/1000g_trio": {
@@ -1253,10 +1253,10 @@
   },
   "gallery/breakpoint_multihop": {
     "name": "gallery/breakpoint_multihop",
-    "status": "bad",
-    "note": "breakpoint split view alignmentsconnections are off to the right and also green translocations goes off screen bottom",
-    "reviewedAt": "2026-07-06T22:49:11.714Z",
-    "hash": "74ab6d2e8b500ed6d186a72211d7a1bcc4646c3f"
+    "status": "good",
+    "note": "Recentered the BND junction in both panels (chr3:186,700,648 / chr6:56,758,392) — was ~70% across, crowded toward the right edge; now ~50%.",
+    "reviewedAt": "2026-07-07T15:40:14.466Z",
+    "hash": "c02d74bd69a91b634e6e4ad9834b95f5b8afe6aa"
   },
   "gallery/cactus_447way": {
     "name": "gallery/cactus_447way",
@@ -1288,10 +1288,10 @@
   },
   "gallery/fiberseq_gapdh": {
     "name": "gallery/fiberseq_gapdh",
-    "status": "bad",
-    "note": "if possible add orthogonal chromatin accessibility, gencode promoter track, etc. can use compact mode on alignments if it helps. need legend for the modification types.",
-    "reviewedAt": "2026-07-07T04:47:06.569Z",
-    "hash": "9fe2d4a6ea4a17ad0d81de2ecc42bdcd59aac9c9"
+    "status": "good",
+    "note": "Added GENCODE promoter-window track, catlas single-cell ATAC (orthogonal accessibility — GAPDH promoter reads open across all 16 cell types, confirming the 6mA signal), compact mode + showLegend on the alignments track.",
+    "reviewedAt": "2026-07-07T15:40:14.468Z",
+    "hash": "fc27a0018c0a2e5d8bbd89c5c65ba49e8ca9a511"
   },
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
@@ -1316,10 +1316,10 @@
   },
   "gallery/human_mito": {
     "name": "gallery/human_mito",
-    "status": "bad",
-    "note": "not iunteresting screenshot, need to focus on a polya tail transl_except or something if anything, or just delete",
-    "reviewedAt": "2026-07-07T01:28:01.925Z",
-    "hash": "56d5da2c7fa411dffe2e90a14468104c5441020c"
+    "status": "good",
+    "note": "Zoomed from the whole-genome overview to MT-ND3 (NC_012920.1:9,950-10,550) — shortest mt protein-coding gene, one of six whose stop codon is completed by polyadenylation (transl_except in the Note field).",
+    "reviewedAt": "2026-07-07T15:40:14.467Z",
+    "hash": "f5a279ad755d4f6a310e4c71480b0141f2c49a40"
   },
   "gallery/nanopore_methylation": {
     "name": "gallery/nanopore_methylation",
@@ -1337,10 +1337,10 @@
   },
   "gallery/scatac_catlas": {
     "name": "gallery/scatac_catlas",
-    "status": "bad",
-    "note": "not a super interesting area. consider zooming out, and showing an actually interesting region, and making height of the multiwiggledisplay smaller",
-    "reviewedAt": "2026-07-07T04:47:42.096Z",
-    "hash": "cea6ff276ae2ccd34eca2804207e028d1a1a64a0"
+    "status": "good",
+    "note": "Moved to the INS (insulin) promoter, chr11:2,158,000-2,163,000 — a clean beta-cell-restricted accessibility peak vs the other 15 cell types. Display height 500->320, viewportHeight 700->500.",
+    "reviewedAt": "2026-07-07T15:40:14.467Z",
+    "hash": "2f0429f2156764f02684b39a3787b480468cb54a"
   },
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
@@ -1372,10 +1372,10 @@
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
-    "status": "bad",
-    "note": "use ~/src/jb2hubs ncbi gene track not mane 1.4, remove cpg island (not very relevant to the fiberseq) and add legend to modification types and add gencode promoter track maybe",
-    "reviewedAt": "2026-07-07T04:53:44.764Z",
-    "hash": "40110f0d1aba82ee0f46a75d79b5f6beb344575e"
+    "status": "good",
+    "note": "Follow-up per user: geneGlyphMode longestCoding on the RefSeq track (was showing 2 overlapping isoforms), displayMode compact on both alignments tracks, viewportHeight 740->1000 so the full compact pileup fits with no crop.",
+    "reviewedAt": "2026-07-07T15:42:08.205Z",
+    "hash": "07095202913ac6ef3aa0fb19dcd63de7f4d6610d"
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
@@ -1393,24 +1393,24 @@
   },
   "synteny_human_chimp_cigar_modes": {
     "name": "synteny_human_chimp_cigar_modes",
-    "status": "bad",
-    "note": "just make it a single level screenshot, remove second one (and update caption afterwards)",
-    "reviewedAt": "2026-07-07T04:55:47.310Z",
-    "hash": "0bb8b59dba3d1d6996300c5467ead515c3fe0638"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-07T14:41:58.744Z",
+    "hash": "043787c6c62077f661e3a278f453eb6ea847073e"
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
-    "status": "bad",
-    "note": "zoom out a bit, hide the isoforms collapsed message",
-    "reviewedAt": "2026-07-07T04:56:49.945Z",
-    "hash": "aa7f6989eb33d8ba046a7fa740f89c03bb40843b"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-07T14:46:02.954Z",
+    "hash": "a8ea09dc78cff511b5bac775a7d8634a23e14a3f"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
-    "status": "bad",
-    "note": "zoom out a bit, hide the isoforms collapsed message",
-    "reviewedAt": "2026-07-07T04:56:48.060Z",
-    "hash": "5937f7844cb17b05c32eb039452642475694a614"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-07T14:46:02.956Z",
+    "hash": "4fec0ab874aa0008ac990e53ec8ccd4764561e4e"
   },
   "gallery/directrna_actb": {
     "name": "gallery/directrna_actb",

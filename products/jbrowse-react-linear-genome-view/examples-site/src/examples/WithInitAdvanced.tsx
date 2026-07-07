@@ -3,8 +3,6 @@ import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 const assembly = {
   name: 'hg38',
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'P6R5xbRqRr',
     adapter: {
       type: 'BgzipFastaAdapter',
       uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',

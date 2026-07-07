@@ -1,15 +1,8 @@
-import { useState } from 'react'
-
-import {
-  JBrowseLinearGenomeView,
-  createViewState,
-} from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'volvox',
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'volvox_refseq',
     adapter: {
       type: 'TwoBitAdapter',
       twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
@@ -38,16 +31,15 @@ const tracks = [
 ]
 
 export default function OneLinearGenomeView() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
+  return (
+    <LinearGenomeView
+      assembly={assembly}
+      tracks={tracks}
       // use 1-based coordinates for locstring
-      location: 'ctgA:1105..1221',
-      onChange: patch => {
+      init={{ loc: 'ctgA:1105..1221' }}
+      onChange={patch => {
         console.log('patch', patch)
-      },
-    }),
+      }}
+    />
   )
-  return <JBrowseLinearGenomeView viewState={state} />
 }

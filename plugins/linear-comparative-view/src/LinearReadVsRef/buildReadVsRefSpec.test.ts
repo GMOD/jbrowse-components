@@ -248,6 +248,40 @@ describe('buildReadVsRefSpec', () => {
     )
   })
 
+  it('hides color legend and reverse/translation sequence rows by default', () => {
+    const feature = makeFeature({
+      refName: 'chr1',
+      start: 1000,
+      end: 1100,
+      strand: 1,
+      CIGAR: '100M',
+      flags: 0,
+      name: 'r',
+      seq: 'A',
+      tags: {},
+    })
+    const spec = buildReadVsRefSpec({
+      primaryFeature: feature,
+      windowSize: 0,
+      viewWidth: 800,
+      trackAssembly: 'hg38',
+      getCanonicalRefName: r => r,
+      sequenceTrackConf: { trackId: 'seq' },
+      now: constNow,
+      rand: seqRand,
+    })
+    expect(spec.viewSpec.showColorLegend).toBe(false)
+    for (const view of spec.viewSpec.views as {
+      tracks: { displays: { configuration: unknown }[] }[]
+    }[]) {
+      const display = view.tracks[0]!.displays[0]!
+      expect(display.configuration).toMatchObject({
+        showReverse: false,
+        showTranslation: false,
+      })
+    }
+  })
+
   it('missing seq field falls back to empty string (secondary alignments)', () => {
     const feature = makeFeature({
       refName: 'chr1',

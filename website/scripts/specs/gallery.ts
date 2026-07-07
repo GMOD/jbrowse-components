@@ -1,5 +1,6 @@
 import {
   DEMO_CONFIG,
+  HG38_GENCODE_PROMOTER_TRACK,
   lgvSession,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
@@ -56,13 +57,18 @@ export const gallerySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gallery/human_mito',
+    // Zoomed to MT-ND3 rather than the whole-genome overview (reviewer:
+    // uninteresting at full width) — ND3 is the shortest human mitochondrial
+    // protein-coding gene and, like five other mt-genes, its stop codon is
+    // just "T--" in the genome; polyadenylation of the mRNA completes it to
+    // TAA (annotated as a `transl_except` on the CDS, in the Note field).
     url: lgvSession('test_data/human_mito/config.json', {
       assembly: 'human_mito',
-      loc: 'NC_012920.1:1-16,569',
+      loc: 'NC_012920.1:9,950-10,550',
       colorByCDS: true,
       tracks: ['ncbi_genes_human_mito'],
     }),
-    readyText: 'NCBI genes',
+    readyText: 'ND3',
     readyTimeout: 60000,
     settleMs: 6000,
     viewportHeight: 420,
@@ -86,10 +92,46 @@ export const gallerySpecs: ScreenshotSpec[] = [
     // GAPDH promoter. Verified ~50 reads deep with a dense 6mA peak (~20% mean,
     // 100% max) at the TSS vs ~2% background. Data:
     // https://epi2me.nanoporetech.com/chromatin-acc-hg002/
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"12:6533000-6536000","type":"LinearGenomeView","tracks":["ncbi_refseq_109_hg38_latest",{"trackId":"PAY22766-nanopore","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"modifications"}}}]}]}',
+    // Reviewer: add a promoter track, an orthogonal accessibility assay to
+    // corroborate the 6mA nucleosome-depletion signal, compact mode on the
+    // alignments (deep pileup), and a legend for the modification-type swatches.
+    // catlas single-cell ATAC (16 cell types) gives that orthogonal signal —
+    // GAPDH is a housekeeping gene, so its promoter should read open broadly
+    // across cell types, unlike the cell-type-restricted INS example in
+    // gallery/scatac_catlas.
+    url: sessionSpec('test_data/config_demo.json', {
+      sessionTracks: [HG38_GENCODE_PROMOTER_TRACK],
+      views: [
+        {
+          assembly: 'hg38',
+          loc: '12:6533000-6536000',
+          type: 'LinearGenomeView',
+          tracks: [
+            'ncbi_refseq_109_hg38_latest',
+            'gencode_promoter_hg38_ucsc',
+            {
+              trackId: 'catlas_scatac_celltypes_hg38',
+              displaySnapshot: {
+                type: 'MultiLinearWiggleDisplay',
+                height: 220,
+              },
+            },
+            {
+              trackId: 'PAY22766-nanopore',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                colorBy: { type: 'modifications' },
+                displayMode: 'compact',
+                showLegend: true,
+              },
+            },
+          ],
+        },
+      ],
+    }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 560,
+    viewportHeight: 820,
   },
   {
     mode: 'url',
@@ -121,10 +163,31 @@ export const gallerySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gallery/scatac_catlas',
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"11:2130000-2200000","type":"LinearGenomeView","tracks":["catlas_scatac_celltypes_hg38"]}]}',
+    // INS (insulin) promoter — a beta-cell-restricted accessibility peak, with
+    // Alpha (glucagon) and the other 14 cell types in this atlas subset showing
+    // little to no signal at the same locus. Shorter display height (was the
+    // 500px config default) so the 16 rows read as a compact panel.
+    url: sessionSpec('test_data/config_demo.json', {
+      views: [
+        {
+          assembly: 'hg38',
+          loc: 'chr11:2,158,000-2,163,000',
+          type: 'LinearGenomeView',
+          tracks: [
+            {
+              trackId: 'catlas_scatac_celltypes_hg38',
+              displaySnapshot: {
+                type: 'MultiLinearWiggleDisplay',
+                height: 320,
+              },
+            },
+          ],
+        },
+      ],
+    }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 700,
+    viewportHeight: 500,
   },
   {
     mode: 'url',
@@ -220,7 +283,10 @@ export const gallerySpecs: ScreenshotSpec[] = [
           views: [
             {
               assembly: 'hg19',
-              loc: 'chr3:186,693,586-186,703,586',
+              // BND junction is chr3:186,700,648 — centered in a 10kb window
+              // (previously the window put the junction at ~70% across,
+              // crowding it toward the right edge)
+              loc: 'chr3:186,695,648-186,705,648',
               tracks: [
                 {
                   trackId: 'pacbio_hg002_breakpoints',
@@ -234,7 +300,8 @@ export const gallerySpecs: ScreenshotSpec[] = [
             },
             {
               assembly: 'hg19',
-              loc: 'chr6:56,751,088-56,761,088',
+              // BND junction is chr6:56,758,392 — centered the same way
+              loc: 'chr6:56,753,392-56,763,392',
               tracks: [
                 {
                   trackId: 'pacbio_hg002_breakpoints',

@@ -170,6 +170,13 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
   }
 
   if (feat) {
+    items.push({
+      label: 'Open feature details',
+      icon: MenuOpenIcon,
+      onClick: () => {
+        self.selectFeature(feat)
+      },
+    })
     const mateFields = getMateFields(feat)
     if (mateFields) {
       items.push({
@@ -296,21 +303,12 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         void copyText(self, JSON.stringify(rest, null, 4), 'feature info')
       },
     })
-    items.push(
-      {
-        label: 'Open feature details',
-        icon: MenuOpenIcon,
-        onClick: () => {
-          self.selectFeature(feat)
-        },
-      },
-      {
-        label: 'Copy',
-        icon: ContentCopyIcon,
-        type: 'subMenu',
-        subMenu: copySubMenu,
-      },
-    )
+    items.push({
+      label: 'Copy',
+      icon: ContentCopyIcon,
+      type: 'subMenu',
+      subMenu: copySubMenu,
+    })
   }
 
   return items

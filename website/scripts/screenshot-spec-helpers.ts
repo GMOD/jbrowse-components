@@ -89,6 +89,55 @@ export const PROTEIN3D_CONFIG = 'test_data/protein3d_config.json'
 export const CGIAB_BASE = `?config=${encodeURIComponent('https://jbrowse.org/demos/cgiab/config.json')}`
 export const HPYLORI_BASE = `?config=${encodeURIComponent('https://jbrowse.org/demos/hpylori/config.json')}`
 
+// hg38 NCBI RefSeq (UCSC hub build, jbrowse.org/ucsc/hg38) as a session track —
+// reviewer's preferred gene track over the MANE bigBed in a few figures.
+// geneGlyphMode: 'longestCoding' on the display collapses isoforms the way
+// MANE Select did.
+export const HG38_NCBI_GENE_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'ncbi_genes_hg38_ucsc',
+  name: 'NCBI RefSeq (UCSC)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    gffGzLocation: {
+      uri: 'https://jbrowse.org/ucsc/hg38/hg38.gff.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      location: {
+        uri: 'https://jbrowse.org/ucsc/hg38/hg38.gff.gz.csi',
+        locationType: 'UriLocation',
+      },
+      indexType: 'CSI',
+    },
+  },
+}
+
+// GENCODE v48 promoter windows (UCSC hub build, jbrowse.org/ucsc/hg38) as a
+// session track, for figures that want promoter context without the full
+// ENCODE cCRE/chromatin-state tracks.
+export const HG38_GENCODE_PROMOTER_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'gencode_promoter_hg38_ucsc',
+  name: 'GENCODE v48 promoter windows (UCSC)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    gffGzLocation: {
+      uri: 'https://jbrowse.org/ucsc/hg38/gencode.v48.promoter_windows.sorted.gff3.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      location: {
+        uri: 'https://jbrowse.org/ucsc/hg38/gencode.v48.promoter_windows.sorted.gff3.gz.csi',
+        locationType: 'UriLocation',
+      },
+      indexType: 'CSI',
+    },
+  },
+}
+
 export function sessionSpec(config: string, session: object) {
   return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }

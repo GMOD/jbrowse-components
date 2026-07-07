@@ -1,16 +1,15 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import type { RefObject } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
 import {
-  JBrowseLinearGenomeView,
-  createViewState,
+  LinearGenomeView,
+  type ViewModel,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'volvox',
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'volvox_refseq',
     adapter: {
       type: 'TwoBitAdapter',
       twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
@@ -38,16 +37,14 @@ const tracks = [
   },
 ]
 
-type ViewState = ReturnType<typeof createViewState>
-
-function FlipButton({ state }: { state: ViewState }) {
+function FlipButton({ viewRef }: { viewRef: RefObject<ViewModel | null> }) {
   const [error, setError] = useState<unknown>()
   return (
     <div>
       <button
         onClick={() => {
           try {
-            state.session.view.horizontallyFlip()
+            viewRef.current?.session.view.horizontallyFlip()
           } catch (e) {
             setError(e)
           }
@@ -61,13 +58,16 @@ function FlipButton({ state }: { state: ViewState }) {
 }
 
 export default function App() {
-  const [state] = useState(() =>
-    createViewState({ assembly, tracks, location: 'ctgA:1-50000' }),
-  )
+  const ref = useRef<ViewModel>(null)
   return (
     <div>
-      <FlipButton state={state} />
-      <JBrowseLinearGenomeView viewState={state} />
+      <FlipButton viewRef={ref} />
+      <LinearGenomeView
+        ref={ref}
+        assembly={assembly}
+        tracks={tracks}
+        init={{ loc: 'ctgA:1-50000' }}
+      />
     </div>
   )
 }
