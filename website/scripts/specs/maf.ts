@@ -32,6 +32,30 @@ const HG38_MANE_TRACK = {
   },
 }
 
+// ce11 NCBI RefSeq (curated) genes as a session track (hosted at jbrowse.org/ucsc,
+// generated from UCSC), so the C. elegans maf figures carry gene context. Chrom
+// names are chrI/chrII/... matching the maf's roman-numeral refnames.
+const CE11_GENE_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'ce11_ncbi_refseq',
+  name: 'NCBI RefSeq genes (ce11)',
+  assemblyNames: ['ce11'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    gffGzLocation: {
+      uri: 'https://jbrowse.org/ucsc/ce11/ncbiRefSeqCurated.gff.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      indexType: 'CSI',
+      location: {
+        uri: 'https://jbrowse.org/ucsc/ce11/ncbiRefSeqCurated.gff.gz.csi',
+        locationType: 'UriLocation',
+      },
+    },
+  },
+}
+
 export const mafSpecs: ScreenshotSpec[] = [
   {
     // The UCSC ce11 26-way multiz alignment (real cross-species nematode data):
@@ -164,17 +188,26 @@ export const mafSpecs: ScreenshotSpec[] = [
     // chromosome to its color.
     mode: 'url',
     name: 'maf_color_by_chromosome',
-    url: lgvSession(CE_MAF_FRAMES, {
-      assembly: 'ce11',
-      loc: 'chrI:2,995,000-3,003,000',
-      tracks: [
+    url: sessionSpec(CE_MAF_FRAMES, {
+      sessionTracks: [CE11_GENE_TRACK],
+      views: [
         {
-          trackId: 'ce11.26way',
-          displaySnapshot: {
-            type: 'LinearMafDisplay',
-            heightOverride: 400,
-            colorByChromosome: true,
-          },
+          type: 'LinearGenomeView',
+          assembly: 'ce11',
+          loc: 'chrI:2,995,000-3,003,000',
+          tracks: [
+            // gene context: the source-chromosome recoloring spans these ce11
+            // genes (supr-1 / dnj-28 / nduf-5)
+            'ce11_ncbi_refseq',
+            {
+              trackId: 'ce11.26way',
+              displaySnapshot: {
+                type: 'LinearMafDisplay',
+                heightOverride: 400,
+                colorByChromosome: true,
+              },
+            },
+          ],
         },
       ],
     }),
