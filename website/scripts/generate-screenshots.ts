@@ -586,9 +586,7 @@ async function captureCliSpec(spec: CliSpec) {
 // compose spec recomposes from the committed parts.
 async function captureComposeSpec(spec: ComposeSpec) {
   const partPaths = spec.parts.map(p => path.join(outDir, `${p}.png`))
-  const missing = spec.parts.filter(
-    (_, i) => !fs.existsSync(partPaths[i]!),
-  )
+  const missing = spec.parts.filter((_, i) => !fs.existsSync(partPaths[i]!))
   if (missing.length > 0) {
     throw new Error(`missing part image(s): ${missing.join(', ')}`)
   }

@@ -255,7 +255,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         }
       }
       // Single writer for trackConfigDeltas (pass undefined to clear).
-      function writeDelta(trackId: string, delta: PlainTrackConfig | undefined) {
+      function writeDelta(
+        trackId: string,
+        delta: PlainTrackConfig | undefined,
+      ) {
         self.trackConfigDeltas = delta
           ? { ...self.trackConfigDeltas, [trackId]: delta }
           : withoutDelta(self.trackConfigDeltas, trackId)

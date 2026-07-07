@@ -177,8 +177,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1(@typescript-eslint/parser@8.62.1(eslint@10.6.0)(typescript@6.0.3))(eslint@10.6.0)
       eslint-plugin-baseline-js:
-        specifier: ^0.6.2
-        version: 0.6.2(eslint@10.6.0)
+        specifier: ^0.7.0
+        version: 0.7.0(eslint@10.6.0)
       eslint-plugin-import-x:
         specifier: ^4.17.1
         version: 4.17.1(@typescript-eslint/utils@8.62.1(eslint@10.6.0)(typescript@6.0.3))(eslint@10.6.0)
@@ -192,8 +192,8 @@ importers:
         specifier: ^1.0.4
         version: 1.0.4(eslint@10.6.0)
       eslint-plugin-unicorn:
-        specifier: 71.0.0
-        version: 71.0.0(eslint@10.6.0)
+        specifier: 71.1.0
+        version: 71.1.0(eslint@10.6.0)
       express:
         specifier: ^5.2.1
         version: 5.2.1
@@ -6728,8 +6728,8 @@ packages:
       eslint-plugin-jsx-a11y:
         optional: true
 
-  eslint-plugin-baseline-js@0.6.2:
-    resolution: {integrity: sha512-RlftLko7ppNUu8Ro3T6acNs0LlNPc290uHq+roBQtac9ys/uqLpMpgLYCTrAJ8WUm5WZdlJn+hQgZeD+g/SmBQ==}
+  eslint-plugin-baseline-js@0.7.0:
+    resolution: {integrity: sha512-wnL74O4s+6y6Q8K+r64G0hL/RNZsXVJXM7U8x+Lf/ti/4vTMywGYcVSnkcuQG46tFtdo3lNZcGgIdOTEQ6i7oQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       eslint: '>=9.29.0 <11'
@@ -6811,8 +6811,8 @@ packages:
     peerDependencies:
       eslint: ^7.14.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
 
-  eslint-plugin-unicorn@71.0.0:
-    resolution: {integrity: sha512-9LAN/lIeEY8x1PsP10wOe1bFhNVJ4s3GWfy2FGiiZiKUd2JXVFKbjFaSVSWMKaVyKx1ulj3g5LMPKjWtvQntwg==}
+  eslint-plugin-unicorn@71.1.0:
+    resolution: {integrity: sha512-dn3YmR3qLLUeYyo/os3ubZ7UHQJ1WbBAgC9cIhnLTyMj9J6kivuc2U1fCmYetLexUlTDVYtBqhjSj/VaebTe6Q==}
     engines: {node: '>=22'}
     peerDependencies:
       eslint: '>=10.4'
@@ -14570,7 +14570,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-baseline-js@0.6.2(eslint@10.6.0):
+  eslint-plugin-baseline-js@0.7.0(eslint@10.6.0):
     dependencies:
       eslint: 10.6.0
       eslint-plugin-es-x: 9.7.0(eslint@10.6.0)
@@ -14713,7 +14713,7 @@ snapshots:
     dependencies:
       eslint: 10.6.0
 
-  eslint-plugin-unicorn@71.0.0(eslint@10.6.0):
+  eslint-plugin-unicorn@71.1.0(eslint@10.6.0):
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.6.0)
       browserslist: 4.28.4

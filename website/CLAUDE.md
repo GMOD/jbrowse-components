@@ -77,23 +77,24 @@ mechanisms build one content-stable stacked PNG instead:
 
 - **Prefer `compose`** when each state is expressible as its own session (the
   usual case for a _setting_ contrast). Write one declarative spec per state
-  (bake the setting into the session — e.g. `cigarMode`/`showColorLegend` as view
-  props, applied via `applyInitSettings`), then a `{ mode: 'compose', parts:
-  [...] }` spec stacks their committed PNGs `convert -append`. No menu-driving, so
-  nothing can drift, and each part is independently openable live. See
-  `synteny_human_chimp_colored` + `_transparent` → `synteny_human_chimp_cigar_modes`.
-- **Use `stages`** only when a state is genuinely reachable *only* through the UI
-  (a hover, a transient popover). Each stage's frame is captured and stacked; to
-  toggle a menu setting, note the synteny "CIGAR display mode" control is on the
-  comparative view's `[aria-label="View options"]` header button, not
+  (bake the setting into the session — e.g. `cigarMode`/`showColorLegend` as
+  view props, applied via `applyInitSettings`), then a
+  `{ mode: 'compose', parts: [...] }` spec stacks their committed PNGs
+  `convert -append`. No menu-driving, so nothing can drift, and each part is
+  independently openable live. See `synteny_human_chimp_colored` +
+  `_transparent` → `synteny_human_chimp_cigar_modes`.
+- **Use `stages`** only when a state is genuinely reachable _only_ through the
+  UI (a hover, a transient popover). Each stage's frame is captured and stacked;
+  to toggle a menu setting, note the synteny "CIGAR display mode" control is on
+  the comparative view's `[aria-label="View options"]` header button, not
   `view_menu_icon`, then `delay` for any refetch.
 
 Either way set `viewportHeight` to just the content so the stacked frames aren't
 mostly whitespace (equal heights for the parts give a clean stack). To open
 _both_ states from one combined figure, `<Figure>` takes
-`links="Label=spec,Label=spec"` — each spec name resolves to its live session (so
-the links can't drift); point them at the two declarative part specs, not the
-compose spec (which has no session of its own).
+`links="Label=spec,Label=spec"` — each spec name resolves to its live session
+(so the links can't drift); point them at the two declarative part specs, not
+the compose spec (which has no session of its own).
 
 **Gallery.** `/gallery/` and `/demos/` are driven by `src/lib/gallery.ts`. A
 figure item sets `spec:` (a `screenshot-specs.ts` name); both its card image

@@ -82,7 +82,10 @@ for (const docPath of findDocFiles(DOCS_DIR)) {
     const trackedUrl = screenshotLiveUrls[name]
     // a combined figure links several specs via `links="Label=spec,..."`; treat
     // the first as its live URL so it isn't flagged as an unlinked manual figure
-    const firstLinkSpec = (attrs.links ?? '').split(',')[0]?.split('=')[1]?.trim()
+    const firstLinkSpec = (attrs.links ?? '')
+      .split(',')[0]
+      ?.split('=')[1]
+      ?.trim()
     const liveUrl =
       attrs.link ??
       trackedUrl ??

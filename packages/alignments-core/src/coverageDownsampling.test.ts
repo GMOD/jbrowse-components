@@ -136,7 +136,10 @@ describe('downsampleStatsBins', () => {
 
 describe('computeVisibleCoverageStats', () => {
   function perBpRegion(depths: number[], startPos: number): CoverageRegion {
-    return { coverageDepths: new Float32Array(depths), coverageStartPos: startPos }
+    return {
+      coverageDepths: new Float32Array(depths),
+      coverageStartPos: startPos,
+    }
   }
 
   test('per-bp path: min/max/mean over the visible clip', () => {

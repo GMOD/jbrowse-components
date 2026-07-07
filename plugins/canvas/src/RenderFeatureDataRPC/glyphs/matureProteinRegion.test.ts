@@ -81,7 +81,9 @@ describe('hasMatureProteinChildren', () => {
 
   it('detects GenBank mat_peptide/sig_peptide children (GenBank→GFF3 conversion of a downloaded viral genome)', () => {
     expect(
-      hasMatureProteinChildren(viralPolyprotein(['mat_peptide', 'sig_peptide'])),
+      hasMatureProteinChildren(
+        viralPolyprotein(['mat_peptide', 'sig_peptide']),
+      ),
     ).toBe(true)
   })
 

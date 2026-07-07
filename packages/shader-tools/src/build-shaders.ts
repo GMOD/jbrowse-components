@@ -427,8 +427,19 @@ function compileOne(slangPath: string) {
       const glslVertexOut = path.join(tmp, `${base}.vert.glsl`)
       const glslFragmentOut = path.join(tmp, `${base}.frag.glsl`)
       const glslArgs = (stage: string, entry: string, out: string) => [
-        slangPath, '-target', 'glsl', '-stage', stage, '-entry', entry,
-        '-o', out, '-I', dir, '-I', SHARED_INCLUDE,
+        slangPath,
+        '-target',
+        'glsl',
+        '-stage',
+        stage,
+        '-entry',
+        entry,
+        '-o',
+        out,
+        '-I',
+        dir,
+        '-I',
+        SHARED_INCLUDE,
       ]
       run(SLANGC, glslArgs('vertex', vsName, glslVertexOut))
       run(SLANGC, glslArgs('fragment', fsName, glslFragmentOut))

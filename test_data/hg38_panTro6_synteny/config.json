@@ -53,7 +53,9 @@
         },
         "index": {
           "indexType": "CSI",
-          "location": { "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi" }
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi"
+          }
         }
       },
       "displays": [
@@ -77,7 +79,9 @@
         },
         "index": {
           "indexType": "CSI",
-          "location": { "uri": "https://jbrowse.org/ucsc/panTro6/ncbiRefSeq.gff.gz.csi" }
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/panTro6/ncbiRefSeq.gff.gz.csi"
+          }
         }
       },
       "displays": [
@@ -125,7 +129,9 @@
         },
         "index": {
           "indexType": "CSI",
-          "location": { "uri": "https://jbrowse.org/ucsc/panTro6/rmsk.bed.gz.csi" }
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/panTro6/rmsk.bed.gz.csi"
+          }
         }
       },
       "displays": [

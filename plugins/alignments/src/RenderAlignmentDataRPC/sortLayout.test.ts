@@ -906,7 +906,12 @@ describe('computeMultiRegionLayout', () => {
     const { rowMap } = computeMultiRegionLayout({
       entries: [[0, exon]],
       regions: new Map([[0, chr1(200, 300)]]),
-      sortedBy: { type: 'basePair', pos: 250, refName: 'chr1', assemblyName: 'a' },
+      sortedBy: {
+        type: 'basePair',
+        pos: 250,
+        refName: 'chr1',
+        assemblyName: 'a',
+      },
       largeFeaturesFirst: true,
     })
     // ascending base order A < C < T — the wide 'T' read still sorts last,

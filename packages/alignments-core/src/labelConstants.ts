@@ -44,6 +44,33 @@ export function computeLabelFontSize(h: number) {
   return Math.max(8, Math.min(h, 10))
 }
 
+// A size label (deletion length / large-insertion count) reaches full opacity
+// once its feature is LABEL_FADE_HI_RATIO times as wide as the space the label
+// needs, and fades linearly to nothing as the feature narrows to exactly that
+// space. This replaces the old hard appear/disappear cutoff with a smooth fade
+// as you zoom out — important when many large indels sit back-to-back (e.g.
+// inter-species comparisons), where a hard cutoff makes every label flicker
+// on/off at once.
+export const LABEL_FADE_HI_RATIO = 2
+
+// Below this opacity a label isn't worth drawing (invisible and sub-pixel), so
+// callers drop it entirely.
+export const MIN_LABEL_OPACITY = 0.05
+
+// GLSL/WGSL smoothstep, matching the Canvas2D fades elsewhere in the plugin.
+function smoothstep(edge0: number, edge1: number, x: number) {
+  const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)))
+  return t * t * (3 - 2 * t)
+}
+
+// Opacity in [0,1] for a size label given how many pixels its feature spans on
+// screen (`availPx`) and the pixel width it needs to be legible (`neededPx`). 0
+// at/below `neededPx` (drop the label), ramping to 1 at LABEL_FADE_HI_RATIO ×
+// `neededPx`.
+export function labelFadeOpacity(availPx: number, neededPx: number) {
+  return smoothstep(neededPx, neededPx * LABEL_FADE_HI_RATIO, availPx)
+}
+
 // SYNC: mirrors textWidthForNumber() in GLSL/WGSL cigarShaders.ts
 // charWidth=6px per digit + padding=10px
 export function textWidthForNumber(num: number) {

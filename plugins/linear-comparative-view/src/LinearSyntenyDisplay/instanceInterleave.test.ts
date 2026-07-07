@@ -1,4 +1,7 @@
-import { interleaveInstances, patchInstanceColors } from './instanceInterleave.ts'
+import {
+  interleaveInstances,
+  patchInstanceColors,
+} from './instanceInterleave.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
@@ -29,7 +32,9 @@ describe('patchInstanceColors', () => {
   // byte-identical to a full re-interleave carrying the new colors over the
   // same geometry — this asserts exactly that.
   test('equals a full re-interleave with the new colors', () => {
-    const data = makeData(Uint32Array.from([0x11111111, 0x22222222, 0x33333333]))
+    const data = makeData(
+      Uint32Array.from([0x11111111, 0x22222222, 0x33333333]),
+    )
     const newColors = Uint32Array.from([0xaabbccdd, 0x01020304, 0xfffefdfc])
 
     const patched = interleaveInstances(data)

@@ -6,7 +6,9 @@ describe('canLaunchSyntenyForMate', () => {
   it('allows launch when the mate is a declared assembly of the track', () => {
     // holds even for an assembly that is not loaded yet — it resolves on demand
     // when the synteny view opens
-    expect(canLaunchSyntenyForMate(trackAssemblyNames, 'volvox_del2')).toBe(true)
+    expect(canLaunchSyntenyForMate(trackAssemblyNames, 'volvox_del2')).toBe(
+      true,
+    )
   })
 
   it('hides launch for a one-vs-all sample label not in assemblyNames', () => {

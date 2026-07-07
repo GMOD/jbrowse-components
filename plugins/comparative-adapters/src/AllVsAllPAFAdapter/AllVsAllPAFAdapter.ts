@@ -153,11 +153,7 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
             (targetPrefix === undefined || matePrefix === targetPrefix) &&
             // skip a degenerate self-diagonal (identical locus on both sides);
             // real paralogy has distinct coords/contig
-            !(
-              mateRefName === refName &&
-              mateStart === start &&
-              mateEnd === end
-            )
+            !(mateRefName === refName && mateStart === start && mateEnd === end)
 
           if (
             drawsHere &&

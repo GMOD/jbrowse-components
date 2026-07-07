@@ -116,7 +116,9 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   "show all" affordance only when reads were actually clipped, so
                   the button's presence signals hidden reads. Gated on showPileup
                   since both actions resize the (hidden) pileup. */}
-              {!showPileup || collapsed || (!hasOverride && !truncated) ? null : (
+              {!showPileup ||
+              collapsed ||
+              (!hasOverride && !truncated) ? null : (
                 <button
                   type="button"
                   className={classes.button}

@@ -1,11 +1,7 @@
 import { runCoveragePipeline } from './runCoveragePipeline.ts'
 
 import type { StrandBaseCounts } from './calculateModificationCounts.ts'
-import type {
-  FeatureData,
-  GapData,
-  InsertionData,
-} from './webglRpcTypes.ts'
+import type { FeatureData, GapData, InsertionData } from './webglRpcTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 
 // 40 reads spanning the whole region → depth 40 everywhere. A mismatch shared by
@@ -60,8 +56,14 @@ const baseArgs = {
 
 describe('runCoveragePipeline coverage-band gate', () => {
   test('showCoverage off skips the band but keeps frequencies identical', async () => {
-    const withBand = await runCoveragePipeline({ ...baseArgs, showCoverage: true })
-    const noBand = await runCoveragePipeline({ ...baseArgs, showCoverage: false })
+    const withBand = await runCoveragePipeline({
+      ...baseArgs,
+      showCoverage: true,
+    })
+    const noBand = await runCoveragePipeline({
+      ...baseArgs,
+      showCoverage: false,
+    })
 
     // The band-off run allocates none of the per-bp depth buffer that trips the
     // GPU device-limit crash at whole-chromosome scale.

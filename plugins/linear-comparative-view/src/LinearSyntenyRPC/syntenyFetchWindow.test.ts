@@ -8,7 +8,12 @@ const ASM = 'test'
 
 // A whole chromosome as the displayed region; wide enough that the fetch window
 // never clamps unless a test intends it to.
-const wholeChr = { refName: 'chr1', assemblyName: ASM, start: 0, end: 200_000_000 }
+const wholeChr = {
+  refName: 'chr1',
+  assemblyName: ASM,
+  start: 0,
+  end: 200_000_000,
+}
 
 function vis(start: number, end: number) {
   return {
@@ -66,10 +71,21 @@ describe('syntenyFetchRegions', () => {
   })
 
   it('clamps the window to the enclosing displayed region', () => {
-    const region = { refName: 'chr1', assemblyName: ASM, start: 1000, end: 9000 }
+    const region = {
+      refName: 'chr1',
+      assemblyName: ASM,
+      start: 1000,
+      end: 9000,
+    }
     const [r] = syntenyFetchRegions({
       visibleRegions: [
-        { refName: 'chr1', assemblyName: ASM, start: 4000, end: 5000, displayedRegionIndex: 0 },
+        {
+          refName: 'chr1',
+          assemblyName: ASM,
+          start: 4000,
+          end: 5000,
+          displayedRegionIndex: 0,
+        },
       ],
       displayedRegions: [region],
       width: 800,
@@ -82,11 +98,22 @@ describe('syntenyFetchRegions', () => {
   it('collapses to the whole displayed region when the buffered window covers it', () => {
     // small region fully inside one buffer -> fetch the whole region, and stay
     // stable (no pan-refetch) as the visible sub-window moves within it
-    const region = { refName: 'chr1', assemblyName: ASM, start: 0, end: 1_000_000 }
+    const region = {
+      refName: 'chr1',
+      assemblyName: ASM,
+      start: 0,
+      end: 1_000_000,
+    }
     const call = (start: number, end: number) =>
       syntenyFetchRegions({
         visibleRegions: [
-          { refName: 'chr1', assemblyName: ASM, start, end, displayedRegionIndex: 0 },
+          {
+            refName: 'chr1',
+            assemblyName: ASM,
+            start,
+            end,
+            displayedRegionIndex: 0,
+          },
         ],
         displayedRegions: [region],
         width: 800,

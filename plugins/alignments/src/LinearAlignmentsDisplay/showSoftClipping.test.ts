@@ -141,7 +141,7 @@ describe('alignments showSoftClipping session default', () => {
   it('is off by default with no config and no session default', () => {
     const { display } = createDisplay()
     expect(display.showSoftClipping).toBe(false)
-    expect(display.isShowSoftClippingDefault).toBe(false)
+    expect(display.softClippingSessionDefault.active).toBe(false)
   })
 
   it('follows a session-wide default of on when the track is not pinned', () => {
@@ -152,7 +152,7 @@ describe('alignments showSoftClipping session default', () => {
       true,
     )
     expect(display.showSoftClipping).toBe(true)
-    expect(display.isShowSoftClippingDefault).toBe(true)
+    expect(display.softClippingSessionDefault.active).toBe(true)
     expect(display.sessionDefaultChanges()).toEqual([
       { path: ['showSoftClipping'], from: false, to: true },
     ])
@@ -207,27 +207,27 @@ describe('alignments showSoftClipping session default', () => {
     expect(display.showSoftClipping).toBe(false)
   })
 
-  describe('setShowSoftClippingDefault', () => {
-    it('promotes the current on value to the session default', () => {
+  describe('softClippingSessionDefault', () => {
+    it('promotes soft-clipping-on as the session default', () => {
       const { session, display } = createDisplay({ showSoftClipping: true })
-      expect(display.isShowSoftClippingDefault).toBe(false)
+      expect(display.softClippingSessionDefault.active).toBe(false)
 
-      display.setShowSoftClippingDefault(true)
+      display.softClippingSessionDefault.toggle()
       expect(
         session.getDisplayTypeDefault(
           'LinearAlignmentsDisplay',
           'showSoftClipping',
         ),
       ).toBe(true)
-      expect(display.isShowSoftClippingDefault).toBe(true)
+      expect(display.softClippingSessionDefault.active).toBe(true)
     })
 
-    it('clears the session default when promote is false', () => {
+    it('clears the session default when toggled off', () => {
       const { session, display } = createDisplay({ showSoftClipping: true })
-      display.setShowSoftClippingDefault(true)
-      expect(display.isShowSoftClippingDefault).toBe(true)
+      display.softClippingSessionDefault.toggle()
+      expect(display.softClippingSessionDefault.active).toBe(true)
 
-      display.setShowSoftClippingDefault(false)
+      display.softClippingSessionDefault.toggle()
       expect(
         session.getDisplayTypeDefault(
           'LinearAlignmentsDisplay',
@@ -690,7 +690,7 @@ describe('alignments linkedReads (view as pairs) session default', () => {
   it('resolves to off by default with no config and no session default', () => {
     const { display } = createDisplay()
     expect(display.linkedReads).toBe('off')
-    expect(display.isLinkedReadsDefault).toBe(false)
+    expect(display.pairsSessionDefault.active).toBe(false)
   })
 
   it('follows a session-wide normal (pairs) default when un-pinned', () => {
@@ -701,7 +701,7 @@ describe('alignments linkedReads (view as pairs) session default', () => {
       'normal',
     )
     expect(display.linkedReads).toBe('normal')
-    expect(display.isLinkedReadsDefault).toBe(true)
+    expect(display.pairsSessionDefault.active).toBe(true)
     expect(display.sessionDefaultChanges()).toEqual([
       { path: ['linkedReads'], from: 'off', to: 'normal' },
     ])
@@ -730,24 +730,35 @@ describe('alignments linkedReads (view as pairs) session default', () => {
     expect(display.linkedReads).toBe('off')
   })
 
-  describe('setLinkedReadsDefault', () => {
-    it('promotes the current normal (pairs) mode to the session default', () => {
+  describe('pairsSessionDefault', () => {
+    it('promotes view-as-pairs as the session default', () => {
       const { session, display } = createDisplay({ linkedReads: 'normal' })
-      expect(display.isLinkedReadsDefault).toBe(false)
+      expect(display.pairsSessionDefault.active).toBe(false)
 
-      display.setLinkedReadsDefault(true)
+      display.pairsSessionDefault.toggle()
       expect(
         session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
       ).toBe('normal')
-      expect(display.isLinkedReadsDefault).toBe(true)
+      expect(display.pairsSessionDefault.active).toBe(true)
     })
 
-    it('clears the session default when promote is false', () => {
-      const { session, display } = createDisplay({ linkedReads: 'normal' })
-      display.setLinkedReadsDefault(true)
-      expect(display.isLinkedReadsDefault).toBe(true)
+    it('promotes pairs even when this track has them off (per-value)', () => {
+      const { session, display } = createDisplay()
+      expect(display.linkedReads).toBe('off')
+      display.pairsSessionDefault.toggle()
+      expect(
+        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
+      ).toBe('normal')
+      // an un-pinned track then follows the promoted default
+      expect(display.linkedReads).toBe('normal')
+    })
 
-      display.setLinkedReadsDefault(false)
+    it('clears the session default when toggled off', () => {
+      const { session, display } = createDisplay({ linkedReads: 'normal' })
+      display.pairsSessionDefault.toggle()
+      expect(display.pairsSessionDefault.active).toBe(true)
+
+      display.pairsSessionDefault.toggle()
       expect(
         session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
       ).toBeUndefined()
@@ -760,7 +771,8 @@ describe('alignments readConnections (arcs) session default', () => {
   it('resolves to off by default with no config and no session default', () => {
     const { display } = createDisplay()
     expect(display.readConnections).toBe('off')
-    expect(display.isReadConnectionsDefault).toBe(false)
+    expect(display.arcsSessionDefault.active).toBe(false)
+    expect(display.readCloudSessionDefault.active).toBe(false)
   })
 
   it('follows a session-wide arc default when un-pinned', () => {
@@ -771,7 +783,9 @@ describe('alignments readConnections (arcs) session default', () => {
       'arc',
     )
     expect(display.readConnections).toBe('arc')
-    expect(display.isReadConnectionsDefault).toBe(true)
+    expect(display.arcsSessionDefault.active).toBe(true)
+    // the read-cloud pin targets a different on-value, so it stays inactive
+    expect(display.readCloudSessionDefault.active).toBe(false)
     expect(display.sessionDefaultChanges()).toEqual([
       { path: ['readConnections'], from: 'off', to: 'arc' },
     ])
@@ -788,9 +802,9 @@ describe('alignments readConnections (arcs) session default', () => {
     expect(display.sessionDefaultChanges()).toEqual([])
   })
 
-  it('promotes the current mode and clears it', () => {
+  it('the arcs pin promotes arc and clears it (per-value)', () => {
     const { session, display } = createDisplay({ readConnections: 'arc' })
-    display.setReadConnectionsDefault(true)
+    display.arcsSessionDefault.toggle()
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',
@@ -798,7 +812,7 @@ describe('alignments readConnections (arcs) session default', () => {
       ),
     ).toBe('arc')
 
-    display.setReadConnectionsDefault(false)
+    display.arcsSessionDefault.toggle()
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',

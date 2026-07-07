@@ -3,9 +3,11 @@ export {
   INDICATOR_TRIANGLE_H,
   INSERTION_COLOR,
   INSERTION_SERIF_MIN_PX_PER_BP,
+  LABEL_FADE_HI_RATIO,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
+  MIN_LABEL_OPACITY,
   MIN_PX_PER_BP_FOR_TEXT,
   MISMATCH_COLOR,
   computeLabelFontSize,
@@ -18,6 +20,7 @@ export {
   insertionBarWidth,
   isCsOpChar,
   isDigit,
+  labelFadeOpacity,
   textWidthForNumber,
 } from './labelConstants.ts'
 export type {

@@ -6,11 +6,14 @@ import {
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
 import {
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
+  MIN_LABEL_OPACITY,
   MIN_PX_PER_BP_FOR_TEXT,
   computeLabelFontSize,
   getInsertionType,
   insertionBarWidth,
+  labelFadeOpacity,
 } from '../constants.ts'
 import {
   bandScreenTop,
@@ -28,6 +31,10 @@ export interface VisibleLabel {
   y: number
   text: string
   fontSize: number
+  // 0-1 draw opacity. Size labels on large indels ramp this down as their
+  // feature narrows so they fade out instead of popping when zoomed out; the
+  // per-base labels (mismatches, small insertions, clip summaries) stay 1.
+  opacity: number
 }
 
 interface LabelView {
@@ -145,7 +152,11 @@ export function computeVisibleLabels(
           const lengthStr = String(length)
           const textWidth = measureText(lengthStr, fontSize)
 
-          if (widthPx < textWidth) {
+          // Fade the length out as the deletion rect narrows toward its own text
+          // width, so back-to-back deletions dissolve smoothly when zooming out
+          // instead of all vanishing at once.
+          const opacity = labelFadeOpacity(widthPx, textWidth)
+          if (opacity < MIN_LABEL_OPACITY) {
             continue
           }
 
@@ -160,6 +171,7 @@ export function computeVisibleLabels(
             y: yPx,
             text: lengthStr,
             fontSize,
+            opacity,
           })
         }
       }
@@ -203,13 +215,21 @@ export function computeVisibleLabels(
               x0: xPx - halfW,
               x1: xPx + halfW,
             })
-            if (tallEnoughForText) {
+            // Fade the count out as the insertion's on-screen span shrinks
+            // toward the 'large' threshold, so a wall of back-to-back insertions
+            // dissolves smoothly when zooming out instead of popping off at once.
+            const opacity = labelFadeOpacity(
+              length * pxPerBp,
+              LONG_INSERTION_TEXT_THRESHOLD_PX,
+            )
+            if (tallEnoughForText && opacity >= MIN_LABEL_OPACITY) {
               labels.push({
                 type: 'insertion',
                 x: xPx,
                 y: yPx,
                 text: String(length),
                 fontSize,
+                opacity,
               })
             }
           } else if (insertionType === 'small' && canRenderText) {
@@ -219,6 +239,7 @@ export function computeVisibleLabels(
               y: yPx,
               text: `(${length})`,
               fontSize,
+              opacity: 1,
             })
           }
         } else if (canRenderText) {
@@ -232,6 +253,7 @@ export function computeVisibleLabels(
               y: yPx,
               text: `(${prefix}${length})`,
               fontSize,
+              opacity: 1,
             })
           }
         }
@@ -273,6 +295,7 @@ export function computeVisibleLabels(
             y: yPx,
             text: String.fromCharCode(mismatchBases[i]!),
             fontSize,
+            opacity: 1,
           })
         }
       }
@@ -299,6 +322,7 @@ export function computeVisibleLabels(
             y: yPx,
             text: String.fromCharCode(softclipBaseBases[i]!),
             fontSize,
+            opacity: 1,
           })
         }
       }

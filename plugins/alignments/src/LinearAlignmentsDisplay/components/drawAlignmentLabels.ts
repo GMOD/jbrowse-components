@@ -1,3 +1,8 @@
+import {
+  cssColorToNormalizedRgb,
+  normalizedRgbToCssRgba,
+} from '@jbrowse/core/util/colorBits'
+
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { Theme } from '@mui/material'
@@ -43,7 +48,18 @@ export function drawAlignmentLabels(
 
     ctx.font = `bold ${label.fontSize}px sans-serif`
     ctx.textAlign = isSmallInterbase ? 'left' : 'center'
-    ctx.fillStyle = fillColor
+    // Bake the fade opacity into an rgba() fill rather than using globalAlpha,
+    // which SvgCanvas (the export path) doesn't support; the comma form is the
+    // one SvgCanvas splits into fill + fill-opacity. Full-opacity labels (all
+    // per-base ones) keep their original color string, so export output for them
+    // is unchanged.
+    ctx.fillStyle =
+      label.opacity < 1
+        ? normalizedRgbToCssRgba(
+            cssColorToNormalizedRgb(fillColor),
+            label.opacity,
+          )
+        : fillColor
     ctx.fillText(label.text, label.x, label.y)
   }
 }

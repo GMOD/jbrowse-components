@@ -247,10 +247,10 @@
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-04T17:59:01.698Z",
-    "hash": "bfb058960bfc75f8da4883bb9c764cc49ec6a7a1"
+    "status": "bad",
+    "note": "this is no longer showing sorted in second stage",
+    "reviewedAt": "2026-07-07T00:57:22.710Z",
+    "hash": "7a851ebc9aa6c58a57af32c16a98184b7aed296c"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -834,10 +834,10 @@
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
-    "status": "good",
-    "note": "The phrasing \"only called 5mC, at mm-tag positions\" is awkward sentence fragment. the comma placement is especially bad. please also remove em-dashes from annotation text and documentation prose.",
-    "reviewedAt": "2026-06-24T13:00:29.059Z",
-    "hash": "6eedabc06c158a8ce8622a1a74ac8c648fff3281"
+    "status": "bad",
+    "note": "the text blurbs are a little hard to interpret if you are just looking at this without context",
+    "reviewedAt": "2026-07-06T22:47:52.190Z",
+    "hash": "ecad4b1c30c893e008a9e2614f4f711d261467c7"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -941,8 +941,8 @@
     "name": "config_not_found",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-03T20:24:06.441Z",
-    "hash": "b562ad3bd23820441af5672648e69144fd9eaf2c"
+    "reviewedAt": "2026-07-06T22:47:10.573Z",
+    "hash": "46cedd96ab3dbc7934684fb23ba7dff9039215ce"
   },
   "default_session_form": {
     "name": "default_session_form",
@@ -1103,8 +1103,8 @@
     "name": "chromhmm",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-03T20:23:59.793Z",
-    "hash": "3c369b0e629f42dd7559bda7eec8c89c694be23c"
+    "reviewedAt": "2026-07-06T22:47:12.294Z",
+    "hash": "d973db527707d5d74c360e576f815e15e103cc14"
   },
   "jbrowse-img/alignments_snpcov": {
     "name": "jbrowse-img/alignments_snpcov",
@@ -1241,9 +1241,72 @@
   },
   "feature_height_default_pin": {
     "name": "feature_height_default_pin",
+    "status": "bad",
+    "note": "just make this a single screenshot",
+    "reviewedAt": "2026-07-06T22:48:18.877Z",
+    "hash": "ea50c68f30c3d4f3f5fa9ecbe4d5e248eed82b94"
+  },
+  "display_settings_url_snapshot": {
+    "name": "display_settings_url_snapshot",
+    "status": "bad",
+    "note": "please use view as pairs for this instead of color by orientation. view as pairs includes color by orientation by default",
+    "reviewedAt": "2026-07-06T22:47:08.522Z",
+    "hash": "9a609d4c84f4631f6ede0bcaabfe2c03f342ea4f"
+  },
+  "gallery/1000g_trio": {
+    "name": "gallery/1000g_trio",
+    "status": "bad",
+    "note": "add arcs to all three and make browser taller",
+    "reviewedAt": "2026-07-06T22:48:38.882Z",
+    "hash": "a6d42221ed17fe494d759904489042fe22d9277d"
+  },
+  "gallery/breakpoint_multihop": {
+    "name": "gallery/breakpoint_multihop",
+    "status": "bad",
+    "note": "breakpoint split view alignmentsconnections are off to the right and also green translocations goes off screen bottom",
+    "reviewedAt": "2026-07-06T22:49:11.714Z",
+    "hash": "74ab6d2e8b500ed6d186a72211d7a1bcc4646c3f"
+  },
+  "gallery/cactus_447way": {
+    "name": "gallery/cactus_447way",
+    "status": "bad",
+    "note": "unclear what is even happening in this figure. should show more compact fit to display height with height ~500px",
+    "reviewedAt": "2026-07-06T22:49:35.525Z",
+    "hash": "b430ec7f7416a0caa45041fe5cd75411749d322f"
+  },
+  "gallery/celegans_26way": {
+    "name": "gallery/celegans_26way",
+    "status": "bad",
+    "note": "captured a loading overlay",
+    "reviewedAt": "2026-07-06T22:49:46.039Z",
+    "hash": "5703b33404ca8022c6558e8d3139f2864c04357f"
+  },
+  "gallery/chromhmm_encode": {
+    "name": "gallery/chromhmm_encode",
+    "status": "bad",
+    "note": "we have other multi-row canvas screenshots can delete unless you think this is interesting",
+    "reviewedAt": "2026-07-06T22:50:14.435Z",
+    "hash": "e429cc992efc76115dd1732e4da120e0402f2bc2"
+  },
+  "gallery/chromhmm_roadmap": {
+    "name": "gallery/chromhmm_roadmap",
+    "status": "bad",
+    "note": "we have other multi-row canvas screenshots can delete unless you think this is interesting",
+    "reviewedAt": "2026-07-06T22:50:14.524Z",
+    "hash": "9ae04b2c9af469698a266eb861db97bb0ea98392"
+  },
+  "gallery/directrna_brca1": {
+    "name": "gallery/directrna_brca1",
+    "status": "bad",
+    "note": "brca1 isn't really a good example because it just has so many isoforms and is so long. just use a shorter gene",
+    "reviewedAt": "2026-07-07T01:07:53.910Z",
+    "hash": "f25ecac9b58caf9a417bc66ca405638faa678694"
+  },
+  "gallery/copynumber_clustered": {
+    "name": "gallery/copynumber_clustered",
     "status": "good",
-    "note": "try to make this just a two part screenshot. then it should get added to a doc page too.",
-    "reviewedAt": "2026-07-04T19:05:48.979Z",
-    "hash": "fc903bed6470a8b4716314c8cc4a5c50a666315f"
+    "note": "are you sure this isnt referenced any gallery? reference it in gallery",
+    "reviewedAt": "2026-07-07T00:57:38.563Z",
+    "hash": "15e061d4d005400a283d025c8651ba814e4fa6f7"
   }
 }

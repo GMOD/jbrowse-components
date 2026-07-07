@@ -30,7 +30,11 @@ test('default mode lists CIGAR-op chips with labels', () => {
 
 test('cigarOps hides indel chips when no indel is drawn on screen', () => {
   const { getByText, queryByText } = render(
-    <ColorByLegend colorBy="default" cigarOps={NO_CIGAR_OPS} onClose={() => {}} />,
+    <ColorByLegend
+      colorBy="default"
+      cigarOps={NO_CIGAR_OPS}
+      onClose={() => {}}
+    />,
   )
   getByText('match')
   expect(queryByText('insertion')).toBeNull()

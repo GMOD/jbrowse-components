@@ -146,7 +146,9 @@ describe('GpuSyntenyRenderer window-relative uniforms', () => {
     // Render with the view panned 500px past the fetch base (bpPerPx = 1).
     const offsetPx = base - 500
     renderer.render(
-      makeState([[0, makeParams({ offsetPx0: offsetPx, offsetPx1: offsetPx })]]),
+      makeState([
+        [0, makeParams({ offsetPx0: offsetPx, offsetPx1: offsetPx })],
+      ]),
     )
     const u = hal.getLastUniformsF32()!
     // panPx0 = (base - offsetPx*bpPerPx)/bpPerPx = 500

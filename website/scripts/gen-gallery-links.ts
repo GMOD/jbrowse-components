@@ -61,7 +61,9 @@ if (process.argv.includes('--check')) {
     )
     process.exit(1)
   }
-  console.log(`galleryLinks.generated.ts up to date (${Object.keys(map).length} urls)`)
+  console.log(
+    `galleryLinks.generated.ts up to date (${Object.keys(map).length} urls)`,
+  )
 } else {
   writeFileSync(outFile, body)
   console.log(`wrote ${Object.keys(map).length} spec urls -> ${outFile}`)

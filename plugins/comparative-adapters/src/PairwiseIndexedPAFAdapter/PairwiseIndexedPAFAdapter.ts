@@ -42,8 +42,7 @@ export function pickPifPrefix({
   const fineLetter = flip ? 'q' : 't'
   const zoomedOut = bpPerPx !== undefined && bpPerPx >= threshold
   const useCoarse =
-    hasCoarseTier &&
-    (lodMode === 'coarse' || (lodMode === 'auto' && zoomedOut))
+    hasCoarseTier && (lodMode === 'coarse' || (lodMode === 'auto' && zoomedOut))
   return useCoarse ? fineLetter.toUpperCase() : fineLetter
 }
 

@@ -1,6 +1,8 @@
 ---
 title: Single-cell ATAC pseudobulk tracks
-description: Aggregate single-cell ATAC into per-cell-type coverage BigWigs and load them as one MultiWiggle track
+description:
+  Aggregate single-cell ATAC into per-cell-type coverage BigWigs and load them
+  as one MultiWiggle track
 guide_category: Tutorials
 ---
 
@@ -203,8 +205,8 @@ array of URLs (the row label is derived from each filename):
 
 ### The CATlas gallery track
 
-The gallery card is exactly this track type, pointing at CATlas (Zhang et al.
-2021) per-cell-type pileup BigWigs, which are hosted publicly (hg38) at
+The gallery card is exactly this track type, pointing at CATlas (Zhang et
+al. 2021) per-cell-type pileup BigWigs, which are hosted publicly (hg38) at
 
 ```
 https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/<CellType>.bw
@@ -277,7 +279,8 @@ Pseudobulk / coverage tools:
 - [SnapATAC2 `export_coverage`](https://scverse.org/SnapATAC2/version/dev/api/_autosummary/snapatac2.ex.export_coverage.html)
 - [ArchR — exporting pseudobulk BigWigs (`getGroupBW`)](https://www.archrproject.com/bookdown/exporting-pseudo-bulked-data-to-a-bigwig-file.html)
 - [deepTools `bamCoverage`](https://deeptools.readthedocs.io/en/develop/content/tools/bamCoverage.html)
-  and its [normalization methods](https://github.com/deeptools/deepTools/wiki/Normalizations)
+  and its
+  [normalization methods](https://github.com/deeptools/deepTools/wiki/Normalizations)
 - [sinto `filterbarcodes` (split BAM by barcode/label)](https://timoast.github.io/sinto/basic_usage.html)
 
 Reference dataset:

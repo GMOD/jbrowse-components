@@ -39,7 +39,9 @@ import type { Feature } from '@jbrowse/core/util'
 // falling back to the plain name/id. Shared by the mature-protein, repeat-region
 // and stacked-box paths so their labels can't drift.
 function resolveSubfeatureLabel(feature: Feature, ctx: RenderContext) {
-  return readFeatureName(ctx.config, feature, ctx.jexl) ?? getFeatureName(feature)
+  return (
+    readFeatureName(ctx.config, feature, ctx.jexl) ?? getFeatureName(feature)
+  )
 }
 
 function emitExonRects(

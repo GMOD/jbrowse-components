@@ -153,8 +153,8 @@ jobs:
           website/scripts/generate-guide-indexes.ts --check
       - name: Check gallery links are up to date
         run:
-          node --experimental-strip-types
-          website/scripts/gen-gallery-links.ts --check
+          node --experimental-strip-types website/scripts/gen-gallery-links.ts
+          --check
       - name: Check doc code/path references resolve
         run:
           node --experimental-strip-types website/scripts/check-doc-imports.ts

@@ -46,7 +46,9 @@ export async function getFeatureAdapterOrThrow(
 ): Promise<BaseFeatureDataAdapter> {
   const dataAdapter = await getFeatureAdapter(args)
   if (!dataAdapter) {
-    throw new Error(`adapter "${args.adapterConfig.type}" is not a feature adapter`)
+    throw new Error(
+      `adapter "${args.adapterConfig.type}" is not a feature adapter`,
+    )
   }
   return dataAdapter
 }

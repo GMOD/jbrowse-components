@@ -27,13 +27,13 @@ function makeRpcData(
 }
 
 // bpPerPx 0.1 → 10px/bp, so text renders (pxPerBp >= 6.5). bpToPx(bp) = bp*10.
-function run(rpcData: PileupDataResult) {
+function run(rpcData: PileupDataResult, bpPerPx = 0.1) {
   return computeVisibleLabels({
     view: {
       visibleRegions: [
         { displayedRegionIndex: 0, start: 0, end: 1000, screenStartPx: 0 },
       ],
-      bpPerPx: 0.1,
+      bpPerPx,
     },
     sections: [
       {
@@ -112,6 +112,51 @@ test('the large insertion still emits its own length label', () => {
   expect(labels.filter(l => l.type === 'insertion').map(l => l.text)).toEqual([
     '20',
   ])
+})
+
+// A single deletion of length 100 spanning bp [0,100]; its on-screen width is
+// 100/bpPerPx, so zooming out narrows it toward the "100" text width and fades.
+const deletionLen100 = {
+  gapPositions: new Uint32Array([0, 100]),
+  gapYs: new Uint16Array([0]),
+  gapLengths: new Uint16Array([100]),
+  gapTypes: new Uint8Array([0]),
+}
+
+function deletionOpacity(bpPerPx: number) {
+  const labels = run(makeRpcData(deletionLen100), bpPerPx).filter(
+    l => l.type === 'deletion',
+  )
+  return labels[0]?.opacity
+}
+
+test('deletion label is fully opaque when the rect is far wider than its text', () => {
+  // width 100/0.1 = 1000px >> text width
+  expect(deletionOpacity(0.1)).toBe(1)
+})
+
+test('deletion label fades (partial opacity) as the rect narrows toward its text', () => {
+  // width 100/4 = 25px, just above the ~16.6px text width for "100"
+  const opacity = deletionOpacity(4)
+  expect(opacity).toBeGreaterThan(0)
+  expect(opacity).toBeLessThan(1)
+})
+
+test('deletion label drops out once the rect is no wider than its text', () => {
+  // width 100/10 = 10px < text width for "100"
+  expect(deletionOpacity(10)).toBeUndefined()
+})
+
+test('large insertion label fades as its on-screen span shrinks toward the large threshold', () => {
+  // span 20*pxPerBp: opacity 1 at >=30px, partial in (15,30), gone below 15px
+  const opacityAt = (bpPerPx: number) =>
+    run(makeRpcData(largeInsertionAt10), bpPerPx).find(
+      l => l.type === 'insertion',
+    )?.opacity
+  expect(opacityAt(0.1)).toBe(1) // span 200px
+  const mid = opacityAt(1)
+  expect(mid).toBeGreaterThan(0) // span 20px
+  expect(mid).toBeLessThan(1)
 })
 
 // 'T' and 'G' clipped bases at pos 30/31 row 2 (show-soft-clipping data).

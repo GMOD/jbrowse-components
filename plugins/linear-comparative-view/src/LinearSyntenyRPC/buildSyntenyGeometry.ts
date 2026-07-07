@@ -1,4 +1,9 @@
-import { CIGAR_D, CIGAR_I, CIGAR_INDEL_MASK, CIGAR_N } from '@jbrowse/cigar-utils'
+import {
+  CIGAR_D,
+  CIGAR_I,
+  CIGAR_INDEL_MASK,
+  CIGAR_N,
+} from '@jbrowse/cigar-utils'
 import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
 
 import {

@@ -51,7 +51,9 @@ export function generateTracks({
     .map(([trackName, track]) => ({
       metadata: {
         ...track.data,
-        ...(track.data.html ? { html: htmlLink(track.data.html, baseUrl) } : {}),
+        ...(track.data.html
+          ? { html: htmlLink(track.data.html, baseUrl) }
+          : {}),
       },
       // folder path: the leaf's UCSC track `group` (broadest), then each
       // ancestor container's shortLabel root-first. Most hubs express structure

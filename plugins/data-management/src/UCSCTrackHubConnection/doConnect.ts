@@ -72,7 +72,10 @@ export async function doConnect(self: ConnectionDoConnectArg) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
   const hubFileLocation = getConf(self, 'hubTxtLocation')
-  if (!isUriLocation(hubFileLocation) && !isLocalPathLocation(hubFileLocation)) {
+  if (
+    !isUriLocation(hubFileLocation) &&
+    !isLocalPathLocation(hubFileLocation)
+  ) {
     throw new Error('UCSC track hubs must be loaded from a URL or local file')
   }
   const hubFileText = await openLocation(hubFileLocation).readFile('utf8')

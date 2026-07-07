@@ -54,7 +54,10 @@ test('cigarOps drives which indel chips the legend shows', () => {
   }
   const insertionOnly = getColorBySwatch('default', { cigarOps: CIGAR_OP_I })
   if (insertionOnly?.kind === 'chips') {
-    expect(insertionOnly.chips.map(c => c.label)).toEqual(['match', 'insertion'])
+    expect(insertionOnly.chips.map(c => c.label)).toEqual([
+      'match',
+      'insertion',
+    ])
   }
   const withSkip = getColorBySwatch('strand', {
     cigarOps: CIGAR_OP_D | CIGAR_OP_N,

@@ -72,7 +72,9 @@ test('I op (target-consuming) inside the window is kept whole', () => {
     130,
   )!
   // the I op survives intact (its 40 target bp are the insertion)
-  const hasFullI = [...c.cigar].some(p => (p & 0xf) === CIGAR_I && p >>> 4 === 40)
+  const hasFullI = [...c.cigar].some(
+    p => (p & 0xf) === CIGAR_I && p >>> 4 === 40,
+  )
   expect(hasFullI).toBe(true)
   expect(c.start).toBe(90)
   expect(c.end).toBe(130)
