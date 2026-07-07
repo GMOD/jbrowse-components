@@ -97,121 +97,104 @@ elaborate example below.
 
 ## Setup
 
-Pass the assembly, tracks, and an initial session to `createViewState`. This
-example wires up an hg38 genome with gene, repeat, alignment, variant, and
-conservation tracks. The [next section](#render-the-view) shows where this call
-goes in the page:
+Define the assembly, tracks, and an `init` describing what to show on first
+paint. This example wires up an hg38 genome with gene, repeat, alignment,
+variant, and conservation tracks. The [next section](#render-the-view) shows
+where these go in the page:
 
 ```typescript
-const state = createViewState({
-  assembly: {
-    name: 'hg38',
-    sequence: {
-      type: 'ReferenceSequenceTrack',
-      trackId: 'GRCh38-ReferenceSequenceTrack',
-      adapter: {
-        type: 'BgzipFastaAdapter',
-        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-      },
+const assembly = {
+  name: 'hg38',
+  sequence: {
+    adapter: {
+      type: 'BgzipFastaAdapter',
+      uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
     },
-    refNameAliases: {
-      adapter: {
-        type: 'RefNameAliasAdapter',
-        uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-      },
+  },
+  refNameAliases: {
+    adapter: {
+      type: 'RefNameAliasAdapter',
+      uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
     },
-    cytobands: {
-      adapter: {
-        type: 'CytobandAdapter',
-        uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
+  },
+  cytobands: {
+    adapter: {
+      type: 'CytobandAdapter',
+      uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
+    },
+  },
+}
+
+const tracks = [
+  {
+    type: 'FeatureTrack',
+    trackId: 'ncbi_genes',
+    name: 'NCBI RefSeq Genes',
+    assemblyNames: ['hg38'],
+    category: ['Genes'],
+    adapter: {
+      type: 'Gff3TabixAdapter',
+      uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+    },
+    textSearching: {
+      textSearchAdapter: {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: 'gff3tabix_genes-index',
+        uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
+        assemblyNames: ['hg38'],
       },
     },
   },
-  tracks: [
-    {
-      type: 'FeatureTrack',
-      trackId: 'ncbi_genes',
-      name: 'NCBI RefSeq Genes',
-      assemblyNames: ['hg38'],
-      category: ['Genes'],
-      adapter: {
-        type: 'Gff3TabixAdapter',
-        uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
-      },
-      textSearching: {
-        textSearchAdapter: {
-          type: 'TrixTextSearchAdapter',
-          textSearchAdapterId: 'gff3tabix_genes-index',
-          uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
-          assemblyNames: ['hg38'],
-        },
-      },
-    },
-    {
-      type: 'FeatureTrack',
-      trackId: 'repeats_hg38',
-      name: 'Repeats',
-      assemblyNames: ['hg38'],
-      category: ['Annotation'],
-      adapter: {
-        type: 'BigBedAdapter',
-        uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
-      },
-    },
-    {
-      type: 'AlignmentsTrack',
-      trackId: 'NA12878_exome',
-      name: 'NA12878 Exome',
-      assemblyNames: ['hg38'],
-      category: ['1000 Genomes', 'Alignments'],
-      adapter: {
-        type: 'CramAdapter',
-        uri: 'https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-      },
-    },
-    {
-      type: 'VariantTrack',
-      trackId: '1000g_vcf',
-      name: '1000 Genomes Variant Calls',
-      assemblyNames: ['hg38'],
-      category: ['1000 Genomes', 'Variants'],
-      adapter: {
-        type: 'VcfTabixAdapter',
-        uri: 'https://jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
-      },
-    },
-    {
-      type: 'QuantitativeTrack',
-      trackId: 'phyloP100way',
-      name: 'hg38.100way.phyloP100way',
-      category: ['Conservation'],
-      assemblyNames: ['hg38'],
-      adapter: {
-        type: 'BigWigAdapter',
-        uri: 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
-      },
-    },
-  ],
-  defaultSession: {
-    name: 'My session',
-    margin: 0,
-    view: {
-      id: 'linearGenomeView',
-      type: 'LinearGenomeView',
-      init: {
-        assembly: 'hg38',
-        loc: '10:29,838,565..29,838,850',
-        tracks: [
-          'GRCh38-ReferenceSequenceTrack',
-          'ncbi_genes',
-          'NA12878_exome',
-          'phyloP100way',
-          '1000g_vcf',
-        ],
-      },
+  {
+    type: 'FeatureTrack',
+    trackId: 'repeats_hg38',
+    name: 'Repeats',
+    assemblyNames: ['hg38'],
+    category: ['Annotation'],
+    adapter: {
+      type: 'BigBedAdapter',
+      uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
     },
   },
-})
+  {
+    type: 'AlignmentsTrack',
+    trackId: 'NA12878_exome',
+    name: 'NA12878 Exome',
+    assemblyNames: ['hg38'],
+    category: ['1000 Genomes', 'Alignments'],
+    adapter: {
+      type: 'CramAdapter',
+      uri: 'https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
+    },
+  },
+  {
+    type: 'VariantTrack',
+    trackId: '1000g_vcf',
+    name: '1000 Genomes Variant Calls',
+    assemblyNames: ['hg38'],
+    category: ['1000 Genomes', 'Variants'],
+    adapter: {
+      type: 'VcfTabixAdapter',
+      uri: 'https://jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
+    },
+  },
+  {
+    type: 'QuantitativeTrack',
+    trackId: 'phyloP100way',
+    name: 'hg38.100way.phyloP100way',
+    category: ['Conservation'],
+    assemblyNames: ['hg38'],
+    adapter: {
+      type: 'BigWigAdapter',
+      uri: 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+    },
+  },
+]
+
+const init = {
+  loc: '10:29,838,565..29,838,850',
+  tracks: ['ncbi_genes', 'NA12878_exome', 'phyloP100way', '1000g_vcf'],
+}
 ```
 
 Notes about the above config:
@@ -230,8 +213,9 @@ Notes about the above config:
 ## Render the view
 
 Replace the "Hello world!" `index.html` from earlier with the page below. It
-loads the component's UMD bundle from a CDN, calls `createViewState` with the
-config from the previous section, and mounts the view into a `<div>`:
+loads the component's UMD bundle from a CDN and mounts the managed
+`LinearGenomeView` component — which owns the view engine itself, so there's no
+`createViewState` call to make — into a `<div>`:
 
 ```html title="index.html"
 <!doctype html>
@@ -247,18 +231,15 @@ config from the previous section, and mounts the view into a `<div>`:
   <body>
     <div id="jbrowse_linear_genome_view"></div>
     <script>
-      const { React, createRoot, createViewState, JBrowseLinearGenomeView } =
+      const { React, createRoot, LinearGenomeView } =
         JBrowseReactLinearGenomeView
 
-      const state = createViewState({
-        /* the assembly, tracks, and defaultSession from the previous section */
-      })
-
+      // assembly, tracks, and init are the values from the previous section
       const root = createRoot(
         document.getElementById('jbrowse_linear_genome_view'),
       )
       root.render(
-        React.createElement(JBrowseLinearGenomeView, { viewState: state }),
+        React.createElement(LinearGenomeView, { assembly, tracks, init }),
       )
     </script>
   </body>
@@ -278,10 +259,24 @@ serve it yourself.
 ## Using the component in a React app
 
 If you are using `@jbrowse/react-linear-genome-view2` as an NPM package in a
-React app (rather than the UMD script tag approach above), import
-`useCreateViewState` instead of calling `createViewState` directly in your
-component body. `createViewState` is expensive and should not run on every
-render:
+React app (rather than the UMD script tag approach above), pass `assembly`,
+`tracks`, and `init` straight to the managed `<LinearGenomeView>` component as
+props — the same data from [Setup](#setup), no `createViewState` call needed:
+
+```jsx
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+function GenomeBrowser() {
+  return <LinearGenomeView assembly={assembly} tracks={tracks} init={init} />
+}
+```
+
+The component constructs the view engine once on mount and reads its props as
+initial values only, so parent re-renders don't reset the browser. If you need
+to reach the engine imperatively from outside the component (e.g. navigate or
+show a track in response to an event), take a `ref` — see the
+[LGV storybook](https://jbrowse.org/storybook/lgv/) for examples — or drop down
+to `useCreateViewState`, which builds the same underlying view state as a hook:
 
 ```js
 import {
@@ -294,10 +289,6 @@ function GenomeBrowser() {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 ```
-
-The hook creates the view state once on mount and keeps it stable across
-re-renders, so panning, zooming, and parent state changes do not reset the
-browser.
 
 ## See also
 

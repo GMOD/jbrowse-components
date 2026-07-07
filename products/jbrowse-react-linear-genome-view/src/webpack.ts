@@ -2,6 +2,7 @@
 import * as React from 'react'
 
 export { default as JBrowseLinearGenomeView } from './JBrowseLinearGenomeView/index.ts'
+export { default as LinearGenomeView } from './LinearGenomeView/index.ts'
 export { default as createModel } from './createModel/index.ts'
 export { default as createViewState } from './createViewState.ts'
 export { default as loadPlugins } from './loadPlugins.ts'

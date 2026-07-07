@@ -15,7 +15,7 @@ export const examples: ExampleMeta[] = [
     name: 'Volvox',
     title: 'Volvox structural variants',
     description:
-      'A circular view of the volvox assembly showing a structural-variant VCF track.',
+      'A circular view of the volvox assembly showing a structural-variant VCF track, via the managed CircularGenomeView component.',
     group: 'Getting started',
   },
   {
@@ -23,15 +23,7 @@ export const examples: ExampleMeta[] = [
     name: 'ShowTrack',
     title: 'Show a track programmatically',
     description:
-      'Open a track imperatively via showTrack instead of through defaultSession.',
-    group: 'Getting started',
-  },
-  {
-    slug: 'managed',
-    name: 'Managed',
-    title: 'Managed (CircularGenomeView)',
-    description:
-      'The managed CircularGenomeView component owns the engine — props are initial values, no createViewState ceremony.',
+      'Open a track imperatively via showTrack instead of through the init prop.',
     group: 'Getting started',
   },
   {

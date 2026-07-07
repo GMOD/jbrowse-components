@@ -9,8 +9,6 @@ const assembly = {
   name: 'volvox',
   aliases: ['vvx'],
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'volvox_refseq',
     adapter: {
       type: 'TwoBitAdapter',
       uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',

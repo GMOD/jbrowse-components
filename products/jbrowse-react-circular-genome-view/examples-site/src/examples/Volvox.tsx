@@ -1,16 +1,9 @@
-import { useState } from 'react'
-
-import {
-  JBrowseCircularGenomeView,
-  createViewState,
-} from '@jbrowse/react-circular-genome-view2'
+import { CircularGenomeView } from '@jbrowse/react-circular-genome-view2'
 
 const assembly = {
   name: 'volvox',
   aliases: ['vvx'],
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'volvox_refseq',
     adapter: {
       type: 'TwoBitAdapter',
       uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
@@ -43,22 +36,11 @@ const tracks = [
 ]
 
 export default function Volvox() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'Storybook',
-        view: {
-          id: 'circularView',
-          type: 'CircularView',
-          init: {
-            assembly: 'volvox',
-            tracks: ['volvox_sv_test'],
-          },
-        },
-      },
-    }),
+  return (
+    <CircularGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      init={{ tracks: ['volvox_sv_test'] }}
+    />
   )
-  return <JBrowseCircularGenomeView viewState={state} />
 }

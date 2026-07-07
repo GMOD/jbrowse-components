@@ -1,16 +1,9 @@
-import { useState } from 'react'
-
-import {
-  JBrowseCircularGenomeView,
-  createViewState,
-} from '@jbrowse/react-circular-genome-view2'
+import { CircularGenomeView } from '@jbrowse/react-circular-genome-view2'
 
 const assembly = {
   name: 'hg19',
   aliases: ['GRCh37'],
   sequence: {
-    type: 'ReferenceSequenceTrack',
-    trackId: 'Pd8Wh30ei9R',
     adapter: {
       type: 'BgzipFastaAdapter',
       uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
@@ -39,22 +32,11 @@ const tracks = [
 ]
 
 export default function Human() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'this session',
-        view: {
-          id: 'circularView',
-          type: 'CircularView',
-          init: {
-            assembly: 'hg19',
-            tracks: ['pacbio_sv_vcf'],
-          },
-        },
-      },
-    }),
+  return (
+    <CircularGenomeView
+      assembly={assembly}
+      tracks={tracks}
+      init={{ tracks: ['pacbio_sv_vcf'] }}
+    />
   )
-  return <JBrowseCircularGenomeView viewState={state} />
 }
