@@ -266,8 +266,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
             sortedBy: {
+              // 0-based internal coordinate: the SNP displayed as ctgA:14,481
+              // (1-based) is position 14480 internally. Match the base the
+              // right-click sort lands on so both figure frames sort identically.
               type: 'basePair',
-              pos: 14481,
+              pos: 14480,
               refName: 'ctgA',
               assemblyName: 'volvox',
             },

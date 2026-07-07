@@ -245,6 +245,10 @@ function CascadingMenuList({
               data-testid={makeTestId('menuitem', item.label)}
               disabled={item.disabled}
               onClick={() => {
+                // onCloseRoot runs before the callback, so item.onClick must
+                // NOT read model state that closing clears (e.g. a right-click
+                // menu's ephemeral hit/context fields): capture that state when
+                // the menu items are built, not live inside onClick.
                 if (closeAfterItemClick) {
                   onCloseRoot()
                 }
