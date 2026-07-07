@@ -33,7 +33,10 @@ export default function VariantConsequenceDataGrid({
       }) satisfies GridColDef<(typeof rows)[0]>,
   )
 
-  return rows.length ? (
+  // Without resolved column names (the VCF header's ANN/CSQ "Format:" field
+  // list) the DataGrid can only render a headerless "No columns" shell, so
+  // suppress the card entirely rather than show an empty table.
+  return rows.length && columns.length ? (
     <BaseCard title={title}>
       <FormControlLabel
         label={<Typography variant="body2">Show options</Typography>}

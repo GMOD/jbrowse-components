@@ -1580,111 +1580,142 @@ export default function baseStateModelFactory(
           self.jexlFiltersSetting = undefined
         },
       }))
-      .actions(self => ({
-        /**
-         * #action
-         */
-        selectFeature(feature: Feature) {
-          openFeatureWidget(self, feature.toJSON(), {
-            widget: self.featureWidgetType,
-          })
-        },
+      .actions(self => {
+        // cache the header-metadata round-trip so repeated feature clicks reuse
+        // one fetch; cleared on failure so a later click retries
+        let metadataPromise: Promise<unknown> | undefined
+        return {
+          /**
+           * #action
+           * Open the feature-details widget. The adapter's header metadata
+           * (VCF INFO/FORMAT descriptions, etc.) is fetched first and passed as
+           * `descriptions` so the widget can label attribute rows and — for the
+           * variant widget — resolve the ANN/CSQ column names; without it that
+           * table renders headerless. CoreGetMetadata returns null for adapters
+           * that expose none, so this is a no-op for those tracks.
+           */
+          selectFeature(feature: Feature) {
+            if (!metadataPromise) {
+              metadataPromise = getSession(self)
+                .rpcManager.call(getRpcSessionId(self), 'CoreGetMetadata', {
+                  adapterConfig: self.adapterConfig,
+                })
+                .catch((e: unknown) => {
+                  metadataPromise = undefined
+                  throw e
+                })
+            }
+            metadataPromise
+              .then(descriptions => {
+                if (isAlive(self)) {
+                  openFeatureWidget(self, feature.toJSON(), {
+                    widget: self.featureWidgetType,
+                    extra: { descriptions },
+                  })
+                }
+              })
+              .catch((e: unknown) => {
+                console.error(e)
+                getSession(self).notifyError(`${e}`, e)
+              })
+          },
 
-        /**
-         * #action
-         */
-        clearSelection() {
-          getSession(self).clearSelection()
-        },
+          /**
+           * #action
+           */
+          clearSelection() {
+            getSession(self).clearSelection()
+          },
 
-        /**
-         * #action
-         */
-        setShowLabels(value: ShowLabelsMode) {
-          self.configuration.setSlot('showLabels', value)
-        },
+          /**
+           * #action
+           */
+          setShowLabels(value: ShowLabelsMode) {
+            self.configuration.setSlot('showLabels', value)
+          },
 
-        /**
-         * #action
-         */
-        setAutoHeight(value: boolean) {
-          self.configuration.setSlot('autoHeight', value)
-          if (value) {
-            // Auto-fit (grow height to content) is the opposite of fit-to-height
-            // (squeeze content into a fixed height); leave fit mode so they
-            // can't both claim to be active.
-            self.squeezeToDisplayHeight = false
-            // The manual expand/restore state is meaningless once auto-fit
-            // drives the height; drop it so a later disable doesn't surface a
-            // stale "restore previous height".
-            self.clearHeightBeforeExpand()
-          }
-        },
+          /**
+           * #action
+           */
+          setAutoHeight(value: boolean) {
+            self.configuration.setSlot('autoHeight', value)
+            if (value) {
+              // Auto-fit (grow height to content) is the opposite of fit-to-height
+              // (squeeze content into a fixed height); leave fit mode so they
+              // can't both claim to be active.
+              self.squeezeToDisplayHeight = false
+              // The manual expand/restore state is meaningless once auto-fit
+              // drives the height; drop it so a later disable doesn't surface a
+              // stale "restore previous height".
+              self.clearHeightBeforeExpand()
+            }
+          },
 
-        /**
-         * #action
-         */
-        setShowDescriptions(value: boolean) {
-          self.configuration.setSlot('showDescriptions', value)
-        },
+          /**
+           * #action
+           */
+          setShowDescriptions(value: boolean) {
+            self.configuration.setSlot('showDescriptions', value)
+          },
 
-        /**
-         * #action
-         * Sets the runtime filter override (already-`jexl:`-prefixed
-         * expressions). Pass undefined to clear it and fall back to the config
-         * `jexlFilters` slot.
-         */
-        setJexlFilters(filters?: string[]) {
-          self.jexlFiltersSetting = cast(filters)
-        },
+          /**
+           * #action
+           * Sets the runtime filter override (already-`jexl:`-prefixed
+           * expressions). Pass undefined to clear it and fall back to the config
+           * `jexlFilters` slot.
+           */
+          setJexlFilters(filters?: string[]) {
+            self.jexlFiltersSetting = cast(filters)
+          },
 
-        /**
-         * #action
-         */
-        setShowOutline(value: boolean) {
-          // THEME_DERIVED_COLOR sentinel: the worker resolves it to a
-          // theme-appropriate outline so it stays visible on dark tracks too.
-          self.configuration.setSlot(
-            'outlineColor',
-            value ? THEME_DERIVED_COLOR : '',
-          )
-        },
+          /**
+           * #action
+           */
+          setShowOutline(value: boolean) {
+            // THEME_DERIVED_COLOR sentinel: the worker resolves it to a
+            // theme-appropriate outline so it stays visible on dark tracks too.
+            self.configuration.setSlot(
+              'outlineColor',
+              value ? THEME_DERIVED_COLOR : '',
+            )
+          },
 
-        /**
-         * #action
-         */
-        // undefined resets to the slot's config default (which may be a
-        // per-feature jexl color); a string sets a solid color for all
-        // features. Flows to the worker via rpcProps -> displayConfig.color.
-        setFeatureColor(color?: string) {
-          self.configuration.setSlot('color', color)
-        },
+          /**
+           * #action
+           */
+          // undefined resets to the slot's config default (which may be a
+          // per-feature jexl color); a string sets a solid color for all
+          // features. Flows to the worker via rpcProps -> displayConfig.color.
+          setFeatureColor(color?: string) {
+            self.configuration.setSlot('color', color)
+          },
 
-        /**
-         * #action
-         */
-        setUtrColor(color?: string) {
-          self.configuration.setSlot('utrColor', color)
-        },
+          /**
+           * #action
+           */
+          setUtrColor(color?: string) {
+            self.configuration.setSlot('utrColor', color)
+          },
 
-        /**
-         * #action
-         */
-        showContextMenuForFeature(
-          featureInfo: FlatbushItem,
-          displayedRegionIndex: number,
-          clientX: number,
-          clientY: number,
-        ) {
-          self.contextMenuInfo = {
-            item: featureInfo,
-            displayedRegionIndex,
-            clientX,
-            clientY,
-          }
-          self.mouseoverExtraInformation = undefined
-        },
-      }))
+          /**
+           * #action
+           */
+          showContextMenuForFeature(
+            featureInfo: FlatbushItem,
+            displayedRegionIndex: number,
+            clientX: number,
+            clientY: number,
+          ) {
+            self.contextMenuInfo = {
+              item: featureInfo,
+              displayedRegionIndex,
+              clientX,
+              clientY,
+            }
+            self.mouseoverExtraInformation = undefined
+          },
+        }
+      })
       .actions(self => ({
         /**
          * #action
