@@ -38,6 +38,18 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
             type: 'AllVsAllPAFAdapter',
             pafLocation: file,
           }
+        } else if (adapterHint === 'AllVsAllIndexedPAFAdapter') {
+          // an all-vs-all PIF shares the .pif.gz extension with a pairwise PIF,
+          // so it is only reachable by explicitly picking the adapter; the
+          // assembly list / PanSN mapping come from its add-track form.
+          return {
+            type: 'AllVsAllIndexedPAFAdapter',
+            pifGzLocation: file,
+            index: {
+              location: index ?? makeIndex(file, '.tbi'),
+              indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+            },
+          }
         } else if (adapterHint === 'MCScanBlocksAdapter') {
           // the extra per-genome BED files and blockAssemblies come from the
           // add-track form; this only seeds the blocks file location

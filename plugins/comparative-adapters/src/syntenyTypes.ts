@@ -9,6 +9,7 @@ export const syntenyTypes = [
   'MCScanBlocksAdapter',
   'PairwiseIndexedPAFAdapter',
   'AllVsAllPAFAdapter',
+  'AllVsAllIndexedPAFAdapter',
 ]
 
 export const pairwiseTypes = [
@@ -30,4 +31,4 @@ export const mcscanTypes = [
 // query/target pair
 export const mcscanBlocksTypes = ['MCScanBlocksAdapter']
 
-export const allVsAllTypes = ['AllVsAllPAFAdapter']
+export const allVsAllTypes = ['AllVsAllPAFAdapter', 'AllVsAllIndexedPAFAdapter']

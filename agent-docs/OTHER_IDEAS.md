@@ -309,6 +309,53 @@ for the `featureId`-as-Float32 16.7M-instance cap noted below — dense all-vs-a
 whole-genome PAF is the likeliest path to hit it, so fold the `uint` fix in here rather
 than doing it speculatively.
 
+**PIF / tabix indexing weaknesses + improvements** (the all-vs-all adapter now
+ships in two forms: in-memory `AllVsAllPAFAdapter` and tabix-indexed
+`AllVsAllIndexedPAFAdapter` over a stock `make-pif` `.pif.gz`, querying the
+anchor's PanSN seqid on both `q`/`t` perspectives — see
+`plugins/comparative-adapters/src/AllVsAllIndexedPAFAdapter/`). PIF reuses proven
+infra (`@gmod/tabix`, bgzip, HTTP range, CSI for >512 Mb) and the double-emit is
+format-agnostic (all-vs-all needed zero `make-pif` changes), but has structural
+limits worth recording:
+
+- **No intra-record slicing (highest impact).** tabix returns whole lines, so a
+  single colinear block spanning tens of Mb carries a multi-MB CIGAR on one
+  fine-tier row; zooming into a 10 kb window *inside* it still fetches+parses the
+  entire CIGAR because the row's `[start,end]` overlaps. The RPC clips oversized
+  blocks (`executeSyntenyFeaturesAndPositions.ts`) but only *after* fetch+parse.
+  `make-pif` already splits the **coarse** tier at large gaps
+  (`splitCigarOnLargeGaps`, `pif-generator.ts`) yet leaves **fine** rows whole.
+  Fix (mostly a `make-pif` + adapter change, no new format): extend gap-splitting
+  to the fine tier, or store CIGAR in an offset-addressed sidecar so a windowed
+  query fetches only the needed slice. This is exactly what IMPG's CIGAR-delta +
+  range projection avoids.
+- **Transitive closure is round-trip-bound.** A live JS `query_transitive_dfs`
+  (see the PanSN+IMPG note below) over PIF is N *sequential, dependent* tabix
+  range queries, each a potential HTTP round-trip into bgzip blocks — vs IMPG's
+  in-memory coitree walk with no I/O per hop. Prefer **precomputing closures
+  offline** with the real IMPG CLI into placement/BED tables served behind the
+  same locator, rather than a live DFS, until proven otherwise.
+- **2×–4× storage blowup.** Each alignment is stored twice (`q`+`t` rows), each
+  with a full CIGAR, and the `q`-row CIGAR is a D↔I-swapped *copy* that won't
+  dedupe under compression; the coarse tier adds more. CIGAR dominates a PAF, so
+  disk/transfer roughly doubles vs IMPG storing it once. Deduping the mirrored
+  CIGAR (store once, reference the sibling) is hard in a line-oriented format —
+  likely only worth it if moving off plain tabix.
+- **Monolithic, non-incremental.** Adding one genome re-sorts+re-indexes the
+  whole file; IMPG supports per-file indices for incremental rebuilds across
+  100+ files. A per-file index mode is the fix for a growing cohort.
+- **Minor.** tabix binning is tuned for many small features, not a few huge
+  blocks; the all-vs-all path issues 2 queries per anchor seqid (anchor can be
+  either PAF side); PIF drops the in-memory adapter's cross-record weighted-mean
+  identity (per-alignment `de:f:` only); the coarse↔fine LOD switch is a hard
+  cliff (coarse has no CIGAR, so mismatches pop). All acceptable for ribbons, not
+  a per-base view.
+
+ROI order: fine-tier row splitting / CIGAR sidecar first (attacks the whole-row
+fetch), then offline transitive precompute, then per-file incremental index. Only
+evaluate a purpose-built binary alignment index (or IMPG's `1ALN`/coitree
+formats) if these prove insufficient.
+
 **Cue-style read-pair + depth matrix.** [PopicLab/cue](https://github.com/PopicLab/cue)
 builds an image showing read pairs, read depth, and L/R–R/L pairs as a matrix — could
 this be shown as a triangular heatmap (like `plugins/hic`) or in dotplot?

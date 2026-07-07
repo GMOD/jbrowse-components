@@ -36,6 +36,20 @@ const threeWayAllVsAllView = {
   ],
 }
 
+// Same stack again, but the shared all-vs-all track is the tabix-indexed
+// (make-pif) form: AllVsAllIndexedPAFAdapter range-queries the PanSN seqid per
+// band instead of loading the whole file. Should render identically to the
+// in-memory all-vs-all view above.
+const threeWayAllVsAllIndexedView = {
+  type: 'LinearSyntenyView',
+  tracks: [['volvox_all_vs_all_indexed'], ['volvox_all_vs_all_indexed']],
+  views: [
+    { loc: 'ctgA:1-50000', assembly: 'volvox_ins' },
+    { loc: 'ctgA:1-50000', assembly: 'volvox' },
+    { loc: 'ctgA:1-50000', assembly: 'volvox_del' },
+  ],
+}
+
 const suite: TestSuite = {
   name: 'Multi-Way Synteny Views',
   tests: [
@@ -64,6 +78,12 @@ const suite: TestSuite = {
       name: '3-way synteny from one all-vs-all PAF (volvox ins/del)',
       snapshot: 'multiway-synteny-3way-allvsall',
       view: threeWayAllVsAllView,
+      waitTestId: 'synteny_canvas_done',
+    }),
+    viewSnapshotTest({
+      name: '3-way synteny from one indexed all-vs-all PIF (volvox ins/del)',
+      snapshot: 'multiway-synteny-3way-allvsall-indexed',
+      view: threeWayAllVsAllIndexedView,
       waitTestId: 'synteny_canvas_done',
     }),
     viewSnapshotTest({

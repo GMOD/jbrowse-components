@@ -36,9 +36,10 @@ const AllVsAllAddTrackComponent = observer(function AllVsAllAddTrackComponent({
   return (
     <>
       <Typography>
-        An all-vs-all PAF contains every pairwise alignment, so one track backs
-        every band of a multi-way view. List the assemblies the file covers; the
-        sequence names must be PanSN-prefixed with their assembly (e.g.{' '}
+        An all-vs-all PAF (or its tabix-indexed <code>.pif.gz</code> form)
+        contains every pairwise alignment, so one track backs every band of a
+        multi-way view. List the assemblies the file covers; the sequence names
+        must be PanSN-prefixed with their assembly (e.g.{' '}
         <code>grape#1#chr1</code>).
       </Typography>
       {assemblyNames.map((assemblyName, idx) => (

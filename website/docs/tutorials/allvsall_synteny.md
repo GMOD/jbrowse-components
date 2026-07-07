@@ -61,6 +61,39 @@ prefix):
 If a JBrowse assembly name differs from its PanSN sample prefix, map it with the
 `assemblyNameToPanSN` slot (e.g. `{ "grape": "Vitis_vinifera" }`).
 
+## Large files: index with make-pif
+
+`AllVsAllPAFAdapter` reads the whole PAF into memory, which is fine for strains
+of one species but does not scale to a whole-genome pangenome of many samples.
+For those, index the file once with `jbrowse make-pif` and switch the adapter to
+`AllVsAllIndexedPAFAdapter` — a tabix range query then fetches only the records
+overlapping the region in view instead of loading the entire file:
+
+```bash
+# produces all_vs_all.pif.gz and all_vs_all.pif.gz.tbi
+jbrowse make-pif all_vs_all.paf
+```
+
+```json
+{
+  "type": "SyntenyTrack",
+  "trackId": "ecoli_ava",
+  "name": "E. coli pangenome (indexed all-vs-all PIF)",
+  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"],
+  "adapter": {
+    "type": "AllVsAllIndexedPAFAdapter",
+    "pifGzLocation": { "uri": "all_vs_all.pif.gz" },
+    "index": { "location": { "uri": "all_vs_all.pif.gz.tbi" } },
+    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"]
+  }
+}
+```
+
+Everything else — `assemblyNames`, `assemblyNameToPanSN`, stacking the rows — is
+identical to the un-indexed adapter above; only the `adapter` block differs. The
+`.pif.gz` keeps its PanSN sequence names, and `make-pif` also emits a coarse
+zoomed-out tier so whole-genome views stay responsive.
+
 ## Stacking the genomes
 
 With the track in your config, there are two ways to open the four strains as a

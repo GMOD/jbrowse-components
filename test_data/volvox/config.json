@@ -2356,6 +2356,26 @@
       }
     },
     {
+      "type": "SyntenyTrack",
+      "category": ["Synteny"],
+      "trackId": "volvox_all_vs_all_indexed",
+      "name": "volvox all-vs-all indexed (ins/volvox/del pangenome)",
+      "assemblyNames": ["volvox_ins", "volvox", "volvox_del"],
+      "adapter": {
+        "type": "AllVsAllIndexedPAFAdapter",
+        "assemblyNames": ["volvox_ins", "volvox", "volvox_del"],
+        "pifGzLocation": {
+          "uri": "volvox_all_vs_all.pif.gz"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "volvox_all_vs_all.pif.gz.tbi"
+          }
+        }
+      }
+    },
+    {
       "type": "VariantTrack",
       "trackId": "variant_effect_demo_data",
       "name": "Ensembl VEP example",
