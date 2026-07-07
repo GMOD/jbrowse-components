@@ -23,11 +23,15 @@ export const methylationSpecs: ScreenshotSpec[] = [
     name: 'methylation/colo829_cram_and_bedmethyl',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      // zoomed into a ~2.5kb core of the CpG island (was ~18kb, then ~5kb)
-      // so the per-base methylation calls + bedmethyl transition are legible
-      // rather than a tiny large-scale smear (reviewer asked to zoom further)
-      loc: 'chr20:18,500,750-18,503,250',
+      // ~2.6kb window over the chr20:18,507,440-18,508,160 CpG island (the prior
+      // window sat in the gap between islands, so the CpG-island track was
+      // empty); the island's hypomethylated core gives the methylated/
+      // unmethylated transition the figure is about (reviewer: show the island)
+      loc: 'chr20:18,506,400-18,509,000',
       tracks: [
+        // UCSC CpG-island annotation on top so the methylated/unmethylated
+        // transition can be read against the island boundary (reviewer)
+        'cpgisland_ucsc_hg38',
         {
           trackId: 'COLO829_tumor.ht',
           displaySnapshot: {
@@ -66,6 +70,10 @@ export const methylationSpecs: ScreenshotSpec[] = [
       assembly: 'hg38',
       loc: 'chr12:6,533,000-6,536,000',
       tracks: [
+        // gene + CpG-island context so the 6mA accessibility signal reads
+        // against the GAPDH promoter / TSS (reviewer: add gene + promoter track)
+        'MANE.GRCh38.v1.4.refseq',
+        'cpgisland_ucsc_hg38',
         {
           trackId: 'PAY22766-nanopore',
           displaySnapshot: {
@@ -86,6 +94,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 20000,
-    viewportHeight: 520,
+    // taller so both the enzyme-treated and control alignment tracks fit below
+    // the added gene + CpG-island context tracks
+    viewportHeight: 740,
   },
 ]
