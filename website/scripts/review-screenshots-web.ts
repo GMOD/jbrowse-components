@@ -161,24 +161,25 @@ async function handleClearVerdict(
 
 const server = http.createServer((req, res) => {
   const url = req.url ?? '/'
+  const pathname = url.split('?')[0]!
   try {
-    if (url === '/' || url === '/index.html') {
+    if (pathname === '/' || pathname === '/index.html') {
       res.writeHead(200, { 'Content-Type': 'text/html' })
       res.end(PAGE)
-    } else if (url === '/api/specs') {
+    } else if (pathname === '/api/specs') {
       sendJson(res, 200, buildSpecPayload())
-    } else if (url === '/api/verdict' && req.method === 'POST') {
+    } else if (pathname === '/api/verdict' && req.method === 'POST') {
       handleVerdict(req, res).catch((err: unknown) => {
         sendJson(res, 500, { error: `${err}` })
       })
-    } else if (url === '/api/verdict/clear' && req.method === 'POST') {
+    } else if (pathname === '/api/verdict/clear' && req.method === 'POST') {
       handleClearVerdict(req, res).catch((err: unknown) => {
         sendJson(res, 500, { error: `${err}` })
       })
-    } else if (url.startsWith('/img-main/')) {
-      serveMainImage(res, url.split('?')[0]!)
-    } else if (url.startsWith('/img/')) {
-      serveImage(res, url.split('?')[0]!)
+    } else if (pathname.startsWith('/img-main/')) {
+      serveMainImage(res, pathname)
+    } else if (pathname.startsWith('/img/')) {
+      serveImage(res, pathname)
     } else {
       res.writeHead(404)
       res.end('not found')
