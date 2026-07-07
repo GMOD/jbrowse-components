@@ -13,7 +13,6 @@ import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
-import { fmtBytes, perfLog, perfTime } from '../shared/alignmentsPerf.ts'
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
 import {
   buildBaseFeatureData,
@@ -296,30 +295,21 @@ async function buildGroupResult(
     perBaseQualityArrays,
     perBaseLetterArrays,
     segmentArrays,
-  } = await perfTime('  buildAlignmentDetailArrays', () =>
-    buildAlignmentDetailArrays({
-      features,
-      gaps,
-      mismatches,
-      insertions,
-      softclips,
-      hardclips,
-      modifications,
-      perBaseQualities,
-      perBaseLetters,
-      detectedModifications,
-      region,
-      showSoftClipping: effShowSoftClipping,
-      statusCallback,
-    }),
-  )
-  perfLog(
-    `  group detail counts: reads=${features.length}`,
-    `mismatches=${mismatches.length}`,
-    `insertions=${insertions.length}`,
-    `gaps(del/skip)=${gaps.length}`,
-    `softclips=${softclips.length}`,
-  )
+  } = await buildAlignmentDetailArrays({
+    features,
+    gaps,
+    mismatches,
+    insertions,
+    softclips,
+    hardclips,
+    modifications,
+    perBaseQualities,
+    perBaseLetters,
+    detectedModifications,
+    region,
+    showSoftClipping: effShowSoftClipping,
+    statusCallback,
+  })
 
   checkStopToken2(stopTokenCheck)
 
@@ -333,38 +323,24 @@ async function buildGroupResult(
       )
     : new Map<number, StrandBaseCounts>()
 
-  const pipeline = await perfTime('  runCoveragePipeline', () =>
-    runCoveragePipeline({
-      features,
-      gaps,
-      insertions,
-      softclips,
-      hardclips,
-      modifications,
-      modBaseCounts,
-      simplexModifications: detectedSimplexModifications,
-      region,
-      mismatchArrays,
-      interbaseArrays,
-      gapArrays,
-      showCoverage,
-      trackStrands,
-      statusCallback,
-      stopTokenCheck,
-    }),
-  )
-  // The coverage depth buffer is packed at one 8-byte record per bp of the
-  // region (no downsampling), so these bytes scale with region width, not read
-  // count — this is the value that trips the GPU device-limit crash. When the
-  // coverage band is off, runCoveragePipeline returns empty depths and skips the
-  // pack entirely (see its showCoverage gate), so this logs 0.
-  const depthBins = pipeline.coverage.depths.length
-  perfLog(
-    `  coverage depthBins=${depthBins}`,
-    `depthBufferBytes=${fmtBytes(depthBins * 8)}`,
-    `snpSegments=${pipeline.snpCoverage.count}`,
-    `interbaseSegments=${pipeline.interbaseCoverage.positions.length}`,
-  )
+  const pipeline = await runCoveragePipeline({
+    features,
+    gaps,
+    insertions,
+    softclips,
+    hardclips,
+    modifications,
+    modBaseCounts,
+    simplexModifications: detectedSimplexModifications,
+    region,
+    mismatchArrays,
+    interbaseArrays,
+    gapArrays,
+    showCoverage,
+    trackStrands,
+    statusCallback,
+    stopTokenCheck,
+  })
 
   // Derived here where both branches' readNextRefs and the region refName are in
   // scope, rather than threaded through the array builders.
@@ -471,24 +447,16 @@ export async function executeRenderAlignmentData({
   const groupBy =
     isChain && !isChainGroupableType(groupByArg?.type) ? undefined : groupByArg
 
-  perfLog(
-    `RPC start ${region.refName}:${region.start}-${region.end}`,
-    `regionWidth(bp)=${region.end - region.start}`,
-    `mode=${isChain ? 'chain' : 'pileup'}`,
-  )
-  const { featuresArray, stopTokenCheck } = await perfTime('fetch', () =>
-    fetchFeaturesFromAdapter({
-      pluginManager,
-      sessionId,
-      adapterConfig,
-      sequenceAdapter,
-      region,
-      filterBy,
-      statusCallback,
-      stopToken,
-    }),
-  )
-  perfLog(`fetched ${featuresArray.length} features`)
+  const { featuresArray, stopTokenCheck } = await fetchFeaturesFromAdapter({
+    pluginManager,
+    sessionId,
+    adapterConfig,
+    sequenceAdapter,
+    region,
+    filterBy,
+    statusCallback,
+    stopToken,
+  })
 
   // The singleton/proper-pair filter groups reads by name, so it applies in
   // both pileup and chain mode (it short-circuits to a plain dedupe when both
@@ -542,20 +510,18 @@ export async function executeRenderAlignmentData({
     statusCallback,
     stopTokenCheck,
   })
-  const extractions = await perfTime('extractFeatureArrays', () =>
-    updateStatus(
-      'Processing alignments',
-      statusCallback,
-      async () =>
-        featureGroups.map(g =>
-          extractFeatureArrays(
-            g.features,
-            buildFeatureData,
-            extractOpts,
-            extractReport,
-          ),
+  const extractions = await updateStatus(
+    'Processing alignments',
+    statusCallback,
+    async () =>
+      featureGroups.map(g =>
+        extractFeatureArrays(
+          g.features,
+          buildFeatureData,
+          extractOpts,
+          extractReport,
         ),
-    ),
+      ),
   )
   const seenModTypes = new Map(extractions.flatMap(e => [...e.seenModTypes]))
   const detectedSimplexModifications = detectSimplexModifications([

@@ -91,7 +91,6 @@ import {
   SOFTCLIP_BASES_PASS,
 } from '../../features/softclip/packBases.ts'
 import { uploadSoftclipBases } from '../../features/softclip/uploadBases.ts'
-import { fmtBytes, perfLog } from '../../shared/alignmentsPerf.ts'
 import { CLIP_PASS, PASS_CLIP, uploadClips } from '../../shared/clipPass.ts'
 import {
   getSelectionBounds,
@@ -632,12 +631,6 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
     const numCoverageBins = data.coverageGpuBinCount
     if (numCoverageBins > 0) {
-      perfLog(
-        `uploadCoverage region=${displayedRegionIndex}`,
-        `bins=${numCoverageBins}`,
-        `binSize=${data.coverageBinSize}`,
-        `bytes=${fmtBytes(data.coveragePackedBuffer.byteLength)}`,
-      )
       uploadCoverageBins(
         this.hal,
         displayedRegionIndex,

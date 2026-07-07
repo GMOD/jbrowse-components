@@ -6,7 +6,6 @@ import {
 import { updateStatus } from '@jbrowse/core/util'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
-import { perfTimeSync } from './alignmentsPerf.ts'
 import { buildModTooltipData } from './buildTooltipData.ts'
 import { computeFrequenciesAndThresholds } from './computeFrequenciesAndThresholds.ts'
 import { packCoverageAreaForGpu } from './packCoverageArea.ts'
@@ -79,9 +78,7 @@ export async function runCoveragePipeline({
     'Computing coverage',
     statusCallback,
     async () =>
-      perfTimeSync('    computeCoverage', () =>
-        computeCoverage(features, gaps, regionStart, regionEnd, showCoverage),
-      ),
+      computeCoverage(features, gaps, regionStart, regionEnd, showCoverage),
   )
 
   checkStopToken2(stopTokenCheck)
@@ -91,14 +88,12 @@ export async function runCoveragePipeline({
   // band gate below, so the fade is identical whether or not the coverage band
   // is shown — do not couple it to showCoverage.
   const { mismatchFrequencies, interbaseFrequencies, gapFrequencies } =
-    perfTimeSync('    computeFrequenciesAndThresholds', () =>
-      computeFrequenciesAndThresholds(
-        mismatchArrays,
-        interbaseArrays,
-        gapArrays,
-        coverage.depths,
-        coverage.startPos,
-      ),
+    computeFrequenciesAndThresholds(
+      mismatchArrays,
+      interbaseArrays,
+      gapArrays,
+      coverage.depths,
+      coverage.startPos,
     )
 
   // The coverage band — histogram, SNP/interbase/mod segments, sashimi arcs, and
@@ -176,14 +171,12 @@ function computeCoverageBand({
     mismatchArrays.mismatchBases,
     coverage,
   )
-  const interbaseCoverage = perfTimeSync('    computeInterbaseCoverage', () =>
-    computeInterbaseCoverage(
-      insertions,
-      softclips,
-      hardclips,
-      regionStart,
-      coverage,
-    ),
+  const interbaseCoverage = computeInterbaseCoverage(
+    insertions,
+    softclips,
+    hardclips,
+    regionStart,
+    coverage,
   )
 
   const modCoverage = trackStrands
@@ -199,8 +192,11 @@ function computeCoverageBand({
   const modTooltipData = buildModTooltipData({ modifications, regionStart })
   const sashimi = computeSashimiJunctions(gaps)
 
-  const coverageAreaPacked = perfTimeSync('    packCoverageAreaForGpu', () =>
-    packCoverageAreaForGpu(coverage, snpCoverage, interbaseCoverage, modCoverage),
+  const coverageAreaPacked = packCoverageAreaForGpu(
+    coverage,
+    snpCoverage,
+    interbaseCoverage,
+    modCoverage,
   )
 
   return {
