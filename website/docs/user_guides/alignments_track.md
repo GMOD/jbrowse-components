@@ -135,7 +135,7 @@ presets (plus a custom value). Choosing **Use "…" as the default for alignment
 tracks** promotes the current height to a session-wide default, so every other
 alignments track that hasn't been individually pinned follows it.
 
-<Figure caption="Setting the feature height. The submenu shows the height presets (top); enabling 'use current height by default on all alignments tracks' applies the chosen height to every un-pinned alignments track in the session (bottom)." src="/img/feature_height_default_pin.png" />
+<Figure caption="Setting the feature height. The submenu shows the height presets; enabling 'use current height as the default for alignments tracks' promotes the chosen height (here Compact) to a session default, so every un-pinned alignments track in the session follows it." src="/img/feature_height_default_pin.png" />
 
 ## Insertion and clipping indicators
 

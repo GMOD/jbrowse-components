@@ -378,14 +378,14 @@ const trioVcfLayout = TRIO_HAPLOTYPES.map(h => ({
   HP: h.hp,
   label: h.label,
 }))
-// top of Child hap1, just under the painting track. The painting is filtered to
-// one parent's 2 haplotype rows, so it's shorter than the old 4-row painting and
-// the VCF panel sits ~44px higher (measured; was 320).
-const TRIO_VCF_ROW_TOP = 276
+// top of Child hap1, just under the painting track — the CSS-y of the
+// variant_canvas top, measured live in the rendered page (scripts/measure-trio.ts)
+// rather than guessed, since the painting-track height above it drifts this value.
+const TRIO_VCF_ROW_TOP = 268
 // the VCF display auto-fits its `TRIO_VCF_DISPLAY_H` px body across the 6
 // haplotype rows (LinearMultiSampleVariantDisplay has no line zone), so the true
 // per-row pitch is height/rows ≈ 43.33 — NOT a round 44, which drifts the frames
-// ~3px low by the bottom row (reviewer: boxes don't exactly match the rows).
+// ~3px low by the bottom row (boxes don't exactly match the rows).
 const TRIO_VCF_DISPLAY_H = 260
 const TRIO_VCF_ROW_PITCH = TRIO_VCF_DISPLAY_H / TRIO_HAPLOTYPES.length
 const trioRowY = (label: string) =>
@@ -400,11 +400,11 @@ const TRIO_HL_FILL = 0.16 // translucent wash inside each highlight frame
 const TRIO_MATERNAL_COLORS = { left: '#15a01a', right: '#ff6f00' } // green/orange
 const TRIO_PATERNAL_COLORS = { left: '#caa200', right: '#8e44ad' } // yellow/purple
 
-// hap-ibd painting rows, top→bottom: Father hap1, Father hap2, Mother hap1,
-// Mother hap2. trioPaintingStep boxes the two rows a crossover steps between
-// (the Father pair starts at index 0, the Mother pair at index 2).
-const TRIO_PAINT_TOP = 188
-const TRIO_PAINT_ROW_H = 32
+// hap-ibd painting: the display is filtered to one parent's 2 haplotype rows,
+// which render at the auto-fit 20px row height (multirow_canvas top/height,
+// measured live). trioPaintingStep boxes both rows the crossover steps between.
+const TRIO_PAINT_TOP = 193
+const TRIO_PAINT_ROW_H = 20
 const trioPaintingStep = (topRow: number) => ({
   type: 'box' as const,
   color: '#333',
@@ -455,7 +455,7 @@ function crossoverHighlights(opts: {
     step,
     {
       type: 'arrow',
-      // thinner line -> smaller arrowhead (reviewer: head was too big)
+      // thinner line -> smaller arrowhead (head was too big)
       strokeWidth: 2,
       from: { x: TRIO_XOVER_X, y: step.y + step.height },
       to: { x: TRIO_XOVER_X, y: trioRowY(child) },
@@ -1118,7 +1118,7 @@ export const specs: ScreenshotSpec[] = [
         {
           trackId: 'volvox_filtered_vcf',
           // the variant track is a single row of features, so shrink its
-          // band so it doesn't dominate the figure over the pileup (reviewer)
+          // band so it doesn't dominate the figure over the pileup
           displaySnapshot: { height: 60 },
         },
         'volvox_cram_alignments',
@@ -1138,7 +1138,7 @@ export const specs: ScreenshotSpec[] = [
   // stop-gained/splice-site (HIGH) variants alongside missense/synonymous/
   // intronic ones.
   // Clustered so the 2,504 sample rows are reordered by genotype similarity with
-  // a dendrogram in the left sidebar (reviewer: "add clustering if it helps") —
+  // a dendrogram in the left sidebar ("add clustering if it helps") —
   // co-inherited haplotype blocks group into contiguous same-color bands instead
   // of being scattered row-to-row. Clustering is a real RPC over the genotype
   // matrix, so the figure drives the "Cluster by genotype" → "Run clustering"
@@ -1183,7 +1183,7 @@ export const specs: ScreenshotSpec[] = [
   // human genome — where SnpEff calls real exon_loss_variant/frameshift_variant
   // (HIGH) consequences against a MODIFIER (intronic/intergenic) background.
   // See test_data/hgsvc_sv_snpeff/README.md for provenance.
-  // Clustered (reviewer: the raw insertion glyphs "look kind of chaotic ... may
+  // Clustered (the raw insertion glyphs "look kind of chaotic ... may
   // want to add clustering"): running "Cluster by genotype" reorders the 74
   // sample/haplotype rows by SV-genotype similarity and adds a dendrogram, so
   // samples sharing the same structural calls stack into coherent blocks instead
@@ -1194,7 +1194,7 @@ export const specs: ScreenshotSpec[] = [
     name: 'variants/consequence_impact_sv',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      // zoomed out to ~450kb (reviewer: "try zooming out more") so the NBPF20
+      // zoomed out to ~450kb ("try zooming out more") so the NBPF20
       // cluster's SV calls sit in flanking context rather than filling the
       // window, while keeping the cluster roughly centered
       loc: 'chr1:145,150,000-145,600,000',
@@ -1375,7 +1375,7 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'bigwig/whole_genome_coverage',
     // start at a single chromosome so the figure can walk through the setup
-    // (reviewer: show how to build this view). Stage 1 opens the View → Show...
+    // (show how to build this view). Stage 1 opens the View → Show...
     // menu with "Show all regions in assembly" boxed; stage 2 is the result.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
@@ -1388,14 +1388,14 @@ export const specs: ScreenshotSpec[] = [
             autoscale: 'localsd',
             numStdDev: 3,
             // scatter rendering reads copy-number gains/losses better than
-            // the filled XY plot across the whole genome (reviewer request)
+            // the filled XY plot across the whole genome
             defaultRendering: 'scatter',
             // finer binning (basesPerSpan = bpPerPx/resolution) so the
-            // whole-genome scatter resolves copy-number structure (reviewer)
+            // whole-genome scatter resolves copy-number structure
             resolution: 5,
             // plot the per-bin average rather than the default whiskers
             // (min/max/avg) — at whole-genome zoom the avg score reads the
-            // copy-number level cleanly without the noise band (reviewer)
+            // copy-number level cleanly without the noise band
             summaryScoreMode: 'avg',
           },
         },
@@ -1405,7 +1405,7 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 15000,
     // tall enough to capture the full open View → Show... submenu in stage 1
-    // (reviewer: the menu was cut off at the old 420px height)
+    // (the menu was cut off at the old 420px height)
     crop: { x: 0, y: 0, width: 1500, height: 560 },
     stages: [
       {
@@ -1417,13 +1417,13 @@ export const specs: ScreenshotSpec[] = [
           ...menuCascade(['Show...', 'Show all regions in assembly']),
         ],
         annotations: [
-          // ring the view (hamburger) menu icon that opens this menu (reviewer)
+          // ring the view (hamburger) menu icon that opens this menu
           {
             type: 'circle',
             anchor: { selector: '[data-testid="view_menu_icon"]' },
           },
           // box the "Show..." parent item plus the sub-item it reveals so the
-          // whole menu path reads at a glance (reviewer)
+          // whole menu path reads at a glance
           { type: 'box', anchor: { text: 'Show...' } },
           { type: 'box', anchor: { text: 'Show all regions in assembly' } },
         ],
@@ -1447,14 +1447,13 @@ export const specs: ScreenshotSpec[] = [
   },
 
   {
-    // Two-step procedure showing the session-wide feature-height default on
-    // alignments tracks. featureHeight/featureSpacing are promotable slots
-    // (getConfResolved: track value → session default → schema default), so:
-    // (1) both alignments tracks inherit Normal, (2) setting the first track to
-    // Compact and choosing "Use ... as the default for alignments tracks"
-    // promotes Compact to a session default and the second (un-pinned) track
-    // follows via inherit. Each stage leaves the "Set feature height" submenu
-    // open and boxes the item clicked.
+    // Single frame showing the session-wide feature-height default on alignments
+    // tracks. featureHeight/featureSpacing are promotable slots (getConfResolved:
+    // track value → session default → schema default). We set the first track to
+    // Compact and enable "Use ... as the default for alignments tracks", which
+    // promotes Compact to a session default; the second (un-pinned) track follows
+    // via inherit. The "Set feature height" submenu is left open with the now-
+    // checked default toggle boxed.
     mode: 'url',
     name: 'feature_height_default_pin',
     url: lgvSession(VOLVOX, {
@@ -1467,79 +1466,49 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     viewportWidth: 1100,
-    viewportHeight: 900,
+    viewportHeight: 700,
     // alignments pileups keep re-laying-out while reads stream in; wait long
     // enough that the menu geometry is stable before the hover/click sequence
     settleMs: 14000,
     hideTooltip: true,
-    stages: [
+    // set the first track to Compact, then enable "Use current height by default
+    // on all alignments tracks" — the second (un-pinned) track follows via
+    // inherit. Re-open the submenu so the now-checked default toggle (the item
+    // actually clicked) is visible and boxed.
+    actions: [
+      trackMenuIcon('volvox_alignments_pileup_coverage'),
+      ...openFeatureHeightSubmenu(),
+      // exact-text match so "Compact" hits the radio, not a longer label
       {
-        // both alignments tracks sit at the default (Normal) height. Leave the
-        // "Set feature height" submenu open (no Escape before capture) and box
-        // the selected "Normal" radio so the reader sees the control itself.
-        actions: [
-          trackMenuIcon('volvox_alignments_pileup_coverage'),
-          ...openFeatureHeightSubmenu(),
-        ],
-        annotations: [
-          {
-            type: 'box',
-            anchor: { text: 'Normal' },
-            strokeWidth: 3,
-            fillOpacity: 0.12,
-          },
-          {
-            type: 'text',
-            x: 620,
-            y: 34,
-            maxWidth: 440,
-            fontSize: 15,
-            text: '1. Feature height defaults to Normal — both tracks inherit it',
-          },
-        ],
+        type: 'click',
+        selector:
+          '::-p-xpath(//li[@role="menuitem"][normalize-space(.)="Compact"])',
+      },
+      { type: 'delay', ms: 300 },
+      ...dismissMenus(),
+      trackMenuIcon('volvox_alignments_pileup_coverage'),
+      ...openFeatureHeightSubmenu(),
+      { type: 'click', text: 'as the default for alignments tracks' },
+      { type: 'delay', ms: 600 },
+      ...dismissMenus(),
+      // re-open to display the checkbox now ticked, kept on screen for capture
+      trackMenuIcon('volvox_alignments_pileup_coverage'),
+      ...openFeatureHeightSubmenu(),
+    ],
+    annotations: [
+      {
+        type: 'box',
+        anchor: { text: 'as the default for alignments tracks' },
+        strokeWidth: 3,
+        fillOpacity: 0.12,
       },
       {
-        // set the first track to Compact, then enable "Use current height by
-        // default on all alignments tracks" — the second (un-pinned) track
-        // follows via inherit. Re-open the submenu so the now-checked default
-        // toggle (the item actually clicked) is visible and boxed.
-        actions: [
-          ...dismissMenus(),
-          trackMenuIcon('volvox_alignments_pileup_coverage'),
-          ...openFeatureHeightSubmenu(),
-          // exact-text match so "Compact" hits the radio, not a longer label
-          {
-            type: 'click',
-            selector:
-              '::-p-xpath(//li[@role="menuitem"][normalize-space(.)="Compact"])',
-          },
-          { type: 'delay', ms: 300 },
-          ...dismissMenus(),
-          trackMenuIcon('volvox_alignments_pileup_coverage'),
-          ...openFeatureHeightSubmenu(),
-          { type: 'click', text: 'as the default for alignments tracks' },
-          { type: 'delay', ms: 600 },
-          ...dismissMenus(),
-          // re-open to display the checkbox now ticked, kept on screen for capture
-          trackMenuIcon('volvox_alignments_pileup_coverage'),
-          ...openFeatureHeightSubmenu(),
-        ],
-        annotations: [
-          {
-            type: 'box',
-            anchor: { text: 'as the default for alignments tracks' },
-            strokeWidth: 3,
-            fillOpacity: 0.12,
-          },
-          {
-            type: 'text',
-            x: 620,
-            y: 34,
-            maxWidth: 440,
-            fontSize: 15,
-            text: '2. "Use ... as the default" promotes it to a session default — every un-pinned track follows',
-          },
-        ],
+        type: 'text',
+        x: 620,
+        y: 34,
+        maxWidth: 440,
+        fontSize: 15,
+        text: '"Use ... as the default for alignments tracks" promotes the chosen height to a session default — every un-pinned track follows',
       },
     ],
   },
@@ -1693,7 +1662,7 @@ export const specs: ScreenshotSpec[] = [
 
   // Color-by-CDS frame coloring on a gene track: human BRCA1 (hg19 NCBI RefSeq)
   // zoomed to base-pair resolution with the reference sequence track above
-  // (reviewer). Two stages mirror the how-to: stage 1 opens the view menu with
+  // . Two stages mirror the how-to: stage 1 opens the view menu with
   // "Color by CDS and draw amino acids" boxed; stage 2 clicks it, so each CDS
   // codon is tinted by its reading frame with the amino acid drawn over it,
   // lined up to the reference codons above.
@@ -1703,7 +1672,7 @@ export const specs: ScreenshotSpec[] = [
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr17:41,244,000-41,244,120',
-      // offset labels so they overlay the tracks (reviewer)
+      // offset labels so they overlay the tracks
       trackLabels: 'offset',
       tracks: [
         'Pd8Wh30ei9R',
@@ -1792,7 +1761,7 @@ export const specs: ScreenshotSpec[] = [
     url: lgvSession('test_data/enterovirus_d/config.json', {
       assembly: 'GCF_000861205.1',
       loc: 'NC_001430.1:727-7,311',
-      // offset labels so they overlay the tracks (reviewer)
+      // offset labels so they overlay the tracks
       trackLabels: 'offset',
       tracks: [
         {
@@ -1834,7 +1803,7 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: 'chr10:87,863,113-87,971,930',
-          // offset labels so they overlay the tracks (reviewer)
+          // offset labels so they overlay the tracks
           trackLabels: 'offset',
           tracks: [
             {
@@ -1851,7 +1820,7 @@ export const specs: ScreenshotSpec[] = [
             {
               // PTEN-only sliced RNA-seq BAM (see PTEN_RNASEQ_ADAPTER): a tiny
               // deterministic download, so the sashimi arcs are reliably present
-              // at capture. compact pileup so the reads pack tightly (reviewer)
+              // at capture. compact pileup so the reads pack tightly
               trackId: 'pten_directrna',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
@@ -1909,7 +1878,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
     settleMs: 8000,
-    // smaller capture window in both dimensions (reviewer)
+    // smaller capture window in both dimensions
     viewportWidth: 1150,
     viewportHeight: 560,
     actions: [
@@ -2010,14 +1979,14 @@ export const specs: ScreenshotSpec[] = [
   // submenu with "Show soft clipping" boxed — soft clipping is NOT yet enabled,
   // so the reads render normally (clipped bases hidden). Bottom frame clicks the
   // item, enabling soft clipping and closing the menu, so it teaches cause→effect
-  // (reviewer: stage 1 must be the not-yet-enabled state, stage 2 the result with
+  // (stage 1 must be the not-yet-enabled state, stage 2 the result with
   // no menu open). Combines the old separate menu + result screenshots.
   {
     mode: 'url',
     name: 'alignments_soft_clipped_menu',
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
-      // zoomed in toward the soft-clip breakpoint (reviewer request)
+      // zoomed in toward the soft-clip breakpoint
       loc: 'ctgA:2670-2730',
       tracks: ['volvox-long-reads-sv-bam'],
     }),
@@ -2066,7 +2035,7 @@ export const specs: ScreenshotSpec[] = [
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1500-2000',
-      // short paired reads from volvox-sv (reviewer: more interesting than
+      // short paired reads from volvox-sv (more interesting than
       // the big long reads the old capture used)
       tracks: ['volvox_sv_cram'],
     }),
@@ -2078,7 +2047,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Linear read vs ref' },
       { type: 'delay', ms: 800 },
     ],
-    // clarify the action (reviewer: it's unclear this menu comes from
+    // clarify the action (it's unclear this menu comes from
     // right-clicking a read). Caption sits over the pileup just left of the menu
     // with a short arrow at the right-clicked read row (y=250 = the click point);
     // JBrowse intentionally clears the hover shading when the context menu opens,
@@ -2110,19 +2079,19 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    // narrower + a touch shorter than before (reviewer), but still tall enough
-    // that the SAMPLES card (low in the variant-details panel) stays on-screen —
-    // the callouts anchor to it, so it must be visible
+    // tall enough that the whole SAMPLES genotype-frequency table (low in the
+    // variant-details panel) clears the viewport bottom — the callouts anchor
+    // to its header, and the reviewer wanted its rows fully visible
     viewportWidth: 1150,
-    viewportHeight: 880,
+    viewportHeight: 1080,
     actions: [
       { type: 'click', text: 'C -> T' },
       { type: 'waitForText', text: 'HG00096' },
       { type: 'delay', ms: 1500 },
     ],
     // label the SAMPLES genotype table: pill sits to the left of the SAMPLES
-    // header (over the empty area beside the drawer) with an arrow into it
-    // (reviewer: text should be to the left of the SAMPLES text)
+    // header with a short horizontal arrow into it (the previous arrow was a
+    // long diagonal floating across empty whitespace)
     annotations: [
       { type: 'box', anchor: { text: 'SAMPLES' } },
       {
@@ -2134,10 +2103,11 @@ export const specs: ScreenshotSpec[] = [
         text: 'Per-sample genotypes',
       },
       // head nudged left of the SAMPLES header so the arrow points at it
-      // without covering the word (reviewer)
+      // without covering the word; tail sits just right of the pill on the same
+      // baseline so the arrow reads as a short horizontal connector
       {
         type: 'arrow',
-        from: { x: 720, y: 486 },
+        from: { x: 680, y: 741 },
         anchor: { text: 'SAMPLES' },
         dx: -60,
       },
@@ -2201,7 +2171,7 @@ export const specs: ScreenshotSpec[] = [
           colorBy: 'query',
           // higher alpha + a taller synteny band give the ribbons room to read,
           // and autoDiagonalize reorders the panels into clean diagonals
-          // (reviewer: increase height, add opacity, diagonalize; then opacity
+          // (increase height, add opacity, diagonalize; then opacity
           // bumped a little more). levelHeights (not a `levels` snapshot) is the
           // key the launch init consumes.
           alpha: 0.8,
@@ -2267,7 +2237,7 @@ export const specs: ScreenshotSpec[] = [
     name: 'multiway_synteny/ecoli_pangenome',
     // colorBy:'default' (not 'query'): these are single-chromosome strains, so
     // per-query-name coloring paints everything one near-uniform color and adds
-    // no signal (reviewer: query-name coloring is only useful with multiple
+    // no signal (query-name coloring is only useful with multiple
     // chromosomes). Default red ribbons read cleaner here.
     url: sessionSpec(
       encodeURIComponent(
@@ -2391,7 +2361,8 @@ export const specs: ScreenshotSpec[] = [
   // display_settings.md: render the tutorial's own URL session-spec example so
   // the reader sees what that displaySnapshot produces. Matches the doc's JSON
   // verbatim (volvox_sv_cram at ctgA:1-10000, height 250, softclipping on,
-  // colored by pair orientation).
+  // viewed as pairs — which links each read to its mate and colors by insert
+  // size + orientation).
   {
     mode: 'url',
     name: 'display_settings_url_snapshot',
@@ -2404,7 +2375,8 @@ export const specs: ScreenshotSpec[] = [
           displaySnapshot: {
             height: 250,
             showSoftClipping: true,
-            colorBy: { type: 'pairOrientation' },
+            linkedReads: 'normal',
+            colorBy: { type: 'insertSizeAndOrientation' },
           },
         },
       ],
@@ -2493,13 +2465,13 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    // narrower window (reviewer request); the rightclick x below is recomputed
+    // narrower window; the rightclick x below is recomputed
     // for this width — the SNP at ctgA:14481 sits at ~0.51 of the 107bp region
     viewportWidth: 1100,
     // crop each stage to the populated header+pileup so the stacked two-frame
-    // figure isn't padded by the empty viewport below (reviewer: shorter window).
+    // figure isn't padded by the empty viewport below (shorter window).
     // height 500 gives the right-click context menu breathing room below its last
-    // item instead of clipping it at the frame edge (reviewer: menu cut off)
+    // item instead of clipping it at the frame edge (menu cut off)
     crop: { x: 0, y: 0, width: 1100, height: 500 },
     settleMs: 5000,
     hideTooltip: true,
@@ -2516,13 +2488,13 @@ export const specs: ScreenshotSpec[] = [
           { type: 'box', anchor: { text: 'Sort by base at position' } },
           // call out that the right-click happens on the variant column itself.
           // Anchored just left of the menu's top item so the label sits next to
-          // the context menu instead of off in the corner (reviewer)
+          // the context menu instead of off in the corner
           {
             type: 'text',
             anchor: { text: 'SNP/Mismatch' },
             // text-anchor is "start", so x is the box's left edge and the label
             // grows rightward — push it well left so its right edge clears the
-            // context menu's left edge instead of overlapping it (reviewer)
+            // context menu's left edge instead of overlapping it
             dx: -440,
             dy: -30,
             maxWidth: 270,
@@ -2559,13 +2531,13 @@ export const specs: ScreenshotSpec[] = [
       // with a single isoform and just 3 introns, so the RNA-seq sashimi arcs
       // are few and clean (GAPDH's many short exons gave "tons of small arcs").
       loc: 'chr15:45,003,000-45,012,000',
-      // offset track labels so they overlay the tracks (reviewer)
+      // offset track labels so they overlay the tracks
       trackLabels: 'offset',
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
           // give the gene track room so the B2M model is clearly visible
-          // above the sashimi arcs (reviewer: gene track too short to see)
+          // above the sashimi arcs (gene track too short to see)
           displaySnapshot: { type: 'LinearBasicDisplay', height: 120 },
         },
         'Pairend_StrandSpecific_51mer_Human_hg19',
@@ -2582,13 +2554,13 @@ export const specs: ScreenshotSpec[] = [
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr8:50,366,343-61,321,733',
-      // offset labels so they overlay the tracks (reviewer)
+      // offset labels so they overlay the tracks
       trackLabels: 'offset',
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
           // hide gene descriptions so the gene track stays compact next to
-          // the Hi-C display (reviewer request)
+          // the Hi-C display
           displaySnapshot: {
             type: 'LinearBasicDisplay',
             showDescriptions: false,
@@ -2605,11 +2577,11 @@ export const specs: ScreenshotSpec[] = [
   // CRAM modifications + bedmethyl together over a CpG island (chr20 18.49-18.51Mb,
   // the same island the `modifications` figure uses) so there is a clear
   // methylated/unmethylated transition — the old chr20:10Mb window had little
-  // signal (reviewer). The COLO829 nanopore reads' per-base CpG methylation calls
+  // signal. The COLO829 nanopore reads' per-base CpG methylation calls
   // (colorBy methylation) line up with the modkit bedmethyl summary below. The
   // bedmethyl uses the multi-row-density renderer (a value-gradient heatmap), not
   // the default two-color xyplot whose negColor never shows for an all-positive
-  // 0-100 methylation percentage (reviewer: don't use twocolor — it only showed
+  // 0-100 methylation percentage (don't use twocolor — it only showed
   // the one red color).
   {
     mode: 'url',
@@ -2627,7 +2599,7 @@ export const specs: ScreenshotSpec[] = [
             // one-color modifications rendering (only methylated calls
             // colored) rather than the two-color methylation mode whose
             // blue "unmethylated" signal has no counterpart in the
-            // bedmethyl track below (reviewer)
+            // bedmethyl track below
             colorBy: { type: 'modifications' },
           },
         },
@@ -2735,7 +2707,7 @@ export const specs: ScreenshotSpec[] = [
           loc: 'chr20:19,749,666-19,770,134',
           tracks: [
             // CpG island annotation first (top) so the left-anchored callout
-            // text on the CRAM rows below doesn't cover it (reviewer)
+            // text on the CRAM rows below doesn't cover it
             'cpgisland_ucsc_hg38',
             {
               trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram_modifications',
@@ -2761,7 +2733,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'CpG',
     readyTimeout: 60000,
     settleMs: 35000,
-    // label the two rows (reviewer): top is modifications mode (only called
+    // label the two rows: top is modifications mode (only called
     // mods, at MM-tag positions); bottom is methylation mode (every CpG on the
     // read inspected, methylated red vs unmethylated blue)
     annotations: [
@@ -2929,7 +2901,7 @@ export const specs: ScreenshotSpec[] = [
                 source: 'COLO829 tumor',
                 // explicit colors: the multiwig source color is now assigned by
                 // post-filter index, which flipped tumor/normal vs origin/main
-                // (reviewer). Pin tumor=red, normal=blue (set1 palette).
+                // . Pin tumor=red, normal=blue (set1 palette).
                 color: '#e41a1c',
                 bigWigLocation: {
                   uri: 'https://jbrowse.org/genomes/hg19/COLO829/colo_tumor.bw',
@@ -2962,13 +2934,13 @@ export const specs: ScreenshotSpec[] = [
                 numStdDev: 3,
                 defaultRendering: 'multiscatter',
                 // even finer binning (basesPerSpan = bpPerPx/resolution) so the
-                // scatter resolves copy-number structure (reviewer: even finer,
+                // scatter resolves copy-number structure (even finer,
                 // then bumped again for slightly higher resolution — the BigWig
                 // zoom levels are discrete, so this has to cross a level to add
                 // detail)
                 resolution: 50,
                 // shrink scatter points (default 2px) so the dense CNV cloud
-                // reads as fine structure rather than blobs (reviewer)
+                // reads as fine structure rather than blobs
                 scatterPointSize: 1,
               },
             },
@@ -2984,7 +2956,7 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // The 27bp heterozygous deletion in HG002 ONT reads at ~1:63,006,xxx (hg19),
-  // used to drive a group-by-HP example (reviewer). A single HG002 ultralong-ONT
+  // used to drive a group-by-HP example. A single HG002 ultralong-ONT
   // track uses the display's groupBy:{type:'tag',tag:'HP'} option, which splits
   // the pileup into one subtrack per HP value at render time (the newer built-in
   // grouping — no manually-filtered duplicate session tracks). The heterozygous
@@ -3064,7 +3036,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          // tighter window (reviewer) so the per-haplotype split and the phased
+          // tighter window so the per-haplotype split and the phased
           // variant columns read clearly
           loc: '1:63,005,000-63,008,000',
           tracks: [
@@ -3130,7 +3102,7 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 700,
     settleMs: 15000,
     hideTooltip: true,
-    // Two-stage figure (reviewer): stage 1 is the menu path (track menu ->
+    // Two-stage figure: stage 1 is the menu path (track menu ->
     // Group by... submenu, the inner item boxed); stage 2 is the dialog that item
     // opens, with the Tag dimension chosen and HP entered so the haplotype example
     // is concrete. Reads start colored by HP (colorBy tag HP) in both frames.
@@ -3237,7 +3209,7 @@ export const specs: ScreenshotSpec[] = [
             {
               trackId: 'illumina_hg002',
               // show soft clipping so the clipped bases flanking the insertion
-              // are visible on the Illumina reads (reviewer)
+              // are visible on the Illumina reads
               displaySnapshot: { height: 250, showSoftClipping: true },
             },
           ],
@@ -3275,11 +3247,11 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 type: 'LinearMultiSampleVariantDisplay',
                 userByteSizeLimit: 100_000_000,
-                // shorter multi-sample display (reviewer: ~400px)
+                // shorter multi-sample display (~400px)
                 height: 400,
               },
             },
-            // NCBI RefSeq gene track below the variant display (reviewer).
+            // NCBI RefSeq gene track below the variant display.
             // showLabels:'on' forces gene names on (the default 'auto' hides
             // them at this 5Mb zoom past maxLabelFeatureDensity); showOnlyGenes
             // drops the per-transcript/mRNA subfeatures so only the gene-level
@@ -3313,7 +3285,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'click', text: 'Sort by genotype' },
       { type: 'delay', ms: 6000 },
       // move the pointer off the matrix so the mouseover crosshair doesn't bake
-      // into the capture (reviewer: remove the crosshairs)
+      // into the capture (remove the crosshairs)
       { type: 'hover', from: { x: 6, y: 6 } },
       { type: 'delay', ms: 800 },
     ],
@@ -3399,7 +3371,7 @@ export const specs: ScreenshotSpec[] = [
           loc: '1:40,481,472-40,524,349',
           tracks: [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-            // read-connection arcs on each trio member (reviewer): discordant /
+            // read-connection arcs on each trio member: discordant /
             // split pairs arc across the SV breakpoints, so the SV signal that is
             // present (or absent) in child vs parents reads at a glance
             {
@@ -3474,8 +3446,8 @@ export const specs: ScreenshotSpec[] = [
     // interchromosomal translocation. Each panel is a loc window centered on
     // its breakpoint (chr1:229,354,402 // chr5:137,884,948). The alignments
     // display height is shortened to 140 (was ~250) so the pileups aren't tall
-    // (reviewer); the intra-view links are toggled off via the view menu below
-    // so only the cross-panel junction splines draw (reviewer).
+    // ; the intra-view links are toggled off via the view menu below
+    // so only the cross-panel junction splines draw.
     url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
@@ -3493,7 +3465,7 @@ export const specs: ScreenshotSpec[] = [
                 {
                   trackId: 'breast_cancer_sniffles_hg19',
                   // drop the megabase-scale inversion calls that span the whole
-                  // window so only the junction breakends show (reviewer)
+                  // window so only the junction breakends show
                   displaySnapshot: {
                     type: 'LinearVariantDisplay',
                     jexlFiltersSetting: [
@@ -3564,7 +3536,7 @@ export const specs: ScreenshotSpec[] = [
   // long-read SV BAM zoomed onto an SV breakpoint, where the reads clip hard at
   // a single column — producing a tall, unmistakable clip-indicator stack
   // (blue = left-clip, red = right-clip). The earlier SKBR3 illumina view was a
-  // wide 28kb window where the ticks were tiny and scattered (reviewer).
+  // wide 28kb window where the ticks were tiny and scattered.
   {
     mode: 'url',
     name: 'alignment_clipping_indicators',
@@ -3614,11 +3586,12 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 linkedReads: 'normal',
                 readConnections: 'arc',
-                readConnectionsDown: false,
+                // arcs drawn below the coverage band (reviewer)
+                readConnectionsDown: true,
                 height: 1300,
                 coverageHeight: 120,
                 // taller reads so the minority green (same-orientation /
-                // inverted) pairs are legible instead of 3px slivers (reviewer)
+                // inverted) pairs are legible instead of 3px slivers
                 featureHeight: 9,
                 colorBy: { type: 'pairOrientation' },
                 // legend is opt-in now; show the pair-orientation key so the
@@ -3633,7 +3606,6 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'HG02768',
     readyTimeout: 60000,
     // taller window so the enlarged pileup + the feature-details sidebar fit
-    // (reviewer request)
     viewportHeight: 1600,
     settleMs: 30000,
     // click the HGSV_2721 variant's floating feature label (stable per-feature
@@ -3651,7 +3623,7 @@ export const specs: ScreenshotSpec[] = [
     ],
     // explain the read evidence, plus a single connector from the "INVdup" callout
     // directly to the CPX_TYPE INFO field in the feature-details sidebar so the
-    // annotation and the data it describes are visibly linked (reviewer)
+    // annotation and the data it describes are visibly linked
     annotations: [
       {
         // sits in the empty white pileup band (so it doesn't cover the arcs at the
@@ -3695,7 +3667,7 @@ export const specs: ScreenshotSpec[] = [
   // spanning its two mates — the same curve shape BreakpointSplitView's
   // AlignmentConnections draws in a single linear view — so the green LL / blue
   // RR same-orientation pairs of the inverted segment stand out as bundled curves
-  // across the locus. "View as pairs" (linkedReads: 'normal') is on (reviewer),
+  // across the locus. "View as pairs" (linkedReads: 'normal') is on,
   // so each mate pair collapses onto a single row joined by its bezier curve —
   // the abnormal same-orientation (LL/RR) pairs of the inverted duplication read
   // as a coherent stack of curves instead of scattered singleton pileup rows.
@@ -3715,6 +3687,9 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 showBezierConnections: true,
                 linkedReads: 'normal',
+                // also draw the coverage-band arcs, below the coverage (reviewer)
+                readConnections: 'arc',
+                readConnectionsDown: true,
                 height: 1300,
                 coverageHeight: 120,
                 featureHeight: 9,
@@ -3849,7 +3824,7 @@ export const specs: ScreenshotSpec[] = [
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)
 
   // Single-frame SV-inspector launch: the app "Add" menu with the "SV inspector"
-  // item boxed (reviewer: drop the second import-form stage — the import form
+  // item boxed (drop the second import-form stage — the import form
   // with the pasted VCF URL is its own figure, sv_inspector_importform_after).
   {
     mode: 'url',
@@ -3866,43 +3841,13 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 500 },
     ],
     // box the "Add" menu button (the path's first click) plus the "SV inspector"
-    // item it opens (reviewer: circle Add too)
+    // item it opens (circle Add too)
     annotations: [
       { type: 'box', anchor: { text: 'Add' } },
       { type: 'box', anchor: { text: 'SV inspector' } },
     ],
   },
 
-  // The SV-inspector import form with "Open from track" selected. The
-  // TrackSelector auto-picks the first importable track (the CNV-calls BED), so
-  // open the Tracks dropdown and choose the somatic-stvar SV benchmark VCF
-  // instead — which flips File Type to VCF — matching the figure where the VCF
-  // is loaded from an in-session track rather than pasted as a URL. Cropped to
-  // the centered form.
-  {
-    mode: 'url',
-    name: 'sv_cgiab/translocation_open_from_track',
-    url: cgiabUrl({ views: [{ type: 'SvInspectorView' }] }),
-    readyText: 'Open from track',
-    readyTimeout: 60000,
-    settleMs: 3000,
-    viewportWidth: 1150,
-    // taller so the form + opened Tracks dropdown clear the viewport edge with
-    // margin below instead of sitting flush against it (reviewer)
-    viewportHeight: 440,
-    actions: [
-      { type: 'click', text: 'Open from track' },
-      { type: 'waitForText', text: 'Tracks' },
-      { type: 'delay', ms: 500 },
-      // clicking the current selection text opens the Tracks dropdown; pick the
-      // stvar VCF (substring match) so File Type switches to VCF
-      { type: 'click', text: 'somatic CNV calls' },
-      { type: 'waitForText', text: 'somatic-stvar' },
-      { type: 'click', text: 'somatic-stvar' },
-      { type: 'delay', ms: 1000 },
-    ],
-    annotations: [{ type: 'box', anchor: { text: 'Open from track' } }],
-  },
 
   {
     mode: 'url',
@@ -3920,7 +3865,7 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 10000,
     // The SV_20 row (chr3:139,976,414 -> chr13:114,353,244, the same
-    // CHROMOPLEXY junction translocation_breakpoint_split drills into below)
+    // translocation junction translocation_breakpoint_split drills into below)
     // is mounted in the DataGrid's virtualization buffer but scrolled below
     // the grid's own internal viewport, so its DOM rect is real but not
     // visible until scrolled into view — hover (which Puppeteer auto-scrolls
@@ -3939,13 +3884,13 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         x: 60,
         y: 90,
-        text: 'SV_20: the chr3↔chr13 chromoplexy translocation, drilled into below.',
+        text: 'SV_20: the chr3↔chr13 translocation, drilled into below.',
         maxWidth: 420,
       },
     ],
   },
 
-  // The chr3<->chr13 CHROMOPLEXY translocation that the chord in the SV inspector
+  // The chr3<->chr13 translocation that the chord in the SV inspector
   // points at — benchmark call SV_20 joins chr3:139,976,414 to chr13:114,353,244.
   // Built declaratively as a BreakpointSplitView (init.views resolves to the two
   // child LGVs after attach), each panel showing the 116x tumor PacBio HiFi reads
@@ -3979,7 +3924,7 @@ export const specs: ScreenshotSpec[] = [
                   displaySnapshot: {
                     featureHeight: 1,
                     featureSpacing: 0,
-                    height: 400,
+                    height: 250,
                     userByteSizeLimit: 500_000_000,
                   },
                 },
@@ -3995,7 +3940,7 @@ export const specs: ScreenshotSpec[] = [
                   displaySnapshot: {
                     featureHeight: 1,
                     featureSpacing: 0,
-                    height: 400,
+                    height: 250,
                     userByteSizeLimit: 500_000_000,
                   },
                 },
@@ -4032,7 +3977,7 @@ export const specs: ScreenshotSpec[] = [
     // crop off the empty viewport below; tall enough for the import form (stage
     // 1) and the resulting whole-genome ruler (stage 2)
     crop: { x: 0, y: 0, width: 1500, height: 250 },
-    // two-stage (reviewer): stage 1 boxes the "Show all regions in assembly"
+    // two-stage: stage 1 boxes the "Show all regions in assembly"
     // button on the import form; stage 2 clicks it so the result — every
     // chromosome laid out across the view — shows next
     stages: [
@@ -4061,7 +4006,7 @@ export const specs: ScreenshotSpec[] = [
     url: cgiabUrl({
       sessionTracks: [
         // hg38 NCBI RefSeq genes (chr-named, CSI-indexed) so the LGV below the
-        // inspector shows CUZD1's gene model over the deletion (reviewer)
+        // inspector shows CUZD1's gene model over the deletion
         {
           type: 'FeatureTrack',
           trackId: 'hg38_ncbiRefSeq_ucsc',
@@ -4087,7 +4032,7 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'SvInspectorView',
           assembly: 'GRCh38_GIABv3',
-          // shorter inspector so the LGV below gets more room (reviewer: not so
+          // shorter inspector so the LGV below gets more room (not so
           // tall)
           height: 420,
           uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.4-20250714/GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf.gz',
@@ -4118,7 +4063,7 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 4000 },
     ],
-    // Pared down to the single core narrative (reviewer: too many annotations):
+    // Pared down to the single core narrative (too many annotations):
     // search SV_85 -> one DEL row -> clicking its location link opens the region
     // below, where SVTYPE=DEL is drawn as the <DEL> ALT allele on the variant.
     annotations: [
@@ -4131,8 +4076,8 @@ export const specs: ScreenshotSpec[] = [
         maxWidth: 420,
       },
       { type: 'box', anchor: { text: 'chr10:122,835,344..122,837,142' } },
-      { type: 'arrow', from: { x: 185, y: 268 }, to: { x: 598, y: 700 } },
-      { type: 'box', x: 592, y: 700, width: 112, height: 52 },
+      { type: 'arrow', from: { x: 185, y: 268 }, to: { x: 598, y: 682 } },
+      { type: 'box', x: 592, y: 682, width: 112, height: 52 },
       {
         type: 'text',
         text: 'The location link opens the region below, where SVTYPE=DEL draws as the <DEL> allele',
@@ -4178,7 +4123,7 @@ export const specs: ScreenshotSpec[] = [
         // A small region-slice of the 116x tumor PacBio BAM (chr10:122.8-122.87Mb,
         // ~360 reads, 2.8MB) rehosted on jbrowse.org/demos/cgiab so the reads
         // auto-load fast instead of tripping the force-load guard the full 116x
-        // BAM hits over this 28kb window (reviewer: render the reads).
+        // BAM hits over this 28kb window (render the reads).
         {
           type: 'AlignmentsTrack',
           trackId: 'hg008t_pacbio_chr10_deletion_slice',
@@ -4216,14 +4161,14 @@ export const specs: ScreenshotSpec[] = [
             'GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf',
             {
               trackId: 'hg008t_pacbio_chr10_deletion_slice',
-              // compact pileup (reviewer): the "Compact" feature-height preset
+              // compact pileup: the "Compact" feature-height preset
               // sets featureHeight=3, featureSpacing=0 (COMPACTNESS_PRESETS),
               // both flat config-override keys on LinearAlignmentsDisplay
               displaySnapshot: {
                 height: 300,
                 featureHeight: 3,
                 featureSpacing: 0,
-                // sort reads by the base at the screen-center column (reviewer)
+                // sort reads by the base at the screen-center column
                 sortedBy: {
                   type: 'basePair',
                   pos: 122836434,
@@ -4245,7 +4190,7 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/cnv_with_bed_track',
     // Whole chr5 with BOTH tumor and normal coverage in a single
-    // MultiQuantitativeTrack (reviewer) above the somatic CNV benchmark bed
+    // MultiQuantitativeTrack above the somatic CNV benchmark bed
     // calls, so the coverage gains/losses can be compared against the called
     // intervals. Uses the normalized indexcov bigwigs (median≈1 → reads
     // directly as copy number).
@@ -4285,7 +4230,7 @@ export const specs: ScreenshotSpec[] = [
           assembly: 'GRCh38_GIABv3',
           loc: 'chr5',
           // offset track labels so they overlay the tracks instead of taking a
-          // dedicated row (reviewer)
+          // dedicated row
           trackLabels: 'offset',
           tracks: [
             {
@@ -4295,7 +4240,7 @@ export const specs: ScreenshotSpec[] = [
                 defaultRendering: 'multiscatter',
                 autoscale: 'localsd',
                 // finer binning (basesPerSpan = bpPerPx/resolution) so the
-                // whole-chromosome scatter resolves more CNV detail (reviewer)
+                // whole-chromosome scatter resolves more CNV detail
                 resolution: 8,
                 height: 200,
               },
@@ -4550,7 +4495,7 @@ export const specs: ScreenshotSpec[] = [
   // alignments linked (the deletion is a clean drop-out in the reads
   // themselves), and the CN-labeled benchmark CNV track (the config's
   // hg008_cnv_calls) whose label reads out the called copy number (CN 0). The
-  // coarse log2 ratio was dropped (reviewer: it duplicates the per-base
+  // coarse log2 ratio was dropped (it duplicates the per-base
   // coverage without adding scale context at this zoom).
   {
     mode: 'url',
@@ -4608,12 +4553,11 @@ export const specs: ScreenshotSpec[] = [
           loc: 'chr9:21,930,000-21,990,000',
           // offset track labels onto their own line so the long track names
           // (fine-scale coverage / PacBio HiFi reads) don't overlap the data
-          // (reviewer)
           trackLabels: 'offset',
           tracks: [
             {
               // genes compact so the RefSeq isoforms collapse to a thin band
-              // rather than dominating the figure (reviewer)
+              // rather than dominating the figure
               trackId: 'hg38_ncbiRefSeq_ucsc',
               displaySnapshot: {
                 type: 'LinearBasicDisplay',
@@ -4630,17 +4574,17 @@ export const specs: ScreenshotSpec[] = [
               },
             },
             {
-              // raw long-read pileup (reviewer): the homozygous deletion is a
+              // raw long-read pileup: the homozygous deletion is a
               // clean read drop-out. linkedReads:'normal' chains each read's
               // supplementary/split alignments onto one row joined by a
-              // connector (reviewer: "add view as pairs / link supplementary
+              // connector ("add view as pairs / link supplementary
               // reads") so reads spanning the deletion breakpoints read as
               // coherent split alignments
               trackId: 'hg008_t_reads_cdkn2a',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
                 linkedReads: 'normal',
-                // compact pileup (reviewer): featureHeight 3 / spacing 0 packs
+                // compact pileup: featureHeight 3 / spacing 0 packs
                 // the ~116x pileup so the deletion drop-out reads as a whole
                 // rather than scrolling off the display height
                 featureHeight: 3,
@@ -4698,7 +4642,7 @@ export const specs: ScreenshotSpec[] = [
           },
         },
         {
-          // raw normal-vs-tumor coverage overlaid in one band (reviewer: show
+          // raw normal-vs-tumor coverage overlaid in one band (show
           // the multiwiggle of normal vs tumor coverage). indexcov is each
           // sample median-normalized to ~1, so a copy loss reads as the tumor
           // band dropping below the normal band.
@@ -4755,7 +4699,7 @@ export const specs: ScreenshotSpec[] = [
                 summaryScoreMode: 'avg',
                 scatterPointSize: 1,
                 // finer bins so the many small CNVs on chr17 resolve at
-                // whole-chromosome scale (reviewer)
+                // whole-chromosome scale
                 resolution: 10,
                 minScore: -2,
                 maxScore: 2,
@@ -4795,7 +4739,7 @@ export const specs: ScreenshotSpec[] = [
   // A compact NCBI RefSeq gene track (hg38_ncbiRefSeq_ucsc, from the cgiab
   // config) anchors KRAS in the gained arm, and the CN-labeled benchmark CNV
   // track (hg008_cnv_calls, also from the config) reads the opaque "SV_101" id
-  // out as its copy number (reviewer: the bare SV id doesn't clarify the
+  // out as its copy number (the bare SV id doesn't clarify the
   // event). Zoomed out from 3.5Mb so the gain sits in flanking context.
   {
     mode: 'url',
@@ -4836,14 +4780,14 @@ export const specs: ScreenshotSpec[] = [
           loc: 'chr12:23,000,000-27,500,000',
           // highlight band over the KRAS locus so the eye lands on the oncogene
           // within the ~4.5Mb gained arm even though the gene is tiny at this
-          // scale (reviewer: "can't see KRAS gene ... interesting if highlighted")
+          // scale ("can't see KRAS gene ... interesting if highlighted")
           highlight: ['chr12:25,205,246-25,250,936'],
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
               displaySnapshot: {
                 // normal (not compact) height so the KRAS gene row + label read
-                // where they land under the highlight band (reviewer: taller track)
+                // where they land under the highlight band (taller track)
                 type: 'LinearBasicDisplay',
                 height: 150,
               },
@@ -4897,7 +4841,7 @@ export const specs: ScreenshotSpec[] = [
   // SMAD4 (DPC4), the mirror image of the TP53 event: 18q loss with LOH
   // (CN 1, 0+1) — negative log2 AND the BAF het SNPs splitting off the 0.5 line.
   // The CNV calls use the config's CN-labeled hg008_cnv_calls track so the 18q
-  // event reads out as its copy number + haplotype split (reviewer: the bare
+  // event reads out as its copy number + haplotype split (the bare
   // draftbenchmark SV ids don't say what the call is).
   {
     mode: 'url',
@@ -5017,6 +4961,9 @@ export const specs: ScreenshotSpec[] = [
           type: 'DotplotView',
           views: [{ assembly: 'HG008T.hap1' }, { assembly: 'GRCh38_GIABv3' }],
           tracks: ['HG008T.hap1_pif'],
+          // reorder/flip the hap1 contigs so the main alignment forms a clean
+          // diagonal instead of a scattered off-axis cloud
+          autoDiagonalize: true,
         },
       ],
     }),
@@ -5097,18 +5044,18 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearSyntenyView',
           // curved ribbons (drawCurves is a LinearSyntenyView-level property) so
-          // the connections read clearly (reviewer). Renders against the local
+          // the connections read clearly. Renders against the local
           // build (cgiabUrl is now a bare ?config= url) so drawCurves is honored
           // — the published jb2/latest release predates it.
-          drawCurves: false,
+          drawCurves: true,
           // taller synteny band (LinearSyntenyViewHelper.height, default 100) so
-          // the ribbons have room to spread out (reviewer). NB the launch init
+          // the ribbons have room to spread out. NB the launch init
           // handler consumes `levelHeights`, not a `levels` snapshot — the
           // latter is silently dropped, which is why the band stayed short.
           levelHeights: [260],
           // drop short noisy alignments and lighten the ribbons so the dense
           // "dark areas" (many overlapping anchors stacking opacity into solid
-          // fans) read as clean syntenic blocks (reviewer)
+          // fans) read as clean syntenic blocks
           minAlignmentLength: 50000,
           alpha: 0.2,
           tracks: ['HG008T.hap1_pif'],
@@ -5151,7 +5098,6 @@ export const specs: ScreenshotSpec[] = [
     // assembly"/"y-axis assembly"), and which assembly goes on which axis is
     // arbitrary here (the old "query"/"target" framing was a track-level
     // distinction the view doesn't impose), so added annotations only mislead
-    // (reviewer).
   },
 
   {
@@ -5290,7 +5236,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     settleMs: 5000,
     // Each label sits in the clear band immediately next to the control it names,
-    // with a SHORT arrow into it (reviewer: minimize arrow length, place text next
+    // with a SHORT arrow into it (minimize arrow length, place text next
     // to its target, don't pile every pill at the top). Three tiers track the
     // three real control rows: the dark app bar (Add), the clear strip just above
     // the navigation toolbar (track selector / pan / search / zoom, controls at
@@ -5394,7 +5340,7 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Add track: single frame (reviewer). The "Open track..." File-menu item and
+  // Add track: single frame. The "Open track..." File-menu item and
   // the AddTrackWidget drawer it opens are shown together — open the drawer, then
   // reopen the File menu (clicking the item closes it) so both the menu path and
   // the resulting form are visible, with an arrow from the boxed menu item across
@@ -5432,7 +5378,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'box', anchor: { selector: '[data-testid="addTrackWorkflow"]' } },
       // arrow from the "Open track..." menu item to the "Enter track data"
       // heading of the panel it opens; head nudged left so it stops short of
-      // the field instead of pointing into the middle of the widget (reviewer)
+      // the field instead of pointing into the middle of the widget
       {
         type: 'arrow',
         from: { x: 222, y: 262 },
@@ -5453,13 +5399,13 @@ export const specs: ScreenshotSpec[] = [
       loc: 'ctgA:1-20000',
       tracks: ['volvox_bam'],
     }),
-    // smaller browser in both stages (reviewer: reduce figure width/height)
+    // smaller browser in both stages (reduce figure width/height)
     viewportWidth: 1000,
     viewportHeight: 600,
     readyText: 'ctgA',
     settleMs: 3000,
     // two-stage: the top frame circles the track-selector icon in the LGV header
-    // (reviewer: circle the header "tracklist" icon, not the view menu); the
+    // (circle the header "tracklist" icon, not the view menu); the
     // bottom frame opens that selector, rings the add-track FAB, and boxes the
     // menu it launches
     stages: [
@@ -5480,7 +5426,7 @@ export const specs: ScreenshotSpec[] = [
             selector: '[data-testid="hierarchical_track_selector"]',
           },
           { type: 'delay', ms: 500 },
-          // open the add-track FAB menu (reviewer: show the menu the FAB
+          // open the add-track FAB menu (show the menu the FAB
           // launches, not just a ring around the button)
           {
             type: 'click',
@@ -5490,7 +5436,7 @@ export const specs: ScreenshotSpec[] = [
           { type: 'delay', ms: 600 },
         ],
         annotations: [
-          // a snug ring on the FAB (reviewer: no arrow — the previous arrow cut
+          // a snug ring on the FAB (no arrow — the previous arrow cut
           // across the "Add track" box; the ring alone is clear enough)
           {
             type: 'circle',
@@ -5515,7 +5461,7 @@ export const specs: ScreenshotSpec[] = [
       tracks: ['volvox_sv_test'],
     }),
     viewportWidth: 1000,
-    // shorter browser in both stages (reviewer)
+    // shorter browser in both stages
     viewportHeight: 500,
     readyText: 'ctgA',
     settleMs: 4000,
@@ -5548,6 +5494,21 @@ export const specs: ScreenshotSpec[] = [
                 '[data-testid="htsTrackEntryMenu-Tracks,volvox_sv_test"]',
             },
           },
+          // arrows from the empty band below each panel point up at the two
+          // ringed menu icons (reviewer: add arrows pointing at the circles)
+          {
+            type: 'arrow',
+            from: { x: 280, y: 430 },
+            anchor: { selector: '[data-testid="track_menu_icon"]' },
+          },
+          {
+            type: 'arrow',
+            from: { x: 730, y: 420 },
+            anchor: {
+              selector:
+                '[data-testid="htsTrackEntryMenu-Tracks,volvox_sv_test"]',
+            },
+          },
         ],
       },
       {
@@ -5562,7 +5523,7 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // Track label positioning submenu in the view menu, over volvox tracks. Uses
-  // the light local volvox BAM (reviewer); local data settles quickly so the
+  // the light local volvox BAM; local data settles quickly so the
   // MUI cascade stays open through capture. The view menu (hamburger) icon is
   // ringed so the reader can see where the menu was opened from; the expanded
   // submenu is boxed.
@@ -5592,8 +5553,8 @@ export const specs: ScreenshotSpec[] = [
 
   // Track settings: two-stage figure — top frame opens the track menu's "Track
   // actions" → "Settings" path (boxed); bottom frame clicks it so the Settings
-  // sidebar (ConfigurationEditor) is open (reviewer). Uses volvox-bam instead of
-  // the gff3 track (reviewer). Any track's settings can now be edited directly
+  // sidebar (ConfigurationEditor) is open. Uses volvox-bam instead of
+  // the gff3 track. Any track's settings can now be edited directly
   // (a non-admin's edits are saved as a session override).
   {
     mode: 'url',
@@ -5605,7 +5566,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 4000,
-    // shorter browser in each stage (reviewer)
+    // shorter browser in each stage
     viewportHeight: 640,
     stages: [
       {
@@ -5640,7 +5601,7 @@ export const specs: ScreenshotSpec[] = [
       tracks: ['volvox_bam'],
     }),
     readyText: 'ctgA',
-    // smaller capture window in both dimensions (reviewer request)
+    // smaller capture window in both dimensions
     viewportWidth: 1150,
     viewportHeight: 470,
     settleMs: 3000,
@@ -5672,7 +5633,7 @@ export const specs: ScreenshotSpec[] = [
           { type: 'box', anchor: { text: 'left' } },
           // arrow drawing the eye from the ringed position button down to the
           // boxed "left" option. Head is nudged left of the word so it points at
-          // the item without covering the "left" label text (reviewer).
+          // the item without covering the "left" label text.
           {
             type: 'arrow',
             from: { x: 560, y: 230 },
@@ -5687,7 +5648,7 @@ export const specs: ScreenshotSpec[] = [
           { type: 'delay', ms: 1500 },
         ],
         // ring the track selector now docked on the left so the reader sees
-        // where the drawer moved to (reviewer)
+        // where the drawer moved to
         annotations: [
           {
             type: 'box',
@@ -5725,7 +5686,7 @@ export const specs: ScreenshotSpec[] = [
   // Bookmark create, two-stage figure: top frame is the rubberband context menu
   // with "Bookmark region" boxed; bottom frame clicks it so the bookmarked
   // region appears as a colored highlight across the view. Uses config_demo hg19
-  // over the PTEN gene (reviewer request) with a shorter viewport.
+  // over the PTEN gene with a shorter viewport.
   {
     mode: 'url',
     name: 'bookmark_widget_create',
@@ -5736,7 +5697,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
-    // shorter viewport so both stacked panels stay tight (reviewer)
+    // shorter viewport so both stacked panels stay tight
     viewportHeight: 440,
     settleMs: 10000,
     actions: [
@@ -5792,9 +5753,9 @@ export const specs: ScreenshotSpec[] = [
     // value lives in an <input>, which has no textContent to anchor to, so the
     // old anchor fell back to the top-left corner). The callout text is
     // left-aligned, so it's pulled well left of the right-side widget header and
-    // width-clamped to keep it from running off the right edge (reviewer)
+    // width-clamped to keep it from running off the right edge
     // moved down + right and given an arrow pointing up at the "my region"
-    // label input (reviewer)
+    // label input
     annotations: [
       {
         type: 'text',
@@ -5869,7 +5830,7 @@ export const specs: ScreenshotSpec[] = [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
           ...menuCascade(['Read connections', 'Show read arcs'], 600),
         ],
-        // box only the "Show read arcs" checkbox (reviewer: this figure is
+        // box only the "Show read arcs" checkbox (this figure is
         // specifically about enabling read arcs)
         annotations: [{ type: 'box', anchor: { text: 'Show read arcs' } }],
       },
@@ -5884,7 +5845,7 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a
-  // UCSC CpG island on chr20 (reviewer: use COLO829_tumor.ht at a CpG island + add
+  // UCSC CpG island on chr20 (use COLO829_tumor.ht at a CpG island + add
   // a CpG island track). Declarative `colorBy: {type:'modifications'}` — the same
   // state the track menu's Color by → Base modifications → All modification types
   // applies — because driving that 3-level hover menu live is unreliable over the
@@ -5954,14 +5915,13 @@ export const specs: ScreenshotSpec[] = [
       loc: 'ctgA:1-20000',
       // no track opened — the figure is about the track-selector hamburger
       // menu, and an open gene track in the LGV behind it was distracting
-      // (reviewer)
       tracks: [],
     }),
     readyText: 'ctgA',
     settleMs: 3000,
     actions: [
       // open the track selector directly via the header button so the LGV view
-      // menu never opens (reviewer: the view menu was left open in the capture)
+      // menu never opens (the view menu was left open in the capture)
       { type: 'click', selector: 'button[title="Open track selector"]' },
       {
         type: 'waitForSelector',
@@ -6002,7 +5962,7 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 8000,
     // single frame: open a track so it lands in "recently used", then open the
     // recently-used dropdown and highlight both the trigger icon and the popover
-    // together (reviewer: one stage with both the icon and the popover ringed)
+    // together (one stage with both the icon and the popover ringed)
     actions: [
       // open the track selector directly via the header button — with no tracks
       // active the view body also renders an "Open track selector" button, so a
@@ -6021,7 +5981,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 1500 },
       // clear the filter (target the actual input, not the floating label, so
       // select-all + Backspace empties it) so the tracklist behind the dropdown
-      // isn't showing distracting search text (reviewer)
+      // isn't showing distracting search text
       {
         type: 'type',
         selector: '[data-testid="hierarchical_track_selector"] input',
@@ -6039,7 +5999,6 @@ export const specs: ScreenshotSpec[] = [
     ],
     annotations: [
       // ring just the recently-used trigger icon; the popover box was removed
-      // (reviewer)
       {
         type: 'circle',
         anchor: { selector: '[data-testid="recently-used-tracks-button"]' },
@@ -6086,7 +6045,7 @@ export const specs: ScreenshotSpec[] = [
     stages: [
       {
         // ring the per-track moreVert menu trigger that was clicked, plus box
-        // the "Add to favorites" item it opened (reviewer)
+        // the "Add to favorites" item it opened
         annotations: [
           {
             type: 'circle',
@@ -6150,7 +6109,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    // smaller capture in both dimensions (reviewer); narrower than default but
+    // smaller capture in both dimensions; narrower than default but
     // still wide enough for the category "..." menu to cascade without clipping,
     // and the "Integration test" wiggle category renders within this height
     viewportWidth: 950,
@@ -6160,7 +6119,7 @@ export const specs: ScreenshotSpec[] = [
         actions: [
           // open the track selector via the in-view header button, not the view
           // hamburger menu, which would otherwise linger open over the capture
-          // (reviewer: only the track menus should show)
+          // (only the track menus should show)
           { type: 'click', selector: 'button[title="Open track selector"]' },
           {
             type: 'waitForSelector',
@@ -6177,7 +6136,7 @@ export const specs: ScreenshotSpec[] = [
           { type: 'delay', ms: 400 },
         ],
         // box the menu item and put the caption over the empty LGV area to its
-        // left; no arrow (reviewer: arrows covered up the menu-item text)
+        // left; no arrow (arrows covered up the menu-item text)
         annotations: [
           { type: 'box', anchor: { text: 'Add to selection' } },
           {
@@ -6222,7 +6181,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    // shorter window — the add-track form is short (reviewer)
+    // shorter window — the add-track form is short
     viewportHeight: 620,
     actions: [
       { type: 'click', text: 'File' },
@@ -6266,7 +6225,7 @@ export const specs: ScreenshotSpec[] = [
           { type: 'delay', ms: 1200 },
         ],
         // box the paste textbox + a label just to its left with a short arrow
-        // into the box (reviewer: the label used to float far from the box; the
+        // into the box (the label used to float far from the box; the
         // form hugs the right edge so the label can't sit above it without
         // clipping)
         annotations: [
@@ -6344,7 +6303,7 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // shorter Manhattan track (250 -> 200) so the bottom axis + low-score SNPs
     // clear the viewport edge with margin below, instead of sitting flush
-    // against it where they read as clipped (reviewer)
+    // against it where they read as clipped
     viewportHeight: 410,
     // settle past the index auto-pick + recolor fetch that follows first paint
     settleMs: 12000,
@@ -6387,7 +6346,7 @@ export const specs: ScreenshotSpec[] = [
     // heading) — reviewer asked to also highlight Tools + the widget
     annotations: [
       // tight round ring nudged down so it isn't clipped at the top edge into an
-      // oval (reviewer: make the Tools ring more square/round)
+      // oval (make the Tools ring more square/round)
       { type: 'circle', anchor: { text: 'Tools' }, radius: 24, dy: 8 },
       { type: 'box', anchor: { text: 'Plugin store' } },
       { type: 'box', anchor: { text: 'Installed plugins' } },
@@ -6410,7 +6369,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'Select a view to launch',
     viewportWidth: 900,
     settleMs: 2000,
-    // slightly shorter crop for both frames (reviewer)
+    // slightly shorter crop for both frames
     crop: { x: 0, y: 0, width: 900, height: 460 },
     stages: [
       {
@@ -6419,7 +6378,7 @@ export const specs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Dotplot view' },
           { type: 'delay', ms: 500 },
         ],
-        // box the Add menu button as well as the Dotplot view item (reviewer)
+        // box the Add menu button as well as the Dotplot view item
         annotations: [
           { type: 'box', anchor: { text: 'Add' } },
           { type: 'box', anchor: { text: 'Dotplot view' } },
@@ -6593,7 +6552,7 @@ export const specs: ScreenshotSpec[] = [
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr7:5,566,500-5,570,500',
-      // offset labels so they overlay the tracks (reviewer)
+      // offset labels so they overlay the tracks
       trackLabels: 'offset',
       tracks: [
         'ncbi_gff_hg19',
@@ -6605,7 +6564,7 @@ export const specs: ScreenshotSpec[] = [
             featureSpacing: 0,
             maxHeight: 2000,
             // taller SNPCoverage band + shorter pileup viewport + shorter
-            // browser (reviewer): coverageHeight is the LinearAlignmentsDisplay
+            // browser: coverageHeight is the LinearAlignmentsDisplay
             // coverage band, the pileup viewport = height - coverageHeight
             coverageHeight: 120,
             height: 420,
@@ -6631,15 +6590,15 @@ export const specs: ScreenshotSpec[] = [
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: 'chr7:5,566,000-5,571,000',
-      // offset labels so they overlay the tracks (reviewer)
+      // offset labels so they overlay the tracks
       trackLabels: 'offset',
       tracks: [
         'ncbi_gff_hg19',
         {
           trackId: 'hg_isoforms.fasta_bam',
-          // taller SNPCoverage band (reviewer): coverageHeight is the
+          // taller SNPCoverage band: coverageHeight is the
           // LinearAlignmentsDisplay coverage-track height (default 45).
-          // super-compact featureHeight=1 (reviewer) so every isoform read
+          // super-compact featureHeight=1 so every isoform read
           // stacks in view instead of hitting "Max layout height reached".
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
@@ -6828,7 +6787,7 @@ export const specs: ScreenshotSpec[] = [
       {
         name: 'trio-crossover-paternal',
         loc: 'chr1:29,497,418-29,897,418',
-        // only paint the father's two haplotypes (reviewer): the mother's rows
+        // only paint the father's two haplotypes: the mother's rows
         // are solid across this window and just add noise. With the painting
         // filtered to the Father pair they sit at painting rows 0-1.
         paintingFilter: ['Father hap1', 'Father hap2'],
@@ -6847,7 +6806,7 @@ export const specs: ScreenshotSpec[] = [
       {
         name: 'trio-crossover-maternal',
         loc: 'chr1:55,553,613-55,953,613',
-        // only paint the mother's two haplotypes (reviewer); filtered to the
+        // only paint the mother's two haplotypes; filtered to the
         // Mother pair they sit at painting rows 0-1.
         paintingFilter: ['Mother hap1', 'Mother hap2'],
         // Child hap2 (maternal) matches Mother hap2 left, Mother hap1 right
@@ -6879,8 +6838,7 @@ export const specs: ScreenshotSpec[] = [
           trackId: 'HG02024_VN049_KHVTrio.chr1.hapibd',
           displaySnapshot: {
             type: 'LinearMultiRowFeatureDisplay',
-            rowHeightOverride: 32,
-            // show only this parent's haplotype rows (reviewer)
+            // show only this parent's haplotype rows
             subtreeFilter: paintingFilter,
           },
         },
@@ -6985,7 +6943,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 4000,
-    // shorter browser (reviewer); the details panel scrolls so this only trims
+    // shorter browser; the details panel scrolls so this only trims
     // empty space below the ringed hyperlink
     viewportHeight: 680,
     actions: [
@@ -7008,7 +6966,7 @@ export const specs: ScreenshotSpec[] = [
         x: 700,
         y: 150,
         text: 'The callback turns the name into a clickable link',
-        // white-on-dark pill to match the other annotated figures (reviewer)
+        // white-on-dark pill to match the other annotated figures
         background: 'rgba(0,0,0,0.78)',
         textColor: '#fff',
       },
@@ -7126,7 +7084,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'Open file from URL or local computer',
     settleMs: 3000,
-    // smaller capture (reviewer) — the import form is compact and centered
+    // smaller capture — the import form is compact and centered
     viewportWidth: 1150,
     viewportHeight: 380,
     actions: [
@@ -7139,7 +7097,7 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 1500 },
     ],
-    // annotations removed (reviewer): just the import form with the URL pasted
+    // annotations removed: just the import form with the URL pasted
   },
 
   // Default UI theme (theme.md) — a small volvox config with the track selector
@@ -7154,7 +7112,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    // shorter browser (reviewer): the palette + track selector fit comfortably
+    // shorter browser: the palette + track selector fit comfortably
     viewportHeight: 520,
     actions: [
       { type: 'click', text: 'Open track selector' },
@@ -7178,7 +7136,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    // shorter browser (reviewer): the palette + track selector fit comfortably
+    // shorter browser: the palette + track selector fit comfortably
     viewportHeight: 520,
     actions: [
       { type: 'click', text: 'Open track selector' },
@@ -7279,12 +7237,12 @@ export const specs: ScreenshotSpec[] = [
   // Multi-wiggle clustering, two-stage figure over the PUR copy-number panel
   // (1000 Genomes kidd-lab CNV bigWigs, 104 PUR individuals) added to
   // config_demo — a far richer dataset than the synthetic volvox wiggle
-  // (reviewer). Shown in multi-row density mode across a wide chr1 window
+  // . Shown in multi-row density mode across a wide chr1 window
   // spanning the AMY1 locus (hg38), a classic copy-number-polymorphic region, so
   // the per-individual copy-number differences drive a meaningful clustering.
   // Top frame: the "Cluster by score" dialog open (auto/manual mode, before).
   // Bottom frame: after "Run clustering", the 104 rows are reordered by signal
-  // similarity. showTree:false hides the dendrogram (reviewer: only the row
+  // similarity. showTree:false hides the dendrogram (only the row
   // reordering matters; a tree wrongly implies phylogeny). Combines the old
   // cluster_dialog + clustered_result into one before/after.
   {
@@ -7300,12 +7258,12 @@ export const specs: ScreenshotSpec[] = [
           displaySnapshot: {
             type: 'MultiLinearWiggleDisplay',
             height: 420,
-            // multi-row density renderer (reviewer): one colored density
+            // multi-row density renderer: one colored density
             // strip per individual; `defaultRendering` is a config slot, so
             // this flat key routes into the display's configOverrides
             defaultRendering: 'multirowdensity',
             // hide the post-clustering dendrogram — the reordered rows are
-            // the point; a tree implies a phylogeny we don't mean (reviewer)
+            // the point; a tree implies a phylogeny we don't mean
             showTree: false,
           },
         },
@@ -7391,7 +7349,7 @@ export const specs: ScreenshotSpec[] = [
   // Top frame: the "Cluster by genotype" dialog open (before). Bottom frame:
   // after "Run clustering", the samples are reordered by genotype similarity
   // with a dendrogram on the left. Combines the old cluster_dialog +
-  // clustered_result screenshots into one multi-part figure (reviewer).
+  // clustered_result screenshots into one multi-part figure.
   {
     mode: 'url',
     name: 'variants/cluster_dialog',
@@ -7442,7 +7400,7 @@ export const specs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'maf_track',
     url: lgvSession(CE_MAF, {
-      // zoomed out further (reviewer): wider window so the per-species
+      // zoomed out further: wider window so the per-species
       // mismatch columns read as a conservation pattern, not just a handful
       // of bases
       assembly: 'ce11',
@@ -7686,7 +7644,7 @@ export const specs: ScreenshotSpec[] = [
     name: 'maf_470way_codon',
     url: lgvSession(HG38_470WAY, {
       assembly: 'hg38',
-      // window trimmed to sit fully inside one GAPDH coding exon (reviewer): the
+      // window trimmed to sit fully inside one GAPDH coding exon: the
       // original ran a few bp past the exon 3' end, so the species that have no
       // aligned block there drew empty "bridge" e-lines on the right that read as
       // artifacts. The codon view is now gap-free across the window: reviewers
@@ -7790,7 +7748,7 @@ export const specs: ScreenshotSpec[] = [
   // Set-default-session dialog: admin mode, Admin -> Set default session. The
   // dialog is a simple confirm ("Set current session as default" / "Clear
   // default session"); persisting the choice needs the real admin-server.
-  // Two-stage figure (reviewer: show what to click to open it): stage 1 rings the
+  // Two-stage figure (show what to click to open it): stage 1 rings the
   // "Set default session" item in the open Admin menu (the menu only appears in
   // admin mode); stage 2 is the resulting dialog.
   {
@@ -8044,6 +8002,8 @@ export const specs: ScreenshotSpec[] = [
           type: 'DotplotView',
           views: [{ assembly: 'R64' }, { assembly: 'YJM1447' }],
           tracks: ['dotplot_track'],
+          autoDiagonalize: true,
+          showColorLegend: false,
         },
       ],
     }),
@@ -8092,52 +8052,28 @@ export const specs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
-    name: 'gallery/pten_cds',
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"10:87863113-87971930","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_refseq_109_hg38_latest"]}]}',
-    readyTimeout: 60000,
-    settleMs: 8000,
-    viewportHeight: 420,
-  },
-  {
-    mode: 'url',
-    name: 'gallery/gwas_sle_stat4',
-    url: '?config=test_data%2Fconfig_gwas.json&session=spec-{"views":[{"assembly":"hg19","loc":"2:191790000-192120000","type":"LinearGenomeView","tracks":["sle_gwas_ld"]}]}',
-    readyTimeout: 90000,
-    settleMs: 10000,
-    viewportHeight: 500,
-  },
-  {
-    mode: 'url',
-    name: 'gallery/rnaseq_paired',
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"1:1-5000000","type":"LinearGenomeView","tracks":["Pairend_StrandSpecific_51mer_Human_hg19"]}]}',
-    readyTimeout: 90000,
-    settleMs: 12000,
-    viewportHeight: 500,
-  },
-  {
-    mode: 'url',
     name: 'gallery/fiberseq_gapdh',
     // ONT HG002 fiber-seq (6mA), enzyme-treated flowcell PAY22766, over the
     // GAPDH promoter. Verified ~50 reads deep with a dense 6mA peak (~20% mean,
     // 100% max) at the TSS vs ~2% background. Data:
     // https://epi2me.nanoporetech.com/chromatin-acc-hg002/
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"12:6533000-6536000","type":"LinearGenomeView","tracks":[{"trackId":"PAY22766-nanopore","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"modifications"}}}]}]}',
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"12:6533000-6536000","type":"LinearGenomeView","tracks":["ncbi_refseq_109_hg38_latest",{"trackId":"PAY22766-nanopore","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"modifications"}}}]}]}',
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 700,
+    viewportHeight: 560,
   },
   {
     mode: 'url',
-    name: 'gallery/directrna_brca1',
-    // BRCA1 gene body. Direct-RNA over an expressed gene fetches ~23MB here, past
-    // the default alignments byte cap (which showed a "too much data / force
-    // load" banner instead of reads), so raise userByteSizeLimit. colorBy
-    // modifications draws the per-base RNA modification calls. Long settle for
-    // the large fetch + modification-tag read.
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"17:43044000-43126000","type":"LinearGenomeView","tracks":[{"trackId":"NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"modifications"},"userByteSizeLimit":100000000}}]}]}',
+    name: 'gallery/directrna_actb',
+    // ACTB gene body — a short, highly expressed housekeeping gene, so the
+    // pileup is deep but the whole gene fits on screen (BRCA1 was too long and
+    // isoform-dense to read). colorBy modifications draws the per-base RNA
+    // modification calls. userByteSizeLimit lifts the default alignments byte cap
+    // so the reads auto-load instead of showing a "too much data" banner.
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"7:5525000-5532500","type":"LinearGenomeView","tracks":[{"trackId":"NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"modifications"},"userByteSizeLimit":100000000}}]}]}',
     readyTimeout: 120000,
     settleMs: 35000,
-    viewportHeight: 700,
+    viewportHeight: 470,
   },
   {
     mode: 'url',
@@ -8155,16 +8091,8 @@ export const specs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
-    name: 'gallery/chromhmm_encode',
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":["broad_chromhmm_multirow_hg19"]}]}',
-    readyTimeout: 90000,
-    settleMs: 12000,
-    viewportHeight: 700,
-  },
-  {
-    mode: 'url',
     name: 'gallery/scatac_catlas',
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"11:2153000-2172000","type":"LinearGenomeView","tracks":["catlas_scatac_celltypes_hg38"]}]}',
+    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"11:2130000-2200000","type":"LinearGenomeView","tracks":["catlas_scatac_celltypes_hg38"]}]}',
     readyTimeout: 120000,
     settleMs: 15000,
     viewportHeight: 700,
@@ -8187,18 +8115,7 @@ export const specs: ScreenshotSpec[] = [
     url: '?config=https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:40484345-40515236","type":"LinearGenomeView","tracks":["1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf",{"trackId":"HG02031.final","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}},{"trackId":"HG02030.final","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}},{"trackId":"HG02032.final","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}}]}]}',
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 900,
-  },
-  {
-    mode: 'url',
-    name: 'gallery/human_trio_phased',
-    // LinearMultiSampleVariantDisplay shows the per-sample genotype matrix (the
-    // trio's phased calls), not a single variant row. ~50kb window keeps the VCF
-    // under the "too many features" guard.
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:163950000-164000000","type":"LinearGenomeView","tracks":[{"trackId":"HG02024_VN049_KHVTrio.chr1.vcf","displaySnapshot":{"type":"LinearMultiSampleVariantDisplay"}}]}]}',
-    readyTimeout: 90000,
-    settleMs: 10000,
-    viewportHeight: 600,
+    viewportHeight: 1000,
   },
   {
     mode: 'url',
@@ -8222,20 +8139,21 @@ export const specs: ScreenshotSpec[] = [
     // paints a canvas "Loading" placeholder the DOM-based waitForQuiescent can't
     // see, and the headless (swiftshader) build is slow to resolve it.
     url: '?config=https://jbrowse.org/demos/ce/config.json&session=spec-{"views":[{"assembly":"ce11","loc":"chrI:2998500-3001800","type":"LinearGenomeView","tracks":[{"trackId":"ce11.26way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true}}]}]}',
-    readyTimeout: 180000,
-    settleMs: 45000,
+    readyTimeout: 240000,
+    settleMs: 90000,
     viewportHeight: 500,
   },
   {
     mode: 'url',
     name: 'gallery/cactus_447way',
     // ~5kb: a 447-way MAF over the full BRCA1 gene trips the "too much data"
-    // guard, so zoom to a slice that auto-loads. rowHeight defaults to 0
-    // (fit-to-display-height), fitting the 447 species into the display height.
-    url: '?config=https://jbrowse.org/ucsc/hg38/config.json&session=spec-{"views":[{"assembly":"hg38","loc":"chr17:43050000-43055000","type":"LinearGenomeView","tracks":[{"trackId":"hg38-cactus447way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true}}]}]}',
+    // guard, so zoom to a slice that auto-loads. A fixed 500px display height
+    // fits all 447 species into a compact fit-to-height band, so the whole
+    // alignment reads as one conservation block rather than scrolling off-screen.
+    url: '?config=https://jbrowse.org/ucsc/hg38/config.json&session=spec-{"views":[{"assembly":"hg38","loc":"chr17:43050000-43055000","type":"LinearGenomeView","tracks":[{"trackId":"hg38-cactus447way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true,"height":500}}]}]}',
     readyTimeout: 180000,
     settleMs: 15000,
-    viewportHeight: 900,
+    viewportHeight: 640,
   },
   // Bare-config gallery cards: each opens the config's own defaultSession (no
   // session spec), the same view the /gallery/ link opens.
@@ -8249,29 +8167,11 @@ export const specs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
-    name: 'gallery/maize_te',
-    url: '?config=test_data%2Fmaize_te%2Fconfig.json',
-    readyTimeout: 90000,
-    settleMs: 10000,
-    viewportHeight: 500,
-  },
-  {
-    mode: 'url',
-    name: 'gallery/chromhmm_roadmap',
-    // Roadmap 127-epigenome ChromHMM over the β-globin locus — the dense
-    // multi-row heatmap paired with the 9-cell-type ENCODE card at the same locus
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":[{"trackId":"roadmap_chromhmm_multirow_hg19","displaySnapshot":{"type":"LinearMultiRowFeatureDisplay","height":480}}]}]}',
-    readyTimeout: 90000,
-    settleMs: 12000,
-    viewportHeight: 700,
-  },
-  {
-    mode: 'url',
     name: 'gallery/hg19_vs_hg38',
     // config's DotplotView defaultSession has empty displayedRegions, so open an
     // explicit whole-genome dotplot over the liftOver chain. Both assemblies'
     // chrom.sizes + the chain load from UCSC (see the config).
-    url: '?config=test_data%2Fhg19_vs_hg38%2Fconfig.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"hg38"},{"assembly":"hg19"}],"tracks":["hg19ToHg38.over.chain.gz-1645073157673"]}]}',
+    url: '?config=test_data%2Fhg19_vs_hg38%2Fconfig.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"hg38"},{"assembly":"hg19"}],"tracks":["hg19ToHg38.over.chain.gz-1645073157673"],"autoDiagonalize":true,"showColorLegend":false}]}',
     readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 10000,

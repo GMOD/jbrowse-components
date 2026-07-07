@@ -13,7 +13,7 @@ outside JBrowse: group cells by cluster or cell-type label, sum their reads into
 one coverage track per group, and save each as a BigWig. You then load all the
 BigWigs as a single **MultiWiggle** track, which stacks one row per file.
 
-<Figure caption="The CATlas single-cell ATAC atlas as pseudobulk rows: one coverage BigWig per cell type, loaded as a single MultiWiggle track (multirowxy) around the INS locus." src="/img/gallery/scatac_catlas.png" />
+<Figure caption="The CATlas single-cell ATAC atlas as pseudobulk rows: one coverage BigWig per cell type, loaded as a single MultiWiggle track (multirowxy) across the imprinted INS/IGF2 region on 11p15.5, where the insulin-producing Beta cell row shows accessibility over INS." src="/img/gallery/scatac_catlas.png" />
 
 This guide covers producing the per-group BigWigs and configuring the JBrowse
 track. It assumes you already have clustered scATAC data (a fragments file or a
