@@ -920,10 +920,14 @@ export function codeBlock(...lines: string[]) {
 }
 
 // Flatten free-form JSDoc prose into one safe table cell: collapse newlines
-// (a pipe table row can't span lines) and escape literal `|` so it can't be
-// mistaken for a column separator.
+// (a pipe table row can't span lines) and escape markdown metacharacters used
+// here: backslash (escape char) and literal `|` (table column separator).
 export function tableCell(text: string | undefined) {
-  return (text ?? '').replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim()
+  return (text ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/\|/g, '\\|')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 // A GFM pipe table: header cells, then one already-built `| a | b | c |` row
