@@ -1,8 +1,8 @@
 JBrowse plugins extend the app with new track types, adapters, renderers, view
 types, and menu items. The simplest pattern: define a `Plugin` subclass in your
-own source and pass it directly to `createViewState` via the `plugins` option:
+own source and pass it directly to `<JBrowse>` via the `plugins` prop:
 
-```js
+```jsx
 import Plugin from '@jbrowse/core/Plugin'
 
 class MyPlugin extends Plugin {
@@ -12,8 +12,7 @@ class MyPlugin extends Plugin {
   }
   configure() {}
 }
-
-const state = createViewState({ config, plugins: [MyPlugin] })
+;<JBrowse assemblies={assemblies} tracks={tracks} plugins={[MyPlugin]} />
 ```
 
 This example registers a plugin that adds a "console.log the selected region"

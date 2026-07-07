@@ -1,7 +1,5 @@
-import { useState } from 'react'
-
 import Plugin from '@jbrowse/core/Plugin'
-import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
+import { JBrowse } from '@jbrowse/react-app2'
 
 import { volvoxConfig } from '../volvoxConfig.ts'
 
@@ -52,28 +50,21 @@ class HighlightRegionPlugin extends Plugin {
 }
 
 export default function EmbeddedPlugin() {
-  const [state] = useState(() =>
-    createViewState({
-      config: {
-        ...volvoxConfig,
-        defaultSession: {
-          name: 'Embedded plugin example',
-          views: [
-            {
-              id: 'view1',
-              type: 'LinearGenomeView',
-              init: {
-                assembly: 'volvox',
-                loc: 'ctgA:1..50000',
-                tracks: ['volvox_cram'],
-              },
-            },
-          ],
+  return (
+    <JBrowse
+      assemblies={volvoxConfig.assemblies}
+      tracks={volvoxConfig.tracks}
+      plugins={[HighlightRegionPlugin]}
+      views={[
+        {
+          type: 'LinearGenomeView',
+          init: {
+            assembly: 'volvox',
+            loc: 'ctgA:1..50000',
+            tracks: ['volvox_cram'],
+          },
         },
-      },
-      plugins: [HighlightRegionPlugin],
-    }),
+      ]}
+    />
   )
-
-  return <JBrowseApp viewState={state} />
 }

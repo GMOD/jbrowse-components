@@ -13,10 +13,12 @@ import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
 
 // one view to open at launch. `init` is the view-type-specific launch blob
 // (LinearGenomeView's InitState, CircularViewInit, synteny's, ...), so across
-// the heterogeneous view list it is an open record rather than one fixed shape
+// the heterogeneous view list it is an open shape rather than one fixed type.
+// Most views take an object, but BreakpointSplitView takes an array of
+// per-panel init objects instead
 export interface ManagedView {
   type: string
-  init?: Record<string, unknown>
+  init?: Record<string, unknown> | unknown[]
   id?: string
 }
 

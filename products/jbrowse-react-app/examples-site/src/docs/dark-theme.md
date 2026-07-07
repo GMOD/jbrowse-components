@@ -1,24 +1,22 @@
-Theme the app via `configuration.theme` in the same
-[config object](../basic-example/) passed to `createViewState`, following
+Theme the app via the `configuration` prop on
+[`<JBrowse>`](../basic-example/), following
 [MUI theme palette](https://mui.com/material-ui/customization/theming/)
 conventions. Setting `palette.mode` to `'dark'` switches the whole app to the
 built-in dark theme:
 
-```js
-createViewState({
-  config: {
-    configuration: {
-      theme: {
-        palette: {
-          mode: 'dark',
-          primary: { main: '#4d9221' },
-          secondary: { main: '#c51b7d' },
-        },
+```jsx
+<JBrowse
+  configuration={{
+    theme: {
+      palette: {
+        mode: 'dark',
+        primary: { main: '#4d9221' },
+        secondary: { main: '#c51b7d' },
       },
     },
-    // ...
-  },
-})
+  }}
+  // ...
+/>
 ```
 
 See the [theming guide](https://jbrowse.org/jb2/docs/config_guides/theme/) for

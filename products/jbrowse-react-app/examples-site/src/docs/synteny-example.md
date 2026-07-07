@@ -1,7 +1,7 @@
 A `react-app2` session can hold any number of views of any type, side by side.
 Each view type launches the same declarative way: a
-[`defaultSession.views`](../basic-example/) entry with a `type` and an `init`
-field. `init` is the same shape JBrowse Web serializes into its
+[`views`](../basic-example/) entry with a `type` and an `init` field. `init` is
+the same shape JBrowse Web serializes into its
 `?session=spec-…` URL parameter (see the
 [URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/)), so these
 examples are the programmatic equivalent of those URLs.

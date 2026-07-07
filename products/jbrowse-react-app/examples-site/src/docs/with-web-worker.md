@@ -3,21 +3,19 @@ thread, which can cause noticeable hitches on large alignments datasets (BAM,
 CRAM). Switching to the WebWorker RPC moves that work off the main thread and
 dramatically reduces UI stalls.
 
-Pass a `makeWorkerInstance` factory to `createViewState` and select the
-`WebWorkerRpcDriver` in config. In a Vite/Astro setup you construct the worker
-from the package's `?worker` entry; in a webpack/CRA setup, import the package's
-prebuilt `@jbrowse/react-app2/esm/makeWorkerInstance` instead:
+Pass a `makeWorkerInstance` factory to `<JBrowse>` and select the
+`WebWorkerRpcDriver` via `configuration`. In a Vite/Astro setup you construct
+the worker from the package's `?worker` entry; in a webpack/CRA setup, import
+the package's prebuilt `@jbrowse/react-app2/esm/makeWorkerInstance` instead:
 
-```js
+```jsx
 import RpcWorker from '@jbrowse/react-app2/esm/rpcWorker?worker'
-
-const state = createViewState({
-  config: {
-    ...config,
-    configuration: { rpc: { defaultDriver: 'WebWorkerRpcDriver' } },
-  },
-  makeWorkerInstance: () => new RpcWorker(),
-})
+;<JBrowse
+  assemblies={assemblies}
+  tracks={tracks}
+  configuration={{ rpc: { defaultDriver: 'WebWorkerRpcDriver' } }}
+  makeWorkerInstance={() => new RpcWorker()}
+/>
 ```
 
 ### Bundler notes

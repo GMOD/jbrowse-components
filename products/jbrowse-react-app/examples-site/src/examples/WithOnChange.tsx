@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
+import { JBrowse } from '@jbrowse/react-app2'
 
 import { volvoxConfig } from '../volvoxConfig.ts'
 
@@ -8,30 +8,6 @@ import { volvoxConfig } from '../volvoxConfig.ts'
 // localStorage or a backend), drive an undo/redo stack, or sync external UI.
 export default function WithOnChange() {
   const [log, setLog] = useState<string[]>([])
-  const [state] = useState(() =>
-    createViewState({
-      config: {
-        ...volvoxConfig,
-        defaultSession: {
-          name: 'onChange example',
-          views: [
-            {
-              id: 'view1',
-              type: 'LinearGenomeView',
-              init: {
-                assembly: 'volvox',
-                loc: 'ctgA:1..50000',
-                tracks: ['volvox_cram'],
-              },
-            },
-          ],
-        },
-      },
-      onChange: patch => {
-        setLog(prev => [`${patch.op} ${patch.path}`, ...prev].slice(0, 8))
-      },
-    }),
-  )
 
   return (
     <div>
@@ -48,7 +24,23 @@ export default function WithOnChange() {
           {log.join('\n') || '(interact with the view to see patches)'}
         </pre>
       </div>
-      <JBrowseApp viewState={state} />
+      <JBrowse
+        assemblies={volvoxConfig.assemblies}
+        tracks={volvoxConfig.tracks}
+        views={[
+          {
+            type: 'LinearGenomeView',
+            init: {
+              assembly: 'volvox',
+              loc: 'ctgA:1..50000',
+              tracks: ['volvox_cram'],
+            },
+          },
+        ]}
+        onChange={patch => {
+          setLog(prev => [`${patch.op} ${patch.path}`, ...prev].slice(0, 8))
+        }}
+      />
     </div>
   )
 }

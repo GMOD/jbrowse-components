@@ -16,15 +16,7 @@ export const examples: ExampleMeta[] = [
     name: 'BasicExample',
     title: 'Basic example',
     description:
-      'A minimal app: one assembly, one alignments track, opened in a linear genome view.',
-    group: 'Getting started',
-  },
-  {
-    slug: 'managed',
-    name: 'Managed',
-    title: 'Managed (JBrowse)',
-    description:
-      'The managed JBrowse component owns the engine — list assemblies, tracks, and the views to open, no createViewState ceremony.',
+      'A minimal app: one assembly, one alignments track, opened in a linear genome view, via the managed JBrowse component.',
     group: 'Getting started',
   },
   {
