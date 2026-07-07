@@ -518,23 +518,38 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  // Read-vs-reference of a SKBR3 PacBio read spanning a ~500bp insertion. The
-  // shared session carries the dynamically-built LinearSyntenyView (read drawn
-  // against a synthetic single-read assembly) below the pileup, which is too
-  // tied to the clicked read's CIGAR to reconstruct as a plain session spec —
-  // so this loads the saved session directly. The hand-captured original also
-  // showed a click-and-drag sequence selection (blue) that this autogen omits.
+  // Read-vs-reference of a SKBR3 PacBio read spanning a ~634bp insertion
+  // (purple box labeled "634" in the pileup, row 1 of the ngmlr track at this
+  // locus). Driven live via rightclick -> Launch view -> Linear read vs ref
+  // (buildReadVsRefSpec.ts) instead of a frozen share-link session, so the
+  // inline-config fix actually gets exercised. Read glyphs are canvas-drawn;
+  // the rightclick coordinate was located by probing this same session.
   {
     mode: 'url',
     name: 'read_vs_ref_insertion',
-    // bare ?config= so it renders against the local build
-    url: '?config=test_data%2Fconfig_demo.json&session=share-rzJ27iixQH&password=rSgZe',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: '1:85,618,922-85,621,742',
+      tracks: ['ngmlr'],
+    }),
     readyText: 'SKBR3',
     readyTimeout: 60000,
-    settleMs: 15000,
+    settleMs: 8000,
+    hideTooltip: true,
     // the synteny read-vs-ref panel below the pileup gets clipped at the default
     // 800px viewport, so give it extra room
     viewportHeight: 950,
+    actions: [
+      { type: 'rightclick', from: { x: 622, y: 249 } },
+      { type: 'waitForText', text: 'Open feature details' },
+      { type: 'hover', text: 'Launch view' },
+      { type: 'waitForText', text: 'Linear read vs ref' },
+      { type: 'click', text: 'Linear read vs ref' },
+      { type: 'waitForText', text: 'Set window size' },
+      { type: 'click', text: 'Submit' },
+      { type: 'waitForText', text: 'Reference sequence' },
+      { type: 'delay', ms: 2000 },
+    ],
   },
   // ────────────────────────────────────────────────────────────────────────
   // Basic UI guides

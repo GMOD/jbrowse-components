@@ -118,9 +118,12 @@ export function getReadDisplayLegendItems(
     }))
   }
   if (colorType && isModificationScheme(colorType) && visibleModifications) {
+    const hidden = colorBy?.modifications?.hiddenModifications
     const items: LegendItem[] = []
     for (const [type, mod] of visibleModifications.entries()) {
-      items.push({ color: mod.color, label: type })
+      if (!hidden?.includes(type)) {
+        items.push({ color: mod.color, label: type })
+      }
     }
     if (presentCategories.has('supplementary')) {
       items.push({

@@ -130,6 +130,25 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
+  test('hiddenModifications drops the swatch even though the type was detected', () => {
+    const mods = new Map([
+      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
+      ['h', { color: 'blue', type: 'h', base: 'C', strand: '+' }],
+      ['a', { color: 'purple', type: 'a', base: 'A', strand: '+' }],
+    ])
+    expect(
+      getReadDisplayLegendItems(
+        {
+          type: 'modifications',
+          modifications: { hiddenModifications: ['m', 'h'] },
+        },
+        new Set(),
+        makeTestPalette(),
+        mods,
+      ).map(i => i.label),
+    ).toEqual(['a'])
+  })
+
   test('swatch colors come from the live palette when provided', () => {
     const palette = makeTestPalette({
       colorFwdStrand: [0, 0, 1],

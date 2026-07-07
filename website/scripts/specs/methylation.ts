@@ -99,7 +99,13 @@ export const methylationSpecs: ScreenshotSpec[] = [
               trackId: 'PAY22766-nanopore',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
-                colorBy: { type: 'modifications' },
+                // this is a 6mA chromatin-accessibility assay; the basecaller
+                // also emits 5mC/5hmC calls on the same reads, but those
+                // aren't what this figure is about (reviewer: 6mA only)
+                colorBy: {
+                  type: 'modifications',
+                  modifications: { hiddenModifications: ['m', 'h'] },
+                },
                 // compact pileup: displayMode isn't a real slot on this
                 // display (that's the shared canvas base schema) — fixed
                 // heightMode + a small featureHeight/featureSpacing is the
@@ -115,7 +121,10 @@ export const methylationSpecs: ScreenshotSpec[] = [
               trackId: 'PBA15131-nanopore',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
-                colorBy: { type: 'modifications' },
+                colorBy: {
+                  type: 'modifications',
+                  modifications: { hiddenModifications: ['m', 'h'] },
+                },
                 heightMode: 'fixed',
                 featureHeight: 3,
                 featureSpacing: 0,
@@ -126,7 +135,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 120000,
-    settleMs: 20000,
+    // was 20000 — the prior capture committed while alignments were still
+    // downloading (progress bars baked into the PNG), so give it more room
+    settleMs: 45000,
     // taller so both alignment tracks' full pileup (compact mode still stacks
     // many rows for this depth) fit below the gene + promoter context tracks
     viewportHeight: 1000,

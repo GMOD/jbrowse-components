@@ -267,10 +267,7 @@ options:
 
 Both are most useful on long reads where a single read spans a breakpoint.
 
-<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning a ~500 bp insertion. The top panel is a standard pileup; the bottom panel is a synteny-style split view showing the read (top lane) aligned to the reference (bottom lane). The gap in the diagonal alignment blocks in the lower panel marks the inserted sequence not present in the reference. Click-and-drag over any region in the lower panel to extract its sequence." src="/img/read_vs_ref_insertion.png" />
-
-[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-rzJ27iixQH&password=rSgZe)
-— SKBR3 PacBio read vs reference insertion
+<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions relative to the reference. The top panel is a standard pileup; the bottom panel is a synteny-style split view showing the read (top lane) aligned to the reference (bottom lane). Each gap in the diagonal alignment blocks in the lower panel marks inserted sequence not present in the reference. Click-and-drag over any region in the lower panel to extract its sequence." src="/img/read_vs_ref_insertion.png" />
 
 ## Breakpoint split view
 
