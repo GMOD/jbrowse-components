@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
+import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -146,6 +147,18 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // promotableDefaults.ts.
         defaultValue: { type: 'normal' },
         promotable: true,
+        // A promoted default surviving to a `COLOR_SCHEMES` lookup with a
+        // `.type` that isn't (or no longer is) a registered scheme throws —
+        // those lookups are total over `ColorSchemeType` by design, with no
+        // runtime fallback. Reject anything else here so a stale/renamed
+        // scheme name in a saved preference degrades to "not usable" instead
+        // of crashing color-by resolution.
+        validate: (value: unknown) =>
+          typeof value === 'object' &&
+          value !== null &&
+          'type' in value &&
+          typeof value.type === 'string' &&
+          value.type in COLOR_SCHEMES,
         description: 'Color scheme for reads',
         advanced: true,
       },

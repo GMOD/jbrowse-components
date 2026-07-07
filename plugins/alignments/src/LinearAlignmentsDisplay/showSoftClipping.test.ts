@@ -657,6 +657,20 @@ describe('alignments colorBy session default', () => {
     expect(display.colorBy).toEqual({ type: 'normal' })
   })
 
+  // colorBy's `validate` hook (configSchema.ts) rejects a `.type` that isn't a
+  // registered COLOR_SCHEMES key — otherwise a stale/renamed scheme name saved
+  // in a session-wide preference would reach the color-scheme lookups
+  // (colorSchemeIndexFor, colorSchemeLabel, isModificationScheme), all of which
+  // throw on an unrecognized type with no fallback.
+  it('ignores an object-shaped session default naming an unregistered scheme', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'colorBy', {
+      type: 'a-removed-color-scheme',
+    })
+    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.sessionDefaultChanges()).toEqual([])
+  })
+
   describe('setColorByDefault', () => {
     it('promotes the current scheme to the session default', () => {
       const { session, display } = createDisplay({ colorBy: methylation })

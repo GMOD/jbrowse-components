@@ -137,3 +137,39 @@ describe('promotable frozen slot structural equality', () => {
     ).toBeUndefined()
   })
 })
+
+// A slot's `validate` hook lets `promotedUsable` reject a value that's
+// structurally fine (right JS type/shape) but semantically stale — e.g. a
+// `colorBy.type` naming a color scheme that's since been renamed or removed —
+// before it reaches a consumer that assumes every value it sees is valid.
+describe('promotable slot validate hook', () => {
+  const KNOWN_TYPES = new Set(['normal', 'strand'])
+  const configSchema = ConfigurationSchema('ValidatedDisplay', {
+    colorBy: {
+      type: 'frozen',
+      defaultValue: { type: 'normal' },
+      promotable: true,
+      validate: (value: unknown) =>
+        typeof value === 'object' &&
+        value !== null &&
+        'type' in value &&
+        typeof value.type === 'string' &&
+        KNOWN_TYPES.has(value.type),
+    },
+  })
+
+  test('accepts a promoted value that passes validate', () => {
+    const { session, display } = createDisplay(configSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'colorBy', { type: 'strand' })
+    expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'strand' })
+  })
+
+  test('rejects a structurally-fine but unregistered value instead of passing it through', () => {
+    const { session, display } = createDisplay(configSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'colorBy', {
+      type: 'a-removed-scheme',
+    })
+    // falls back to base rather than handing a consumer an unrecognized type
+    expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'normal' })
+  })
+})

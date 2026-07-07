@@ -56,43 +56,38 @@ function promotableSlots(self: PromotableDisplay): string[] {
 /**
  * A stored promoted default is only usable when it could be a valid slot value:
  * same JS type as the slot default, and — for a `stringEnum` slot — one of the
- * enum's choices, and never the inherit sentinel itself. Rejects a stale/garbage
- * value left in a saved preference so every consumer falls back in lockstep.
+ * enum's choices, and never the inherit sentinel itself, and — when the slot
+ * declares one — passes its `validate` hook. Rejects a stale/garbage value left
+ * in a saved preference so every consumer falls back in lockstep.
  */
 function promotedUsable(def: ConfigSlotDefinition, promoted: unknown): boolean {
-  const { type, model, defaultValue, promotedBase } = def
-  if (promoted === undefined) {
-    return false
-  }
+  const { type, model, defaultValue, promotedBase, validate } = def
   // a sentinel slot's own `defaultValue` (its `'inherit'` member) is never a
   // real value to inherit — only `promotedBase` and the other members are
-  if (promotedBase !== undefined && deepEqual(promoted, defaultValue)) {
-    return false
-  }
-  if (type === 'stringEnum' && model) {
-    return (
-      typeof promoted === 'string' &&
-      getEnumerationValues(model).includes(promoted)
-    )
-  }
-  // a frozen/object slot (e.g. alignments `colorBy`): require a non-null object
-  // of matching array-ness — `typeof promoted === typeof defaultValue` admits
-  // `null` (typeof null === 'object') and an array against an object default
-  if (typeof defaultValue === 'object' && defaultValue !== null) {
-    return (
-      typeof promoted === 'object' &&
-      promoted !== null &&
-      Array.isArray(promoted) === Array.isArray(defaultValue)
-    )
-  }
-  // `maybeNumber` is the only slot type allowed a `defaultValue` of `undefined`
-  // (its "unset" state — see ConfigSlot); `typeof promoted === typeof undefined`
-  // would reject every real value, so validate against its actual value type
-  // (a number) instead.
-  if (defaultValue === undefined) {
-    return typeof promoted === 'number'
-  }
-  return typeof promoted === typeof defaultValue
+  const isInheritSentinel =
+    promotedBase !== undefined && deepEqual(promoted, defaultValue)
+  const shapeOk =
+    promoted === undefined || isInheritSentinel
+      ? false
+      : type === 'stringEnum' && model
+        ? typeof promoted === 'string' &&
+          getEnumerationValues(model).includes(promoted)
+        : // a frozen/object slot (e.g. alignments `colorBy`): require a
+          // non-null object of matching array-ness — `typeof promoted ===
+          // typeof defaultValue` admits `null` (typeof null === 'object') and
+          // an array against an object default
+          typeof defaultValue === 'object' && defaultValue !== null
+          ? typeof promoted === 'object' &&
+            promoted !== null &&
+            Array.isArray(promoted) === Array.isArray(defaultValue)
+          : // `maybeNumber` is the only slot type allowed a `defaultValue` of
+            // `undefined` (its "unset" state — see ConfigSlot); `typeof
+            // promoted === typeof undefined` would reject every real value, so
+            // validate against its actual value type (a number) instead
+            defaultValue === undefined
+            ? typeof promoted === 'number'
+            : typeof promoted === typeof defaultValue
+  return shapeOk && (!validate || validate(promoted))
 }
 
 interface SlotResolution {

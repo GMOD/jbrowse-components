@@ -101,6 +101,18 @@ export interface ConfigSlotDefinition {
    * ordinary promotable slot whose `defaultValue` is itself a usable value.
    */
   promotedBase?: unknown
+  /**
+   * For a `promotable` slot: an extra runtime check a stored session-wide
+   * default must pass, beyond the built-in type-shape check, before
+   * `promotedUsable` (see `promotableDefaults.ts`) accepts it. Needed when a
+   * slot's shape alone can't catch a semantically-invalid value — e.g.
+   * alignments `colorBy`'s `.type` must name a currently-registered color
+   * scheme, not just be *some* string — so a stale scheme name (renamed or
+   * removed since the value was promoted) degrades to "not usable" instead of
+   * reaching a lookup that assumes every `.type` is registered. Omit when the
+   * type-shape check alone is enough to trust the value.
+   */
+  validate?: (value: unknown) => boolean
 }
 
 /**
