@@ -53,11 +53,6 @@
         }
       ]
     },
-    "embedded_components",
-    "initializing_views",
-    "urlparams",
-    "jbrowse_jupyter",
-    "jbrowser",
     {
       "type": "category",
       "label": "Development",
@@ -105,6 +100,11 @@
         }
       ]
     },
+    "embedded_components",
+    "initializing_views",
+    "urlparams",
+    "jbrowse_jupyter",
+    "jbrowser",
     "cli",
     "jbrowse-img",
     "faq"
