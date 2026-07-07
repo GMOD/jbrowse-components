@@ -9,6 +9,7 @@ import {
   collectTransitive,
   docPage,
   exampleSection,
+  filterUnseenByName,
   lookupByIdOrName,
   mapByKey,
   overviewSection,
@@ -136,24 +137,33 @@ function collectBaseConfigs(config: ConfigWithHeader, index: ConfigIndex) {
 // Full slot detail for every inherited config, grouped by the base it comes
 // from, so a config page is self-contained — a reader configuring this track
 // sees every available slot (own + inherited) without chasing links.
-function inheritedSlotsSection(bases: ConfigWithHeader[]) {
-  const blocks = bases.flatMap(config =>
-    config.slots.length
+//
+// `ownSlots` seeds a seen-by-name set so a slot the config (or a closer base)
+// redeclares is skipped at every farther base — otherwise an override (e.g.
+// LGVSyntenyDisplay's `colorBy`, non-promotable with a `strand` default) still
+// shows the shadowed base definition (promotable, `normal` default) in the
+// "Inherited" section, which reads as a live alternative rather than
+// superseded history.
+function inheritedSlotsSection(ownSlots: Item[], bases: ConfigWithHeader[]) {
+  const seen = new Set(ownSlots.map(s => s.name))
+  const blocks = bases.flatMap(config => {
+    const shown = filterUnseenByName(seen, config.slots)
+    return shown.length
       ? [
           collapsible(
             `Inherited from ${config.header.name}`,
             // a markdown link inside <summary> renders literally, so the link to
             // the base config's own page leads the body instead
             `[${config.header.name} config →](../${config.header.id})`,
-            ...config.slots.map(s => slotBlock(s)),
+            ...shown.map(s => slotBlock(s)),
           ),
         ]
-      : [],
-  )
+      : []
+  })
   return blocks.length
     ? section(
         '## Inherited config slots',
-        'Slots available on this config via its base configuration(s), shown in full so this page is self-contained.',
+        'Slots available on this config via its base configuration(s), shown in full so this page is self-contained. A slot redeclared by a more specific config is shown once, at its most specific definition.',
         ...blocks,
       )
     : ''
@@ -396,7 +406,7 @@ function renderConfig(
       ),
     slots.length &&
       collapsible(`${header.name} - Slots`, ...slots.map(s => slotBlock(s))),
-    inheritedSlotsSection(bases),
+    inheritedSlotsSection(slots, bases),
     derives &&
       // when the base resolves to a page, the link says it all; only fall back
       // to the raw `baseConfiguration:` code when it couldn't be resolved

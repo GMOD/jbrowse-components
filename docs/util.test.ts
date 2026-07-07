@@ -4,6 +4,7 @@ import {
   collapsibleClosed,
   collectTransitive,
   exampleSection,
+  filterUnseenByName,
   overviewSection,
   parseTaggedComment,
   removeComments,
@@ -228,6 +229,31 @@ describe('collectTransitive', () => {
         n => n.parents.map(p => cyclic[p]!),
       ).map(n => n.id),
     ).toEqual(['y', 'x'])
+  })
+})
+
+describe('filterUnseenByName', () => {
+  test('keeps items not yet seen and adds them to the set', () => {
+    const seen = new Set<string>()
+    const kept = filterUnseenByName(seen, [{ name: 'a' }, { name: 'b' }])
+    expect(kept.map(i => i.name)).toEqual(['a', 'b'])
+    expect(seen).toEqual(new Set(['a', 'b']))
+  })
+
+  test('drops an item whose name is already seen', () => {
+    const seen = new Set(['a'])
+    const kept = filterUnseenByName(seen, [{ name: 'a' }, { name: 'b' }])
+    expect(kept.map(i => i.name)).toEqual(['b'])
+  })
+
+  test('across two calls sharing one set, a name is kept only the first time', () => {
+    // mirrors walking a base chain closest-first: a slot a closer base already
+    // showed must not resurface from a farther one
+    const seen = new Set<string>()
+    const closer = filterUnseenByName(seen, [{ name: 'featureHeight' }])
+    const farther = filterUnseenByName(seen, [{ name: 'featureHeight' }])
+    expect(closer.map(i => i.name)).toEqual(['featureHeight'])
+    expect(farther).toEqual([])
   })
 })
 

@@ -899,6 +899,21 @@ export function collectTransitive<T>(
   return out
 }
 
+// Keep only the items whose `name` isn't already in `seen`, and add each kept
+// name to `seen` — so a caller walking outward through several sources (e.g. a
+// config's base chain) shows each name once, at its closest/most-specific
+// source, instead of repeating a shadowed definition from farther away.
+export function filterUnseenByName<T extends { name: string }>(
+  seen: Set<string>,
+  items: T[],
+): T[] {
+  const fresh = items.filter(item => !seen.has(item.name))
+  for (const item of fresh) {
+    seen.add(item.name)
+  }
+  return fresh
+}
+
 // Shared markdown builders used by both generators.
 export function codeBlock(...lines: string[]) {
   return ['```js', ...lines, '```'].join('\n')

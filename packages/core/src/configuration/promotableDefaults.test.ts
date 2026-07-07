@@ -67,6 +67,7 @@ describe('promotable maybeNumber slot', () => {
     customHeight: {
       type: 'maybeNumber',
       description: 'an optional promotable height override',
+      defaultValue: undefined,
       promotable: true,
     },
   })
