@@ -11,7 +11,42 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
-<details open>
+## Members
+
+| Member                                                                                         | Kind       | Description                                                                                                                   |
+| ---------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [label](#property-label)                                                                       | Properties |                                                                                                                               |
+| [highlight](#property-highlight)                                                               | Properties |                                                                                                                               |
+| [id](#property-id)                                                                             | Properties |                                                                                                                               |
+| [type](#property-type)                                                                         | Properties |                                                                                                                               |
+| [bookmarks](#property-bookmarks)                                                               | Properties | loaded from localStorage when not present in snapshot; sharedBookmarks from a shared URL are merged in via preProcessSnapshot |
+| [selectedBookmarks](#volatile-selectedbookmarks)                                               | Volatiles  |                                                                                                                               |
+| [selectedAssembliesPre](#volatile-selectedassembliespre)                                       | Volatiles  | undefined = "all valid assemblies"; an array = explicit filter                                                                |
+| [gridView](#volatile-gridview)                                                                 | Volatiles  | which grid tab is visible: bookmarks or highlights                                                                            |
+| [bookmarkAssemblies](#getter-bookmarkassemblies)                                               | Getters    |                                                                                                                               |
+| [validAssemblies](#getter-validassemblies)                                                     | Getters    |                                                                                                                               |
+| [areBookmarksHighlightedOnAllOpenViews](#getter-arebookmarkshighlightedonallopenviews)         | Getters    |                                                                                                                               |
+| [areBookmarksHighlightLabelsOnAllOpenViews](#getter-arebookmarkshighlightlabelsonallopenviews) | Getters    |                                                                                                                               |
+| [bookmarksWithValidAssemblies](#getter-bookmarkswithvalidassemblies)                           | Getters    |                                                                                                                               |
+| [selectedAssemblies](#getter-selectedassemblies)                                               | Getters    |                                                                                                                               |
+| [setLabel](#action-setlabel)                                                                   | Actions    |                                                                                                                               |
+| [setHighlight](#action-sethighlight)                                                           | Actions    |                                                                                                                               |
+| [setSelectedAssemblies](#action-setselectedassemblies)                                         | Actions    |                                                                                                                               |
+| [setGridView](#action-setgridview)                                                             | Actions    |                                                                                                                               |
+| [importBookmarks](#action-importbookmarks)                                                     | Actions    |                                                                                                                               |
+| [addBookmark](#action-addbookmark)                                                             | Actions    |                                                                                                                               |
+| [updateBookmarkLabel](#action-updatebookmarklabel)                                             | Actions    |                                                                                                                               |
+| [updateBookmarkHighlight](#action-updatebookmarkhighlight)                                     | Actions    |                                                                                                                               |
+| [updateBulkBookmarkHighlights](#action-updatebulkbookmarkhighlights)                           | Actions    |                                                                                                                               |
+| [setSelectedBookmarks](#action-setselectedbookmarks)                                           | Actions    |                                                                                                                               |
+| [setBookmarkedRegions](#action-setbookmarkedregions)                                           | Actions    |                                                                                                                               |
+| [setBookmarkHighlightsVisible](#action-setbookmarkhighlightsvisible)                           | Actions    |                                                                                                                               |
+| [setBookmarkLabelsVisible](#action-setbookmarklabelsvisible)                                   | Actions    |                                                                                                                               |
+| [clearBookmarksForLoadedAssemblies](#action-clearbookmarksforloadedassemblies)                 | Actions    |                                                                                                                               |
+| [clearSelectedBookmarks](#action-clearselectedbookmarks)                                       | Actions    |                                                                                                                               |
+| [removeBookmarkObject](#action-removebookmarkobject)                                           | Actions    |                                                                                                                               |
+
+<details>
 <summary>GridBookmarkWidgetModel - Properties</summary>
 
 #### property: bookmarks
@@ -71,7 +106,7 @@ type: types.literal('GridBookmarkWidget')
 
 </details>
 
-<details open>
+<details>
 <summary>GridBookmarkWidgetModel - Volatiles</summary>
 
 #### volatile: selectedAssembliesPre

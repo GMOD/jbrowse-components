@@ -12,7 +12,16 @@ Auto-generated config schema for the current JBrowse release — see the
 
 generally exists on the config.json or root config as configuration.hierarchical
 
-<details open>
+| Slot                                                                                                                                | Type          | Description                                             |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------- |
+| [configuration.hierarchical.sort.trackNames](#slot-configurationhierarchicalsorttracknames)                                         | `boolean`     |                                                         |
+| [configuration.hierarchical.sort.categories](#slot-configurationhierarchicalsortcategories)                                         | `boolean`     |                                                         |
+| [configuration.hierarchical.defaultFolderCategories](#slot-configurationhierarchicaldefaultfoldercategories)                        | `stringArray` | list of category names to display as folders by default |
+| [configuration.hierarchical.defaultCollapsed.categoryNames](#slot-configurationhierarchicaldefaultcollapsedcategorynames)           | `stringArray` |                                                         |
+| [configuration.hierarchical.defaultCollapsed.topLevelCategories](#slot-configurationhierarchicaldefaultcollapsedtoplevelcategories) | `boolean`     |                                                         |
+| [configuration.hierarchical.defaultCollapsed.subCategories](#slot-configurationhierarchicaldefaultcollapsedsubcategories)           | `boolean`     |                                                         |
+
+<details>
 <summary>HierarchicalConfigSchema - Slots</summary>
 
 #### slot: configuration.hierarchical.sort.trackNames

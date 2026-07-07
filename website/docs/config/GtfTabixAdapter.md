@@ -31,15 +31,6 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed GTF files
 
-### Used in
-
-Supplies data to the [FeatureTrack](../featuretrack) track, rendered by:
-
-- [LinearArcDisplay](../lineararcdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
-
 ### GtfTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes tbi index at yourfile.gtf.gz.tbi:
@@ -51,7 +42,15 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.gtf.gz.tbi:
 }
 ```
 
-<details open>
+| Slot                                    | Type                    | Description                                                                                                                                                                                                                                 |
+| --------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [gtfGzLocation](#slot-gtfgzlocation)    | `fileLocation`          |                                                                                                                                                                                                                                             |
+| [index.indexType](#slot-indexindextype) | `stringEnum` (TBI, CSI) |                                                                                                                                                                                                                                             |
+| [index.location](#slot-indexlocation)   | `fileLocation`          |                                                                                                                                                                                                                                             |
+| [dontRedispatch](#slot-dontredispatch)  | `stringArray`           | the GtfTabixAdapter has to "redispatch" if it fetches a region and features it finds inside that region extend outside the region we requested. you can disable this for certain feature types to avoid fetching e.g. the entire chromosome |
+| [aggregateField](#slot-aggregatefield)  | `string`                | field used to aggregate multiple transcripts into a single parent gene feature                                                                                                                                                              |
+
+<details>
 <summary>GtfTabixAdapter - Slots</summary>
 
 #### slot: gtfGzLocation
@@ -83,3 +82,11 @@ field used to aggregate multiple transcripts into a single parent gene feature
 **Type:** `string` · **Default:** `'gene_name'`
 
 </details>
+
+## Related links
+
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)

@@ -44,18 +44,19 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### LinearHicDisplay - Compatible adapters
+| Slot                                                   | Type                                   | Description                                                                                                                                                                                                            |
+| ------------------------------------------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [height](#slot-height)                                 | `number`                               | default height for the Hi-C track                                                                                                                                                                                      |
+| [colorScheme](#slot-colorscheme)                       | `stringEnum` (fall, juicebox, viridis) | color ramp used to render contact intensity                                                                                                                                                                            |
+| [showLegend](#slot-showlegend)                         | `boolean`                              | show the color scale legend                                                                                                                                                                                            |
+| [resolutionBias](#slot-resolutionbias)                 | `number`                               | Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure auto; `-1` is one step finer, `+1` one step coarser. Tracking the offset (not an absolute binsize) keeps the intent valid across zoom. |
+| [useLogScale](#slot-uselogscale)                       | `boolean`                              | map contact counts to color on a log2 scale                                                                                                                                                                            |
+| [useColorPercentile](#slot-usecolorpercentile)         | `boolean`                              | false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of counts, so off-diagonal contacts read more strongly.                                                                                         |
+| [showResolutionControls](#slot-showresolutioncontrols) | `boolean`                              | show the on-canvas resolution stepper overlay                                                                                                                                                                          |
+| [selectedNormalization](#slot-selectednormalization)   | `string`                               | The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC, NONE). Resolved at runtime against what the `.hic` file actually provides — see the model's `activeNormalization` getter.                           |
+| [fitToHeight](#slot-fittoheight)                       | `boolean`                              | squash the triangle vertically to fit the display height instead of drawing square bins                                                                                                                                |
 
-Data adapters that can supply the [HicTrack](../hictrack):
-
-- [HicAdapter](../hicadapter)
-
-### LinearHicDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/linearhicdisplay).
-
-<details open>
+<details>
 <summary>LinearHicDisplay - Slots</summary>
 
 #### slot: height
@@ -127,7 +128,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseLinearDisplay</summary>
 
 [BaseLinearDisplay config →](../baselineardisplay)
@@ -171,6 +172,8 @@ runtime rather than being stored with jexl in the config
 
 </details>
 
-### LinearHicDisplay - Derives from
+## Related links
 
-- [BaseLinearDisplay](../baselineardisplay)
+- **Adapter:** [HicAdapter](../hicadapter)
+- **State model:** [runtime API](../../models/linearhicdisplay)
+- **Base config:** [BaseLinearDisplay](../baselineardisplay)

@@ -41,7 +41,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseTrack</summary>
 
 [BaseTrack config →](../basetrack)
@@ -189,6 +189,6 @@ formats configuration object in about dialog
 
 </details>
 
-### LDTrack - Derives from
+## Related links
 
-- [BaseTrack](../basetrack)
+- **Base config:** [BaseTrack](../basetrack)

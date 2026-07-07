@@ -11,11 +11,6 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Overview
 
-### UCSCTrackHubConnection - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/ucsctrackhubconnection).
-
 ### UCSCTrackHubConnection - Pre-processor / simplified config
 
 preprocessor to allow minimal config, where `uri` points at the hub.txt:
@@ -27,7 +22,12 @@ preprocessor to allow minimal config, where `uri` points at the hub.txt:
 }
 ```
 
-<details open>
+| Slot                                   | Type           | Description                                                                                   |
+| -------------------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
+| [hubTxtLocation](#slot-hubtxtlocation) | `fileLocation` | location of the hub file (usually called hub.txt)                                             |
+| [assemblyNames](#slot-assemblynames)   | `stringArray`  | optional list of genomes to import from this track hub, if empty all genomes will be imported |
+
+<details>
 <summary>UCSCTrackHubConnection - Slots</summary>
 
 #### slot: hubTxtLocation
@@ -62,7 +62,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseConnection</summary>
 
 [BaseConnection config →](../baseconnection)
@@ -75,6 +75,7 @@ a unique name for this connection
 
 </details>
 
-### UCSCTrackHubConnection - Derives from
+## Related links
 
-- [BaseConnection](../baseconnection)
+- **State model:** [runtime API](../../models/ucsctrackhubconnection)
+- **Base config:** [BaseConnection](../baseconnection)

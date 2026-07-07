@@ -41,6 +41,15 @@ track's own sequence adapter, so no extra adapter is needed. `gcMode` is
 
 base model `SharedGCContentModel`
 
+## Members
+
+| Member                                         | Kind       | Description                                                                                                                                                 |
+| ---------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                         | Properties |                                                                                                                                                             |
+| [adapterConfig](#getter-adapterconfig)         | Getters    | wraps the parent ReferenceSequenceTrack's sequence adapter in a GCContentAdapter                                                                            |
+| [trackMenuItems](#method-trackmenuitems)       | Methods    |                                                                                                                                                             |
+| [addGCContentTrack](#action-addgccontenttrack) | Actions    | spins up a standalone GCContentTrack session track that wraps the parent ReferenceSequenceTrack's sequence adapter, carrying the current display parameters |
+
 ### LinearGCContentDisplay - Configuration
 
 The configuration slots for this model are documented on its
@@ -283,7 +292,7 @@ type: types.literal('LinearGCContentDisplay')
 
 </details>
 
-<details open>
+<details>
 <summary>LinearGCContentDisplay - Getters</summary>
 
 #### getter: adapterConfig
@@ -313,7 +322,7 @@ type trackMenuItems = () => MenuItem[]
 
 </details>
 
-<details open>
+<details>
 <summary>LinearGCContentDisplay - Actions</summary>
 
 #### action: addGCContentTrack

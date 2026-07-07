@@ -53,32 +53,6 @@ _See the **Slots** section below for all available configuration fields._
 
 used for basic gene and feature tracks, generally used with LinearBasicDisplay
 
-### FeatureTrack - Display types
-
-A track is just a container; the actual rendering behavior and config slots live
-on its display type(s):
-
-- [LinearArcDisplay](../lineararcdisplay)
-  ([state model](../../models/lineararcdisplay))
-- [LinearBasicDisplay](../linearbasicdisplay)
-  ([state model](../../models/linearbasicdisplay))
-- [LinearBasicDisplay](../linearbasicdisplay)
-  ([state model](../../models/linearbasicdisplay))
-- [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
-  ([state model](../../models/linearmultirowfeaturedisplay))
-
-### FeatureTrack - Compatible adapters
-
-Data adapters that can supply this track:
-
-- [BedAdapter](../bedadapter)
-- [BedTabixAdapter](../bedtabixadapter)
-- [BigBedAdapter](../bigbedadapter)
-- [Gff3Adapter](../gff3adapter)
-- [Gff3TabixAdapter](../gff3tabixadapter)
-- [GtfAdapter](../gtfadapter)
-- [GtfTabixAdapter](../gtftabixadapter)
-
 ### FeatureTrack - Identifier
 
 Every FeatureTrack has a unique `trackId`, a required top-level field that
@@ -90,7 +64,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseTrack</summary>
 
 [BaseTrack config →](../basetrack)
@@ -238,6 +212,21 @@ formats configuration object in about dialog
 
 </details>
 
-### FeatureTrack - Derives from
+## Related links
 
-- [BaseTrack](../basetrack)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+  ([state model](../../models/lineararcdisplay))
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+  ([state model](../../models/linearbasicdisplay))
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+  ([state model](../../models/linearbasicdisplay))
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+  ([state model](../../models/linearmultirowfeaturedisplay))
+- **Adapter:** [BedAdapter](../bedadapter)
+- **Adapter:** [BedTabixAdapter](../bedtabixadapter)
+- **Adapter:** [BigBedAdapter](../bigbedadapter)
+- **Adapter:** [Gff3Adapter](../gff3adapter)
+- **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
+- **Adapter:** [GtfAdapter](../gtfadapter)
+- **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **Base config:** [BaseTrack](../basetrack)

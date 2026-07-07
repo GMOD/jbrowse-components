@@ -11,11 +11,6 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Overview
 
-### JB2TrackHubConnection - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/jb2trackhubconnection).
-
 ### JB2TrackHubConnection - Pre-processor / simplified config
 
 preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
@@ -27,7 +22,12 @@ preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
 }
 ```
 
-<details open>
+| Slot                                           | Type           | Description                                                                                     |
+| ---------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------- |
+| [configJsonLocation](#slot-configjsonlocation) | `fileLocation` | location of the jb2 config file (usually called config.json)                                    |
+| [assemblyNames](#slot-assemblynames)           | `stringArray`  | optional list of genomes to import from this config.json, if empty all genomes will be imported |
+
+<details>
 <summary>JB2TrackHubConnection - Slots</summary>
 
 #### slot: configJsonLocation
@@ -63,7 +63,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseConnection</summary>
 
 [BaseConnection config →](../baseconnection)
@@ -76,6 +76,7 @@ a unique name for this connection
 
 </details>
 
-### JB2TrackHubConnection - Derives from
+## Related links
 
-- [BaseConnection](../baseconnection)
+- **State model:** [runtime API](../../models/jb2trackhubconnection)
+- **Base config:** [BaseConnection](../baseconnection)

@@ -11,7 +11,17 @@ plugin.
 
 ## Overview
 
-<details open>
+| Slot                                     | Type                          | Description                                                                                          |
+| ---------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [sequenceAdapter](#slot-sequenceadapter) | `frozen`                      |                                                                                                      |
+| [pam](#slot-pam)                         | `string`                      | PAM motif in IUPAC codes, e.g. NGG for SpCas9, TTTV for Cas12a                                       |
+| [guideLength](#slot-guidelength)         | `number`                      | protospacer length in bp                                                                             |
+| [pamLocation](#slot-pamlocation)         | `stringEnum` (3prime, 5prime) | whether the PAM is 3' (Cas9) or 5' (Cas12a) of the protospacer                                       |
+| [cutOffset](#slot-cutoffset)             | `number`                      | distance in bp from the PAM-proximal end of the protospacer to the predicted cut site (3 for SpCas9) |
+| [searchForward](#slot-searchforward)     | `boolean`                     |                                                                                                      |
+| [searchReverse](#slot-searchreverse)     | `boolean`                     |                                                                                                      |
+
+<details>
 <summary>CrisprGuideAdapter - Slots</summary>
 
 #### slot: sequenceAdapter

@@ -12,7 +12,15 @@ Auto-generated config schema for the current JBrowse release — see the
 
 used to configure BigMaf adapter
 
-<details open>
+| Slot                                         | Type           | Description                                                                                                                                                                                 |
+| -------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [samples](#slot-samples)                     | `frozen`       | string[] or {id:string,label:string,color?:string}[]                                                                                                                                        |
+| [bigBedLocation](#slot-bigbedlocation)       | `fileLocation` |                                                                                                                                                                                             |
+| [nhLocation](#slot-nhlocation)               | `fileLocation` | newick tree                                                                                                                                                                                 |
+| [summaryAdapter](#slot-summaryadapter)       | `frozen`       | optional swappable sub-adapter (e.g. a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it                                                        |
+| [annotationAdapter](#slot-annotationadapter) | `frozen`       | optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it |
+
+<details>
 <summary>BigMafAdapter - Slots</summary>
 
 #### slot: samples

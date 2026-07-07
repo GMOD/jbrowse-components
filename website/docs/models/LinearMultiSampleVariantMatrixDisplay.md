@@ -14,6 +14,20 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 Multi-sample variant display rendering genotypes as a compact sample-by-site
 matrix, with subpixel column alpha-scaling for anti-aliased parity.
 
+## Members
+
+| Member                                                 | Kind       | Description                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                 | Properties |                                                                                                                                                                                                                                                                                                                                                    |
+| [lineZoneHeight](#property-linezoneheight)             | Properties |                                                                                                                                                                                                                                                                                                                                                    |
+| [flipped](#getter-flipped)                             | Getters    | True when every visible region is reversed (the view is horizontally flipped). The matrix lays columns out by genomic-ascending feature index, but a flipped view runs the ruler right-to-left, so columns are mirrored to `numFeatures-1-i` to keep them and the genome connector lines from crossing. Mixed forward/reversed regions don't flip. |
+| [blockType](#getter-blocktype)                         | Getters    |                                                                                                                                                                                                                                                                                                                                                    |
+| [prefersOffset](#getter-prefersoffset)                 | Getters    |                                                                                                                                                                                                                                                                                                                                                    |
+| [renderState](#getter-renderstate)                     | Getters    | Per-frame render state for the GPU backend — the autorun reads this every time any tracked observable (cellData, scrollTop, rowHeight, canvas width, …) changes.                                                                                                                                                                                   |
+| [renderSvg](#method-rendersvg)                         | Methods    |                                                                                                                                                                                                                                                                                                                                                    |
+| [setLineZoneHeight](#action-setlinezoneheight)         | Actions    |                                                                                                                                                                                                                                                                                                                                                    |
+| [startRenderingBackend](#action-startrenderingbackend) | Actions    |                                                                                                                                                                                                                                                                                                                                                    |
+
 ### LinearMultiSampleVariantMatrixDisplay - Configuration
 
 The configuration slots for this model are documented on its
@@ -295,7 +309,7 @@ lineZoneHeight: types.stripDefault(types.number, 20)
 
 </details>
 
-<details open>
+<details>
 <summary>LinearMultiSampleVariantMatrixDisplay - Getters</summary>
 
 #### getter: flipped

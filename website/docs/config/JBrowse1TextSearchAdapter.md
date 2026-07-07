@@ -18,7 +18,13 @@ note: metadata about tracks and assemblies covered by text search adapter
 Every JBrowse1TextSearchAdapter has a unique `textSearchAdapterId`, a required
 top-level field that identifies it (not one of the config slots below).
 
-<details open>
+| Slot                                           | Type           | Description                                             |
+| ---------------------------------------------- | -------------- | ------------------------------------------------------- |
+| [namesIndexLocation](#slot-namesindexlocation) | `fileLocation` | the location of the JBrowse1 names index data directory |
+| [tracks](#slot-tracks)                         | `stringArray`  | List of tracks covered by text search adapter           |
+| [assemblyNames](#slot-assemblynames)           | `stringArray`  | List of assemblies covered by text search adapter       |
+
+<details>
 <summary>JBrowse1TextSearchAdapter - Slots</summary>
 
 #### slot: namesIndexLocation

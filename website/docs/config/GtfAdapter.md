@@ -32,15 +32,6 @@ _See the **Slots** section below for all available configuration fields._
 used to load plain-text GTF files (optionally gzipped). Loads the whole file
 into memory, so prefer the GtfTabixAdapter for large files.
 
-### Used in
-
-Supplies data to the [FeatureTrack](../featuretrack) track, rendered by:
-
-- [LinearArcDisplay](../lineararcdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
-
 ### GtfAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -52,7 +43,12 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                   | Type           | Description                                                                    |
+| -------------------------------------- | -------------- | ------------------------------------------------------------------------------ |
+| [gtfLocation](#slot-gtflocation)       | `fileLocation` | path to gtf file, also allows for gzipped gtf                                  |
+| [aggregateField](#slot-aggregatefield) | `string`       | field used to aggregate multiple transcripts into a single parent gene feature |
+
+<details>
 <summary>GtfAdapter - Slots</summary>
 
 #### slot: gtfLocation
@@ -69,3 +65,11 @@ field used to aggregate multiple transcripts into a single parent gene feature
 **Type:** `string` · **Default:** `'gene_name'`
 
 </details>
+
+## Related links
+
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)

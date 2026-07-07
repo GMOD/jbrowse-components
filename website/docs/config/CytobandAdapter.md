@@ -21,7 +21,11 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                       | Type           | Description |
+| ------------------------------------------ | -------------- | ----------- |
+| [cytobandLocation](#slot-cytobandlocation) | `fileLocation` |             |
+
+<details>
 <summary>CytobandAdapter - Slots</summary>
 
 #### slot: cytobandLocation

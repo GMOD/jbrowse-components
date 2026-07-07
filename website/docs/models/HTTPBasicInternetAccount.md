@@ -11,6 +11,17 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
+## Members
+
+| Member                                       | Kind       | Description |
+| -------------------------------------------- | ---------- | ----------- |
+| [type](#property-type)                       | Properties |             |
+| [configuration](#property-configuration)     | Properties |             |
+| [conf](#getter-conf)                         | Getters    |             |
+| [validateWithHEAD](#getter-validatewithhead) | Getters    |             |
+| [getTokenFromUser](#action-gettokenfromuser) | Actions    |             |
+| [validateToken](#action-validatetoken)       | Actions    |             |
+
 ### HTTPBasicInternetAccount - Configuration
 
 The configuration slots for this model are documented on its

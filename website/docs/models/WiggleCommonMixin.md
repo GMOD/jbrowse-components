@@ -16,6 +16,17 @@ reset. Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays that
 own a different rpcDataMap type should compose WiggleScoreConfigMixin directly
 instead.
 
+## Members
+
+| Member                                                       | Kind      | Description                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [rpcDataMap](#volatile-rpcdatamap)                           | Volatiles |                                                                                                                                                                                                                                                                                                                    |
+| [autoscaleSourceNames](#getter-autoscalesourcenames)         | Getters   | Source names to include when computing the autoscale domain; `undefined` means every fetched source. Multi-wiggle always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. |
+| [visibleScoreRange](#getter-visiblescorerange)               | Getters   |                                                                                                                                                                                                                                                                                                                    |
+| [hasNoData](#getter-hasnodata)                               | Getters   | True once a fetch has completed (loadedBpPerPx set) but every loaded region came back with zero features — lets the display show a "no data" message instead of an ambiguous flat baseline at score 0.                                                                                                             |
+| [domain](#getter-domain)                                     | Getters   |                                                                                                                                                                                                                                                                                                                    |
+| [clearDisplaySpecificData](#action-cleardisplayspecificdata) | Actions   |                                                                                                                                                                                                                                                                                                                    |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -72,7 +83,7 @@ rpcDataMap: observable.map<number, WiggleDataResult>()
 
 </details>
 
-<details open>
+<details>
 <summary>WiggleCommonMixin - Getters</summary>
 
 #### getter: autoscaleSourceNames

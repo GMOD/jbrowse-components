@@ -33,14 +33,6 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### Used in
-
-Supplies data to the [SyntenyTrack](../syntenytrack) track, rendered by:
-
-- [DotplotDisplay](../dotplotdisplay)
-- [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- [LinearSyntenyDisplay](../linearsyntenydisplay)
-
 ### PAFAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -54,7 +46,14 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                   | Type           | Description                                                                                                                               |
+| -------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
+| [targetAssembly](#slot-targetassembly) | `string`       | Alternative to assemblyNames: the target assembly name                                                                                    |
+| [queryAssembly](#slot-queryassembly)   | `string`       | Alternative to assemblyNames: the query assembly name                                                                                     |
+| [pafLocation](#slot-paflocation)       | `fileLocation` |                                                                                                                                           |
+
+<details>
 <summary>PAFAdapter - Slots</summary>
 
 #### slot: assemblyNames
@@ -82,3 +81,10 @@ Alternative to assemblyNames: the query assembly name
 `{ uri: '/path/to/file.paf', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

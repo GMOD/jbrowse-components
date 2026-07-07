@@ -21,7 +21,15 @@ it, and third-party plugins extend it too.
 Every BaseLinearDisplay has a unique `displayId`, a required top-level field
 that identifies it (not one of the config slots below).
 
-<details open>
+| Slot                                                     | Type          | Description                                                                                                                           |
+| -------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [maxFeatureScreenDensity](#slot-maxfeaturescreendensity) | `number`      | maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available                |
+| [fetchSizeLimit](#slot-fetchsizelimit)                   | `number`      | maximum data to attempt to download for a given track, used if adapter doesn't specify one                                            |
+| [height](#slot-height)                                   | `number`      | default height for the track                                                                                                          |
+| [mouseover](#slot-mouseover)                             | `string`      | text to display when the cursor hovers over a feature                                                                                 |
+| [jexlFilters](#slot-jexlfilters)                         | `stringArray` | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config |
+
+<details>
 <summary>BaseLinearDisplay - Slots</summary>
 
 #### slot: maxFeatureScreenDensity

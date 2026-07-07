@@ -11,7 +11,21 @@ JBrowse core.
 
 ## Overview
 
-<details open>
+## Members
+
+| Member                                                 | Kind      | Description                                                                                                                                                                                               |
+| ------------------------------------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [snackbarMessages](#volatile-snackbarmessages)         | Volatiles |                                                                                                                                                                                                           |
+| [errorDialog](#volatile-errordialog)                   | Volatiles | the error currently shown in the stack-trace dialog. Kept off the dialog queue so it can stack on top of an already-open dialog (e.g. the one whose action raised the error) instead of waiting behind it |
+| [snackbarMessageSet](#getter-snackbarmessageset)       | Getters   |                                                                                                                                                                                                           |
+| [notify](#action-notify)                               | Actions   |                                                                                                                                                                                                           |
+| [notifyError](#action-notifyerror)                     | Actions   |                                                                                                                                                                                                           |
+| [setErrorDialog](#action-seterrordialog)               | Actions   |                                                                                                                                                                                                           |
+| [pushSnackbarMessage](#action-pushsnackbarmessage)     | Actions   |                                                                                                                                                                                                           |
+| [popSnackbarMessage](#action-popsnackbarmessage)       | Actions   |                                                                                                                                                                                                           |
+| [removeSnackbarMessage](#action-removesnackbarmessage) | Actions   |                                                                                                                                                                                                           |
+
+<details>
 <summary>SnackbarModel - Volatiles</summary>
 
 #### volatile: errorDialog

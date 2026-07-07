@@ -32,13 +32,12 @@ _See the **Slots** section below for all available configuration fields._
 Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam
 library
 
-### Used in
+| Slot                                 | Type     | Description                                    |
+| ------------------------------------ | -------- | ---------------------------------------------- |
+| [htsgetBase](#slot-htsgetbase)       | `string` | the base URL to fetch from                     |
+| [htsgetTrackId](#slot-htsgettrackid) | `string` | the trackId, which is appended to the base URL |
 
-Supplies data to the [AlignmentsTrack](../alignmentstrack) track, rendered by:
-
-- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
-
-<details open>
+<details>
 <summary>HtsgetBamAdapter - Slots</summary>
 
 #### slot: htsgetBase
@@ -54,3 +53,8 @@ the trackId, which is appended to the base URL
 **Type:** `string` · **Default:** `''`
 
 </details>
+
+## Related links
+
+- **Track:** [AlignmentsTrack](../alignmentstrack)
+- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)

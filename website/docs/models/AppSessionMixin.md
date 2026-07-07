@@ -17,6 +17,18 @@ plus `renameCurrentSession`. Centralized here so the products compose one mixin
 instead of re-declaring (and diverging on) the same root delegations. The root
 must satisfy .
 
+## Members
+
+| Member                                               | Kind    | Description |
+| ---------------------------------------------------- | ------- | ----------- |
+| [root](#getter-root)                                 | Getters |             |
+| [version](#getter-version)                           | Getters |             |
+| [gitCommit](#getter-gitcommit)                       | Getters |             |
+| [history](#getter-history)                           | Getters |             |
+| [assemblyManager](#getter-assemblymanager)           | Getters |             |
+| [menus](#method-menus)                               | Methods |             |
+| [renameCurrentSession](#action-renamecurrentsession) | Actions |             |
+
 <details>
 <summary>AppSessionMixin - Getters</summary>
 

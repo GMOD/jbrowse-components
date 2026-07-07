@@ -33,6 +33,24 @@ mitochondrial contig with the vertebrate mitochondrial code (NCBI table 2):
 }
 ```
 
+### Example: shorthand-sequence
+
+`sequence.type` and `sequence.trackId` are boilerplate that can be omitted —
+they're always `'ReferenceSequenceTrack'` and a name derived from the assembly's
+`name`, respectively — leaving just the adapter:
+
+```js
+{
+  name: 'hg38',
+  sequence: {
+    adapter: {
+      type: 'BgzipFastaAdapter',
+      uri: 'https://example.com/hg38.fa.gz',
+    },
+  },
+}
+```
+
 ### Example: with-refname-aliases-and-cytobands
 
 Adds `refNameAliases` (so `chr1` and `1` resolve to the same sequence) and
@@ -95,7 +113,18 @@ there is no separate "id" field on an assembly: the "name" is the id, usually a
 short machine-readable string like hg38. For a longer human-readable label, set
 the "displayName" config slot instead
 
-<details open>
+| Slot                                                  | Type           | Description                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [aliases](#slot-aliases)                              | `stringArray`  | aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38"                                                                                                                                                                                                                                                                                                                                                |
+| [sequence](#slot-sequence)                            |                | sequence refers to a reference sequence track that has an adapter containing, importantly, a sequence adapter such as IndexedFastaAdapter                                                                                                                                                                                                                                                                                   |
+| [refNameColors](#slot-refnamecolors)                  | `stringArray`  | Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence.                                                                                                                                                                                                                                                                                           |
+| [geneticCodes](#slot-geneticcodes)                    | `frozen`       | Maps a reference sequence name to an NCBI genetic-code (translation table) id for sequences that don't use the standard code, e.g. `{ "chrM": 2 }` for the vertebrate mitochondrial code or `{ "chrPltd": 11 }` for a plastid. Drives the reference sequence track's translation rows; unlisted refNames use the standard code (1). CDS-level translation reads the GFF `transl_table` attribute directly and ignores this. |
+| [geneticCodesLocation](#slot-geneticcodeslocation)    | `fileLocation` | Optional file (tab-separated `refName<TAB>geneticCodeId`, `#` comments allowed) to load the same refName-to-genetic-code mapping from, instead of inlining it — useful when a config generator emits a sidecar rather than inlining per assembly. Entries in the inline `geneticCodes` slot take precedence over the file.                                                                                                  |
+| [refNameAliases.adapter](#slot-refnamealiasesadapter) |                | refNameAliases help resolve e.g. chr1 and 1 as the same entity the data for refNameAliases are fetched from an adapter, that is commonly a tsv like chromAliases.txt from UCSC or similar                                                                                                                                                                                                                                   |
+| [cytobands.adapter](#slot-cytobandsadapter)           |                | cytoband data is fetched from an adapter, and can be displayed by a view type as ideograms                                                                                                                                                                                                                                                                                                                                  |
+| [displayName](#slot-displayname)                      | `string`       | A human readable display name for the assembly e.g. "Homo sapiens (hg38)" while the assembly name may just be "hg38"                                                                                                                                                                                                                                                                                                        |
+
+<details>
 <summary>BaseAssembly - Slots</summary>
 
 #### slot: aliases

@@ -44,6 +44,13 @@ its own track):
 used on GCContentTrack, separately from the display type on the
 ReferenceSequenceTrack
 
+## Members
+
+| Member                                 | Kind       | Description                                                                                                                             |
+| -------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                 | Properties |                                                                                                                                         |
+| [adapterConfig](#getter-adapterconfig) | Getters    | the parent GCContentTrack's adapter is already a GCContentAdapter, so use it directly and apply the current display parameter overrides |
+
 ### LinearGCContentTrackDisplay - Configuration
 
 The configuration slots for this model are documented on its
@@ -286,7 +293,7 @@ type: types.literal('LinearGCContentTrackDisplay')
 
 </details>
 
-<details open>
+<details>
 <summary>LinearGCContentTrackDisplay - Getters</summary>
 
 #### getter: adapterConfig

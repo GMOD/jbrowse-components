@@ -15,6 +15,28 @@ Composable web session shared by jbrowse-web and react-app, before (the
 snapshotProcessor can't be `compose`d). jbrowse-web composes
 `WebSessionManagementMixin` onto this; react-app uses it as-is.
 
+## Members
+
+| Member                                                     | Kind       | Description                                                                                                                                                                                                                                                                     |
+| ---------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [sessionPlugins](#property-sessionplugins)                 | Properties |                                                                                                                                                                                                                                                                                 |
+| [sessionThemeName](#volatile-sessionthemename)             | Volatiles  |                                                                                                                                                                                                                                                                                 |
+| [pendingFileHandleIds](#volatile-pendingfilehandleids)     | Volatiles  |                                                                                                                                                                                                                                                                                 |
+| [root](#getter-root)                                       | Getters    |                                                                                                                                                                                                                                                                                 |
+| [connections](#getter-connections)                         | Getters    | list of config connections and session connections                                                                                                                                                                                                                              |
+| [shareURL](#getter-shareurl)                               | Getters    |                                                                                                                                                                                                                                                                                 |
+| [textSearchManager](#getter-textsearchmanager)             | Getters    |                                                                                                                                                                                                                                                                                 |
+| [canEditTrack](#method-canedittrack)                       | Methods    | whether the user may edit this track's config (admins may edit any; everyone else only their own session tracks)                                                                                                                                                                |
+| [isTrackOverride](#method-istrackoverride)                 | Methods    | whether `trackId` has a non-admin config override (a delta stored in trackConfigDeltas against an admin-owned config track, see updateTrackConfiguration), rather than a standalone user-added session track. Drives the "Reset track settings" menu swap and the edited badge. |
+| [getTrackActions](#method-gettrackactions)                 | Methods    | raw track actions (Settings, Copy, Delete) without submenu wrapper                                                                                                                                                                                                              |
+| [addAssemblyConf](#action-addassemblyconf)                 | Actions    |                                                                                                                                                                                                                                                                                 |
+| [addSessionPlugin](#action-addsessionplugin)               | Actions    |                                                                                                                                                                                                                                                                                 |
+| [removeSessionPlugin](#action-removesessionplugin)         | Actions    |                                                                                                                                                                                                                                                                                 |
+| [setDefaultSession](#action-setdefaultsession)             | Actions    |                                                                                                                                                                                                                                                                                 |
+| [setSession](#action-setsession)                           | Actions    |                                                                                                                                                                                                                                                                                 |
+| [editTrackConfiguration](#action-edittrackconfiguration)   | Actions    | opens the config editor for a track. Available for any track: edits to a non-session (admin-owned) track apply in-memory for the current session even when the user lacks rights to persist them.                                                                               |
+| [setPendingFileHandleIds](#action-setpendingfilehandleids) | Actions    |                                                                                                                                                                                                                                                                                 |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -300,7 +322,7 @@ pendingFileHandleIds: [] as string[]
 
 </details>
 
-<details open>
+<details>
 <summary>BaseWebSessionModel - Getters</summary>
 
 #### getter: connections
@@ -336,7 +358,7 @@ type textSearchManager = TextSearchManager
 
 </details>
 
-<details open>
+<details>
 <summary>BaseWebSessionModel - Methods</summary>
 
 #### method: canEditTrack
@@ -369,7 +391,7 @@ type getTrackActions = (config: ModelInstanceTypeProps<Record<string, any>> & { 
 
 </details>
 
-<details open>
+<details>
 <summary>BaseWebSessionModel - Actions</summary>
 
 #### action: editTrackConfiguration

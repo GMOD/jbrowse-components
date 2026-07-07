@@ -61,12 +61,14 @@ _See the **Slots** section below for all available configuration fields._
 
 configuration for the Manhattan plot display used by GWAS tracks
 
-### LinearManhattanDisplay - State model
+| Slot                                       | Type                      | Description                                                                                                                                 |
+| ------------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| [color](#slot-color)                       | `color`                   | CSS color or jexl callback for Manhattan points                                                                                             |
+| [colorBy](#slot-colorby)                   | `stringEnum` (normal, ld) | LocusZoom-style coloring. 'normal' uses `color`; 'ld' colors each point by its r² to the index SNP, read from `ldAdapter`.                  |
+| [scatterPointSize](#slot-scatterpointsize) | `number`                  | Manhattan point diameter in px (adjustable from the track menu). Larger default than wiggle's since Manhattan points are the primary glyph. |
+| [ldAdapter](#slot-ldadapter)               | `frozen`                  | PLINK .ld adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying pairwise r² used when colorBy is 'ld'.                                   |
 
-This config's runtime API is documented on its
-[state model page](../../models/linearmanhattandisplay).
-
-<details open>
+<details>
 <summary>LinearManhattanDisplay - Slots</summary>
 
 #### slot: color
@@ -104,7 +106,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from LinearWiggleDisplay</summary>
 
 [LinearWiggleDisplay config →](../linearwiggledisplay)
@@ -162,6 +164,7 @@ the same rendering
 
 </details>
 
-### LinearManhattanDisplay - Derives from
+## Related links
 
-- [LinearWiggleDisplay](../linearwiggledisplay)
+- **State model:** [runtime API](../../models/linearmanhattandisplay)
+- **Base config:** [LinearWiggleDisplay](../linearwiggledisplay)

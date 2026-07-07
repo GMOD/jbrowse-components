@@ -11,7 +11,13 @@ JBrowse core.
 
 ## Overview
 
-<details open>
+## Members
+
+| Member                       | Kind       | Description        |
+| ---------------------------- | ---------- | ------------------ |
+| [history](#property-history) | Properties | used for undo/redo |
+
+<details>
 <summary>HistoryManagementMixin - Properties</summary>
 
 #### property: history

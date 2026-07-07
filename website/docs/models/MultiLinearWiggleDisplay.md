@@ -14,6 +14,46 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 Wiggle display overlaying/stacking multiple quantitative subtracks in one area,
 with optional clustering and a tree sidebar.
 
+## Members
+
+| Member                                                               | Kind       | Description                                                                                                              |
+| -------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [type](#property-type)                                               | Properties |                                                                                                                          |
+| [configuration](#property-configuration)                             | Properties |                                                                                                                          |
+| [sourcesVolatile](#volatile-sourcesvolatile)                         | Volatiles  |                                                                                                                          |
+| [featureUnderMouse](#volatile-featureundermouse)                     | Volatiles  |                                                                                                                          |
+| [DisplayMessageComponent](#getter-displaymessagecomponent)           | Getters    |                                                                                                                          |
+| [isDensityMode](#getter-isdensitymode)                               | Getters    |                                                                                                                          |
+| [isOverlay](#getter-isoverlay)                                       | Getters    |                                                                                                                          |
+| [sourcesWithoutLayout](#getter-sourceswithoutlayout)                 | Getters    |                                                                                                                          |
+| [editableSources](#getter-editablesources)                           | Getters    |                                                                                                                          |
+| [sources](#getter-sources)                                           | Getters    |                                                                                                                          |
+| [numSources](#getter-numsources)                                     | Getters    |                                                                                                                          |
+| [autoscaleSourceNames](#getter-autoscalesourcenames)                 | Getters    |                                                                                                                          |
+| [rowHeight](#getter-rowheight)                                       | Getters    |                                                                                                                          |
+| [rowHeightTooSmallForScalebar](#getter-rowheighttoosmallforscalebar) | Getters    |                                                                                                                          |
+| [ticks](#getter-ticks)                                               | Getters    |                                                                                                                          |
+| [renderState](#getter-renderstate)                                   | Getters    |                                                                                                                          |
+| [showTree](#getter-showtree)                                         | Getters    |                                                                                                                          |
+| [showBranchLength](#getter-showbranchlength)                         | Getters    |                                                                                                                          |
+| [showRowSeparators](#getter-showrowseparators)                       | Getters    |                                                                                                                          |
+| [prefersOffset](#getter-prefersoffset)                               | Getters    | Offset the track label above the visualization so the stacked per-source rows aren't hidden behind an overlapping label. |
+| [hierarchy](#getter-hierarchy)                                       | Getters    |                                                                                                                          |
+| [spatialIndex](#getter-spatialindex)                                 | Getters    |                                                                                                                          |
+| [rpcProps](#method-rpcprops)                                         | Methods    |                                                                                                                          |
+| [gpuProps](#method-gpuprops)                                         | Methods    |                                                                                                                          |
+| [trackMenuItems](#method-trackmenuitems)                             | Methods    |                                                                                                                          |
+| [clearDisplaySpecificData](#action-cleardisplayspecificdata)         | Actions    |                                                                                                                          |
+| [setRpcData](#action-setrpcdata)                                     | Actions    |                                                                                                                          |
+| [startRenderingBackend](#action-startrenderingbackend)               | Actions    |                                                                                                                          |
+| [setShowTree](#action-setshowtree)                                   | Actions    |                                                                                                                          |
+| [setShowBranchLength](#action-setshowbranchlength)                   | Actions    |                                                                                                                          |
+| [setShowRowSeparators](#action-setshowrowseparators)                 | Actions    |                                                                                                                          |
+| [setFeatureUnderMouse](#action-setfeatureundermouse)                 | Actions    |                                                                                                                          |
+| [selectFeature](#action-selectfeature)                               | Actions    |                                                                                                                          |
+| [fetchNeeded](#action-fetchneeded)                                   | Actions    |                                                                                                                          |
+| [renderSvg](#action-rendersvg)                                       | Actions    |                                                                                                                          |
+
 ### MultiLinearWiggleDisplay - Configuration
 
 The configuration slots for this model are documented on its
@@ -272,7 +312,7 @@ featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined
 
 </details>
 
-<details open>
+<details>
 <summary>MultiLinearWiggleDisplay - Getters</summary>
 
 #### getter: prefersOffset

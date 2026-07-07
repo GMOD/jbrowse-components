@@ -10,6 +10,12 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 
 ## Overview
 
+## Members
+
+| Member                                     | Kind    | Description                                                               |
+| ------------------------------------------ | ------- | ------------------------------------------------------------------------- |
+| [getTrackActions](#method-gettrackactions) | Methods | raw track actions (Settings, Copy, Delete, Index) without submenu wrapper |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -21,7 +27,7 @@ and docs.
 [getTrackListMenuItems](../trackmenuitemssessionmixin#method-gettracklistmenuitems),
 [getTrackActionMenuItems](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)
 
-<details open>
+<details>
 <summary>DesktopSessionTrackMenuMixin - Methods</summary>
 
 #### method: getTrackActions

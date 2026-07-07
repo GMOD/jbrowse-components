@@ -43,6 +43,34 @@ canvas base display (`LinearCanvasBaseDisplay`). This is the GPU stack — despi
 the name it does NOT extend `BaseLinearDisplay` (the legacy block stack). See
 agent-docs/ARCHITECTURE.md "Display stacks".
 
+## Members
+
+| Member                                                                     | Kind      | Description |
+| -------------------------------------------------------------------------- | --------- | ----------- |
+| [isoformCollapseNoticeDismissed](#volatile-isoformcollapsenoticedismissed) | Volatiles |             |
+| [subfeatureLabels](#getter-subfeaturelabels)                               | Getters   |             |
+| [geneGlyphMode](#getter-geneglyphmode)                                     | Getters   |             |
+| [displayDirectionalChevrons](#getter-displaydirectionalchevrons)           | Getters   |             |
+| [isDisplayModeDefault](#getter-isdisplaymodedefault)                       | Getters   |             |
+| [isDisplayModePinned](#getter-isdisplaymodepinned)                         | Getters   |             |
+| [inheritedDisplayMode](#getter-inheriteddisplaymode)                       | Getters   |             |
+| [effectiveGeneGlyphMode](#getter-effectivegeneglyphmode)                   | Getters   |             |
+| [showIsoformCollapseNotice](#getter-showisoformcollapsenotice)             | Getters   |             |
+| [isGeneLike](#getter-isgenelike)                                           | Getters   |             |
+| [rpcProps](#method-rpcprops)                                               | Methods   |             |
+| [showSubmenuMenuItems](#method-showsubmenumenuitems)                       | Methods   |             |
+| [trackMenuItems](#method-trackmenuitems)                                   | Methods   |             |
+| [contextMenuItems](#method-contextmenuitems)                               | Methods   |             |
+| [setSubfeatureLabels](#action-setsubfeaturelabels)                         | Actions   |             |
+| [setGeneGlyphMode](#action-setgeneglyphmode)                               | Actions   |             |
+| [setDisplayMode](#action-setdisplaymode)                                   | Actions   |             |
+| [resetDisplayMode](#action-resetdisplaymode)                               | Actions   |             |
+| [setCompactness](#action-setcompactness)                                   | Actions   |             |
+| [setDisplayModeDefault](#action-setdisplaymodedefault)                     | Actions   |             |
+| [setShowOnlyGenes](#action-setshowonlygenes)                               | Actions   |             |
+| [setDisplayDirectionalChevrons](#action-setdisplaydirectionalchevrons)     | Actions   |             |
+| [dismissIsoformCollapseNotice](#action-dismissisoformcollapsenotice)       | Actions   |             |
+
 ### LinearBasicDisplay - Configuration
 
 The configuration slots for this model are documented on its

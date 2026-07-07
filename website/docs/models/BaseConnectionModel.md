@@ -11,7 +11,23 @@ JBrowse core.
 
 ## Overview
 
-<details open>
+## Members
+
+| Member                                   | Kind       | Description                                                                                                                                                                                                                                                                                   |
+| ---------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [tracks](#property-tracks)               | Properties |                                                                                                                                                                                                                                                                                               |
+| [configuration](#property-configuration) | Properties |                                                                                                                                                                                                                                                                                               |
+| [silent](#property-silent)               | Properties | set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. Runtime-only: connection instances aren't serialized. |
+| [loading](#volatile-loading)             | Volatiles  | true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector. Distinct from an empty `tracks` array, which is also the state of a connection that loaded successfully but has no tracks.                                                    |
+| [connectionId](#getter-connectionid)     | Getters    | the connection's unique id, resolved from its configuration (the config is the source of truth; connection names are not guaranteed unique)                                                                                                                                                   |
+| [name](#getter-name)                     | Getters    |                                                                                                                                                                                                                                                                                               |
+| [connect](#action-connect)               | Actions    | no-op hook; concrete connections (UCSC/JB2 track hubs, etc.) override this to fetch and populate their `tracks`. Returns a promise so `afterAttach` can clear the loading flag once the fetch settles.                                                                                        |
+| [setLoading](#action-setloading)         | Actions    |                                                                                                                                                                                                                                                                                               |
+| [addTrackConf](#action-addtrackconf)     | Actions    |                                                                                                                                                                                                                                                                                               |
+| [addTrackConfs](#action-addtrackconfs)   | Actions    |                                                                                                                                                                                                                                                                                               |
+| [setTrackConfs](#action-settrackconfs)   | Actions    |                                                                                                                                                                                                                                                                                               |
+
+<details>
 <summary>BaseConnectionModel - Properties</summary>
 
 #### property: silent
@@ -53,7 +69,7 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
+<details>
 <summary>BaseConnectionModel - Volatiles</summary>
 
 #### volatile: loading
@@ -71,7 +87,7 @@ loading: false
 
 </details>
 
-<details open>
+<details>
 <summary>BaseConnectionModel - Getters</summary>
 
 #### getter: connectionId
@@ -96,7 +112,7 @@ type name = string
 
 </details>
 
-<details open>
+<details>
 <summary>BaseConnectionModel - Actions</summary>
 
 #### action: connect

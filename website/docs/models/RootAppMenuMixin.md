@@ -11,6 +11,19 @@ JBrowse core.
 
 ## Overview
 
+## Members
+
+| Member                                             | Kind      | Description                              |
+| -------------------------------------------------- | --------- | ---------------------------------------- |
+| [mutableMenuActions](#volatile-mutablemenuactions) | Volatiles |                                          |
+| [setMenus](#action-setmenus)                       | Actions   |                                          |
+| [appendMenu](#action-appendmenu)                   | Actions   | Add a top-level menu                     |
+| [insertMenu](#action-insertmenu)                   | Actions   | Insert a top-level menu                  |
+| [appendToMenu](#action-appendtomenu)               | Actions   | Add a menu item to a top-level menu      |
+| [insertInMenu](#action-insertinmenu)               | Actions   | Insert a menu item into a top-level menu |
+| [appendToSubMenu](#action-appendtosubmenu)         | Actions   | Add a menu item to a sub-menu            |
+| [insertInSubMenu](#action-insertinsubmenu)         | Actions   | Insert a menu item into a sub-menu       |
+
 <details>
 <summary>RootAppMenuMixin - Volatiles</summary>
 
@@ -25,7 +38,7 @@ mutableMenuActions: [] as MenuAction[]
 
 </details>
 
-<details open>
+<details>
 <summary>RootAppMenuMixin - Actions</summary>
 
 #### action: appendMenu

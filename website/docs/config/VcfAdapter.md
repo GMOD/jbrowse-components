@@ -31,16 +31,6 @@ _See the **Slots** section below for all available configuration fields._
 used to load plain-text (non-bgzipped) VCF files. Loads the whole file into
 memory, so prefer the VcfTabixAdapter for large files.
 
-### Used in
-
-Supplies data to the [VariantTrack](../varianttrack) track, rendered by:
-
-- [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- [ChordVariantDisplay](../chordvariantdisplay)
-- [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-- [LinearVariantDisplay](../linearvariantdisplay)
-
 ### VcfAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -52,7 +42,12 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                           | Type           | Description |
+| ---------------------------------------------- | -------------- | ----------- |
+| [vcfLocation](#slot-vcflocation)               | `fileLocation` |             |
+| [samplesTsvLocation](#slot-samplestsvlocation) | `fileLocation` |             |
+
+<details>
 <summary>VcfAdapter - Slots</summary>
 
 #### slot: vcfLocation
@@ -77,3 +72,14 @@ preprocessor to allow minimal config:
 ```
 
 </details>
+
+## Related links
+
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)

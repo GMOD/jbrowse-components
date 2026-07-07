@@ -15,6 +15,25 @@ built on the [JBrowseRootConfig](/docs/config/jbrowserootconfig) config model â€
 config models are MST trees themselves, which is why this state model is allowed
 to build on one. Generally found on a property named rootModel.jbrowse
 
+## Members
+
+| Member                                                         | Kind    | Description                                                                                             |
+| -------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| [assemblyNames](#getter-assemblynames)                         | Getters |                                                                                                         |
+| [rpcManager](#getter-rpcmanager)                               | Getters |                                                                                                         |
+| [addAssemblyConf](#action-addassemblyconf)                     | Actions |                                                                                                         |
+| [removeAssemblyConf](#action-removeassemblyconf)               | Actions |                                                                                                         |
+| [addTrackConf](#action-addtrackconf)                           | Actions |                                                                                                         |
+| [addConnectionConf](#action-addconnectionconf)                 | Actions |                                                                                                         |
+| [deleteConnectionConf](#action-deleteconnectionconf)           | Actions |                                                                                                         |
+| [deleteTrackConf](#action-deletetrackconf)                     | Actions |                                                                                                         |
+| [updateTrackConf](#action-updatetrackconf)                     | Actions | Updates an existing track configuration. Used to sync editable configs back to the frozen tracks array. |
+| [addPlugin](#action-addplugin)                                 | Actions |                                                                                                         |
+| [removePlugin](#action-removeplugin)                           | Actions |                                                                                                         |
+| [setDefaultSessionConf](#action-setdefaultsessionconf)         | Actions |                                                                                                         |
+| [addInternetAccountConf](#action-addinternetaccountconf)       | Actions |                                                                                                         |
+| [deleteInternetAccountConf](#action-deleteinternetaccountconf) | Actions |                                                                                                         |
+
 <details>
 <summary>AppCoreJBrowseModel - Getters</summary>
 
@@ -32,7 +51,7 @@ type rpcManager = RpcManager
 
 </details>
 
-<details open>
+<details>
 <summary>AppCoreJBrowseModel - Actions</summary>
 
 #### action: updateTrackConf

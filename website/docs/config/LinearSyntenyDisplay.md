@@ -31,24 +31,16 @@ A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
 }
 ```
 
-## Overview
+## Related links
 
-### LinearSyntenyDisplay - Compatible adapters
-
-Data adapters that can supply the [SyntenyTrack](../syntenytrack):
-
-- [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
-- [AllVsAllPAFAdapter](../allvsallpafadapter)
-- [ChainAdapter](../chainadapter)
-- [DeltaAdapter](../deltaadapter)
-- [MCScanAnchorsAdapter](../mcscananchorsadapter)
-- [MCScanBlocksAdapter](../mcscanblocksadapter)
-- [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
-- [MashMapAdapter](../mashmapadapter)
-- [PAFAdapter](../pafadapter)
-- [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
-
-### LinearSyntenyDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/linearsyntenydisplay).
+- **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
+- **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
+- **Adapter:** [ChainAdapter](../chainadapter)
+- **Adapter:** [DeltaAdapter](../deltaadapter)
+- **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
+- **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
+- **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- **Adapter:** [MashMapAdapter](../mashmapadapter)
+- **Adapter:** [PAFAdapter](../pafadapter)
+- **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
+- **State model:** [runtime API](../../models/linearsyntenydisplay)

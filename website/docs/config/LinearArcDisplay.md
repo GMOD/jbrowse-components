@@ -43,24 +43,16 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### LinearArcDisplay - Compatible adapters
+| Slot                             | Type                       | Description                                                    |
+| -------------------------------- | -------------------------- | -------------------------------------------------------------- |
+| [color](#slot-color)             | `color`                    | the color of the arcs                                          |
+| [thickness](#slot-thickness)     | `number`                   | the thickness of the arcs                                      |
+| [label](#slot-label)             | `string`                   | the label to appear at the apex of the arcs                    |
+| [arcHeight](#slot-archeight)     | `number`                   | the height of the arcs                                         |
+| [caption](#slot-caption)         | `string`                   | the caption to appear when hovering over any point on the arcs |
+| [displayMode](#slot-displaymode) | `enum` (arcs, semicircles) | render semi-circles instead of arcs                            |
 
-Data adapters that can supply the [FeatureTrack](../featuretrack):
-
-- [BedAdapter](../bedadapter)
-- [BedTabixAdapter](../bedtabixadapter)
-- [BigBedAdapter](../bigbedadapter)
-- [Gff3Adapter](../gff3adapter)
-- [Gff3TabixAdapter](../gff3tabixadapter)
-- [GtfAdapter](../gtfadapter)
-- [GtfTabixAdapter](../gtftabixadapter)
-
-### LinearArcDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/lineararcdisplay).
-
-<details open>
+<details>
 <summary>LinearArcDisplay - Slots</summary>
 
 #### slot: color
@@ -154,7 +146,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseLinearDisplay</summary>
 
 [BaseLinearDisplay config →](../baselineardisplay)
@@ -204,6 +196,14 @@ runtime rather than being stored with jexl in the config
 
 </details>
 
-### LinearArcDisplay - Derives from
+## Related links
 
-- [BaseLinearDisplay](../baselineardisplay)
+- **Adapter:** [BedAdapter](../bedadapter)
+- **Adapter:** [BedTabixAdapter](../bedtabixadapter)
+- **Adapter:** [BigBedAdapter](../bigbedadapter)
+- **Adapter:** [Gff3Adapter](../gff3adapter)
+- **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
+- **Adapter:** [GtfAdapter](../gtfadapter)
+- **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **State model:** [runtime API](../../models/lineararcdisplay)
+- **Base config:** [BaseLinearDisplay](../baselineardisplay)

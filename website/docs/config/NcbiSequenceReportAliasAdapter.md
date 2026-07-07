@@ -24,7 +24,12 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                     | Type           | Description                                                           |
+| ---------------------------------------- | -------------- | --------------------------------------------------------------------- |
+| [location](#slot-location)               | `fileLocation` |                                                                       |
+| [useNameOverride](#slot-usenameoverride) | `boolean`      | forces usage of the UCSC names over the NCBI style names from a FASTA |
+
+<details>
 <summary>NcbiSequenceReportAliasAdapter - Slots</summary>
 
 #### slot: location

@@ -14,6 +14,30 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 Holds one level of a linear synteny comparison: its track list, height and level
 index, composed with the shared rendering-lifecycle state.
 
+## Members
+
+| Member                                                 | Kind       | Description                                                                                                                                                                                                                                                                         |
+| ------------------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                     | Properties |                                                                                                                                                                                                                                                                                     |
+| [type](#property-type)                                 | Properties |                                                                                                                                                                                                                                                                                     |
+| [tracks](#property-tracks)                             | Properties |                                                                                                                                                                                                                                                                                     |
+| [height](#property-height)                             | Properties |                                                                                                                                                                                                                                                                                     |
+| [level](#property-level)                               | Properties |                                                                                                                                                                                                                                                                                     |
+| [gpuRenderingBackend](#getter-gpurenderingbackend)     | Getters    | Typed accessor for the slot-mixin-owned `currentRenderingBackend`. All synteny displays within the level upload their geometry to the same backend and render onto one canvas.                                                                                                      |
+| [parentView](#getter-parentview)                       | Getters    |                                                                                                                                                                                                                                                                                     |
+| [assemblyNames](#getter-assemblynames)                 | Getters    |                                                                                                                                                                                                                                                                                     |
+| [linearSyntenyDisplays](#getter-linearsyntenydisplays) | Getters    | All synteny displays under this level's tracks.                                                                                                                                                                                                                                     |
+| [numFeats](#getter-numfeats)                           | Getters    |                                                                                                                                                                                                                                                                                     |
+| [settled](#getter-settled)                             | Getters    | Canvas has painted and no display is still fetching, so what's on screen is the final settled content. Drives the `synteny_canvas_done` test-id, which screenshot capture and the browser-test suites wait on before snapshotting — so it must mean "done", not just "first paint". |
+| [geometryByDisplayKey](#getter-geometrybydisplaykey)   | Getters    | Per-display GPU geometry keyed by displayKey. The upload autorun diffs this map — new entries upload, vanished entries evict.                                                                                                                                                       |
+| [syntenyRenderState](#getter-syntenyrenderstate)       | Getters    | Aggregated per-frame render state. Every display in the level draws starting at yTop=0 since each level owns its own canvas.                                                                                                                                                        |
+| [displaysByKey](#getter-displaysbykey)                 | Getters    | Reverse lookup key → display, used to dispatch pick results.                                                                                                                                                                                                                        |
+| [setHeight](#action-setheight)                         | Actions    |                                                                                                                                                                                                                                                                                     |
+| [showTrack](#action-showtrack)                         | Actions    |                                                                                                                                                                                                                                                                                     |
+| [hideTrack](#action-hidetrack)                         | Actions    |                                                                                                                                                                                                                                                                                     |
+| [toggleTrack](#action-toggletrack)                     | Actions    |                                                                                                                                                                                                                                                                                     |
+| [startRenderingBackend](#action-startrenderingbackend) | Actions    |                                                                                                                                                                                                                                                                                     |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -84,7 +108,7 @@ level: types.number
 
 </details>
 
-<details open>
+<details>
 <summary>LinearSyntenyViewHelper - Getters</summary>
 
 #### getter: gpuRenderingBackend

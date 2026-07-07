@@ -47,15 +47,14 @@ from the two matching columns. When neither column is the reference the link is
 transitive (both orthologous to the same reference gene) rather than a direct
 alignment. Listing just two assemblies pins the track to that pair.
 
-### Used in
+| Slot                                               | Type           | Description                                                                                                                                                                                                                                  |
+| -------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [mcscanBlocksLocation](#slot-mcscanblockslocation) | `fileLocation` |                                                                                                                                                                                                                                              |
+| [blockAssemblies](#slot-blockassemblies)           | `stringArray`  | one assembly name per column of the blocks file, in column order (column 0 is the reference)                                                                                                                                                 |
+| [bedLocations](#slot-bedlocations)                 | `frozen`       | one BED fileLocation per column of the blocks file, parallel to blockAssemblies, resolving that column's gene ids to coordinates                                                                                                             |
+| [assemblyNames](#slot-assemblynames)               | `stringArray`  | the assemblies this track can render; list all of blockAssemblies to let one track back every band of a multi-way view (the view picks each band's pair), or just two to pin it to a single pair. Every entry must appear in blockAssemblies |
 
-Supplies data to the [SyntenyTrack](../syntenytrack) track, rendered by:
-
-- [DotplotDisplay](../dotplotdisplay)
-- [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- [LinearSyntenyDisplay](../linearsyntenydisplay)
-
-<details open>
+<details>
 <summary>MCScanBlocksAdapter - Slots</summary>
 
 #### slot: mcscanBlocksLocation
@@ -86,3 +85,10 @@ just two to pin it to a single pair. Every entry must appear in blockAssemblies
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
+
+## Related links
+
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

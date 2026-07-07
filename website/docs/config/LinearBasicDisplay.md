@@ -74,24 +74,11 @@ Color by an attribute with a jexl expression:
 }
 ```
 
-### LinearBasicDisplay - Compatible adapters
+| Slot                                   | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| -------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [fetchSizeLimit](#slot-fetchsizelimit) | `number` | Raises the inherited 1 Mb default: feature (GFF/BED) tracks are light text, and the tabix index byte estimate is a coarse upper bound that over-reports small dense regions, so a single gene routinely tripped the old 1 Mb gate. A few Mb of feature text downloads fast; the feature-density gate remains the backstop for genuinely over-dense views. Kept here on the feature leaf so the heavier alignment/variant displays keep their own tighter inherited limit. |
 
-Data adapters that can supply the [FeatureTrack](../featuretrack):
-
-- [BedAdapter](../bedadapter)
-- [BedTabixAdapter](../bedtabixadapter)
-- [BigBedAdapter](../bigbedadapter)
-- [Gff3Adapter](../gff3adapter)
-- [Gff3TabixAdapter](../gff3tabixadapter)
-- [GtfAdapter](../gtfadapter)
-- [GtfTabixAdapter](../gtftabixadapter)
-
-### LinearBasicDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/linearbasicdisplay).
-
-<details open>
+<details>
 <summary>LinearBasicDisplay - Slots</summary>
 
 #### slot: fetchSizeLimit
@@ -106,3 +93,14 @@ alignment/variant displays keep their own tighter inherited limit.
 **Type:** `number` · **Default:** `5_000_000` · _advanced_
 
 </details>
+
+## Related links
+
+- **Adapter:** [BedAdapter](../bedadapter)
+- **Adapter:** [BedTabixAdapter](../bedtabixadapter)
+- **Adapter:** [BigBedAdapter](../bigbedadapter)
+- **Adapter:** [Gff3Adapter](../gff3adapter)
+- **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
+- **Adapter:** [GtfAdapter](../gtfadapter)
+- **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **State model:** [runtime API](../../models/linearbasicdisplay)

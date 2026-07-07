@@ -14,6 +14,23 @@ JBrowse core.
 Undo/redo history for a target state-tree node: records snapshots as it changes
 and exposes canUndo/canRedo with undo/redo actions.
 
+## Members
+
+| Member                                           | Kind       | Description |
+| ------------------------------------------------ | ---------- | ----------- |
+| [undoIdx](#property-undoidx)                     | Properties |             |
+| [targetPath](#property-targetpath)               | Properties |             |
+| [history](#volatile-history)                     | Volatiles  |             |
+| [notTrackingUndo](#volatile-nottrackingundo)     | Volatiles  |             |
+| [canUndo](#getter-canundo)                       | Getters    |             |
+| [canRedo](#getter-canredo)                       | Getters    |             |
+| [stopTrackingUndo](#action-stoptrackingundo)     | Actions    |             |
+| [resumeTrackingUndo](#action-resumetrackingundo) | Actions    |             |
+| [addUndoState](#action-addundostate)             | Actions    |             |
+| [initialize](#action-initialize)                 | Actions    |             |
+| [undo](#action-undo)                             | Actions    |             |
+| [redo](#action-redo)                             | Actions    |             |
+
 <details>
 <summary>TimeTraveller - Properties</summary>
 

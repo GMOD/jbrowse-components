@@ -37,6 +37,19 @@ A complete `VariantTrack` config to paste into `tracks`:
 
 GPU-accelerated variant display with custom feature widget on click.
 
+## Members
+
+| Member                                                         | Kind       | Description |
+| -------------------------------------------------------------- | ---------- | ----------- |
+| [type](#property-type)                                         | Properties |             |
+| [impactLegendDismissed](#volatile-impactlegenddismissed)       | Volatiles  |             |
+| [featureWidgetType](#getter-featurewidgettype)                 | Getters    |             |
+| [colorsByConsequenceImpact](#getter-colorsbyconsequenceimpact) | Getters    |             |
+| [impactLegendItems](#getter-impactlegenditems)                 | Getters    |             |
+| [showImpactLegend](#getter-showimpactlegend)                   | Getters    |             |
+| [colorBySubMenuItems](#method-colorbysubmenuitems)             | Methods    |             |
+| [setImpactLegendDismissed](#action-setimpactlegenddismissed)   | Actions    |             |
+
 ### LinearVariantDisplay - Configuration
 
 The configuration slots for this model are documented on its

@@ -41,6 +41,16 @@ display type:
 displays location of "synteny" feature in a plain LGV, allowing linking out to
 external synteny views
 
+## Members
+
+| Member                                         | Kind       | Description                                                                                                                       |
+| ---------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                         | Properties |                                                                                                                                   |
+| [configuration](#property-configuration)       | Properties |                                                                                                                                   |
+| [featureWidgetType](#getter-featurewidgettype) | Getters    | synteny features open the SyntenyFeatureWidget; the inherited `selectFeature` action reads this getter, so no override is needed. |
+| [contextMenuItems](#method-contextmenuitems)   | Methods    |                                                                                                                                   |
+| [trackMenuItems](#method-trackmenuitems)       | Methods    |                                                                                                                                   |
+
 ### LGVSyntenyDisplay - Configuration
 
 The configuration slots for this model are documented on its
@@ -63,8 +73,7 @@ and docs.
 [contextMenuCoord](../linearalignmentsdisplay#volatile-contextmenucoord),
 [contextMenuCigarHit](../linearalignmentsdisplay#volatile-contextmenucigarhit),
 [contextMenuIndicatorHit](../linearalignmentsdisplay#volatile-contextmenuindicatorhit),
-[contextMenuRefName](../linearalignmentsdisplay#volatile-contextmenurefname),
-[contextMenuRpcData](../linearalignmentsdisplay#volatile-contextmenurpcdata),
+[contextMenuBlock](../linearalignmentsdisplay#volatile-contextmenublock),
 [rpcDataMap](../linearalignmentsdisplay#volatile-rpcdatamap),
 [scrollTop](../linearalignmentsdisplay#volatile-scrolltop),
 [collapsedGroups](../linearalignmentsdisplay#volatile-collapsedgroups),
@@ -271,8 +280,7 @@ and docs.
 [setContextMenuCigarHit](../linearalignmentsdisplay#action-setcontextmenucigarhit),
 [setContextMenuIndicatorHit](../linearalignmentsdisplay#action-setcontextmenuindicatorhit),
 [clearContextMenu](../linearalignmentsdisplay#action-clearcontextmenu),
-[setContextMenuRefName](../linearalignmentsdisplay#action-setcontextmenurefname),
-[setContextMenuRpcData](../linearalignmentsdisplay#action-setcontextmenurpcdata),
+[setContextMenuBlock](../linearalignmentsdisplay#action-setcontextmenublock),
 [selectFeature](../linearalignmentsdisplay#action-selectfeature),
 [startRenderingBackend](../linearalignmentsdisplay#action-startrenderingbackend),
 [selectFeatureById](../linearalignmentsdisplay#action-selectfeaturebyid),
@@ -437,7 +445,7 @@ configuration: ConfigurationReference(schema)
 
 </details>
 
-<details open>
+<details>
 <summary>LGVSyntenyDisplay - Getters</summary>
 
 #### getter: featureWidgetType

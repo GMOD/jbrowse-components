@@ -39,14 +39,6 @@ whole-genome pangenome alignments that do not fit in memory. Semantics match
 `AllVsAllPAFAdapter`: one-vs-all in a plain LGV, single-pair when the synteny
 view supplies a `targetAssemblyName`.
 
-### Used in
-
-Supplies data to the [SyntenyTrack](../syntenytrack) track, rendered by:
-
-- [DotplotDisplay](../dotplotdisplay)
-- [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- [LinearSyntenyDisplay](../linearsyntenydisplay)
-
 ### AllVsAllIndexedPAFAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes all_vs_all.pif.gz.tbi:
@@ -59,7 +51,17 @@ preprocessor to allow minimal config, assumes all_vs_all.pif.gz.tbi:
 }
 ```
 
-<details open>
+| Slot                                                   | Type                    | Description                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)                   | `stringArray`           | The assemblies this track appears on and can back synteny bands for — list the assemblies you load into JBrowse. Each entry must resolve to a PanSN sample prefix present in the file. In a plain LGV the track still draws its assembly against every other sample in the file, so mates need not be listed here (unlisted mates are labelled by their PanSN prefix). |
+| [pifGzLocation](#slot-pifgzlocation)                   | `fileLocation`          | location of the all-vs-all tabix indexed PAF (pif)                                                                                                                                                                                                                                                                                                                     |
+| [assemblyNameToPanSN](#slot-assemblynametopansn)       | `frozen`                | Maps a JBrowse assembly name to its PanSN sample prefix in the PAF, for when they differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need `{ grape: 'Vitis_vinifera' }`). Defaults to identity: the assembly name is assumed to be the PanSN sample name.                                                                                           |
+| [coarseBpPerPxThreshold](#slot-coarsebpperpxthreshold) | `number`                | bpPerPx threshold at which the reader switches from the per-row CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier (uppercase T/Q prefix), when make-pif was run with a coarse tier. No coarse tier present in the file = always uses fine tier.                                                                                                            |
+| [index](#slot-index)                                   |                         |                                                                                                                                                                                                                                                                                                                                                                        |
+| [index.indexType](#slot-indexindextype)                | `stringEnum` (TBI, CSI) |                                                                                                                                                                                                                                                                                                                                                                        |
+| [index.location](#slot-indexlocation)                  | `fileLocation`          |                                                                                                                                                                                                                                                                                                                                                                        |
+
+<details>
 <summary>AllVsAllIndexedPAFAdapter - Slots</summary>
 
 #### slot: assemblyNames
@@ -127,3 +129,10 @@ ConfigurationSchema('TabixIndex', {
 `{ uri: '/path/to/all_vs_all.pif.gz.tbi', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

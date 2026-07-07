@@ -16,7 +16,14 @@ selector, `getTrackActionMenuItems` for the in-view label menu) shared by the
 full web and desktop sessions. Both are pure functions of `getTrackActions`,
 which each session supplies (web gates on edit rights; desktop adds indexing).
 
-<details open>
+## Members
+
+| Member                                                     | Kind    | Description                                                           |
+| ---------------------------------------------------------- | ------- | --------------------------------------------------------------------- |
+| [getTrackListMenuItems](#method-gettracklistmenuitems)     | Methods | flattened menu items for use in hierarchical track selector           |
+| [getTrackActionMenuItems](#method-gettrackactionmenuitems) | Methods | track menu with About + "Track actions" submenu for the in-view label |
+
+<details>
 <summary>TrackMenuItemsSessionMixin - Methods</summary>
 
 #### method: getTrackListMenuItems

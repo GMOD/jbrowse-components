@@ -28,14 +28,6 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### Used in
-
-Supplies data to the [ReferenceSequenceTrack](../referencesequencetrack) track,
-rendered by:
-
-- [LinearGCContentDisplay](../lineargccontentdisplay)
-- [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
-
 ### BgzipFastaAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.fa.fai and
@@ -48,7 +40,14 @@ yourfile.fa.gzi:
 }
 ```
 
-<details open>
+| Slot                                       | Type           | Description            |
+| ------------------------------------------ | -------------- | ---------------------- |
+| [fastaLocation](#slot-fastalocation)       | `fileLocation` |                        |
+| [faiLocation](#slot-failocation)           | `fileLocation` |                        |
+| [metadataLocation](#slot-metadatalocation) | `fileLocation` | Optional metadata file |
+| [gziLocation](#slot-gzilocation)           | `fileLocation` |                        |
+
+<details>
 <summary>BgzipFastaAdapter - Slots</summary>
 
 #### slot: fastaLocation
@@ -74,3 +73,10 @@ Optional metadata file
 `{ uri: '/path/to/seq.fa.gz.gzi', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)

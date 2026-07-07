@@ -32,14 +32,6 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load MashMap `.out` alignment files (query and target assembly required)
 
-### Used in
-
-Supplies data to the [SyntenyTrack](../syntenytrack) track, rendered by:
-
-- [DotplotDisplay](../dotplotdisplay)
-- [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- [LinearSyntenyDisplay](../linearsyntenydisplay)
-
 ### MashMapAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -53,7 +45,14 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                   | Type           | Description                                                                                                                               |
+| -------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
+| [targetAssembly](#slot-targetassembly) | `string`       | Alternative to assemblyNames array: the target assembly                                                                                   |
+| [queryAssembly](#slot-queryassembly)   | `string`       | Alternative to assemblyNames array: the query assembly                                                                                    |
+| [outLocation](#slot-outlocation)       | `fileLocation` |                                                                                                                                           |
+
+<details>
 <summary>MashMapAdapter - Slots</summary>
 
 #### slot: assemblyNames
@@ -81,3 +80,10 @@ Alternative to assemblyNames array: the query assembly
 `{ uri: '/path/to/mashmap.out', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

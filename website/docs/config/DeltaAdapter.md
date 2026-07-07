@@ -33,14 +33,6 @@ _See the **Slots** section below for all available configuration fields._
 used to load MUMmer `.delta` alignment files (query and target assembly
 required)
 
-### Used in
-
-Supplies data to the [SyntenyTrack](../syntenytrack) track, rendered by:
-
-- [DotplotDisplay](../dotplotdisplay)
-- [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- [LinearSyntenyDisplay](../linearsyntenydisplay)
-
 ### DeltaAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -54,7 +46,14 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                   | Type           | Description                                                                                                                               |
+| -------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
+| [targetAssembly](#slot-targetassembly) | `string`       | alternative to assembly names                                                                                                             |
+| [queryAssembly](#slot-queryassembly)   | `string`       | alternative to assembly names                                                                                                             |
+| [deltaLocation](#slot-deltalocation)   | `fileLocation` |                                                                                                                                           |
+
+<details>
 <summary>DeltaAdapter - Slots</summary>
 
 #### slot: assemblyNames
@@ -82,3 +81,10 @@ alternative to assembly names
 `{ uri: '/path/to/file.delta', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

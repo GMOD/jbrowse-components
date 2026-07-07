@@ -18,6 +18,54 @@ shared per-region lifecycle. Rows are a `sources` chain (discovered →
 layout-reconciled → subtree-filtered) and the left sidebar (labels +
 dendrogram + reorder) is the shared `TreeSidebarMixin`.
 
+## Members
+
+| Member                                                       | Kind       | Description                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                       | Properties |                                                                                                                                                                                                                                                               |
+| [configuration](#property-configuration)                     | Properties |                                                                                                                                                                                                                                                               |
+| [rpcDataMap](#volatile-rpcdatamap)                           | Volatiles  |                                                                                                                                                                                                                                                               |
+| [prefersOffset](#volatile-prefersoffset)                     | Volatiles  |                                                                                                                                                                                                                                                               |
+| [hoveredFeature](#volatile-hoveredfeature)                   | Volatiles  | The feature under the mouse (+ client coords for tooltip placement), or undefined when not hovering a block.                                                                                                                                                  |
+| [conf](#getter-conf)                                         | Getters    | config typed off the concrete schema (ConfigurationReference erases it to any); direct reads route through here to stay typed                                                                                                                                 |
+| [showTree](#getter-showtree)                                 | Getters    |                                                                                                                                                                                                                                                               |
+| [showBranchLength](#getter-showbranchlength)                 | Getters    |                                                                                                                                                                                                                                                               |
+| [partitionField](#getter-partitionfield)                     | Getters    |                                                                                                                                                                                                                                                               |
+| [rowOrder](#getter-roworder)                                 | Getters    | Optional explicit row order from config; values listed here are placed first, remaining discovered values follow in sorted order.                                                                                                                             |
+| [colorConfig](#getter-colorconfig)                           | Getters    | Raw `color` slot (a CSS color or `jexl:` string), forwarded to the worker which resolves it per feature.                                                                                                                                                      |
+| [sampleColorMap](#getter-samplecolormap)                     | Getters    | Map of partition value → color, forwarded to the worker which applies it over the per-feature `color`.                                                                                                                                                        |
+| [rowProportion](#getter-rowproportion)                       | Getters    |                                                                                                                                                                                                                                                               |
+| [sourcesWithoutLayout](#getter-sourceswithoutlayout)         | Getters    | Rows discovered in the loaded data: the distinct partition values across all loaded regions, ordered by the config `rowOrder` then sorted. The pre-layout, pre-filter input to the arrangement dialog and to clustering.                                      |
+| [editableSources](#getter-editablesources)                   | Getters    | Discovered rows with the user's arrangement (reorder/relabel) applied — what the arrangement dialog edits. Not subtree-filtered.                                                                                                                              |
+| [sources](#getter-sources)                                   | Getters    | The display rows: `editableSources` narrowed by the active subtree filter. Render order, label order, and `rowIndexByValue` all key off this, so reordering/filtering flows through to the painting.                                                          |
+| [rowIndexByValue](#getter-rowindexbyvalue)                   | Getters    |                                                                                                                                                                                                                                                               |
+| [rowColorsByIndex](#getter-rowcolorsbyindex)                 | Getters    | Per-row color (ABGR) by display row — the single per-row resolver (dialog color > config `sampleColorMap` > palette-when-default). Applied at render time over the worker-baked per-feature `color` slot, so any color change repaints without a refetch.     |
+| [nrow](#getter-nrow)                                         | Getters    | Number of displayed rows (at least 1, so the auto-fit division is safe and the canvas mounts before data arrives).                                                                                                                                            |
+| [fitTargetHeight](#getter-fittargetheight)                   | Getters    | The track height that auto-fit mode divides among rows: the `height` config slot (its default, or a drag-resized value written to it).                                                                                                                        |
+| [rowHeightSetting](#getter-rowheightsetting)                 | Getters    | Resolved fixed row-height setting: `0` is auto-fit, any positive value is a pinned px height. Drag-resize / fit-toggle write it via `setSlot`.                                                                                                                |
+| [rowHeight](#getter-rowheight)                               | Getters    | Resolved per-row height. `rowHeightSetting === 0` auto-fits: the display height split evenly across rows so all rows stay visible as the row count grows. Any positive value is a pinned px height. Every consumer reads this, never `rowHeightSetting`.      |
+| [height](#getter-height)                                     | Getters    | Override BaseLinearDisplay.height so the track container matches the rendering canvas (numRows × rowHeight). In auto-fit mode this resolves to `fitTargetHeight`; in fixed mode it grows with the row count.                                                  |
+| [hierarchy](#getter-hierarchy)                               | Getters    | Positioned dendrogram (when a cluster tree exists and rows are loaded). Leaves spaced over `height`, branches over `treeAreaWidth`.                                                                                                                           |
+| [sidebarOffset](#getter-sidebaroffset)                       | Getters    | Pixel width reserved on the left for the tree (0 when no tree shows).                                                                                                                                                                                         |
+| [spatialIndex](#getter-spatialindex)                         | Getters    |                                                                                                                                                                                                                                                               |
+| [renderState](#getter-renderstate)                           | Getters    | Render state passed to the GPU/Canvas2D backend each frame.                                                                                                                                                                                                   |
+| [rpcProps](#method-rpcprops)                                 | Methods    | Fetch-input cache keys (tier-1, via SettingsInvalidate → refetch). Color is resolved in the worker, so the raw color slot is a key.                                                                                                                           |
+| [featureAt](#method-featureat)                               | Methods    | Hit-test the feature under a canvas-relative pixel: row from `mouseY / rowHeight`, genomic bp from the view, then the first feature on that row whose `[start,end)` covers the bp. Returns undefined over the sidebar, off-row, out-of-bounds, or over a gap. |
+| [trackMenuItems](#method-trackmenuitems)                     | Methods    |                                                                                                                                                                                                                                                               |
+| [setRowHeight](#action-setrowheight)                         | Actions    |                                                                                                                                                                                                                                                               |
+| [setShowTree](#action-setshowtree)                           | Actions    |                                                                                                                                                                                                                                                               |
+| [setShowBranchLength](#action-setshowbranchlength)           | Actions    |                                                                                                                                                                                                                                                               |
+| [setHoveredFeature](#action-sethoveredfeature)               | Actions    |                                                                                                                                                                                                                                                               |
+| [selectFeatureById](#action-selectfeaturebyid)               | Actions    | Re-fetch the full clicked feature by id and open it in the feature details widget. The painting ships only the slim render arrays, so the complete feature is fetched on demand (GetCanvasFeatureDetails).                                                    |
+| [setRpcData](#action-setrpcdata)                             | Actions    |                                                                                                                                                                                                                                                               |
+| [clearDisplaySpecificData](#action-cleardisplayspecificdata) | Actions    |                                                                                                                                                                                                                                                               |
+| [setHeight](#action-setheight)                               | Actions    | Set the track height. In auto-fit mode the rows restretch to it; in fixed mode it's distributed across the current rows as a pinned row height.                                                                                                               |
+| [resizeHeight](#action-resizeheight)                         | Actions    | Drag-resize. Defers to `setHeight`, which restretches rows in auto-fit mode and re-pins the row height in fixed mode.                                                                                                                                         |
+| [setFitToHeight](#action-setfittoheight)                     | Actions    | Switch to auto-fit: seed the `height` config slot from the current content height (so toggling on doesn't jump), then `rowHeight = 0` makes `rowHeight` derive from it.                                                                                       |
+| [startRenderingBackend](#action-startrenderingbackend)       | Actions    |                                                                                                                                                                                                                                                               |
+| [fetchNeeded](#action-fetchneeded)                           | Actions    |                                                                                                                                                                                                                                                               |
+| [renderSvg](#action-rendersvg)                               | Actions    |                                                                                                                                                                                                                                                               |
+
 ### LinearMultiRowFeatureDisplay - Configuration
 
 The configuration slots for this model are documented on its
@@ -203,7 +251,7 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
+<details>
 <summary>LinearMultiRowFeatureDisplay - Volatiles</summary>
 
 #### volatile: hoveredFeature
@@ -243,7 +291,7 @@ prefersOffset: true
 
 </details>
 
-<details open>
+<details>
 <summary>LinearMultiRowFeatureDisplay - Getters</summary>
 
 #### getter: conf
@@ -439,7 +487,7 @@ type spatialIndex =
 
 </details>
 
-<details open>
+<details>
 <summary>LinearMultiRowFeatureDisplay - Methods</summary>
 
 #### method: rpcProps
@@ -475,7 +523,7 @@ type trackMenuItems = () => MenuItem[]
 
 </details>
 
-<details open>
+<details>
 <summary>LinearMultiRowFeatureDisplay - Actions</summary>
 
 #### action: selectFeatureById

@@ -33,16 +33,6 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed VCF files
 
-### Used in
-
-Supplies data to the [VariantTrack](../varianttrack) track, rendered by:
-
-- [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- [ChordVariantDisplay](../chordvariantdisplay)
-- [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-- [LinearVariantDisplay](../linearvariantdisplay)
-
 ### VcfTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
@@ -54,7 +44,15 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
 }
 ```
 
-<details open>
+| Slot                                           | Type                    | Description                                                                                  |
+| ---------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------- |
+| [vcfGzLocation](#slot-vcfgzlocation)           | `fileLocation`          |                                                                                              |
+| [index.indexType](#slot-indexindextype)        | `stringEnum` (TBI, CSI) |                                                                                              |
+| [index.location](#slot-indexlocation)          | `fileLocation`          |                                                                                              |
+| [samplesTsvLocation](#slot-samplestsvlocation) | `fileLocation`          |                                                                                              |
+| [fetchSizeLimit](#slot-fetchsizelimit)         | `number`                | size in bytes over which to display a warning to the user that too much data will be fetched |
+
+<details>
 <summary>VcfTabixAdapter - Slots</summary>
 
 #### slot: vcfGzLocation
@@ -95,3 +93,14 @@ will be fetched
 **Type:** `number` · **Default:** `1_000_000` · _advanced_
 
 </details>
+
+## Related links
+
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)

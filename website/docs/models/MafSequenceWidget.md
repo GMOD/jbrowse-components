@@ -14,6 +14,19 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 Widget showing multiple-alignment (MAF) sequence for a set of samples over the
 connected view's regions, with per-row hover highlight state.
 
+## Members
+
+| Member                                         | Kind       | Description |
+| ---------------------------------------------- | ---------- | ----------- |
+| [id](#property-id)                             | Properties |             |
+| [type](#property-type)                         | Properties |             |
+| [adapterConfig](#property-adapterconfig)       | Properties |             |
+| [samples](#property-samples)                   | Properties |             |
+| [regions](#property-regions)                   | Properties |             |
+| [connectedViewId](#property-connectedviewid)   | Properties |             |
+| [hoverHighlight](#volatile-hoverhighlight)     | Volatiles  |             |
+| [setHoverHighlight](#action-sethoverhighlight) | Actions    |             |
+
 <details>
 <summary>MafSequenceWidget - Properties</summary>
 

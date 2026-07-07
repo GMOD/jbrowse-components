@@ -30,7 +30,11 @@ Preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                           | Type           | Description                                   |
+| ------------------------------ | -------------- | --------------------------------------------- |
+| [ldLocation](#slot-ldlocation) | `fileLocation` | Location of the PLINK LD file (.ld or .ld.gz) |
+
+<details>
 <summary>PlinkLDAdapter - Slots</summary>
 
 #### slot: ldLocation

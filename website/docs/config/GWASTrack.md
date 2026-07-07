@@ -37,21 +37,13 @@ _See the **Slots** section below for all available configuration fields._
 
 used for GWAS (Genome-Wide Association Study) tracks with Manhattan plot display
 
-### GWASTrack - Display types
-
-A track is just a container; the actual rendering behavior and config slots live
-on its display type(s):
-
-- [LinearManhattanDisplay](../linearmanhattandisplay)
-  ([state model](../../models/linearmanhattandisplay))
-
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseTrack</summary>
 
 [BaseTrack config →](../basetrack)
@@ -199,6 +191,8 @@ formats configuration object in about dialog
 
 </details>
 
-### GWASTrack - Derives from
+## Related links
 
-- [BaseTrack](../basetrack)
+- **Display:** [LinearManhattanDisplay](../linearmanhattandisplay)
+  ([state model](../../models/linearmanhattandisplay))
+- **Base config:** [BaseTrack](../basetrack)

@@ -30,15 +30,6 @@ _See the **Slots** section below for all available configuration fields._
 used to load plain-text GFF3 files. Loads the whole file into memory, so prefer
 the Gff3TabixAdapter for large files.
 
-### Used in
-
-Supplies data to the [FeatureTrack](../featuretrack) track, rendered by:
-
-- [LinearArcDisplay](../lineararcdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
-
 ### Gff3Adapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -50,7 +41,11 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                             | Type           | Description |
+| -------------------------------- | -------------- | ----------- |
+| [gffLocation](#slot-gfflocation) | `fileLocation` |             |
+
+<details>
 <summary>Gff3Adapter - Slots</summary>
 
 #### slot: gffLocation
@@ -59,3 +54,11 @@ preprocessor to allow minimal config:
 `{ uri: '/path/to/my.gff', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)

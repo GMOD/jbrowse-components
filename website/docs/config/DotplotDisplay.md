@@ -38,27 +38,21 @@ The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`
 
 ## Overview
 
-### DotplotDisplay - Compatible adapters
-
-Data adapters that can supply the [SyntenyTrack](../syntenytrack):
-
-- [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
-- [AllVsAllPAFAdapter](../allvsallpafadapter)
-- [ChainAdapter](../chainadapter)
-- [DeltaAdapter](../deltaadapter)
-- [MCScanAnchorsAdapter](../mcscananchorsadapter)
-- [MCScanBlocksAdapter](../mcscanblocksadapter)
-- [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
-- [MashMapAdapter](../mashmapadapter)
-- [PAFAdapter](../pafadapter)
-- [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
-
-### DotplotDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/dotplotdisplay).
-
 ### DotplotDisplay - Identifier
 
 Every DotplotDisplay has a unique `displayId`, a required top-level field that
 identifies it (not one of the config slots below).
+
+## Related links
+
+- **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
+- **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
+- **Adapter:** [ChainAdapter](../chainadapter)
+- **Adapter:** [DeltaAdapter](../deltaadapter)
+- **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
+- **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
+- **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- **Adapter:** [MashMapAdapter](../mashmapadapter)
+- **Adapter:** [PAFAdapter](../pafadapter)
+- **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
+- **State model:** [runtime API](../../models/dotplotdisplay)

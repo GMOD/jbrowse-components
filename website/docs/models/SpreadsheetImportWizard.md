@@ -11,7 +11,29 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
-<details open>
+## Members
+
+| Member                                                     | Kind       | Description                                                                                                                                                                               |
+| ---------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [fileType](#property-filetype)                             | Properties |                                                                                                                                                                                           |
+| [selectedAssemblyName](#property-selectedassemblyname)     | Properties |                                                                                                                                                                                           |
+| [cachedFileLocation](#property-cachedfilelocation)         | Properties | used specifically for UriLocation's                                                                                                                                                       |
+| [fileSource](#volatile-filesource)                         | Volatiles  |                                                                                                                                                                                           |
+| [error](#volatile-error)                                   | Volatiles  |                                                                                                                                                                                           |
+| [loading](#volatile-loading)                               | Volatiles  |                                                                                                                                                                                           |
+| [isReadyToOpen](#getter-isreadytoopen)                     | Getters    |                                                                                                                                                                                           |
+| [fileName](#getter-filename)                               | Getters    |                                                                                                                                                                                           |
+| [tracksForAssembly](#method-tracksforassembly)             | Methods    |                                                                                                                                                                                           |
+| [setSelectedAssemblyName](#action-setselectedassemblyname) | Actions    |                                                                                                                                                                                           |
+| [setFileSource](#action-setfilesource)                     | Actions    |                                                                                                                                                                                           |
+| [setFileType](#action-setfiletype)                         | Actions    |                                                                                                                                                                                           |
+| [setError](#action-seterror)                               | Actions    |                                                                                                                                                                                           |
+| [setLoading](#action-setloading)                           | Actions    |                                                                                                                                                                                           |
+| [setCachedFileHandle](#action-setcachedfilehandle)         | Actions    |                                                                                                                                                                                           |
+| [selectDefaultTrack](#action-selectdefaulttrack)           | Actions    | point the source/type at the first usable track for an assembly (or clear if none), used to seed the "open from track" flow                                                               |
+| [import](#action-import)                                   | Actions    | fetch and parse the file, returning a spreadsheet snapshot for the owning view to display (the view owns displaySpreadsheet; this stays a pure fetch/parse with no reach into the parent) |
+
+<details>
 <summary>SpreadsheetImportWizard - Properties</summary>
 
 #### property: cachedFileLocation
@@ -117,7 +139,7 @@ type tracksForAssembly = (selectedAssembly: string) => { track: ModelInstanceTyp
 
 </details>
 
-<details open>
+<details>
 <summary>SpreadsheetImportWizard - Actions</summary>
 
 #### action: selectDefaultTrack

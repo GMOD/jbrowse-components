@@ -11,7 +11,15 @@ plugin.
 
 ## Overview
 
-<details open>
+| Slot                                     | Type      | Description                          |
+| ---------------------------------------- | --------- | ------------------------------------ |
+| [search](#slot-search)                   | `string`  | Search string or regex to search for |
+| [sequenceAdapter](#slot-sequenceadapter) | `frozen`  |                                      |
+| [searchForward](#slot-searchforward)     | `boolean` |                                      |
+| [searchReverse](#slot-searchreverse)     | `boolean` |                                      |
+| [caseInsensitive](#slot-caseinsensitive) | `boolean` |                                      |
+
+<details>
 <summary>SequenceSearchAdapter - Slots</summary>
 
 #### slot: search

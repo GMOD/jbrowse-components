@@ -51,28 +51,13 @@ _See the **Slots** section below for all available configuration fields._
 
 Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
 
-### LinearVariantDisplay - Compatible adapters
-
-Data adapters that can supply the [VariantTrack](../varianttrack):
-
-- [BedpeAdapter](../bedpeadapter)
-- [StarFusionAdapter](../starfusionadapter)
-- [SplitVcfTabixAdapter](../splitvcftabixadapter)
-- [VcfAdapter](../vcfadapter)
-- [VcfTabixAdapter](../vcftabixadapter)
-
-### LinearVariantDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/linearvariantdisplay).
-
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from LinearCanvasBaseDisplay</summary>
 
 [LinearCanvasBaseDisplay config →](../linearcanvasbasedisplay)
@@ -313,7 +298,7 @@ ConfigurationSchema('CanvasFeatureLabels', {
 
 </details>
 
-<details open>
+<details>
 <summary>Inherited from BaseLinearDisplay</summary>
 
 [BaseLinearDisplay config →](../baselineardisplay)
@@ -363,6 +348,12 @@ runtime rather than being stored with jexl in the config
 
 </details>
 
-### LinearVariantDisplay - Derives from
+## Related links
 
-- [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
+- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
+- **Adapter:** [VcfAdapter](../vcfadapter)
+- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **State model:** [runtime API](../../models/linearvariantdisplay)
+- **Base config:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)

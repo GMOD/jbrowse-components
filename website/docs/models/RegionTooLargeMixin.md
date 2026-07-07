@@ -21,7 +21,24 @@ their own byte-estimate gating in fetchArcFeatures.
 Owns the state that TooLargeMessage reads: regionTooLarge, regionTooLargeReason,
 forceLoad.
 
-<details open>
+## Members
+
+| Member                                                             | Kind       | Description                                                                                                                                                                                                            |
+| ------------------------------------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [userByteSizeLimit](#property-userbytesizelimit)                   | Properties | user-confirmed byte limit after a force-load, disabling the gate                                                                                                                                                       |
+| [regionTooLargeState](#volatile-regiontoolargestate)               | Volatiles  |                                                                                                                                                                                                                        |
+| [regionTooLargeReasonState](#volatile-regiontoolargereasonstate)   | Volatiles  |                                                                                                                                                                                                                        |
+| [featureDensityStats](#volatile-featuredensitystats)               | Volatiles  |                                                                                                                                                                                                                        |
+| [regionTooLarge](#getter-regiontoolarge)                           | Getters    |                                                                                                                                                                                                                        |
+| [regionTooLargeReason](#getter-regiontoolargereason)               | Getters    |                                                                                                                                                                                                                        |
+| [regionCannotBeRenderedText](#method-regioncannotberenderedtext)   | Methods    | Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the display chrome via `TooLargeMessage`, not the model.                                                                                  |
+| [setRegionTooLarge](#action-setregiontoolarge)                     | Actions    |                                                                                                                                                                                                                        |
+| [setFeatureDensityStats](#action-setfeaturedensitystats)           | Actions    |                                                                                                                                                                                                                        |
+| [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit) | Actions    | force-load: raise the byte limit past the current request and clear the too-large banner                                                                                                                               |
+| [reload](#action-reload)                                           | Actions    |                                                                                                                                                                                                                        |
+| [forceLoad](#action-forceload)                                     | Actions    | Raises the byte limit past the current density stats and triggers a reload. The display chrome calls this via TooLargeMessage's force-load button; concrete display models override reload() to do the actual refetch. |
+
+<details>
 <summary>RegionTooLargeMixin - Properties</summary>
 
 #### property: userByteSizeLimit
@@ -86,7 +103,7 @@ type regionTooLargeReason = string
 
 </details>
 
-<details open>
+<details>
 <summary>RegionTooLargeMixin - Methods</summary>
 
 #### method: regionCannotBeRenderedText
@@ -102,7 +119,7 @@ type regionCannotBeRenderedText = (
 
 </details>
 
-<details open>
+<details>
 <summary>RegionTooLargeMixin - Actions</summary>
 
 #### action: setFeatureDensityStatsLimit

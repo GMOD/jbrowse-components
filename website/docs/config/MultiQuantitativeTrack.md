@@ -35,27 +35,13 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### MultiQuantitativeTrack - Display types
-
-A track is just a container; the actual rendering behavior and config slots live
-on its display type(s):
-
-- [MultiLinearWiggleDisplay](../multilinearwiggledisplay)
-  ([state model](../../models/multilinearwiggledisplay))
-
-### MultiQuantitativeTrack - Compatible adapters
-
-Data adapters that can supply this track:
-
-- [MultiWiggleAdapter](../multiwiggleadapter)
-
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseTrack</summary>
 
 [BaseTrack config →](../basetrack)
@@ -203,6 +189,9 @@ formats configuration object in about dialog
 
 </details>
 
-### MultiQuantitativeTrack - Derives from
+## Related links
 
-- [BaseTrack](../basetrack)
+- **Display:** [MultiLinearWiggleDisplay](../multilinearwiggledisplay)
+  ([state model](../../models/multilinearwiggledisplay))
+- **Adapter:** [MultiWiggleAdapter](../multiwiggleadapter)
+- **Base config:** [BaseTrack](../basetrack)

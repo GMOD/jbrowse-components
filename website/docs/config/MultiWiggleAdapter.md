@@ -69,14 +69,12 @@ _See the **Slots** section below for all available configuration fields._
 
 combines multiple BigWig files into a single multi-row quantitative track
 
-### Used in
+| Slot                             | Type     | Description                                                     |
+| -------------------------------- | -------- | --------------------------------------------------------------- |
+| [subadapters](#slot-subadapters) | `frozen` | array of subadapter JSON objects                                |
+| [bigWigs](#slot-bigwigs)         | `frozen` | array of BigWig URLs/paths, alternative to the subadapters slot |
 
-Supplies data to the [MultiQuantitativeTrack](../multiquantitativetrack) track,
-rendered by:
-
-- [MultiLinearWiggleDisplay](../multilinearwiggledisplay)
-
-<details open>
+<details>
 <summary>MultiWiggleAdapter - Slots</summary>
 
 #### slot: subadapters
@@ -92,3 +90,8 @@ array of BigWig URLs/paths, alternative to the subadapters slot
 **Type:** `frozen` · **Default:** `[]`
 
 </details>
+
+## Related links
+
+- **Track:** [MultiQuantitativeTrack](../multiquantitativetrack)
+- **Display:** [MultiLinearWiggleDisplay](../multilinearwiggledisplay)

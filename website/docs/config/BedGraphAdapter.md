@@ -30,13 +30,6 @@ _See the **Slots** section below for all available configuration fields._
 used to load plain-text bedGraph signal files. Loads the whole file into memory,
 so prefer the BedGraphTabixAdapter for large files.
 
-### Used in
-
-Supplies data to the [QuantitativeTrack](../quantitativetrack) track, rendered
-by:
-
-- [LinearWiggleDisplay](../linearwiggledisplay)
-
 ### BedGraphAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -48,7 +41,12 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                       | Type           | Description          |
+| ------------------------------------------ | -------------- | -------------------- |
+| [bedGraphLocation](#slot-bedgraphlocation) | `fileLocation` |                      |
+| [columnNames](#slot-columnnames)           | `stringArray`  | List of column names |
+
+<details>
 <summary>BedGraphAdapter - Slots</summary>
 
 #### slot: bedGraphLocation
@@ -63,3 +61,8 @@ List of column names
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
+
+## Related links
+
+- **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)

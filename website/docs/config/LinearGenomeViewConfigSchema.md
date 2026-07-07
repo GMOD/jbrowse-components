@@ -11,12 +11,16 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Overview
 
-<details open>
+| Slot                                                                                                     | Type                                   | Description |
+| -------------------------------------------------------------------------------------------------------- | -------------------------------------- | ----------- |
+| [configuration.LinearGenomeViewPlugin.trackLabels](#slot-configurationlineargenomeviewplugintracklabels) | `string` (offset, overlapping, hidden) |             |
+
+<details>
 <summary>LinearGenomeViewConfigSchema - Slots</summary>
 
 #### slot: configuration.LinearGenomeViewPlugin.trackLabels
 
 **Type:** `string` (one of `offset`, `overlapping`, `hidden`) · **Default:**
-`'overlapping'`
+`'offset'`
 
 </details>

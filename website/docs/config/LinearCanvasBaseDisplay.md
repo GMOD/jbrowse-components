@@ -13,12 +13,29 @@ plugin.
 
 base config for canvas-based linear feature displays (pileup-style glyphs)
 
-### LinearCanvasBaseDisplay - State model
+| Slot                                                           | Type                                                  | Description                                                                                                                                                                                                                                                |
+| -------------------------------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [maxHeight](#slot-maxheight)                                   | `number`                                              | Maximum height of the display in pixels                                                                                                                                                                                                                    |
+| [autoHeight](#slot-autoheight)                                 | `boolean`                                             | Automatically resize the track height to fit all features                                                                                                                                                                                                  |
+| [showLabels](#slot-showlabels)                                 | `stringEnum`                                          | Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides                                                                                                                                                    |
+| [maxLabelFeatureDensity](#slot-maxlabelfeaturedensity)         | `number`                                              | In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value                                                                                                                                                    |
+| [showDescriptions](#slot-showdescriptions)                     | `boolean`                                             | Show feature descriptions                                                                                                                                                                                                                                  |
+| [color](#slot-color)                                           | `color`                                               | the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring)                                                                                                                                                           |
+| [connectorColor](#slot-connectorcolor)                         | `color`                                               | color of the connecting/intron lines between feature segments (defaults to the theme text color)                                                                                                                                                           |
+| [utrColor](#slot-utrcolor)                                     | `color`                                               | fill color for UTRs on gene/transcript glyphs                                                                                                                                                                                                              |
+| [outlineColor](#slot-outlinecolor)                             | `color`                                               | outline color for features (empty string = no outline)                                                                                                                                                                                                     |
+| [featureHeight](#slot-featureheight)                           | `number`                                              | height in pixels of the main body of each feature                                                                                                                                                                                                          |
+| [displayMode](#slot-displaymode)                               | `stringEnum` (inherit, normal, compact, superCompact) | Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` each pin an explicit height (including pinning `normal` over a compact session default) |
+| [geneGlyphMode](#slot-geneglyphmode)                           | `stringEnum`                                          | Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longestCoding" shows only the longest coding transcript                                                                                                        |
+| [subfeatureLabels](#slot-subfeaturelabels)                     | `stringEnum` (none, below, overlay)                   | subfeature label display mode                                                                                                                                                                                                                              |
+| [displayDirectionalChevrons](#slot-displaydirectionalchevrons) | `boolean`                                             | Display directional chevrons on intron lines to indicate strand direction                                                                                                                                                                                  |
+| [transcriptTypes](#slot-transcripttypes)                       | `stringArray`                                         |                                                                                                                                                                                                                                                            |
+| [containerTypes](#slot-containertypes)                         | `stringArray`                                         |                                                                                                                                                                                                                                                            |
+| [subParts](#slot-subparts)                                     | `string`                                              | subparts for a glyph                                                                                                                                                                                                                                       |
+| [impliedUTRs](#slot-impliedutrs)                               | `boolean`                                             | imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures                                                                                                                                                           |
+| [labels](#slot-labels)                                         |                                                       |                                                                                                                                                                                                                                                            |
 
-This config's runtime API is documented on its
-[state model page](../../models/linearcanvasbasedisplay).
-
-<details open>
+<details>
 <summary>LinearCanvasBaseDisplay - Slots</summary>
 
 #### slot: maxHeight
@@ -263,7 +280,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseLinearDisplay</summary>
 
 [BaseLinearDisplay config →](../baselineardisplay)
@@ -313,6 +330,7 @@ runtime rather than being stored with jexl in the config
 
 </details>
 
-### LinearCanvasBaseDisplay - Derives from
+## Related links
 
-- [BaseLinearDisplay](../baselineardisplay)
+- **State model:** [runtime API](../../models/linearcanvasbasedisplay)
+- **Base config:** [BaseLinearDisplay](../baselineardisplay)

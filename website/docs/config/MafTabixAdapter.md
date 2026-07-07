@@ -22,7 +22,17 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 }
 ```
 
-<details open>
+| Slot                                         | Type                    | Description                                                                                                                                                                                 |
+| -------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [samples](#slot-samples)                     | `frozen`                | string[] or {id:string,label:string,color?:string}[]                                                                                                                                        |
+| [bedGzLocation](#slot-bedgzlocation)         | `fileLocation`          |                                                                                                                                                                                             |
+| [refAssemblyName](#slot-refassemblyname)     | `string`                |                                                                                                                                                                                             |
+| [index.location](#slot-indexlocation)        | `fileLocation`          |                                                                                                                                                                                             |
+| [index.indexType](#slot-indexindextype)      | `stringEnum` (TBI, CSI) |                                                                                                                                                                                             |
+| [nhLocation](#slot-nhlocation)               | `fileLocation`          | newick tree                                                                                                                                                                                 |
+| [annotationAdapter](#slot-annotationadapter) | `frozen`                | optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it |
+
+<details>
 <summary>MafTabixAdapter - Slots</summary>
 
 #### slot: samples

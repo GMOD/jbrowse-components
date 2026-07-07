@@ -17,7 +17,14 @@ items (`Core-extraTrackMenuItems`). Mirrors the shape of the full
 `TrackMenuItemsSessionMixin` so both menu surfaces stay consistent across
 products, minus the Settings/Copy/Delete actions.
 
-<details open>
+## Members
+
+| Member                                                     | Kind    | Description                                                 |
+| ---------------------------------------------------------- | ------- | ----------------------------------------------------------- |
+| [getTrackListMenuItems](#method-gettracklistmenuitems)     | Methods | flattened menu items for use in hierarchical track selector |
+| [getTrackActionMenuItems](#method-gettrackactionmenuitems) | Methods |                                                             |
+
+<details>
 <summary>TrackMenuSessionMixin - Methods</summary>
 
 #### method: getTrackListMenuItems

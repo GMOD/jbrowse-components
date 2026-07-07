@@ -38,17 +38,14 @@ _See the **Slots** section below for all available configuration fields._
 reads a set of per-chromosome VCF files, keyed by refName, instead of a single
 combined VCF (useful for large call sets split by chromosome)
 
-### Used in
+| Slot                                           | Type                    | Description                               |
+| ---------------------------------------------- | ----------------------- | ----------------------------------------- |
+| [vcfGzLocationMap](#slot-vcfgzlocationmap)     | `frozen`                | object like `{chr1:{uri:'url to file'}}`  |
+| [indexLocationMap](#slot-indexlocationmap)     | `frozen`                | object like `{chr1:{uri:'url to index'}}` |
+| [indexType](#slot-indextype)                   | `stringEnum` (TBI, CSI) |                                           |
+| [samplesTsvLocation](#slot-samplestsvlocation) | `fileLocation`          |                                           |
 
-Supplies data to the [VariantTrack](../varianttrack) track, rendered by:
-
-- [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- [ChordVariantDisplay](../chordvariantdisplay)
-- [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-- [LinearVariantDisplay](../linearvariantdisplay)
-
-<details open>
+<details>
 <summary>SplitVcfTabixAdapter - Slots</summary>
 
 #### slot: vcfGzLocationMap
@@ -84,3 +81,14 @@ object like `{chr1:{uri:'url to index'}}`
 ```
 
 </details>
+
+## Related links
+
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)

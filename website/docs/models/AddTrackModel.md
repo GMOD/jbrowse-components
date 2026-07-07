@@ -11,6 +11,39 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
+## Members
+
+| Member                                                           | Kind       | Description                                                                                                           |
+| ---------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                               | Properties |                                                                                                                       |
+| [type](#property-type)                                           | Properties |                                                                                                                       |
+| [view](#property-view)                                           | Properties |                                                                                                                       |
+| [trackAdapter](#getter-trackadapter)                             | Getters    |                                                                                                                       |
+| [trackName](#getter-trackname)                                   | Getters    |                                                                                                                       |
+| [uris](#getter-uris)                                             | Getters    |                                                                                                                       |
+| [isFtp](#getter-isftp)                                           | Getters    |                                                                                                                       |
+| [isRelativeTrackUrl](#getter-isrelativetrackurl)                 | Getters    |                                                                                                                       |
+| [isRelativeIndexUrl](#getter-isrelativeindexurl)                 | Getters    |                                                                                                                       |
+| [isRelativeUrl](#getter-isrelativeurl)                           | Getters    |                                                                                                                       |
+| [wrongProtocol](#getter-wrongprotocol)                           | Getters    |                                                                                                                       |
+| [unsupported](#getter-unsupported)                               | Getters    |                                                                                                                       |
+| [adapterHintNotConfigurable](#getter-adapterhintnotconfigurable) | Getters    | Returns true if the user selected an adapter from the dropdown but the extension point couldn't build a config for it |
+| [assembly](#getter-assembly)                                     | Getters    |                                                                                                                       |
+| [trackAdapterType](#getter-trackadaptertype)                     | Getters    |                                                                                                                       |
+| [trackType](#getter-tracktype)                                   | Getters    |                                                                                                                       |
+| [warningMessage](#getter-warningmessage)                         | Getters    |                                                                                                                       |
+| [getTrackConfig](#method-gettrackconfig)                         | Methods    |                                                                                                                       |
+| [setMixinData](#action-setmixindata)                             | Actions    |                                                                                                                       |
+| [setAdapterHint](#action-setadapterhint)                         | Actions    |                                                                                                                       |
+| [setTextIndexingConf](#action-settextindexingconf)               | Actions    |                                                                                                                       |
+| [setTextIndexTrack](#action-settextindextrack)                   | Actions    |                                                                                                                       |
+| [setTrackData](#action-settrackdata)                             | Actions    |                                                                                                                       |
+| [setIndexTrackData](#action-setindextrackdata)                   | Actions    |                                                                                                                       |
+| [setAssembly](#action-setassembly)                               | Actions    |                                                                                                                       |
+| [setTrackName](#action-settrackname)                             | Actions    |                                                                                                                       |
+| [setTrackType](#action-settracktype)                             | Actions    |                                                                                                                       |
+| [clearData](#action-cleardata)                                   | Actions    |                                                                                                                       |
+
 <details>
 <summary>AddTrackModel - Properties</summary>
 
@@ -43,7 +76,7 @@ view: types.safeReference(pluginManager.pluggableMstType('view', 'stateModel'))
 
 </details>
 
-<details open>
+<details>
 <summary>AddTrackModel - Getters</summary>
 
 #### getter: adapterHintNotConfigurable

@@ -16,6 +16,28 @@ contents of what is displayed
 
 see: formatDetails-\>feature,formatDetails-\>subfeatures
 
+## Members
+
+| Member                                                     | Kind       | Description |
+| ---------------------------------------------------------- | ---------- | ----------- |
+| [id](#property-id)                                         | Properties |             |
+| [type](#property-type)                                     | Properties |             |
+| [featureData](#property-featuredata)                       | Properties |             |
+| [unformattedFeatureData](#property-unformattedfeaturedata) | Properties |             |
+| [view](#property-view)                                     | Properties |             |
+| [track](#property-track)                                   | Properties |             |
+| [trackId](#property-trackid)                               | Properties |             |
+| [trackType](#property-tracktype)                           | Properties |             |
+| [maxDepth](#property-maxdepth)                             | Properties |             |
+| [sequenceFeatureDetails](#property-sequencefeaturedetails) | Properties |             |
+| [descriptions](#property-descriptions)                     | Properties |             |
+| [error](#volatile-error)                                   | Volatiles  |             |
+| [setFeatureData](#action-setfeaturedata)                   | Actions    |             |
+| [clearFeatureData](#action-clearfeaturedata)               | Actions    |             |
+| [setFormattedData](#action-setformatteddata)               | Actions    |             |
+| [setExtra](#action-setextra)                               | Actions    |             |
+| [setError](#action-seterror)                               | Actions    |             |
+
 <details>
 <summary>BaseFeatureWidget - Properties</summary>
 

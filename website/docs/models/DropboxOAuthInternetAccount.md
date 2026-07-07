@@ -11,6 +11,17 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
+## Members
+
+| Member                                   | Kind       | Description                       |
+| ---------------------------------------- | ---------- | --------------------------------- |
+| [type](#property-type)                   | Properties |                                   |
+| [configuration](#property-configuration) | Properties |                                   |
+| [toggleContents](#getter-togglecontents) | Getters    | The FileSelector icon for Dropbox |
+| [selectorLabel](#getter-selectorlabel)   | Getters    |                                   |
+| [getFetcher](#method-getfetcher)         | Methods    |                                   |
+| [validateToken](#action-validatetoken)   | Actions    |                                   |
+
 ### DropboxOAuthInternetAccount - Configuration
 
 The configuration slots for this model are documented on its
@@ -73,7 +84,7 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
+<details>
 <summary>DropboxOAuthInternetAccount - Getters</summary>
 
 #### getter: toggleContents

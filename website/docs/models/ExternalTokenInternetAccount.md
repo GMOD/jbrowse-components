@@ -15,6 +15,15 @@ Internet account that authenticates requests with a user-supplied external
 token, prompting for the token via a dialog and optionally validating it with a
 HEAD request.
 
+## Members
+
+| Member                                       | Kind    | Description |
+| -------------------------------------------- | ------- | ----------- |
+| [conf](#getter-conf)                         | Getters |             |
+| [validateWithHEAD](#getter-validatewithhead) | Getters |             |
+| [getTokenFromUser](#action-gettokenfromuser) | Actions |             |
+| [validateToken](#action-validatetoken)       | Actions |             |
+
 ### ExternalTokenInternetAccount - Configuration
 
 The configuration slots for this model are documented on its

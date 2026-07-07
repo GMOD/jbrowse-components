@@ -37,6 +37,26 @@ controls how far the chords bow toward the center:
 
 ## Overview
 
+## Members
+
+| Member                                           | Kind       | Description                          |
+| ------------------------------------------------ | ---------- | ------------------------------------ |
+| [type](#property-type)                           | Properties |                                      |
+| [bezierRadiusRatio](#property-bezierradiusratio) | Properties |                                      |
+| [configuration](#property-configuration)         | Properties |                                      |
+| [features](#volatile-features)                   | Volatiles  |                                      |
+| [refNameMap](#volatile-refnamemap)               | Volatiles  |                                      |
+| [ready](#getter-ready)                           | Getters    |                                      |
+| [radiusPx](#getter-radiuspx)                     | Getters    |                                      |
+| [bezierRadius](#getter-bezierradius)             | Getters    | how far chords bow toward the center |
+| [blocksForRefs](#getter-blocksforrefs)           | Getters    |                                      |
+| [selectedFeatureId](#getter-selectedfeatureid)   | Getters    |                                      |
+| [renderSvg](#method-rendersvg)                   | Methods    |                                      |
+| [onChordClick](#action-onchordclick)             | Actions    |                                      |
+| [openErrorDialog](#action-openerrordialog)       | Actions    |                                      |
+| [setFeatures](#action-setfeatures)               | Actions    |                                      |
+| [setRefNameMap](#action-setrefnamemap)           | Actions    |                                      |
+
 ### ChordVariantDisplay - Configuration
 
 The configuration slots for this model are documented on its
@@ -131,7 +151,7 @@ refNameMap: undefined as Record<string, string> | undefined
 
 </details>
 
-<details open>
+<details>
 <summary>ChordVariantDisplay - Getters</summary>
 
 #### getter: bezierRadius

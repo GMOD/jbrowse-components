@@ -27,15 +27,6 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### Used in
-
-Supplies data to the [FeatureTrack](../featuretrack) track, rendered by:
-
-- [LinearArcDisplay](../lineararcdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
-
 ### BigBedAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -47,7 +38,14 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                               | Type           | Description                                                                                                                                                                        |
+| -------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [bigBedLocation](#slot-bigbedlocation)             | `fileLocation` |                                                                                                                                                                                    |
+| [scoreColumn](#slot-scorecolumn)                   | `string`       | The column to use as a "score" attribute                                                                                                                                           |
+| [aggregateField](#slot-aggregatefield)             | `string`       | An attribute to aggregate features with                                                                                                                                            |
+| [disableGeneHeuristic](#slot-disablegeneheuristic) | `boolean`      | Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications) |
+
+<details>
 <summary>BigBedAdapter - Slots</summary>
 
 #### slot: bigBedLocation
@@ -76,3 +74,11 @@ structures. Useful for files that have BED12-like structure but are not genes
 **Type:** `boolean` · **Default:** `false`
 
 </details>
+
+## Related links
+
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)

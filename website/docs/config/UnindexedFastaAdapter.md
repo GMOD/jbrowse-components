@@ -29,14 +29,6 @@ _See the **Slots** section below for all available configuration fields._
 loads a plain (non-bgzipped) FASTA without a separate index. Reads the whole
 sequence into memory, so prefer the IndexedFastaAdapter for large genomes.
 
-### Used in
-
-Supplies data to the [ReferenceSequenceTrack](../referencesequencetrack) track,
-rendered by:
-
-- [LinearGCContentDisplay](../lineargccontentdisplay)
-- [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
-
 ### UnindexedFastaAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -48,7 +40,13 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                       | Type           | Description            |
+| ------------------------------------------ | -------------- | ---------------------- |
+| [rewriteRefNames](#slot-rewriterefnames)   | `string`       |                        |
+| [fastaLocation](#slot-fastalocation)       | `fileLocation` |                        |
+| [metadataLocation](#slot-metadatalocation) | `fileLocation` | Optional metadata file |
+
+<details>
 <summary>UnindexedFastaAdapter - Slots</summary>
 
 #### slot: rewriteRefNames
@@ -76,3 +74,10 @@ Optional metadata file
 `{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)

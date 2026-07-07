@@ -14,7 +14,18 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 ref https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state
 used here
 
-<details open>
+## Members
+
+| Member                                 | Kind    | Description                               |
+| -------------------------------------- | ------- | ----------------------------------------- |
+| [dynamicBlocks](#getter-dynamicblocks) | Getters | this uses padding=false and elision=false |
+| [maxBpPerPx](#getter-maxbpperpx)       | Getters |                                           |
+| [minBpPerPx](#getter-minbpperpx)       | Getters |                                           |
+| [maxOffset](#getter-maxoffset)         | Getters |                                           |
+| [minOffset](#getter-minoffset)         | Getters |                                           |
+| [center](#action-center)               | Actions |                                           |
+
+<details>
 <summary>Dotplot1DView - Getters</summary>
 
 #### getter: dynamicBlocks

@@ -18,6 +18,16 @@ auto-fit mode declare `height` as a `maybeNumber` slot (default `undefined`) and
 override the `height` getter to fall back to their computed content height when
 unset.
 
+## Members
+
+| Member                               | Kind      | Description |
+| ------------------------------------ | --------- | ----------- |
+| [scrollTop](#volatile-scrolltop)     | Volatiles |             |
+| [height](#getter-height)             | Getters   |             |
+| [setScrollTop](#action-setscrolltop) | Actions   |             |
+| [setHeight](#action-setheight)       | Actions   |             |
+| [resizeHeight](#action-resizeheight) | Actions   |             |
+
 <details>
 <summary>TrackHeightMixin - Volatiles</summary>
 

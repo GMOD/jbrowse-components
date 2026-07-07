@@ -11,6 +11,27 @@ JBrowse core.
 
 ## Overview
 
+## Members
+
+| Member                                               | Kind       | Description                                                                                               |
+| ---------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------- |
+| [drawerPosition](#property-drawerposition)           | Properties |                                                                                                           |
+| [drawerWidth](#property-drawerwidth)                 | Properties |                                                                                                           |
+| [widgets](#property-widgets)                         | Properties |                                                                                                           |
+| [activeWidgets](#property-activewidgets)             | Properties |                                                                                                           |
+| [minimized](#property-minimized)                     | Properties |                                                                                                           |
+| [visibleWidget](#getter-visiblewidget)               | Getters    |                                                                                                           |
+| [setDrawerPosition](#action-setdrawerposition)       | Actions    |                                                                                                           |
+| [updateDrawerWidth](#action-updatedrawerwidth)       | Actions    |                                                                                                           |
+| [resizeDrawer](#action-resizedrawer)                 | Actions    |                                                                                                           |
+| [addWidget](#action-addwidget)                       | Actions    |                                                                                                           |
+| [showWidget](#action-showwidget)                     | Actions    |                                                                                                           |
+| [hideWidget](#action-hidewidget)                     | Actions    |                                                                                                           |
+| [minimizeWidgetDrawer](#action-minimizewidgetdrawer) | Actions    |                                                                                                           |
+| [showWidgetDrawer](#action-showwidgetdrawer)         | Actions    |                                                                                                           |
+| [hideAllWidgets](#action-hideallwidgets)             | Actions    |                                                                                                           |
+| [editConfiguration](#action-editconfiguration)       | Actions    | opens a configuration editor to configure the given thing, and sets the current task to be configuring it |
+
 <details>
 <summary>DrawerWidgetSessionMixin - Properties</summary>
 
@@ -84,7 +105,7 @@ type visibleWidget = any
 
 </details>
 
-<details open>
+<details>
 <summary>DrawerWidgetSessionMixin - Actions</summary>
 
 #### action: editConfiguration

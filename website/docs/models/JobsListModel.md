@@ -11,6 +11,27 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
+## Members
+
+| Member                                                   | Kind       | Description |
+| -------------------------------------------------------- | ---------- | ----------- |
+| [id](#property-id)                                       | Properties |             |
+| [type](#property-type)                                   | Properties |             |
+| [jobs](#property-jobs)                                   | Properties |             |
+| [finished](#property-finished)                           | Properties |             |
+| [queued](#property-queued)                               | Properties |             |
+| [aborted](#property-aborted)                             | Properties |             |
+| [addJob](#action-addjob)                                 | Actions    |             |
+| [removeJob](#action-removejob)                           | Actions    |             |
+| [addFinishedJob](#action-addfinishedjob)                 | Actions    |             |
+| [addQueuedJob](#action-addqueuedjob)                     | Actions    |             |
+| [addAbortedJob](#action-addabortedjob)                   | Actions    |             |
+| [removeQueuedJob](#action-removequeuedjob)               | Actions    |             |
+| [clearFinished](#action-clearfinished)                   | Actions    |             |
+| [clearAborted](#action-clearaborted)                     | Actions    |             |
+| [updateJobStatusMessage](#action-updatejobstatusmessage) | Actions    |             |
+| [updateJobProgressPct](#action-updatejobprogresspct)     | Actions    |             |
+
 <details>
 <summary>JobsListModel - Properties</summary>
 

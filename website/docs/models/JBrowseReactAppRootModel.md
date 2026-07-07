@@ -14,6 +14,16 @@ note: many properties of the root model are available through the session, and
 we generally prefer using the session model (via e.g. getSession) over the root
 model (via e.g. getRoot) in plugin code
 
+## Members
+
+| Member                                         | Kind      | Description |
+| ---------------------------------------------- | --------- | ----------- |
+| [version](#volatile-version)                   | Volatiles |             |
+| [pluginsUpdated](#volatile-pluginsupdated)     | Volatiles |             |
+| [rpcManager](#volatile-rpcmanager)             | Volatiles |             |
+| [menus](#method-menus)                         | Methods   |             |
+| [setPluginsUpdated](#action-setpluginsupdated) | Actions   |             |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

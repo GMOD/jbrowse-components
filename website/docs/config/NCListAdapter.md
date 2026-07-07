@@ -11,7 +11,12 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Overview
 
-<details open>
+| Slot                                     | Type           | Description                                           |
+| ---------------------------------------- | -------------- | ----------------------------------------------------- |
+| [rootUrlTemplate](#slot-rooturltemplate) | `fileLocation` |                                                       |
+| [refNames](#slot-refnames)               | `stringArray`  | List of refNames used by the NCList used for aliasing |
+
+<details>
 <summary>NCListAdapter - Slots</summary>
 
 #### slot: rootUrlTemplate

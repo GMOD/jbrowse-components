@@ -11,6 +11,34 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
+## Members
+
+| Member                                                 | Kind       | Description                                                                                                                                                                                                           |
+| ------------------------------------------------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                 | Properties |                                                                                                                                                                                                                       |
+| [configuration](#property-configuration)               | Properties |                                                                                                                                                                                                                       |
+| [colorBy](#property-colorby)                           | Properties | color by setting that overrides the config setting                                                                                                                                                                    |
+| [alpha](#property-alpha)                               | Properties |                                                                                                                                                                                                                       |
+| [minAlignmentLength](#property-minalignmentlength)     | Properties |                                                                                                                                                                                                                       |
+| [rpcData](#volatile-rpcdata)                           | Volatiles  | RPC-computed feature data                                                                                                                                                                                             |
+| [geometry](#volatile-geometry)                         | Volatiles  | GPU-instance geometry produced from featPositions, self- describing via embedded bpPerPx. The containing DotplotView aggregates one of these per display and uploads them to the shared backend keyed by track index. |
+| [fetchStopToken](#volatile-fetchstoptoken)             | Volatiles  |                                                                                                                                                                                                                       |
+| [fetchWarnings](#volatile-fetchwarnings)               | Volatiles  |                                                                                                                                                                                                                       |
+| [assembliesSwapped](#volatile-assembliesswapped)       | Volatiles  |                                                                                                                                                                                                                       |
+| [isLoading](#getter-isloading)                         | Getters    |                                                                                                                                                                                                                       |
+| [isRefetching](#getter-isrefetching)                   | Getters    |                                                                                                                                                                                                                       |
+| [warnings](#getter-warnings)                           | Getters    | Per-render fetch warnings, plus the load-time reversed-assembly hint.                                                                                                                                                 |
+| [renderSvg](#method-rendersvg)                         | Methods    |                                                                                                                                                                                                                       |
+| [setLoading](#action-setloading)                       | Actions    |                                                                                                                                                                                                                       |
+| [setRpcData](#action-setrpcdata)                       | Actions    |                                                                                                                                                                                                                       |
+| [setWarnings](#action-setwarnings)                     | Actions    |                                                                                                                                                                                                                       |
+| [setAssembliesSwapped](#action-setassembliesswapped)   | Actions    |                                                                                                                                                                                                                       |
+| [setGeometry](#action-setgeometry)                     | Actions    |                                                                                                                                                                                                                       |
+| [setError](#action-seterror)                           | Actions    |                                                                                                                                                                                                                       |
+| [setAlpha](#action-setalpha)                           | Actions    |                                                                                                                                                                                                                       |
+| [setMinAlignmentLength](#action-setminalignmentlength) | Actions    |                                                                                                                                                                                                                       |
+| [setColorBy](#action-setcolorby)                       | Actions    |                                                                                                                                                                                                                       |
+
 ### DotplotDisplay - Configuration
 
 The configuration slots for this model are documented on its
@@ -50,7 +78,7 @@ and docs.
 [setRpcDriverName](../basedisplay#action-setrpcdrivername),
 [reload](../basedisplay#action-reload)
 
-<details open>
+<details>
 <summary>DotplotDisplay - Properties</summary>
 
 #### property: colorBy
@@ -107,7 +135,7 @@ minAlignmentLength: types.optional(types.number, 0)
 
 </details>
 
-<details open>
+<details>
 <summary>DotplotDisplay - Volatiles</summary>
 
 #### volatile: rpcData
@@ -168,7 +196,7 @@ assembliesSwapped: false
 
 </details>
 
-<details open>
+<details>
 <summary>DotplotDisplay - Getters</summary>
 
 #### getter: warnings

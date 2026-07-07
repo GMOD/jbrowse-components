@@ -33,14 +33,6 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load MCScan (jcvi) `.anchors.simple` files with their two BED files
 
-### Used in
-
-Supplies data to the [SyntenyTrack](../syntenytrack) track, rendered by:
-
-- [DotplotDisplay](../dotplotdisplay)
-- [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- [LinearSyntenyDisplay](../linearsyntenydisplay)
-
 ### MCScanSimpleAnchorsAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -55,7 +47,14 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                                             | Type           | Description |
+| ---------------------------------------------------------------- | -------------- | ----------- |
+| [mcscanSimpleAnchorsLocation](#slot-mcscansimpleanchorslocation) | `fileLocation` |             |
+| [bed1Location](#slot-bed1location)                               | `fileLocation` |             |
+| [bed2Location](#slot-bed2location)                               | `fileLocation` |             |
+| [assemblyNames](#slot-assemblynames)                             | `stringArray`  |             |
+
+<details>
 <summary>MCScanSimpleAnchorsAdapter - Slots</summary>
 
 #### slot: mcscanSimpleAnchorsLocation
@@ -78,3 +77,10 @@ preprocessor to allow minimal config:
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
+
+## Related links
+
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

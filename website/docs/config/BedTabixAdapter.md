@@ -30,15 +30,6 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### Used in
-
-Supplies data to the [FeatureTrack](../featuretrack) track, rendered by:
-
-- [LinearArcDisplay](../lineararcdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
-
 ### BedTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
@@ -50,7 +41,17 @@ preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
 }
 ```
 
-<details open>
+| Slot                                               | Type                    | Description                                                                                                                                                                        |
+| -------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [bedGzLocation](#slot-bedgzlocation)               | `fileLocation`          |                                                                                                                                                                                    |
+| [index.indexType](#slot-indexindextype)            | `stringEnum` (TBI, CSI) |                                                                                                                                                                                    |
+| [index.location](#slot-indexlocation)              | `fileLocation`          |                                                                                                                                                                                    |
+| [columnNames](#slot-columnnames)                   | `stringArray`           | List of column names                                                                                                                                                               |
+| [scoreColumn](#slot-scorecolumn)                   | `string`                | The column to use as a "score" attribute                                                                                                                                           |
+| [autoSql](#slot-autosql)                           | `string`                | The autoSql definition for the data fields in the file                                                                                                                             |
+| [disableGeneHeuristic](#slot-disablegeneheuristic) | `boolean`               | Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications) |
+
+<details>
 <summary>BedTabixAdapter - Slots</summary>
 
 #### slot: bedGzLocation
@@ -94,3 +95,11 @@ structures. Useful for files that have BED12-like structure but are not genes
 **Type:** `boolean` · **Default:** `false`
 
 </details>
+
+## Related links
+
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)

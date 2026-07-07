@@ -5,19 +5,21 @@ import * as ts from 'typescript'
 
 import {
   codeBlock,
-  collapsible,
+  collapsibleClosed,
   collectTransitive,
   docPage,
   exampleSection,
   filterUnseenByName,
   lookupByIdOrName,
   mapByKey,
+  markdownTable,
   overviewSection,
   parseNode,
   repoRelative,
   section,
   stripPropertyName,
   suffixCategory,
+  tableCell,
   assertSingleHeader,
   warnHeaderGaps,
   withHeaders,
@@ -150,7 +152,7 @@ function inheritedSlotsSection(ownSlots: Item[], bases: ConfigWithHeader[]) {
     const shown = filterUnseenByName(seen, config.slots)
     return shown.length
       ? [
-          collapsible(
+          collapsibleClosed(
             `Inherited from ${config.header.name}`,
             // a markdown link inside <summary> renders literally, so the link to
             // the base config's own page leads the body instead
@@ -205,57 +207,46 @@ function relatedTrackType(name: string, links: DisplayLinkContext) {
     : links.displayToTrackType.get(name)
 }
 
+// One bullet per related link, prefixed with the kind of page it points to
+// (Track/Adapter/Display/Guide/...), so the whole "Related links" section
+// stays a single flat scannable list instead of a comma-joined line or its
+// own subsection per relationship.
+function relatedLine(kind: string, label: string) {
+  return `- **${kind}:** ${label}`
+}
+
 // The data adapters that feed a track/display, each declared via an adapter's
 // `#trackType` tag. Gives e.g. LinearAlignmentsDisplay -> BamAdapter,
 // CramAdapter, and AlignmentsTrack -> the same — so a reader configuring the
 // display or track sees which data formats it accepts.
-function compatibleAdaptersSection(name: string, links: DisplayLinkContext) {
+function compatibleAdaptersLines(name: string, links: DisplayLinkContext) {
   const trackType = relatedTrackType(name, links)
-  const track = trackType ? links.byName.get(trackType) : undefined
-  const lines = (trackType ? (links.adaptersByTrack.get(trackType) ?? []) : [])
+  return (trackType ? (links.adaptersByTrack.get(trackType) ?? []) : [])
     .map(adapterName => links.byName.get(adapterName))
     .filter((a): a is ConfigWithHeader => Boolean(a))
-    .map(a => `- [${a.header.name}](../${a.header.id})`)
-  // on a Track's own page the track type is this page, so don't self-link
-  const trackLabel =
-    name === trackType
-      ? 'this track'
-      : track
-        ? `the [${trackType}](../${track.header.id})`
-        : `the ${trackType ?? 'track'}`
-  return lines.length
-    ? section(
-        `### ${name} - Compatible adapters`,
-        `Data adapters that can supply ${trackLabel}:`,
-        lines.join('\n'),
-      )
-    : ''
+    .map(a => relatedLine('Adapter', `[${a.header.name}](../${a.header.id})`))
 }
 
 // Reverse-links a Track config to the Display types that attach to it.
 // Displays parameterized from a shared factory at runtime (e.g.
 // LDDisplay/LDTrackDisplay) carry no individually-tagged #config and so
 // resolve to nothing here; silently skipped, same as an empty Slots section.
-function displayTypesSection(name: string, links: DisplayLinkContext) {
-  const lines = (links.displayTypesByTrack.get(name) ?? []).flatMap(
-    displayName => {
-      const display = links.byName.get(displayName)
-      if (!display) {
-        return []
-      }
-      const modelLink = links.modelNames.has(displayName)
-        ? ` ([state model](../../models/${display.header.id}))`
-        : ''
-      return [`- [${displayName}](../${display.header.id})${modelLink}`]
-    },
-  )
-  return lines.length
-    ? section(
-        `### ${name} - Display types`,
-        'A track is just a container; the actual rendering behavior and config slots live on its display type(s):',
-        lines.join('\n'),
-      )
-    : ''
+function displayTypesLines(name: string, links: DisplayLinkContext) {
+  return (links.displayTypesByTrack.get(name) ?? []).flatMap(displayName => {
+    const display = links.byName.get(displayName)
+    if (!display) {
+      return []
+    }
+    const modelLink = links.modelNames.has(displayName)
+      ? ` ([state model](../../models/${display.header.id}))`
+      : ''
+    return [
+      relatedLine(
+        'Display',
+        `[${displayName}](../${display.header.id})${modelLink}`,
+      ),
+    ]
+  })
 }
 
 // Re-indent a bare adapter object so it nests cleanly as the 2-space-indented
@@ -335,43 +326,29 @@ function wrapAdapterExample(content: string, trackType = 'FeatureTrack') {
 // An adapter declares the track type its example is wrapped in via #trackType
 // (see wrapAdapterExample). Surface the full chain the adapter's data flows
 // through: the track that consumes it, then the display types that render that
-// track — closing the loop with each display's "Compatible adapters" section.
-function usedInSection(
-  trackType: string | undefined,
-  links: DisplayLinkContext,
-) {
-  const track = trackType ? links.byName.get(trackType) : undefined
-  const displayLines = (
-    trackType ? (links.displayTypesByTrack.get(trackType) ?? []) : []
-  )
+// track — closing the loop with each display's "Adapter" line.
+function usedInLines(trackType: string | undefined, links: DisplayLinkContext) {
+  const track = trackType && links.byName.get(trackType)
+  if (!trackType || !track) {
+    return []
+  }
+  const displayLines = (links.displayTypesByTrack.get(trackType) ?? [])
     .map(name => links.byName.get(name))
     .filter((d): d is ConfigWithHeader => Boolean(d))
-    .map(d => `- [${d.header.name}](../${d.header.id})`)
-  return track
-    ? section(
-        '### Used in',
-        displayLines.length
-          ? `Supplies data to the [${track.header.name}](../${track.header.id}) track, rendered by:`
-          : `Supplies data to the [${track.header.name}](../${track.header.id}) track.`,
-        displayLines.join('\n'),
-      )
-    : ''
+    .map(d => relatedLine('Display', `[${d.header.name}](../${d.header.id})`))
+  return [
+    relatedLine('Track', `[${track.header.name}](../${track.header.id})`),
+    ...displayLines,
+  ]
 }
 
-// The inverse of the per-display model link in displayTypesSection: a config
+// The inverse of the per-display model link in displayTypesLines: a config
 // (commonly a Display or Track) links to its own state-model page when one with
 // the same name is documented, so the two halves of a pluggable element — config
 // slots and runtime API — reference each other.
-function stateModelSection(
-  name: string,
-  id: string,
-  links: DisplayLinkContext,
-) {
+function stateModelLine(name: string, id: string, links: DisplayLinkContext) {
   return links.modelNames.has(name)
-    ? section(
-        `### ${name} - State model`,
-        `This config's runtime API is documented on its [state model page](../../models/${id}).`,
-      )
+    ? relatedLine('State model', `[runtime API](../../models/${id})`)
     : ''
 }
 
@@ -389,10 +366,6 @@ function renderConfig(
 ): string {
   const directBase = bases[0]
   const sections = section(
-    displayTypesSection(header.name, links),
-    compatibleAdaptersSection(header.name, links),
-    usedInSection(header.trackType, links),
-    stateModelSection(header.name, header.id, links),
     preProcess &&
       section(
         `### ${header.name} - Pre-processor / simplified config`,
@@ -404,19 +377,40 @@ function renderConfig(
         `Every ${header.name} has a unique \`${identifierField(identifier)}\`, a required top-level field that identifies it (not one of the config slots below).`,
         identifier.docs,
       ),
+    slots.length && slotsTable(slots),
     slots.length &&
-      collapsible(`${header.name} - Slots`, ...slots.map(s => slotBlock(s))),
-    inheritedSlotsSection(slots, bases),
-    derives &&
-      // when the base resolves to a page, the link says it all; only fall back
-      // to the raw `baseConfiguration:` code when it couldn't be resolved
-      section(
-        `### ${header.name} - Derives from`,
-        directBase
-          ? `- [${directBase.header.name}](../${directBase.header.id})`
-          : section(derives.docs, codeBlock(derives.code)),
+      collapsibleClosed(
+        `${header.name} - Slots`,
+        ...slots.map(s => slotBlock(s)),
       ),
+    inheritedSlotsSection(slots, bases),
   )
+
+  // Every cross-reference to another documented page (adapter/track/display/
+  // state-model/base-config links) is gathered here as one flat bullet list,
+  // one link per line prefixed with what kind of page it is, instead of
+  // scattered through Overview as its own subsection apiece — a reader
+  // looking for "what connects to this config" has one place to scan.
+  const derivesLine = derives
+    ? // when the base resolves to a page, the link says it all; only fall back
+      // to the raw `baseConfiguration:` code when it couldn't be resolved
+      directBase
+      ? relatedLine(
+          'Base config',
+          `[${directBase.header.name}](../${directBase.header.id})`,
+        )
+      : section(
+          `**Base config:** (unresolved) ${derives.docs}`,
+          codeBlock(derives.code),
+        )
+    : ''
+  const relatedLines = [
+    ...displayTypesLines(header.name, links),
+    ...compatibleAdaptersLines(header.name, links),
+    ...usedInLines(header.trackType, links),
+    stateModelLine(header.name, header.id, links),
+    derivesLine,
+  ].filter(Boolean)
 
   const hasSlots = slots.length > 0 || bases.some(b => b.slots.length > 0)
   const slotsNote = hasSlots
@@ -434,6 +428,9 @@ function renderConfig(
       : header.examples
   const exSection = exampleSection(examples, '## Example usage', slotsNote)
   const docsSection = overviewSection(header.docs, sections)
+  const relatedSection = relatedLines.length
+    ? section('## Related links', relatedLines.join('\n'))
+    : ''
 
   return docPage({
     id: header.id,
@@ -441,7 +438,7 @@ function renderConfig(
     sidebarLabel: `${category} -> ${header.name}`,
     notes: `Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts.`,
     sourcePath: filename,
-    body: section(exSection, docsSection),
+    body: section(exSection, docsSection, relatedSection),
   })
 }
 
@@ -588,16 +585,50 @@ function slotMetaLine(meta: SlotMeta): string {
     .join(' · ')
 }
 
-function slotBlock({ name, docs, examples, code }: Item) {
-  const value = stripPropertyName(code)
-  const meta = parseSlotMeta(value)
+// Parses a slot's value object literal once; slotBlock (full entry) and
+// slotRow (table summary) both read off this so they can't drift apart.
+function slotMetaFor(item: Item) {
+  const value = stripPropertyName(item.code)
+  return { value, meta: parseSlotMeta(value) }
+}
+
+function slotBlock(item: Item) {
+  const { value, meta } = slotMetaFor(item)
   return section(
-    `#### slot: ${name}`,
-    docs || meta.description,
+    `#### slot: ${item.name}`,
+    item.docs || meta.description,
     slotMetaLine(meta),
     meta.keepCode && codeBlock(value),
-    exampleSection(examples, '**Example:**'),
+    exampleSection(item.examples, '**Example:**'),
   )
+}
+
+// Mirrors the github-slugger id Astro derives for a slotBlock's `#### slot:
+// <name>` heading: lowercased, with the `slot: ` prefix's punctuation and any
+// dots in a nested slot name (e.g. `index.indexType`) dropped rather than
+// kept as separators.
+function slotAnchor(name: string) {
+  return `slot-${name.toLowerCase().replace(/\./g, '')}`
+}
+
+// One row of the slots table: name (linked to its full entry below), type,
+// and a one-line description.
+function slotRow(item: Item) {
+  const { meta } = slotMetaFor(item)
+  const enums = meta.enumValues ? ` (${meta.enumValues.join(', ')})` : ''
+  const type = meta.type ? `\`${meta.type}\`${enums}` : ''
+  return `| [${item.name}](#${slotAnchor(item.name)}) | ${tableCell(type)} | ${tableCell(item.docs || meta.description)} |`
+}
+
+// A real table of this config's own slots — name, type, and description at a
+// glance — rather than a bare list of links, since the slots are the actual
+// user-facing configuration surface and are worth seeing in one scan. The
+// Slots section itself is collapsed by default (see renderConfig): this table
+// is the primary way to find and evaluate a slot without opening it, and the
+// site's own table of contents only goes down to h2/h3 so it misses the h4
+// slot headings entirely.
+function slotsTable(slots: Item[]) {
+  return markdownTable(['Slot', 'Type', 'Description'], slots.map(slotRow))
 }
 
 // Warn once per config that declares a `baseConfiguration` we couldn't link to a

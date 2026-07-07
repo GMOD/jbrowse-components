@@ -3,19 +3,20 @@ import fs from 'fs'
 import slugify from 'slugify'
 
 import {
-  collapsible,
   collapsibleClosed,
   collectTransitive,
   docPage,
   exampleSection,
   lookupByIdOrName,
   mapByKey,
+  markdownTable,
   overviewSection,
   parseNode,
   repoRelative,
   section,
   stripComposedBlock,
   suffixCategory,
+  tableCell,
   typeAliasBlock,
   typeAndCodeBlock,
   assertSingleHeader,
@@ -248,6 +249,33 @@ function inheritedSection(ancestors: ModelWithHeader[]) {
     : ''
 }
 
+// One row of the own-members table: name (linked to its full entry below),
+// kind, and a one-line description — empty for "plumbing" members that carry
+// no JSDoc, which itself is useful signal (nothing to read there).
+function memberRow(def: MemberKind, m: Member) {
+  return `| [${m.name}](#${def.tag}-${m.name.toLowerCase()}) | ${def.label} | ${tableCell(m.docs)} |`
+}
+
+// A real table of this model's own members (not inherited — see
+// inheritedSection for that): name, kind, and description at a glance, each
+// linking to its full entry below. The full entries are collapsed by default
+// (see memberSection) since a model can carry hundreds of them, so this table
+// — placed right under the intro prose — is both the fast way to find one and
+// the fast way to see what's actually documented, rather than scrolling past
+// every member; the site's own table of contents only goes down to h2/h3 and
+// misses these h4 member headings entirely.
+function memberIndexSection(members: Record<MemberKey, Member[]>) {
+  const rows = MEMBER_KINDS.flatMap(k =>
+    members[k.key].map(m => memberRow(k, m)),
+  )
+  return rows.length
+    ? section(
+        '## Members',
+        markdownTable(['Member', 'Kind', 'Description'], rows),
+      )
+    : ''
+}
+
 // A model and its config schema are two halves of one pluggable element (runtime
 // API vs. configuration slots). They live on separate pages under sibling dirs;
 // link a model to its config page when one with the same name is documented.
@@ -277,6 +305,7 @@ function renderModel(
   const exSection = exampleSection(header.examples)
   const docsSection = overviewSection(
     header.docs,
+    memberIndexSection(model.members),
     configLinkSection(header.name, header.id, configNames),
     inheritedSection(ancestors),
     sections,
@@ -311,12 +340,12 @@ function memberEntry(def: MemberKind, m: Member) {
   )
 }
 
-// Documented members render in full in an open block; undocumented "plumbing"
-// members (bare setters, internal accessors) render once each in a folded-closed
-// block — their `#### <tag>: <name>` headings are the anchor targets other
-// pages' "Inherited members" links point at, and fragment navigation
-// auto-expands the block. No separate signature table: it only duplicated the
-// signatures already shown here.
+// Both documented members and undocumented "plumbing" ones (bare setters,
+// internal accessors) render in full, one folded-closed block per kind — the
+// memberIndexSection index above is the primary way in, so nothing needs to
+// start expanded. Their `#### <tag>: <name>` headings are the anchor targets
+// that index and other pages' "Inherited members" links point at; fragment
+// navigation auto-expands the block on landing.
 function memberSection(modelName: string, def: MemberKind, members: Member[]) {
   if (!members.length) {
     return ''
@@ -325,7 +354,7 @@ function memberSection(modelName: string, def: MemberKind, members: Member[]) {
   const plumbing = members.filter(m => !isDocumented(m))
   return section(
     documented.length
-      ? collapsible(
+      ? collapsibleClosed(
           `${modelName} - ${def.label}`,
           ...documented.map(m => memberEntry(def, m)),
         )

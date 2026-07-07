@@ -26,6 +26,17 @@ no autoruns. Fetch triggering is left entirely to the display's own afterAttach
 autorun so each display can express its own trigger conditions (HiC: viewport
 change; LD: viewport + showLDTriangle + etc).
 
+## Members
+
+| Member                                                 | Kind      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [reloadCounter](#volatile-reloadcounter)               | Volatiles | Bumped by `reload()` to retrigger a global display's fetch autorun. Each display reads `void self.reloadCounter` in its `afterAttach` fetch autorun so a user-initiated reload re-runs the fetch even when no viewport/setting changed.                                                                                                                                                                                                                                                                                                                                                                         |
+| [displayPhase](#getter-displayphase)                   | Getters   | Same precedence as MultiRegionDisplayMixin (single-sourced in `computeDisplayPhase`). A global display has no per-region staleness axis — it either has its one dataset or is fetching it — so its `loading` axis is simply "fetch in flight".                                                                                                                                                                                                                                                                                                                                                                  |
+| [dataLoaded](#getter-dataloaded)                       | Getters   | Overridable hook (default false): a subclass returns true once its single global dataset has actually been fetched — even when the fetch committed an empty result. The mixin owns no data state, so a global display must express this; it is the global-display analog of `MultiRegionDisplayMixin.viewportWithinLoadedData`.                                                                                                                                                                                                                                                                                 |
+| [svgReadyExtraTerminal](#getter-svgreadyextraterminal) | Getters   | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [svgReady](#getter-svgready)                           | Getters   | Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an off-screen (SVG) export can read final data. Like that mixin it requires the dataset to actually be loaded (or a terminal error / too-large / extra state), NOT merely "not currently fetching": the fetch trigger is a debounced `afterAttach` autorun, so at export time `isLoading` can still be false with no data yet — a `displayPhase !== 'loading'` test would then capture an empty render. Never gates on `canvasDrawn`, which an off-screen export never sets. Off-screen renderers gate on it via `awaitSvgReady(model)`. |
+| [reload](#action-reload)                               | Actions   | Satisfies the `reload` contract `DisplayChrome` requires of every display (the per-region foundation provides its own). Clears any error and bumps `reloadCounter` so the display's fetch autorun re-runs. A subclass whose reload needs extra teardown can override and chain.                                                                                                                                                                                                                                                                                                                                 |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -93,7 +104,7 @@ and docs.
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
 
-<details open>
+<details>
 <summary>GlobalDataDisplayMixin - Volatiles</summary>
 
 #### volatile: reloadCounter
@@ -111,7 +122,7 @@ reloadCounter: 0
 
 </details>
 
-<details open>
+<details>
 <summary>GlobalDataDisplayMixin - Getters</summary>
 
 #### getter: displayPhase
@@ -164,7 +175,7 @@ type svgReady = boolean
 
 </details>
 
-<details open>
+<details>
 <summary>GlobalDataDisplayMixin - Actions</summary>
 
 #### action: reload

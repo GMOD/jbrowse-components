@@ -14,6 +14,30 @@ note: many properties of the root model are available through the session, and
 we generally prefer using the session model (via e.g. getSession) over the root
 model (via e.g. getRoot) in plugin code
 
+## Members
+
+| Member                                                                   | Kind       | Description |
+| ------------------------------------------------------------------------ | ---------- | ----------- |
+| [configPath](#property-configpath)                                       | Properties |             |
+| [adminMode](#volatile-adminmode)                                         | Volatiles  |             |
+| [sessionDB](#volatile-sessiondb)                                         | Volatiles  |             |
+| [version](#volatile-version)                                             | Volatiles  |             |
+| [gitCommit](#volatile-gitcommit)                                         | Volatiles  |             |
+| [pluginsUpdated](#volatile-pluginsupdated)                               | Volatiles  |             |
+| [rpcManager](#volatile-rpcmanager)                                       | Volatiles  |             |
+| [savedSessionMetadata](#volatile-savedsessionmetadata)                   | Volatiles  |             |
+| [reloadPluginManagerCallback](#volatile-reloadpluginmanagercallback)     | Volatiles  |             |
+| [menus](#method-menus)                                                   | Methods    |             |
+| [setSavedSessionMetadata](#action-setsavedsessionmetadata)               | Actions    |             |
+| [fetchSessionMetadata](#action-fetchsessionmetadata)                     | Actions    |             |
+| [setSessionDB](#action-setsessiondb)                                     | Actions    |             |
+| [setPluginsUpdated](#action-setpluginsupdated)                           | Actions    |             |
+| [setReloadPluginManagerCallback](#action-setreloadpluginmanagercallback) | Actions    |             |
+| [activateSession](#action-activatesession)                               | Actions    |             |
+| [setSavedSessionFavorite](#action-setsavedsessionfavorite)               | Actions    |             |
+| [deleteSavedSession](#action-deletesavedsession)                         | Actions    |             |
+| [renameSavedSession](#action-renamesavedsession)                         | Actions    |             |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

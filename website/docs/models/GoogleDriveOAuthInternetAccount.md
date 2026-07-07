@@ -11,6 +11,18 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
+## Members
+
+| Member                                   | Kind       | Description                            |
+| ---------------------------------------- | ---------- | -------------------------------------- |
+| [type](#property-type)                   | Properties |                                        |
+| [configuration](#property-configuration) | Properties |                                        |
+| [toggleContents](#getter-togglecontents) | Getters    | The FileSelector icon for Google drive |
+| [selectorLabel](#getter-selectorlabel)   | Getters    |                                        |
+| [getFetcher](#method-getfetcher)         | Methods    |                                        |
+| [openLocation](#method-openlocation)     | Methods    |                                        |
+| [validateToken](#action-validatetoken)   | Actions    |                                        |
+
 ### GoogleDriveOAuthInternetAccount - Configuration
 
 The configuration slots for this model are documented on its
@@ -73,7 +85,7 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
+<details>
 <summary>GoogleDriveOAuthInternetAccount - Getters</summary>
 
 #### getter: toggleContents

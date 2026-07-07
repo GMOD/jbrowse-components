@@ -33,7 +33,12 @@ _See the **Slots** section below for all available configuration fields._
 supplies reference sequence inline in the config; each feature's `seq` holds the
 bases for its region
 
-<details open>
+| Slot                         | Type     | Description |
+| ---------------------------- | -------- | ----------- |
+| [adapterId](#slot-adapterid) | `string` |             |
+| [features](#slot-features)   | `frozen` |             |
+
+<details>
 <summary>FromConfigSequenceAdapter - Slots</summary>
 
 #### slot: adapterId

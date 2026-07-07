@@ -11,6 +11,15 @@ JBrowse core.
 
 ## Overview
 
+## Members
+
+| Member                                                                   | Kind       | Description |
+| ------------------------------------------------------------------------ | ---------- | ----------- |
+| [internetAccounts](#property-internetaccounts)                           | Properties |             |
+| [initializeInternetAccount](#action-initializeinternetaccount)           | Actions    |             |
+| [createEphemeralInternetAccount](#action-createephemeralinternetaccount) | Actions    |             |
+| [findAppropriateInternetAccount](#action-findappropriateinternetaccount) | Actions    |             |
+
 <details>
 <summary>InternetAccountsMixin - Properties</summary>
 

@@ -70,19 +70,17 @@ preloaded on the _adapter_, not here — use `MultiWiggleAdapter`'s `subadapters
 slot, where `group` drives the sidebar clustering tree and `color` sets each
 subtrack's line/fill.
 
-### MultiLinearWiggleDisplay - Compatible adapters
+| Slot                                         | Type                                   | Description                                                                                                                                                                                                                                                     |
+| -------------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [height](#slot-height)                       | `number`                               | Default height of the track                                                                                                                                                                                                                                     |
+| [summaryScoreMode](#slot-summaryscoremode)   | `stringEnum` (max, min, avg, whiskers) | choose whether to use max/min/average or whiskers which combines all three into the same rendering                                                                                                                                                              |
+| [defaultRendering](#slot-defaultrendering)   | `stringEnum`                           | Default rendering type. Multi-row modes (`multirowxy`, `multirowdensity`, `multirowline`, `multirowscatter`) draw one stacked plot per subtrack; overlapping modes (`multixyplot`, `multiline`, `multiscatter`) draw all subtracks together in one shared plot. |
+| [minimalTicks](#slot-minimalticks)           | `boolean`                              | Draw only the min/max Y-axis ticks                                                                                                                                                                                                                              |
+| [showTree](#slot-showtree)                   | `boolean`                              | Show the subtrack clustering tree in the sidebar                                                                                                                                                                                                                |
+| [showBranchLength](#slot-showbranchlength)   | `boolean`                              | Draw the clustering tree with branch lengths                                                                                                                                                                                                                    |
+| [showRowSeparators](#slot-showrowseparators) | `boolean`                              | Draw separator lines between subtrack rows                                                                                                                                                                                                                      |
 
-Data adapters that can supply the
-[MultiQuantitativeTrack](../multiquantitativetrack):
-
-- [MultiWiggleAdapter](../multiwiggleadapter)
-
-### MultiLinearWiggleDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/multilinearwiggledisplay).
-
-<details open>
+<details>
 <summary>MultiLinearWiggleDisplay - Slots</summary>
 
 #### slot: height
@@ -151,3 +149,8 @@ Draw separator lines between subtrack rows
 **Type:** `boolean` · **Default:** `false`
 
 </details>
+
+## Related links
+
+- **Adapter:** [MultiWiggleAdapter](../multiwiggleadapter)
+- **State model:** [runtime API](../../models/multilinearwiggledisplay)

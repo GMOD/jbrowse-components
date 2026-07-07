@@ -11,12 +11,12 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Overview
 
-### JBrowse1Connection - State model
+| Slot                                     | Type           | Description                                                                                         |
+| ---------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------- |
+| [dataDirLocation](#slot-datadirlocation) | `fileLocation` | the location of the JBrowse 1 data directory, often something like https://mysite.com/jbrowse/data/ |
+| [assemblyNames](#slot-assemblynames)     | `stringArray`  | name of the assembly the connection belongs to, should be a single entry                            |
 
-This config's runtime API is documented on its
-[state model page](../../models/jbrowse1connection).
-
-<details open>
+<details>
 <summary>JBrowse1Connection - Slots</summary>
 
 #### slot: dataDirLocation
@@ -41,7 +41,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseConnection</summary>
 
 [BaseConnection config →](../baseconnection)
@@ -54,6 +54,7 @@ a unique name for this connection
 
 </details>
 
-### JBrowse1Connection - Derives from
+## Related links
 
-- [BaseConnection](../baseconnection)
+- **State model:** [runtime API](../../models/jbrowse1connection)
+- **Base config:** [BaseConnection](../baseconnection)

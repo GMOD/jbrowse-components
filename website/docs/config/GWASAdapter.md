@@ -14,7 +14,12 @@ adapter for GWAS results files; a BedTabixAdapter with `scoreColumn` defaulted
 to `neg_log_pvalue` so files load with a sensible Manhattan plot score out of
 the box
 
-<details open>
+| Slot                                   | Type                                          | Description                                                                                                                                                                                                                                                           |
+| -------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [scoreColumn](#slot-scorecolumn)       | `string`                                      | BED column to read as the Manhattan plot score                                                                                                                                                                                                                        |
+| [scoreTransform](#slot-scoretransform) | `stringEnum` (none, negLog10, negLog10FromLn) | transform applied to `scoreColumn` to produce the Manhattan -log10(p) value: `none` (column is already -log10, e.g. Pan-UKBB neglog10_pval_*), `negLog10` (column is a raw p-value), or `negLog10FromLn` (column is a natural-log p-value, e.g. Pan-UKBB Hail `ln P`) |
+
+<details>
 <summary>GWASAdapter - Slots</summary>
 
 #### slot: scoreColumn
@@ -41,7 +46,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BedTabixAdapter</summary>
 
 [BedTabixAdapter config →](../bedtabixadapter)
@@ -82,6 +87,6 @@ structures. Useful for files that have BED12-like structure but are not genes
 
 </details>
 
-### GWASAdapter - Derives from
+## Related links
 
-- [BedTabixAdapter](../bedtabixadapter)
+- **Base config:** [BedTabixAdapter](../bedtabixadapter)

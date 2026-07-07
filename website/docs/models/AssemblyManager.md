@@ -11,7 +11,25 @@ JBrowse core.
 
 ## Overview
 
-<details open>
+## Members
+
+| Member                                                       | Kind       | Description                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [assemblies](#property-assemblies)                           | Properties | this is automatically managed by an autorun which looks in the parent session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies                                                                                                                                                                                                          |
+| [assemblyNameMap](#getter-assemblynamemap)                   | Getters    |                                                                                                                                                                                                                                                                                                                                                               |
+| [assemblyNamesList](#getter-assemblynameslist)               | Getters    |                                                                                                                                                                                                                                                                                                                                                               |
+| [assemblyList](#getter-assemblylist)                         | Getters    | combined jbrowse.assemblies, session.sessionAssemblies, and session.temporaryAssemblies                                                                                                                                                                                                                                                                       |
+| [rpcManager](#getter-rpcmanager)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                               |
+| [getCanonicalAssemblyName](#method-getcanonicalassemblyname) | Methods    |                                                                                                                                                                                                                                                                                                                                                               |
+| [getDisplayName](#method-getdisplayname)                     | Methods    |                                                                                                                                                                                                                                                                                                                                                               |
+| [get](#method-get)                                           | Methods    |                                                                                                                                                                                                                                                                                                                                                               |
+| [waitForAssembly](#method-waitforassembly)                   | Methods    | use this method instead of assemblyManager.get(assemblyName) to get an assembly with regions loaded                                                                                                                                                                                                                                                           |
+| [getRefNameMapForAdapter](#method-getrefnamemapforadapter)   | Methods    |                                                                                                                                                                                                                                                                                                                                                               |
+| [isValidRefName](#method-isvalidrefname)                     | Methods    |                                                                                                                                                                                                                                                                                                                                                               |
+| [removeAssembly](#action-removeassembly)                     | Actions    | private: you would generally want to add to manipulate jbrowse.assemblies, session.sessionAssemblies, or session.temporaryAssemblies instead of using this directly                                                                                                                                                                                           |
+| [addAssembly](#action-addassembly)                           | Actions    | private: you would generally want to add to manipulate jbrowse.assemblies, session.sessionAssemblies, or session.temporaryAssemblies instead of using this directly this can take an active instance of an assembly, in which case it is referred to, or it can take an identifier e.g. assembly name, which is used as a reference. snapshots cannot be used |
+
+<details>
 <summary>AssemblyManager - Properties</summary>
 
 #### property: assemblies
@@ -28,7 +46,7 @@ assemblies: types.array(assemblyFactory(conf, pm))
 
 </details>
 
-<details open>
+<details>
 <summary>AssemblyManager - Getters</summary>
 
 #### getter: assemblyList
@@ -65,7 +83,7 @@ type rpcManager = RpcManager
 
 </details>
 
-<details open>
+<details>
 <summary>AssemblyManager - Methods</summary>
 
 #### method: waitForAssembly
@@ -118,7 +136,7 @@ type isValidRefName = (refName: string, assemblyName: string) => boolean
 
 </details>
 
-<details open>
+<details>
 <summary>AssemblyManager - Actions</summary>
 
 #### action: removeAssembly

@@ -11,6 +11,33 @@ JBrowse core.
 
 ## Overview
 
+## Members
+
+| Member                                                     | Kind       | Description                                                                                                                                                                                                                           |
+| ---------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                         | Properties |                                                                                                                                                                                                                                       |
+| [type](#property-type)                                     | Properties |                                                                                                                                                                                                                                       |
+| [rpcDriverName](#property-rpcdrivername)                   | Properties |                                                                                                                                                                                                                                       |
+| [error](#volatile-error)                                   | Volatiles  |                                                                                                                                                                                                                                       |
+| [statusMessage](#volatile-statusmessage)                   | Volatiles  |                                                                                                                                                                                                                                       |
+| [statusProgress](#volatile-statusprogress)                 | Volatiles  | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined. |
+| [parentTrack](#getter-parenttrack)                         | Getters    |                                                                                                                                                                                                                                       |
+| [parentDisplay](#getter-parentdisplay)                     | Getters    | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                                                      |
+| [RenderingComponent](#getter-renderingcomponent)           | Getters    |                                                                                                                                                                                                                                       |
+| [DisplayBlurb](#getter-displayblurb)                       | Getters    |                                                                                                                                                                                                                                       |
+| [adapterConfig](#getter-adapterconfig)                     | Getters    |                                                                                                                                                                                                                                       |
+| [isMinimized](#getter-isminimized)                         | Getters    | Returns true if the parent track is minimized. Used to skip expensive operations like autoruns when track is not visible.                                                                                                             |
+| [effectiveRpcDriverName](#getter-effectiverpcdrivername)   | Getters    | Returns the effective RPC driver name with hierarchical fallback: 1. This display's explicit rpcDriverName 2. Parent display's effectiveRpcDriverName (for nested displays) 3. Track config's rpcDriverName                           |
+| [DisplayMessageComponent](#getter-displaymessagecomponent) | Getters    | if a display-level message should be displayed instead, make this return a react component                                                                                                                                            |
+| [viewMenuActions](#getter-viewmenuactions)                 | Getters    |                                                                                                                                                                                                                                       |
+| [renderingProps](#method-renderingprops)                   | Methods    | props passed to the renderer's React "Rendering" component. these are client-side only and never sent to the worker. includes displayModel and callbacks                                                                              |
+| [trackMenuItems](#method-trackmenuitems)                   | Methods    |                                                                                                                                                                                                                                       |
+| [regionCannotBeRendered](#method-regioncannotberendered)   | Methods    |                                                                                                                                                                                                                                       |
+| [setStatusMessage](#action-setstatusmessage)               | Actions    |                                                                                                                                                                                                                                       |
+| [setError](#action-seterror)                               | Actions    |                                                                                                                                                                                                                                       |
+| [setRpcDriverName](#action-setrpcdrivername)               | Actions    |                                                                                                                                                                                                                                       |
+| [reload](#action-reload)                                   | Actions    | base display reload does nothing, see specialized displays for details                                                                                                                                                                |
+
 <details>
 <summary>BaseDisplay - Properties</summary>
 
@@ -43,7 +70,7 @@ rpcDriverName: types.maybe(types.string)
 
 </details>
 
-<details open>
+<details>
 <summary>BaseDisplay - Volatiles</summary>
 
 #### volatile: statusProgress
@@ -84,7 +111,7 @@ statusMessage: undefined as string | undefined
 
 </details>
 
-<details open>
+<details>
 <summary>BaseDisplay - Getters</summary>
 
 #### getter: parentDisplay
@@ -165,7 +192,7 @@ type viewMenuActions = MenuItem[]
 
 </details>
 
-<details open>
+<details>
 <summary>BaseDisplay - Methods</summary>
 
 #### method: renderingProps
@@ -197,7 +224,7 @@ type regionCannotBeRendered = () => null
 
 </details>
 
-<details open>
+<details>
 <summary>BaseDisplay - Actions</summary>
 
 #### action: reload

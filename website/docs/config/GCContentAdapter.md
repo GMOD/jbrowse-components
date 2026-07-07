@@ -11,7 +11,14 @@ plugin.
 
 ## Overview
 
-<details open>
+| Slot                                     | Type                         | Description                                          |
+| ---------------------------------------- | ---------------------------- | ---------------------------------------------------- |
+| [sequenceAdapter](#slot-sequenceadapter) | `frozen`                     |                                                      |
+| [windowSize](#slot-windowsize)           | `number`                     |                                                      |
+| [windowDelta](#slot-windowdelta)         | `number`                     |                                                      |
+| [gcMode](#slot-gcmode)                   | `stringEnum` (content, skew) | calculate GC content fraction or GC skew (G-C)/(G+C) |
+
+<details>
 <summary>GCContentAdapter - Slots</summary>
 
 #### slot: sequenceAdapter

@@ -30,7 +30,13 @@ Preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                    | Type                    | Description                                     |
+| --------------------------------------- | ----------------------- | ----------------------------------------------- |
+| [ldLocation](#slot-ldlocation)          | `fileLocation`          | Location of the bgzipped PLINK LD file (.ld.gz) |
+| [index.indexType](#slot-indexindextype) | `stringEnum` (TBI, CSI) |                                                 |
+| [index.location](#slot-indexlocation)   | `fileLocation`          |                                                 |
+
+<details>
 <summary>PlinkLDTabixAdapter - Slots</summary>
 
 #### slot: ldLocation

@@ -63,21 +63,13 @@ _See the **Slots** section below for all available configuration fields._
 
 used for having a gc content track outside of the "reference sequence display"
 
-### GCContentTrack - Display types
-
-A track is just a container; the actual rendering behavior and config slots live
-on its display type(s):
-
-- [LinearGCContentTrackDisplay](../lineargccontenttrackdisplay)
-  ([state model](../../models/lineargccontenttrackdisplay))
-
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseTrack</summary>
 
 [BaseTrack config →](../basetrack)
@@ -225,6 +217,8 @@ formats configuration object in about dialog
 
 </details>
 
-### GCContentTrack - Derives from
+## Related links
 
-- [BaseTrack](../basetrack)
+- **Display:** [LinearGCContentTrackDisplay](../lineargccontenttrackdisplay)
+  ([state model](../../models/lineargccontenttrackdisplay))
+- **Base config:** [BaseTrack](../basetrack)

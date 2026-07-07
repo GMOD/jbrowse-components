@@ -18,7 +18,14 @@ display. A display whose config schema has any `promotable` slot composes this
 so the "affected by a session default" badge and its "clear default" action work
 without re-implementing the two delegations per display type.
 
-<details open>
+## Members
+
+| Member                                                 | Kind    | Description                                                                                                                                                                                                    |
+| ------------------------------------------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [sessionDefaultChanges](#method-sessiondefaultchanges) | Methods | Effective config differences an un-pinned track inherits from session-wide defaults (distinct from per-track config edits / trackConfigDeltas). Drives the "affected by a session default" badge.              |
+| [clearSessionDefaults](#action-clearsessiondefaults)   | Actions | Clear the session-wide defaults reported by `sessionDefaultChanges` so this display (and its siblings of the same type) revert to their config values. Backs the "clear default" action on the selector badge. |
+
+<details>
 <summary>PromotableDefaultsMixin - Methods</summary>
 
 #### method: sessionDefaultChanges
@@ -33,7 +40,7 @@ type sessionDefaultChanges = () => TrackConfigChange[]
 
 </details>
 
-<details open>
+<details>
 <summary>PromotableDefaultsMixin - Actions</summary>
 
 #### action: clearSessionDefaults

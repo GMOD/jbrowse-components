@@ -30,14 +30,6 @@ loads only chromosome names and lengths from a UCSC-style `.chrom.sizes` file
 (tab-separated `name<TAB>length`), with no actual sequence. Useful for karyotype
 or whole-genome/synteny views where the base-level sequence isn't needed.
 
-### Used in
-
-Supplies data to the [ReferenceSequenceTrack](../referencesequencetrack) track,
-rendered by:
-
-- [LinearGCContentDisplay](../lineargccontentdisplay)
-- [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
-
 ### ChromSizesAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -49,7 +41,11 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                           | Type           | Description |
+| ---------------------------------------------- | -------------- | ----------- |
+| [chromSizesLocation](#slot-chromsizeslocation) | `fileLocation` |             |
+
+<details>
 <summary>ChromSizesAdapter - Slots</summary>
 
 #### slot: chromSizesLocation
@@ -58,3 +54,10 @@ preprocessor to allow minimal config:
 `{ uri: '/path/to/species.chrom.sizes', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)

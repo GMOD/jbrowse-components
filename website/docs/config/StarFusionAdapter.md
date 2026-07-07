@@ -29,16 +29,6 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
 
-### Used in
-
-Supplies data to the [VariantTrack](../varianttrack) track, rendered by:
-
-- [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- [ChordVariantDisplay](../chordvariantdisplay)
-- [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-- [LinearVariantDisplay](../linearvariantdisplay)
-
 ### StarFusionAdapter - Pre-processor / simplified config
 
 Allows minimal config:
@@ -47,7 +37,11 @@ Allows minimal config:
 { "type": "StarFusionAdapter", "uri": "star-fusion.tsv" }
 ```
 
-<details open>
+| Slot                                           | Type           | Description                                         |
+| ---------------------------------------------- | -------------- | --------------------------------------------------- |
+| [starFusionLocation](#slot-starfusionlocation) | `fileLocation` | STAR-Fusion TSV output file (plain text or gzipped) |
+
+<details>
 <summary>StarFusionAdapter - Slots</summary>
 
 #### slot: starFusionLocation
@@ -68,3 +62,14 @@ STAR-Fusion TSV output file (plain text or gzipped)
 ```
 
 </details>
+
+## Related links
+
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)

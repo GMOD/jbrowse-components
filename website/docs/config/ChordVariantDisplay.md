@@ -39,22 +39,14 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### ChordVariantDisplay - Compatible adapters
+| Slot                                             | Type      | Description                                                        |
+| ------------------------------------------------ | --------- | ------------------------------------------------------------------ |
+| [onChordClick](#slot-onchordclick)               | `boolean` | callback that should be run when a chord in the track is clicked   |
+| [strokeColor](#slot-strokecolor)                 | `color`   | the line color of each arc                                         |
+| [strokeColorSelected](#slot-strokecolorselected) | `color`   | the line color of an arc that has been selected                    |
+| [strokeColorHover](#slot-strokecolorhover)       | `color`   | the line color of an arc that is being hovered over with the mouse |
 
-Data adapters that can supply the [VariantTrack](../varianttrack):
-
-- [BedpeAdapter](../bedpeadapter)
-- [StarFusionAdapter](../starfusionadapter)
-- [SplitVcfTabixAdapter](../splitvcftabixadapter)
-- [VcfAdapter](../vcfadapter)
-- [VcfTabixAdapter](../vcftabixadapter)
-
-### ChordVariantDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/chordvariantdisplay).
-
-<details open>
+<details>
 <summary>ChordVariantDisplay - Slots</summary>
 
 #### slot: onChordClick
@@ -120,3 +112,12 @@ the line color of an arc that is being hovered over with the mouse
 ```
 
 </details>
+
+## Related links
+
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
+- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
+- **Adapter:** [VcfAdapter](../vcfadapter)
+- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **State model:** [runtime API](../../models/chordvariantdisplay)

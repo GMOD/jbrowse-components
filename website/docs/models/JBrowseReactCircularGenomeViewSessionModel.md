@@ -10,6 +10,22 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 
 ## Overview
 
+## Members
+
+| Member                                     | Kind       | Description                |
+| ------------------------------------------ | ---------- | -------------------------- |
+| [view](#property-view)                     | Properties |                            |
+| [version](#getter-version)                 | Getters    |                            |
+| [assemblies](#getter-assemblies)           | Getters    |                            |
+| [assemblyNames](#getter-assemblynames)     | Getters    |                            |
+| [connections](#getter-connections)         | Getters    |                            |
+| [assemblyManager](#getter-assemblymanager) | Getters    |                            |
+| [views](#getter-views)                     | Getters    |                            |
+| [themeOptions](#getter-themeoptions)       | Getters    |                            |
+| [theme](#getter-theme)                     | Getters    |                            |
+| [addView](#action-addview)                 | Actions    | replaces view in this case |
+| [removeView](#action-removeview)           | Actions    | does nothing               |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -204,7 +220,7 @@ type theme = Theme
 
 </details>
 
-<details open>
+<details>
 <summary>JBrowseReactCircularGenomeViewSessionModel - Actions</summary>
 
 #### action: addView

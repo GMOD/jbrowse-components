@@ -11,12 +11,14 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Overview
 
-### GoogleDriveOAuthInternetAccount - State model
+| Slot                               | Type          | Description                                                    |
+| ---------------------------------- | ------------- | -------------------------------------------------------------- |
+| [authEndpoint](#slot-authendpoint) | `string`      | the authorization code endpoint of the internet account        |
+| [scopes](#slot-scopes)             | `string`      | optional scopes for the authorization call                     |
+| [domains](#slot-domains)           | `stringArray` | array of valid domains the url can contain to use this account |
+| [responseType](#slot-responsetype) | `string`      | the type of response from the authorization endpoint           |
 
-This config's runtime API is documented on its
-[state model page](../../models/googledriveoauthinternetaccount).
-
-<details open>
+<details>
 <summary>GoogleDriveOAuthInternetAccount - Slots</summary>
 
 #### slot: authEndpoint
@@ -53,7 +55,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from OAuthInternetAccount</summary>
 
 [OAuthInternetAccount config →](../oauthinternetaccount)
@@ -90,7 +92,7 @@ optional state for the authorization call
 
 </details>
 
-<details open>
+<details>
 <summary>Inherited from BaseInternetAccount</summary>
 
 [BaseInternetAccount config →](../baseinternetaccount)
@@ -115,6 +117,7 @@ request header for credentials
 
 </details>
 
-### GoogleDriveOAuthInternetAccount - Derives from
+## Related links
 
-- [OAuthInternetAccount](../oauthinternetaccount)
+- **State model:** [runtime API](../../models/googledriveoauthinternetaccount)
+- **Base config:** [OAuthInternetAccount](../oauthinternetaccount)

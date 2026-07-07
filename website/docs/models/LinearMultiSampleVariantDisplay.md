@@ -14,6 +14,20 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 Multi-sample variant display drawing one genotype row per sample, with a
 per-cell feature widget on click.
 
+## Members
+
+| Member                                                 | Kind       | Description |
+| ------------------------------------------------------ | ---------- | ----------- |
+| [type](#property-type)                                 | Properties |             |
+| [visibleRegions](#getter-visibleregions)               | Getters    |             |
+| [renderState](#getter-renderstate)                     | Getters    |             |
+| [prefersOffset](#getter-prefersoffset)                 | Getters    |             |
+| [perRegionCellMap](#getter-perregioncellmap)           | Getters    |             |
+| [flatbushIndices](#getter-flatbushindices)             | Getters    |             |
+| [renderSvg](#method-rendersvg)                         | Methods    |             |
+| [showSubmenuItems](#method-showsubmenuitems)           | Methods    |             |
+| [startRenderingBackend](#action-startrenderingbackend) | Actions    |             |
+
 ### LinearMultiSampleVariantDisplay - Configuration
 
 The configuration slots for this model are documented on its

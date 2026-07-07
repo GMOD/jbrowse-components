@@ -33,14 +33,6 @@ _See the **Slots** section below for all available configuration fields._
 a tabix-indexed PAF (PIF) for large synteny datasets. The `uri` shorthand
 auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
 
-### Used in
-
-Supplies data to the [SyntenyTrack](../syntenytrack) track, rendered by:
-
-- [DotplotDisplay](../dotplotdisplay)
-- [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- [LinearSyntenyDisplay](../linearsyntenydisplay)
-
 ### PairwiseIndexedPAFAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes file.pif.gz.tbi:
@@ -54,7 +46,18 @@ preprocessor to allow minimal config, assumes file.pif.gz.tbi:
 }
 ```
 
-<details open>
+| Slot                                                   | Type                    | Description                                                                                                                                                                                                                                            |
+| ------------------------------------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [assemblyNames](#slot-assemblynames)                   | `stringArray`           | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second                                                                                                              |
+| [targetAssembly](#slot-targetassembly)                 | `string`                | Alternative to assemblyNames: the target assembly name                                                                                                                                                                                                 |
+| [queryAssembly](#slot-queryassembly)                   | `string`                | Alternative to assemblyNames: the query assembly name                                                                                                                                                                                                  |
+| [pifGzLocation](#slot-pifgzlocation)                   | `fileLocation`          | location of pairwise tabix indexed PAF (pif)                                                                                                                                                                                                           |
+| [coarseBpPerPxThreshold](#slot-coarsebpperpxthreshold) | `number`                | bpPerPx threshold at which the reader switches from the per-row CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier (uppercase T/Q prefix), when make-pif was run with --coarse. No coarse tier present in the file = always uses fine tier. |
+| [index](#slot-index)                                   |                         |                                                                                                                                                                                                                                                        |
+| [index.indexType](#slot-indexindextype)                | `stringEnum` (TBI, CSI) |                                                                                                                                                                                                                                                        |
+| [index.location](#slot-indexlocation)                  | `fileLocation`          |                                                                                                                                                                                                                                                        |
+
+<details>
 <summary>PairwiseIndexedPAFAdapter - Slots</summary>
 
 #### slot: assemblyNames
@@ -122,3 +125,10 @@ ConfigurationSchema('TabixIndex', {
 `{ uri: '/path/to/my.paf.gz.tbi', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

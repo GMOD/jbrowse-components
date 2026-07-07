@@ -11,12 +11,14 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Overview
 
-### DropboxOAuthInternetAccount - State model
+| Slot                                 | Type          | Description                                                    |
+| ------------------------------------ | ------------- | -------------------------------------------------------------- |
+| [authEndpoint](#slot-authendpoint)   | `string`      | the authorization code endpoint of the internet account        |
+| [tokenEndpoint](#slot-tokenendpoint) | `string`      | the token endpoint of the internet account                     |
+| [needsPKCE](#slot-needspkce)         | `boolean`     | boolean to indicate if the endpoint needs a PKCE code          |
+| [domains](#slot-domains)             | `stringArray` | array of valid domains the url can contain to use this account |
 
-This config's runtime API is documented on its
-[state model page](../../models/dropboxoauthinternetaccount).
-
-<details open>
+<details>
 <summary>DropboxOAuthInternetAccount - Slots</summary>
 
 #### slot: authEndpoint
@@ -68,7 +70,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from OAuthInternetAccount</summary>
 
 [OAuthInternetAccount config →](../oauthinternetaccount)
@@ -105,7 +107,7 @@ the type of response from the authorization endpoint. can be 'token' or 'code'
 
 </details>
 
-<details open>
+<details>
 <summary>Inherited from BaseInternetAccount</summary>
 
 [BaseInternetAccount config →](../baseinternetaccount)
@@ -130,6 +132,7 @@ request header for credentials
 
 </details>
 
-### DropboxOAuthInternetAccount - Derives from
+## Related links
 
-- [OAuthInternetAccount](../oauthinternetaccount)
+- **State model:** [runtime API](../../models/dropboxoauthinternetaccount)
+- **Base config:** [OAuthInternetAccount](../oauthinternetaccount)

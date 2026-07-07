@@ -57,20 +57,16 @@ shorthand `displayDefaults: { key: value }` is equivalent to the full
 array form — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays).
 
-### LinearWiggleDisplay - Compatible adapters
+| Slot                                       | Type                                   | Description                                                                                                                                                |
+| ------------------------------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [defaultRendering](#slot-defaultrendering) | `stringEnum`                           | Default rendering type: `xyplot`, `density`, `line`, or `scatter`.                                                                                         |
+| [height](#slot-height)                     | `number`                               | Default height of the track                                                                                                                                |
+| [useBicolor](#slot-usebicolor)             | `boolean`                              | When true (the default), positive scores use posColor and negative scores use negColor. When false, all bars use the single color slot.                    |
+| [color](#slot-color)                       | `color`                                | Single fill color for the wiggle bars. Only used when useBicolor is false (useBicolor defaults to true, in which case posColor/negColor are used instead). |
+| [minimalTicks](#slot-minimalticks)         | `boolean`                              | Draw only the min/max Y-axis ticks                                                                                                                         |
+| [summaryScoreMode](#slot-summaryscoremode) | `stringEnum` (max, min, avg, whiskers) | choose whether to use max/min/average or whiskers which combines all three into the same rendering                                                         |
 
-Data adapters that can supply the [QuantitativeTrack](../quantitativetrack):
-
-- [BedGraphAdapter](../bedgraphadapter)
-- [BedGraphTabixAdapter](../bedgraphtabixadapter)
-- [BigWigAdapter](../bigwigadapter)
-
-### LinearWiggleDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/linearwiggledisplay).
-
-<details open>
+<details>
 <summary>LinearWiggleDisplay - Slots</summary>
 
 #### slot: defaultRendering
@@ -132,3 +128,10 @@ the same rendering
 `'whiskers'`
 
 </details>
+
+## Related links
+
+- **Adapter:** [BedGraphAdapter](../bedgraphadapter)
+- **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)
+- **Adapter:** [BigWigAdapter](../bigwigadapter)
+- **State model:** [runtime API](../../models/linearwiggledisplay)

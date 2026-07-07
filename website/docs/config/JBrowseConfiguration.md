@@ -20,7 +20,16 @@ this is the entry under the `configuration` key e.g.
 }
 ```
 
-<details open>
+| Slot                                                                  | Type           | Description |
+| --------------------------------------------------------------------- | -------------- | ----------- |
+| [configuration.rpc](#slot-configurationrpc)                           |                |             |
+| [configuration.disableAnalytics](#slot-configurationdisableanalytics) | `boolean`      |             |
+| [configuration.preferences](#slot-configurationpreferences)           |                |             |
+| [configuration.theme](#slot-configurationtheme)                       | `frozen`       |             |
+| [configuration.extraThemes](#slot-configurationextrathemes)           | `frozen`       |             |
+| [configuration.logoPath](#slot-configurationlogopath)                 | `fileLocation` |             |
+
+<details>
 <summary>JBrowseConfiguration - Slots</summary>
 
 #### slot: configuration.rpc

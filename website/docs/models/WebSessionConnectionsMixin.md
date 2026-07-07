@@ -11,6 +11,14 @@ JBrowse core.
 
 ## Overview
 
+## Members
+
+| Member                                             | Kind       | Description |
+| -------------------------------------------------- | ---------- | ----------- |
+| [sessionConnections](#property-sessionconnections) | Properties |             |
+| [addConnectionConf](#action-addconnectionconf)     | Actions    |             |
+| [deleteConnection](#action-deleteconnection)       | Actions    |             |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

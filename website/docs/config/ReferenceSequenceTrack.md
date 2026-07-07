@@ -31,32 +31,23 @@ _See the **Slots** section below for all available configuration fields._
 
 used to display base level DNA sequence tracks
 
-### ReferenceSequenceTrack - Display types
-
-A track is just a container; the actual rendering behavior and config slots live
-on its display type(s):
-
-- [LinearGCContentDisplay](../lineargccontentdisplay)
-  ([state model](../../models/lineargccontentdisplay))
-- [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
-  ([state model](../../models/linearreferencesequencedisplay))
-
-### ReferenceSequenceTrack - Compatible adapters
-
-Data adapters that can supply this track:
-
-- [BgzipFastaAdapter](../bgzipfastaadapter)
-- [ChromSizesAdapter](../chromsizesadapter)
-- [IndexedFastaAdapter](../indexedfastaadapter)
-- [TwoBitAdapter](../twobitadapter)
-- [UnindexedFastaAdapter](../unindexedfastaadapter)
-
 ### ReferenceSequenceTrack - Identifier
 
 Every ReferenceSequenceTrack has a unique `trackId`, a required top-level field
 that identifies it (not one of the config slots below).
 
-<details open>
+| Slot                                              | Type      | Description                                                                 |
+| ------------------------------------------------- | --------- | --------------------------------------------------------------------------- |
+| [adapter](#slot-adapter)                          |           | configuration for track adapter                                             |
+| [displays](#slot-displays)                        |           | configuration for the displays e.g. LinearReferenceSequenceDisplay          |
+| [name](#slot-name)                                | `string`  | optional track name, otherwise uses the "Reference sequence (assemblyName)" |
+| [sequenceType](#slot-sequencetype)                | `string`  | either dna or pep                                                           |
+| [description](#slot-description)                  | `string`  | a description of the track                                                  |
+| [metadata](#slot-metadata)                        | `frozen`  | anything to add about this track                                            |
+| [formatAbout.config](#slot-formataboutconfig)     | `frozen`  | formats configuration in about dialog                                       |
+| [formatAbout.hideUris](#slot-formatabouthideuris) | `boolean` |                                                                             |
+
+<details>
 <summary>ReferenceSequenceTrack - Slots</summary>
 
 #### slot: adapter
@@ -119,3 +110,16 @@ formats configuration in about dialog
 **Type:** `boolean` · **Default:** `false`
 
 </details>
+
+## Related links
+
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+  ([state model](../../models/lineargccontentdisplay))
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
+  ([state model](../../models/linearreferencesequencedisplay))
+- **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
+- **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
+- **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
+- **Adapter:** [TwoBitAdapter](../twobitadapter)
+- **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)

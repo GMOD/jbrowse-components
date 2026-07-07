@@ -39,22 +39,11 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### LinearPairedArcDisplay - Compatible adapters
+| Slot                 | Type    | Description           |
+| -------------------- | ------- | --------------------- |
+| [color](#slot-color) | `color` | the color of the arcs |
 
-Data adapters that can supply the [VariantTrack](../varianttrack):
-
-- [BedpeAdapter](../bedpeadapter)
-- [StarFusionAdapter](../starfusionadapter)
-- [SplitVcfTabixAdapter](../splitvcftabixadapter)
-- [VcfAdapter](../vcfadapter)
-- [VcfTabixAdapter](../vcftabixadapter)
-
-### LinearPairedArcDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/linearpairedarcdisplay).
-
-<details open>
+<details>
 <summary>LinearPairedArcDisplay - Slots</summary>
 
 #### slot: color
@@ -80,7 +69,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseLinearDisplay</summary>
 
 [BaseLinearDisplay config →](../baselineardisplay)
@@ -130,6 +119,12 @@ runtime rather than being stored with jexl in the config
 
 </details>
 
-### LinearPairedArcDisplay - Derives from
+## Related links
 
-- [BaseLinearDisplay](../baselineardisplay)
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
+- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
+- **Adapter:** [VcfAdapter](../vcfadapter)
+- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **State model:** [runtime API](../../models/linearpairedarcdisplay)
+- **Base config:** [BaseLinearDisplay](../baselineardisplay)

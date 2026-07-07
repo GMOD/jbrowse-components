@@ -40,27 +40,13 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### LGVSyntenyDisplay - Compatible adapters
+| Slot                                           | Type      | Description                                                                                                                                                                                                 |
+| ---------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [colorBy](#slot-colorby)                       | `frozen`  | Synteny reads are strand-colored by default (vs the base alignments display's `normal`); overrides the inherited `colorBy` slot's default.                                                                  |
+| [showCoverage](#slot-showcoverage)             | `boolean` | Synteny reads hide the coverage histogram by default; overrides the inherited base alignments display's `showCoverage` default of `true`.                                                                   |
+| [largeFeaturesFirst](#slot-largefeaturesfirst) | `boolean` | Synteny lays large alignments out first so big syntenic blocks cluster at the top instead of interleaving with small ones; overrides the base alignments display's `largeFeaturesFirst` default of `false`. |
 
-Data adapters that can supply the [SyntenyTrack](../syntenytrack):
-
-- [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
-- [AllVsAllPAFAdapter](../allvsallpafadapter)
-- [ChainAdapter](../chainadapter)
-- [DeltaAdapter](../deltaadapter)
-- [MCScanAnchorsAdapter](../mcscananchorsadapter)
-- [MCScanBlocksAdapter](../mcscanblocksadapter)
-- [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
-- [MashMapAdapter](../mashmapadapter)
-- [PAFAdapter](../pafadapter)
-- [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
-
-### LGVSyntenyDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/lgvsyntenydisplay).
-
-<details open>
+<details>
 <summary>LGVSyntenyDisplay - Slots</summary>
 
 #### slot: colorBy
@@ -93,7 +79,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from LinearAlignmentsDisplay</summary>
 
 [LinearAlignmentsDisplay config →](../linearalignmentsdisplay)
@@ -427,7 +413,7 @@ Draw soft-clipped read portions
 
 </details>
 
-<details open>
+<details>
 <summary>Inherited from BaseLinearDisplay</summary>
 
 [BaseLinearDisplay config →](../baselineardisplay)
@@ -471,6 +457,17 @@ runtime rather than being stored with jexl in the config
 
 </details>
 
-### LGVSyntenyDisplay - Derives from
+## Related links
 
-- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+- **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
+- **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
+- **Adapter:** [ChainAdapter](../chainadapter)
+- **Adapter:** [DeltaAdapter](../deltaadapter)
+- **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
+- **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
+- **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- **Adapter:** [MashMapAdapter](../mashmapadapter)
+- **Adapter:** [PAFAdapter](../pafadapter)
+- **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
+- **State model:** [runtime API](../../models/lgvsyntenydisplay)
+- **Base config:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)

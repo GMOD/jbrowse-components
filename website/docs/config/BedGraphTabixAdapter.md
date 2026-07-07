@@ -31,13 +31,6 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed bedGraph signal files
 
-### Used in
-
-Supplies data to the [QuantitativeTrack](../quantitativetrack) track, rendered
-by:
-
-- [LinearWiggleDisplay](../linearwiggledisplay)
-
 ### BedGraphTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
@@ -49,7 +42,14 @@ preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
 }
 ```
 
-<details open>
+| Slot                                           | Type                    | Description          |
+| ---------------------------------------------- | ----------------------- | -------------------- |
+| [bedGraphGzLocation](#slot-bedgraphgzlocation) | `fileLocation`          |                      |
+| [index.indexType](#slot-indexindextype)        | `stringEnum` (TBI, CSI) |                      |
+| [index.location](#slot-indexlocation)          | `fileLocation`          |                      |
+| [columnNames](#slot-columnnames)               | `stringArray`           | List of column names |
+
+<details>
 <summary>BedGraphTabixAdapter - Slots</summary>
 
 #### slot: bedGraphGzLocation
@@ -73,3 +73,8 @@ List of column names
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
+
+## Related links
+
+- **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)

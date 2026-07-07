@@ -36,12 +36,6 @@ used to configure BAM adapter
 Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
 automatically supplies it from the enclosing assembly's sequence track.
 
-### Used in
-
-Supplies data to the [AlignmentsTrack](../alignmentstrack) track, rendered by:
-
-- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
-
 ### BamAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.bam.bai:
@@ -53,7 +47,14 @@ preprocessor to allow minimal config, assumes yourfile.bam.bai:
 }
 ```
 
-<details open>
+| Slot                                    | Type                    | Description                                                                                           |
+| --------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| [bamLocation](#slot-bamlocation)        | `fileLocation`          |                                                                                                       |
+| [index.indexType](#slot-indexindextype) | `stringEnum` (BAI, CSI) |                                                                                                       |
+| [index.location](#slot-indexlocation)   | `fileLocation`          |                                                                                                       |
+| [fetchSizeLimit](#slot-fetchsizelimit)  | `number`                | size to fetch in bytes over which to display a warning to the user that too much data will be fetched |
+
+<details>
 <summary>BamAdapter - Slots</summary>
 
 #### slot: bamLocation
@@ -78,3 +79,8 @@ data will be fetched
 **Type:** `number` · **Default:** `5_000_000` · _advanced_
 
 </details>
+
+## Related links
+
+- **Track:** [AlignmentsTrack](../alignmentstrack)
+- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)

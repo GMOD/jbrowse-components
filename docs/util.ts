@@ -919,6 +919,26 @@ export function codeBlock(...lines: string[]) {
   return ['```js', ...lines, '```'].join('\n')
 }
 
+// Flatten free-form JSDoc prose into one safe table cell: collapse newlines
+// (a pipe table row can't span lines) and escape literal `|` so it can't be
+// mistaken for a column separator.
+export function tableCell(text: string | undefined) {
+  return (text ?? '').replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim()
+}
+
+// A GFM pipe table: header cells, then one already-built `| a | b | c |` row
+// per entry. Rows are joined with a single newline (not `section`'s blank-line
+// join) since a table's rows must be consecutive lines with no gaps.
+export function markdownTable(headers: string[], rows: string[]) {
+  return rows.length
+    ? [
+        `| ${headers.join(' | ')} |`,
+        `| ${headers.map(() => '---').join(' | ')} |`,
+        ...rows,
+      ].join('\n')
+    : ''
+}
+
 // A member's documented type is a bare type expression. Emitting it on its own
 // line in a ```js block lets prettier parse it as a statement, so e.g. an object
 // type followed by `[]` gets ASI-split into a `;[]` line. Wrapping it as a

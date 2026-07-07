@@ -11,7 +11,27 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
-<details open>
+## Members
+
+| Member                                         | Kind       | Description                                                                                                                                 |
+| ---------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| [rowSet](#property-rowset)                     | Properties |                                                                                                                                             |
+| [columns](#property-columns)                   | Properties |                                                                                                                                             |
+| [assemblyName](#property-assemblyname)         | Properties |                                                                                                                                             |
+| [visibleColumns](#property-visiblecolumns)     | Properties |                                                                                                                                             |
+| [svTypeFilter](#property-svtypefilter)         | Properties | selected value of the SVTYPE quick-filter dropdown (undefined = show all); applied to the INFO.SVTYPE column when the imported data has one |
+| [visibleRowFlags](#volatile-visiblerowflags)   | Volatiles  |                                                                                                                                             |
+| [rows](#getter-rows)                           | Getters    |                                                                                                                                             |
+| [initialized](#getter-initialized)             | Getters    |                                                                                                                                             |
+| [dataGridColumns](#getter-datagridcolumns)     | Getters    |                                                                                                                                             |
+| [visibleRows](#getter-visiblerows)             | Getters    |                                                                                                                                             |
+| [svTypeColumnField](#getter-svtypecolumnfield) | Getters    | the SVTYPE column field name, present only for structural-variant VCFs (drives whether the SV-type quick-filter dropdown is shown)          |
+| [svTypeOptions](#getter-svtypeoptions)         | Getters    | the distinct SVTYPE values present in the data, sorted, for the quick-filter dropdown options                                               |
+| [setVisibleRows](#action-setvisiblerows)       | Actions    |                                                                                                                                             |
+| [setSvTypeFilter](#action-setsvtypefilter)     | Actions    |                                                                                                                                             |
+| [setVisibleColumns](#action-setvisiblecolumns) | Actions    |                                                                                                                                             |
+
+<details>
 <summary>SpreadsheetViewSpreadsheet - Properties</summary>
 
 #### property: svTypeFilter
@@ -90,7 +110,7 @@ visibleRowFlags: undefined as Record<number, boolean> | undefined
 
 </details>
 
-<details open>
+<details>
 <summary>SpreadsheetViewSpreadsheet - Getters</summary>
 
 #### getter: svTypeColumnField

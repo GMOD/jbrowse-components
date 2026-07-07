@@ -15,6 +15,31 @@ Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
 tree, sidebar width and subtree filter, plus the hover/canvas volatile state
 used while drawing the tree.
 
+## Members
+
+| Member                                                     | Kind       | Description |
+| ---------------------------------------------------------- | ---------- | ----------- |
+| [layout](#property-layout)                                 | Properties |             |
+| [clusterTree](#property-clustertree)                       | Properties |             |
+| [treeAreaWidth](#property-treeareawidth)                   | Properties |             |
+| [subtreeFilter](#property-subtreefilter)                   | Properties |             |
+| [hoveredTreeNode](#volatile-hoveredtreenode)               | Volatiles  |             |
+| [treeCanvas](#volatile-treecanvas)                         | Volatiles  |             |
+| [mouseoverCanvas](#volatile-mouseovercanvas)               | Volatiles  |             |
+| [parsedTree](#getter-parsedtree)                           | Getters    |             |
+| [root](#getter-root)                                       | Getters    |             |
+| [treeHasBranchLengths](#getter-treehasbranchlengths)       | Getters    |             |
+| [willClearTree](#method-willcleartree)                     | Methods    |             |
+| [setLayout](#action-setlayout)                             | Actions    |             |
+| [clearLayout](#action-clearlayout)                         | Actions    |             |
+| [setClusterTree](#action-setclustertree)                   | Actions    |             |
+| [setLayoutAndClusterTree](#action-setlayoutandclustertree) | Actions    |             |
+| [setTreeAreaWidth](#action-settreeareawidth)               | Actions    |             |
+| [setSubtreeFilter](#action-setsubtreefilter)               | Actions    |             |
+| [setHoveredTreeNode](#action-sethoveredtreenode)           | Actions    |             |
+| [setTreeCanvasRef](#action-settreecanvasref)               | Actions    |             |
+| [setMouseoverCanvasRef](#action-setmouseovercanvasref)     | Actions    |             |
+
 <details>
 <summary>TreeSidebarMixin - Properties</summary>
 

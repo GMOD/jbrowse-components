@@ -29,14 +29,6 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### Used in
-
-Supplies data to the [ReferenceSequenceTrack](../referencesequencetrack) track,
-rendered by:
-
-- [LinearGCContentDisplay](../lineargccontentdisplay)
-- [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
-
 ### TwoBitAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config (note that adding chromSizes improves
@@ -52,7 +44,12 @@ names and sizes):
 
 ```
 
-<details open>
+| Slot                                           | Type           | Description                                                                                                  |
+| ---------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------ |
+| [twoBitLocation](#slot-twobitlocation)         | `fileLocation` |                                                                                                              |
+| [chromSizesLocation](#slot-chromsizeslocation) | `fileLocation` | An optional chrom.sizes file can be supplied to speed up loading since parsing the twobit file can take time |
+
+<details>
 <summary>TwoBitAdapter - Slots</summary>
 
 #### slot: twoBitLocation
@@ -69,3 +66,10 @@ the twobit file can take time
 `{ uri: '/path/to/default.chrom.sizes', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)

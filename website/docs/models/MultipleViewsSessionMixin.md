@@ -11,6 +11,22 @@ JBrowse core.
 
 ## Overview
 
+## Members
+
+| Member                                               | Kind       | Description                                              |
+| ---------------------------------------------------- | ---------- | -------------------------------------------------------- |
+| [views](#property-views)                             | Properties |                                                          |
+| [stickyViewHeaders](#property-stickyviewheaders)     | Properties |                                                          |
+| [useWorkspaces](#property-useworkspaces)             | Properties | enables the dockview-based tabbed/tiled workspace layout |
+| [moveViewDown](#action-moveviewdown)                 | Actions    |                                                          |
+| [moveViewUp](#action-moveviewup)                     | Actions    |                                                          |
+| [moveViewToTop](#action-moveviewtotop)               | Actions    |                                                          |
+| [moveViewToBottom](#action-moveviewtobottom)         | Actions    |                                                          |
+| [addView](#action-addview)                           | Actions    |                                                          |
+| [removeView](#action-removeview)                     | Actions    |                                                          |
+| [setStickyViewHeaders](#action-setstickyviewheaders) | Actions    |                                                          |
+| [setUseWorkspaces](#action-setuseworkspaces)         | Actions    |                                                          |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -91,7 +107,7 @@ and docs.
 [hideAllWidgets](../drawerwidgetsessionmixin#action-hideallwidgets),
 [editConfiguration](../drawerwidgetsessionmixin#action-editconfiguration)
 
-<details open>
+<details>
 <summary>MultipleViewsSessionMixin - Properties</summary>
 
 #### property: useWorkspaces

@@ -33,6 +33,37 @@ does not extend, but is a combination of a
 - [SpreadsheetView](../spreadsheetview)
 - [CircularView](../circularview)
 
+## Members
+
+| Member                                                                                             | Kind       | Description                                            |
+| -------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------ |
+| [id](#property-id)                                                                                 | Properties |                                                        |
+| [type](#property-type)                                                                             | Properties |                                                        |
+| [height](#property-height)                                                                         | Properties |                                                        |
+| [onlyDisplayRelevantRegionsInCircularView](#property-onlydisplayrelevantregionsincircularview)     | Properties |                                                        |
+| [spreadsheetView](#property-spreadsheetview)                                                       | Properties |                                                        |
+| [circularView](#property-circularview)                                                             | Properties |                                                        |
+| [init](#property-init)                                                                             | Properties | used for initializing the view from a session snapshot |
+| [width](#volatile-width)                                                                           | Volatiles  |                                                        |
+| [SpreadsheetViewReactComponent](#volatile-spreadsheetviewreactcomponent)                           | Volatiles  |                                                        |
+| [CircularViewReactComponent](#volatile-circularviewreactcomponent)                                 | Volatiles  |                                                        |
+| [circularViewOptionsBarHeight](#volatile-circularviewoptionsbarheight)                             | Volatiles  |                                                        |
+| [assemblyName](#getter-assemblyname)                                                               | Getters    |                                                        |
+| [showCircularView](#getter-showcircularview)                                                       | Getters    |                                                        |
+| [features](#getter-features)                                                                       | Getters    |                                                        |
+| [featuresAdapterConfigSnapshot](#getter-featuresadapterconfigsnapshot)                             | Getters    |                                                        |
+| [featureRefNames](#getter-featurerefnames)                                                         | Getters    |                                                        |
+| [currentAssembly](#getter-currentassembly)                                                         | Getters    |                                                        |
+| [canonicalFeatureRefNameSet](#getter-canonicalfeaturerefnameset)                                   | Getters    |                                                        |
+| [variantTrackId](#getter-varianttrackid)                                                           | Getters    |                                                        |
+| [featuresCircularTrackConfiguration](#getter-featurescirculartrackconfiguration)                   | Getters    |                                                        |
+| [menuItems](#method-menuitems)                                                                     | Methods    |                                                        |
+| [setWidth](#action-setwidth)                                                                       | Actions    |                                                        |
+| [setHeight](#action-setheight)                                                                     | Actions    |                                                        |
+| [setOnlyDisplayRelevantRegionsInCircularView](#action-setonlydisplayrelevantregionsincircularview) | Actions    |                                                        |
+| [setInit](#action-setinit)                                                                         | Actions    |                                                        |
+| [resizeHeight](#action-resizeheight)                                                               | Actions    |                                                        |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -52,7 +83,7 @@ and docs.
 [setWidth](../baseviewmodel#action-setwidth),
 [setMinimized](../baseviewmodel#action-setminimized)
 
-<details open>
+<details>
 <summary>SvInspectorView - Properties</summary>
 
 #### property: init

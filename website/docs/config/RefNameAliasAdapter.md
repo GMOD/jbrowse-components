@@ -25,7 +25,13 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                                     | Type           | Description                                                                                                                |
+| -------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| [location](#slot-location)                               | `fileLocation` |                                                                                                                            |
+| [refNameColumn](#slot-refnamecolumn)                     | `number`       | by default, the "ref names that match the fasta" are assumed to be in the first column (0), change this variable if needed |
+| [refNameColumnHeaderName](#slot-refnamecolumnheadername) | `string`       | refNameColumnHeaderName                                                                                                    |
+
+<details>
 <summary>RefNameAliasAdapter - Slots</summary>
 
 #### slot: location

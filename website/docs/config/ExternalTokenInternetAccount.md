@@ -11,12 +11,11 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Overview
 
-### ExternalTokenInternetAccount - State model
+| Slot                                       | Type      | Description                                            |
+| ------------------------------------------ | --------- | ------------------------------------------------------ |
+| [validateWithHEAD](#slot-validatewithhead) | `boolean` | validate the token with a HEAD request before using it |
 
-This config's runtime API is documented on its
-[state model page](../../models/externaltokeninternetaccount).
-
-<details open>
+<details>
 <summary>ExternalTokenInternetAccount - Slots</summary>
 
 #### slot: validateWithHEAD
@@ -33,7 +32,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseInternetAccount</summary>
 
 [BaseInternetAccount config →](../baseinternetaccount)
@@ -70,6 +69,7 @@ array of valid domains the url can contain to use this account
 
 </details>
 
-### ExternalTokenInternetAccount - Derives from
+## Related links
 
-- [BaseInternetAccount](../baseinternetaccount)
+- **State model:** [runtime API](../../models/externaltokeninternetaccount)
+- **Base config:** [BaseInternetAccount](../baseinternetaccount)

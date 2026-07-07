@@ -11,7 +11,15 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Overview
 
-<details open>
+| Slot                                           | Type           | Description                                                                                                                                                                                                 |
+| ---------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)           | `stringArray`  | Query assembly is the first value in the array, target assembly is the second                                                                                                                               |
+| [targetAssembly](#slot-targetassembly)         | `string`       | Alternative to assemblyNames array: the target assembly                                                                                                                                                     |
+| [queryAssembly](#slot-queryassembly)           | `string`       | Alternative to assemblyNames array: the query assembly                                                                                                                                                      |
+| [blastTableLocation](#slot-blasttablelocation) | `fileLocation` |                                                                                                                                                                                                             |
+| [columns](#slot-columns)                       | `string`       | Optional space-separated column name list. If custom columns were used in outfmt, enter them here exactly as specified in the command. At least qseqid, sseqid, qstart, qend, sstart, and send are required |
+
+<details>
 <summary>BlastTabularAdapter - Slots</summary>
 
 #### slot: assemblyNames

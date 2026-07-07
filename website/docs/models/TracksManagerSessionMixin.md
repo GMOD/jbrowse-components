@@ -11,6 +11,17 @@ JBrowse core.
 
 ## Overview
 
+## Members
+
+| Member                                                       | Kind    | Description                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [tracks](#getter-tracks)                                     | Getters |                                                                                                                                                                                                                                                                      |
+| [getTracksById](#getter-gettracksbyid)                       | Getters | Map of trackId → config for all tracks, assemblies, and connections. Frozen jbrowse.tracks are returned as plain objects here; hydration to MST models happens lazily in TrackConfigurationReference on first access. MobX caches this until any dependency changes. |
+| [tracksById](#getter-tracksbyid)                             | Getters | MobX-cached map of trackId → config for all tracks, assemblies, and connections. Recomputes only when dependencies change.                                                                                                                                           |
+| [addTrackConf](#action-addtrackconf)                         | Actions |                                                                                                                                                                                                                                                                      |
+| [updateTrackConfiguration](#action-updatetrackconfiguration) | Actions | Persist edited track config back to the in-memory jbrowse config. The session-tracks mixin overrides this so a non-admin's edits become a shareable session-track override instead.                                                                                  |
+| [deleteTrackConf](#action-deletetrackconf)                   | Actions |                                                                                                                                                                                                                                                                      |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -77,7 +88,7 @@ and docs.
 **Actions:**
 [dereferenceTrack](../referencemanagementsessionmixin#action-dereferencetrack)
 
-<details open>
+<details>
 <summary>TracksManagerSessionMixin - Getters</summary>
 
 #### getter: getTracksById
@@ -113,7 +124,7 @@ type tracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slot
 
 </details>
 
-<details open>
+<details>
 <summary>TracksManagerSessionMixin - Actions</summary>
 
 #### action: updateTrackConfiguration

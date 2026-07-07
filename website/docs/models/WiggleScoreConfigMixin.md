@@ -16,6 +16,40 @@ include rpcDataMap or autoscale domain computation — those live in
 WiggleCommonMixin, which composes this. Displays that own their own rpcDataMap
 type (e.g. LinearManhattanDisplay) should compose this instead.
 
+## Members
+
+| Member                                               | Kind       | Description                        |
+| ---------------------------------------------------- | ---------- | ---------------------------------- |
+| [resolution](#property-resolution)                   | Properties |                                    |
+| [displayCrossHatches](#property-displaycrosshatches) | Properties |                                    |
+| [loadedBpPerPx](#volatile-loadedbpperpx)             | Volatiles  |                                    |
+| [scalebarOverlapLeft](#getter-scalebaroverlapleft)   | Getters    |                                    |
+| [posColor](#getter-poscolor)                         | Getters    |                                    |
+| [negColor](#getter-negcolor)                         | Getters    |                                    |
+| [bicolorPivot](#getter-bicolorpivot)                 | Getters    |                                    |
+| [scaleType](#getter-scaletype)                       | Getters    |                                    |
+| [autoscaleType](#getter-autoscaletype)               | Getters    |                                    |
+| [numStdDev](#getter-numstddev)                       | Getters    |                                    |
+| [scatterPointSize](#getter-scatterpointsize)         | Getters    |                                    |
+| [summaryScoreMode](#getter-summaryscoremode)         | Getters    |                                    |
+| [renderingType](#getter-renderingtype)               | Getters    |                                    |
+| [minScore](#getter-minscore)                         | Getters    |                                    |
+| [maxScore](#getter-maxscore)                         | Getters    |                                    |
+| [minScoreBound](#getter-minscorebound)               | Getters    |                                    |
+| [maxScoreBound](#getter-maxscorebound)               | Getters    |                                    |
+| [hasResolution](#getter-hasresolution)               | Getters    |                                    |
+| [toggleCrossHatches](#action-togglecrosshatches)     | Actions    |                                    |
+| [setResolution](#action-setresolution)               | Actions    |                                    |
+| [setLoadedBpPerPx](#action-setloadedbpperpx)         | Actions    |                                    |
+| [setScaleType](#action-setscaletype)                 | Actions    |                                    |
+| [setMinScore](#action-setminscore)                   | Actions    |                                    |
+| [setMaxScore](#action-setmaxscore)                   | Actions    |                                    |
+| [setRenderingType](#action-setrenderingtype)         | Actions    |                                    |
+| [setSummaryScoreMode](#action-setsummaryscoremode)   | Actions    |                                    |
+| [setScatterPointSize](#action-setscatterpointsize)   | Actions    |                                    |
+| [setAutoscale](#action-setautoscale)                 | Actions    |                                    |
+| [isCacheValid](#action-iscachevalid)                 | Actions    | Strict zoom equality: see adr-008. |
+
 <details>
 <summary>WiggleScoreConfigMixin - Properties</summary>
 
@@ -148,7 +182,7 @@ type hasResolution = boolean
 
 </details>
 
-<details open>
+<details>
 <summary>WiggleScoreConfigMixin - Actions</summary>
 
 #### action: isCacheValid

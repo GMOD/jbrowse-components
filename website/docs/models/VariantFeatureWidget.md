@@ -14,6 +14,13 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 Feature-details widget for a VCF variant, extending the base feature widget with
 variant-specific fields such as genotypes and INFO.
 
+## Members
+
+| Member                                 | Kind       | Description |
+| -------------------------------------- | ---------- | ----------- |
+| [type](#property-type)                 | Properties |             |
+| [descriptions](#property-descriptions) | Properties |             |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

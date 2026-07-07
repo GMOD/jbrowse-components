@@ -11,12 +11,12 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Overview
 
-### HTTPBasicInternetAccount - State model
+| Slot                                       | Type      | Description                                            |
+| ------------------------------------------ | --------- | ------------------------------------------------------ |
+| [tokenType](#slot-tokentype)               | `string`  | a custom name for a token to include in the header     |
+| [validateWithHEAD](#slot-validatewithhead) | `boolean` | validate the token with a HEAD request before using it |
 
-This config's runtime API is documented on its
-[state model page](../../models/httpbasicinternetaccount).
-
-<details open>
+<details>
 <summary>HTTPBasicInternetAccount - Slots</summary>
 
 #### slot: tokenType
@@ -39,7 +39,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseInternetAccount</summary>
 
 [BaseInternetAccount config →](../baseinternetaccount)
@@ -70,6 +70,7 @@ array of valid domains the url can contain to use this account
 
 </details>
 
-### HTTPBasicInternetAccount - Derives from
+## Related links
 
-- [BaseInternetAccount](../baseinternetaccount)
+- **State model:** [runtime API](../../models/httpbasicinternetaccount)
+- **Base config:** [BaseInternetAccount](../baseinternetaccount)

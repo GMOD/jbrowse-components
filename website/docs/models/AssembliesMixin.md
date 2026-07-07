@@ -14,6 +14,21 @@ JBrowse core.
 Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 `temporaryAssemblies` (used for ad-hoc read-vs-ref style assemblies).
 
+## Members
+
+| Member                                                     | Kind       | Description                                                                                                                                      |
+| ---------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [sessionAssemblies](#property-sessionassemblies)           | Properties |                                                                                                                                                  |
+| [temporaryAssemblies](#property-temporaryassemblies)       | Properties |                                                                                                                                                  |
+| [assemblies](#getter-assemblies)                           | Getters    | sessionAssemblies plus jbrowse config assemblies. Does not include temporaryAssemblies; this is the list shown in the AssemblySelector dropdown. |
+| [assemblyNames](#getter-assemblynames)                     | Getters    | names of the assemblies returned by the `assemblies` getter                                                                                      |
+| [addSessionAssembly](#action-addsessionassembly)           | Actions    |                                                                                                                                                  |
+| [addAssembly](#action-addassembly)                         | Actions    |                                                                                                                                                  |
+| [removeAssembly](#action-removeassembly)                   | Actions    |                                                                                                                                                  |
+| [removeSessionAssembly](#action-removesessionassembly)     | Actions    |                                                                                                                                                  |
+| [addTemporaryAssembly](#action-addtemporaryassembly)       | Actions    | used for read vs ref type assemblies.                                                                                                            |
+| [removeTemporaryAssembly](#action-removetemporaryassembly) | Actions    |                                                                                                                                                  |
+
 <details>
 <summary>AssembliesMixin - Properties</summary>
 
@@ -43,7 +58,7 @@ temporaryAssemblies: types.stripDefault(
 
 </details>
 
-<details open>
+<details>
 <summary>AssembliesMixin - Getters</summary>
 
 #### getter: assemblies
@@ -65,7 +80,7 @@ type assemblyNames = string[]
 
 </details>
 
-<details open>
+<details>
 <summary>AssembliesMixin - Actions</summary>
 
 #### action: addTemporaryAssembly

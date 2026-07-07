@@ -34,7 +34,12 @@ _See the **Slots** section below for all available configuration fields._
 
 used for specifying refNames+sizes of an assembly
 
-<details open>
+| Slot                         | Type     | Description |
+| ---------------------------- | -------- | ----------- |
+| [adapterId](#slot-adapterid) | `string` |             |
+| [features](#slot-features)   | `frozen` |             |
+
+<details>
 <summary>FromConfigRegionsAdapter - Slots</summary>
 
 #### slot: adapterId

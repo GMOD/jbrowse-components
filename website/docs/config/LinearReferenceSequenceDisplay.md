@@ -39,23 +39,14 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### LinearReferenceSequenceDisplay - Compatible adapters
+| Slot                                     | Type          | Description                                                                                                                                 |
+| ---------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| [height](#slot-height)                   | `maybeNumber` | explicit display height (e.g. from a drag-resize); unset means auto-fit to the zoom-aware computed height. See the model's `height` getter. |
+| [showForward](#slot-showforward)         | `boolean`     | show the forward-strand sequence row                                                                                                        |
+| [showReverse](#slot-showreverse)         | `boolean`     | show the reverse-complement sequence row (DNA only)                                                                                         |
+| [showTranslation](#slot-showtranslation) | `boolean`     | show the translation frame rows (DNA only)                                                                                                  |
 
-Data adapters that can supply the
-[ReferenceSequenceTrack](../referencesequencetrack):
-
-- [BgzipFastaAdapter](../bgzipfastaadapter)
-- [ChromSizesAdapter](../chromsizesadapter)
-- [IndexedFastaAdapter](../indexedfastaadapter)
-- [TwoBitAdapter](../twobitadapter)
-- [UnindexedFastaAdapter](../unindexedfastaadapter)
-
-### LinearReferenceSequenceDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/linearreferencesequencedisplay).
-
-<details open>
+<details>
 <summary>LinearReferenceSequenceDisplay - Slots</summary>
 
 #### slot: height
@@ -84,3 +75,12 @@ show the translation frame rows (DNA only)
 **Type:** `boolean` · **Default:** `true`
 
 </details>
+
+## Related links
+
+- **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
+- **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
+- **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
+- **Adapter:** [TwoBitAdapter](../twobitadapter)
+- **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)
+- **State model:** [runtime API](../../models/linearreferencesequencedisplay)

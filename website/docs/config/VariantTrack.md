@@ -51,39 +51,13 @@ _See the **Slots** section below for all available configuration fields._
 Mostly similar to feature track, but has `ChordDisplayType` registered to it,
 and custom feature details in `LinearVariantDisplay`
 
-### VariantTrack - Display types
-
-A track is just a container; the actual rendering behavior and config slots live
-on its display type(s):
-
-- [LinearPairedArcDisplay](../linearpairedarcdisplay)
-  ([state model](../../models/linearpairedarcdisplay))
-- [ChordVariantDisplay](../chordvariantdisplay)
-  ([state model](../../models/chordvariantdisplay))
-- [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-  ([state model](../../models/linearmultisamplevariantdisplay))
-- [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-  ([state model](../../models/linearmultisamplevariantmatrixdisplay))
-- [LinearVariantDisplay](../linearvariantdisplay)
-  ([state model](../../models/linearvariantdisplay))
-
-### VariantTrack - Compatible adapters
-
-Data adapters that can supply this track:
-
-- [BedpeAdapter](../bedpeadapter)
-- [StarFusionAdapter](../starfusionadapter)
-- [SplitVcfTabixAdapter](../splitvcftabixadapter)
-- [VcfAdapter](../vcfadapter)
-- [VcfTabixAdapter](../vcftabixadapter)
-
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseTrack</summary>
 
 [BaseTrack config →](../basetrack)
@@ -231,6 +205,23 @@ formats configuration object in about dialog
 
 </details>
 
-### VariantTrack - Derives from
+## Related links
 
-- [BaseTrack](../basetrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+  ([state model](../../models/linearpairedarcdisplay))
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+  ([state model](../../models/chordvariantdisplay))
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+  ([state model](../../models/linearmultisamplevariantdisplay))
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+  ([state model](../../models/linearmultisamplevariantmatrixdisplay))
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)
+  ([state model](../../models/linearvariantdisplay))
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
+- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
+- **Adapter:** [VcfAdapter](../vcfadapter)
+- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **Base config:** [BaseTrack](../basetrack)

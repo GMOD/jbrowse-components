@@ -35,40 +35,13 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### SyntenyTrack - Display types
-
-A track is just a container; the actual rendering behavior and config slots live
-on its display type(s):
-
-- [DotplotDisplay](../dotplotdisplay)
-  ([state model](../../models/dotplotdisplay))
-- [LGVSyntenyDisplay](../lgvsyntenydisplay)
-  ([state model](../../models/lgvsyntenydisplay))
-- [LinearSyntenyDisplay](../linearsyntenydisplay)
-  ([state model](../../models/linearsyntenydisplay))
-
-### SyntenyTrack - Compatible adapters
-
-Data adapters that can supply this track:
-
-- [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
-- [AllVsAllPAFAdapter](../allvsallpafadapter)
-- [ChainAdapter](../chainadapter)
-- [DeltaAdapter](../deltaadapter)
-- [MCScanAnchorsAdapter](../mcscananchorsadapter)
-- [MCScanBlocksAdapter](../mcscanblocksadapter)
-- [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
-- [MashMapAdapter](../mashmapadapter)
-- [PAFAdapter](../pafadapter)
-- [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
-
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseTrack</summary>
 
 [BaseTrack config →](../basetrack)
@@ -216,6 +189,22 @@ formats configuration object in about dialog
 
 </details>
 
-### SyntenyTrack - Derives from
+## Related links
 
-- [BaseTrack](../basetrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+  ([state model](../../models/dotplotdisplay))
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+  ([state model](../../models/lgvsyntenydisplay))
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
+  ([state model](../../models/linearsyntenydisplay))
+- **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
+- **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
+- **Adapter:** [ChainAdapter](../chainadapter)
+- **Adapter:** [DeltaAdapter](../deltaadapter)
+- **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
+- **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
+- **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- **Adapter:** [MashMapAdapter](../mashmapadapter)
+- **Adapter:** [PAFAdapter](../pafadapter)
+- **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
+- **Base config:** [BaseTrack](../basetrack)

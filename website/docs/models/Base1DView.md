@@ -14,6 +14,41 @@ JBrowse core.
 used in non-lgv view representations of a 1d view e.g. the two axes of the
 dotplot use this
 
+## Members
+
+| Member                                                     | Kind       | Description                                                                                                                  |
+| ---------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                         | Properties |                                                                                                                              |
+| [displayedRegions](#property-displayedregions)             | Properties |                                                                                                                              |
+| [bpPerPx](#property-bpperpx)                               | Properties |                                                                                                                              |
+| [offsetPx](#property-offsetpx)                             | Properties |                                                                                                                              |
+| [minimumBlockWidth](#property-minimumblockwidth)           | Properties |                                                                                                                              |
+| [features](#volatile-features)                             | Volatiles  |                                                                                                                              |
+| [volatileWidth](#volatile-volatilewidth)                   | Volatiles  |                                                                                                                              |
+| [width](#getter-width)                                     | Getters    |                                                                                                                              |
+| [assemblyNames](#getter-assemblynames)                     | Getters    |                                                                                                                              |
+| [displayedRegionsTotalPx](#getter-displayedregionstotalpx) | Getters    |                                                                                                                              |
+| [maxOffset](#getter-maxoffset)                             | Getters    |                                                                                                                              |
+| [minOffset](#getter-minoffset)                             | Getters    |                                                                                                                              |
+| [totalBp](#getter-totalbp)                                 | Getters    |                                                                                                                              |
+| [dynamicBlocks](#getter-dynamicblocks)                     | Getters    |                                                                                                                              |
+| [staticBlocks](#getter-staticblocks)                       | Getters    |                                                                                                                              |
+| [currBp](#getter-currbp)                                   | Getters    |                                                                                                                              |
+| [pxToBp](#method-pxtobp)                                   | Methods    |                                                                                                                              |
+| [bpToPx](#method-bptopx)                                   | Methods    |                                                                                                                              |
+| [setDisplayedRegions](#action-setdisplayedregions)         | Actions    |                                                                                                                              |
+| [setBpPerPx](#action-setbpperpx)                           | Actions    |                                                                                                                              |
+| [setVolatileWidth](#action-setvolatilewidth)               | Actions    |                                                                                                                              |
+| [setFeatures](#action-setfeatures)                         | Actions    |                                                                                                                              |
+| [showAllRegions](#action-showallregions)                   | Actions    | this makes a zoomed out view that shows all displayedRegions that makes the overview bar square with the scale bar           |
+| [zoomOut](#action-zoomout)                                 | Actions    |                                                                                                                              |
+| [zoomIn](#action-zoomin)                                   | Actions    |                                                                                                                              |
+| [zoomTo](#action-zoomto)                                   | Actions    |                                                                                                                              |
+| [scrollTo](#action-scrollto)                               | Actions    |                                                                                                                              |
+| [centerAt](#action-centerat)                               | Actions    |                                                                                                                              |
+| [scroll](#action-scroll)                                   | Actions    | note: the scroll is clamped to keep the view on the main screen                                                              |
+| [moveTo](#action-moveto)                                   | Actions    | offset is the base-pair-offset in the displayed region, index is the index of the displayed region in the linear genome view |
+
 <details>
 <summary>Base1DView - Properties</summary>
 
@@ -174,7 +209,7 @@ type bpToPx = ({
 
 </details>
 
-<details open>
+<details>
 <summary>Base1DView - Actions</summary>
 
 #### action: showAllRegions

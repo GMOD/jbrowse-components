@@ -52,29 +52,13 @@ _See the **Slots** section below for all available configuration fields._
 
 has very little config; most config and state logic is on the display
 
-### AlignmentsTrack - Display types
-
-A track is just a container; the actual rendering behavior and config slots live
-on its display type(s):
-
-- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
-  ([state model](../../models/linearalignmentsdisplay))
-
-### AlignmentsTrack - Compatible adapters
-
-Data adapters that can supply this track:
-
-- [BamAdapter](../bamadapter)
-- [CramAdapter](../cramadapter)
-- [HtsgetBamAdapter](../htsgetbamadapter)
-
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseTrack</summary>
 
 [BaseTrack config →](../basetrack)
@@ -222,6 +206,11 @@ formats configuration object in about dialog
 
 </details>
 
-### AlignmentsTrack - Derives from
+## Related links
 
-- [BaseTrack](../basetrack)
+- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+  ([state model](../../models/linearalignmentsdisplay))
+- **Adapter:** [BamAdapter](../bamadapter)
+- **Adapter:** [CramAdapter](../cramadapter)
+- **Adapter:** [HtsgetBamAdapter](../htsgetbamadapter)
+- **Base config:** [BaseTrack](../basetrack)

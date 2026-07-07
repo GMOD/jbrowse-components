@@ -29,16 +29,6 @@ _See the **Slots** section below for all available configuration fields._
 
 intended for SVs in a single assembly
 
-### Used in
-
-Supplies data to the [VariantTrack](../varianttrack) track, rendered by:
-
-- [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- [ChordVariantDisplay](../chordvariantdisplay)
-- [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-- [LinearVariantDisplay](../linearvariantdisplay)
-
 ### BedpeAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -50,7 +40,12 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                 | Type           | Description                                                               |
+| ------------------------------------ | -------------- | ------------------------------------------------------------------------- |
+| [bedpeLocation](#slot-bedpelocation) | `fileLocation` | can be plaintext or gzipped, not indexed so loaded into memory on startup |
+| [columnNames](#slot-columnnames)     | `stringArray`  | List of column names                                                      |
+
+<details>
 <summary>BedpeAdapter - Slots</summary>
 
 #### slot: bedpeLocation
@@ -67,3 +62,14 @@ List of column names
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
+
+## Related links
+
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)

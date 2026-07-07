@@ -11,6 +11,32 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
+## Members
+
+| Member                                                                             | Kind       | Description                                                                                                                                                                                                                                                                   |
+| ---------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                                             | Properties |                                                                                                                                                                                                                                                                               |
+| [configuration](#property-configuration)                                           | Properties |                                                                                                                                                                                                                                                                               |
+| [conf](#getter-conf)                                                               | Getters    | The config typed off the concrete schema. `ConfigurationReference` erases `self.configuration` to `any` (the reference's MST instance brand doesn't carry the schema's slot definitions), so reads go through this getter to recover per-slot types and slot-name validation. |
+| [codeVerifierPKCE](#getter-codeverifierpkce)                                       | Getters    |                                                                                                                                                                                                                                                                               |
+| [authEndpoint](#getter-authendpoint)                                               | Getters    |                                                                                                                                                                                                                                                                               |
+| [tokenEndpoint](#getter-tokenendpoint)                                             | Getters    |                                                                                                                                                                                                                                                                               |
+| [needsPKCE](#getter-needspkce)                                                     | Getters    |                                                                                                                                                                                                                                                                               |
+| [clientId](#getter-clientid)                                                       | Getters    |                                                                                                                                                                                                                                                                               |
+| [scopes](#getter-scopes)                                                           | Getters    |                                                                                                                                                                                                                                                                               |
+| [state](#getter-state)                                                             | Getters    | OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1 Can override or extend if dynamic state is needed.                                                                                                                                                |
+| [responseType](#getter-responsetype)                                               | Getters    |                                                                                                                                                                                                                                                                               |
+| [refreshTokenKey](#getter-refreshtokenkey)                                         | Getters    |                                                                                                                                                                                                                                                                               |
+| [retrieveRefreshToken](#method-retrieverefreshtoken)                               | Methods    |                                                                                                                                                                                                                                                                               |
+| [storeRefreshToken](#action-storerefreshtoken)                                     | Actions    |                                                                                                                                                                                                                                                                               |
+| [removeRefreshToken](#action-removerefreshtoken)                                   | Actions    |                                                                                                                                                                                                                                                                               |
+| [exchangeAuthorizationForAccessToken](#action-exchangeauthorizationforaccesstoken) | Actions    |                                                                                                                                                                                                                                                                               |
+| [exchangeRefreshForAccessToken](#action-exchangerefreshforaccesstoken)             | Actions    |                                                                                                                                                                                                                                                                               |
+| [getTokenViaAuthFlow](#action-gettokenviaauthflow)                                 | Actions    | Opens the provider's auth page and returns a promise for the resulting token. For Electron, drives the flow directly via IPC; for web, opens a popup and waits for the redirect message.                                                                                      |
+| [getTokenFromUser](#action-gettokenfromuser)                                       | Actions    |                                                                                                                                                                                                                                                                               |
+| [validateToken](#action-validatetoken)                                             | Actions    |                                                                                                                                                                                                                                                                               |
+| [getFetcher](#action-getfetcher)                                                   | Actions    |                                                                                                                                                                                                                                                                               |
+
 ### OAuthInternetAccount - Configuration
 
 The configuration slots for this model are documented on its
@@ -39,7 +65,7 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details open>
+<details>
 <summary>OAuthInternetAccount - Getters</summary>
 
 #### getter: conf
@@ -129,7 +155,7 @@ type retrieveRefreshToken = () => string | null
 
 </details>
 
-<details open>
+<details>
 <summary>OAuthInternetAccount - Actions</summary>
 
 #### action: getTokenViaAuthFlow

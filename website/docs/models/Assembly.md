@@ -11,6 +11,47 @@ JBrowse core.
 
 ## Overview
 
+## Members
+
+| Member                                                                   | Kind       | Description                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [configuration](#property-configuration)                                 | Properties |                                                                                                                                                                                                                                                               |
+| [error](#volatile-error)                                                 | Volatiles  |                                                                                                                                                                                                                                                               |
+| [loadingP](#volatile-loadingp)                                           | Volatiles  |                                                                                                                                                                                                                                                               |
+| [adapterLoads](#volatile-adapterloads)                                   | Volatiles  |                                                                                                                                                                                                                                                               |
+| [volatileRegions](#volatile-volatileregions)                             | Volatiles  |                                                                                                                                                                                                                                                               |
+| [refNameAliases](#volatile-refnamealiases)                               | Volatiles  |                                                                                                                                                                                                                                                               |
+| [canonicalToSeqAdapterRefNames](#volatile-canonicaltoseqadapterrefnames) | Volatiles  | Maps canonical refName -> sequence adapter refName (in FASTA). These may differ when refNameAliases with override:true remap names.                                                                                                                           |
+| [cytobands](#volatile-cytobands)                                         | Volatiles  |                                                                                                                                                                                                                                                               |
+| [loadedGeneticCodes](#volatile-loadedgeneticcodes)                       | Volatiles  | refName -> NCBI genetic-code id loaded from `geneticCodesLocation`; merged with (and overridden by) the inline `geneticCodes` config slot                                                                                                                     |
+| [lowerCaseRefNameAliases](#volatile-lowercaserefnamealiases)             | Volatiles  | Precomputed in loadPre to avoid expensive synchronous computation when MobX triggers the autorun after setLoaded                                                                                                                                              |
+| [allRefNamesWithLowerCase](#volatile-allrefnameswithlowercase)           | Volatiles  | Precomputed in loadPre to avoid expensive synchronous computation when MobX triggers the autorun after setLoaded                                                                                                                                              |
+| [name](#getter-name)                                                     | Getters    |                                                                                                                                                                                                                                                               |
+| [aliases](#getter-aliases)                                               | Getters    |                                                                                                                                                                                                                                                               |
+| [displayName](#getter-displayname)                                       | Getters    |                                                                                                                                                                                                                                                               |
+| [refNameColors](#getter-refnamecolors)                                   | Getters    |                                                                                                                                                                                                                                                               |
+| [allAliases](#getter-allaliases)                                         | Getters    |                                                                                                                                                                                                                                                               |
+| [initialized](#getter-initialized)                                       | Getters    |                                                                                                                                                                                                                                                               |
+| [regions](#getter-regions)                                               | Getters    |                                                                                                                                                                                                                                                               |
+| [allRefNames](#getter-allrefnames)                                       | Getters    | note: lowerCaseRefNameAliases not included here: this allows the list of refnames to be just the "normal casing", but things like getCanonicalRefName can resolve a lower-case name if needed                                                                 |
+| [rpcManager](#getter-rpcmanager)                                         | Getters    |                                                                                                                                                                                                                                                               |
+| [refNames](#getter-refnames)                                             | Getters    |                                                                                                                                                                                                                                                               |
+| [refNameToIndex](#getter-refnametoindex)                                 | Getters    | memoized refName -> first region index, so getRefNameColor is O(1) instead of an O(n) indexOf per call (matters for assemblies with many contigs rendered in overview scalebars/rulers)                                                                       |
+| [getConf](#method-getconf)                                               | Methods    |                                                                                                                                                                                                                                                               |
+| [hasName](#method-hasname)                                               | Methods    |                                                                                                                                                                                                                                                               |
+| [getCanonicalRefName](#method-getcanonicalrefname)                       | Methods    | Returns the canonical refName for a given alias or refName. Note: The canonical name may differ from what's in the FASTA file when refNameAliases with override:true are configured. To get the name that matches the FASTA file, use getSeqAdapterRefName(). |
+| [getRefNameColor](#method-getrefnamecolor)                               | Methods    |                                                                                                                                                                                                                                                               |
+| [getGeneticCodeId](#method-getgeneticcodeid)                             | Methods    | NCBI genetic-code (translation table) id for a refName, from the assembly's `geneticCodes` config map (e.g. a mitochondrial contig = 2). Falls back to the standard code (1) for unlisted refNames.                                                           |
+| [getSeqAdapterRefName](#method-getseqadapterrefname)                     | Methods    | Given a canonical refName, returns the refName used by the sequence adapter (what's in the FASTA file). Falls back to the input if no mapping exists.                                                                                                         |
+| [getCanonicalRefName2](#method-getcanonicalrefname2)                     | Methods    | Returns canonical refName, falling back to input if not found. See getCanonicalRefName() for details.                                                                                                                                                         |
+| [isValidRefName](#method-isvalidrefname)                                 | Methods    |                                                                                                                                                                                                                                                               |
+| [getRefNameMapForAdapter](#method-getrefnamemapforadapter)               | Methods    | get Map of `canonical-name -> adapter-specific-name`, memoized per adapter config so concurrent callers share one load                                                                                                                                        |
+| [setLoaded](#action-setloaded)                                           | Actions    | Applies all load-time state in a single transaction so dependent autoruns fire once, with the precomputed lowercase/name lookups already in place by the time refNameAliases becomes observable.                                                              |
+| [setError](#action-seterror)                                             | Actions    |                                                                                                                                                                                                                                                               |
+| [setLoadingP](#action-setloadingp)                                       | Actions    |                                                                                                                                                                                                                                                               |
+| [loadPre](#action-loadpre)                                               | Actions    |                                                                                                                                                                                                                                                               |
+| [load](#action-load)                                                     | Actions    |                                                                                                                                                                                                                                                               |
+
 <details>
 <summary>Assembly - Properties</summary>
 
@@ -25,7 +66,7 @@ configuration: types.safeReference(assemblyConfigType)
 
 </details>
 
-<details open>
+<details>
 <summary>Assembly - Volatiles</summary>
 
 #### volatile: canonicalToSeqAdapterRefNames
@@ -139,7 +180,7 @@ cytobands: undefined as Feature[] | undefined
 
 </details>
 
-<details open>
+<details>
 <summary>Assembly - Getters</summary>
 
 #### getter: allRefNames
@@ -223,7 +264,7 @@ type refNames = string[] | undefined
 
 </details>
 
-<details open>
+<details>
 <summary>Assembly - Methods</summary>
 
 #### method: getCanonicalRefName
@@ -308,7 +349,7 @@ type isValidRefName = (refName: string) => boolean
 
 </details>
 
-<details open>
+<details>
 <summary>Assembly - Actions</summary>
 
 #### action: setLoaded

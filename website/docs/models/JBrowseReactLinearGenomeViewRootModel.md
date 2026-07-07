@@ -10,6 +10,28 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 
 ## Overview
 
+## Members
+
+| Member                                                                   | Kind       | Description |
+| ------------------------------------------------------------------------ | ---------- | ----------- |
+| [config](#property-config)                                               | Properties |             |
+| [session](#property-session)                                             | Properties |             |
+| [assemblyManager](#property-assemblymanager)                             | Properties |             |
+| [disableAddTracks](#property-disableaddtracks)                           | Properties |             |
+| [drawerViewHeight](#property-drawerviewheight)                           | Properties |             |
+| [internetAccounts](#property-internetaccounts)                           | Properties |             |
+| [error](#volatile-error)                                                 | Volatiles  |             |
+| [rpcManager](#volatile-rpcmanager)                                       | Volatiles  |             |
+| [textSearchManager](#volatile-textsearchmanager)                         | Volatiles  |             |
+| [adminMode](#volatile-adminmode)                                         | Volatiles  |             |
+| [version](#volatile-version)                                             | Volatiles  |             |
+| [jbrowse](#getter-jbrowse)                                               | Getters    |             |
+| [setSession](#action-setsession)                                         | Actions    |             |
+| [renameCurrentSession](#action-renamecurrentsession)                     | Actions    |             |
+| [setError](#action-seterror)                                             | Actions    |             |
+| [addInternetAccount](#action-addinternetaccount)                         | Actions    |             |
+| [findAppropriateInternetAccount](#action-findappropriateinternetaccount) | Actions    |             |
+
 <details>
 <summary>JBrowseReactLinearGenomeViewRootModel - Properties</summary>
 

@@ -32,15 +32,6 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed GFF3 files
 
-### Used in
-
-Supplies data to the [FeatureTrack](../featuretrack) track, rendered by:
-
-- [LinearArcDisplay](../lineararcdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearBasicDisplay](../linearbasicdisplay)
-- [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
-
 ### Gff3TabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi
@@ -54,7 +45,14 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi
 }
 ```
 
-<details open>
+| Slot                                    | Type                    | Description                                                                                                                                                                                                                                  |
+| --------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [gffGzLocation](#slot-gffgzlocation)    | `fileLocation`          |                                                                                                                                                                                                                                              |
+| [index.indexType](#slot-indexindextype) | `stringEnum` (TBI, CSI) |                                                                                                                                                                                                                                              |
+| [index.indexType](#slot-indexindextype) | `fileLocation`          |                                                                                                                                                                                                                                              |
+| [dontRedispatch](#slot-dontredispatch)  | `stringArray`           | the Gff3TabixAdapter has to "redispatch" if it fetches a region and features it finds inside that region extend outside the region we requested. you can disable this for certain feature types to avoid fetching e.g. the entire chromosome |
+
+<details>
 <summary>Gff3TabixAdapter - Slots</summary>
 
 #### slot: gffGzLocation
@@ -80,3 +78,11 @@ this for certain feature types to avoid fetching e.g. the entire chromosome
 **Type:** `stringArray` · **Default:** `['chromosome', 'region', 'contig']`
 
 </details>
+
+## Related links
+
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)

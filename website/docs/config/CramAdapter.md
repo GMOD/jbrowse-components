@@ -35,12 +35,6 @@ used to configure CRAM adapter
 Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
 automatically supplies it from the enclosing assembly's sequence track.
 
-### Used in
-
-Supplies data to the [AlignmentsTrack](../alignmentstrack) track, rendered by:
-
-- [LinearAlignmentsDisplay](../linearalignmentsdisplay)
-
 ### CramAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.cram.crai:
@@ -52,7 +46,13 @@ preprocessor to allow minimal config, assumes yourfile.cram.crai:
 }
 ```
 
-<details open>
+| Slot                                   | Type           | Description                                                                                  |
+| -------------------------------------- | -------------- | -------------------------------------------------------------------------------------------- |
+| [fetchSizeLimit](#slot-fetchsizelimit) | `number`       | size in bytes over which to display a warning to the user that too much data will be fetched |
+| [cramLocation](#slot-cramlocation)     | `fileLocation` |                                                                                              |
+| [craiLocation](#slot-crailocation)     | `fileLocation` |                                                                                              |
+
+<details>
 <summary>CramAdapter - Slots</summary>
 
 #### slot: fetchSizeLimit
@@ -73,3 +73,8 @@ will be fetched
 `{ uri: '/path/to/my.cram.crai', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [AlignmentsTrack](../alignmentstrack)
+- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)

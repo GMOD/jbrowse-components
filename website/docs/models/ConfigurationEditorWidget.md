@@ -14,6 +14,17 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 Widget for editing a config model's slots in a form: holds the target
 configuration and debounce-saves edits back to the session.
 
+## Members
+
+| Member                                               | Kind       | Description |
+| ---------------------------------------------------- | ---------- | ----------- |
+| [id](#property-id)                                   | Properties |             |
+| [type](#property-type)                               | Properties |             |
+| [target](#volatile-target)                           | Volatiles  |             |
+| [expandedDisplayId](#volatile-expandeddisplayid)     | Volatiles  |             |
+| [setTarget](#action-settarget)                       | Actions    |             |
+| [setExpandedDisplayId](#action-setexpandeddisplayid) | Actions    |             |
+
 <details>
 <summary>ConfigurationEditorWidget - Properties</summary>
 

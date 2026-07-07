@@ -11,6 +11,17 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
+## Members
+
+| Member                                           | Kind    | Description |
+| ------------------------------------------------ | ------- | ----------- |
+| [windowSize](#getter-windowsize)                 | Getters |             |
+| [windowDelta](#getter-windowdelta)               | Getters |             |
+| [gcMode](#getter-gcmode)                         | Getters |             |
+| [trackMenuItems](#method-trackmenuitems)         | Methods |             |
+| [setGCContentParams](#action-setgccontentparams) | Actions |             |
+| [setGCMode](#action-setgcmode)                   | Actions |             |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

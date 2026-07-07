@@ -30,13 +30,6 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load BigWig quantitative signal files
 
-### Used in
-
-Supplies data to the [QuantitativeTrack](../quantitativetrack) track, rendered
-by:
-
-- [LinearWiggleDisplay](../linearwiggledisplay)
-
 ### BigWigAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -48,7 +41,13 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                               | Type           | Description                                                                                                                               |
+| -------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [bigWigLocation](#slot-bigwiglocation)             | `fileLocation` |                                                                                                                                           |
+| [source](#slot-source)                             | `string`       | added as feature.get('source') on all features                                                                                            |
+| [resolutionMultiplier](#slot-resolutionmultiplier) | `number`       | Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points) |
+
+<details>
 <summary>BigWigAdapter - Slots</summary>
 
 #### slot: bigWigLocation
@@ -70,3 +69,8 @@ resolution), >1 fetches fewer (e.g. 2 = half as many points)
 **Type:** `number` · **Default:** `1` · _advanced_
 
 </details>
+
+## Related links
+
+- **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)

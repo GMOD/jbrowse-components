@@ -5,6 +5,7 @@ import * as ts from 'typescript'
 import {
   jsDocText,
   listDocs,
+  markdownTable,
   normalizeMarkerWhitespace,
   parsePipeTags,
   runMarkerScript,
@@ -111,17 +112,13 @@ function swatch(value: string) {
 }
 
 function renderTable(rows: Row[]) {
-  const body = rows
-    .map(
+  return markdownTable(
+    ['Color', 'Name', 'Value', 'Description'],
+    rows.map(
       r =>
         `| ${swatch(r.value)} | ${r.label} | \`${r.value}\` | ${r.description} |`,
-    )
-    .join('\n')
-  return [
-    '| Color | Name | Value | Description |',
-    '| --- | --- | --- | --- |',
-    body,
-  ].join('\n')
+    ),
+  )
 }
 
 function start(group: string) {

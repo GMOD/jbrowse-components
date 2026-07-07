@@ -29,12 +29,6 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load Hi-C contact matrix data from a `.hic` file
 
-### Used in
-
-Supplies data to the [HicTrack](../hictrack) track, rendered by:
-
-- [LinearHicDisplay](../linearhicdisplay)
-
 ### HicAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -46,7 +40,11 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                             | Type           | Description |
+| -------------------------------- | -------------- | ----------- |
+| [hicLocation](#slot-hiclocation) | `fileLocation` |             |
+
+<details>
 <summary>HicAdapter - Slots</summary>
 
 #### slot: hicLocation
@@ -55,3 +53,8 @@ preprocessor to allow minimal config:
 `{ uri: '/path/to/my.hic', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [HicTrack](../hictrack)
+- **Display:** [LinearHicDisplay](../linearhicdisplay)

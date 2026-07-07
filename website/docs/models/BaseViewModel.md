@@ -11,7 +11,20 @@ JBrowse core.
 
 ## Overview
 
-<details open>
+## Members
+
+| Member                                   | Kind       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                       | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [displayName](#property-displayname)     | Properties | displayName is displayed in the header of the view, or assembly names being used if none is specified                                                                                                                                                                                                                                                                                                                                               |
+| [minimized](#property-minimized)         | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [width](#volatile-width)                 | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [menuItems](#getter-menuitems)           | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setDisplayName](#action-setdisplayname) | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setWidth](#action-setwidth)             | Actions    | width is an important attribute of the view model, when it becomes set, it often indicates when the app can start drawing to it. certain views like lgv are strict about this because if it tries to draw before it knows the width it should draw to, it may start fetching data for regions it doesn't need to setWidth is updated by a ResizeObserver generally, the views often need to know how wide they are to properly draw genomic regions |
+| [setMinimized](#action-setminimized)     | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+
+<details>
 <summary>BaseViewModel - Properties</summary>
 
 #### property: displayName
@@ -76,7 +89,7 @@ type menuItems = () => MenuItem[]
 
 </details>
 
-<details open>
+<details>
 <summary>BaseViewModel - Actions</summary>
 
 #### action: setWidth

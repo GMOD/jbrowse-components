@@ -15,7 +15,12 @@ admin/embedder defaults for user-facing preferences, found on the root config as
 (persisted to localStorage) via the session `getPreference` reader; a runtime
 override map layered over config defaults, at app scope.
 
-<details open>
+| Slot                                                                                   | Type                                     | Description                                                                                                                                                     |
+| -------------------------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [configuration.preferences.animationMode](#slot-configurationpreferencesanimationmode) | `stringEnum` (system, enabled, disabled) | controls feature-layout animations: 'enabled' always animates (the default), 'system' respects the OS prefers-reduced-motion setting, 'disabled' never animates |
+| [configuration.preferences.scrollZoom](#slot-configurationpreferencesscrollzoom)       | `boolean`                                | when true, scrolling the mouse wheel over a track zooms in and out without holding Ctrl. Applies globally to all wheel-zoom views.                              |
+
+<details>
 <summary>PreferencesConfigSchema - Slots</summary>
 
 #### slot: configuration.preferences.animationMode

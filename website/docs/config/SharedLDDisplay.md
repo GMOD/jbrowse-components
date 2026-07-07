@@ -11,7 +11,27 @@ plugin.
 
 ## Overview
 
-<details open>
+| Slot                                                           | Type                      | Description                                                                                                                                                  |
+| -------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [minorAlleleFrequencyFilter](#slot-minorallelefrequencyfilter) | `number`                  | Filter variants by minor allele frequency (0-1). Variants with MAF below this threshold will be hidden                                                       |
+| [lengthCutoffFilter](#slot-lengthcutofffilter)                 | `number`                  | Maximum length of variants to include (in bp)                                                                                                                |
+| [lineZoneHeight](#slot-linezoneheight)                         | `number`                  | Height of the zone for connecting lines at the top                                                                                                           |
+| [ldMetric](#slot-ldmetric)                                     | `stringEnum` (r2, dprime) | LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D)                                                                                  |
+| [showLegend](#slot-showlegend)                                 | `boolean`                 | Whether to show the legend                                                                                                                                   |
+| [showLDTriangle](#slot-showldtriangle)                         | `boolean`                 | Whether to show the LD triangle heatmap                                                                                                                      |
+| [showRecombination](#slot-showrecombination)                   | `boolean`                 | Whether to show the recombination rate track                                                                                                                 |
+| [recombinationZoneHeight](#slot-recombinationzoneheight)       | `number`                  | Height of the recombination track zone at the top                                                                                                            |
+| [fitToHeight](#slot-fittoheight)                               | `boolean`                 | When true, squash the LD triangle to fit the display height                                                                                                  |
+| [hweFilterThreshold](#slot-hwefilterthreshold)                 | `number`                  | HWE filter p-value threshold (variants with HWE p < this are excluded). Set to 0 to disable HWE filtering                                                    |
+| [callRateFilter](#slot-callratefilter)                         | `number`                  | Call rate filter threshold (0-1). Variants with fewer than this proportion of non-missing genotypes are excluded. Set to 0 to disable.                       |
+| [showVerticalGuides](#slot-showverticalguides)                 | `boolean`                 | Whether to show vertical guides at the connected genome positions on hover                                                                                   |
+| [showLabels](#slot-showlabels)                                 | `boolean`                 | Whether to show variant labels above the tick marks                                                                                                          |
+| [tickHeight](#slot-tickheight)                                 | `number`                  | Height of the vertical tick marks at the genomic position                                                                                                    |
+| [useGenomicPositions](#slot-usegenomicpositions)               | `boolean`                 | When true, draw cells sized according to genomic distance between SNPs rather than uniform squares                                                           |
+| [signedLD](#slot-signedld)                                     | `boolean`                 | When true, show signed LD values (-1 to 1) instead of absolute values (0 to 1). For R², this shows R (correlation) instead. For D', this preserves the sign. |
+| [jexlFilters](#slot-jexlfilters)                               | `stringArray`             | JEXL filter expressions to apply to variants (one per line, starting with jexl:)                                                                             |
+
+<details>
 <summary>SharedLDDisplay - Slots</summary>
 
 #### slot: minorAlleleFrequencyFilter
@@ -129,7 +149,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseLinearDisplay</summary>
 
 [BaseLinearDisplay config →](../baselineardisplay)
@@ -172,6 +192,6 @@ text to display when the cursor hovers over a feature
 
 </details>
 
-### SharedLDDisplay - Derives from
+## Related links
 
-- [BaseLinearDisplay](../baselineardisplay)
+- **Base config:** [BaseLinearDisplay](../baselineardisplay)

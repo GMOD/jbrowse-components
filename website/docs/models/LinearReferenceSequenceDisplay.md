@@ -39,6 +39,42 @@ A complete `ReferenceSequenceTrack` config to paste into `tracks` (an assembly's
 
 base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
 
+## Members
+
+| Member                                                       | Kind       | Description                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                       | Properties |                                                                                                                                                                                                                                                                                                   |
+| [configuration](#property-configuration)                     | Properties |                                                                                                                                                                                                                                                                                                   |
+| [sequenceData](#volatile-sequencedata)                       | Volatiles  |                                                                                                                                                                                                                                                                                                   |
+| [showForward](#getter-showforward)                           | Getters    |                                                                                                                                                                                                                                                                                                   |
+| [showReverse](#getter-showreverse)                           | Getters    |                                                                                                                                                                                                                                                                                                   |
+| [showTranslation](#getter-showtranslation)                   | Getters    |                                                                                                                                                                                                                                                                                                   |
+| [sequenceType](#getter-sequencetype)                         | Getters    |                                                                                                                                                                                                                                                                                                   |
+| [colorState](#getter-colorstate)                             | Getters    | Theme-derived palette + text colors, derived from the session theme so they're always available — including headless SVG export and RPC, where no component mounts to seed them.                                                                                                                  |
+| [isDna](#getter-isdna)                                       | Getters    | true for DNA tracks; reverse-complement and translation rows are gated on this since they are biologically meaningful only for DNA.                                                                                                                                                               |
+| [effectiveShowReverse](#getter-effectiveshowreverse)         | Getters    | reverse-complement row is meaningful only for DNA                                                                                                                                                                                                                                                 |
+| [effectiveShowTranslation](#getter-effectiveshowtranslation) | Getters    | translation rows are meaningful only for DNA                                                                                                                                                                                                                                                      |
+| [zoomedOut](#getter-zoomedout)                               | Getters    | the view is too zoomed out to show individual bases                                                                                                                                                                                                                                               |
+| [svgReadyExtraTerminal](#getter-svgreadyextraterminal)       | Getters    | zoomedOut is a terminal renderable state (static "zoom in" message, no fetch), so it makes `svgReady` resolve even though no data loads. See MultiRegionDisplayMixin.svgReadyExtraTerminal.                                                                                                       |
+| [numRows](#getter-numrows)                                   | Getters    |                                                                                                                                                                                                                                                                                                   |
+| [sequenceHeight](#getter-sequenceheight)                     | Getters    |                                                                                                                                                                                                                                                                                                   |
+| [computedHeight](#getter-computedheight)                     | Getters    | collapses to 50px when zoomed out (no sequence visible) or before the view initializes; otherwise sized to fit the visible rows.                                                                                                                                                                  |
+| [height](#getter-height)                                     | Getters    | override TrackHeightMixin height: use manual resize if set, otherwise the zoom-aware computed height.                                                                                                                                                                                             |
+| [rowHeight](#getter-rowheight)                               | Getters    |                                                                                                                                                                                                                                                                                                   |
+| [renderState](#getter-renderstate)                           | Getters    | everything the Canvas2D backend needs to paint a frame                                                                                                                                                                                                                                            |
+| [displayPhase](#getter-displayphase)                         | Getters    | Same precedence as MultiRegionDisplayMixin plus a zoom gate: when zoomed past base resolution the body shows a "zoom in" message, so suppress the loading phase (fall through to `ready`) and let that message show. The chrome's loading-overlay visibility derives from this overridden getter. |
+| [hoverAt](#method-hoverat)                                   | Methods    | Resolve the genomic position, reference base, and codon/amino-acid under a cursor at track-relative pixel `(offsetX, offsetY)`. Drives the hover tooltip; returns undefined when zoomed out, off a fetched region, or between rows.                                                               |
+| [renderSvg](#method-rendersvg)                               | Methods    |                                                                                                                                                                                                                                                                                                   |
+| [trackMenuItems](#method-trackmenuitems)                     | Methods    |                                                                                                                                                                                                                                                                                                   |
+| [setSequenceRegion](#action-setsequenceregion)               | Actions    |                                                                                                                                                                                                                                                                                                   |
+| [clearDisplaySpecificData](#action-cleardisplayspecificdata) | Actions    |                                                                                                                                                                                                                                                                                                   |
+| [toggleShowForward](#action-toggleshowforward)               | Actions    |                                                                                                                                                                                                                                                                                                   |
+| [toggleShowReverse](#action-toggleshowreverse)               | Actions    |                                                                                                                                                                                                                                                                                                   |
+| [toggleShowTranslation](#action-toggleshowtranslation)       | Actions    |                                                                                                                                                                                                                                                                                                   |
+| [addGCContentTrack](#action-addgccontenttrack)               | Actions    | spins up a standalone GCContentTrack session track that wraps this track's sequence adapter (requires the gccontent plugin)                                                                                                                                                                       |
+| [startRenderingBackend](#action-startrenderingbackend)       | Actions    | Called by `useRenderingBackend` (via DisplayChrome) once the canvas backend is created. Streams each fetched region into the backend and draws every frame from `renderState`.                                                                                                                    |
+| [fetchNeeded](#action-fetchneeded)                           | Actions    |                                                                                                                                                                                                                                                                                                   |
+
 ### LinearReferenceSequenceDisplay - Configuration
 
 The configuration slots for this model are documented on its
@@ -211,7 +247,7 @@ sequenceData: observable.map<number, SequenceRegionData>()
 
 </details>
 
-<details open>
+<details>
 <summary>LinearReferenceSequenceDisplay - Getters</summary>
 
 #### getter: colorState
@@ -353,7 +389,7 @@ type rowHeight = number
 
 </details>
 
-<details open>
+<details>
 <summary>LinearReferenceSequenceDisplay - Methods</summary>
 
 #### method: hoverAt
@@ -395,7 +431,7 @@ type trackMenuItems = () => (
 
 </details>
 
-<details open>
+<details>
 <summary>LinearReferenceSequenceDisplay - Actions</summary>
 
 #### action: addGCContentTrack

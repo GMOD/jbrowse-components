@@ -28,14 +28,6 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### Used in
-
-Supplies data to the [ReferenceSequenceTrack](../referencesequencetrack) track,
-rendered by:
-
-- [LinearGCContentDisplay](../lineargccontentdisplay)
-- [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
-
 ### IndexedFastaAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.fa.fai:
@@ -47,7 +39,13 @@ preprocessor to allow minimal config, assumes yourfile.fa.fai:
 }
 ```
 
-<details open>
+| Slot                                       | Type           | Description            |
+| ------------------------------------------ | -------------- | ---------------------- |
+| [fastaLocation](#slot-fastalocation)       | `fileLocation` |                        |
+| [faiLocation](#slot-failocation)           | `fileLocation` |                        |
+| [metadataLocation](#slot-metadatalocation) | `fileLocation` | Optional metadata file |
+
+<details>
 <summary>IndexedFastaAdapter - Slots</summary>
 
 #### slot: fastaLocation
@@ -68,3 +66,10 @@ Optional metadata file
 `{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)

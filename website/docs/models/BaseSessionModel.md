@@ -14,6 +14,42 @@ JBrowse core.
 base session shared by all JBrowse products. Be careful what you include here,
 everything will use it.
 
+## Members
+
+| Member                                                 | Kind       | Description                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                     | Properties |                                                                                                                                                                                                                                                                                                                                                                |
+| [name](#property-name)                                 | Properties |                                                                                                                                                                                                                                                                                                                                                                |
+| [margin](#property-margin)                             | Properties |                                                                                                                                                                                                                                                                                                                                                                |
+| [focusedViewId](#property-focusedviewid)               | Properties | used to keep track of which view is in focus                                                                                                                                                                                                                                                                                                                   |
+| [selection](#volatile-selection)                       | Volatiles  | this is the globally "selected" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.                                                                                                                                                                                                                  |
+| [hovered](#volatile-hovered)                           | Volatiles  | this is the globally "hovered" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.                                                                                                                                                                                                                   |
+| [queueOfDialogs](#volatile-queueofdialogs)             | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                |
+| [preferencesOverrides](#volatile-preferencesoverrides) | Volatiles  | runtime user-preference overrides keyed by preference id, resolved by `getPreference` against the `configuration.preferences` admin defaults. Empty here (config-only); products that let users edit preferences load and persist these via localStorage. A runtime override map layered over config defaults, kept off the snapshot since prefs are local UI. |
+| [root](#getter-root)                                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
+| [jbrowse](#getter-jbrowse)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
+| [rpcManager](#getter-rpcmanager)                       | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
+| [configuration](#getter-configuration)                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
+| [adminMode](#getter-adminmode)                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
+| [textSearchManager](#getter-textsearchmanager)         | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
+| [assemblies](#getter-assemblies)                       | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
+| [DialogComponent](#getter-dialogcomponent)             | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
+| [DialogProps](#getter-dialogprops)                     | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
+| [animationMode](#getter-animationmode)                 | Getters    | resolved feature-layout animation mode (never undefined)                                                                                                                                                                                                                                                                                                       |
+| [scrollZoom](#getter-scrollzoom)                       | Getters    | resolved scroll-to-zoom preference. Global and personal (never shared in a session snapshot); every wheel-zoom view reads this single value.                                                                                                                                                                                                                   |
+| [getPreference](#method-getpreference)                 | Methods    | resolved value of a user preference: a runtime override if the user set one, otherwise the admin/embedder `configuration.preferences` default. The override map is empty unless the product loads it (web/desktop).                                                                                                                                            |
+| [getDisplayTypeDefault](#method-getdisplaytypedefault) | Methods    | resolved value of a per-display-type slot default the user promoted (see `setDisplayTypeDefault`); undefined when nothing was promoted.                                                                                                                                                                                                                        |
+| [setSelection](#action-setselection)                   | Actions    | set the global selection, i.e. the globally-selected object. can be a feature, a view, just about anything                                                                                                                                                                                                                                                     |
+| [clearSelection](#action-clearselection)               | Actions    | clears the global selection                                                                                                                                                                                                                                                                                                                                    |
+| [setHovered](#action-sethovered)                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                |
+| [setPreferenceOverride](#action-setpreferenceoverride) | Actions    | set a runtime user-preference override (see `getPreference`). Mutates volatile state; products persist these to localStorage.                                                                                                                                                                                                                                  |
+| [setScrollZoom](#action-setscrollzoom)                 | Actions    | set the global scroll-to-zoom preference (see the `scrollZoom` getter)                                                                                                                                                                                                                                                                                         |
+| [setDisplayTypeDefault](#action-setdisplaytypedefault) | Actions    | promote (or, with `value` undefined, clear) a per-display-type slot default. Stored under `preferencesOverrides.displayTypeDefaults` so the PreferencesSessionMixin persists it to localStorage like other prefs.                                                                                                                                              |
+| [setName](#action-setname)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                |
+| [setFocusedViewId](#action-setfocusedviewid)           | Actions    |                                                                                                                                                                                                                                                                                                                                                                |
+| [removeActiveDialog](#action-removeactivedialog)       | Actions    |                                                                                                                                                                                                                                                                                                                                                                |
+| [queueDialog](#action-queuedialog)                     | Actions    |                                                                                                                                                                                                                                                                                                                                                                |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -33,7 +69,7 @@ and docs.
 [popSnackbarMessage](../snackbarmodel#action-popsnackbarmessage),
 [removeSnackbarMessage](../snackbarmodel#action-removesnackbarmessage)
 
-<details open>
+<details>
 <summary>BaseSessionModel - Properties</summary>
 
 #### property: focusedViewId
@@ -81,7 +117,7 @@ margin: types.stripDefault(types.number, 0)
 
 </details>
 
-<details open>
+<details>
 <summary>BaseSessionModel - Volatiles</summary>
 
 #### volatile: selection
@@ -139,7 +175,7 @@ queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][]
 
 </details>
 
-<details open>
+<details>
 <summary>BaseSessionModel - Getters</summary>
 
 #### getter: animationMode
@@ -220,7 +256,7 @@ type DialogProps = Record<string, unknown>
 
 </details>
 
-<details open>
+<details>
 <summary>BaseSessionModel - Methods</summary>
 
 #### method: getPreference
@@ -244,7 +280,7 @@ type getDisplayTypeDefault = (displayType: string, slot: string) => unknown
 
 </details>
 
-<details open>
+<details>
 <summary>BaseSessionModel - Actions</summary>
 
 #### action: setSelection

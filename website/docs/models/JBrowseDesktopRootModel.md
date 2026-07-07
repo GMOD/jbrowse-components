@@ -14,6 +14,22 @@ note: many properties of the root model are available through the session, and
 we generally prefer using the session model (via e.g. getSession) over the root
 model (via e.g. getRoot) in plugin code
 
+## Members
+
+| Member                                                                   | Kind       | Description                                                                                                                                                                  |
+| ------------------------------------------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [jobsManager](#property-jobsmanager)                                     | Properties |                                                                                                                                                                              |
+| [version](#volatile-version)                                             | Volatiles  |                                                                                                                                                                              |
+| [adminMode](#volatile-adminmode)                                         | Volatiles  |                                                                                                                                                                              |
+| [rpcManager](#volatile-rpcmanager)                                       | Volatiles  |                                                                                                                                                                              |
+| [openNewSessionCallback](#volatile-opennewsessioncallback)               | Volatiles  |                                                                                                                                                                              |
+| [returnToStartScreenCallback](#volatile-returntostartscreencallback)     | Volatiles  |                                                                                                                                                                              |
+| [menus](#method-menus)                                                   | Methods    |                                                                                                                                                                              |
+| [setOpenNewSessionCallback](#action-setopennewsessioncallback)           | Actions    |                                                                                                                                                                              |
+| [setReturnToStartScreenCallback](#action-setreturntostartscreencallback) | Actions    | Wired by the Loader to tear down this plugin manager and show the start screen (the Loader owns plugin-manager lifecycle).                                                   |
+| [saveSession](#action-savesession)                                       | Actions    |                                                                                                                                                                              |
+| [setPluginsUpdated](#action-setpluginsupdated)                           | Actions    | Persist the session, then rebuild the plugin manager from disk so the changed plugin set takes effect (Loader wires openNewSessionCallback to reload from the session path). |
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -147,7 +163,7 @@ type menus = () => Menu[]
 
 </details>
 
-<details open>
+<details>
 <summary>JBrowseDesktopRootModel - Actions</summary>
 
 #### action: setReturnToStartScreenCallback

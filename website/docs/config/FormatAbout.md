@@ -12,7 +12,12 @@ Auto-generated config schema for the current JBrowse release — see the
 
 generally exists on the config.json or root config as configuration.formatAbout
 
-<details open>
+| Slot                                                                         | Type      | Description                                  |
+| ---------------------------------------------------------------------------- | --------- | -------------------------------------------- |
+| [configuration.formatAbout.config](#slot-configurationformataboutconfig)     | `frozen`  | formats configuration object in about dialog |
+| [configuration.formatAbout.hideUris](#slot-configurationformatabouthideuris) | `boolean` |                                              |
+
+<details>
 <summary>FormatAbout - Slots</summary>
 
 #### slot: configuration.formatAbout.config

@@ -11,7 +11,45 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
-<details open>
+## Members
+
+| Member                                                   | Kind       | Description                                                                                                                                                     |
+| -------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [filterText](#property-filtertext)                       | Properties |                                                                                                                                                                 |
+| [showSparse](#property-showsparse)                       | Properties |                                                                                                                                                                 |
+| [showFilters](#property-showfilters)                     | Properties |                                                                                                                                                                 |
+| [panelWidth](#property-panelwidth)                       | Properties |                                                                                                                                                                 |
+| [hiddenColumns](#property-hiddencolumns)                 | Properties | Column names the user has hidden. Loaded from a config+assembly scoped localStorage entry in setTrackConfigurations (once assemblies are known).                |
+| [assemblyNames](#volatile-assemblynames)                 | Volatiles  |                                                                                                                                                                 |
+| [useShoppingCart](#volatile-useshoppingcart)             | Volatiles  |                                                                                                                                                                 |
+| [filters](#volatile-filters)                             | Volatiles  |                                                                                                                                                                 |
+| [sortField](#volatile-sortfield)                         | Volatiles  | Field id the grid is sorted by; empty string keeps natural order.                                                                                               |
+| [sortAscending](#volatile-sortascending)                 | Volatiles  |                                                                                                                                                                 |
+| [trackConfigurations](#volatile-trackconfigurations)     | Volatiles  |                                                                                                                                                                 |
+| [session](#volatile-session)                             | Volatiles  |                                                                                                                                                                 |
+| [allRows](#getter-allrows)                               | Getters    | Builds row objects from track configs. Cached and only recomputes when track configurations change, not on every filterText keystroke.                          |
+| [rows](#getter-rows)                                     | Getters    | Text-filtered rows. Cheap string filtering on already-built allRows.                                                                                            |
+| [metadataKeys](#getter-metadatakeys)                     | Getters    |                                                                                                                                                                 |
+| [facetFields](#getter-facetfields)                       | Getters    | Facet field ids in column order (non-metadata first, then `metadata.<key>`); both kinds resolve through getRowStr. Sparse fields are dropped unless showSparse. |
+| [fields](#getter-fields)                                 | Getters    |                                                                                                                                                                 |
+| [nonMetadataFieldSet](#getter-nonmetadatafieldset)       | Getters    | The non-metadata field names, used to detect when a metadata key collides with one (so the header can show "x (from metadata)").                                |
+| [visible](#getter-visible)                               | Getters    | Per-field visibility derived from the persisted hiddenColumns list. A field absent from the list (e.g. newly introduced) defaults to visible.                   |
+| [filteredRows](#getter-filteredrows)                     | Getters    |                                                                                                                                                                 |
+| [facetCategoryCounts](#getter-facetcategorycounts)       | Getters    | Per-facet category counts for the filter sidebar. Cached by MobX so it recomputes only when rows or filters change, not on every render.                        |
+| [initialWidths](#getter-initialwidths)                   | Getters    | Measured pixel widths for every column. Measured over allRows so widths stay stable and don't recompute on every filterText keystroke.                          |
+| [sortedRows](#getter-sortedrows)                         | Getters    | Faceted rows in display order: filteredRows sorted by the active sort field (natural order when no field is selected).                                          |
+| [setTrackConfigurations](#action-settrackconfigurations) | Actions    |                                                                                                                                                                 |
+| [setFilter](#action-setfilter)                           | Actions    |                                                                                                                                                                 |
+| [clearFilters](#action-clearfilters)                     | Actions    |                                                                                                                                                                 |
+| [setSort](#action-setsort)                               | Actions    |                                                                                                                                                                 |
+| [setPanelWidth](#action-setpanelwidth)                   | Actions    |                                                                                                                                                                 |
+| [setUseShoppingCart](#action-setuseshoppingcart)         | Actions    |                                                                                                                                                                 |
+| [setFilterText](#action-setfiltertext)                   | Actions    |                                                                                                                                                                 |
+| [setShowSparse](#action-setshowsparse)                   | Actions    |                                                                                                                                                                 |
+| [setShowFilters](#action-setshowfilters)                 | Actions    |                                                                                                                                                                 |
+| [setColumnVisible](#action-setcolumnvisible)             | Actions    |                                                                                                                                                                 |
+
+<details>
 <summary>FacetedModel - Properties</summary>
 
 #### property: hiddenColumns
@@ -78,7 +116,7 @@ panelWidth: types.optional(types.number, () =>
 
 </details>
 
-<details open>
+<details>
 <summary>FacetedModel - Volatiles</summary>
 
 #### volatile: sortField
@@ -153,7 +191,7 @@ session: undefined as AbstractSessionModel | undefined
 
 </details>
 
-<details open>
+<details>
 <summary>FacetedModel - Getters</summary>
 
 #### getter: allRows

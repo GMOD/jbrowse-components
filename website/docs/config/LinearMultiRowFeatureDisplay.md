@@ -67,24 +67,18 @@ so configure it with an explicit `displays` entry (rather than the
 `displayDefaults` shorthand, whose `color` would also reach the default
 `LinearBasicDisplay`).
 
-### LinearMultiRowFeatureDisplay - Compatible adapters
+| Slot                                       | Type          | Description                                                                                                                                                                                                                        |
+| ------------------------------------------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [partitionField](#slot-partitionfield)     | `string`      | Feature attribute whose value assigns each feature to a row (e.g. a BED column name). Features sharing a value stack into the same row.                                                                                            |
+| [color](#slot-color)                       | `color`       | Per-block fill (a CSS color, or a `jexl:` expression for per-feature coloring, e.g. `jexl:get(feature,'itemRgb')`). Left at its default, each row instead gets a distinct color from a categorical palette.                        |
+| [sampleColorMap](#slot-samplecolormap)     | `frozen`      | Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`. When a feature's partition value has an entry here it overrides the `color` slot, so whole rows can be colored without a per-feature color column. |
+| [rowOrder](#slot-roworder)                 | `stringArray` | Optional explicit row order. Rows listed here come first in this order; any remaining partition values are appended in sorted order. Empty = fully auto (sorted).                                                                  |
+| [rowHeight](#slot-rowheight)               | `number`      | Fixed height in pixels of each row. `0` (the default) auto-fits: all rows stretch to fill the display height, so adding rows shrinks them instead of growing the track — a dense, fully-visible painting.                          |
+| [rowProportion](#slot-rowproportion)       | `number`      | Fraction of the row height each block fills (1 = full, leaving no gap between rows).                                                                                                                                               |
+| [showTree](#slot-showtree)                 | `boolean`     | show the cluster tree sidebar                                                                                                                                                                                                      |
+| [showBranchLength](#slot-showbranchlength) | `boolean`     | Position tree nodes by cluster merge height (dendrogram) vs. evenly by topology (cladogram).                                                                                                                                       |
 
-Data adapters that can supply the [FeatureTrack](../featuretrack):
-
-- [BedAdapter](../bedadapter)
-- [BedTabixAdapter](../bedtabixadapter)
-- [BigBedAdapter](../bigbedadapter)
-- [Gff3Adapter](../gff3adapter)
-- [Gff3TabixAdapter](../gff3tabixadapter)
-- [GtfAdapter](../gtfadapter)
-- [GtfTabixAdapter](../gtftabixadapter)
-
-### LinearMultiRowFeatureDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/linearmultirowfeaturedisplay).
-
-<details open>
+<details>
 <summary>LinearMultiRowFeatureDisplay - Slots</summary>
 
 #### slot: partitionField
@@ -157,3 +151,14 @@ Position tree nodes by cluster merge height (dendrogram) vs. evenly by topology
 **Type:** `boolean` · **Default:** `false`
 
 </details>
+
+## Related links
+
+- **Adapter:** [BedAdapter](../bedadapter)
+- **Adapter:** [BedTabixAdapter](../bedtabixadapter)
+- **Adapter:** [BigBedAdapter](../bigbedadapter)
+- **Adapter:** [Gff3Adapter](../gff3adapter)
+- **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
+- **Adapter:** [GtfAdapter](../gtfadapter)
+- **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **State model:** [runtime API](../../models/linearmultirowfeaturedisplay)

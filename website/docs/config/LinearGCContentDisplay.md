@@ -41,29 +41,13 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### LinearGCContentDisplay - Compatible adapters
-
-Data adapters that can supply the
-[ReferenceSequenceTrack](../referencesequencetrack):
-
-- [BgzipFastaAdapter](../bgzipfastaadapter)
-- [ChromSizesAdapter](../chromsizesadapter)
-- [IndexedFastaAdapter](../indexedfastaadapter)
-- [TwoBitAdapter](../twobitadapter)
-- [UnindexedFastaAdapter](../unindexedfastaadapter)
-
-### LinearGCContentDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/lineargccontentdisplay).
-
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from LinearWiggleDisplay</summary>
 
 [LinearWiggleDisplay config →](../linearwiggledisplay)
@@ -128,6 +112,12 @@ the same rendering
 
 </details>
 
-### LinearGCContentDisplay - Derives from
+## Related links
 
-- [LinearWiggleDisplay](../linearwiggledisplay)
+- **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
+- **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
+- **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
+- **Adapter:** [TwoBitAdapter](../twobitadapter)
+- **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)
+- **State model:** [runtime API](../../models/lineargccontentdisplay)
+- **Base config:** [LinearWiggleDisplay](../linearwiggledisplay)

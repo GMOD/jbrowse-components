@@ -94,22 +94,11 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-### LinearMultiSampleVariantMatrixDisplay - Compatible adapters
+| Slot                   | Type     | Description |
+| ---------------------- | -------- | ----------- |
+| [height](#slot-height) | `number` |             |
 
-Data adapters that can supply the [VariantTrack](../varianttrack):
-
-- [BedpeAdapter](../bedpeadapter)
-- [StarFusionAdapter](../starfusionadapter)
-- [SplitVcfTabixAdapter](../splitvcftabixadapter)
-- [VcfAdapter](../vcfadapter)
-- [VcfTabixAdapter](../vcftabixadapter)
-
-### LinearMultiSampleVariantMatrixDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/linearmultisamplevariantmatrixdisplay).
-
-<details open>
+<details>
 <summary>LinearMultiSampleVariantMatrixDisplay - Slots</summary>
 
 #### slot: height
@@ -124,7 +113,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from SharedVariantDisplay</summary>
 
 [SharedVariantDisplay config →](../sharedvariantdisplay)
@@ -209,7 +198,7 @@ from then on this slot alone is the single source of truth.
 
 </details>
 
-<details open>
+<details>
 <summary>Inherited from BaseLinearDisplay</summary>
 
 [BaseLinearDisplay config →](../baselineardisplay)
@@ -253,6 +242,13 @@ runtime rather than being stored with jexl in the config
 
 </details>
 
-### LinearMultiSampleVariantMatrixDisplay - Derives from
+## Related links
 
-- [SharedVariantDisplay](../sharedvariantdisplay)
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
+- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
+- **Adapter:** [VcfAdapter](../vcfadapter)
+- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **State model:**
+  [runtime API](../../models/linearmultisamplevariantmatrixdisplay)
+- **Base config:** [SharedVariantDisplay](../sharedvariantdisplay)

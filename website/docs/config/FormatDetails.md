@@ -13,7 +13,14 @@ Auto-generated config schema for the current JBrowse release — see the
 generally exists on the tracks in the config.json or as a 'session' config as
 configuration.formatDetails
 
-<details open>
+| Slot                                                                                   | Type     | Description                                                                                                                                             |
+| -------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [configuration.formatDetails.feature](#slot-configurationformatdetailsfeature)         | `frozen` | adds extra fields to the feature details                                                                                                                |
+| [configuration.formatDetails.subfeatures](#slot-configurationformatdetailssubfeatures) | `frozen` | adds extra fields to the subfeatures of a feature                                                                                                       |
+| [configuration.formatDetails.depth](#slot-configurationformatdetailsdepth)             | `number` | depth to iterate the formatDetails->subfeatures callback on subfeatures (used for example to only apply the callback to the first layer of subfeatures) |
+| [configuration.formatDetails.maxDepth](#slot-configurationformatdetailsmaxdepth)       | `number` | hide subfeatures greater than a certain depth                                                                                                           |
+
+<details>
 <summary>FormatDetails - Slots</summary>
 
 #### slot: configuration.formatDetails.feature

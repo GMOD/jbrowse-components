@@ -50,29 +50,13 @@ _See the **Slots** section below for all available configuration fields._
 a numerical signal track (coverage, conservation, etc.), typically backed by a
 BigWig file and drawn as an XY plot or density
 
-### QuantitativeTrack - Display types
-
-A track is just a container; the actual rendering behavior and config slots live
-on its display type(s):
-
-- [LinearWiggleDisplay](../linearwiggledisplay)
-  ([state model](../../models/linearwiggledisplay))
-
-### QuantitativeTrack - Compatible adapters
-
-Data adapters that can supply this track:
-
-- [BedGraphAdapter](../bedgraphadapter)
-- [BedGraphTabixAdapter](../bedgraphtabixadapter)
-- [BigWigAdapter](../bigwigadapter)
-
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseTrack</summary>
 
 [BaseTrack config →](../basetrack)
@@ -220,6 +204,11 @@ formats configuration object in about dialog
 
 </details>
 
-### QuantitativeTrack - Derives from
+## Related links
 
-- [BaseTrack](../basetrack)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
+  ([state model](../../models/linearwiggledisplay))
+- **Adapter:** [BedGraphAdapter](../bedgraphadapter)
+- **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)
+- **Adapter:** [BigWigAdapter](../bigwigadapter)
+- **Base config:** [BaseTrack](../basetrack)

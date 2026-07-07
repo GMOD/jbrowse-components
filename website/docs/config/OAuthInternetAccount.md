@@ -11,12 +11,18 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Overview
 
-### OAuthInternetAccount - State model
+| Slot                                 | Type      | Description                                                                    |
+| ------------------------------------ | --------- | ------------------------------------------------------------------------------ |
+| [tokenType](#slot-tokentype)         | `string`  | a custom name for a token to include in the header                             |
+| [authEndpoint](#slot-authendpoint)   | `string`  | the authorization code endpoint of the internet account                        |
+| [tokenEndpoint](#slot-tokenendpoint) | `string`  | the token endpoint of the internet account                                     |
+| [needsPKCE](#slot-needspkce)         | `boolean` | boolean to indicate if the endpoint needs a PKCE code                          |
+| [clientId](#slot-clientid)           | `string`  | id for the OAuth application                                                   |
+| [scopes](#slot-scopes)               | `string`  | optional scopes for the authorization call                                     |
+| [state](#slot-state)                 | `string`  | optional state for the authorization call                                      |
+| [responseType](#slot-responsetype)   | `string`  | the type of response from the authorization endpoint. can be 'token' or 'code' |
 
-This config's runtime API is documented on its
-[state model page](../../models/oauthinternetaccount).
-
-<details open>
+<details>
 <summary>OAuthInternetAccount - Slots</summary>
 
 #### slot: tokenType
@@ -75,7 +81,7 @@ Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from BaseInternetAccount</summary>
 
 [BaseInternetAccount config →](../baseinternetaccount)
@@ -106,6 +112,7 @@ array of valid domains the url can contain to use this account
 
 </details>
 
-### OAuthInternetAccount - Derives from
+## Related links
 
-- [BaseInternetAccount](../baseinternetaccount)
+- **State model:** [runtime API](../../models/oauthinternetaccount)
+- **Base config:** [BaseInternetAccount](../baseinternetaccount)

@@ -13,7 +13,37 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 Desktop text-indexing job queue: tracks the running job with its progress and
 status message, plus the list of queued indexing jobs.
 
-<details open>
+## Members
+
+| Member                                                             | Kind      | Description                                                                                            |
+| ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------ |
+| [running](#volatile-running)                                       | Volatiles |                                                                                                        |
+| [statusMessage](#volatile-statusmessage)                           | Volatiles |                                                                                                        |
+| [jobName](#volatile-jobname)                                       | Volatiles |                                                                                                        |
+| [stopToken](#volatile-stoptoken)                                   | Volatiles | stop token for the currently running RPC indexing job, used to cancel                                  |
+| [aborted](#volatile-aborted)                                       | Volatiles | set when the user cancels, so the catch block reports a cancellation rather than an error              |
+| [jobsQueue](#volatile-jobsqueue)                                   | Volatiles |                                                                                                        |
+| [rpcManager](#getter-rpcmanager)                                   | Getters   |                                                                                                        |
+| [tracks](#getter-tracks)                                           | Getters   |                                                                                                        |
+| [session](#getter-session)                                         | Getters   |                                                                                                        |
+| [aggregateTextSearchAdapters](#getter-aggregatetextsearchadapters) | Getters   |                                                                                                        |
+| [getJobStatusWidget](#method-getjobstatuswidget)                   | Methods   |                                                                                                        |
+| [setRunning](#action-setrunning)                                   | Actions   |                                                                                                        |
+| [setJobName](#action-setjobname)                                   | Actions   |                                                                                                        |
+| [setStopToken](#action-setstoptoken)                               | Actions   |                                                                                                        |
+| [abortJob](#action-abortjob)                                       | Actions   | cancel the currently running indexing job; the RPC throws 'aborted', handled in runIndexingJob's catch |
+| [reportStatus](#action-reportstatus)                               | Actions   |                                                                                                        |
+| [setWidgetStatus](#action-setwidgetstatus)                         | Actions   |                                                                                                        |
+| [setStatusMessage](#action-setstatusmessage)                       | Actions   |                                                                                                        |
+| [queueJob](#action-queuejob)                                       | Actions   |                                                                                                        |
+| [dequeueJob](#action-dequeuejob)                                   | Actions   |                                                                                                        |
+| [clear](#action-clear)                                             | Actions   |                                                                                                        |
+| [runIndexingJob](#action-runindexingjob)                           | Actions   |                                                                                                        |
+| [runJob](#action-runjob)                                           | Actions   |                                                                                                        |
+| [addTrackTextSearchConf](#action-addtracktextsearchconf)           | Actions   |                                                                                                        |
+| [addAggregateTextSearchConf](#action-addaggregatetextsearchconf)   | Actions   |                                                                                                        |
+
+<details>
 <summary>JobsManager - Volatiles</summary>
 
 #### volatile: stopToken
@@ -122,7 +152,7 @@ type getJobStatusWidget = () => ModelInstanceTypeProps<{ id: IOptionalIType<ISim
 
 </details>
 
-<details open>
+<details>
 <summary>JobsManager - Actions</summary>
 
 #### action: abortJob

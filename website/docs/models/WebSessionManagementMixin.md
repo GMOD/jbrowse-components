@@ -15,6 +15,16 @@ Saved-session-database actions (favorites, recent sessions, activate/delete)
 delegating to the root's . Composed only by the full-app jbrowse-web session;
 react-app omits it (its root has no session database).
 
+## Members
+
+| Member                                                     | Kind    | Description |
+| ---------------------------------------------------------- | ------- | ----------- |
+| [savedSessionMetadata](#getter-savedsessionmetadata)       | Getters |             |
+| [deleteSavedSession](#action-deletesavedsession)           | Actions |             |
+| [setSavedSessionFavorite](#action-setsavedsessionfavorite) | Actions |             |
+| [renameSavedSession](#action-renamesavedsession)           | Actions |             |
+| [activateSession](#action-activatesession)                 | Actions |             |
+
 <details>
 <summary>WebSessionManagementMixin - Getters</summary>
 

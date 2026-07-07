@@ -32,14 +32,6 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load UCSC chain alignment files (query and target assembly required)
 
-### Used in
-
-Supplies data to the [SyntenyTrack](../syntenytrack) track, rendered by:
-
-- [DotplotDisplay](../dotplotdisplay)
-- [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- [LinearSyntenyDisplay](../linearsyntenydisplay)
-
 ### ChainAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -53,7 +45,14 @@ preprocessor to allow minimal config:
 }
 ```
 
-<details open>
+| Slot                                   | Type           | Description                                                                                                                               |
+| -------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
+| [targetAssembly](#slot-targetassembly) | `string`       | can be specified as alternative to assemblyNames                                                                                          |
+| [queryAssembly](#slot-queryassembly)   | `string`       | can be specified as alternative to assemblyNames                                                                                          |
+| [chainLocation](#slot-chainlocation)   | `fileLocation` |                                                                                                                                           |
+
+<details>
 <summary>ChainAdapter - Slots</summary>
 
 #### slot: assemblyNames
@@ -81,3 +80,10 @@ can be specified as alternative to assemblyNames
 `{ uri: '/path/to/file.chain', locationType: 'UriLocation' }`
 
 </details>
+
+## Related links
+
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

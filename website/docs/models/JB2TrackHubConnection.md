@@ -11,6 +11,14 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
+## Members
+
+| Member                                   | Kind       | Description |
+| ---------------------------------------- | ---------- | ----------- |
+| [configuration](#property-configuration) | Properties |             |
+| [type](#property-type)                   | Properties |             |
+| [connect](#action-connect)               | Actions    |             |
+
 ### JB2TrackHubConnection - Configuration
 
 The configuration slots for this model are documented on its

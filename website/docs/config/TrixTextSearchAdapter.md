@@ -28,7 +28,15 @@ preprocessor to allow minimal config, assumes file.ixx also exists:
 Every TrixTextSearchAdapter has a unique `textSearchAdapterId`, a required
 top-level field that identifies it (not one of the config slots below).
 
-<details open>
+| Slot                                 | Type           | Description                                       |
+| ------------------------------------ | -------------- | ------------------------------------------------- |
+| [ixFilePath](#slot-ixfilepath)       | `fileLocation` |                                                   |
+| [ixxFilePath](#slot-ixxfilepath)     | `fileLocation` |                                                   |
+| [metaFilePath](#slot-metafilepath)   | `fileLocation` |                                                   |
+| [tracks](#slot-tracks)               | `stringArray`  | List of tracks covered by text search adapter     |
+| [assemblyNames](#slot-assemblynames) | `stringArray`  | List of assemblies covered by text search adapter |
+
+<details>
 <summary>TrixTextSearchAdapter - Slots</summary>
 
 #### slot: ixFilePath

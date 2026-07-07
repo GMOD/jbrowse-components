@@ -14,6 +14,16 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 Widget backing the plugin store: holds the text filter applied to the
 installable plugin list and the view it was opened from.
 
+## Members
+
+| Member                                 | Kind       | Description |
+| -------------------------------------- | ---------- | ----------- |
+| [id](#property-id)                     | Properties |             |
+| [type](#property-type)                 | Properties |             |
+| [filterText](#property-filtertext)     | Properties |             |
+| [view](#property-view)                 | Properties |             |
+| [setFilterText](#action-setfiltertext) | Actions    |             |
+
 <details>
 <summary>PluginStoreWidget - Properties</summary>
 

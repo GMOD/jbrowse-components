@@ -11,6 +11,17 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
+## Members
+
+| Member                                         | Kind       | Description |
+| ---------------------------------------------- | ---------- | ----------- |
+| [name](#property-name)                         | Properties |             |
+| [statusMessage](#volatile-statusmessage)       | Volatiles  |             |
+| [progressPct](#volatile-progresspct)           | Volatiles  |             |
+| [setCancelCallback](#action-setcancelcallback) | Actions    |             |
+| [setStatusMessage](#action-setstatusmessage)   | Actions    |             |
+| [setProgressPct](#action-setprogresspct)       | Actions    |             |
+
 <details>
 <summary>Job - Properties</summary>
 

@@ -61,18 +61,13 @@ _See the **Slots** section below for all available configuration fields._
 
 used specifically for GCContentTrack
 
-### LinearGCContentTrackDisplay - State model
-
-This config's runtime API is documented on its
-[state model page](../../models/lineargccontenttrackdisplay).
-
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
 this page is self-contained. A slot redeclared by a more specific config is
 shown once, at its most specific definition.
 
-<details open>
+<details>
 <summary>Inherited from LinearWiggleDisplay</summary>
 
 [LinearWiggleDisplay config →](../linearwiggledisplay)
@@ -137,6 +132,7 @@ the same rendering
 
 </details>
 
-### LinearGCContentTrackDisplay - Derives from
+## Related links
 
-- [LinearWiggleDisplay](../linearwiggledisplay)
+- **State model:** [runtime API](../../models/lineargccontenttrackdisplay)
+- **Base config:** [LinearWiggleDisplay](../linearwiggledisplay)
