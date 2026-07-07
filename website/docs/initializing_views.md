@@ -1,5 +1,6 @@
 ---
 title: Initializing and launching views
+sidebar_label: Initializing views
 ---
 
 Whether you're launching a view from a URL, an embedded component, or a

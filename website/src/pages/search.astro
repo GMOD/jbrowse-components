@@ -1,10 +1,14 @@
 ---
+import { getCollection } from 'astro:content'
+
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { baseUrl } from '../lib/base-url.ts'
+import { buildSearchCategoryMap } from '../lib/docs-sidebar.ts'
 import page from '../styles/page.module.css'
 import styles from '../styles/search.module.css'
 
 const q = Astro.url.searchParams.get('q') ?? ''
+const searchCategories = buildSearchCategoryMap(await getCollection('docs'))
 ---
 
 <BaseLayout
@@ -43,7 +47,7 @@ const q = Astro.url.searchParams.get('q') ?? ''
   </div>
 </BaseLayout>
 
-<script is:inline define:vars={{ baseUrl }}>
+<script is:inline define:vars={{ baseUrl, searchCategories }}>
   const input = document.getElementById('search-input')
   const countEl = document.getElementById('search-count')
   const resultsList = document.getElementById('search-results')
@@ -64,6 +68,9 @@ const q = Astro.url.searchParams.get('q') ?? ''
     other: 4,
   }
 
+  // searchCategories is generated from sidebars.json (buildSearchCategoryMap
+  // in docs-sidebar.ts) so this stays in sync with the actual sidebar
+  // placement instead of hand-listing slugs here.
   function getCategory(url) {
     const path = new URL(url, location.href).pathname
     const match = path.match(/\/docs\/(.*)/)
@@ -71,36 +78,7 @@ const q = Astro.url.searchParams.get('q') ?? ''
       return 'other'
     }
     const slug = match[1].replace(/\/$/, '')
-
-    if (
-      slug === 'user_guide' ||
-      slug.startsWith('user_guides/') ||
-      (slug.startsWith('tutorials/') && !slug.startsWith('tutorials/embed'))
-    ) {
-      return 'user'
-    }
-    if (slug === 'config_guide' || slug.startsWith('config_guides/')) {
-      return 'config'
-    }
-    if (
-      slug === 'developer_guide' ||
-      slug.startsWith('developer_guides/') ||
-      slug.startsWith('tutorials/embed') ||
-      slug === 'embedded_components' ||
-      slug === 'jbrowse_jupyter' ||
-      slug === 'jbrowser' ||
-      slug === 'quickstart_adminserver'
-    ) {
-      return 'developer'
-    }
-    if (
-      slug.startsWith('config/') ||
-      slug.startsWith('models/') ||
-      slug.startsWith('api/')
-    ) {
-      return 'autogen'
-    }
-    return 'other'
+    return searchCategories[slug] ?? 'other'
   }
 
   function renderResults() {

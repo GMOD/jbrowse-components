@@ -1,5 +1,6 @@
 ---
 title: URL query parameter API
+sidebar_label: URL parameters
 ---
 
 JBrowse Web supports URL parameters for initializing a session.
