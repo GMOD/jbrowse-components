@@ -1,0 +1,662 @@
+import {
+  DOTPLOT_CONFIG,
+  HS1_MM39_CONFIG,
+  PICALM_ALU_LOCUS,
+  VAPB_SVA_LOCUS,
+  VOLVOX,
+  cgiabUrl,
+  hg38ChimpSynteny,
+  hpyloriSyntenyWithGenes,
+  hpyloriUrl,
+  sessionSpec,
+} from '../screenshot-spec-helpers.ts'
+
+import type {
+  ScreenshotSpec,
+} from '../screenshot-spec-types.ts'
+
+export const syntenySpecs: ScreenshotSpec[] = [
+  // Human vs chimp synteny (hosted liftOver chain, zoomed to LMNB2). The two
+  // CIGAR display modes are captured as independent DECLARATIVE sessions (the
+  // cigarMode is baked into each session, no menu-driving) then stacked by the
+  // `synteny_human_chimp_cigar_modes` compose spec below. Each also guards the
+  // oversized-block viewport clip — a chromosome-scale block must render at high
+  // zoom instead of a blank canvas.
+  {
+    mode: 'url',
+    name: 'synteny_human_chimp_colored',
+    url: hg38ChimpSynteny('full'),
+    viewportWidth: 1200,
+    viewportHeight: 730,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+  {
+    mode: 'url',
+    name: 'synteny_human_chimp_transparent',
+    url: hg38ChimpSynteny('matches'),
+    viewportWidth: 1200,
+    viewportHeight: 730,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+  // Stacks the two declarative captures into one before/after figure. Both
+  // panels stay openable live (the doc <Figure links=> points at the two specs
+  // above), and neither the image nor the links can drift from the real states.
+  {
+    mode: 'compose',
+    name: 'synteny_human_chimp_cigar_modes',
+    parts: ['synteny_human_chimp_colored', 'synteny_human_chimp_transparent'],
+  },
+  // Second human-specific-TE example: an SVA_F retrotransposon inserted in VAPB.
+  {
+    mode: 'url',
+    name: 'synteny_te_vapb_sva',
+    url: hg38ChimpSynteny('full', VAPB_SVA_LOCUS),
+    viewportWidth: 1200,
+    viewportHeight: 730,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+  // Third human-specific-TE example: a small AluYb8 insertion in PICALM.
+  // PICALM has many RefSeq isoforms — superCompact keeps the gene lanes from
+  // dwarfing the ~0.3 kb insertion.
+  {
+    mode: 'url',
+    name: 'synteny_te_picalm_alu',
+    url: hg38ChimpSynteny('full', PICALM_ALU_LOCUS, 'superCompact'),
+    viewportWidth: 1200,
+    viewportHeight: 730,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+
+  {
+    mode: 'url',
+    name: 'dotplot',
+    // use the full peach_grape.paf (grape_peach_paf), not the small in-repo paf
+    // that the config defaultSession loads
+    url: sessionSpec(DOTPLOT_CONFIG, {
+      views: [
+        {
+          type: 'DotplotView',
+          views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+          tracks: ['grape_peach_paf'],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 8000,
+  },
+
+  {
+    mode: 'url',
+    name: 'linear_synteny',
+    // Whole-genome grape vs peach MCScan synteny as an explicit controlled
+    // session (was a reviewer share link whose mismatched per-panel zoom fanned
+    // ribbons far off the left edge — the "drawing offscreen" the review
+    // flagged). Both panels span their full assemblies at matched scale, so the
+    // bezier ribbons stay inside the view. minAlignmentLength drops short-anchor
+    // noise; drawCurves + per-query color + low alpha keep them legible.
+    url: sessionSpec('test_data/config_dotplot.json', {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: ['grape_peach_synteny_mcscan'],
+          drawCurves: false,
+          colorBy: 'query',
+          // higher alpha + a taller synteny band give the ribbons room to read,
+          // and autoDiagonalize reorders the panels into clean diagonals
+          // (increase height, add opacity, diagonalize; then opacity
+          // bumped a little more). levelHeights (not a `levels` snapshot) is the
+          // key the launch init consumes.
+          alpha: 0.8,
+          levelHeights: [360],
+          autoDiagonalize: true,
+          views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 10000,
+  },
+
+  // Multi-way synteny demos: grape_peach_cacao for the multiway_synteny.md
+  // (ortholog tables) tutorial, ecoli_pangenome for the allvsall_synteny.md
+  // tutorial. Both load a
+  // hosted demo config (whose defaultSession opens the stacked LinearSyntenyView)
+  // as a bare ?config= against the local build, since MCScanBlocksAdapter /
+  // AllVsAllPAFAdapter are newer than jbrowse.org/code/jb2/latest. Generous
+  // timeout/settle: the config pulls remote genomes + a synteny file and
+  // autoDiagonalize runs a whole-genome RPC before the canvas settles.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/grape_peach_cacao',
+    // Rows peach / cacao / grape. colorBy:'reference' anchors every level on the
+    // max-adjacency middle row (cacao, shared by both bands) so a cacao
+    // chromosome carries ONE color as it's traced up into peach and down into
+    // grape. The top peach-cacao band is a transitive ortholog link (grape is
+    // the MCScan reference, so only grape-adjacent pairs are direct); the
+    // grape-cacao band is direct. autoDiagonalize reorders/flips each lower axis
+    // to follow the one above, so the ribbons run near-diagonal instead of
+    // crossing into a hairball. showColorLegend:false hides the floating legend.
+    // Mirrors the hosted config's defaultSession init otherwise.
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              { assembly: 'peach' },
+              { assembly: 'cacao' },
+              { assembly: 'grape' },
+            ],
+            tracks: [['peach_cacao_blocks'], ['grape_cacao_blocks']],
+            drawCurves: false,
+            colorBy: 'reference',
+            autoDiagonalize: true,
+            showColorLegend: false,
+          },
+        ],
+      },
+    ),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+  },
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_pangenome',
+    // colorBy:'default' (not 'query'): these are single-chromosome strains, so
+    // per-query-name coloring paints everything one near-uniform color and adds
+    // no signal (query-name coloring is only useful with multiple
+    // chromosomes). Default red ribbons read cleaner here.
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              { assembly: 'K12' },
+              { assembly: 'Sakai' },
+              { assembly: 'CFT073' },
+              { assembly: 'NCTC86' },
+            ],
+            // one all-vs-all track backs every band (lists all four assemblies)
+            tracks: [['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava']],
+            drawCurves: false,
+            colorBy: 'default',
+            // legend would read just "match" here (whole-genome zoom drops the
+            // sub-pixel indels, and default red is self-evident) — hide it
+            showColorLegend: false,
+            // drop short minimap2 alignments so the shared backbone reads as
+            // clean ribbons instead of a dense noise band
+            minAlignmentLength: 10000,
+          },
+        ],
+      },
+    ),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+  },
+
+  // The Linear synteny view import form for the allvsall_synteny.md "From the
+  // UI" section, using the all-vs-all quick-start path. A bare LinearSyntenyView
+  // session spec is rejected (needs >=2 views), so open it the way a user does:
+  // load the ecoli_pangenome demo config with no views, then Add -> Linear
+  // synteny view -> an empty view that lands on the import form. Two-stage
+  // teaching figure: (1) open "Quick start" and pick the all-vs-all track, (2)
+  // every assembly in that track's assemblyNames becomes a row (the single track
+  // backs every band), then Launch.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_import_form',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+      ),
+      { views: [] },
+    ),
+    readyText: 'Select a view to launch',
+    readyTimeout: 60000,
+    settleMs: 1000,
+    viewportHeight: 500,
+    crop: { x: 0, y: 0, width: 1500, height: 470 },
+    actions: [
+      { type: 'click', text: 'Add' },
+      { type: 'waitForText', text: 'Linear synteny view' },
+      { type: 'click', text: 'Linear synteny view' },
+      {
+        type: 'waitForText',
+        text: 'Select assemblies for linear synteny view',
+      },
+      { type: 'delay', ms: 1000 },
+    ],
+    stages: [
+      {
+        actions: [
+          {
+            type: 'click',
+            text: 'Select a synteny track to auto-fill assemblies',
+          },
+          { type: 'waitForSelector', selector: 'li[data-value="ecoli_ava"]' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            text: '1',
+            anchor: { text: 'Quick start from a synteny track' },
+            dx: -45,
+          },
+          { type: 'box', anchor: { selector: 'li[data-value="ecoli_ava"]' } },
+          {
+            type: 'text',
+            text: 'Open Quick start and pick your all-vs-all track',
+            x: 130,
+            y: 345,
+            maxWidth: 430,
+          },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', selector: 'li[data-value="ecoli_ava"]' },
+          { type: 'waitForText', text: 'Row 4 assembly' },
+          { type: 'delay', ms: 1000 },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            text: '2',
+            anchor: { text: 'Select assemblies for linear synteny view' },
+            dx: -45,
+          },
+          {
+            type: 'text',
+            text: 'Every assembly in the track becomes a row — the one all-vs-all track backs every band',
+            x: 520,
+            y: 340,
+            maxWidth: 470,
+          },
+          { type: 'circle', text: '3', anchor: { text: 'Launch' }, dx: 58 },
+          { type: 'box', anchor: { text: 'Launch' } },
+        ],
+      },
+    ],
+  },
+
+  // For the gallery: load the exact curated share session the reviewer wants
+  // captured verbatim (peach Pp05 vs grape chr2 with the per-gene MCScan
+  // connections + the red/blue inverted-vs-non-inverted synteny blocks). The
+  // bare ?config= url is served against the local build; the password param
+  // auto-decrypts the shared session so it loads with no interaction. The
+  // docs live-link becomes the same query on jbrowse.org/code/jb2/latest.
+  {
+    mode: 'url',
+    name: 'linear_synteny_gallery',
+    url: '?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt',
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 10000,
+  },
+
+  // Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny, mirroring the
+  // hs1_vs_mm39 config defaultSession: 500k minlen drops short-alignment
+  // hairball noise, autoDiagonalize reorders mm39 chroms into clean diagonals,
+  // and drawCurves + low alpha + per-query coloring give legible bezier ribbons
+  // (matches data/hs1ToMm39/ribbon-500k.png reference). Remote UCSC liftOver PIF
+  // + two 2bit genomes, so allow a long ready/settle.
+  {
+    mode: 'url',
+    name: 'hs1_vs_mm39_synteny',
+    url: sessionSpec(HS1_MM39_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: ['hs1ToMm39.over.chain.pif'],
+          minAlignmentLength: 500000,
+          drawCurves: false,
+          autoDiagonalize: true,
+          colorBy: 'query',
+          alpha: 0.4,
+          levelHeights: [350],
+          views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    // autoDiagonalize holds the synteny canvas (and thus synteny_canvas_done)
+    // off-screen until the diagonalize RPC lands and the reorder is applied, so
+    // the canvas only ever appears in its final diagonalized state. The remote
+    // 2bit genomes + S3 PIF make that whole-genome fetch slow, so allow
+    // generous headroom.
+    readyTimeout: 180000,
+    settleMs: 15000,
+  },
+
+  {
+    mode: 'url',
+    name: 'sv_cgiab/dotplot_result',
+    // The cgiab config ships this synteny track with a plain PAFAdapter pointed
+    // at a .pif.gz — but PAFAdapter doesn't strip the PIF q/t refName prefixes,
+    // so every feature's refName ("qhaplotype1-…") fails to match the assembly
+    // refName ("haplotype1-…") and the dotplot renders empty. Override the track
+    // with the correct PairwiseIndexedPAFAdapter (tabix .pif.gz) so the dots paint.
+    url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'SyntenyTrack',
+          trackId: 'HG008T.hap1_pif',
+          name: 'HG008T.hap1',
+          assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+          adapter: {
+            type: 'PairwiseIndexedPAFAdapter',
+            assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+            pifGzLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz',
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'TBI',
+              location: {
+                uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz.tbi',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'DotplotView',
+          views: [{ assembly: 'HG008T.hap1' }, { assembly: 'GRCh38_GIABv3' }],
+          tracks: ['HG008T.hap1_pif'],
+          // reorder/flip the hap1 contigs so the main alignment forms a clean
+          // diagonal instead of a scattered off-axis cloud
+          autoDiagonalize: true,
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readyTimeout: 90000,
+    viewportWidth: 1800,
+    // canvasDrawn doesn't reliably flip for this whole-genome WebGL dotplot, so
+    // gate on the grid labels then settle long for the heavy whole-genome PIF
+    // fetch to paint its dots
+    settleMs: 60000,
+  },
+
+  // The dotplot import form with HG008T.hap1 on one axis and GRCh38 on the other
+  // (tutorial caption). An empty DotplotView (views:[{},{}]) shows the form; both
+  // selectors default to the config's first assembly (GRCh38_GIABv3), so open the
+  // first (x-axis) selector and pick HG008T.hap1. Replaces a stale hand-made
+  // capture that showed unrelated generic assembly names. Selecting via the UI
+  // (not pre-setting assemblies in the snapshot) keeps the form open — pre-set
+  // assemblies auto-launch the view.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/dotplot_import_form',
+    url: cgiabUrl({ views: [{ type: 'DotplotView', views: [{}, {}] }] }),
+    readyText: 'Select assemblies for dotplot view',
+    readyTimeout: 60000,
+    settleMs: 3000,
+    viewportWidth: 1500,
+    // tall enough to include the optional synteny-track row below the assembly
+    // selectors and the full wrapped helper text
+    viewportHeight: 400,
+    actions: [
+      // both selectors show GRCh38_GIABv3; the first match is the x-axis one —
+      // open it and switch to HG008T.hap1. Let the menu's open animation settle
+      // before clicking the item, else the click misses mid-transition.
+      { type: 'click', text: 'GRCh38_GIABv3' },
+      { type: 'waitForText', text: 'HG008T.hap1' },
+      { type: 'delay', ms: 600 },
+      // target the MUI Select option by data-value (reliable vs a text click
+      // that can land on the backdrop during the menu transition)
+      { type: 'click', selector: 'li[data-value="HG008T.hap1"]' },
+      { type: 'delay', ms: 1000 },
+    ],
+  },
+
+  {
+    mode: 'url',
+    name: 'sv_cgiab/synteny_view',
+    // Same fix as sv_cgiab/dotplot_result: the config's plain PAFAdapter can't
+    // strip the PIF q/t refName prefixes, so ribbons never map. Override with
+    // PairwiseIndexedPAFAdapter. hap1 contigs 16 (↔chr3, ↔chr13) and 11 (↔chr13)
+    // are the ones that actually align to the displayed GRCh38 chromosomes, so
+    // the ribbons connect (contig 15 maps to chr1/chr5, not shown here).
+    url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'SyntenyTrack',
+          trackId: 'HG008T.hap1_pif',
+          name: 'HG008T.hap1',
+          assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+          adapter: {
+            type: 'PairwiseIndexedPAFAdapter',
+            assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+            pifGzLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz',
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'TBI',
+              location: {
+                uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz.tbi',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          // curved ribbons (drawCurves is a LinearSyntenyView-level property) so
+          // the connections read clearly. Renders against the local
+          // build (cgiabUrl is now a bare ?config= url) so drawCurves is honored
+          // — the published jb2/latest release predates it.
+          drawCurves: true,
+          // taller synteny band (LinearSyntenyViewHelper.height, default 100) so
+          // the ribbons have room to spread out. NB the launch init
+          // handler consumes `levelHeights`, not a `levels` snapshot — the
+          // latter is silently dropped, which is why the band stayed short.
+          levelHeights: [260],
+          // drop short noisy alignments and lighten the ribbons so the dense
+          // "dark areas" (many overlapping anchors stacking opacity into solid
+          // fans) read as clean syntenic blocks
+          minAlignmentLength: 50000,
+          alpha: 0.2,
+          tracks: ['HG008T.hap1_pif'],
+          views: [
+            {
+              loc: 'chr3:1-198295559 chr13:1-114364328',
+              assembly: 'GRCh38_GIABv3',
+            },
+            {
+              loc: 'haplotype1-0000016:1-212902875 haplotype1-0000011:1-99479325',
+              assembly: 'HG008T.hap1',
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr3',
+    readyTimeout: 90000,
+    viewportWidth: 1800,
+    // fit the taller curved synteny band + both LGV panels without a tall
+    // white margin
+    viewportHeight: 620,
+    // giant remote assembly PAF; synteny_canvas_done can exceed 90s, so settle
+    // long rather than gate on it
+    settleMs: 45000,
+  },
+
+  // H. pylori synteny tutorial (synteny_visualization.md) — live hpylori demo
+
+  {
+    mode: 'url',
+    // assemblies intentionally not pre-set: supplying them auto-launches the
+    // DotplotView, but this tutorial image is specifically the import form
+    name: 'sv_synteny/dotplot_import',
+    url: hpyloriUrl({ views: [{ type: 'DotplotView', views: [{}, {}] }] }),
+    readyText: 'Select assemblies for dotplot view',
+    readyTimeout: 60000,
+    settleMs: 3000,
+    // No callouts: the import form already labels its two selectors ("x-axis
+    // assembly"/"y-axis assembly"), and which assembly goes on which axis is
+    // arbitrary here (the old "query"/"target" framing was a track-level
+    // distinction the view doesn't impose), so added annotations only mislead
+  },
+
+  {
+    mode: 'url',
+    name: 'sv_synteny/dotplot',
+    url: hpyloriUrl({
+      views: [
+        {
+          type: 'DotplotView',
+          tracks: ['26695_vs_j99.pif'],
+          views: [{ assembly: 'hpylori_j99' }, { assembly: 'hpylori_26695' }],
+        },
+      ],
+    }),
+    settleMs: 18000,
+  },
+
+  {
+    mode: 'url',
+    name: 'sv_synteny/linear_synteny_genes',
+    url: hpyloriSyntenyWithGenes(),
+    readyText: 'NC_018939.1',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Dotplot / synteny interactions
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Dotplot launch, two-stage figure: top frame opens the app "Add" menu with
+  // "Dotplot view" boxed; bottom frame is the import form it opens (launched
+  // from an empty session so only the import form shows, no leftover LGV).
+  // Replaces the old separate dotplot_menu screenshot. Narrow window + height
+  // crop keep the figure tight on the menu and form.
+  {
+    mode: 'url',
+    name: 'dotplot_add',
+    url: sessionSpec(VOLVOX, { views: [] }),
+    readyText: 'Select a view to launch',
+    viewportWidth: 900,
+    settleMs: 2000,
+    // slightly shorter crop for both frames
+    crop: { x: 0, y: 0, width: 900, height: 460 },
+    stages: [
+      {
+        actions: [
+          { type: 'click', text: 'Add' },
+          { type: 'waitForText', text: 'Dotplot view' },
+          { type: 'delay', ms: 500 },
+        ],
+        // box the Add menu button as well as the Dotplot view item
+        annotations: [
+          { type: 'box', anchor: { text: 'Add' } },
+          { type: 'box', anchor: { text: 'Dotplot view' } },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Dotplot view' },
+          { type: 'waitForText', text: 'Select assemblies for dotplot view' },
+          { type: 'delay', ms: 1500 },
+        ],
+      },
+    ],
+  },
+
+  // Two-stage figure: (top) dotplot drag-selection context menu showing "Open
+  // linear synteny view", (bottom) the linear synteny view it launches.
+  // Uses the curated MCScan anchor tracks (the same pair the linear_synteny
+  // figure uses) rather than the raw grape_peach_paf. A small drag-selection
+  // over one diagonal block in the lower-left (peach Pp01 vs grape chr1) launches
+  // a legible synteny view instead of the whole-genome criss-cross the reviewer
+  // rejected.
+  {
+    mode: 'url',
+    name: 'synteny_from_dotplot_view',
+    url: sessionSpec(DOTPLOT_CONFIG, {
+      views: [
+        {
+          type: 'DotplotView',
+          views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+          tracks: [
+            'grape_peach_synteny_mcscan',
+            'grape_peach_synteny_mcscan_simple',
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readyTimeout: 60000,
+    settleMs: 5000,
+    actions: [
+      // small rubberband-drag over a single diagonal block in the lower-left
+      // (a focused subsection, not the whole region — reviewer; ~75% of the
+      // previous drag span, centered on the same block)
+      { type: 'drag', from: { x: 126, y: 259 }, to: { x: 224, y: 311 } },
+      { type: 'waitForText', text: 'Open linear synteny view' },
+      { type: 'delay', ms: 1000 },
+    ],
+    stages: [
+      // top frame: the context menu left open by the shared actions above
+      {},
+      // bottom frame: launch the linear synteny view, close the now-redundant
+      // dotplot view (views[0], so the first close_view button) and let it draw
+      {
+        actions: [
+          { type: 'click', text: 'Open linear synteny view' },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="synteny_canvas_done"]',
+          },
+          { type: 'delay', ms: 2000 },
+          { type: 'click', selector: '[data-testid="close_view"]' },
+          { type: 'delay', ms: 2000 },
+        ],
+      },
+    ],
+  },
+  {
+    mode: 'url',
+    name: 'gallery/yeast_dotplot',
+    url: sessionSpec('test_data/yeast_synteny/config.json', {
+      views: [
+        {
+          type: 'DotplotView',
+          views: [{ assembly: 'R64' }, { assembly: 'YJM1447' }],
+          tracks: ['dotplot_track'],
+          autoDiagonalize: true,
+          showColorLegend: false,
+        },
+      ],
+    }),
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readyTimeout: 90000,
+    settleMs: 10000,
+  },
+]
