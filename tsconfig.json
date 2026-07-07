@@ -26,6 +26,7 @@
   },
   "exclude": [
     "infrastructure/",
+    "aws/",
     "**/build/",
     "**/docs/",
     "**/dist/",
