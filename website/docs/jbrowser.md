@@ -9,3 +9,9 @@ Comprehensive documentation for JBrowseR is found off-site,
 [here](https://gmod.github.io/JBrowseR/).
 
 Also check out the [GitHub repo](https://github.com/GMOD/JBrowseR/).
+
+## See also
+
+- [JBrowse Jupyter](/docs/jbrowse_jupyter) — the Python/Jupyter equivalent
+- [Embedded components](/docs/embedded_components) — the underlying JS/React
+  components this wraps

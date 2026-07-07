@@ -31,3 +31,5 @@ You can also extract or copy the sequence underlying selected features; see the
   feature's CDS, protein, cDNA, or genomic sequence
 - [Assembly configuration](/docs/config_guides/assemblies) — reference sequence
   adapters and alternative genetic codes
+- [GC content track](/docs/user_guides/gc_content_track) — computed on the fly
+  from this track's sequence, launched from its track menu

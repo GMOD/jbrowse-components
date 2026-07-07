@@ -4,9 +4,8 @@ title: JBrowse CLI admin server
 
 :::caution
 
-For most purposes we recommend using the CLI
-[JBrowse CLI quickstart](/docs/quickstart_web/) for setting up configs, the
-admin-server is not as commonly used and fairly niche
+We recommend the [CLI quickstart](/docs/quickstart_web/) for most config setup.
+The admin-server is a niche tool for occasional GUI editing.
 
 :::
 
@@ -86,8 +85,7 @@ form:
 
 <Figure caption="Assembly manager page for adding a new assembly." src="/img/hg38_assembly_table.png"/>
 
-Click on "Create New Assembly". Great, we've added an assembly! We can see that
-we have successfully added the hg38 assembly:
+Click on "Create New Assembly". The hg38 assembly now appears in the list:
 
 <Figure caption="The assembly manager dialog box with human assemblies available" src="/img/add_hg38_assembly.png"/>
 
@@ -139,6 +137,13 @@ visited. To do so, open the Set default session form (Admin menu):
 You can use the form to clear your default session, select the currently open
 session, or any of your previously saved sessions.
 
-## Additional resources
+## See also
 
-For more configuration topics, see the [config guide](/docs/config_guide).
+- [Quickstart web](/docs/quickstart_web) — the recommended CLI-first setup path
+- [Supported file types](/docs/config_guides/file_types) — formats the Add Track
+  form accepts
+- [Default session](/docs/config_guides/default_session) — the config-file
+  equivalent of the "Set default session" form
+- [Assembly configuration guide](/docs/config_guides/assemblies) — aliasing and
+  genetic-code options beyond the GUI form
+- [Config guide](/docs/config_guide) — more configuration topics

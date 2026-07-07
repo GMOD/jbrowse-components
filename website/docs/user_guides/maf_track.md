@@ -113,3 +113,5 @@ manual row heights.
 - [Linear synteny view](/docs/user_guides/linear_synteny_view) — pairwise
   alignment of two genomes, complementary to MAF's multiple alignment against
   one reference
+- [Gene track](/docs/user_guides/gene_track) — the same reading-frame coloring
+  and peptide lettering, applied to a single genome's CDS

@@ -70,10 +70,9 @@ row, `{name: ...}` rewrites the Name row, and so on.
 
 ## Making sophisticated customizations to feature detail panels
 
-If your feature detail panel customization is complex, you can create a custom
-javascript function in a plugin that is registered with the jexl system.
+For complex customizations, register a jexl function in a plugin.
 
-You can make a small plugin file "myplugin.js"
+Create a small plugin file, `myplugin.js`:
 
 ```js
 // myplugin.js
@@ -180,8 +179,7 @@ rename.
 
 ## Example: A generalized solution to dbxrefs
 
-If you wanted to always link out to different websites mentioned in the dbxrefs
-of your data file, you could make a jexl function such as the following
+To link out to websites referenced in `dbxref`, use a jexl function like this:
 
 ```js
 // myplugin.js

@@ -177,8 +177,8 @@ type: synchronous
 
 - `args` - adapter config
 
-used to infer an adapter type given a location type from the "Add track"
-workflow. you will receive a callback asking if you can provide an adapter
+Used to infer an adapter type given a location type from the "Add track"
+workflow. You will receive a callback asking if you can provide an adapter
 config given a location object. See the
 [add track workflow guide](/docs/developer_guides/creating_addtrack_workflow)
 for how this fits into adding tracks.
@@ -191,16 +191,16 @@ type: synchronous
 
 - `args` - `FileLocation` object
 
-used to infer a track type given a location type from the "Add track workflow"
+Used to infer a track type given a location type from the "Add track" workflow.
 
-example
+Example:
 https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/index.ts#L108-L118
 
 ### Core-extendSession
 
 type: synchronous
 
-used to extend the session model itself with new features
+Used to extend the session model itself with new features.
 
 - `args` - `AbstractSessionModel` - instance of the session model
 
@@ -208,7 +208,8 @@ used to extend the session model itself with new features
 
 type: synchronous
 
-adds option to provide a different component for the "About this track" dialog
+Adds an option to provide a different component for the "About this track"
+dialog.
 
 - `args` - a `ReactComponent`, by default the AboutTrack dialog
 - `props` - an argument of the format below
@@ -284,8 +285,8 @@ Wrap your content in `BaseCard` to keep the old titled-section look.
 
 type: synchronous
 
-lets you transform the config snapshot shown in the "About this track" dialog,
-after any `formatAbout` config has already been applied
+Lets you transform the config snapshot shown in the "About this track" dialog,
+after any `formatAbout` config has already been applied.
 
 - `args` - an object of the form `{ config: Record<string, unknown> }`, the
   track config snapshot with `formatAbout` already merged in
@@ -314,7 +315,8 @@ pluginManager.addToExtensionPoint('Core-customizeAbout', (arg, { config }) => {
 
 type: synchronous
 
-adds option to provide a different component for a given widget, drawer or modal
+Adds an option to provide a different component for a given widget, drawer, or
+modal.
 
 - `args` - a `ReactComponent`
 - `props` - an object of the type below
@@ -378,14 +380,14 @@ pluginManager.addToExtensionPoint(
 )
 ```
 
-Note 1: it is not always possible to retrieve the configuration associated with
-a track that produced the feature details. Therefore, we check model.trackId
-that produced the popup instead.
+**Why trackId, not config:** it is not always possible to retrieve the
+configuration associated with a track that produced the feature details.
+Therefore, we check `model.trackId` that produced the popup instead.
 
-Note 2: If you want e.g. a "User copy" of your track to get the same treatment,
-match the trackId with a `RegExp` via `matchTrackId` (shown above) rather than
-an exact compare — the copy of a track has a timestamp and `-sessionTrack`
-appended to its id.
+**Matching "user copy" tracks:** if you want e.g. a "User copy" of your track to
+get the same treatment, match the trackId with a `RegExp` via `matchTrackId`
+(shown above) rather than an exact compare — the copy of a track has a timestamp
+and `-sessionTrack` appended to its id.
 
 ### Core-extraFeaturePanel
 
@@ -497,10 +499,10 @@ interface props {
 }
 ```
 
-used to add new menu items to the "shopping cart" in the header of the
-hierarchical track menu when tracks are added to the selection
+Used to add new menu items to the "shopping cart" in the header of the
+hierarchical track menu when tracks are added to the selection.
 
-example
+Example:
 https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#L10-L67
 
 ### TrackSelector-folderDialog
@@ -1009,3 +1011,15 @@ pluginManager.addToExtensionPoint(
 The naming system, "Core-" just refers to the fact that these extension points
 are from our core codebase. Plugin developers may choose their own prefix to
 avoid collisions.
+
+## See also
+
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+  every element type, including extension points
+- [Custom view types](/docs/developer_guides/creating_view) — the
+  `LaunchView-<type>` pattern referenced above
+- [Top-level menu items](/docs/developer_guides/menus) — a worked example using
+  `Core-extendPluggableElement` to add context menu items
+- [Add-track workflows](/docs/developer_guides/creating_addtrack_workflow) —
+  where `Core-guessAdapterForLocation`/`Core-guessTrackTypeForLocation` fit into
+  adding tracks

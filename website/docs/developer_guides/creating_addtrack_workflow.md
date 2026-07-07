@@ -60,4 +60,5 @@ export default class WigglePlugin extends Plugin {
 - [Extension points](/docs/developer_guides/extension_points) —
   `Core-guessAdapterForLocation` and `Core-guessTrackTypeForLocation` are the
   related add-track inference hooks
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+  all element types a plugin can register, including add-track workflows

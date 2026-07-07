@@ -105,4 +105,5 @@ export default function modelFactory(pluginManager) {
   the connection's config slots
 - [MST patterns](/docs/developer_guides/mst_patterns) — `types.compose` and
   model factories
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+  all element types a plugin can register, including connections

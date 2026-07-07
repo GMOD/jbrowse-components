@@ -50,14 +50,10 @@ by-eye pattern into a painted track.
 
 ## Using a program to help find phased blocks
 
-In the above section, we could see matching blocks with our eyes, but can a
-program help?
-
-There are indeed options for this. The program
-[hap-ibd](https://github.com/browning-lab/hap-ibd) can find "identical by
-descent" blocks. It is actually capable of finding such blocks in massive
-population-scale datasets, but we are applying it here to a smaller trio VCF.
-The hap-ibd program takes as input:
+The by-eye matching above can also be found programmatically.
+[hap-ibd](https://github.com/browning-lab/hap-ibd) finds "identical by descent"
+blocks — built for population-scale cohorts, but works on a single trio VCF too.
+It takes as input:
 
 - a phased VCF like the
   [trio dataset](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
@@ -395,9 +391,13 @@ well-phased trio VCF.
 
 ## See also
 
-For structural variant analysis with the 1000 Genomes dataset — multi-sample
-genotypes, trio inheritance of SVs, and a large chromosomal inversion — see the
-[Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) tutorial.
+- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) —
+  structural variant analysis with the 1000 Genomes dataset: multi-sample
+  genotypes, trio inheritance of SVs, and a large chromosomal inversion.
+- [Multi-sample variant display](/docs/user_guides/multivariant_track) — the
+  matrix/phased display this tutorial builds on.
+- [Variant track config](/docs/config_guides/variant_track) — loading the phased
+  VCF used throughout.
 
 ## Live demo
 

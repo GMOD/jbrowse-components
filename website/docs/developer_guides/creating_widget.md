@@ -9,7 +9,7 @@ places in the app — for example the configuration editor, feature detail popup
 and the add-track form. A custom widget pairs a state model with a React
 component and is registered with `pluginManager.addWidgetType`.
 
-Here is an example of registering a custom widget in `index.tsx`:
+Register a custom widget in `index.tsx`:
 
 ```tsx
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
@@ -58,7 +58,7 @@ export default (pluginManager: PluginManager) => {
 }
 ```
 
-You can then use it in code:
+Use it:
 
 ```typescript
 const widget = session.addWidget('MyWidget', 'instanceOfMyWidget', {

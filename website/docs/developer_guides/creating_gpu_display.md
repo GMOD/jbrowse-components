@@ -428,3 +428,5 @@ full registration pattern).
 - [Creating custom display types](/docs/developer_guides/creating_display) — the
   Canvas2D-only path and display registration
 - [Adding SVG export to a display](/docs/developer_guides/svg_export)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+  all element types, including displays

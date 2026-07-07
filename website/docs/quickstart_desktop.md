@@ -180,7 +180,7 @@ opened sessions" and choose **Add to quickstart list** (the playlist-add icon in
 list view, or the entry's action menu). It then appears in the **Quickstart
 list** on the left panel for one-click launching.
 
-## Next steps
+## See also
 
 - [User guide](/docs/user_guide) — track types, views, and UI features
 - [Config guide](/docs/config_guide) — advanced track and assembly configuration

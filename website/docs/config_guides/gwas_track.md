@@ -233,3 +233,5 @@ slot reference.
 
 - [GWAS / Manhattan track](/docs/user_guides/gwas_track) — using GWAS tracks and
   LD coloring in the app
+- [Variant track — Linkage disequilibrium (LD) display](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display)
+  — the LDTrack/LDDisplay that reuse the same PLINK `.ld` file prepared here

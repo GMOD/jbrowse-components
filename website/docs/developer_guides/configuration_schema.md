@@ -214,3 +214,5 @@ This is why `session.tracksById` returns plain objects: access them with
   `readConfObject`, `ConfigurationReference` signatures
 - [MST patterns](/docs/developer_guides/mst_patterns) — `types.frozen` and model
   composition
+- [Custom track types](/docs/developer_guides/creating_track) — a concrete
+  pluggable element that declares a `configSchema` like the ones above

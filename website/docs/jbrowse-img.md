@@ -10,17 +10,15 @@ Static exports of JBrowse 2 rendering.
 
 ## Prerequisites
 
-You don't need to have JBrowse 2 installed to use this tool. The tool can
-generate images using files on your hard drive or from remote files. So, all you
-need to run this tool is
+You don't need JBrowse 2 installed — the tool renders from local or remote
+files. Requirements:
 
 - NodeJS v23+
 
 ## Setup
 
-You can install the `@jbrowse/img` package from npm, which, if your node is
-configured in a typical configuration, will then have a command `jb2export` in
-your path
+Install the `@jbrowse/img` package from npm; with a typical Node setup this puts
+a `jb2export` command on your PATH.
 
 ```bash
 npm install -g @jbrowse/img

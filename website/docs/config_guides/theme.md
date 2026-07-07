@@ -24,14 +24,14 @@ config file. For example:
 }
 ```
 
-JBrowse's palette has 4 customizable colors. For example, this is the default
-theme:
+JBrowse's palette has 4 customizable colors. Here's the default theme next to a
+theme customized with the palette below:
 
 <Figure src="/img/default_theme.png" caption="Example screenshot showing the default theme"/>
 
 <Figure src="/img/customized_theme.png" caption="Example screenshot showing the customized theme"/>
 
-The customized theme screenshot uses the below configuration:
+The customized theme uses this configuration:
 
 |            | Color code | Color       |
 | ---------- | ---------- | ----------- |
@@ -124,9 +124,7 @@ size your SVG similarly to fit the header.
 
 ## Sizing
 
-You can also change some sizing options by specifying the "typography" (to
-change font size) and "spacing" (to change the amount of space between elements)
-options:
+`typography` and `spacing` adjust font size and the space between elements:
 
 ```json
 {

@@ -196,3 +196,5 @@ on every map write.
   `ConfigurationReference` and `getConf` in models
 - [Creating custom view types](/docs/developer_guides/creating_view) — the view
   state model
+- [Config model basics](/docs/developer_guides/config_model) — a configuration
+  is itself an MST model tree

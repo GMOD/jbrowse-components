@@ -37,7 +37,7 @@ preference — always do this for text and labels so they stay crisp.
 
 ## Implementing renderSvg
 
-### 1. Create `renderSvg.tsx`
+### Create `renderSvg.tsx`
 
 ```tsx
 import { when } from 'mobx'
@@ -90,7 +90,7 @@ export async function renderSvg(
 }
 ```
 
-### 2. Add the action to your display model
+### Add the action to your display model
 
 ```ts
 .actions(self => ({

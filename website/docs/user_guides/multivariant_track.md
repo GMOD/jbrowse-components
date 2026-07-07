@@ -204,3 +204,5 @@ have the full field reference.
   display across a large SV cohort
 - [Variant track configuration](/docs/config_guides/variant_track) — config-file
   options
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) —
+  the featureColor/Jexl mechanism behind the impactColor example above

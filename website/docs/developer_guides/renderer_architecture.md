@@ -36,4 +36,7 @@ the GPU path above rather than this pattern.
 - [RPC and worker system](/docs/developer_guides/rpc_workers)
 - [Adding SVG export to a display](/docs/developer_guides/svg_export) — the
   shared `paintLayer` draw path
-- [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [Custom display types](/docs/developer_guides/creating_display) — displays are
+  the natural owner/invoker of a renderer
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+  all element types, including renderers

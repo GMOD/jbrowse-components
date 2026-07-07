@@ -13,9 +13,6 @@ That makes "where does this import come from?" a real question with two answers:
   must use the host's copy, not bundle its own.
 - **Everything else** — any other npm package. Your plugin bundles it normally.
 
-This page explains the split, why it exists, and how to import from each in both
-build-step and no-build plugins.
-
 ## Why re-exports exist
 
 Some libraries break if two copies are loaded at once. If your plugin bundled
@@ -165,3 +162,12 @@ helpers, but risky for anything that depends on shared identity or singletons
 diverging copies. If you need such a module shared and it isn't re-exported,
 [open a request](https://github.com/GMOD/jbrowse-components/discussions/new) to
 have it added to the list.
+
+## See also
+
+- [Writing a plugin](/docs/developer_guides/simple_plugin) — the build-step
+  templates that externalize this re-export list automatically
+- [Writing a no-build plugin](/docs/developer_guides/no_build_plugin) —
+  `jbrequire` is the no-build equivalent of importing a re-export
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — the
+  `@jbrowse/core` APIs listed above are what you register these against

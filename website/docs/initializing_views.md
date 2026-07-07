@@ -84,8 +84,7 @@ const state = createViewState({
 
 For full track control at launch, provide a `defaultSession` whose view carries
 an `init` object. See
-[Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) and
-[Drawer widgets](/docs/developer_guides/drawer_widgets).
+[Embedding JBrowse](/docs/tutorials/embed_linear_genome_view).
 
 ## Config / session files
 
@@ -132,3 +131,12 @@ Circular, dotplot, synteny, spreadsheet, breakpoint-split, and SV-inspector
 views each accept their own `init`/session-spec shape with the same
 "applied-once-on-launch" lifecycle. Their fields are documented per view type in
 the [URL query parameter API](/docs/urlparams) session-spec section.
+
+## See also
+
+- [Embedded components](/docs/embedded_components) — choosing a package before
+  wiring up `init`
+- [Default session](/docs/config_guides/default_session) — the config-file
+  equivalent of shipping an `init` block
+- [URL query parameter API](/docs/urlparams) — full parameter and session-spec
+  reference for every view type

@@ -4,13 +4,11 @@ description: Installing community plugins
 guide_category: Other features
 ---
 
-The in-app plugin store installs community plugins into the current session.
-Plugins can add new track types, view types, data adapters, custom menu items,
-and more.
+The in-app plugin store lets you browse, search, and install community plugins
+into the current session. Plugins can add new track types, view types, data
+adapters, custom menu items, and more.
 
-You can browse and search the available plugins, which are drawn from the public
-plugin store. To write your own plugin, see the
-[developer guide](/docs/developer_guide).
+To write your own plugin, see the [developer guide](/docs/developer_guide).
 
 Where the install persists depends on the context:
 

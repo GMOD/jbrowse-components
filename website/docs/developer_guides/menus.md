@@ -15,11 +15,9 @@ existing menus and sub-menus. Sub-menus can be arbitrarily deep.
 <Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `Add` menu provides quick access to adding a view via the UI; this is a good place to consider adding your own custom view type."/>
 
 You add menus in the `configure` method of your plugin. Not all JBrowse products
-will have top-level menus, though. JBrowse Web and JBrowse Desktop have them,
-but something like JBrowse Linear View (which is just a single view designed to
-be embedded in another page) does not. This means you need to check whether or
-not menus are supported using `isAbstractMenuManager` in the `configure` method.
-This way the rest of the plugin will still work if there is no menu. Here's an
+have top-level menus — Web and Desktop do, embeddable views like JBrowse Linear
+View don't. Check support with `isAbstractMenuManager` in the `configure`
+method, so the rest of the plugin still works if there is no menu. Here's an
 example that adds an "Open My View" item to the `Add` menu.
 
 ```js
@@ -85,10 +83,10 @@ any menu items defined for it.
 
 <Figure src="/img/linear_align_ctx_menu.png" caption="A screenshot of a context menu available on a linear genome view track. Here, we see the context menu of a feature right-clicked on a LinearAlignmentsDisplay."/>
 
-It's possible to add items to that menu, and you can also have different menu
-items based on if the click was on a feature or not, and based on what feature
-is clicked. This is done by extending the `contextMenuItems` view of the display
-model via the `Core-extendPluggableElement`
+It's possible to add items to that menu, and items can vary by whether the click
+hit a feature, and by which feature. This is done by extending the
+`contextMenuItems` view of the display model via the
+`Core-extendPluggableElement`
 [extension point](/docs/developer_guides/extension_points). Here is an example:
 
 ```js
@@ -333,3 +331,5 @@ The new length of the sub-menu
 - [Creating custom track types](/docs/developer_guides/creating_track) and
   [display types](/docs/developer_guides/creating_display) — where
   `trackMenuItems` / `contextMenuItems` live
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — menus are
+  one of the element types surveyed there

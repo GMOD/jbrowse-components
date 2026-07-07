@@ -177,13 +177,26 @@ See the [PIF format guide](/docs/developer_guides/pif_format) for details.
   across more than two genomes, see the
   [MAF track config guide](/docs/config_guides/maf_track).
 
-For more on working with synteny views, see the
-[synteny track config guide](/docs/config_guides/synteny_track), the
-[dotplot view guide](/docs/user_guides/dotplot_view), and the
-[linear synteny view guide](/docs/user_guides/linear_synteny_view). The
-[gallery](/gallery) has a grape-vs-peach linear synteny example (genes plus
+The [gallery](/gallery) has a grape-vs-peach linear synteny example (genes plus
 synteny blocks, rendered both as ribbons and as a feature track) alongside a
 whole-genome human-vs-mouse comparison.
+
+## See also
+
+- [Synteny track config guide](/docs/config_guides/synteny_track) — adapter and
+  display options for dotplot/synteny tracks
+- [Dotplot view](/docs/user_guides/dotplot_view) — full reference for the
+  dotplot view covered above
+- [Linear synteny view](/docs/user_guides/linear_synteny_view) — full reference
+  for the linear synteny view covered above
+- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) — stacking closely
+  related strains from a single all-vs-all PAF
+- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) — the
+  cross-species, gene-level .blocks workflow for N-way synteny
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) — the same
+  dotplot/synteny views applied to a tumor de novo assembly
+- [PIF format](/docs/developer_guides/pif_format) — the indexed alignment format
+  for large genomes, introduced above
 
 ## References
 

@@ -6,8 +6,6 @@ description:
 guide_category: Getting started
 ---
 
-This guide covers creating a no-build plugin for JBrowse 2.
-
 ## Prerequisites
 
 - you can run an instance of JBrowse 2 on the web, see
@@ -72,8 +70,7 @@ Put `myplugin.js` alongside your config file and reference it in `config.json`:
 ### Example use case: Adding a global menu item
 
 Another example of a no-build plugin is to add menu items or minor extension
-points. Here, we're going to add a menu item using the `configure` method in the
-plugin class.
+points. This example adds a menu item via the plugin's `configure` method:
 
 `myplugin.js`
 
@@ -252,3 +249,18 @@ const state = createViewState({ config, plugins: [MyPlugin] })
 See the
 [With external plugin](https://jbrowse.org/storybook/app/with-external-plugin/)
 example in the `@jbrowse/react-app2` examples site for a live example.
+
+## See also
+
+- [Writing a plugin](/docs/developer_guides/simple_plugin) — the build-step
+  alternative, needed for JSX, TypeScript, or bundled dependencies
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — the full
+  list of element types a no-build plugin can also register
+- [Top-level menu items](/docs/developer_guides/menus) — a fuller worked example
+  of the menu registration used above
+- [Custom widgets](/docs/developer_guides/creating_widget) — the `WidgetType`
+  API used in the citation-widget example
+- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports) —
+  what `jbrequire` can and can't load in a no-build plugin
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) —
+  a common motivation for writing a no-build plugin's jexl callback

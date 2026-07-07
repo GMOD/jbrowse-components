@@ -22,3 +22,10 @@ is the one piece of deploy config that must live in `index.html` rather than in
 `config.json`. It is a single line, so it is easy to inject from a build script
 instead of hand-editing — see
 [Deploying JBrowse Web](/docs/config_guides/deploying).
+
+## See also
+
+- [Deploying JBrowse Web](/docs/config_guides/deploying) — the pipeline that
+  injects this snippet into index.html at build time
+- [config.json format](/docs/config_guides/intro) — clarifies why this one
+  setting must live outside config.json

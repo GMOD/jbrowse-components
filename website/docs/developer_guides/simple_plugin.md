@@ -44,3 +44,14 @@ The element-specific guides walk through each type:
 For plugins that don't need a build step (e.g. jexl callbacks or small behavior
 tweaks), see
 [writing a no-build plugin](/docs/developer_guides/no_build_plugin).
+
+## See also
+
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+  every element type a plugin can register
+- [Writing a no-build plugin](/docs/developer_guides/no_build_plugin) — the
+  alternative path when a build step isn't needed
+- [Testing a plugin](/docs/developer_guides/testing_plugins) — Jest/Vitest setup
+  for the templates above
+- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports) —
+  what the bundler externalizes versus what your plugin bundles itself

@@ -254,11 +254,10 @@ options).
 
 ### FASTA metadata
 
-Meta-information on the assembly can be specified by adding the following
-section to either the IndexedFastaAdapter or BgzipFastaAdapter configuration.
-One option for the contents of this metadata is the FFRGS (Fair Formatted
-Reference Genome Standard) header specification for FASTA files, found
-[here](https://github.com/FFRGS/FFRGS-Specification). The raw plaintext is
+Attach free-form metadata via `metadataLocation` on an IndexedFastaAdapter or
+BgzipFastaAdapter. One option for the contents of this metadata is the FFRGS
+(Fair Formatted Reference Genome Standard) header specification for FASTA files,
+found [here](https://github.com/FFRGS/FFRGS-Specification). The raw plaintext is
 displayed as-is, so the format is not strict from JBrowse's perspective.
 
 ```json
@@ -269,9 +268,8 @@ displayed as-is, so the format is not strict from JBrowse's perspective.
 
 ## TwoBitAdapter
 
-The UCSC twoBit adapter is also supported. Note however that the 2bit format has
-a longer startup time than other adapters because there is a larger upfront
-parsing time.
+The UCSC twoBit adapter is also supported. 2bit has a longer startup time than
+other adapters due to upfront parsing.
 
 ```json
 {
@@ -358,5 +356,7 @@ chromosome:
 
 - [Sequence track](/docs/user_guides/sequence_track) — the reference sequence
   and six-frame translation in the app
+- [Basic usage](/docs/user_guides/basic_usage) — the overview scale bar that
+  draws the cytoband ideogram configured here
 - [BaseAssembly config docs](/docs/config/baseassembly/) — the full slot
   reference (auto-generated from the schema)

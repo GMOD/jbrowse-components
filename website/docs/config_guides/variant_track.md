@@ -146,8 +146,6 @@ configure the display to always show reference alleles:
 
 #### Example: Configure multiple default settings
 
-You can combine multiple settings to customize the default behavior:
-
 ```json
 {
   "type": "VariantTrack",
@@ -177,11 +175,11 @@ If you have sample metadata (e.g., population, cohort, phenotype) stored in a
 TSV file, you can configure the display to automatically color samples by a
 specific attribute when the track loads.
 
-#### Step 1: Provide sample metadata via samplesTsvLocation
+#### Provide sample metadata via samplesTsvLocation
 
-First, configure your adapter with a `samplesTsvLocation` that points to a TSV
-file with sample metadata. The first column must be `name` (the sample names
-matching the VCF), and subsequent columns are arbitrary metadata attributes:
+Configure your adapter with a `samplesTsvLocation` that points to a TSV file
+with sample metadata. The first column must be `name` (the sample names matching
+the VCF), and subsequent columns are arbitrary metadata attributes:
 
 ```tsv
 name	population	region	phenotype
@@ -191,7 +189,7 @@ SAMPLE003	EUR	Western	control
 SAMPLE004	EAS	Pacific	case
 ```
 
-#### Step 2: Configure colorBy on the display
+#### Configure colorBy on the display
 
 Then set the `colorBy` option on the display to the attribute you want to color
 by:
@@ -224,9 +222,6 @@ the track loads. Each unique value (EUR, AFR, EAS, etc.) gets a distinct color
 from the palette.
 
 #### Complete example with all options
-
-Here's a complete example that uses sample metadata coloring along with other
-display options:
 
 ```json
 {

@@ -60,3 +60,5 @@ In-tree references:
 - [Adding SVG export to a display](/docs/developer_guides/svg_export)
 - [Renderer architecture](/docs/developer_guides/renderer_architecture)
 - [Creating custom widgets](/docs/developer_guides/creating_widget)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+  all element types, including displays

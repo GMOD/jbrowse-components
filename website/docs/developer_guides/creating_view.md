@@ -71,3 +71,5 @@ Read these alongside the simple plugin tutorial when designing your own.
   `LaunchView-*` points are a reference for launching your own view type
 - [MST patterns](/docs/developer_guides/mst_patterns)
 - [Pluggable elements](/docs/developer_guides/pluggable_elements)
+- [Creating custom track types](/docs/developer_guides/creating_track) — for
+  views like `DotplotView`/`LinearSyntenyView` that host tracks

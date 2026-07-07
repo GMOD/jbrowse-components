@@ -62,7 +62,6 @@ genome view. Examples include:
 - `DotplotView` - a comparative 2-D genome view
 - `SvInspectorView` - super-view containing `CircularView` and `SpreadsheetView`
   sub-views
-- And more
 
 ## Adapters
 
@@ -100,13 +99,12 @@ Example tracks:
 
 A _display_ is a method for displaying a particular track in a particular view.
 
-For example, we have a notion of a synteny track type, and the synteny track
-type has two display models:
+For example, the synteny track type has two display models:
 
 - `DotplotDisplay`, which is used in the dotplot view
 - `LinearSyntenyDisplay`, which is used in the linear synteny view
 
-This enables a single track entry to be used in multiple view types e.g. if I
+This enables a single track entry to be used in multiple view types, e.g. if you
 run `jbrowse add-track myfile.paf`, this automatically creates a `SyntenyTrack`
 entry in the tracklist, and when this track is opened in the dotplot view, the
 `DotplotDisplay` is used for rendering.
@@ -184,20 +182,34 @@ These methods can run in the web worker when available.
 Add track workflows allow users to specify a custom react component for loading
 tracks into a jbrowse session.
 
-Checkout the [docs here](/docs/developer_guides/creating_addtrack_workflow).
+Check out the
+[add-track workflow guide](/docs/developer_guides/creating_addtrack_workflow)
+for details.
 
 ## Extension points
 
 Extension points are a pluggable element type which allows users to add a
 callback that is called at an appropriate time.
 
-Checkout the [full extension point API](/docs/developer_guides/extension_points)
-or an [example for adding context menu items](/docs/developer_guides/menus) for
-more detailed information.
+See the [full extension point API](/docs/developer_guides/extension_points) or
+the [menus guide](/docs/developer_guides/menus) for an example of adding context
+menu items.
 
-## Next steps
+## See also
 
-- [Configuration model](/docs/developer_guides/config_model)
-- [Plugin tutorial](/docs/developer_guides/simple_plugin/)
-- [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter)
-- [Creating custom connections](/docs/developer_guides/creating_connection)
+- [Custom track types](/docs/developer_guides/creating_track) — define new
+  high-level track concepts backed by display types
+- [Custom display types](/docs/developer_guides/creating_display) — control how
+  a track renders in a given view type
+- [Custom view types](/docs/developer_guides/creating_view) — add entirely new
+  view panels such as `DotplotView` or `CircularView`
+- [Custom widgets](/docs/developer_guides/creating_widget) — add new
+  drawer/panel UI components
+- [Config model basics](/docs/developer_guides/config_model) — config slot
+  types, defaults, and how configuration schemas work
+- [Writing a plugin](/docs/developer_guides/simple_plugin) — scaffold a plugin
+  that registers pluggable elements from an official template
+- [Text search adapters](/docs/developer_guides/creating_text_search_adapter) —
+  implement a custom backend for the search box
+- [Custom connections](/docs/developer_guides/creating_connection) — add a new
+  way to import remote/external data sources

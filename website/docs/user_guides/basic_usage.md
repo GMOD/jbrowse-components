@@ -170,7 +170,7 @@ Sharing sessions is not available for JBrowse Desktop.
 
 <Figure caption="The session share dialog, which gives you a short URL to share your session with other users." src="/img/share_button.png" />
 
-The session URL will contain the following:
+The session URL contains:
 
 - the open views and their settings (e.g. track label positioning)
 - the tracks in each view, including any you added yourself
@@ -292,3 +292,5 @@ See the [configuration guide](/docs/config_guides/track_selector) for more.
   columns and faceted filtering
 - [Avoiding stale config](/docs/config_guides/avoiding_stale_config) — how admin
   edits and session-track overrides interact
+- [Supported file types](/docs/config_guides/file_types) — the config-level
+  companion to the format list above

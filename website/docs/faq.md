@@ -15,7 +15,7 @@ We recommend that you have the following:
 Then you can follow the steps from our
 [README](https://github.com/gmod/jbrowse-components).
 
-It basically boils down to:
+Steps:
 
 ```bash
 git clone https://github.com/GMOD/jbrowse-components
@@ -684,9 +684,8 @@ export MINIO_API_CORS_ALLOW_ORIGIN="https://your-jbrowse-host.example.com"
 
 ### Why does my saved session fail to load
 
-Changing track IDs or deleting tracks can cause saved sessions to fail to load,
-since any inconsistency causes the entire session to fail. Make these changes
-carefully.
+Changing or deleting a track's ID breaks any saved session that references it —
+the whole session fails, not just that track. Make these changes carefully.
 
 ### What should I do if the Share system isn't working
 

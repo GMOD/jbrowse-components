@@ -66,13 +66,14 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <!-- COLOR_TABLE alignments-pair-orientation START -->
 
-| Color                                                                                                                                                                       | Name                                       | Value     | Description                                                                        |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | --------- | ---------------------------------------------------------------------------------- |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#d3d3d3;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#d3d3d3"></span> | LR (→ ←, normal proper pair)               | `#d3d3d3` | Concordant                                                                         |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#0099bb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#0099bb"></span> | RL (← →, mates point away from each other) | `#0099bb` | Abnormal orientation                                                               |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#4d9a4d;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#4d9a4d"></span> | LL (→ →, both mates forward strand)        | `#4d9a4d` | Abnormal orientation                                                               |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#5555bb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#5555bb"></span> | RR (← ←, both mates reverse strand)        | `#5555bb` | Abnormal orientation                                                               |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#6e4b3a;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#6e4b3a"></span> | Inter-chromosomal                          | `#6e4b3a` | Mate maps to a different chromosome; colored distinctly rather than by orientation |
+| Color                                                                                                                                                                       | Name                                       | Value     | Description                                                                                                         |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#d3d3d3;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#d3d3d3"></span> | LR (→ ←, normal proper pair)               | `#d3d3d3` | Concordant                                                                                                          |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#0099bb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#0099bb"></span> | RL (← →, mates point away from each other) | `#0099bb` | Abnormal orientation                                                                                                |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#4d9a4d;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#4d9a4d"></span> | LL (→ →, both mates forward strand)        | `#4d9a4d` | Abnormal orientation                                                                                                |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#5555bb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#5555bb"></span> | RR (← ←, both mates reverse strand)        | `#5555bb` | Abnormal orientation                                                                                                |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#6e4b3a;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#6e4b3a"></span> | Inter-chromosomal                          | `#6e4b3a` | Mate maps to a different chromosome; colored distinctly rather than by orientation                                  |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#9b30b0;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#9b30b0"></span> | Split-read inversion                       | `#9b30b0` | A paired read's supplementary segment maps opposite-strand to its primary — the split crosses an inversion junction |
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 
@@ -293,6 +294,8 @@ The header bar accepts location searches directly in either panel.
 - **From alignment feature details** — click any read with a supplementary
   alignment; the feature details panel includes an option to open the split view
   centered on that read and its supplementary partner.
+- **From the circular genome view** — click a chord's feature details and use
+  its "Launch breakpoint split view" action.
 
 <Figure caption="Feature details panel for a TRA variant. The BREAKENDS section at the bottom contains 'Launch split views with breakend source and target' — clicking that link (e.g. '14:84871468 // 17:74803924 (split view)') opens both breakpoint loci simultaneously in the breakpoint split view, with any open alignment tracks pre-loaded." src="/img/link_to_split_view.png" />
 
@@ -403,6 +406,8 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 - [Alignments track](/docs/user_guides/alignments_track) — sorting, coloring,
   grouping, and filtering reads in general use
 - [SV inspector](/docs/user_guides/sv_inspector_view) — whole-genome SV triage
+- [Circular genome view](/docs/user_guides/circular_view) — plot a single SV
+  track as chords and launch the breakpoint split view from one
 - [Variant track](/docs/user_guides/variant_track) — VCF display and the
   per-sample genotype table
 - [Alignments track configuration](/docs/config_guides/alignments_track) —

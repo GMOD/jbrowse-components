@@ -257,8 +257,7 @@ via `defaultSession.view.init` (it does not parse URLs itself).
 
 Under the hood, each view's `type` dispatches to a `LaunchView-<type>`
 [extension point](/docs/developer_guides/extension_points) that builds the view
-from the remaining fields — so the fields a view accepts are defined by its
-`LaunchView-<type>` handler. This is also how plugins add launchable view types
+from the remaining fields. This is also how plugins add launchable view types
 (see [Plugin-provided view types](#plugin-provided-view-types)).
 
 ```json live config=test_data/volvox/config.json
@@ -404,12 +403,6 @@ Each track object supports the following properties:
   - `minScore`, `maxScore`: Score range for quantitative tracks
   - Other display-specific settings
 - `trackSnapshot` (optional): Initial track state such as `pinned: true`
-
-This is useful for:
-
-- Opening a track with a specific display type
-- Setting initial display height or color scheme
-- Configuring autoscale settings for quantitative tracks
 
 #### Live example: alignments display settings
 
@@ -983,3 +976,14 @@ https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
 
 See
 [this FAQ entry for more info about how shared sessions work](/docs/faq/#how-does-session-sharing-with-shortened-urls-work-in-jbrowse-web)
+
+## See also
+
+- [Initializing and launching views](/docs/initializing_views) — the shared
+  `init` model behind every launch surface
+- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) —
+  `createViewState`/`location` as an alternative to URL params
+- [Default session](/docs/config_guides/default_session) — baking a session spec
+  into config.json instead of a URL
+- [Extension points](/docs/developer_guides/extension_points) — how plugins
+  register `LaunchView-<type>` handlers

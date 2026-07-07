@@ -54,6 +54,18 @@ Not ready to install anything? Browse [live demos](/demos/), the
   segmentations in one multi-row feature track
 - [Applying display settings](/docs/tutorials/display_settings) — set track
   display settings via config.json, URL, or embedded session
+- [SV visualization](/docs/user_guides/sv_visualization) — interpreting SV
+  signals across display types
+- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) — stacking closely
+  related strains from a single all-vs-all PAF
+- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) — N-way
+  synteny from a gene-level .blocks workflow
+- [Introgression tracts](/docs/tutorials/introgression) — painting per-haplotype
+  ancestry segments across a population
+- [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk) —
+  aggregating single-cell signal into per-group wiggle tracks
+- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) — embed the
+  linear genome view component in a custom web page
 
 ## Developers
 
@@ -71,10 +83,9 @@ Not ready to install anything? Browse [live demos](/demos/), the
 - [@jbrowse/cli](/docs/cli) — CLI tools for loading tracks, assemblies, text
   indexing, and more
 - [@jbrowse/img](/docs/jbrowse-img) — command-line image generator
-- [JBrowseR](https://gmod.github.io/JBrowseR/) — R htmlwidget usable in Shiny
-  apps
-- [JBrowse Jupyter](https://gmod.github.io/jbrowse-jupyter/docs/html/index.html)
-  — Python dash component usable in Jupyter
+- [JBrowseR](/docs/jbrowser) — R htmlwidget usable in Shiny apps
+- [JBrowse Jupyter](/docs/jbrowse_jupyter) — Python dash component usable in
+  Jupyter
 
 ## Contact information
 

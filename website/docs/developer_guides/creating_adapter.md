@@ -10,10 +10,10 @@ guide_category: Creating pluggable elements
 An adapter is a class that fetches and parses your data and returns it in a
 format JBrowse understands.
 
-If you have a data source containing genes and want to display them using
-JBrowse's existing gene displays, write a custom adapter. For custom rendering,
-you'll also need a [custom display](/docs/developer_guides/creating_display)
-and/or a [renderer](/docs/developer_guides/renderer_architecture).
+To display data from a new source using JBrowse's existing gene displays, write
+a custom adapter. For custom rendering, you'll also need a
+[custom display](/docs/developer_guides/creating_display) and/or a
+[renderer](/docs/developer_guides/renderer_architecture).
 
 ## Adapter types
 
@@ -180,3 +180,5 @@ Returns an rxjs `Observable`. Emit features with
   inside web workers
 - [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
   — where `@jbrowse/core/util/rxjs` and other shared imports come from
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+  all element types a plugin can register, including adapters

@@ -133,3 +133,5 @@ https://jbrowse.org/storybook/lgv/with-drawer-widget/
   register the widget type shown in a drawer
 - [Extension points](/docs/developer_guides/extension_points) —
   `Core-replaceWidget` and `Core-extraFeaturePanel` customize widget contents
+- [Embedded components](/docs/embedded_components) — drawer widgets are specific
+  to `@jbrowse/react-linear-genome-view2`

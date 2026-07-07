@@ -153,3 +153,18 @@ You can open both tracks live in the
 [JBrowse demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json)
 under the **ENCODE → Chromatin state** and **Roadmap Epigenomics → Chromatin
 state** categories.
+
+## See also
+
+- [Introgression tracts](/docs/tutorials/introgression) — the same multi-row
+  feature display technique, painting per-haplotype segments instead of
+  per-cell-type states
+- [Phased trio analysis](/docs/tutorials/analyze_trio) — another multi-row
+  feature display use case, painting hap-ibd inheritance blocks
+- [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk) — the
+  continuous-signal analog of this one-row-per-group pattern, using MultiWiggle
+  instead of discrete features
+- [jexl](/docs/config_guides/jexl) — the color callback syntax used to map
+  itemRgb to a CSS color
+- [Configuring tracks](/docs/config_guides/tracks) — general
+  FeatureTrack/BigBedAdapter config referenced above

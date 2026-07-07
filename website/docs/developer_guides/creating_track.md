@@ -53,3 +53,7 @@ references:
   combines an adapter with its displays
 - [Configuration schema](/docs/developer_guides/configuration_schema) — define a
   custom config schema for the track category
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) — the full set
+  of base track config slots referenced above
+- [Writing a plugin](/docs/developer_guides/simple_plugin) — the end-to-end
+  scaffold this guide's examples build on

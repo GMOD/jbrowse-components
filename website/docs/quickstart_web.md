@@ -220,7 +220,7 @@ can be typed directly into the location search box. See the
 [text-index docs](/docs/cli#jbrowse-text-index) and
 [FAQ](/docs/faq#text-searching) for more.
 
-## Next steps
+## See also
 
 - [User guide](/docs/user_guide) — track types, views, and UI features
 - [Supported file types](/docs/config_guides/file_types) — every format and its

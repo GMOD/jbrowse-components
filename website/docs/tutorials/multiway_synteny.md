@@ -197,4 +197,9 @@ peach – grape – cacao — so _every_ band is a direct comparison.
   complete-graph workflow for strains and accessions of one species.
 - [Synteny visualization](/docs/tutorials/synteny_visualization) — pairwise
   dotplot and linear synteny basics.
-- [MCScanBlocksAdapter config](/docs/config/mcscanblocksadapter)
+- [Linear synteny view](/docs/user_guides/linear_synteny_view) — full reference
+  for the multi-row `views`/`tracks` structure used above.
+- [Synteny track config guide](/docs/config_guides/synteny_track) — adapter and
+  display options for synteny tracks in general.
+- [MCScanBlocksAdapter config](/docs/config/mcscanblocksadapter) — full schema
+  for the adapter used above.

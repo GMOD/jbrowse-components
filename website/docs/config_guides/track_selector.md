@@ -131,3 +131,5 @@ top to further narrow results by name, category, or description.
 
 - [Basic usage](/docs/user_guides/basic_usage) — using the track selector,
   favorites, and the faceted selector in the app
+- [Configuring tracks](/docs/config_guides/tracks) — the track's `category`
+  field that feeds this hierarchy

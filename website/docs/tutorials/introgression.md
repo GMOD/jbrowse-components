@@ -161,6 +161,19 @@ row per sample.
 Any caller that outputs per-individual segments loads the same way — swap the
 assembly and the input file, the track config is unchanged.
 
+## See also
+
+- [ChromHMM chromatin states](/docs/tutorials/chromhmm) — the same multi-row
+  feature display pattern, for per-cell-type chromatin states instead of
+  per-haplotype segments
+- [Phased trio analysis](/docs/tutorials/analyze_trio) — another multi-row
+  painting technique, for hap-ibd inheritance blocks
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) — the
+  windowed-score alternative (multi-wiggle) for continuous per-sample signals
+  like Sprime/D-statistics
+- [jexl](/docs/config_guides/jexl) — the color callback syntax coloring features
+  by inferred source
+
 ## Data and attribution
 
 The archaic-segment calls are the hmmix HGDP/1000 Genomes callset of Skov et

@@ -260,3 +260,5 @@ default value resolution logic.
 - [Configuration API reference](/docs/api/core-configuration) — `getConf` /
   `readConfObject` signatures
 - [jexl config callbacks](/docs/config_guides/jexl)
+- [MST patterns](/docs/developer_guides/mst_patterns) — a configuration is
+  itself an MST model tree

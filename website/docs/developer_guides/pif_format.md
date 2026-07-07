@@ -194,3 +194,5 @@ whole-genome comparisons PIF is strongly preferred.
   [PAFAdapter](/docs/config/pafadapter)
 - [Creating custom view types](/docs/developer_guides/creating_view) — the
   dotplot and linear synteny views that render PIF data
+- [Synteny track](/docs/config_guides/synteny_track) — the user-facing config
+  guide for tracks that consume PIF/PAF data

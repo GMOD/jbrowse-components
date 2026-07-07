@@ -178,3 +178,14 @@ never drifts). For example:
   [LinearWiggleDisplay](/docs/config/linearwiggledisplay)
 
 Browse the full list under the [config reference](/docs/config_guide).
+
+## See also
+
+- [Supported file types](/docs/config_guides/file_types) — per-format adapter
+  reference
+- [Hierarchical track selector](/docs/config_guides/track_selector) — where the
+  `category` field described above is consumed
+- [Deploying JBrowse Web](/docs/config_guides/deploying#generating-configjson-from-a-script)
+  — generating track configs from a script
+- [Display settings](/docs/tutorials/display_settings) — opening a track in a
+  particular display state via URL instead of editing the config default

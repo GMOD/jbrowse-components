@@ -167,4 +167,9 @@ most convenient source when you have it.
   cross-species, gene-based `.blocks` workflow.
 - [Synteny visualization](/docs/tutorials/synteny_visualization) — pairwise
   dotplot and linear synteny basics.
-- [AllVsAllPAFAdapter config](/docs/config/allvsallpafadapter)
+- [AllVsAllPAFAdapter config](/docs/config/allvsallpafadapter) — full schema for
+  the un-indexed adapter used above.
+- [AllVsAllIndexedPAFAdapter config](/docs/config/allvsallindexedpafadapter) —
+  the tabix-backed adapter for whole-genome pangenomes.
+- [PIF format](/docs/developer_guides/pif_format) — the indexed alignment format
+  `make-pif` produces.

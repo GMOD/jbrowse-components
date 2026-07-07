@@ -218,6 +218,7 @@ dendrogram of just the kept species, so the tree always matches the visible rows
 
 ## See also
 
+- [MAF track](/docs/user_guides/maf_track) — using MAF tracks in the app
 - [Synteny track config](/docs/config_guides/synteny_track) — pairwise alignment
   of two genomes (vs. MAF's multiple alignment against one reference)
 - [Supported file types](/docs/config_guides/file_types) — preparing tabix and
