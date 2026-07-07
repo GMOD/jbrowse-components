@@ -49,8 +49,8 @@ Two things make this cheap:
   default doesn't rewrite every track's config — un-pinned tracks just resolve
   differently on their next read.
 
-**Objects compare structurally.** `pinned` uses `sameValue(own, defaultValue)`,
-which is identity for primitives and a `JSON.stringify` compare for
+**Objects compare structurally.** `pinned` uses `deepEqual(own, defaultValue)`,
+which is identity for primitives and an order-independent recursive compare for
 objects/arrays — a naive `!==` would read every object slot as *permanently
 pinned* (a fresh MST-reconstructed value is never `===` its stored default), so
 the session default would never apply. `colorBy` (a `frozen` `{ type: ... }`
@@ -106,7 +106,11 @@ function resolveSlot(self, slot): SlotResolution {
   const base = def.promotedBase ?? def.defaultValue
   const own = getConf(self, slot)
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  const pinned = !deepEqual(own, def.defaultValue)
+  // an own value differing from the default but failing the slot's `validate`
+  // hook reads as un-pinned, so it degrades to inherited/base like a rejected
+  // promoted default rather than reaching a consumer that trusts every value
+  const pinned =
+    !deepEqual(own, def.defaultValue) && (!def.validate || def.validate(own))
   const inherited = promotedUsable(def, promoted) ? promoted : base
   const value = pinned ? own : inherited
   return { base, pinned, promoted, inherited, value }
@@ -116,7 +120,13 @@ function resolveSlot(self, slot): SlotResolution {
 `promotedUsable` rejects a stale/garbage promoted value (wrong JS type, a
 `stringEnum` value that isn't a current choice, or a sentinel slot's own
 `'inherit'` member) so the getter, the "make default" checkbox, and the badge all
-fall back in lockstep — no consumer guards on its own.
+fall back in lockstep — no consumer guards on its own. A slot's optional
+`validate` hook adds a semantic check on top of the JS-shape check, and applies
+to **both** entry points: a promoted default (inside `promotedUsable`) and a
+track's own pinned value (the `pinned` clause above). `colorBy` uses it so a
+`.type` naming a since-removed color scheme — pinned or promoted — degrades to
+the base instead of reaching the total `COLOR_SCHEMES` lookups that throw on an
+unregistered type.
 
 `getConfResolved` **always returns a real value**, never a slot's inherit
 sentinel, so the display getter needs no post-guard:
