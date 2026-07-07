@@ -154,9 +154,11 @@ the **per-value** pair behind `makeSessionDefaultControl` (see "UI surface"
 below) — always-visible pins on a specific on-value, independent of what the
 track currently shows.
 
-`areSlotsAtSessionDefault` / `toggleSlotsSessionDefault` take a **slot group** so
+`areSlotsAtSessionDefault` / `setSlotsSessionDefault` take a **slot group** so
 several slots move behind one menu item (alignments' `featureHeight` +
-`featureSpacing` = one "compactness" default).
+`featureSpacing` = one "compactness" default). `setSlotsSessionDefault` takes an
+explicit `promote` boolean rather than toggling — the menu `onClick` computes the
+direction as `!areSlotsAtSessionDefault(self, slots)`.
 
 Note `resolveSlot` reads the session even for a pinned track — required so the
 "pinned value equals the promoted default → checkbox checked" case works. This is
@@ -225,13 +227,19 @@ degrades to "no promoted defaults", never throws.
 1. In the display's config schema, add `promotable: true` to the slot. For a
    value users will want to pin *at its default* (rare — think hard), instead make
    the default a dedicated inherit sentinel and add `promotedBase: <realDefault>`.
+   If the slot's *shape* alone can't tell a valid value from a stale one (e.g. a
+   `frozen` `colorBy` whose `.type` must name a registered scheme, not just be
+   some string), add a `validate: (value) => boolean` hook — it gates both a
+   promoted default and a track's own saved value, so a value that's since gone
+   invalid degrades to the base instead of reaching a consumer that trusts it.
 2. Read it on the display via `getConfResolved(self, slot)` (never raw `getConf`
    for a promotable slot — raw won't apply the session default, and for a
    sentinel slot could hand a consumer `'inherit'`).
 3. If the display isn't already an adopter, `.compose(PromotableDefaultsMixin())`
    so the badge hooks exist.
-4. Track menu: "make default" via `toggleSlotsSessionDefault(self, [slot])` and
-   `areSlotsAtSessionDefault(self, [slot])`; group slots that move together.
+4. Track menu: "make default" via `setSlotsSessionDefault(self, [slot], promote)`
+   with `promote = !areSlotsAtSessionDefault(self, [slot])` computed in the
+   `onClick`; group slots that move together.
 5. **Worker boundary:** promotable slots resolve on the **main thread**. If the
    worker needs the value, pass the *resolved* value through `rpcProps()` (read
    the display's resolved getter), and exclude the raw slot from any
