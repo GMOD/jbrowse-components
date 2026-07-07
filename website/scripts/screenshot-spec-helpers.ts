@@ -437,10 +437,16 @@ export function hg38ChimpSynteny(
   // (e.g. PICALM) whose full transcript stack would otherwise dwarf the ribbon
   geneDisplayMode?: 'superCompact',
 ) {
-  const genes = (id: string) =>
-    geneDisplayMode
-      ? { trackId: id, displaySnapshot: { displayMode: geneDisplayMode } }
-      : id
+  // collapse each gene to its single longest coding transcript: MANE isn't
+  // available for panTro6, so geneGlyphMode 'longestCoding' is the way to cut
+  // the dense NCBI isoform stacks on both genomes (reviewer)
+  const genes = (id: string) => ({
+    trackId: id,
+    displaySnapshot: {
+      geneGlyphMode: 'longestCoding',
+      ...(geneDisplayMode ? { displayMode: geneDisplayMode } : {}),
+    },
+  })
   return sessionSpec(HG38_PANTRO6_CONFIG, {
     views: [
       {
