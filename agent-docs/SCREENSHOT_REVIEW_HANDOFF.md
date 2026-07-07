@@ -60,7 +60,75 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
   `getBoundingClientRect()`. The trio figures broke because the VCF panel top
   drifted 276→268 when the painting track above shrank.
 
-## Remaining `bad` items (as of commit 1e0969b8fd)
+## IMPORTANT: the review log is largely STALE — triage by PNG hash first
+
+`screenshot-review.json` lists ~71 `bad` items, but most are already fixed or
+already deleted. Each review entry stores a `hash` (sha1 of the PNG it was made
+against). An item is only *genuinely* still-bad when its committed PNG is
+byte-identical to that hash — otherwise the figure has changed since the review
+and the note is likely already addressed (the human just hasn't re-reviewed).
+Triage before touching anything:
+
+```bash
+jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value.hash)"' \
+  scripts/screenshot-review.json | while IFS=$'\t' read -r name hash; do
+  f="static/img/${name}.png"
+  if [ ! -f "$f" ]; then echo "NOPNG (deleted)  $name"
+  elif [ "$(sha1sum "$f" | cut -d' ' -f1)" = "$hash" ]; then echo "UNCHANGED (real) $name"
+  else echo "changed (addressed?) $name"; fi
+done
+```
+
+- **NOPNG** = spec+PNG already deleted (the many gallery deletes: chromhmm_*,
+  gwas_sle_stat4, maize_te, human_trio_phased, pten_cds, rnaseq_paired,
+  directrna_brca1). Resolved.
+- **changed** = PNG differs from the reviewed one → fix likely already in the
+  spec (verify by reading it; e.g. every BAF display already uses
+  `defaultRendering:'scatter'`, not whiskers — the whisker notes are all stale).
+- **UNCHANGED** = the real backlog. Even then, read the *whole* note: often one
+  sub-part is stale (BAF whiskers) while another is open (trackLabels/height).
+
+### Done this session (2026-07-06, webgl-poc, scoped commits)
+- `lgv_usage_guide` drop drag-to-reorder callout; `linear_align_ctx_menu` arrow
+  off the text box; `multiwig/addtrack` box the dropdown option (commit 8756873890)
+- sv_cgiab `driver_smad4_loh` (trackLabels:offset + taller), `driver_chr17_loh`
+  + `cnv_log2ratio_genome` (trackLabels:offset + `displayCrossHatches:true` on
+  the log2-ratio band); BAF-whisker notes confirmed stale (971a24d4d2)
+- `introgression` + `introgression_locus` explanatory blurbs (0166e9a326)
+- `alignments/modifications2` reworded callouts (b1ad2a85da)
+- `maf_470way` + `maf_470way_codon` MANE Select (NCBI RefSeq) session track via
+  new `HG38_MANE_TRACK`; switched to `sessionSpec`; regen galleryLinks (91c43c6cdf).
+  The hg38 470way assembly has refNameAliases so a chr-named BigBed aligns to
+  the numeric '12' MAF refnames — reusable pattern for the other hg38 maf specs.
+
+### Deferred with reason (not quick spec wins)
+- `read_vs_ref_insertion` — note ("drop protein-translation/showReverse/legend
+  from launched read-vs-ref synteny **by default**") is an app-default change in
+  the synteny-launcher code, and the figure loads a *saved remote session* that
+  already bakes those on. Needs a code change + a re-saved session, not a spec edit.
+- `sv_cgiab/driver_cdkn2a_deletion` — "sort split reads to bottom": no such sort
+  mode exists (sort options are position/strand/basePair/tag only). Feature request.
+
+### Real backlog still UNCHANGED (verify with the hash script above)
+- **ce11 maf gene-track requests** (`maf_codon_tooltip` [+width], `maf_color_by_chromosome`)
+  need a hosted ce11 NCBI gene track — none in the ce_maf configs; only the
+  hg38 470way pair had a usable track (MANE). `maf_inversions`/`maf_track`/
+  `maf_conservation` are delete/keep judgment calls (maf_inversions is the ONLY
+  figure documenting `showInversions`, used by both maf_track.md docs — don't
+  blind-delete).
+- **need new hosted data**: `variants/consequence_impact_sv` (ClinVar SV),
+  `methylation/colo829_cram_and_bedmethyl` + `gallery/nanopore_methylation`
+  (CpG-island BED), `methylation/chromatin_accessibility_6ma`, sv_cgiab
+  `cnv_show_all_regions`/`cnv_with_bed_track` (real normalized depth vs indexcov).
+- **app UI changes**: `plugin_store` (remove screenshots from the widget sidebar),
+  `share_button` (dialog restyle concern).
+- **synteny agent area**: `synteny_te_vapb_sva`/`_picalm_alu` (MANE on human+chimp
+  — note MANE is human-only; chimp needs a RefSeq-Select equivalent),
+  `synteny_human_chimp_cigar_modes`/`_colored`/`_transparent`.
+- **still tractable next**: `alignments_sort_by_base` (2nd-stage sort broken),
+  `multiway_synteny/ecoli_import_form` (simplify UI+blurbs), jbrowse-img specs.
+
+## Remaining `bad` items (original notes, as of commit 1e0969b8fd)
 
 ### Tractable, no new data
 - `alignments_sort_by_base` — 2nd stage no longer shows a sorted pileup; the
