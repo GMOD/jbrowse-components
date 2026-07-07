@@ -61,7 +61,7 @@ function createDisplay(
 
 // A promotable `maybeNumber` slot has no real `defaultValue` to type-check a
 // promoted value against (its default is the "unset" sentinel `undefined`) —
-// `promotedUsable` special-cases this to validate against `number` instead.
+// `matchesSlotShape` special-cases this to check against `number` instead.
 describe('promotable maybeNumber slot', () => {
   const configSchema = ConfigurationSchema('MaybeNumberDisplay', {
     customHeight: {
@@ -136,9 +136,18 @@ describe('promotable frozen slot structural equality', () => {
       session.getDisplayTypeDefault('TestDisplay', 'colorBy'),
     ).toBeUndefined()
   })
+
+  test('a malformed own value of the wrong JS shape degrades to the base', () => {
+    // a frozen slot accepts any JSON, so a corrupt saved snapshot could pin a
+    // string where an object is expected — the shape gate alone (no validate
+    // hook here) treats it as un-pinned so it falls back rather than flowing on
+    const { display } = createDisplay(configSchema, { colorBy: 'not-an-object' })
+    expect(isSlotPinned(display, 'colorBy')).toBe(false)
+    expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'normal' })
+  })
 })
 
-// A slot's `validate` hook lets `promotedUsable` reject a value that's
+// A slot's `validate` hook lets `isUsableValue` reject a value that's
 // structurally fine (right JS type/shape) but semantically stale — e.g. a
 // `colorBy.type` naming a color scheme that's since been renamed or removed —
 // before it reaches a consumer that assumes every value it sees is valid.

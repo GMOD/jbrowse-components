@@ -54,40 +54,56 @@ function promotableSlots(self: PromotableDisplay): string[] {
 }
 
 /**
- * A stored promoted default is only usable when it could be a valid slot value:
- * same JS type as the slot default, and — for a `stringEnum` slot — one of the
- * enum's choices, and never the inherit sentinel itself, and — when the slot
- * declares one — passes its `validate` hook. Rejects a stale/garbage value left
- * in a saved preference so every consumer falls back in lockstep.
+ * Whether a stored value could really be a value of this slot — the single
+ * gate both cascade tiers pass a candidate through: a session-wide promoted
+ * default, and a track's own value read from an untyped saved snapshot. Three
+ * independent checks, each obviously correct on its own:
+ *   1. it's a concrete value, not "inherit" (`isConcreteValue`),
+ *   2. its JS shape fits the slot (`matchesSlotShape`),
+ *   3. it passes the slot's optional semantic `validate` hook.
+ * An unusable value is dropped so every consumer falls back in lockstep.
  */
-function promotedUsable(def: ConfigSlotDefinition, promoted: unknown): boolean {
-  const { type, model, defaultValue, promotedBase, validate } = def
-  // a sentinel slot's own `defaultValue` (its `'inherit'` member) is never a
-  // real value to inherit — only `promotedBase` and the other members are
+function isUsableValue(def: ConfigSlotDefinition, value: unknown): boolean {
+  const { validate } = def
+  return (
+    isConcreteValue(def, value) &&
+    matchesSlotShape(def, value) &&
+    (!validate || validate(value))
+  )
+}
+
+// A real value to use, versus the two ways a stored value means "no value —
+// inherit": `undefined` (an unset/stripped slot), or a sentinel slot's own
+// `defaultValue` (its `'inherit'` member — only `promotedBase` and the other
+// members are real values there).
+function isConcreteValue(def: ConfigSlotDefinition, value: unknown): boolean {
+  const { defaultValue, promotedBase } = def
   const isInheritSentinel =
-    promotedBase !== undefined && deepEqual(promoted, defaultValue)
-  const shapeOk =
-    promoted === undefined || isInheritSentinel
-      ? false
-      : type === 'stringEnum' && model
-        ? typeof promoted === 'string' &&
-          getEnumerationValues(model).includes(promoted)
-        : // a frozen/object slot (e.g. alignments `colorBy`): require a
-          // non-null object of matching array-ness — `typeof promoted ===
-          // typeof defaultValue` admits `null` (typeof null === 'object') and
-          // an array against an object default
-          typeof defaultValue === 'object' && defaultValue !== null
-          ? typeof promoted === 'object' &&
-            promoted !== null &&
-            Array.isArray(promoted) === Array.isArray(defaultValue)
-          : // `maybeNumber` is the only slot type allowed a `defaultValue` of
-            // `undefined` (its "unset" state — see ConfigSlot); `typeof
-            // promoted === typeof undefined` would reject every real value, so
-            // validate against its actual value type (a number) instead
-            defaultValue === undefined
-            ? typeof promoted === 'number'
-            : typeof promoted === typeof defaultValue
-  return shapeOk && (!validate || validate(promoted))
+    promotedBase !== undefined && deepEqual(value, defaultValue)
+  return value !== undefined && !isInheritSentinel
+}
+
+// Whether `value` has a JS shape this slot could hold. Guards the untyped
+// session store / saved snapshot against garbage; not a full validation
+// (`validate` layers semantics on top). Derived from the slot's own metadata so
+// a new promotable slot type needs no change here.
+function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
+  const { type, model, defaultValue } = def
+  return type === 'stringEnum' && model
+    ? typeof value === 'string' && getEnumerationValues(model).includes(value)
+    : typeof defaultValue === 'object' && defaultValue !== null
+      ? // object/array slot (e.g. `colorBy`): match null-ness and array-ness —
+        // `typeof value === typeof defaultValue` would admit `null` (typeof
+        // null === 'object') and an array against an object default
+        typeof value === 'object' &&
+        value !== null &&
+        Array.isArray(value) === Array.isArray(defaultValue)
+      : // `maybeNumber` is the only slot type whose `defaultValue` is `undefined`
+        // (its "unset" state — see ConfigSlot); match its real value type, since
+        // `typeof value === typeof undefined` would reject every number
+        defaultValue === undefined
+        ? typeof value === 'number'
+        : typeof value === typeof defaultValue
 }
 
 interface SlotResolution {
@@ -110,15 +126,14 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
   const base = def.promotedBase ?? def.defaultValue
   const own = getConf(self, slot)
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  // an own value that fails the slot's `validate` hook (e.g. a saved `colorBy`
-  // naming a since-removed scheme) is treated as un-pinned, so it degrades to
-  // the inherited/base value in lockstep with a rejected promoted default rather
-  // than reaching a consumer that assumes every value it sees is valid. A
-  // frozen slot's shape is already trusted (MST-hydrated), so only `validate`
-  // gates `own`, not `promotedUsable`'s full shape battery for the untyped store
-  const pinned =
-    !deepEqual(own, def.defaultValue) && (!def.validate || def.validate(own))
-  const inherited = promotedUsable(def, promoted) ? promoted : base
+  // A track pins only when it holds a *usable* value other than the default.
+  // Routing `own` through the same `isUsableValue` gate as a promoted default
+  // means an own value that's malformed or fails `validate` (e.g. a saved
+  // `colorBy` naming a since-removed scheme) reads as un-pinned and degrades to
+  // the inherited value in lockstep, instead of reaching a consumer that trusts
+  // every value it sees.
+  const pinned = !deepEqual(own, def.defaultValue) && isUsableValue(def, own)
+  const inherited = isUsableValue(def, promoted) ? promoted : base
   const value = pinned ? own : inherited
   return { base, pinned, promoted, inherited, value }
 }

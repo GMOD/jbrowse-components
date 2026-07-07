@@ -106,27 +106,28 @@ function resolveSlot(self, slot): SlotResolution {
   const base = def.promotedBase ?? def.defaultValue
   const own = getConf(self, slot)
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  // an own value differing from the default but failing the slot's `validate`
-  // hook reads as un-pinned, so it degrades to inherited/base like a rejected
-  // promoted default rather than reaching a consumer that trusts every value
-  const pinned =
-    !deepEqual(own, def.defaultValue) && (!def.validate || def.validate(own))
-  const inherited = promotedUsable(def, promoted) ? promoted : base
+  // a track pins only when it holds a *usable* value other than the default —
+  // the same `isUsableValue` gate a promoted default passes, so a malformed or
+  // stale own value reads as un-pinned and degrades to inherited/base rather
+  // than reaching a consumer that trusts every value
+  const pinned = !deepEqual(own, def.defaultValue) && isUsableValue(def, own)
+  const inherited = isUsableValue(def, promoted) ? promoted : base
   const value = pinned ? own : inherited
   return { base, pinned, promoted, inherited, value }
 }
 ```
 
-`promotedUsable` rejects a stale/garbage promoted value (wrong JS type, a
-`stringEnum` value that isn't a current choice, or a sentinel slot's own
-`'inherit'` member) so the getter, the "make default" checkbox, and the badge all
-fall back in lockstep — no consumer guards on its own. A slot's optional
-`validate` hook adds a semantic check on top of the JS-shape check, and applies
-to **both** entry points: a promoted default (inside `promotedUsable`) and a
-track's own pinned value (the `pinned` clause above). `colorBy` uses it so a
-`.type` naming a since-removed color scheme — pinned or promoted — degrades to
-the base instead of reaching the total `COLOR_SCHEMES` lookups that throw on an
-unregistered type.
+`isUsableValue` is the single gate **both** tiers pass a candidate through — a
+promoted default and a track's own saved value. It composes three independent
+checks: the value is concrete (not `undefined`, not a sentinel slot's own
+`'inherit'` member), its JS shape fits the slot (a `stringEnum` choice, an
+object/array of matching kind, a `maybeNumber`'s number, else the default's
+`typeof`), and it passes the slot's optional semantic `validate` hook. A value
+failing any check is dropped so the getter, the "make default" checkbox, and the
+badge all fall back in lockstep — no consumer guards on its own. `colorBy` uses
+`validate` so a `.type` naming a since-removed color scheme — pinned or promoted
+— degrades to the base instead of reaching the total `COLOR_SCHEMES` lookups
+that throw on an unregistered type.
 
 `getConfResolved` **always returns a real value**, never a slot's inherit
 sentinel, so the display getter needs no post-guard:

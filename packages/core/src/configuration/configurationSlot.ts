@@ -102,17 +102,16 @@ export interface ConfigSlotDefinition {
    */
   promotedBase?: unknown
   /**
-   * For a `promotable` slot: an extra runtime check a stored value must pass
-   * before the cascade (`promotableDefaults.ts`) treats it as usable — applied
-   * both to a session-wide promoted default (in `promotedUsable`, on top of the
-   * built-in type-shape check) and to a track's own pinned value (in
-   * `resolveSlot`, where the shape is already MST-trusted). Needed when a slot's
-   * shape alone can't catch a semantically-invalid value — e.g. alignments
-   * `colorBy`'s `.type` must name a currently-registered color scheme, not just
-   * be *some* string — so a stale scheme name (renamed or removed since the
-   * value was saved) degrades to "not usable" (falls back to the base) instead
-   * of reaching a lookup that assumes every `.type` is registered. Omit when the
-   * type-shape check alone is enough to trust the value.
+   * For a `promotable` slot: an extra semantic check a stored value must pass,
+   * on top of the built-in type-shape check, before the cascade
+   * (`promotableDefaults.ts`'s `isUsableValue`) treats it as usable. Applies to
+   * both cascade tiers — a session-wide promoted default and a track's own saved
+   * value. Needed when a slot's shape alone can't catch a semantically-invalid
+   * value — e.g. alignments `colorBy`'s `.type` must name a currently-registered
+   * color scheme, not just be *some* string — so a stale scheme name (renamed or
+   * removed since the value was saved) degrades to "not usable" (falls back to
+   * the base) instead of reaching a lookup that assumes every `.type` is
+   * registered. Omit when the type-shape check alone is enough to trust the value.
    */
   validate?: (value: unknown) => boolean
 }
