@@ -8,6 +8,7 @@ import {
   wheelFrameElapsedMs,
   wheelZoomAccum,
 } from '@jbrowse/core/util'
+import { trackPointerPresence } from '@jbrowse/core/util/pointerPresence'
 
 interface GenomeViewModel {
   bpPerPx: number
@@ -70,11 +71,23 @@ export function useWheelScroll(
       : undefined
     observer?.observe(curr)
 
+    // Once the pointer leaves the view, drop any in-flight accumulation and
+    // stop consuming the wheel events the browser keeps latching here (see
+    // trackPointerPresence) so a continued gesture pans/zooms nothing and
+    // chains to the page instead of staying stuck to this view.
+    const presence = trackPointerPresence(curr, () => {
+      s.scrollDelta = 0
+      s.zoomAccum = 0
+    })
+
     // the handler must be non-passive (passive: false) so we can
     // preventDefault to suppress native scroll during zoom. to compensate,
     // the handler only accumulates deltas — all heavy work (model.zoomTo,
     // model.horizontalScroll) is deferred to a single requestAnimationFrame
     function onWheel(event: WheelEvent) {
+      if (!presence.isOver) {
+        return
+      }
       if (event.shiftKey && model.scrollZoom) {
         return
       }
@@ -154,6 +167,7 @@ export function useWheelScroll(
     return () => {
       curr.removeEventListener('wheel', onWheel)
       document.removeEventListener('visibilitychange', onVisibilityChange)
+      presence.dispose()
       observer?.disconnect()
       if (s.rafId !== null) {
         cancelAnimationFrame(s.rafId)

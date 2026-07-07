@@ -33,5 +33,12 @@ export function createScrollLatch(timeoutMs = LATCH_TIMEOUT_MS) {
       }
       return null
     },
+    // Forget the last-consumed timestamp so the next event is treated as a
+    // fresh gesture. Called when the pointer leaves the panel: a gesture the
+    // browser has latched to this element must not keep the page suppressed
+    // once the cursor is elsewhere.
+    reset() {
+      lastConsumed = -Infinity
+    },
   }
 }

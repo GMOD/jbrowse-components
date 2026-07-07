@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
+import { trackPointerPresence } from './pointerPresence.ts'
 import { createScrollLatch } from './scrollLatch.ts'
 import { useEventCallback } from './useEventCallback.ts'
 import { normalizeWheelDelta } from './wheelZoom.ts'
@@ -48,9 +49,23 @@ export function useVirtualScrollWheel(
     if (!canvas) {
       return undefined
     }
-    canvas.addEventListener('wheel', handleWheel, { passive: false })
-    return () => {
-      canvas.removeEventListener('wheel', handleWheel)
+    // Ignore wheel events the browser keeps latching to this canvas once the
+    // pointer has left (see trackPointerPresence): let them chain to the page
+    // and reset the latch so the next in-panel gesture starts clean. Without
+    // this the panel stays stuck to per-track scroll after the mouse has left —
+    // worst in embedded, where the outer page is the thing that should scroll.
+    const presence = trackPointerPresence(canvas, () => {
+      latch.reset()
+    })
+    const onWheelNative = (e: WheelEvent) => {
+      if (presence.isOver) {
+        handleWheel(e)
+      }
     }
-  }, [canvas, handleWheel])
+    canvas.addEventListener('wheel', onWheelNative, { passive: false })
+    return () => {
+      canvas.removeEventListener('wheel', onWheelNative)
+      presence.dispose()
+    }
+  }, [canvas, handleWheel, latch])
 }

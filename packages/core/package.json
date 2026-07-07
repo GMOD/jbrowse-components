@@ -137,6 +137,7 @@
     "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.ts",
     "./util/paintLayer": "./src/util/paintLayer.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
+    "./util/pointerPresence": "./src/util/pointerPresence.ts",
     "./util/range": "./src/util/range.ts",
     "./util/rxjs": "./src/util/rxjs.ts",
     "./util/simpleFeature": "./src/util/simpleFeature.ts",
@@ -670,6 +671,10 @@
         "types": "./esm/util/parseLineByLine.d.ts",
         "import": "./esm/util/parseLineByLine.js"
       },
+      "./util/pointerPresence": {
+        "types": "./esm/util/pointerPresence.d.ts",
+        "import": "./esm/util/pointerPresence.js"
+      },
       "./util/range": {
         "types": "./esm/util/range.d.ts",
         "import": "./esm/util/range.js"
@@ -1079,6 +1084,9 @@
         ],
         "util/parseLineByLine": [
           "esm/util/parseLineByLine.d.ts"
+        ],
+        "util/pointerPresence": [
+          "esm/util/pointerPresence.d.ts"
         ],
         "util/range": [
           "esm/util/range.d.ts"

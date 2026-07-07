@@ -67,3 +67,13 @@ test('each consumed scroll refreshes the latch window', () => {
   expect(latch.scroll(e, 100, 30, 100)).toBe(null)
   expect(e.prevented).toBe(true)
 })
+
+test('reset releases a boundary event that would otherwise stay latched', () => {
+  const latch = createScrollLatch(200)
+  latch.scroll(wheelEvent(0), 50, 60, 100) // consume, window opens at 0
+  latch.reset()
+  // 50ms later would normally stay latched, but reset cleared the window
+  const e = wheelEvent(50)
+  expect(latch.scroll(e, 100, 30, 100)).toBe(null)
+  expect(e.prevented).toBe(false)
+})
