@@ -93,8 +93,48 @@ function chainSubRead<E extends MinEntry>(segs: E[], out: ReadConnection<E>[]) {
 // The primary (non-supplementary) segment carries the read's pair orientation /
 // template length, so the mate link sources its color from it. Falls back to
 // the read-order-first segment if no primary is on screen.
-function primaryOf<E extends MinEntry>(segs: E[]) {
+export function primaryOf<E extends MinEntry>(segs: E[]) {
   return segs.find(e => !(flagsOf(e) & SAM_FLAG_SUPPLEMENTARY)) ?? segs[0]!
+}
+
+// Dedup a QNAME group by readId, drop the alignments that never take part in a
+// connection, then split the survivors into first/second-in-pair sub-reads.
+//   - readId dedup: the same physical read overlapping two displayedRegions
+//     (e.g. spanning collapsed-intron exons) is returned by each region's
+//     fetch, arriving as duplicate entries sharing a readId (f.id() =
+//     adapter.id + fileOffset, stable across fetches). Collapse them, else the
+//     copies look like a 2-segment split read and chainSubRead fabricates a
+//     self-junction. Genuine split segments and mates are distinct records with
+//     distinct ids, so they survive.
+//   - filter: secondary alignments are alternate mappings, not split segments;
+//     paired reads with an unmapped mate would create a spurious mate link.
+//   - partition: everything lands in `first` when the group is unpaired.
+// Shared by the mate-link resolver and the arc path's SA-augmented per-mate
+// chaining, so both agree on which segments belong to which mate.
+export function partitionReadGroup<E extends MinEntry>(entries: E[]) {
+  const byId = new Map<string, E>()
+  for (const e of entries) {
+    const id = readIdOf(e)
+    if (!byId.has(id)) {
+      byId.set(id, e)
+    }
+  }
+  const filtered = [...byId.values()].filter(e => {
+    const f = flagsOf(e)
+    const paired = !!(f & SAM_FLAG_PAIRED)
+    return !(f & SAM_FLAG_SECONDARY) && !(paired && f & SAM_FLAG_MATE_UNMAPPED)
+  })
+  const hasPaired = filtered.some(e => flagsOf(e) & SAM_FLAG_PAIRED)
+  const first: E[] = []
+  const second: E[] = []
+  for (const e of filtered) {
+    if (!hasPaired || flagsOf(e) & SAM_FLAG_FIRST_IN_PAIR) {
+      first.push(e)
+    } else {
+      second.push(e)
+    }
+  }
+  return { first, second, hasPaired }
 }
 
 // Resolve a QNAME group (≥2 on-screen alignments sharing a read name) into the
@@ -111,45 +151,14 @@ function primaryOf<E extends MinEntry>(segs: E[]) {
 export function readGroupConnections<E extends MinEntry>(
   entries: E[],
 ): ReadConnection<E>[] {
-  // The same physical read overlapping two displayedRegions (e.g. a read
-  // spanning collapsed-intron exons) is returned by each region's fetch, so it
-  // arrives as duplicate entries sharing a readId (f.id() = adapter.id +
-  // fileOffset, stable across fetches). Collapse them first, else the copies
-  // look like a 2-segment split read and chainSubRead fabricates a self-
-  // junction. Genuine split segments and mates are distinct records with
-  // distinct ids, so they survive.
-  const byId = new Map<string, E>()
-  for (const e of entries) {
-    const id = readIdOf(e)
-    if (!byId.has(id)) {
-      byId.set(id, e)
-    }
-  }
-  const filtered = [...byId.values()].filter(e => {
-    const f = flagsOf(e)
-    const paired = !!(f & SAM_FLAG_PAIRED)
-    return !(f & SAM_FLAG_SECONDARY) && !(paired && f & SAM_FLAG_MATE_UNMAPPED)
-  })
-
+  const { first, second, hasPaired } = partitionReadGroup(entries)
   const out: ReadConnection<E>[] = []
-  const hasPaired = filtered.some(e => flagsOf(e) & SAM_FLAG_PAIRED)
+  chainSubRead(first, out)
   if (hasPaired) {
-    const first: E[] = []
-    const second: E[] = []
-    for (const e of filtered) {
-      if (flagsOf(e) & SAM_FLAG_FIRST_IN_PAIR) {
-        first.push(e)
-      } else {
-        second.push(e)
-      }
-    }
-    chainSubRead(first, out)
     chainSubRead(second, out)
     if (first.length > 0 && second.length > 0) {
       out.push({ e1: primaryOf(first), e2: primaryOf(second), isSplit: false })
     }
-  } else {
-    chainSubRead([...filtered], out)
   }
   return out
 }

@@ -13,7 +13,8 @@ import {
 
 import {
   connectionEndpoints,
-  readGroupConnections,
+  partitionReadGroup,
+  primaryOf,
 } from '../../shared/readGroupConnections.ts'
 
 import type { ArcsUploadData } from './types.ts'
@@ -535,12 +536,28 @@ function collectPendingArcs(
         pendingArcs.push(...unpairedChainArcs(entries, drawLongRange))
       }
     } else {
-      // ≥2 on-screen paired alignments sharing a name: resolve into per-mate
-      // split junctions + the mate link (handles paired reads that are
-      // themselves SA-split), then materialize each as an arc.
-      pendingArcs.push(
-        ...readGroupConnections(entries).map(pendingArcFromConnection),
-      )
+      // ≥2 on-screen paired alignments sharing a name. Partition into first/
+      // second-in-pair sub-reads and chain each in read order, stepping through
+      // any off-screen SA segment (gated by drawLongRange) exactly as the
+      // unpaired path does — so a 3rd, off-screen split segment still gets its
+      // junctions instead of being skipped over — then add the single mate link
+      // between the two mates' primaries. (readGroupConnections, used by the
+      // bezier overlay, only chains the on-screen entries; the SA-tag off-screen
+      // walk lives here so it doesn't leak pseudo-entries into that path.)
+      const { first, second, hasPaired } = partitionReadGroup(entries)
+      pendingArcs.push(...unpairedChainArcs(first, drawLongRange))
+      if (hasPaired) {
+        pendingArcs.push(...unpairedChainArcs(second, drawLongRange))
+        if (first.length > 0 && second.length > 0) {
+          pendingArcs.push(
+            pendingArcFromConnection({
+              e1: primaryOf(first),
+              e2: primaryOf(second),
+              isSplit: false,
+            }),
+          )
+        }
+      }
     }
   }
   return pendingArcs

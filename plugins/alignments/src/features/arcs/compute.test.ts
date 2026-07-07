@@ -902,6 +902,69 @@ describe('computeArcsFromPileupData', () => {
     expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([1200, 5000])
   })
 
+  test('paired multi-segment read steps through an off-screen 3rd split segment', () => {
+    // First-in-pair read has two on-screen segments A (clip 0, chr1:1000) and C
+    // (clip 200, chr1:5000) plus a middle segment B (clip 100) mapped off-screen
+    // at chr1:9000, known only from the SA tags. Its mate D (second-in-pair) is
+    // on screen at chr1:5500. Previously the ≥2-on-screen paired branch chained
+    // only the entries it was handed, so it drew a misleading direct A→C join
+    // and never stepped through B. It must now behave like the unpaired path:
+    // A→B→C when long-range is on, nothing within the read when it is off.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1200, 5000, 5200, 5500, 5700]),
+      readFlags: new Uint16Array([
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SUPPLEMENTARY,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ]),
+      readStrands: new Int8Array([1, 1, -1]),
+      readInsertSizes: new Float32Array([600, 0, 600]),
+      readPairOrientations: new Uint8Array([1, 0, 1]),
+      readNames: ['readA', 'readA', 'readA'],
+      readClipAtStart: new Uint32Array([0, 200, 0]),
+      readSuppAlignments: [
+        // A's SA names B (off-screen) and C
+        'chr1,9001,+,100S200M,60,0;chr1,5001,+,200S200M,60,0;',
+        // C's SA names A and B (off-screen)
+        'chr1,1001,+,200M200S,60,0;chr1,9001,+,100S200M,60,0;',
+        // mate D has no supplementary alignments
+        '',
+      ],
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
+    ]
+
+    const withLongRange = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    }).arcs
+    const pairs = withLongRange.map(a => [a.p1.bp, a.p2.bp])
+    // A→B (1200→9000) and B→C (9200→5000) step through the hidden segment...
+    expect(pairs).toContainEqual([1200, 9000])
+    expect(pairs).toContainEqual([9200, 5000])
+    // ...never the direct A→C join (1200→5000) the old branch produced...
+    expect(pairs).not.toContainEqual([1200, 5000])
+    // ...plus the mate link A↔D (fwd 3' end 1200 → reverse mate's 5500).
+    expect(pairs).toContainEqual([1200, 5500])
+    expect(withLongRange).toHaveLength(3)
+
+    // With long-range off, B can't be drawn and A/C are not read-adjacent, so no
+    // within-read junction is drawn — but the on-screen mate link still is.
+    const withoutLongRange = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      regions,
+      {
+        colorByType: 'insertSizeAndOrientation',
+        drawInter: false,
+        drawLongRange: false,
+      },
+    ).arcs
+    expect(withoutLongRange.map(a => [a.p1.bp, a.p2.bp])).toEqual([[1200, 5500]])
+  })
+
   test('mixed dataset: a lone unpaired SA read draws its split junction, not a mate arc', () => {
     // A paired pair (idx 0/1, both mates on screen) makes the dataset globally
     // paired, alongside a lone unpaired read (idx 2) carrying an SA tag (its
