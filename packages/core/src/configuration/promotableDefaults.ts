@@ -201,6 +201,40 @@ export function setSlotsSessionDefault(
 
 /**
  * #api core/configuration
+ * Whether a *specific* value is the session-wide promoted default for this slot,
+ * independent of the track's current value. Use for an always-visible "make this
+ * the default for all tracks" control whose meaning is "promote this on-value"
+ * (e.g. a per-mode toggle), rather than the value-dependent
+ * `areSlotsAtSessionDefault` used by "promote whatever is current" controls.
+ */
+export function isSlotValueSessionDefault(
+  self: PromotableDisplay,
+  slot: string,
+  value: unknown,
+): boolean {
+  return sameValue(resolveSlot(self, slot).promoted, value)
+}
+
+/**
+ * #api core/configuration
+ * Promote a specific value as the session-wide default for this slot (`on`), or
+ * clear the default (`!on`). Pair with `isSlotValueSessionDefault`.
+ */
+export function setSlotValueSessionDefault(
+  self: PromotableDisplay,
+  slot: string,
+  value: unknown,
+  on: boolean,
+): void {
+  getSession(self).setDisplayTypeDefault?.(
+    self.type,
+    slot,
+    on ? value : undefined,
+  )
+}
+
+/**
+ * #api core/configuration
  * Effective differences an un-pinned track inherits from session-wide defaults,
  * one per promotable slot whose inherited value differs from its schema default.
  * Drives the track-selector "affected by a session default" badge.

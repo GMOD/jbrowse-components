@@ -29,6 +29,8 @@ export {
   getConfResolved,
   getSlotInheritedValue,
   isSlotPinned,
+  isSlotValueSessionDefault,
+  setSlotValueSessionDefault,
   setSlotsSessionDefault,
 } from './promotableDefaults.ts'
 export type { PromotableDisplay } from './promotableDefaults.ts'

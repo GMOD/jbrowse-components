@@ -152,23 +152,38 @@ degrades to "no promoted defaults", never throws.
 ## UI surface
 
 - **Track menu** (per adopter): the value control plus a "make this the default
-  for all tracks like this" affordance (`areSlotsAtSessionDefault` state +
-  `toggleSlotsSessionDefault`). Two shapes, by setting complexity:
-  - **Flat boolean settings** (`linkedReads`, `readConnections`) use a **compound
-    checkbox row**: an ordinary `type:'checkbox'` menu item (native hover/sizing/
-    keyboard) carrying a trailing **`endAdornment`** — a "default for all"
-    checkbox (`DefaultForAllAdornment`). One row expresses both the track value
-    and the session default. The adornment shows only while the value is on
-    (nothing to promote otherwise). `endAdornment` is a general `BaseMenuItem`
-    field rendered by `CascadingMenu` before the check decoration; its content
-    must `stopPropagation`. Build the item with `promotableToggleItem(...)`.
+  for all tracks like this" affordance. Two shapes, by setting complexity:
+  - **Flat boolean settings** (`linkedReads`, `readConnections`, `showSoftClipping`)
+    use a **compound checkbox row**: an ordinary `type:'checkbox'` menu item
+    (native hover/sizing/keyboard) carrying a trailing **`endAdornment`** — a pin
+    (`DefaultForAllAdornment`, a MUI `ToggleButton`) that promotes the setting's
+    *on-value* as the default. One row expresses both axes. `endAdornment` is a
+    general `BaseMenuItem` field; `CascadingMenu` renders it in a fixed-width slot
+    to the right of the check decoration (reserved on every row when any row has
+    one, so checkboxes stay column-aligned and pins float in their own column).
+    The pin is **always shown** (discoverable) and uses **per-value** semantics —
+    `isSlotValueSessionDefault` / `setSlotValueSessionDefault`, bundled by
+    `makeSessionDefaultControl(self, slot, onValue)` into a `SessionDefaultControl`
+    (`{ active, toggle }`) that the model exposes and `promotableToggleItem`
+    consumes. Per-value (not "promote current") is what lets an always-visible pin
+    never promote a meaningless off-value and keeps two toggles sharing one slot
+    (arcs `'arc'` vs read cloud `'samplot'`) independent. Its content must
+    `stopPropagation`.
   - **Submenu settings** (`colorBy`, feature height, `displayMode`) put the
     "make default" checkbox at the **bottom of their own submenu** (e.g.
     `colorBy.ts` `sessionDefaultSection`) — same principle, room to spell it out.
+    These still use the value-dependent `areSlotsAtSessionDefault` /
+    `setSlotsSessionDefault` ("promote whatever is current"), which suits a
+    multi-value picker.
   Selecting a sentinel slot's base value **pins** it. An explicit **"Follow
   default" reset item** (writes `'inherit'`) is *optional*; `displayMode` folds it
   into a top "Default (X)" radio, the others omit it (picking a value pins,
   untouched inherits). Don't add one reflexively.
+- **Disabled-not-hidden for dependent options:** options that only apply once a
+  parent toggle is on (the arc/read-cloud band submenu, arc coloring) stay
+  present but `disabled` with a `disabledHelpText`, rather than vanishing — so
+  they're discoverable. `CascadingMenu` already greys a disabled submenu and
+  blocks it from opening.
 - **Badge** (`OverrideBadge.tsx`, track selector): a distinct `SettingsSuggestIcon`
   (vs. the per-track-edit pencil) shows when `sessionDefaultChanges()` is
   non-empty; click opens `TrackSettingsChangesDialog` with a "clear default"

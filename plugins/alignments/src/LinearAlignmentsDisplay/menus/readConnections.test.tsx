@@ -8,24 +8,29 @@ import { getReadConnectionsMenuItem } from './readConnections.ts'
 
 const theme = createJBrowseTheme()
 
+// stateful stand-in for a SessionDefaultControl bundle ({ active, toggle })
+function control() {
+  return {
+    active: false,
+    toggle() {
+      this.active = !this.active
+    },
+  }
+}
+
 function makeModel() {
   return {
     linkedReads: 'off' as 'off' | 'normal',
     setLinkedReads(mode: 'off' | 'normal') {
       this.linkedReads = mode
     },
-    isLinkedReadsDefault: false,
-    setLinkedReadsDefault(promote: boolean) {
-      this.isLinkedReadsDefault = promote
-    },
+    pairsSessionDefault: control(),
     readConnections: 'off' as 'off' | 'arc' | 'samplot',
     setReadConnections(mode: 'off' | 'arc' | 'samplot') {
       this.readConnections = mode
     },
-    isReadConnectionsDefault: false,
-    setReadConnectionsDefault(promote: boolean) {
-      this.isReadConnectionsDefault = promote
-    },
+    arcsSessionDefault: control(),
+    readCloudSessionDefault: control(),
     readConnectionsDown: false,
     setReadConnectionsDown(v: boolean) {
       this.readConnectionsDown = v
@@ -54,9 +59,24 @@ function makeModel() {
 }
 
 function findByLabel(model: ReturnType<typeof makeModel>, label: string) {
-  return getReadConnectionsMenuItem(model).subMenu.find(
-    i => 'label' in i && i.label === label,
+  const items = getReadConnectionsMenuItem(model).subMenu
+  return (
+    items.find(i => 'label' in i && i.label === label) ??
+    items
+      .filter((i): i is typeof i & { subMenu: typeof items } => 'subMenu' in i)
+      .flatMap(i => i.subMenu)
+      .find(i => 'label' in i && i.label === label)
   )
+}
+
+function bandOptionsSubMenu(model: ReturnType<typeof makeModel>) {
+  const item = getReadConnectionsMenuItem(model).subMenu.find(
+    i => 'label' in i && i.label === 'Arc / read cloud band options',
+  )
+  if (!item || !('subMenu' in item)) {
+    throw new Error('no band options submenu')
+  }
+  return item
 }
 
 function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
@@ -68,13 +88,12 @@ function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
 }
 
 // A promotable row is a native checkbox item carrying a "default for all"
-// endAdornment (a DefaultForAllAdornment element). Whether it's present drives
-// the showDefault behavior; mounting it lets us click through to the model.
+// endAdornment (a DefaultForAllAdornment element), always present.
 function endAdornment(model: ReturnType<typeof makeModel>, label: string) {
   return findByLabel(model, label)?.endAdornment
 }
 
-// Mount the endAdornment and click its checkbox to exercise the promote wiring.
+// Mount the endAdornment and click its pin button to exercise the promote wiring.
 function clickDefaultForAll(
   model: ReturnType<typeof makeModel>,
   label: string,
@@ -86,7 +105,7 @@ function clickDefaultForAll(
   const { getByRole } = render(
     <ThemeProvider theme={theme}>{adornment}</ThemeProvider>,
   )
-  fireEvent.click(getByRole('checkbox'))
+  fireEvent.click(getByRole('button'))
 }
 
 describe('read connections menu', () => {
@@ -134,46 +153,48 @@ describe('read connections menu', () => {
   })
 })
 
-describe('read-connection band options appear only with an active overlay', () => {
-  test('hidden when no overlay is active', () => {
+describe('read-connection band options submenu is disabled until an overlay is active', () => {
+  test('disabled with a help tooltip when no overlay is active', () => {
     const model = makeModel()
-    expect(findByLabel(model, 'Draw below coverage band')).toBeUndefined()
+    const submenu = bandOptionsSubMenu(model)
+    expect(submenu.disabled).toBe(true)
+    expect(submenu.disabledHelpText).toBeTruthy()
+    // items stay defined (discoverable) even while the submenu is disabled
+    expect(findByLabel(model, 'Draw below coverage band')).toBeDefined()
     expect(
       findByLabel(model, 'Show off-screen mate connections'),
-    ).toBeUndefined()
+    ).toBeDefined()
   })
 
-  test('revealed and functional when arcs are on', () => {
+  test('enabled and functional when arcs are on', () => {
     const model = makeModel()
     model.readConnections = 'arc'
+    expect(bandOptionsSubMenu(model).disabled).toBe(false)
     checkboxByLabel(model, 'Draw below coverage band').onClick()
     expect(model.readConnectionsDown).toBe(true)
   })
 })
 
-describe('promote-as-default (default for all) control', () => {
+describe('promote-as-default (default for all) pin', () => {
   const pairs = 'View as pairs / link supplementary alignments'
 
-  test('default-for-all control is hidden while the mode is off', () => {
+  test('the pin is always shown, even while the mode is off', () => {
     const model = makeModel()
-    expect(endAdornment(model, pairs)).toBeUndefined()
-    // shown once the mode is on (nothing to promote while off)
-    model.linkedReads = 'normal'
     expect(endAdornment(model, pairs)).toBeDefined()
-  })
-
-  test('default-for-all promotes the current linked-reads mode', () => {
-    const model = makeModel()
-    model.linkedReads = 'normal'
-    clickDefaultForAll(model, pairs)
-    expect(model.isLinkedReadsDefault).toBe(true)
-  })
-
-  test('default-for-all promotes the current read-connections mode', () => {
-    const model = makeModel()
-    model.readConnections = 'arc'
     expect(endAdornment(model, 'Show read arcs')).toBeDefined()
+    expect(endAdornment(model, 'Show read cloud')).toBeDefined()
+  })
+
+  test('the pin toggles the view-as-pairs session default', () => {
+    const model = makeModel()
+    clickDefaultForAll(model, pairs)
+    expect(model.pairsSessionDefault.active).toBe(true)
+  })
+
+  test('arcs and read cloud pins toggle independent session defaults', () => {
+    const model = makeModel()
     clickDefaultForAll(model, 'Show read arcs')
-    expect(model.isReadConnectionsDefault).toBe(true)
+    expect(model.arcsSessionDefault.active).toBe(true)
+    expect(model.readCloudSessionDefault.active).toBe(false)
   })
 })

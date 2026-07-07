@@ -1,31 +1,22 @@
 import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
 
+import type { SessionDefaultControl } from './sessionDefaultControl.ts'
 import type { CheckboxMenuItem } from '@jbrowse/core/ui'
 
 // A promotable setting as one native checkbox menu row: the value toggles the
-// track, and a trailing "default for all" adornment (endAdornment) promotes the
-// current value as the session-wide default for this display type. Because it is
-// an ordinary checkbox item, it inherits native hover/sizing/keyboard behavior —
-// only the adornment is bespoke.
-//
-// `showDefault` defaults to `checked`: a promotable slot's default is always a
-// real (on) value, and isDefault can only be true when the value is on, so
-// gating the adornment on `checked` both hides the pointless "promote off" case
-// and still surfaces it whenever it could be checked.
+// track (inheriting native hover/sizing/keyboard), and a trailing pin
+// (endAdornment) promotes the setting's on-value as the session-wide default for
+// this display type. The pin is always shown so the capability is discoverable.
 export function promotableToggleItem({
   label,
   checked,
   onToggle,
-  isDefault,
-  onToggleDefault,
-  showDefault = checked,
+  sessionDefault,
 }: {
   label: string
   checked: boolean
   onToggle: () => void
-  isDefault: boolean
-  onToggleDefault: () => void
-  showDefault?: boolean
+  sessionDefault: SessionDefaultControl
 }): CheckboxMenuItem {
   return {
     label,
@@ -34,11 +25,13 @@ export function promotableToggleItem({
     onClick: () => {
       onToggle()
     },
-    endAdornment: showDefault ? (
+    endAdornment: (
       <DefaultForAllAdornment
-        isDefault={isDefault}
-        onToggleDefault={onToggleDefault}
+        isDefault={sessionDefault.active}
+        onToggleDefault={() => {
+          sessionDefault.toggle()
+        }}
       />
-    ) : undefined,
+    ),
   }
 }

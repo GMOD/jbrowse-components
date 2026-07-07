@@ -164,6 +164,10 @@ function CascadingMenuList({
   const hasCheckboxOrRadioWithHelp = menuItems.some(
     m => (m.type === 'checkbox' || m.type === 'radio') && m.helpText,
   )
+  // When any row carries a trailing endAdornment, reserve a fixed-width slot on
+  // every row so the checkbox/radio decorations stay column-aligned and the
+  // adornments float in their own rightmost column.
+  const hasEndAdornment = menuItems.some(m => 'endAdornment' in m)
 
   const sortedItems = menuItems.toSorted(
     (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
@@ -267,7 +271,6 @@ function CascadingMenuList({
                 inset={hasIcon && !item.icon}
               />
               <div style={{ flexGrow: 1, minWidth: 10 }} />
-              {item.endAdornment}
               {isCheckOrRadio ? (
                 <MenuItemEndDecoration
                   type={item.type}
@@ -282,6 +285,18 @@ function CascadingMenuList({
                 />
               ) : isCheckOrRadio && hasCheckboxOrRadioWithHelp ? (
                 <CascadingMenuHelpIconSpacer />
+              ) : null}
+              {hasEndAdornment ? (
+                <div
+                  style={{
+                    width: 40,
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                  }}
+                >
+                  {item.endAdornment}
+                </div>
               ) : null}
             </MenuItem>
           </DisabledTooltip>

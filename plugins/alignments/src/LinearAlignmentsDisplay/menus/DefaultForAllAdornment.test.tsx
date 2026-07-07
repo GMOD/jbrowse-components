@@ -20,19 +20,22 @@ function renderAdornment(isDefault: boolean) {
 }
 
 describe('DefaultForAllAdornment', () => {
-  it('labels itself "default for all"', () => {
-    const { getByText } = renderAdornment(false)
-    expect(getByText('default for all')).toBeTruthy()
+  it('renders a labeled toggle button', () => {
+    const { getByRole } = renderAdornment(false)
+    expect(getByRole('button', { name: 'default for all tracks' })).toBeTruthy()
   })
 
-  it('reflects the promoted state', () => {
-    const { getByRole } = renderAdornment(true)
-    expect(getByRole('checkbox').getAttribute('aria-checked')).toBe('true')
+  it('reflects the promoted state via aria-pressed', () => {
+    const on = renderAdornment(true)
+    expect(on.getByRole('button').getAttribute('aria-pressed')).toBe('true')
+    on.unmount()
+    const off = renderAdornment(false)
+    expect(off.getByRole('button').getAttribute('aria-pressed')).toBe('false')
   })
 
   it('toggling calls onToggleDefault', () => {
     const { getByRole, onToggleDefault } = renderAdornment(false)
-    fireEvent.click(getByRole('checkbox'))
+    fireEvent.click(getByRole('button'))
     expect(onToggleDefault).toHaveBeenCalledTimes(1)
   })
 
@@ -52,7 +55,7 @@ describe('DefaultForAllAdornment', () => {
         </div>
       </ThemeProvider>,
     )
-    fireEvent.click(getByRole('checkbox'))
+    fireEvent.click(getByRole('button'))
     expect(rowClick).not.toHaveBeenCalled()
   })
 })

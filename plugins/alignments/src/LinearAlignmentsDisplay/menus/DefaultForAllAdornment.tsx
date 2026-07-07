@@ -1,30 +1,26 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import CheckBoxIcon from '@mui/icons-material/CheckBox'
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
-import { Typography } from '@mui/material'
+import PushPinIcon from '@mui/icons-material/PushPin'
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined'
+import { ToggleButton, Tooltip } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
-  root: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-    cursor: 'pointer',
-  },
-  // Mirror MenuItemEndDecoration exactly (padding:0, margin:0, height:16 around a
-  // default-size icon) so this box lines up pixel-for-pixel with the native
-  // value check that follows it on the same row — a MUI Checkbox centers its
-  // icon differently and rode ~2px high.
-  iconBox: {
-    padding: 0,
-    margin: 0,
-    height: 16,
+  // compact enough to sit inline with the value check: drop the default
+  // ToggleButton border/padding so it's ~icon-sized, but keep the selected
+  // background tint (an unmistakable on/off signal, unlike a hollow-vs-filled
+  // icon alone)
+  button: {
+    border: 0,
+    padding: theme.spacing(0.25),
   },
 }))
 
 // Trailing "default for all tracks" control for a promotable setting, rendered
-// as a menu item's `endAdornment` so the value stays a first-class native
-// checkbox row (hover, sizing, keyboard nav all inherited). stopPropagation
-// keeps a click here from toggling the row's value or dismissing the menu.
+// as a menu item's `endAdornment` to the right of the value check. A real MUI
+// ToggleButton (native button a11y + a clear selected background) with a pin —
+// distinct from the value checkbox — reads as "pinned as the default":
+// unselected = outline pin, selected = filled pin on an accent-tinted button.
+// Always shown so the capability is discoverable. stopPropagation keeps the
+// click from toggling the row value or dismissing the menu.
 export function DefaultForAllAdornment({
   isDefault,
   onToggleDefault,
@@ -34,30 +30,31 @@ export function DefaultForAllAdornment({
 }) {
   const { classes } = useStyles()
   return (
-    <span
-      role="checkbox"
-      aria-checked={isDefault}
-      aria-label="default for all tracks"
-      tabIndex={0}
-      className={classes.root}
-      onClick={e => {
-        e.stopPropagation()
-        onToggleDefault()
-      }}
-      onKeyDown={e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
+    <Tooltip
+      title={
+        isDefault
+          ? 'Default for all alignments tracks (click to clear)'
+          : 'Make this the default for all alignments tracks'
+      }
+    >
+      <ToggleButton
+        className={classes.button}
+        value="default"
+        selected={isDefault}
+        color="primary"
+        size="small"
+        aria-label="default for all tracks"
+        onChange={e => {
           e.stopPropagation()
           onToggleDefault()
-        }
-      }}
-    >
-      <Typography variant="caption" color="textSecondary">
-        default for all
-      </Typography>
-      <span className={classes.iconBox}>
-        {isDefault ? <CheckBoxIcon /> : <CheckBoxOutlineBlankIcon color="action" />}
-      </span>
-    </span>
+        }}
+      >
+        {isDefault ? (
+          <PushPinIcon fontSize="small" />
+        ) : (
+          <PushPinOutlinedIcon fontSize="small" />
+        )}
+      </ToggleButton>
+    </Tooltip>
   )
 }

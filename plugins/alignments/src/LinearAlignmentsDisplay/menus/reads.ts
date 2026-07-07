@@ -6,6 +6,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { checkboxItem } from './menuHelpers.ts'
 import { promotableToggleItem } from './promotableToggleItem.tsx'
 
+import type { SessionDefaultControl } from './sessionDefaultControl.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const SetMaxHeightDialog = lazy(
@@ -23,8 +24,7 @@ interface ReadsModel {
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
   toggleSoftClipping: () => void
-  isShowSoftClippingDefault: boolean
-  setShowSoftClippingDefault: (promote: boolean) => void
+  softClippingSessionDefault: SessionDefaultControl
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
   mismatchAlpha: boolean
@@ -63,10 +63,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         onToggle: () => {
           model.toggleSoftClipping()
         },
-        isDefault: model.isShowSoftClippingDefault,
-        onToggleDefault: () => {
-          model.setShowSoftClippingDefault(!model.isShowSoftClippingDefault)
-        },
+        sessionDefault: model.softClippingSessionDefault,
       }),
       {
         label: 'Advanced',

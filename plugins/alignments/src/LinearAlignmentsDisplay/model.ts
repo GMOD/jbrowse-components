@@ -68,6 +68,7 @@ import {
   getReadsMenuItem,
   getSashimiMenuItem,
   getSortByMenuItem,
+  makeSessionDefaultControl,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
@@ -335,10 +336,10 @@ export default function stateModelFactory(
           return getConfResolved<LinkedReadsMode>(self, 'linkedReads')
         },
         /** #getter */
-        // true when linked-reads already equals the session-wide default for this
-        // display type (drives the "make default" checkbox)
-        get isLinkedReadsDefault(): boolean {
-          return areSlotsAtSessionDefault(self, ['linkedReads'])
+        // "make view-as-pairs the default for all tracks" control (pin): active
+        // when 'normal' is the session default for this display type
+        get pairsSessionDefault() {
+          return makeSessionDefaultControl(self, 'linkedReads', 'normal')
         },
         /** #getter */
         get showBezierConnections(): boolean {
@@ -401,10 +402,17 @@ export default function stateModelFactory(
           return getConfResolved<ReadConnectionsMode>(self, 'readConnections')
         },
         /** #getter */
-        // true when read-connections already equals the session-wide default for
-        // this display type (drives the "make default" checkbox)
-        get isReadConnectionsDefault(): boolean {
-          return areSlotsAtSessionDefault(self, ['readConnections'])
+        // "make arcs the default for all tracks" control (pin): active when
+        // 'arc' is the session default. Independent of read cloud (both toggles
+        // share the readConnections slot but target different on-values).
+        get arcsSessionDefault() {
+          return makeSessionDefaultControl(self, 'readConnections', 'arc')
+        },
+        /** #getter */
+        // "make read cloud the default for all tracks" control (pin): active when
+        // 'samplot' is the session default
+        get readCloudSessionDefault() {
+          return makeSessionDefaultControl(self, 'readConnections', 'samplot')
         },
         /** #getter */
         get readConnectionsDown(): boolean {
@@ -441,10 +449,10 @@ export default function stateModelFactory(
         },
 
         /** #getter */
-        // true when soft clipping already equals the session-wide default for
-        // this display type (drives the "make default" checkbox)
-        get isShowSoftClippingDefault(): boolean {
-          return areSlotsAtSessionDefault(self, ['showSoftClipping'])
+        // "make soft clipping the default for all tracks" control (pin): active
+        // when `true` is the session default for this display type
+        get softClippingSessionDefault() {
+          return makeSessionDefaultControl(self, 'showSoftClipping', true)
         },
       }))
       .volatile(() => {
@@ -1469,7 +1477,10 @@ export default function stateModelFactory(
         get pileupContentHeight() {
           return this.isGrouped
             ? this.sections.contentHeight
-            : Math.max(0, this.sections.contentHeight - self.coverageDisplayHeight)
+            : Math.max(
+                0,
+                this.sections.contentHeight - self.coverageDisplayHeight,
+              )
         },
 
         /**
@@ -2027,17 +2038,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          // Promote (or clear) the current soft-clipping as the session-wide
-          // default for this display type (persisted via preferences). Every
-          // alignments track that hasn't pinned soft clipping picks it up
-          // through the showSoftClipping getter.
-          setShowSoftClippingDefault(promote: boolean) {
-            setSlotsSessionDefault(self, ['showSoftClipping'], promote)
-          },
-
-          /**
-           * #action
-           */
           // Promote (or clear) the current size (any preset or custom size) as
           // the session-wide default for this display type. Every alignments
           // track left at the default size picks it up through the
@@ -2320,17 +2320,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          // Promote (or clear) the current read-connections mode as the
-          // session-wide default for this display type. Every alignments track
-          // that hasn't pinned a mode picks it up through the readConnections
-          // getter.
-          setReadConnectionsDefault(promote: boolean) {
-            setSlotsSessionDefault(self, ['readConnections'], promote)
-          },
-
-          /**
-           * #action
-           */
           // Shared below-coverage band orientation for both read-connection
           // arcs and sashimi arcs. Single source of truth — there is no
           // per-feature direction to keep in sync.
@@ -2514,17 +2503,6 @@ export default function stateModelFactory(
               }
               self.invalidateLoadedRegions()
             }
-          },
-
-          /**
-           * #action
-           */
-          // Promote (or clear) the current linked-reads mode (view-as-pairs) as
-          // the session-wide default for this display type. Every alignments
-          // track that hasn't pinned a mode picks it up through the linkedReads
-          // getter (a tier-1 change: the un-pinned tracks refetch).
-          setLinkedReadsDefault(promote: boolean) {
-            setSlotsSessionDefault(self, ['linkedReads'], promote)
           },
 
           /**
@@ -2801,15 +2779,13 @@ export default function stateModelFactory(
           return [
             getColorByMenuItem(self, {
               includeTagOption: true,
-              arcColor:
-                self.readConnections !== 'off'
-                  ? {
-                      current: self.arcColorByType,
-                      setColor: (type: ArcColorByType) => {
-                        self.setArcColorByType(type)
-                      },
-                    }
-                  : undefined,
+              arcColor: {
+                current: self.arcColorByType,
+                setColor: (type: ArcColorByType) => {
+                  self.setArcColorByType(type)
+                },
+                disabled: self.readConnections === 'off',
+              },
               supplementaryColoring: {
                 flipStrandLongReadChains: self.flipStrandLongReadChains,
                 setFlipStrandLongReadChains: (flag: boolean) => {

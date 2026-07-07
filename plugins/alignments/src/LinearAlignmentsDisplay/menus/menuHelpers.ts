@@ -25,6 +25,7 @@ export function checkboxItem(
     helpText?: string
     icon?: CheckboxMenuItem['icon']
     disabled?: boolean
+    disabledHelpText?: string
   },
 ): CheckboxMenuItem {
   return {
@@ -44,11 +45,13 @@ export function radioModeMenuItem<T extends string>(
   current: T,
   setMode: (m: T) => void,
   helpText?: string,
+  opts?: { disabled?: boolean; disabledHelpText?: string },
 ) {
   return {
     label,
     helpText,
     type: 'subMenu' as const,
     subMenu: radioItems(options, current, setMode),
+    ...opts,
   }
 }
