@@ -332,6 +332,18 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           { type: 'hover', from: { x: 200, y: 100 } },
           { type: 'delay', ms: 2500 },
         ],
+        // make the (subtly-grouped) sort legible: point at the center column
+        // where the reads carrying each base at 14481 now stack into one block
+        annotations: [
+          {
+            type: 'text',
+            x: 610,
+            y: 250,
+            maxWidth: 330,
+            text: 'Sorted: reads carrying each base at ctgA:14,481 now stack into one block — here the A-reads run down the center column.',
+          },
+          { type: 'arrow', from: { x: 605, y: 258 }, to: { x: 565, y: 235 } },
+        ],
       },
     ],
   },
