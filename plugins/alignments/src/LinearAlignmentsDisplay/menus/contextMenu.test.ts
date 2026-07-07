@@ -1,13 +1,25 @@
 import { getContextMenuItems } from './contextMenu.ts'
 
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
-import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
+import type { CigarHitResult, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { FilterBy } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 type SortCall = [type: string, pos: number, refName: string]
 
 const defaultFilterBy: FilterBy = { flagInclude: 0, flagExclude: 1540 }
+
+// A minimal block under the right-click; only refName is read by the sort items.
+function makeBlock(refName: string): ResolvedBlock {
+  return {
+    refName,
+    rpcData: {} as ResolvedBlock['rpcData'],
+    bpRange: [0, 0],
+    blockStartPx: 0,
+    blockWidth: 0,
+    reversed: false,
+  }
+}
 
 // A minimal Feature stand-in: only .get()/.id()/.toJSON() are exercised by the
 // context menu, and unknown keys return undefined (so the mate branch is skipped
@@ -24,7 +36,7 @@ function makeModel(
   over: {
     contextMenuCigarHit?: CigarHitResult
     contextMenuIndicatorHit?: IndicatorHitResult
-    contextMenuRefName?: string
+    contextMenuBlock?: ResolvedBlock
     contextMenuFeature?: Feature
     filterBy?: FilterBy
   } = {},
@@ -37,8 +49,7 @@ function makeModel(
     contextMenuFeature: undefined as Feature | undefined,
     contextMenuCigarHit: undefined,
     contextMenuIndicatorHit: undefined,
-    contextMenuRefName: 'ctgA' as string | undefined,
-    contextMenuRpcData: undefined,
+    contextMenuBlock: makeBlock('ctgA') as ResolvedBlock | undefined,
     filterBy: defaultFilterBy,
     // Record every call and apply it, so successive quick-filter clicks read the
     // accumulated filterBy (the coexistence path this suite guards).
@@ -97,6 +108,19 @@ test('a base-pair cigar hit sorts by base at that position', () => {
   expect(model.sortCalls).toEqual([['basePair', 42, 'ctgA']])
 })
 
+// The menu closes (clearContextMenu) before the clicked item's callback runs,
+// so an onClick that read model.contextMenuBlock live would see undefined and
+// silently skip the sort. The item must capture the block when it's built.
+test('sort still fires when the block is cleared before the click', () => {
+  const model = makeModel({
+    contextMenuCigarHit: { type: 'mismatch', index: 0, position: 42 },
+  })
+  const item = firstSubMenuItem(run(model)[0])
+  model.contextMenuBlock = undefined
+  item.onClick()
+  expect(model.sortCalls).toEqual([['basePair', 42, 'ctgA']])
+})
+
 test('an interbase (insertion) cigar hit sorts by the interbase type', () => {
   const model = makeModel({
     contextMenuCigarHit: { type: 'insertion', index: 0, position: 7 },
@@ -117,10 +141,10 @@ test('an indicator hit sorts by the indicator type', () => {
   expect(model.sortCalls).toEqual([['insertion', 100, 'ctgA']])
 })
 
-test('sort is a no-op without a refName', () => {
+test('sort is a no-op without a block', () => {
   const model = makeModel({
     contextMenuCigarHit: { type: 'mismatch', index: 0, position: 42 },
-    contextMenuRefName: undefined,
+    contextMenuBlock: undefined,
   })
   firstSubMenuItem(run(model)[0]).onClick()
   expect(model.sortCalls).toEqual([])

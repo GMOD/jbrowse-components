@@ -180,8 +180,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       e.preventDefault()
       model.clearMouseoverState()
       model.setContextMenuCoord([e.clientX, e.clientY])
-      model.setContextMenuRefName(resolved?.refName)
-      model.setContextMenuRpcData(resolved?.rpcData)
+      model.setContextMenuBlock(resolved)
       model.setContextMenuCigarHit(cigarHit)
       model.setContextMenuIndicatorHit(indicatorHit)
       // Clear the previous read first: consecutive right-clicks reposition the

@@ -18,9 +18,8 @@ import {
 } from '../components/detailWidgets.ts'
 import { viewMateRegionInCurrentView } from '../viewMateRegion.ts'
 
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
-import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
+import type { CigarHitResult, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { FilterBy } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
@@ -33,8 +32,12 @@ interface ContextMenuModel extends IAnyStateTreeNode {
   contextMenuFeature: Feature | undefined
   contextMenuCigarHit: CigarHitResult | undefined
   contextMenuIndicatorHit: IndicatorHitResult | undefined
-  contextMenuRefName: string | undefined
-  contextMenuRpcData: PileupDataResult | undefined
+  // The block under the right-click (refName + worker result + bp range), the
+  // single source of the position sort's refName and the indicator widget's
+  // rpcData. Captured once when the menu is built so its onClicks operate on a
+  // snapshot — clearContextMenu runs before the click callback, so reading it
+  // live would see undefined.
+  contextMenuBlock: ResolvedBlock | undefined
   filterBy: FilterBy
   setFilterBy: (filterBy: FilterBy) => void
   setSortedByAtPosition: (type: string, pos: number, refName: string) => void
@@ -82,6 +85,7 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
   const feat = self.contextMenuFeature
   const cigarHit = self.contextMenuCigarHit
   const indicatorHit = self.contextMenuIndicatorHit
+  const block = self.contextMenuBlock
   const items: MenuItem[] = []
 
   if (cigarHit) {
@@ -101,11 +105,11 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
           label: sortLabel,
           icon: SwapVertIcon,
           onClick: () => {
-            if (self.contextMenuRefName) {
+            if (block) {
               self.setSortedByAtPosition(
                 sortType,
                 cigarHit.position,
-                self.contextMenuRefName,
+                block.refName,
               )
             }
           },
@@ -114,8 +118,8 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
           label: `Open ${typeLabel.toLowerCase()} details`,
           icon: MenuOpenIcon,
           onClick: () => {
-            if (self.contextMenuRefName) {
-              openCigarWidget(self, cigarHit, self.contextMenuRefName)
+            if (block) {
+              openCigarWidget(self, cigarHit, block.refName)
             }
           },
         },
@@ -135,11 +139,11 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
           label: `Sort by ${typeLabel.toLowerCase()} at position`,
           icon: SwapVertIcon,
           onClick: () => {
-            if (self.contextMenuRefName) {
+            if (block) {
               self.setSortedByAtPosition(
                 indicatorHit.indicatorType,
                 indicatorHit.position,
-                self.contextMenuRefName,
+                block.refName,
               )
             }
           },
@@ -148,12 +152,12 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
           label: `Open ${typeLabel.toLowerCase()} details`,
           icon: MenuOpenIcon,
           onClick: () => {
-            if (self.contextMenuRefName) {
+            if (block) {
               openIndicatorWidget(
                 self,
                 indicatorHit,
-                self.contextMenuRefName,
-                self.contextMenuRpcData,
+                block.refName,
+                block.rpcData,
               )
             }
           },

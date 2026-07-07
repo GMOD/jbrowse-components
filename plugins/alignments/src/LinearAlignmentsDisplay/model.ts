@@ -101,7 +101,7 @@ import type {
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
-import type { CigarHitResult } from '../shared/hitTestTypes.ts'
+import type { CigarHitResult, ResolvedBlock } from '../shared/hitTestTypes.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
@@ -512,15 +512,12 @@ export default function stateModelFactory(
           contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
           /**
            * #volatile
+           * The block under a right-click (refName + block-level worker result +
+           * bp range). The position sort reads its refName and the
+           * indicator/coverage detail items read its rpcData to open the
+           * aggregate widget (mirrors the left-click path in useAlignmentsBase).
            */
-          contextMenuRefName: undefined as string | undefined,
-          /**
-           * #volatile
-           * Block-level worker result under a right-click, so the
-           * indicator/coverage context-menu detail items can open the aggregate
-           * widget (mirrors the left-click path in useAlignmentsBase).
-           */
-          contextMenuRpcData: undefined as PileupDataResult | undefined,
+          contextMenuBlock: undefined as ResolvedBlock | undefined,
           /**
            * #volatile
            */
@@ -2632,22 +2629,14 @@ export default function stateModelFactory(
             self.contextMenuFeature = undefined
             self.contextMenuCigarHit = undefined
             self.contextMenuIndicatorHit = undefined
-            self.contextMenuRpcData = undefined
-            self.contextMenuRefName = undefined
+            self.contextMenuBlock = undefined
           },
 
           /**
            * #action
            */
-          setContextMenuRefName(refName?: string) {
-            self.contextMenuRefName = refName
-          },
-
-          /**
-           * #action
-           */
-          setContextMenuRpcData(data?: PileupDataResult) {
-            self.contextMenuRpcData = data
+          setContextMenuBlock(block?: ResolvedBlock) {
+            self.contextMenuBlock = block
           },
 
           /**
