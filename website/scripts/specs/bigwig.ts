@@ -348,6 +348,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             from: { x: 880, y: 262 },
             anchor: { selector: '[aria-expanded="true"]' },
           },
+          // box the specific target option in the open dropdown
+          { type: 'box', anchor: { text: 'Add multi-wiggle track' } },
         ],
       },
       {

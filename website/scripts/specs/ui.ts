@@ -605,20 +605,8 @@ export const uiSpecs: ScreenshotSpec[] = [
         anchor: { selector: '[data-testid="zoom_in"]' },
       },
 
-      // ruler tier: labels in the strip at y~152, short arrows down into the
-      // track-header controls at y~178
-      {
-        type: 'text',
-        text: 'Drag to reorder track',
-        x: 40,
-        y: 152,
-        fontSize: 16,
-      },
-      {
-        type: 'arrow',
-        from: { x: 44, y: 160 },
-        anchor: { selector: '[data-testid^="dragHandle-"]' },
-      },
+      // ruler tier: label in the strip at y~152, short arrow down into the
+      // track-menu control at y~178
       { type: 'text', text: 'Track menu', x: 360, y: 152, fontSize: 16 },
       {
         type: 'arrow',

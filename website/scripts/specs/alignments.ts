@@ -223,9 +223,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         maxWidth: 180,
         text: 'Right-click any read to open this menu',
       },
-      // start the arrow below the text pill (which spans ~y265-285) so the line
-      // doesn't cross the callout box, then point up at the right-clicked read
-      { type: 'arrow', from: { x: 300, y: 315 }, to: { x: 392, y: 250 } },
+      // start the arrow to the right of the text pill (which spans ~x165-345)
+      // so the line never crosses the callout box, then point up at the
+      // right-clicked read
+      { type: 'arrow', from: { x: 365, y: 300 }, to: { x: 392, y: 250 } },
     ],
   },
 
