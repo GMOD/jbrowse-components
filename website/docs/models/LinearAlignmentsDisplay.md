@@ -108,8 +108,7 @@ and docs.
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** [renderProps](../basedisplay#method-renderprops),
-[renderingProps](../basedisplay#method-renderingprops),
+**Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
 [regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
@@ -301,18 +300,19 @@ type groupMaxHeightOverrides = ObservableMap<string, number>
 groupMaxHeightOverrides: observable.map<string, number>()
 ```
 
-#### volatile: fitHeightToDisplay
+#### volatile: fittedHeightPx
 
-"Fit to display height" mode: an autorun keeps `featureHeight` sized so all
-uncollapsed groups' reads fill the display without scrolling (reads thin as
-needed). Volatile — a view preference like scrollTop; picking any explicit
-feature-height preset turns it back off.
+Cache of the current fitted read height in px, kept in sync by the afterAttach
+autorun while `fitHeightToDisplay` is on. A volatile (not a getter) because the
+fit height derives from late layout getters that the early `featureHeight`
+getter can't reference — the autorun bridges that ordering. 0 until first
+computed / when nothing fits.
 
 ```ts
 // type signature
-type fitHeightToDisplay = false
+type fittedHeightPx = number
 // code
-fitHeightToDisplay: false
+fittedHeightPx: 0
 ```
 
 #### volatile: hoverCoverageBand
@@ -480,13 +480,55 @@ pairs.
 type showLinkedReadLines = boolean
 ```
 
-#### getter: showSashimiLabels
+#### getter: fitHeightToDisplay
 
-Whether to draw the supporting-read count on each sashimi arc (config slot
-`showSashimiLabels`, overridable from the track menu).
+"Fit to display height" mode: reads pack to fill the display without scrolling.
+Derived from the promotable `heightMode` sentinel slot so it flows through the
+session-default cascade (track value, else session-wide default, else `fixed`) —
+same machinery as the numeric height slots. The `featureHeight`/`height` slots
+are never written, so they stay pure user intent.
 
 ```ts
-type showSashimiLabels = any
+type fitHeightToDisplay = boolean
+```
+
+#### getter: isFitting
+
+True when fit-to-display mode is on AND a pitch has been computed
+(`fittedHeightPx > 0`, i.e. there are rows and room to fit them). The single
+gate both size getters read, so it's obvious they either both split the fitted
+pitch or both fall back to config — never a mix.
+
+```ts
+type isFitting = boolean
+```
+
+#### getter: showSashimiLabels
+
+Whether to draw the supporting-read count on each sashimi arc. Resolved through
+the promotable-slot tiers (getConfResolved): a track configured `true` pins
+labels on; otherwise it follows the session-wide default, falling back to off.
+
+```ts
+type showSashimiLabels = boolean
+```
+
+#### getter: showSashimiLabelsSessionDefault
+
+"make this the default for all tracks" control (pin) for sashimi arc labels
+
+```ts
+type showSashimiLabelsSessionDefault = SessionDefaultControl
+```
+
+#### getter: largeFeaturesFirst
+
+Lay out the widest features in the lowest pileup rows (main-thread tier-2
+relayout via laidOutPileupMap). LGVSyntenyDisplay defaults it on. Ignored while
+an explicit `sortedBy` position sort is active.
+
+```ts
+type largeFeaturesFirst = boolean
 ```
 
 #### getter: groupBy
@@ -562,7 +604,7 @@ group out uncapped to count rows. Kept apart from the fit policy (row caps),
 which varies per call.
 
 ```ts
-type groupLayoutContext = { order: GroupId[]; rawByGroup: Map<string, Map<number, PileupDataResult>>; isChainMode: boolean; sortedBy: SortedBy | undefined; ... 4 more ...; colorTagMap: Record<...>; }
+type groupLayoutContext = { order: GroupId[]; rawByGroup: Map<string, Map<number, PileupDataResult>>; isChainMode: boolean; sortedBy: SortedBy | undefined; ... 5 more ...; colorTagMap: Record<...>; }
 ```
 
 #### getter: groupOrder
@@ -604,9 +646,9 @@ type sourceSections = {
 
 Row count of the primary group across its regions. This reads only the first
 group (`laidOutPileupMap`), so it is meaningful only on the
-single-section/ungrouped path (`totalPileupHeight`, `searchFeatureByID`, and the
-no-data synthetic section in `sections`). Grouped layout sizes each section from
-its own `groupMaxY`; don't use this as a cross-group aggregate.
+single-section/ungrouped path (`searchFeatureByID` and the no-data synthetic
+section in `sections`). Grouped layout sizes each section from its own
+`groupMaxY`; don't use this as a cross-group aggregate.
 
 ```ts
 type maxY = number
@@ -771,8 +813,12 @@ type pileupViewportHeight = number
 
 #### getter: pileupContentHeight
 
-Total scrollable content height. Ungrouped is just the pileup (coverage is
-sticky); grouped is the full stacked-sections height.
+Total scrollable content height. Grouped is the full stacked-sections height;
+ungrouped is the pileup band alone (coverage is sticky), which is the stacked
+height minus that sticky coverage band. Both read the laid-out `sections` so the
+scroll extent tracks the geometry actually drawn — when `showPileup` is off or
+the group is collapsed the section reserves no pileup rows, so this collapses to
+0 and no phantom scroll region opens up below the coverage band.
 
 ```ts
 type pileupContentHeight = number
@@ -795,8 +841,13 @@ The read height that makes every uncollapsed group's reads fill the display
 without scrolling. Row count is fixed by read overlaps, so we lay the groups out
 uncapped (a fixed maxHeight-row cap, independent of the current featureHeight —
 so the fit autorun that writes featureHeight can't feed back into this) and
-divide the pileup space by it. 0 when there's nothing to fit (no data / no
-room), signalling "leave as-is".
+divide the pileup space by it.
+
+Fractional (not floored): the pileup then fills the display exactly rather than
+leaving up to a row of slack at the bottom. Clamped up to a 1px floor — below
+1px the reads can't all fit, so the stack scrolls instead. 0 when there's
+nothing to fit (no data / no room), signalling "leave the configured height
+as-is".
 
 ```ts
 type fittedFeatureHeight = number
@@ -811,6 +862,12 @@ type fittedFeatureHeight = number
 
 ```ts
 type linkedReads = LinkedReadsMode
+```
+
+#### getter: pairsSessionDefault
+
+```ts
+type pairsSessionDefault = SessionDefaultControl
 ```
 
 #### getter: showBezierConnections
@@ -897,10 +954,28 @@ type arcColorByType = ArcColorByType
 type readConnections = ReadConnectionsMode
 ```
 
+#### getter: arcsSessionDefault
+
+```ts
+type arcsSessionDefault = SessionDefaultControl
+```
+
+#### getter: readCloudSessionDefault
+
+```ts
+type readCloudSessionDefault = SessionDefaultControl
+```
+
 #### getter: readConnectionsDown
 
 ```ts
 type readConnectionsDown = boolean
+```
+
+#### getter: readConnectionsDownSessionDefault
+
+```ts
+type readConnectionsDownSessionDefault = SessionDefaultControl
 ```
 
 #### getter: showSashimiArcs
@@ -913,6 +988,18 @@ type showSashimiArcs = boolean
 
 ```ts
 type sashimiArcsMode = SashimiArcsMode
+```
+
+#### getter: sashimiDownSessionDefault
+
+```ts
+type sashimiDownSessionDefault = SessionDefaultControl
+```
+
+#### getter: sashimiAutoSessionDefault
+
+```ts
+type sashimiAutoSessionDefault = SessionDefaultControl
 ```
 
 #### getter: minSashimiScore
@@ -939,10 +1026,10 @@ type readConnectionsHeight = number
 type showSoftClipping = boolean
 ```
 
-#### getter: isShowSoftClippingDefault
+#### getter: softClippingSessionDefault
 
 ```ts
-type isShowSoftClippingDefault = boolean
+type softClippingSessionDefault = SessionDefaultControl
 ```
 
 #### getter: isChainMode
@@ -1163,12 +1250,6 @@ type showPerBaseQuality = boolean
 type showPerBaseLetter = boolean
 ```
 
-#### getter: totalPileupHeight
-
-```ts
-type totalPileupHeight = number
-```
-
 #### getter: readIdIndexMap
 
 ```ts
@@ -1303,7 +1384,7 @@ type chainIdsForRead = (rpcData: PileupDataResult, index: number) => string[]
 Track menu items
 
 ```ts
-type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; } | { ...; })[]
+type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | ... 6 more ... | { ...; })[]
 ```
 
 </details>
@@ -1365,6 +1446,7 @@ type rpcProps = () => {
   sortTag: string | undefined
   groupBy: GroupBy | undefined
   showSoftClipping: boolean
+  showCoverage: boolean
   drawSingletons: boolean
   drawProperPairs: boolean
   linkedReads: LinkedReadsMode
@@ -1417,22 +1499,11 @@ type toggleGroupExpanded = (key: string) => void
 #### action: resizeGroupHeight
 
 Drag a stacked group's pileup band taller/shorter by `dy` px, capping how many
-rows that group lays out; one row is the floor.
-
-The override accumulates continuously across drag frames. It must not re-seed
-from the section's displayed `pileupHeight` each frame: that height is
-row-snapped (`maxY * rowHeight`) and content-capped, so a sub-row `dy` rounds
-away to nothing while a sub-row negative `dy` snaps off a whole row — the drag
-stutters and biases toward shrinking. Instead grow the stored px value directly,
-seeding from the displayed height only on the first frame. When the override
-already runs past the real content (displayed height < override), clamp back to
-one row of headroom so reversing the drag responds immediately.
-
-A fully-shown group (no hidden reads) has nothing to grow into, so a downward
-drag never banks pixels past its content: with no existing override it's a clean
-no-op (no spurious "fit to view" affordance), and with an override it pins at
-the content height. Shrinking, or growing a group that still hides reads,
-adjusts the override as usual.
+rows that group lays out. The continuous-accumulation policy (seed once, floor
+at a row, pin/skip a fully-shown group) lives in the pure
+`nextGroupHeightOverride`; this action just gathers the group's live state and
+commits the result (undefined = leave on the fit budget). Pairs with
+`hasGroupHeightOverride` / `toggleGroupExpanded`.
 
 ```ts
 type resizeGroupHeight = (key: string, dy: number) => void
@@ -1440,23 +1511,26 @@ type resizeGroupHeight = (key: string, dy: number) => void
 
 #### action: setFitHeightToDisplay
 
-Enter/leave "fit to display height" mode. Entering drops per-group height
-overrides so the fit is uniform; the afterAttach autorun then keeps
-`featureHeight` sized to fit as the display/data change.
+Enter/leave "fit to display height" mode. Entering resets the two bits of
+transient state that a uniform fit contradicts — per-group height overrides (a
+drag opts a group out of the fit budget) and the scroll offset (a fitted stack
+doesn't scroll). These clears are tied to the explicit user action on purpose: a
+track that inherits `fit` passively from a session-wide default keeps its
+overrides, so setting an unrelated default can't silently wipe a group the user
+dragged. The afterAttach autorun then keeps `featureHeight` sized to fit as the
+display/data change, regardless of how fit was entered.
 
 ```ts
 type setFitHeightToDisplay = (fit: boolean) => void
 ```
 
-#### action: applyFittedHeight
+#### action: setFittedHeightPx
 
-Write the fitted read height into the feature-size slots. Bypasses
-`setFeatureHeight` (which would exit fit mode) — this IS the mode maintaining
-itself. `fittedFeatureHeight` is featureHeight-independent, so writing these
-slots can't re-trigger the driving autorun.
+Cache the fitted read height so the `featureHeight`/`featureSpacing` getters can
+resolve to it. Written only by the driving autorun.
 
 ```ts
-type applyFittedHeight = (height: number) => void
+type setFittedHeightPx = (px: number) => void
 ```
 
 #### action: setShowBezierConnections
@@ -1579,12 +1653,6 @@ type setShowOutline = (show: boolean | undefined) => void
 type toggleSoftClipping = () => void
 ```
 
-#### action: setShowSoftClippingDefault
-
-```ts
-type setShowSoftClippingDefault = (promote: boolean) => void
-```
-
 #### action: setCompactnessDefault
 
 ```ts
@@ -1623,6 +1691,12 @@ type setSortedByAtPosition = (
 
 ```ts
 type clearSortedBy = () => void
+```
+
+#### action: setLargeFeaturesFirst
+
+```ts
+type setLargeFeaturesFirst = (flag: boolean) => void
 ```
 
 #### action: setScaleType
@@ -1757,10 +1831,10 @@ type setDrawInter = (draw: boolean) => void
 type setDrawLongRange = (draw: boolean) => void
 ```
 
-#### action: setColorByType
+#### action: setArcColorByType
 
 ```ts
-type setColorByType = (type: ArcColorByType) => void
+type setArcColorByType = (type: ArcColorByType) => void
 ```
 
 #### action: setShowMismatches

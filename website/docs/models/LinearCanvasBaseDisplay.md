@@ -48,8 +48,7 @@ and docs.
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** [renderProps](../basedisplay#method-renderprops),
-[renderingProps](../basedisplay#method-renderingprops),
+**Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
 [regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
@@ -328,8 +327,29 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details>
+<details open>
 <summary>LinearCanvasBaseDisplay - Volatiles</summary>
+
+#### volatile: squeezeToDisplayHeight
+
+Squeeze-to-display-height mode (the "Fit to display height" menu preset):
+laid-out glyphs are uniformly shrunk so every row fits the track height without
+scrolling. Volatile — a view preference like scrollTop; picking any
+feature-height preset turns it off. The `height` config slot is never written,
+so it stays pure user intent. Only ever shrinks (scale <= 1); a track that
+already fits is left untouched.
+
+```ts
+// type signature
+type squeezeToDisplayHeight = false
+// code
+squeezeToDisplayHeight: false
+```
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Volatiles (other undocumented members)</summary>
 
 #### volatile: rpcDataMap
 
@@ -510,6 +530,40 @@ permanently stuck banner.
 
 ```ts
 type estimatedVisibleBytes = number | undefined
+```
+
+#### getter: baseLaidOutDataMap
+
+Layout at the current display mode, before any fit-to-height squeeze. The
+reference for both `squeezeScale` (which reads its height) and the final
+`laidOutDataMap`; kept separate so the fit scale derives from the unscaled
+content height and can't feed back on itself.
+
+```ts
+type baseLaidOutDataMap = Map<number, FeatureDataResult>
+```
+
+#### getter: squeezeScale
+
+Uniform vertical squeeze factor for squeeze-to-display-height mode: makes the
+whole stack fit the track height without scrolling. Shrink-only (<= 1); 1
+whenever the squeeze is off, content already fits, or there's nothing to lay
+out. Measured off the unsqueezed base layout so it can't feed back on itself.
+
+```ts
+type squeezeScale = number
+```
+
+#### getter: laidOutDataMap
+
+What every consumer (hit test, GPU upload, React render) reads. The
+`baseLaidOutDataMap` by reference unless the squeeze is shrinking the stack, in
+which case each region is cloned and scaled to exactly fill the track height.
+Returning the base map by reference off the squeeze path keeps the
+incremental-layout upload diff and Y-morph idle check intact.
+
+```ts
+type laidOutDataMap = Map<number, FeatureDataResult>
 ```
 
 </details>
@@ -713,12 +767,6 @@ type regionTooLarge = boolean
 
 ```ts
 type regionTooLargeReason = string
-```
-
-#### getter: laidOutDataMap
-
-```ts
-type laidOutDataMap = Map<number, FeatureDataResult>
 ```
 
 #### getter: renderDataMap
@@ -926,6 +974,29 @@ type trackMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIcon
 <details open>
 <summary>LinearCanvasBaseDisplay - Actions</summary>
 
+#### action: setSqueezeToDisplayHeight
+
+Enter/leave squeeze-to-display-height mode. Entering scrolls to the top (a
+squeezed stack has no scroll, so a stale scrollTop would leave the GPU canvas
+painted at an invalid offset). The `laidOutDataMap` getter does the actual
+squeeze reactively.
+
+```ts
+type setSqueezeToDisplayHeight = (squeeze: boolean) => void
+```
+
+#### action: selectFeature
+
+Open the feature-details widget. The adapter's header metadata (VCF INFO/FORMAT
+descriptions, etc.) is fetched first and passed as `descriptions` so the widget
+can label attribute rows and — for the variant widget — resolve the ANN/CSQ
+column names; without it that table renders headerless. CoreGetMetadata returns
+null for adapters that expose none, so this is a no-op for those tracks.
+
+```ts
+type selectFeature = (feature: Feature) => void
+```
+
 #### action: setJexlFilters
 
 Sets the runtime filter override (already-`jexl:`-prefixed expressions). Pass
@@ -1128,12 +1199,6 @@ type soloFeature = (featureId: string) => void
 
 ```ts
 type clearAllFeatureFilters = () => void
-```
-
-#### action: selectFeature
-
-```ts
-type selectFeature = (feature: Feature) => void
 ```
 
 #### action: clearSelection

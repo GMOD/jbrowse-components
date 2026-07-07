@@ -81,11 +81,11 @@ and docs.
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
 **Methods:**
-[getReferring](../referencemanagementsessionmixin#method-getreferring),
-[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple)
+[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple),
+[getReferring](../referencemanagementsessionmixin#method-getreferring)
 
 **Actions:**
-[removeReferring](../referencemanagementsessionmixin#action-removereferring)
+[dereferenceTrack](../referencemanagementsessionmixin#action-dereferencetrack)
 
 <details open>
 <summary>SessionTracksManagerSessionMixin - Properties</summary>
@@ -129,6 +129,33 @@ trackConfigDeltas: types.frozen<Record<string, PlainTrackConfig>>({})
 </details>
 
 <details open>
+<summary>SessionTracksManagerSessionMixin - Volatiles</summary>
+
+#### volatile: editableTrackConfigs
+
+Per-track private working copies (non-admin), keyed by trackId. A plain Map —
+not observable, not persisted — mirroring the pluginManager hydration cache: it
+holds the live MST config node a shown track's in-place quick-edits mutate, so
+the shared frozen base is never touched. See agent-docs/ADR-032 and
+CONFIG_WORKING_COPY_PLAN.md.
+
+Not evicted: it's a pure memoization cache, bounded by the count of distinct
+tracks shown this session (each entry a lazily-hydrated config node), holding no
+authoritative state — the persisted delta is the source of truth, and
+reset/programmatic edits keep a retained copy in sync. Retention is volatile RAM
+only (never serialized), so it's not worth a reference-counted prune at every
+track-removal path.
+
+```ts
+// type signature
+type editableTrackConfigs = Map<string, IAnyStateTreeNode>
+// code
+editableTrackConfigs: new Map<string, IAnyStateTreeNode>()
+```
+
+</details>
+
+<details open>
 <summary>SessionTracksManagerSessionMixin - Getters</summary>
 
 #### getter: tracks
@@ -154,6 +181,23 @@ changes" dialog opened from the edited badge.
 
 ```ts
 type getTrackConfigChanges = (trackId: string) => TrackConfigChange[]
+```
+
+#### method: getEditableTrackConfig
+
+A non-admin's private working copy of a track config, created on first access
+from the current frozen (base+delta) value and cached by trackId, so a shown
+track's in-place quick-edits (setSlot) mutate this copy and never the shared
+frozen base node (see ADR-032). Undefined in admin mode — there the base
+jbrowse.tracks entry is edited in place. Called by TrackConfigurationReference
+during lazy hydration.
+
+```ts
+type getEditableTrackConfig = (
+  trackId: string,
+  frozenConfig: unknown,
+  schemaType: IAnyType,
+) => IAnyStateTreeNode | undefined
 ```
 
 </details>

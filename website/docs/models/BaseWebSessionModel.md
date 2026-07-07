@@ -23,11 +23,11 @@ and docs.
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
 **Methods:**
-[getReferring](../referencemanagementsessionmixin#method-getreferring),
-[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple)
+[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple),
+[getReferring](../referencemanagementsessionmixin#method-getreferring)
 
 **Actions:**
-[removeReferring](../referencemanagementsessionmixin#action-removereferring)
+[dereferenceTrack](../referencemanagementsessionmixin#action-dereferencetrack)
 
 ### Available via [ThemeManagerSessionMixin](../thememanagersessionmixin)
 
@@ -139,10 +139,14 @@ and docs.
 [sessionTracks](../sessiontracksmanagersessionmixin#property-sessiontracks),
 [trackConfigDeltas](../sessiontracksmanagersessionmixin#property-trackconfigdeltas)
 
+**Volatiles:**
+[editableTrackConfigs](../sessiontracksmanagersessionmixin#volatile-editabletrackconfigs)
+
 **Getters:** [tracks](../sessiontracksmanagersessionmixin#getter-tracks)
 
 **Methods:**
-[getTrackConfigChanges](../sessiontracksmanagersessionmixin#method-gettrackconfigchanges)
+[getTrackConfigChanges](../sessiontracksmanagersessionmixin#method-gettrackconfigchanges),
+[getEditableTrackConfig](../sessiontracksmanagersessionmixin#method-geteditabletrackconfig)
 
 **Actions:**
 [addTrackConf](../sessiontracksmanagersessionmixin#action-addtrackconf),
@@ -184,8 +188,7 @@ and docs.
 [history](../appsessionmixin#getter-history),
 [assemblyManager](../appsessionmixin#getter-assemblymanager)
 
-**Methods:** [renderProps](../appsessionmixin#method-renderprops),
-[menus](../appsessionmixin#method-menus)
+**Methods:** [menus](../appsessionmixin#method-menus)
 
 **Actions:**
 [renameCurrentSession](../appsessionmixin#action-renamecurrentsession)
@@ -210,13 +213,14 @@ and docs.
 
 **Actions:**
 [makeConnection](../connectionmanagementsessionmixin#action-makeconnection),
-[prepareToBreakConnection](../connectionmanagementsessionmixin#action-preparetobreakconnection),
 [breakConnection](../connectionmanagementsessionmixin#action-breakconnection),
+[teardownConnection](../connectionmanagementsessionmixin#action-teardownconnection),
 [deleteConnection](../connectionmanagementsessionmixin#action-deleteconnection),
 [addConnectionConf](../connectionmanagementsessionmixin#action-addconnectionconf),
 [clearConnections](../connectionmanagementsessionmixin#action-clearconnections),
 [captureConnectionTrack](../connectionmanagementsessionmixin#action-captureconnectiontrack),
 [updateConnectionTrackConfig](../connectionmanagementsessionmixin#action-updateconnectiontrackconfig),
+[setConnectionTrackConfig](../connectionmanagementsessionmixin#action-setconnectiontrackconfig),
 [pruneConnectionTrackConfig](../connectionmanagementsessionmixin#action-pruneconnectiontrackconfig),
 [hydrateConnection](../connectionmanagementsessionmixin#action-hydrateconnection)
 

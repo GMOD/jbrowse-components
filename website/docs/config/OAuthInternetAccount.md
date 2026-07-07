@@ -72,7 +72,8 @@ the type of response from the authorization endpoint. can be 'token' or 'code'
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
 
 <details open>
 <summary>Inherited from BaseInternetAccount</summary>
@@ -96,12 +97,6 @@ a description of the internet account
 request header for credentials
 
 **Type:** `string` · **Default:** `'Authorization'`
-
-#### slot: tokenType
-
-a custom name for a token to include in the header
-
-**Type:** `string` · **Default:** `''`
 
 #### slot: domains
 

@@ -67,8 +67,7 @@ and docs.
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** [renderProps](../basedisplay#method-renderprops),
-[renderingProps](../basedisplay#method-renderingprops),
+**Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
 [regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
@@ -132,13 +131,32 @@ refNameMap: undefined as Record<string, string> | undefined
 
 </details>
 
-<details>
+<details open>
 <summary>ChordVariantDisplay - Getters</summary>
+
+#### getter: bezierRadius
+
+how far chords bow toward the center
+
+```ts
+type bezierRadius = number
+```
+
+</details>
+
+<details>
+<summary>ChordVariantDisplay - Getters (other undocumented members)</summary>
 
 #### getter: ready
 
 ```ts
 type ready = boolean
+```
+
+#### getter: radiusPx
+
+```ts
+type radiusPx = number
 ```
 
 #### getter: blocksForRefs
@@ -175,6 +193,12 @@ type renderSvg = (
 
 ```ts
 type onChordClick = (feature: Feature) => void
+```
+
+#### action: openErrorDialog
+
+```ts
+type openErrorDialog = () => void
 ```
 
 #### action: setFeatures

@@ -69,7 +69,7 @@ and docs.
 [scrollTop](../linearalignmentsdisplay#volatile-scrolltop),
 [collapsedGroups](../linearalignmentsdisplay#volatile-collapsedgroups),
 [groupMaxHeightOverrides](../linearalignmentsdisplay#volatile-groupmaxheightoverrides),
-[fitHeightToDisplay](../linearalignmentsdisplay#volatile-fitheighttodisplay),
+[fittedHeightPx](../linearalignmentsdisplay#volatile-fittedheightpx),
 [highlightedChainIds](../linearalignmentsdisplay#volatile-highlightedchainids),
 [selectedChainIds](../linearalignmentsdisplay#volatile-selectedchainids),
 [colorTagMap](../linearalignmentsdisplay#volatile-colortagmap),
@@ -79,6 +79,7 @@ and docs.
 [hoverCoverageBand](../linearalignmentsdisplay#volatile-hovercoverageband)
 
 **Getters:** [linkedReads](../linearalignmentsdisplay#getter-linkedreads),
+[pairsSessionDefault](../linearalignmentsdisplay#getter-pairssessiondefault),
 [showBezierConnections](../linearalignmentsdisplay#getter-showbezierconnections),
 [showCoverage](../linearalignmentsdisplay#getter-showcoverage),
 [showPileup](../linearalignmentsdisplay#getter-showpileup),
@@ -93,16 +94,22 @@ and docs.
 [drawLongRange](../linearalignmentsdisplay#getter-drawlongrange),
 [arcColorByType](../linearalignmentsdisplay#getter-arccolorbytype),
 [readConnections](../linearalignmentsdisplay#getter-readconnections),
+[arcsSessionDefault](../linearalignmentsdisplay#getter-arcssessiondefault),
+[readCloudSessionDefault](../linearalignmentsdisplay#getter-readcloudsessiondefault),
 [readConnectionsDown](../linearalignmentsdisplay#getter-readconnectionsdown),
+[readConnectionsDownSessionDefault](../linearalignmentsdisplay#getter-readconnectionsdownsessiondefault),
 [showSashimiArcs](../linearalignmentsdisplay#getter-showsashimiarcs),
 [sashimiArcsMode](../linearalignmentsdisplay#getter-sashimiarcsmode),
+[sashimiDownSessionDefault](../linearalignmentsdisplay#getter-sashimidownsessiondefault),
+[sashimiAutoSessionDefault](../linearalignmentsdisplay#getter-sashimiautosessiondefault),
 [minSashimiScore](../linearalignmentsdisplay#getter-minsashimiscore),
 [sashimiArcsHeight](../linearalignmentsdisplay#getter-sashimiarcsheight),
 [readConnectionsHeight](../linearalignmentsdisplay#getter-readconnectionsheight),
 [showSoftClipping](../linearalignmentsdisplay#getter-showsoftclipping),
-[isShowSoftClippingDefault](../linearalignmentsdisplay#getter-isshowsoftclippingdefault),
+[softClippingSessionDefault](../linearalignmentsdisplay#getter-softclippingsessiondefault),
 [isChainMode](../linearalignmentsdisplay#getter-ischainmode),
 [showLinkedReadLines](../linearalignmentsdisplay#getter-showlinkedreadlines),
+[fitHeightToDisplay](../linearalignmentsdisplay#getter-fitheighttodisplay),
 [scaleType](../linearalignmentsdisplay#getter-scaletype),
 [autoscaleType](../linearalignmentsdisplay#getter-autoscaletype),
 [minScore](../linearalignmentsdisplay#getter-minscore),
@@ -117,16 +124,19 @@ and docs.
 [colorBy](../linearalignmentsdisplay#getter-colorby),
 [isColorByDefault](../linearalignmentsdisplay#getter-iscolorbydefault),
 [filterBy](../linearalignmentsdisplay#getter-filterby),
+[isFitting](../linearalignmentsdisplay#getter-isfitting),
 [featureHeight](../linearalignmentsdisplay#getter-featureheight),
 [featureSpacing](../linearalignmentsdisplay#getter-featurespacing),
 [isCompactnessDefault](../linearalignmentsdisplay#getter-iscompactnessdefault),
 [maxHeight](../linearalignmentsdisplay#getter-maxheight),
 [showSashimiLabels](../linearalignmentsdisplay#getter-showsashimilabels),
+[showSashimiLabelsSessionDefault](../linearalignmentsdisplay#getter-showsashimilabelssessiondefault),
 [chainIdMap](../linearalignmentsdisplay#getter-chainidmap),
 [mismatchAlpha](../linearalignmentsdisplay#getter-mismatchalpha),
 [showLowFreqMismatches](../linearalignmentsdisplay#getter-showlowfreqmismatches),
 [showLegend](../linearalignmentsdisplay#getter-showlegend),
 [sortedBy](../linearalignmentsdisplay#getter-sortedby),
+[largeFeaturesFirst](../linearalignmentsdisplay#getter-largefeaturesfirst),
 [groupBy](../linearalignmentsdisplay#getter-groupby),
 [prefersOffset](../linearalignmentsdisplay#getter-prefersoffset),
 [coverageIsLog](../linearalignmentsdisplay#getter-coverageislog),
@@ -150,7 +160,6 @@ and docs.
 [showModifications](../linearalignmentsdisplay#getter-showmodifications),
 [showPerBaseQuality](../linearalignmentsdisplay#getter-showperbasequality),
 [showPerBaseLetter](../linearalignmentsdisplay#getter-showperbaseletter),
-[totalPileupHeight](../linearalignmentsdisplay#getter-totalpileupheight),
 [readIdIndexMap](../linearalignmentsdisplay#getter-readidindexmap),
 [readConnectionsLineWidth](../linearalignmentsdisplay#getter-readconnectionslinewidth),
 [belowCoverageBands](../linearalignmentsdisplay#getter-belowcoveragebands),
@@ -207,13 +216,13 @@ and docs.
 [setFilterBy](../linearalignmentsdisplay#action-setfilterby),
 [setShowOutline](../linearalignmentsdisplay#action-setshowoutline),
 [toggleSoftClipping](../linearalignmentsdisplay#action-togglesoftclipping),
-[setShowSoftClippingDefault](../linearalignmentsdisplay#action-setshowsoftclippingdefault),
 [setCompactnessDefault](../linearalignmentsdisplay#action-setcompactnessdefault),
 [toggleMismatchAlpha](../linearalignmentsdisplay#action-togglemismatchalpha),
 [toggleShowLowFreqMismatches](../linearalignmentsdisplay#action-toggleshowlowfreqmismatches),
 [setSortedBy](../linearalignmentsdisplay#action-setsortedby),
 [setSortedByAtPosition](../linearalignmentsdisplay#action-setsortedbyatposition),
 [clearSortedBy](../linearalignmentsdisplay#action-clearsortedby),
+[setLargeFeaturesFirst](../linearalignmentsdisplay#action-setlargefeaturesfirst),
 [setGroupBy](../linearalignmentsdisplay#action-setgroupby),
 [toggleGroupCollapsed](../linearalignmentsdisplay#action-togglegroupcollapsed),
 [toggleGroupExpanded](../linearalignmentsdisplay#action-togglegroupexpanded),
@@ -227,7 +236,7 @@ and docs.
 [setMaxHeight](../linearalignmentsdisplay#action-setmaxheight),
 [setCompactness](../linearalignmentsdisplay#action-setcompactness),
 [setFitHeightToDisplay](../linearalignmentsdisplay#action-setfitheighttodisplay),
-[applyFittedHeight](../linearalignmentsdisplay#action-applyfittedheight),
+[setFittedHeightPx](../linearalignmentsdisplay#action-setfittedheightpx),
 [setShowSashimiArcs](../linearalignmentsdisplay#action-setshowsashimiarcs),
 [setReadConnections](../linearalignmentsdisplay#action-setreadconnections),
 [setReadConnectionsDown](../linearalignmentsdisplay#action-setreadconnectionsdown),
@@ -242,7 +251,7 @@ and docs.
 [setReadConnectionsLineWidth](../linearalignmentsdisplay#action-setreadconnectionslinewidth),
 [setDrawInter](../linearalignmentsdisplay#action-setdrawinter),
 [setDrawLongRange](../linearalignmentsdisplay#action-setdrawlongrange),
-[setColorByType](../linearalignmentsdisplay#action-setcolorbytype),
+[setArcColorByType](../linearalignmentsdisplay#action-setarccolorbytype),
 [setShowMismatches](../linearalignmentsdisplay#action-setshowmismatches),
 [setShowLegend](../linearalignmentsdisplay#action-setshowlegend),
 [setDrawSingletons](../linearalignmentsdisplay#action-setdrawsingletons),
@@ -292,8 +301,7 @@ and docs.
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** [renderProps](../basedisplay#method-renderprops),
-[renderingProps](../basedisplay#method-renderingprops),
+**Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
 [regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
@@ -464,7 +472,7 @@ type contextMenuItems = () => (
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; })[]
+type trackMenuItems = () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 </details>

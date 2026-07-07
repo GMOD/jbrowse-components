@@ -44,8 +44,7 @@ and docs.
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** [renderProps](../basedisplay#method-renderprops),
-[renderingProps](../basedisplay#method-renderingprops),
+**Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
 [regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
@@ -154,7 +153,9 @@ and docs.
 
 **Volatiles:** [rpcDataMap](../wigglecommonmixin#volatile-rpcdatamap)
 
-**Getters:** [visibleScoreRange](../wigglecommonmixin#getter-visiblescorerange),
+**Getters:**
+[autoscaleSourceNames](../wigglecommonmixin#getter-autoscalesourcenames),
+[visibleScoreRange](../wigglecommonmixin#getter-visiblescorerange),
 [hasNoData](../wigglecommonmixin#getter-hasnodata),
 [domain](../wigglecommonmixin#getter-domain)
 
@@ -330,6 +331,12 @@ type sources = Source[]
 
 ```ts
 type numSources = number
+```
+
+#### getter: autoscaleSourceNames
+
+```ts
+type autoscaleSourceNames = Set<string>
 ```
 
 #### getter: rowHeight

@@ -9,9 +9,7 @@ import {
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
-import type {
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // MANE Select (v1.4, RefSeq/NCBI) as a session track: one curated transcript
 // per gene, so the GAPDH exon/CDS structure lines up above the 470-way heatmap

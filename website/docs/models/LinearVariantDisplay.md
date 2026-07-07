@@ -71,6 +71,7 @@ and docs.
 [userFeatureDensityLimit](../linearcanvasbasedisplay#volatile-userfeaturedensitylimit),
 [byteEstimateVisibleBp](../linearcanvasbasedisplay#volatile-byteestimatevisiblebp),
 [heightBeforeExpand](../linearcanvasbasedisplay#volatile-heightbeforeexpand),
+[squeezeToDisplayHeight](../linearcanvasbasedisplay#volatile-squeezetodisplayheight),
 [incrementalLayout](../linearcanvasbasedisplay#volatile-incrementallayout),
 [morphFromTops](../linearcanvasbasedisplay#volatile-morphfromtops),
 [morphProgress](../linearcanvasbasedisplay#volatile-morphprogress),
@@ -111,6 +112,8 @@ and docs.
 [tooLargeStatus](../linearcanvasbasedisplay#getter-toolargestatus),
 [regionTooLarge](../linearcanvasbasedisplay#getter-regiontoolarge),
 [regionTooLargeReason](../linearcanvasbasedisplay#getter-regiontoolargereason),
+[baseLaidOutDataMap](../linearcanvasbasedisplay#getter-baselaidoutdatamap),
+[squeezeScale](../linearcanvasbasedisplay#getter-squeezescale),
 [laidOutDataMap](../linearcanvasbasedisplay#getter-laidoutdatamap),
 [renderDataMap](../linearcanvasbasedisplay#getter-renderdatamap),
 [maxY](../linearcanvasbasedisplay#getter-maxy),
@@ -144,6 +147,7 @@ and docs.
 [setMorphProgress](../linearcanvasbasedisplay#action-setmorphprogress),
 [endYMorph](../linearcanvasbasedisplay#action-endymorph),
 [expandToFit](../linearcanvasbasedisplay#action-expandtofit),
+[setSqueezeToDisplayHeight](../linearcanvasbasedisplay#action-setsqueezetodisplayheight),
 [collapseFromExpand](../linearcanvasbasedisplay#action-collapsefromexpand),
 [clearHeightBeforeExpand](../linearcanvasbasedisplay#action-clearheightbeforeexpand),
 [setRpcData](../linearcanvasbasedisplay#action-setrpcdata),
@@ -209,8 +213,7 @@ and docs.
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** [renderProps](../basedisplay#method-renderprops),
-[renderingProps](../basedisplay#method-renderingprops),
+**Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
 [regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 

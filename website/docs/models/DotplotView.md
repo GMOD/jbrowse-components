@@ -598,12 +598,6 @@ type getVHighlightCoords = (region: {
 <details>
 <summary>DotplotView - Methods (other undocumented members)</summary>
 
-#### method: renderProps
-
-```ts
-type renderProps = () => { drawCigar: boolean }
-```
-
 #### method: menuItems
 
 ```ts

@@ -206,10 +206,10 @@
   },
   "sv_cgiab/dotplot_result": {
     "name": "sv_cgiab/dotplot_result",
-    "status": "good",
-    "note": "try to add autodiagonalize  DONE: added autoDiagonalize:true — main alignment now forms a clean diagonal",
-    "reviewedAt": "2026-07-07T02:35:59.963Z",
-    "hash": "3376f298e5df6b909a5253eee1ab63850c23a26a"
+    "status": "bad",
+    "note": "the autodiagonalize is pretty good but there are some significant off-diagonals. we may want to compare against mummerplot",
+    "reviewedAt": "2026-07-07T03:45:47.172Z",
+    "hash": "e7d92508d8008836914ea95edbb2c320087878dc"
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
@@ -850,9 +850,9 @@
   "alignments/modifications2": {
     "name": "alignments/modifications2",
     "status": "bad",
-    "note": "the text blurbs are a little hard to interpret if you are just looking at this without context",
-    "reviewedAt": "2026-07-06T22:47:52.190Z",
-    "hash": "ecad4b1c30c893e008a9e2614f4f711d261467c7"
+    "note": "we may need a 'inset' of the track menu sowing the two different colorby options that the user would interactively choose from",
+    "reviewedAt": "2026-07-07T03:36:20.840Z",
+    "hash": "50d5e2102ac9bdfb060028f343ec7531a1278ecc"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",

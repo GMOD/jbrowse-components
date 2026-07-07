@@ -69,7 +69,8 @@ This config's runtime API is documented on its
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
 
 <details open>
 <summary>Inherited from LinearWiggleDisplay</summary>

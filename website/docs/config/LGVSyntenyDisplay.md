@@ -44,6 +44,7 @@ _See the **Slots** section below for all available configuration fields._
 
 Data adapters that can supply the [SyntenyTrack](../syntenytrack):
 
+- [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
 - [AllVsAllPAFAdapter](../allvsallpafadapter)
 - [ChainAdapter](../chainadapter)
 - [DeltaAdapter](../deltaadapter)
@@ -76,12 +77,21 @@ base alignments display's `showCoverage` default of `true`.
 
 **Type:** `boolean` · **Default:** `false`
 
+#### slot: largeFeaturesFirst
+
+Synteny lays large alignments out first so big syntenic blocks cluster at the
+top instead of interleaving with small ones; overrides the base alignments
+display's `largeFeaturesFirst` default of `false`.
+
+**Type:** `boolean` · **Default:** `true`
+
 </details>
 
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
 
 <details open>
 <summary>Inherited from LinearAlignmentsDisplay</summary>
@@ -100,6 +110,32 @@ Spacing between features in pixels
 
 **Type:** `number` · **Default:** `1` · _promotable_
 
+#### slot: heightMode
+
+How read height is chosen. `inherit` (the default) follows the session-wide
+default for this display type, falling back to `fixed`; `fixed` uses
+`featureHeight`/`featureSpacing`; `fit` sizes reads so every uncollapsed group
+fills the display without scrolling
+
+**Type:** `stringEnum` (one of `inherit`, `fit`, `fixed`) · **Default:**
+`'inherit'` · _promotable_
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('heightMode', ['inherit', 'fit', 'fixed']),
+  description:
+    'How read height is chosen. `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing`; `fit` sizes reads so every uncollapsed group fills the display without scrolling',
+
+
+
+
+  defaultValue: 'inherit',
+  promotedBase: 'fixed',
+  promotable: true,
+}
+```
+
 #### slot: readConnectionsLineWidth
 
 Line width for read-connection arcs/lines in pixels
@@ -110,7 +146,7 @@ Line width for read-connection arcs/lines in pixels
 
 Draw the supporting-read count on each sashimi arc
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** `boolean` · **Default:** `false` · _promotable_
 
 #### slot: maxHeight
 
@@ -122,30 +158,6 @@ Maximum pixel height of the pileup layout; reads beyond this are not stacked
 #### slot: height
 
 **Type:** `number` · **Default:** `250`
-
-#### slot: colorBy
-
-Color scheme for reads
-
-**Type:** `frozen` · **Default:** `{ type: 'inherit' }` · _advanced, promotable_
-
-```js
-{
-  type: 'frozen',
-
-
-
-
-
-
-
-  defaultValue: { type: 'inherit' },
-  promotedBase: { type: 'normal' },
-  promotable: true,
-  description: 'Color scheme for reads',
-  advanced: true,
-}
-```
 
 #### slot: filterBy
 
@@ -228,19 +240,34 @@ force it on or off regardless of mode.
 
 Linked-read (barcode-chain) layout mode
 
-**Type:** `stringEnum` (one of `off`, `normal`) · **Default:** `'off'`
+**Type:** `stringEnum` (one of `inherit`, `off`, `normal`) · **Default:**
+`'inherit'` · _promotable_
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('LinkedReadsMode', [
+    'inherit',
+    'off',
+    'normal',
+  ]),
+
+
+
+
+
+  defaultValue: 'inherit',
+  promotedBase: 'off',
+  promotable: true,
+  description: 'Linked-read (barcode-chain) layout mode',
+}
+```
 
 #### slot: showBezierConnections
 
 Draw paired-read connection curves over the pileup
 
 **Type:** `boolean` · **Default:** `false`
-
-#### slot: showCoverage
-
-Draw the coverage histogram band
-
-**Type:** `boolean` · **Default:** `true`
 
 #### slot: showPileup
 
@@ -313,13 +340,34 @@ How to color read-connection arcs
 
 Read-connection rendering mode (mate pairs + split reads)
 
-**Type:** `stringEnum` (one of `off`, `arc`, `samplot`) · **Default:** `'off'`
+**Type:** `stringEnum` (one of `inherit`, `off`, `arc`, `samplot`) ·
+**Default:** `'inherit'` · _promotable_
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('ReadConnectionsMode', [
+    'inherit',
+    'off',
+    'arc',
+    'samplot',
+  ]),
+
+
+
+  defaultValue: 'inherit',
+  promotedBase: 'off',
+  promotable: true,
+  description:
+    'Read-connection rendering mode (mate pairs + split reads)',
+}
+```
 
 #### slot: readConnectionsDown
 
 Draw read connections below the coverage band
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** `boolean` · **Default:** `false` · _promotable_
 
 #### slot: showSashimiArcs
 
@@ -331,7 +379,27 @@ Draw sashimi (splice-junction) arcs
 
 Sashimi junction-arc placement
 
-**Type:** `stringEnum` (one of `up`, `down`, `auto`) · **Default:** `'up'`
+**Type:** `stringEnum` (one of `inherit`, `up`, `down`, `auto`) · **Default:**
+`'inherit'` · _promotable_
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('SashimiArcsMode', [
+    'inherit',
+    'up',
+    'down',
+    'auto',
+  ]),
+
+
+
+  defaultValue: 'inherit',
+  promotedBase: 'up',
+  promotable: true,
+  description: 'Sashimi junction-arc placement',
+}
+```
 
 #### slot: minSashimiScore
 
@@ -377,12 +445,6 @@ maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
 **Type:** `number` · **Default:** `1_000_000` · _advanced_
-
-#### slot: height
-
-default height for the track
-
-**Type:** `number` · **Default:** `100`
 
 #### slot: mouseover
 

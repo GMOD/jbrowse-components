@@ -60,7 +60,8 @@ will be imported
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
 
 <details open>
 <summary>Inherited from BaseConnection</summary>
@@ -72,12 +73,6 @@ this page is self-contained.
 a unique name for this connection
 
 **Type:** `string` · **Default:** `'nameOfConnection'`
-
-#### slot: assemblyNames
-
-optional list of names of assemblies in this connection
-
-**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 

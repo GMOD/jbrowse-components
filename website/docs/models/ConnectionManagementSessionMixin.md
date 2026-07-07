@@ -64,6 +64,39 @@ type connections = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema
 <details open>
 <summary>ConnectionManagementSessionMixin - Actions</summary>
 
+#### action: breakConnection
+
+Remove a live connection instance. Tolerant of an already-dormant connection
+(its instance is stripped from the session on reload). Leaves persisted
+open-track configs alone — the connect() error path calls this and the user's
+already-open tracks must survive a transient failure. Full removal goes through
+`deleteConnection`.
+
+```ts
+type breakConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
+```
+
+#### action: teardownConnection
+
+Close every track a connection contributed — the live instance's tracks plus any
+persisted open-track configs (a dormant connection, never expanded this session,
+still renders its opened tracks from `connectionTrackConfigs`) — from all
+views/widgets, drop the live instance, and drop the persisted configs. The
+session is left as if the connection had never loaded.
+
+```ts
+type teardownConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
+```
+
+#### action: deleteConnection
+
+Fully remove a connection: tear down its tracks and live instance, then delete
+its config.
+
+```ts
+type deleteConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```
+
 #### action: captureConnectionTrack
 
 Snapshot a just-opened connection track's config into `connectionTrackConfigs`
@@ -83,6 +116,18 @@ complete config resolves synchronously.
 ```ts
 type updateConnectionTrackConfig = (
   trackConf: Record<string, unknown> & { trackId: string },
+) => void
+```
+
+#### action: setConnectionTrackConfig
+
+Upsert one opened connection track's persisted config.
+
+```ts
+type setConnectionTrackConfig = (
+  trackId: string,
+  connectionId: string,
+  config: Record<string, unknown>,
 ) => void
 ```
 
@@ -115,24 +160,6 @@ type hydrateConnection = (connectionId: string) => void
 
 ```ts
 type makeConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any
-```
-
-#### action: prepareToBreakConnection
-
-```ts
-type prepareToBreakConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => [...] | undefined
-```
-
-#### action: breakConnection
-
-```ts
-type breakConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
-```
-
-#### action: deleteConnection
-
-```ts
-type deleteConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 #### action: addConnectionConf

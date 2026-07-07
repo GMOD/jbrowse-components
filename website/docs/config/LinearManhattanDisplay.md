@@ -101,7 +101,8 @@ used when colorBy is 'ld'.
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
 
 <details open>
 <summary>Inherited from LinearWiggleDisplay</summary>
@@ -144,13 +145,6 @@ When true (the default), positive scores use posColor and negative scores use
 negColor. When false, all bars use the single color slot.
 
 **Type:** `boolean` · **Default:** `true`
-
-#### slot: color
-
-Single fill color for the wiggle bars. Only used when useBicolor is false
-(useBicolor defaults to true, in which case posColor/negColor are used instead).
-
-**Type:** `color` · **Default:** `WIGGLE_POS_COLOR_DEFAULT`
 
 #### slot: minimalTicks
 

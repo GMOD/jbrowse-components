@@ -54,6 +54,24 @@ configuration: ConfigurationReference(configSchema)
 </details>
 
 <details open>
+<summary>BaseConnectionModel - Volatiles</summary>
+
+#### volatile: loading
+
+true while `connect()` is fetching this connection's tracks; drives a loading
+affordance in the track selector. Distinct from an empty `tracks` array, which
+is also the state of a connection that loaded successfully but has no tracks.
+
+```ts
+// type signature
+type loading = false
+// code
+loading: false
+```
+
+</details>
+
+<details open>
 <summary>BaseConnectionModel - Getters</summary>
 
 #### getter: connectionId
@@ -84,16 +102,23 @@ type name = string
 #### action: connect
 
 no-op hook; concrete connections (UCSC/JB2 track hubs, etc.) override this to
-fetch and populate their `tracks`
+fetch and populate their `tracks`. Returns a promise so `afterAttach` can clear
+the loading flag once the fetch settles.
 
 ```ts
-type connect = () => void
+type connect = () => Promise<void>
 ```
 
 </details>
 
 <details>
 <summary>BaseConnectionModel - Actions (other undocumented members)</summary>
+
+#### action: setLoading
+
+```ts
+type setLoading = (loading: boolean) => void
+```
 
 #### action: addTrackConf
 

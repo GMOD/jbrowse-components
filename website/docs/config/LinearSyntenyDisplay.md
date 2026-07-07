@@ -37,6 +37,7 @@ A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
 
 Data adapters that can supply the [SyntenyTrack](../syntenytrack):
 
+- [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
 - [AllVsAllPAFAdapter](../allvsallpafadapter)
 - [ChainAdapter](../chainadapter)
 - [DeltaAdapter](../deltaadapter)

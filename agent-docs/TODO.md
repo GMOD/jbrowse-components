@@ -44,4 +44,6 @@ max-zoomed-out level, and is more noticeable near the plot edge.
 
 
 
+## more accurate cgiab
 
+look at wakhan, pycnv

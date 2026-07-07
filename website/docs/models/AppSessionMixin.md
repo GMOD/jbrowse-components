@@ -13,9 +13,9 @@ JBrowse core.
 
 Session getters shared by the "app" products (desktop + web) that simply
 delegate to the root model — `version`, `history`, `menus`, `assemblyManager` —
-plus `renderProps` and `renameCurrentSession`. Centralized here so the products
-compose one mixin instead of re-declaring (and diverging on) the same root
-delegations. The root must satisfy .
+plus `renameCurrentSession`. Centralized here so the products compose one mixin
+instead of re-declaring (and diverging on) the same root delegations. The root
+must satisfy .
 
 <details>
 <summary>AppSessionMixin - Getters</summary>
@@ -55,12 +55,6 @@ type assemblyManager = ModelInstanceTypeProps<{ assemblies: IArrayType<IModelTyp
 
 <details>
 <summary>AppSessionMixin - Methods</summary>
-
-#### method: renderProps
-
-```ts
-type renderProps = () => { theme: SerializableThemeArgs }
-```
 
 #### method: menus
 

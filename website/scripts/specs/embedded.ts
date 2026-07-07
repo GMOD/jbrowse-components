@@ -1,9 +1,6 @@
-import type {
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const embeddedSpecs: ScreenshotSpec[] = [
-
   // The embed tutorial's hero figure: the *embedded*
   // `@jbrowse/react-linear-genome-view2` component (not the jbrowse-web app),
   // captured from its prebuilt UMD bundle via the script-tag setup the tutorial

@@ -126,7 +126,8 @@ JEXL filter expressions to apply to variants (one per line, starting with jexl:)
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
 
 <details open>
 <summary>Inherited from BaseLinearDisplay</summary>
@@ -168,13 +169,6 @@ text to display when the cursor hovers over a feature
   contextVariable: ['feature', 'mouseoverExtraInformation'],
 }
 ```
-
-#### slot: jexlFilters
-
-config jexlFilters are deferred evaluated so they are prepended with jexl at
-runtime rather than being stored with jexl in the config
-
-**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 

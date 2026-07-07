@@ -50,7 +50,8 @@ the type of response from the authorization endpoint
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
 
 <details open>
 <summary>Inherited from OAuthInternetAccount</summary>
@@ -62,12 +63,6 @@ this page is self-contained.
 a custom name for a token to include in the header
 
 **Type:** `string` · **Default:** `'Bearer'`
-
-#### slot: authEndpoint
-
-the authorization code endpoint of the internet account
-
-**Type:** `string` · **Default:** `''`
 
 #### slot: tokenEndpoint
 
@@ -87,23 +82,11 @@ id for the OAuth application
 
 **Type:** `string` · **Default:** `''`
 
-#### slot: scopes
-
-optional scopes for the authorization call
-
-**Type:** `string` · **Default:** `''`
-
 #### slot: state
 
 optional state for the authorization call
 
 **Type:** `string` · **Default:** `''`
-
-#### slot: responseType
-
-the type of response from the authorization endpoint. can be 'token' or 'code'
-
-**Type:** `string` · **Default:** `'code'`
 
 </details>
 
@@ -129,18 +112,6 @@ a description of the internet account
 request header for credentials
 
 **Type:** `string` · **Default:** `'Authorization'`
-
-#### slot: tokenType
-
-a custom name for a token to include in the header
-
-**Type:** `string` · **Default:** `''`
-
-#### slot: domains
-
-array of valid domains the url can contain to use this account
-
-**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 

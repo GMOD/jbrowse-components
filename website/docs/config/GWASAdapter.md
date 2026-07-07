@@ -38,7 +38,8 @@ e.g. Pan-UKBB Hail `ln P`)
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
 
 <details open>
 <summary>Inherited from BedTabixAdapter</summary>
@@ -64,12 +65,6 @@ this page is self-contained.
 List of column names
 
 **Type:** `stringArray` · **Default:** `[]`
-
-#### slot: scoreColumn
-
-The column to use as a "score" attribute
-
-**Type:** `string` · **Default:** `''`
 
 #### slot: autoSql
 

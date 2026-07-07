@@ -1,14 +1,8 @@
-import {
-  DEMO_CONFIG,
-  lgvSession,
-} from '../screenshot-spec-helpers.ts'
+import { DEMO_CONFIG, lgvSession } from '../screenshot-spec-helpers.ts'
 
-import type {
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const methylationSpecs: ScreenshotSpec[] = [
-
   // CRAM modifications + bedmethyl together over a CpG island (chr20 18.49-18.51Mb,
   // the same island the `modifications` figure uses) so there is a clear
   // methylated/unmethylated transition — the old chr20:10Mb window had little

@@ -73,8 +73,7 @@ and docs.
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** [renderProps](../basedisplay#method-renderprops),
-[renderingProps](../basedisplay#method-renderingprops),
+**Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
 [regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
@@ -194,6 +193,19 @@ Stable backend key under the view-shared backend.
 type displayKey = number
 ```
 
+#### getter: presentCigarKinds
+
+Which CIGAR indel ops are actually painted in the current geometry. The worker
+only emits an indel instance for an op wide enough to draw (sub-pixel indels are
+dropped), so a set bit means a visible-width op of that kind is on screen. The
+legend keys its indel chips off this rather than the coarse "file has any CIGAR"
+flag, so whole-genome zoom (every indel sub-pixel) shows no dead
+insertion/deletion swatch.
+
+```ts
+type presentCigarKinds = number
+```
+
 #### getter: warnings
 
 Warnings surfaced in the view header. Flags a likely reversed assembly row
@@ -246,6 +258,18 @@ the RPC.
 type computedColors = Uint32Array<ArrayBuffer> | undefined
 ```
 
+#### getter: effectiveColorBy
+
+The view-level colorBy resolved for this specific level. 'reference' is a
+stacked-view mode that colors every level by the shared anchor assembly's
+chromosome names; each level maps it to 'query' or 'target' depending on which
+of its two assemblies is the anchor, so the coloring stays consistent across
+levels. Every other mode passes through.
+
+```ts
+type effectiveColorBy = SyntenyColorBy
+```
+
 #### getter: renderInstanceData
 
 Instance data with main-thread-computed colors substituted in. The view's upload
@@ -253,7 +277,7 @@ autorun reads this, so any colorBy change re-fires upload without an RPC
 round-trip.
 
 ```ts
-type renderInstanceData = { colors: Uint32Array<ArrayBuffer>; bp1Hi: Float32Array<ArrayBufferLike>; bp1Lo: Float32Array<ArrayBufferLike>; ... 9 more ...; instanceCount: number; } | undefined
+type renderInstanceData = { colors: Uint32Array<ArrayBuffer>; bp1: Float32Array<ArrayBufferLike>; bp2: Float32Array<ArrayBufferLike>; ... 7 more ...; instanceCount: number; } | undefined
 ```
 
 #### getter: connectedViews
@@ -276,6 +300,18 @@ zoom within a bucket.
 
 ```ts
 type bpPerPxBucketKey = string | undefined
+```
+
+#### getter: fetchRegionsKey
+
+Stable key over the _snapped_ fetch window of both connected views. The fetch
+autorun tracks this so a scroll/zoom that moves the snapped window refetches,
+while a sub-buffer pan (identical snapped window) does not — a MobX computed
+only notifies when its string output changes. Mirrors the window
+syntenyFetchRegions hands the worker.
+
+```ts
+type fetchRegionsKey = string | undefined
 ```
 
 #### getter: renderParams

@@ -11,7 +11,8 @@ export const VOLVOX = 'test_data/volvox/config.json'
 // that the group-by spec renders. Session tracks don't inherit the config's
 // baseUri, so an absolute url is used (the same volvox test data jbrowse.org
 // hosts) — works in both the local generator and the live-link instance.
-export const VOLVOX_SV_CRAM = 'https://jbrowse.org/code/jb2/latest/test_data/volvox'
+export const VOLVOX_SV_CRAM =
+  'https://jbrowse.org/code/jb2/latest/test_data/volvox'
 export const VOLVOX_SV_CRAM_ADAPTER = {
   type: 'CramAdapter',
   cramLocation: {

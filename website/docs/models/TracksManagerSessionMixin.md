@@ -71,11 +71,11 @@ and docs.
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
 **Methods:**
-[getReferring](../referencemanagementsessionmixin#method-getreferring),
-[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple)
+[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple),
+[getReferring](../referencemanagementsessionmixin#method-getreferring)
 
 **Actions:**
-[removeReferring](../referencemanagementsessionmixin#action-removereferring)
+[dereferenceTrack](../referencemanagementsessionmixin#action-dereferencetrack)
 
 <details open>
 <summary>TracksManagerSessionMixin - Getters</summary>

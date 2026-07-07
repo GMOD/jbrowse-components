@@ -30,10 +30,13 @@ and docs.
 [configuration](../baseconnectionmodel#property-configuration),
 [silent](../baseconnectionmodel#property-silent)
 
+**Volatiles:** [loading](../baseconnectionmodel#volatile-loading)
+
 **Getters:** [connectionId](../baseconnectionmodel#getter-connectionid),
 [name](../baseconnectionmodel#getter-name)
 
 **Actions:** [connect](../baseconnectionmodel#action-connect),
+[setLoading](../baseconnectionmodel#action-setloading),
 [addTrackConf](../baseconnectionmodel#action-addtrackconf),
 [addTrackConfs](../baseconnectionmodel#action-addtrackconfs),
 [setTrackConfs](../baseconnectionmodel#action-settrackconfs)

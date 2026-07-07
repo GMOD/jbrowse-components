@@ -42,6 +42,7 @@ The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`
 
 Data adapters that can supply the [SyntenyTrack](../syntenytrack):
 
+- [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
 - [AllVsAllPAFAdapter](../allvsallpafadapter)
 - [ChainAdapter](../chainadapter)
 - [DeltaAdapter](../deltaadapter)

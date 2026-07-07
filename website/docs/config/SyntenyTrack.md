@@ -51,6 +51,7 @@ on its display type(s):
 
 Data adapters that can supply this track:
 
+- [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
 - [AllVsAllPAFAdapter](../allvsallpafadapter)
 - [ChainAdapter](../chainadapter)
 - [DeltaAdapter](../deltaadapter)
@@ -64,7 +65,8 @@ Data adapters that can supply this track:
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
 
 <details open>
 <summary>Inherited from BaseTrack</summary>

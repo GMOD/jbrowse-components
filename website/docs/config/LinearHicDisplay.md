@@ -124,7 +124,8 @@ square bins
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
 
 <details open>
 <summary>Inherited from BaseLinearDisplay</summary>
@@ -144,12 +145,6 @@ maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
 **Type:** `number` · **Default:** `1_000_000` · _advanced_
-
-#### slot: height
-
-default height for the track
-
-**Type:** `number` · **Default:** `100`
 
 #### slot: mouseover
 

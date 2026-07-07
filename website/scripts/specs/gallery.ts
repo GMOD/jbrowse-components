@@ -4,12 +4,9 @@ import {
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
-import type {
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const gallerySpecs: ScreenshotSpec[] = [
-
   // Gallery card for the copy-number clustering figure: only the clustered
   // RESULT (the "second panel" of multiwig/cluster_dialog), captured standalone
   // — same session + region, run clustering, no dialog left open. The docs guide

@@ -9,12 +9,9 @@ import {
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
-import type {
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const alignmentsSpecs: ScreenshotSpec[] = [
-
   {
     mode: 'url',
     name: 'volvox_alignments',

@@ -55,6 +55,7 @@ and docs.
 [featureWidgetType](../multisamplevariantbasemodel#getter-featurewidgettype),
 [fetchSizeLimit](../multisamplevariantbasemodel#getter-fetchsizelimit),
 [minorAlleleFrequencyFilter](../multisamplevariantbasemodel#getter-minorallelefrequencyfilter),
+[maxMissingnessFilter](../multisamplevariantbasemodel#getter-maxmissingnessfilter),
 [filters](../multisamplevariantbasemodel#getter-filters),
 [showSidebarLabels](../multisamplevariantbasemodel#getter-showsidebarlabels),
 [showTree](../multisamplevariantbasemodel#getter-showtree),
@@ -101,6 +102,7 @@ and docs.
 [setColorBy](../multisamplevariantbasemodel#action-setcolorby),
 [clearLayout](../multisamplevariantbasemodel#action-clearlayout),
 [setMafFilter](../multisamplevariantbasemodel#action-setmaffilter),
+[setMaxMissingnessFilter](../multisamplevariantbasemodel#action-setmaxmissingnessfilter),
 [setShowSidebarLabels](../multisamplevariantbasemodel#action-setshowsidebarlabels),
 [setShowTree](../multisamplevariantbasemodel#action-setshowtree),
 [setShowBranchLength](../multisamplevariantbasemodel#action-setshowbranchlength),
@@ -138,8 +140,7 @@ and docs.
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** [renderProps](../basedisplay#method-renderprops),
-[renderingProps](../basedisplay#method-renderingprops),
+**Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
 [regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 

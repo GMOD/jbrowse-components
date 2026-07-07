@@ -101,13 +101,14 @@ and docs.
 
 **Actions:**
 [makeConnection](../connectionmanagementsessionmixin#action-makeconnection),
-[prepareToBreakConnection](../connectionmanagementsessionmixin#action-preparetobreakconnection),
 [breakConnection](../connectionmanagementsessionmixin#action-breakconnection),
+[teardownConnection](../connectionmanagementsessionmixin#action-teardownconnection),
 [deleteConnection](../connectionmanagementsessionmixin#action-deleteconnection),
 [addConnectionConf](../connectionmanagementsessionmixin#action-addconnectionconf),
 [clearConnections](../connectionmanagementsessionmixin#action-clearconnections),
 [captureConnectionTrack](../connectionmanagementsessionmixin#action-captureconnectiontrack),
 [updateConnectionTrackConfig](../connectionmanagementsessionmixin#action-updateconnectiontrackconfig),
+[setConnectionTrackConfig](../connectionmanagementsessionmixin#action-setconnectiontrackconfig),
 [pruneConnectionTrackConfig](../connectionmanagementsessionmixin#action-pruneconnectiontrackconfig),
 [hydrateConnection](../connectionmanagementsessionmixin#action-hydrateconnection)
 
@@ -124,11 +125,11 @@ and docs.
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
 **Methods:**
-[getReferring](../referencemanagementsessionmixin#method-getreferring),
-[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple)
+[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple),
+[getReferring](../referencemanagementsessionmixin#method-getreferring)
 
 **Actions:**
-[removeReferring](../referencemanagementsessionmixin#action-removereferring)
+[dereferenceTrack](../referencemanagementsessionmixin#action-dereferencetrack)
 
 ### Available via [TrackMenuSessionMixin](../trackmenusessionmixin)
 
@@ -189,21 +190,16 @@ type assemblyManager = any
 type views = any[]
 ```
 
+#### getter: themeOptions
+
+```ts
+type themeOptions = SerializableThemeArgs
+```
+
 #### getter: theme
 
 ```ts
 type theme = Theme
-```
-
-</details>
-
-<details>
-<summary>JBrowseReactCircularGenomeViewSessionModel - Methods</summary>
-
-#### method: renderProps
-
-```ts
-type renderProps = () => { theme: any }
 ```
 
 </details>

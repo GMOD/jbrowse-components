@@ -8,12 +8,9 @@ import {
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
-import type {
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const uiSpecs: ScreenshotSpec[] = [
-
   // The top-level "Add" menu (Circular / Dotplot / Linear genome / Linear
   // synteny / Tabular data / SV inspector), cropped to the menu for the
   // developer "menus" guide. Replaces a stale capture where Add was nested

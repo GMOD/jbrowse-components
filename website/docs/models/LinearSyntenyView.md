@@ -352,6 +352,29 @@ so the menu doesn't flicker between renders.
 type hasCigarData = boolean
 ```
 
+#### getter: presentCigarKinds
+
+Union across every loaded synteny display of which CIGAR indel ops are actually
+drawn on screen. The floating legend lists an indel chip only when a
+visible-width op of that kind is painted somewhere in the view.
+
+```ts
+type presentCigarKinds = number
+```
+
+#### getter: anchorAssemblyName
+
+The "anchor" assembly for colorBy:'reference': the assembly bordering the most
+synteny levels. In a stacked ref-vs-A / ref-vs-B layout each interior assembly
+touches two levels and the ends touch one, so the max-adjacency assembly is the
+shared reference. Ties resolve to the topmost. Every level then colors by this
+assembly's chromosome names, so a region keeps its color as it's traced across
+levels.
+
+```ts
+type anchorAssemblyName = string | undefined
+```
+
 #### getter: showLoading
 
 Whether to show a loading indicator instead of the import form or view

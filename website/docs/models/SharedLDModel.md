@@ -38,8 +38,7 @@ and docs.
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** [renderProps](../basedisplay#method-renderprops),
-[renderingProps](../basedisplay#method-renderingprops),
+**Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
 [regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
@@ -196,6 +195,17 @@ than computing LD from VCF genotypes
 
 ```ts
 type snps = LDSnp[]
+```
+
+#### getter: dataLoaded
+
+Global-display data-loaded signal read by `GlobalDataDisplayMixin.svgReady`. The
+fetch commits `rpcData` even for an empty viewport, so this flips true once data
+has loaded. Without the override the mixin default (`false`) leaves `svgReady`
+unable to resolve on a successful load, hanging SVG export.
+
+```ts
+type dataLoaded = boolean
 ```
 
 #### getter: focalSnpIndex

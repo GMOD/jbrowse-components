@@ -101,24 +101,25 @@ and docs.
 
 **Actions:**
 [makeConnection](../connectionmanagementsessionmixin#action-makeconnection),
-[prepareToBreakConnection](../connectionmanagementsessionmixin#action-preparetobreakconnection),
 [breakConnection](../connectionmanagementsessionmixin#action-breakconnection),
+[teardownConnection](../connectionmanagementsessionmixin#action-teardownconnection),
 [deleteConnection](../connectionmanagementsessionmixin#action-deleteconnection),
 [addConnectionConf](../connectionmanagementsessionmixin#action-addconnectionconf),
 [clearConnections](../connectionmanagementsessionmixin#action-clearconnections),
 [captureConnectionTrack](../connectionmanagementsessionmixin#action-captureconnectiontrack),
 [updateConnectionTrackConfig](../connectionmanagementsessionmixin#action-updateconnectiontrackconfig),
+[setConnectionTrackConfig](../connectionmanagementsessionmixin#action-setconnectiontrackconfig),
 [pruneConnectionTrackConfig](../connectionmanagementsessionmixin#action-pruneconnectiontrackconfig),
 [hydrateConnection](../connectionmanagementsessionmixin#action-hydrateconnection)
 
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
 **Methods:**
-[getReferring](../referencemanagementsessionmixin#method-getreferring),
-[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple)
+[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple),
+[getReferring](../referencemanagementsessionmixin#method-getreferring)
 
 **Actions:**
-[removeReferring](../referencemanagementsessionmixin#action-removereferring)
+[dereferenceTrack](../referencemanagementsessionmixin#action-dereferencetrack)
 
 ### Available via [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
 
@@ -126,10 +127,14 @@ and docs.
 [sessionTracks](../sessiontracksmanagersessionmixin#property-sessiontracks),
 [trackConfigDeltas](../sessiontracksmanagersessionmixin#property-trackconfigdeltas)
 
+**Volatiles:**
+[editableTrackConfigs](../sessiontracksmanagersessionmixin#volatile-editabletrackconfigs)
+
 **Getters:** [tracks](../sessiontracksmanagersessionmixin#getter-tracks)
 
 **Methods:**
-[getTrackConfigChanges](../sessiontracksmanagersessionmixin#method-gettrackconfigchanges)
+[getTrackConfigChanges](../sessiontracksmanagersessionmixin#method-gettrackconfigchanges),
+[getEditableTrackConfig](../sessiontracksmanagersessionmixin#method-geteditabletrackconfig)
 
 **Actions:**
 [addTrackConf](../sessiontracksmanagersessionmixin#action-addtrackconf),
@@ -213,21 +218,16 @@ type assemblyManager = any
 type views = (ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>)[]
 ```
 
+#### getter: themeOptions
+
+```ts
+type themeOptions = SerializableThemeArgs
+```
+
 #### getter: theme
 
 ```ts
 type theme = Theme
-```
-
-</details>
-
-<details>
-<summary>JBrowseReactLinearGenomeViewSessionModel - Methods</summary>
-
-#### method: renderProps
-
-```ts
-type renderProps = () => { theme: any }
 ```
 
 </details>

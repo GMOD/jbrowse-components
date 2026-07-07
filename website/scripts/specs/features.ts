@@ -12,12 +12,9 @@ import {
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
-import type {
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const featuresSpecs: ScreenshotSpec[] = [
-
   {
     // Single frame showing the session-wide feature-height default on alignments
     // tracks. featureHeight/featureSpacing are promotable slots (getConfResolved:

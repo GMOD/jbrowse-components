@@ -936,11 +936,15 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
     ]
 
-    const withLongRange = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'insertSizeAndOrientation',
-      drawInter: false,
-      drawLongRange: true,
-    }).arcs
+    const withLongRange = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      regions,
+      {
+        colorByType: 'insertSizeAndOrientation',
+        drawInter: false,
+        drawLongRange: true,
+      },
+    ).arcs
     const pairs = withLongRange.map(a => [a.p1.bp, a.p2.bp])
     // A→B (1200→9000) and B→C (9200→5000) step through the hidden segment...
     expect(pairs).toContainEqual([1200, 9000])
@@ -962,7 +966,9 @@ describe('computeArcsFromPileupData', () => {
         drawLongRange: false,
       },
     ).arcs
-    expect(withoutLongRange.map(a => [a.p1.bp, a.p2.bp])).toEqual([[1200, 5500]])
+    expect(withoutLongRange.map(a => [a.p1.bp, a.p2.bp])).toEqual([
+      [1200, 5500],
+    ])
   })
 
   test('mixed dataset: a lone unpaired SA read draws its split junction, not a mate arc', () => {

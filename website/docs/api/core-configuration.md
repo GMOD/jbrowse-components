@@ -97,6 +97,21 @@ inheriting the session-wide promoted default.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+## isSlotValueSessionDefault
+
+Whether a _specific_ value is the session-wide promoted default for this slot,
+independent of the track's current value. Use for an always-visible "make this
+the default for all tracks" control whose meaning is "promote this on-value"
+(e.g. a per-mode toggle), rather than the value-dependent
+`areSlotsAtSessionDefault` used by "promote whatever is current" controls.
+
+```js
+// type signature
+(self: PromotableDisplay, slot: string, value: unknown) => boolean
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
 ## readConfObject
 
 Given a configuration model (an instance of a ConfigurationSchema), read the
@@ -122,6 +137,18 @@ setting behind one "make default" item.
 ```js
 // type signature
 (self: PromotableDisplay, slots: string[], promote: boolean) => void
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+## setSlotValueSessionDefault
+
+Promote a specific value as the session-wide default for this slot (`on`), or
+clear the default (`!on`). Pair with `isSlotValueSessionDefault`.
+
+```js
+// type signature
+(self: PromotableDisplay, slot: string, value: unknown, on: boolean) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)

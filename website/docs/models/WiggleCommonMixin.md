@@ -75,6 +75,17 @@ rpcDataMap: observable.map<number, WiggleDataResult>()
 <details open>
 <summary>WiggleCommonMixin - Getters</summary>
 
+#### getter: autoscaleSourceNames
+
+Source names to include when computing the autoscale domain; `undefined` means
+every fetched source. Multi-wiggle always fetches all sources and filters
+client-side, so it overrides this to the visible subset — otherwise a subtree
+filter that hides sources would leave the Y-axis scaled to the hidden ones.
+
+```ts
+type autoscaleSourceNames = Set<string> | undefined
+```
+
 #### getter: hasNoData
 
 True once a fetch has completed (loadedBpPerPx set) but every loaded region came

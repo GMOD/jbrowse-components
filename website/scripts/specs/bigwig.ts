@@ -6,12 +6,9 @@ import {
   menuCascade,
 } from '../screenshot-spec-helpers.ts'
 
-import type {
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const bigwigSpecs: ScreenshotSpec[] = [
-
   {
     mode: 'url',
     name: 'bigwig_xyplot',

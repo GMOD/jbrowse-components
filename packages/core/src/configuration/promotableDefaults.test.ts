@@ -141,7 +141,9 @@ describe('promotable frozen slot structural equality', () => {
     // a frozen slot accepts any JSON, so a corrupt saved snapshot could pin a
     // string where an object is expected — the shape gate alone (no validate
     // hook here) treats it as un-pinned so it falls back rather than flowing on
-    const { display } = createDisplay(configSchema, { colorBy: 'not-an-object' })
+    const { display } = createDisplay(configSchema, {
+      colorBy: 'not-an-object',
+    })
     expect(isSlotPinned(display, 'colorBy')).toBe(false)
     expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'normal' })
   })

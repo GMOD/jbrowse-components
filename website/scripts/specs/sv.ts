@@ -9,12 +9,9 @@ import {
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
-import type {
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const svSpecs: ScreenshotSpec[] = [
-
   // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
 
   {
@@ -585,7 +582,6 @@ export const svSpecs: ScreenshotSpec[] = [
       { type: 'box', anchor: { text: 'SV inspector' } },
     ],
   },
-
 
   {
     mode: 'url',

@@ -246,7 +246,7 @@ type allTrackConfigurations = (ModelInstanceTypeProps<Record<string, any>> & { s
 #### getter: allTracks
 
 ```ts
-type allTracks = { group: string; id: string; tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]; noCategories: boolean; defaultCollapsed: boolean; }[]
+type allTracks = { group: string; id: string; tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]; noCategories: boolean; defaultCollapsed: boolean; loading: boolean; }[]
 ```
 
 #### getter: hierarchy
@@ -262,6 +262,7 @@ type hierarchy = {
     type: 'category'
     nestingLevel: number
     defaultCollapsed: boolean
+    loading: boolean
     children: TreeNode[]
   }[]
 }

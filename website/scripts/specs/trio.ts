@@ -9,13 +9,9 @@ import {
   trioVcfLayout,
 } from '../screenshot-spec-helpers.ts'
 
-import type {
-  Annotation,
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const trioSpecs: ScreenshotSpec[] = [
-
   // ────────────────────────────────────────────────────────────────────────
   // Phased trio analysis tutorial screenshots
   // ────────────────────────────────────────────────────────────────────────

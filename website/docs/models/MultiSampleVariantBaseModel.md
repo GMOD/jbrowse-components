@@ -53,8 +53,7 @@ and docs.
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** [renderProps](../basedisplay#method-renderprops),
-[renderingProps](../basedisplay#method-renderingprops),
+**Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
 [regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
@@ -429,6 +428,15 @@ Returns the minor allele frequency filter config slot value
 type minorAlleleFrequencyFilter = number
 ```
 
+#### getter: maxMissingnessFilter
+
+Max fraction of no-call genotypes a variant may have before it's hidden; 1 keeps
+every variant
+
+```ts
+type maxMissingnessFilter = number
+```
+
 #### getter: filters
 
 The jexl filter expressions (from the Edit filters dialog) as a
@@ -693,6 +701,7 @@ type legendSections = () => LegendSection[]
 type rpcProps = () => {
   sources: ProcessedSource[] | undefined
   minorAlleleFrequencyFilter: number
+  maxMissingnessFilter: number
   filters: SerializableFilterChain | undefined
   renderingMode: string
   referenceDrawingMode: string
@@ -755,7 +764,8 @@ type clearLayout = () => void
 
 #### action: setFitToHeight
 
-Toggle auto height mode. When turning off, uses default of 10px per row.
+Enable fit-to-display-height mode: `rowHeight = 0` makes `effectiveRowHeight`
+divide `availableHeight` across the rows.
 
 ```ts
 type setFitToHeight = () => void
@@ -763,8 +773,11 @@ type setFitToHeight = () => void
 
 #### action: resizeHeight
 
-Override resizeHeight to scale row heights proportionally when the display is
-vertically resized
+Override resizeHeight to scale a pinned row height proportionally when the
+display is vertically resized. Rows live in `availableHeight`
+(`height - lineZoneHeight`), not the full height, so scale by the
+available-height ratio — otherwise the visible fraction of rows drifts on resize
+whenever `lineZoneHeight` is non-zero (the matrix display).
 
 ```ts
 type resizeHeight = (distance: number) => number
@@ -852,6 +865,12 @@ type setSources = (sources: Source[]) => void
 
 ```ts
 type setMafFilter = (arg: number) => void
+```
+
+#### action: setMaxMissingnessFilter
+
+```ts
+type setMaxMissingnessFilter = (arg: number) => void
 ```
 
 #### action: setShowSidebarLabels

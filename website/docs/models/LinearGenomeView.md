@@ -1081,12 +1081,6 @@ type MiniControlsComponent = () => FC<any>
 type HeaderComponent = () => FC<any>
 ```
 
-#### method: renderProps
-
-```ts
-type renderProps = () => { bpPerPx: number; colorByCDS: boolean }
-```
-
 #### method: searchScope
 
 ```ts

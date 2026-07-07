@@ -98,4 +98,3 @@ export function matchesFilterTokens(
     tokens.some(t => (exact ? name === t : name.includes(t)))
   )
 }
-

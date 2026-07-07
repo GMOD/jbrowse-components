@@ -14,35 +14,38 @@ JBrowse core.
 <details open>
 <summary>ReferenceManagementSessionMixin - Methods</summary>
 
-#### method: getReferring
-
-See if any MST nodes currently have a types.reference to this object.
-
-```ts
-type getReferring = (object: IAnyStateTreeNode) => ReferringNode[]
-```
-
 #### method: getReferringMultiple
 
-Batch version of getReferring: walks the tree once and returns a map from
-trackId to referring nodes. Use this instead of calling getReferring() in a loop
-to avoid O(n × treeSize) traversals.
+Walk the tree once and map each requested trackId to the nodes holding a
+`types.reference` that resolves to it (a view's track entry, a config editor
+widget). Track configs are matched by trackId, not identity, so a frozen base
+and its hydrated MST node compare equal.
 
 ```ts
-type getReferringMultiple = (
-  tracks: IAnyStateTreeNode[],
-) => Map<string, ReferringNode[]>
+type getReferringMultiple = (trackIds: string[]) => Map<string, ReferringNode[]>
+```
+
+#### method: getReferring
+
+The nodes currently referring to `trackId` (see getReferringMultiple).
+
+```ts
+type getReferring = (trackId: string) => ReferringNode[]
 ```
 
 </details>
 
-<details>
+<details open>
 <summary>ReferenceManagementSessionMixin - Actions</summary>
 
-#### action: removeReferring
+#### action: dereferenceTrack
+
+Remove `trackId` from every view referring to it and close any config editor
+widget open on it. Runs immediately: the walk that produced `referring` has
+finished, so mutating those views here is safe.
 
 ```ts
-type removeReferring = (referring: ReferringNode[], track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, callbacks: (() => void)[], dereferenceTypeCount: Record<...>) => void
+type dereferenceTrack = (trackId: string, referring: ReferringNode[]) => void
 ```
 
 </details>

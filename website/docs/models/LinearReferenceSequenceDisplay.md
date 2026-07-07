@@ -69,8 +69,7 @@ and docs.
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** [renderProps](../basedisplay#method-renderprops),
-[renderingProps](../basedisplay#method-renderingprops),
+**Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
 [regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
@@ -354,8 +353,23 @@ type rowHeight = number
 
 </details>
 
-<details>
+<details open>
 <summary>LinearReferenceSequenceDisplay - Methods</summary>
+
+#### method: hoverAt
+
+Resolve the genomic position, reference base, and codon/amino-acid under a
+cursor at track-relative pixel `(offsetX, offsetY)`. Drives the hover tooltip;
+returns undefined when zoomed out, off a fetched region, or between rows.
+
+```ts
+type hoverAt = (offsetX: number, offsetY: number) => SequenceHover | undefined
+```
+
+</details>
+
+<details>
+<summary>LinearReferenceSequenceDisplay - Methods (other undocumented members)</summary>
 
 #### method: renderSvg
 

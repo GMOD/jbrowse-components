@@ -1,13 +1,8 @@
-import {
-  lgvSession,
-} from '../screenshot-spec-helpers.ts'
+import { lgvSession } from '../screenshot-spec-helpers.ts'
 
-import type {
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const gwasSpecs: ScreenshotSpec[] = [
-
   // ────────────────────────────────────────────────────────────────────────
   // GWAS / Manhattan plot
   // ────────────────────────────────────────────────────────────────────────

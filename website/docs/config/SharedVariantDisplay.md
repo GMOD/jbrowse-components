@@ -67,6 +67,13 @@ Hide variants whose minor allele frequency is below this threshold
 
 **Type:** `number` · **Default:** `0` · _advanced_
 
+#### slot: maxMissingnessFilter
+
+Hide variants whose fraction of no-call (missing) genotypes is above this
+threshold; 1 keeps every variant
+
+**Type:** `number` · **Default:** `1` · _advanced_
+
 #### slot: colorBy
 
 Name of a sample-metadata attribute (a column in the adapter's
@@ -90,7 +97,8 @@ from then on this slot alone is the single source of truth.
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
 
 <details open>
 <summary>Inherited from BaseLinearDisplay</summary>

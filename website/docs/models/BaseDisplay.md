@@ -168,15 +168,6 @@ type viewMenuActions = MenuItem[]
 <details open>
 <summary>BaseDisplay - Methods</summary>
 
-#### method: renderProps
-
-the react props that are passed to the Renderer when data is rendered in this
-display. these are serialized and sent to the worker for server-side rendering
-
-```ts
-type renderProps = () => { notReady: boolean; rpcDriverName: any }
-```
-
 #### method: renderingProps
 
 props passed to the renderer's React "Rendering" component. these are

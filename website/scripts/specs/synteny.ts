@@ -11,9 +11,7 @@ import {
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
-import type {
-  ScreenshotSpec,
-} from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const syntenySpecs: ScreenshotSpec[] = [
   // Human vs chimp synteny (hosted liftOver chain, zoomed to LMNB2). The two
@@ -383,10 +381,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'DotplotView',
-          views: [{ assembly: 'HG008T.hap1' }, { assembly: 'GRCh38_GIABv3' }],
+          // GRCh38 on x (stays in its natural chr1->chrX order) and the
+          // fragmented HG008T.hap1 assembly on y: autoDiagonalize reorders the
+          // vertical axis, so putting the assembly there reorders/flips its
+          // contigs to form a clean diagonal against a readable reference axis.
+          // (Reordering the reference axis instead scrambles the familiar
+          // chromosome order and breaks the single diagonal into a staircase.)
+          views: [{ assembly: 'GRCh38_GIABv3' }, { assembly: 'HG008T.hap1' }],
           tracks: ['HG008T.hap1_pif'],
-          // reorder/flip the hap1 contigs so the main alignment forms a clean
-          // diagonal instead of a scattered off-axis cloud
           autoDiagonalize: true,
         },
       ],
