@@ -1,7 +1,8 @@
 ---
 title: Automating JBrowse
 sidebar_label: Automating JBrowse
-description: Launch and preset views from a URL, embedded app, config file, or session spec
+description:
+  Launch and preset views from a URL, embedded app, config file, or session spec
 ---
 
 JBrowse is designed to be driven from the outside: you can open it straight into
@@ -147,8 +148,8 @@ the [URL query parameter API](/docs/urlparams) session-spec section.
 ## Headless / puppeteer
 
 When you want a **static image** of a view, reach for
-[@jbrowse/img](/docs/jbrowse-img) first — it renders SVG/PNG/PDF from the command
-line without a browser.
+[@jbrowse/img](/docs/jbrowse-img) first — it renders SVG/PNG/PDF from the
+command line without a browser.
 
 Drive the full JBrowse Web app with puppeteer (or Playwright) when you need
 something `img` can't produce: a real screenshot of the running UI, a transient
@@ -164,9 +165,10 @@ Two things bite people driving JBrowse headlessly, both worth knowing up front:
   `--enable-unsafe-swiftshader`, canvases come up blank. Launch with
   `args: ['--no-sandbox', '--enable-unsafe-swiftshader']`.
 - **"Loaded" is a specific signal, not a guessable selector.** JBrowse shows a
-  `[data-testid="loading-overlay"]` while the session initializes, and each track
-  display flips its `data-testid` from `display-<id>` to `display-<id>-done` once
-  it has actually painted. Wait for those, not for an arbitrary element.
+  `[data-testid="loading-overlay"]` while the session initializes, and each
+  track display flips its `data-testid` from `display-<id>` to
+  `display-<id>-done` once it has actually painted. Wait for those, not for an
+  arbitrary element.
 
 ```js
 import puppeteer from 'puppeteer'

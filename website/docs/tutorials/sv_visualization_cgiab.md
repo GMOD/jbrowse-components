@@ -488,6 +488,8 @@ scatter** so the two samples plot as points in one band — tumor red, normal
 blue. Zoom to a region and open the benchmark CNV BED track to check that
 coverage changes line up with the called intervals.
 
+<Figure caption="The linear genome view start screen: click Show all regions in assembly to lay out every chromosome across the view." src="/img/sv_cgiab/cnv_show_all_regions.png" />
+
 <Figure caption="A multi-bigwig track with tumor (red) and normal (blue) coverage zoomed to chromosome 5, in overlapping-scatter rendering, above the benchmark CNV BED track. Orange boxes mark individual CNVs (clicking one shows its feature details); coverage drops and gains line up with the called intervals below." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
 Raw coverage is only a sanity check on existing calls. For a normalized signal

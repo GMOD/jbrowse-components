@@ -230,7 +230,28 @@ export const gallerySpecs: ScreenshotSpec[] = [
     // species fit the viewport with no scroll. Long settle: the MAF coverage band
     // paints a canvas "Loading" placeholder the DOM-based waitForQuiescent can't
     // see, and the headless (swiftshader) build is slow to resolve it.
-    url: '?config=https://jbrowse.org/demos/ce/config.json&session=spec-{"views":[{"assembly":"ce11","loc":"chrI:2998500-3001800","type":"LinearGenomeView","tracks":[{"trackId":"ce11.26way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true}}]}]}',
+    // Gene track NOT added: fixed the config's dead ce11.ncbiRefSeq.sorted.gff
+    // adapter (was pointing cross-bucket at a 404'd jbrowse.org/ucsc/ce11/...
+    // wrong filename; repointed at the correct co-located
+    // jbrowse.org/demos/ce/ce11.ncbiRefSeq.sorted.gff.gz+.tbi, verified via
+    // jb2export, re-uploaded config.json + CloudFront invalidation — real fix,
+    // independently good). But adding that track to THIS spec exposes a
+    // separate, real bug: the MAF coverage/conservation canvas's "Loading"
+    // placeholder over a real no-alignment-data gap never gets cleared once a
+    // second track is present (reproduced 3/3, order-independent, unaffected
+    // by settleMs 90000->180000 — so the display's "done" signal fires but the
+    // stale placeholder paint is never overdrawn). Worth its own investigation;
+    // not chased further here. See agent-docs/TODO.md.
+    url: lgvSession('https://jbrowse.org/demos/ce/config.json', {
+      assembly: 'ce11',
+      loc: 'chrI:2998500-3001800',
+      tracks: [
+        {
+          trackId: 'ce11.26way',
+          displaySnapshot: { type: 'LinearMafDisplay', showConservation: true },
+        },
+      ],
+    }),
     readyTimeout: 240000,
     settleMs: 90000,
     viewportHeight: 500,

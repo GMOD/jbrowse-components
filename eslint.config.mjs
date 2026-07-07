@@ -76,6 +76,7 @@ export default defineConfig(
       'packages/core/src/util/p-limit.ts',
 
       // AWS Lambda functions
+      'aws',
       'products/jbrowse-aws-lambda-functions',
 
       // Test fixtures and mocks

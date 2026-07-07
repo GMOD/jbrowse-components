@@ -20,7 +20,11 @@ function isNetworkNoise(text: string): boolean {
     text.includes('net::ERR_') ||
     text.includes('Failed to load resource') ||
     text.includes('Failed to fetch') ||
-    text.includes('Fetch failed')
+    text.includes('Fetch failed') ||
+    // HTTP 5xx from a remote data host (fetchJson.ts, RemoteFileWithRangeCache.ts
+    // throw "HTTP <status> fetching <url>") is a transient host outage, not a
+    // code regression
+    /HTTP 5\d\d fetching/.test(text)
   )
 }
 

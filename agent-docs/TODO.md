@@ -6,22 +6,18 @@
 - Add a "hide this feature" option to `LinearMultiSampleVariantDisplay` (and similar displays).
 - Quick/copy consensus, a separate quantitative splice-junction track, and sample/library (SM/LB) grouping.
 
-## Display height
+## MAF canvas "Loading" placeholder never clears with a 2nd track
 
-Rename "display mode" to "set feature height" — see the display-height-system
-redesign options in [OTHER_IDEAS.md](OTHER_IDEAS.md).
-
-## Fused AbortSignal + stopToken
-
-See [REQUEST_ABORT_PLAN.md](REQUEST_ABORT_PLAN.md) — proposal, not implemented.
-
-## Config quick-edits mutate shared hydrated nodes
-
-A compensating fix is shipped (evict the dirtied hydration node on delta drop);
-the deeper fix — never mutate the shared base-config node in place — would remove
-the whole bug class. See
-[CONFIG_EDIT_INPLACE_MUTATION.md](CONFIG_EDIT_INPLACE_MUTATION.md) — proposal,
-not implemented.
+`gallery/celegans_26way` (screenshot-review.json): a MAF display's
+coverage/conservation canvas has a real gap where no alignment block covers the
+region (genuinely empty, not a bug on its own) — normally paints blank. Add any
+second track to the same view and that gap instead shows a permanently stuck
+"Loading" placeholder. Reproduced 3/3, independent of track order, unaffected by
+raising settleMs 90000->180000 in the screenshot generator (so it's not slow,
+it's stuck) — the display's "-done" test-id fires quickly regardless, so
+`waitForDisplaysDone` doesn't catch it. Likely: the empty-region draw path skips
+clearing/overwriting the placeholder text when there's no data to draw. Not
+investigated further.
 
 ## Dotplot edge-zoom jump
 
@@ -70,9 +66,6 @@ in plugins/dotplot-view we have the idea of allocating space for refname labels.
 
 ## follow ups
 
-
-- jbrowse-react-circular-genome-view's examples-site has the same verbose pattern in 4 files (Volvox.tsx, Managed.tsx, ShowTrack.tsx, Human.tsx) — worth the same cleanup for consistency across products.
-- website/docs/tutorials/embed_linear_genome_view.md (the main "embedding" tutorial, not examples-site) still shows the old verbose form — likely the highest-traffic doc a new user reads, so it's the most valuable one to update even though it's outside what you scoped today.
 - Push the shorthand one step further: refNameAliases/cytobands still require the full { adapter: { type: 'RefNameAliasAdapter', uri: '...' } } wrapper — a refNameAliases: { uri: '...' } shorthand (defaulting adapter.type) would trim that the same way, and it's the same preProcessSnapshot idiom already in place there.
 - The riskier "auto-detect adapter type from extension" idea we discussed and deferred (fasta: 'foo.fa.gz' → infer BgzipFastaAdapter) is still on the table if you want maximal terseness, but I'd only do it if you're fine with implicit magic.
 3
@@ -80,131 +73,70 @@ in plugins/dotplot-view we have the idea of allocating space for refname labels.
 ## occasionally mouseover on gene glyph does not show cursor pointer with mouseover shading
 
 
-## only show 6ma methylation in chromatin_accessibility_6ma3
 
 ## add fit to height to jbrowse-img
 
-## error in test
 
+## autofit height for lineargenomeview example-site demo
 
-PASS default products/jbrowse-web/src/rootModel/rootModel.test.ts
-  ● Console
+## human demo as main data in example-site demo3
 
-    console.error
-      Error: assembly name required for JBrowse 1 connection
-          at Object.connect (/home/runner/work/jbrowse-components/jbrowse-components/plugins/legacy-jbrowse/src/JBrowse1Connection/model.ts:38:19)
-          at processTicksAndRejections (node:internal/process/task_queues:104:5)
+## more aggressive scroll latch3
 
-      26 |     return undefined
-      27 |   }
-    > 28 |   originalError.call(console, ...args)
-         |                 ^
-      29 | }
-      30 |
-      31 | console.warn = (...args) => {
+## debug hitbox
 
-      at console.error (config/jest/console.js:28:17)
-      at Object.connect (plugins/legacy-jbrowse/src/JBrowse1Connection/model.ts:61:19)
+Done — the flag now defaults on. The example-site's dev server should hot-reload; move the mouse over a gene and you'll see:
 
-PASS default plugins/comparative-adapters/src/PAFAdapter/PAFAdapter.test.ts
-  ● Console
+- Red outlines = the actual hit-test rectangles (laidOutDataMap, padded exactly like the real flatbush box). Compare these against where the glyphs are painted.
+- Blue outlines = drawn-glyph rectangles, drawn only during a Y-morph. If red and blue separate after a zoom, that's the bug in the act.
+- Console [hitbox] logs on every mousemove — watch morphActive, hitFeatureId, unresolvedHit, resolvedHoveredFeatureId.
 
-    console.warn
-      unknown not found in this adapter
+What to look for when a glyph doesn't light up:
+- hitFeatureId: null + morphActive: true → confirms the morph draw/hit mismatch.
+- hitFeatureId: null + morphActive: false on a static view → a coordinate offset (red boxes will look shifted from the glyphs); points me toward the DPR/trackWidthPx/border-offset path instead.
+- unresolvedHit: true → hit found but the model getter failed to resolve it (a data/index desync).
 
-      42 |     return undefined
-      43 |   }
-    > 44 |   originalWarn.call(console, ...args)
-         |                ^
-      45 | }
-      46 |
+To silence it without a rebuild: globalThis.__JBROWSE_HITBOX_DEBUG = false in the console.
 
-      at console.warn (config/jest/console.js:44:16)
-      at plugins/comparative-adapters/src/PAFAdapter/PAFAdapter.ts:88:17
+Tell me what the red boxes and the log show and I'll pin the fix. (Reminder: this is default-on debug scaffolding — I'll flip it back off or remove it once we've nailed the cause.)
 
+✻ Baked for 53s
 
-PASS jbrowse-img products/jbrowse-img/src/util.test.ts
-  ● Console
+❯ did you make bugfixes? i am not seeing issue anymore
 
-    console.error
-      rsvg-convert stderr: boom
+No — I did not make any bugfix. Everything I added is purely additive debug instrumentation:
 
-      26 |     return undefined
-      27 |   }
-    > 28 |   originalError.call(console, ...args)
-         |                 ^
-      29 | }
-      30 |
-      31 | console.warn = (...args) => {
+- two new files (hitTestDebug.ts, HitBoxDebugOverlay.tsx)
+- a logging call appended after theleMouseMove (the setHover/clearHover code is byte-for-byte unchanged)
+- a morphProgress field added to th
+- the red/blue overlay rendered with pointerEvents: 'none' so it can't intercept anything
 
-      at console.error (config/jest/console.js:28:17)
-      at convert (products/jbrowse-img/src/util.ts:41:15)
-      at products/jbrowse-img/src/util.test.ts:58:14
-      at Object.<anonymous> (node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:1824:9)
-      at Object.throwingMatcher [as toThrow] (node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2235:93)
-      at Object.<anonymous> (products/jbrowse-img/src/util.test.ts:59:8)3
+None of that touches the hit-test or hover code path. So the issue "disappearing" is meaningful
+signal, not a fix. Two likely expla
 
-## copilot
+1. It's intermittent and you're notr — consistent with the Y-morphhypothesis, which only manifests in the ~300ms after a zoom re-pack. On a statically-loaded view
+there's no morph, so hover always w
+2. The extra overlay/re-render subtly shifted render timing and is masking it. If adding a re-render
+makes it vanish, that itself pointsbug (again, the morph).
 
+Two quick checks to tell which:
 
+- Do you actually see red outlines ms the new code is live (HMRsometimes doesn't pick up brand-new files — a full page reload forces it). If you don't see red
+boxes, you're still on old code and
+- Force the original trigger: zoom in or out a notch and immediately sweep the mouse across a gene
+while it's animating into place. Waating from the blue drawn box, andcheck the console [hitbox] line for morphActive: true with hitFeatureId: null.
 
-Use complete, ordered escaping for markdown table cell content:
+If you can reproduce it that way (or it stays gone even mid-zoom), tell me — that decides whether the fix is "hit-test against renders a coordinate bug.
+                                                                                              Cogitated for 40s
+                                                                                              i do see red outlines. the issue waation, it was persistently notmouseover shading even after morph settled
+No, I made zero logic changes — the hover/hit-test code is untouched. So a persistent failurvanishes the moment I add an overla a big diagnostic clue: it means the bug is a MobX reactivity / stale-render problem, not a geometry or coordinate one. My debug added new observed reads (laidOutDagLabelsData) to the Overlaysobserver, and my log line reads model.hoveredFeature in the mousemove handler every move — ewhich can force a computed to re-evnder that wasn't happening before.That's masking the bug, not fixing it.
+This fits the symptom: hoveredFeature (which gates both cursor and shading) is a computed → featureIdIndex → laidOutDataMap. Ifre-render, isn't invalidating whenit should, you'd get exactly this — persistently no shading even though the mouse is over the glyph, until something else triggers a ren
+                                                                                                     Two quick things to confirm this anit:
+                                                                                                     1. Toggle the instrumentation off wonsole:
+globalThis.__JBROWSE_HITBOX_DEBUG = false                                                            1. then mouse over genes. If the buy extra re-renders were masking areactivity bug (and it's the overlay's observed reads doing it). Set it back to true to make it      disappear again.
+2. Are the red boxes aligned with the genes? You said morph wasn't involved, so I expect yes — which rules out the coordinate/DPR path aause.
+                                                                                                    Once you confirm #1 (bug returns wieal defect — most likely Overlaysnot tracking hoveredFeature, or the hoveredFeature/featureIdIndex/laidOutDataMap computed chain not invalidating — and fix that properl. Can you run the toggle test?
 
-    Escape backslashes first.
-    Then escape pipe characters.
-
-Escaping backslashes first prevents pre-existing \ from interfering with subsequent \| escaping. In docs/util.ts, update tableCell at line 926 to chain a backslash-global replacement before the pipe replacement, while preserving existing whitespace-collapsing and trimming behavior.
-
-No new imports or helper methods are required.
-Suggested changeset 1
-docs/util.ts
-@@ -920,10 +920,14 @@
-}
-
-// Flatten free-form JSDoc prose into one safe table cell: collapse newlines
-// (a pipe table row can't span lines) and escape literal `|` so it can't be
-// mistaken for a column separator.
-// (a pipe table row can't span lines) and escape markdown metacharacters used
-// here: backslash (escape char) and literal `|` (table column separator).
-export function tableCell(text: string | undefined) {
-  return (text ?? '').replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim()
-  return (text ?? '')
-    .replace(/\\/g, '\\\\')
-    .replace(/\|/g, '\\|')
-    .replace(/\s+/g, ' ')
-    .trim()
-
-## ci type error
-
-
-
-Run pnpm typecheck
-
-> root@0.0.0 typecheck /home/runner/work/jbrowse-components/jbrowse-components
-> tsgo --noEmit
-
-Error: aws/blat-proxy/src/index.ts(10,8): error TS2307: Cannot find module 'aws-lambda' or its corresponding type declarations.
-Error: aws/blat-proxy/test/proxy.test.ts(1,38): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
-Error: aws/blat-proxy/vitest.config.ts(1,30): error TS2307: Cannot find module 'vitest/config' or its corresponding type declarations.
- ELIFECYCLE  Command failed with exit code 1.
-Error: Process completed with exit code 1.
-
-## err
-
-
-Run pnpm --filter lgv-examples-site smoke
-
-> lgv-examples-site@0.0.0 smoke /home/runner/work/jbrowse-components/jbrowse-components/products/jbrowse-react-linear-genome-view/examples-site
-> node scripts/smoke.mjs
-
-FAIL pan-ukb-gwas
-     console: Error: HTTP 503 fetching https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt
-
-40/41 pages OK
-/home/runner/work/jbrowse-components/jbrowse-components/products/jbrowse-react-linear-genome-view/examples-site:
- ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  lgv-examples-site@0.0.0 smoke: `node scripts/smoke.mjs`
-Exit status 1
-
-## odd scroll behavior on embedded
-
-scrolls per-track, then scrolls page, and continues to be attached to per track scroll even after mouse has left
+                          ## promotable preferences for plugins/canvas
+                          show chevrons
+                          etc

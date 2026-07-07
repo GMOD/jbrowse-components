@@ -118,7 +118,7 @@ export function getReadDisplayLegendItems(
     }))
   }
   if (colorType && isModificationScheme(colorType) && visibleModifications) {
-    const hidden = colorBy?.modifications?.hiddenModifications
+    const hidden = colorBy.modifications?.hiddenModifications
     const items: LegendItem[] = []
     for (const [type, mod] of visibleModifications.entries()) {
       if (!hidden?.includes(type)) {

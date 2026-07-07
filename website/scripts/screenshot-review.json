@@ -489,10 +489,10 @@
   },
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
-    "status": "bad",
-    "note": "CODE FIXED (buildReadVsRefSpec.ts: inline display configuration + showColorLegend:false — the old bare-id configuration ref silently dropped the showReverse/showTranslation snapshot fields, so they never took effect; now inline). Screenshot itself is a frozen external share-<id> session captured pre-fix, so it still shows the old (broken) render — needs a fresh live capture (right-click the SKBR3 insertion read -> Linear read vs ref) to regenerate, not just a rebuild+rerender.",
-    "reviewedAt": "2026-07-07T14:38:10.076Z",
-    "hash": "d894706a07088492250ebdbbfd11c00bd785c0c9"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-07T19:39:51.915Z",
+    "hash": "1184605ee66b9ff73f92adbfffda4dd96b9d5dec"
   },
   "recent_tracks": {
     "name": "recent_tracks",
@@ -863,8 +863,8 @@
   "maf_conservation": {
     "name": "maf_conservation",
     "status": "bad",
-    "note": "I feel like i dont care about conservation. we can add some prose about it but i dont feel confident in it",
-    "reviewedAt": "2026-07-07T01:54:14.408Z",
+    "note": "I feel like i dont care about conservation. just delete this figure",
+    "reviewedAt": "2026-07-07T20:19:17.858Z",
     "hash": "6f92189b463691a0b57dac27e6aa19dc3b04167e"
   },
   "rnaseq/single_read": {
@@ -1113,10 +1113,10 @@
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
-    "status": "bad",
-    "note": "add ncbi gene track, pretty uninteresting on its own",
-    "reviewedAt": "2026-07-07T01:35:17.433Z",
-    "hash": "20b2f2126e7d199aacc9a3872edca58904b903e5"
+    "status": "good",
+    "note": "Added NCBI RefSeq gene track via --hub hg19 --track hg19-ncbiRefSeqCurated alongside --hic, giving the TAD structure real gene context. Verified render (genes align under the contact matrix). README + jbrowse-img.md + img/hic.png regenerated via pnpm gen-img-doc.",
+    "reviewedAt": "2026-07-07T20:20:24.156Z",
+    "hash": "fd9453047ef405a6f8f0c9ba3e8cf4a31966182a"
   },
   "maf_470way": {
     "name": "maf_470way",
@@ -1149,8 +1149,8 @@
   "sv_cgiab/cnv_log2ratio_genome": {
     "name": "sv_cgiab/cnv_log2ratio_genome",
     "status": "bad",
-    "note": "the multiwiggle depth should ideally be raw depths not indexcov",
-    "reviewedAt": "2026-07-07T04:54:32.673Z",
+    "note": "the multiwiggle depth should ideally be raw depths not indexcov. we may want to make this screenshot wider. the baf values are also probably confusing for anyone without proper background, and the 'whiskers' are confusing too. also we are not plotting folded b-allele frequency anymore",
+    "reviewedAt": "2026-07-07T20:20:31.631Z",
     "hash": "dd8cd99c72cea070e59453d3d0df80251e7737cc"
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
@@ -1268,9 +1268,9 @@
   "gallery/celegans_26way": {
     "name": "gallery/celegans_26way",
     "status": "bad",
-    "note": "this is a relatively uninteresting screenshot, could consider deleting or adding gene track at minimum to make it interesting",
-    "reviewedAt": "2026-07-07T04:45:47.420Z",
-    "hash": "7501782b022a5f735506e79b0bd34beeda5478b3"
+    "note": "Fixed the config bug this exposed: ce11.ncbiRefSeq.sorted.gff pointed at a dead cross-bucket S3 file (wrong filename); repointed at the correct co-located file + reuploaded config.json + CloudFront invalidation (real, independent fix). Did NOT add the gene track here though: doing so exposes a separate real bug where the MAF Loading placeholder over a genuine no-data gap never clears once a 2nd track is present (reproduced 3/3, order-independent, unaffected by settleMs 90000->180000). Screenshot itself unchanged (still MAF-only, uninteresting) pending that investigation.",
+    "reviewedAt": "2026-07-07T20:20:00.057Z",
+    "hash": "45f71c55f7087eeefd72838ca03ff71d1a72c5d1"
   },
   "gallery/copynumber_clustered": {
     "name": "gallery/copynumber_clustered",
@@ -1373,9 +1373,9 @@
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
     "status": "good",
-    "note": "Follow-up per user: geneGlyphMode longestCoding on the RefSeq track (was showing 2 overlapping isoforms), displayMode compact on both alignments tracks, viewportHeight 740->1000 so the full compact pileup fits with no crop.",
-    "reviewedAt": "2026-07-07T15:42:08.205Z",
-    "hash": "07095202913ac6ef3aa0fb19dcd63de7f4d6610d"
+    "note": "Follow-up per user: hiddenModifications:[m,h] so only 6mA (a) renders/legends; also fixed a real bug where hiddenModifications filtered what rendered but not the legend swatches (legendUtils.ts). Also fixed a stale capture (was committed mid-download, progress bars baked in) by raising settleMs 20000->45000.",
+    "reviewedAt": "2026-07-07T19:47:08.871Z",
+    "hash": "1603f9aea4ac2c3d8018a9ad6f7a5ef15e87e9ce"
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",

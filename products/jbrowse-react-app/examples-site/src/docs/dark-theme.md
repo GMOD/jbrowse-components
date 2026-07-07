@@ -1,5 +1,5 @@
-Theme the app via the `configuration` prop on
-[`<JBrowse>`](../basic-example/), following
+Theme the app via the `configuration` prop on [`<JBrowse>`](../basic-example/),
+following
 [MUI theme palette](https://mui.com/material-ui/customization/theming/)
 conventions. Setting `palette.mode` to `'dark'` switches the whole app to the
 built-in dark theme:

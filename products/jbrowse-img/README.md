@@ -341,10 +341,12 @@ jb2export --fasta data/volvox/volvox.fa --aliases data/volvox/volvox.aliases.txt
 ### Hi-C tracks
 
 A `--hic` track draws the contact matrix as a triangular heatmap. This example
-streams the public hg19 demo `.hic` and shows the TAD structure along chr1:
+streams the public hg19 demo `.hic` and shows the TAD structure along chr1, with
+the NCBI RefSeq gene track (via `--hub`/`--track`) underneath for context:
 
 ```bash
-jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+jb2export --hub hg19 \
+  --track hg19-ncbiRefSeqCurated \
   --hic https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic height:400 \
   --loc 1:2,500,000-12,500,000 --width 1200 --out hic.png
 ```

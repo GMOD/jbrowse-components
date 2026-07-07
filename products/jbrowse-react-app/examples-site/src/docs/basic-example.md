@@ -6,9 +6,9 @@ component is a better fit.
 
 ## A minimal embed
 
-Pass `assemblies`, `tracks`, and a `views` list straight to `<JBrowse>` as
-props — no `createViewState` call or nested `config` object to hand-assemble.
-Each entry in `views` carries its own view-type `init` blob:
+Pass `assemblies`, `tracks`, and a `views` list straight to `<JBrowse>` as props
+— no `createViewState` call or nested `config` object to hand-assemble. Each
+entry in `views` carries its own view-type `init` blob:
 
 ```jsx
 import { JBrowse } from '@jbrowse/react-app2'
@@ -29,12 +29,11 @@ import { JBrowse } from '@jbrowse/react-app2'
 />
 ```
 
-The props are **initial values** — read once on mount. `assemblies` and
-`tracks` use the same format as a JBrowse Web `config.json`, so configs
-round-trip between the two. Unlike JBrowse Web, the embedded component does
-**not** auto-fetch a `config.json` from a URL parameter — you control how and
-when the config is loaded (see
-[Import a config.json](../with-import-config-json/)).
+The props are **initial values** — read once on mount. `assemblies` and `tracks`
+use the same format as a JBrowse Web `config.json`, so configs round-trip
+between the two. Unlike JBrowse Web, the embedded component does **not**
+auto-fetch a `config.json` from a URL parameter — you control how and when the
+config is loaded (see [Import a config.json](../with-import-config-json/)).
 
 `<JBrowse>` also accepts:
 

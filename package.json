@@ -91,7 +91,7 @@
     "cors": "^2.8.6",
     "cross-spawn": "^7.0.6",
     "css-loader": "^7.1.4",
-    "electron": "^43.0.0",
+    "electron": "^43.1.0",
     "eslint": "^10.6.0",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-astro": "2.1.1",
@@ -132,7 +132,7 @@
     "swr": "^2.4.2",
     "tslib": "^2.8.1",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.62.1",
+    "typescript-eslint": "^8.63.0",
     "webpack": "^5.108.4",
     "webpack-cli": "^7.2.1",
     "webpack-dev-server": "^6.0.0"

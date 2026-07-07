@@ -1,7 +1,7 @@
 When a track needs to open in response to a runtime condition (a button click, a
 search hit, a parent prop) rather than at first mount, call the imperative
-`showTrack` action after construction instead of baking the trackId into
-`init`. This requires the unmanaged `createViewState` flow, since the managed
+`showTrack` action after construction instead of baking the trackId into `init`.
+This requires the unmanaged `createViewState` flow, since the managed
 `<CircularGenomeView>` only reads its props once on mount:
 
 ```js

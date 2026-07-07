@@ -980,8 +980,8 @@ See
 
 ## See also
 
-- [Automating JBrowse](/docs/automating) — the shared `init` model behind
-  every launch surface
+- [Automating JBrowse](/docs/automating) — the shared `init` model behind every
+  launch surface
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) —
   `createViewState`/`location` as an alternative to URL params
 - [Default session](/docs/config_guides/default_session) — baking a session spec
