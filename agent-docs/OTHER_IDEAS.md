@@ -319,7 +319,7 @@ format-agnostic (all-vs-all needed zero `make-pif` changes), but has structural
 limits worth recording:
 
 - **No intra-record slicing (highest impact).** tabix returns whole lines, so a
-  single colinear block spanning tens of Mb carries a multi-MB CIGAR on one
+  single collinear block spanning tens of Mb carries a multi-MB CIGAR on one
   fine-tier row; zooming into a 10 kb window *inside* it still fetches+parses the
   entire CIGAR because the row's `[start,end]` overlaps. The RPC clips oversized
   blocks (`executeSyntenyFeaturesAndPositions.ts`) but only *after* fetch+parse.
@@ -1193,7 +1193,7 @@ Calibrated confidence
 - Direction — metadata-driven, single promotable flag feeds the UI: high (~85%). Architecturally sound; the badge already proves zero-per-slot enumeration works.
 - Track-menu auto-generation via the mixin: high (~80%). It operates on the live display model, where resolveSlot/getConfResolved already work correctly and reactively. This is the safe generalization, and it's where the
 - Config-editor GUI as a clean drop-in: low (~40%). Feasible, but it's athree frictions above — detached taaw-vs-resolved display — not a small SlotEditor addition. I over-sold it last turn.
-Things I still haven't measured that gate any of this: the field-wise slmany existing subclasses override anly inherit baseadvanced/description — unknown, potentially wide), and the test surface (displayMode/showSoftClipping/Overr).
+Things I still haven't measured that gate any of this: the field-wise slmany existing subclasses override only inherit baseadvanced/description — unknown, potentially wide), and the test surface (displayMode/showSoftClipping/Overr).
                                                                                                      What I'd actually recommend
                                                                                                      Do the mixin-driven track-menu autohigh-confidence generalization, runs where the resolver already behaves, and gets per-slot cost down to a schema line without touching    the editor's delta/detached-target ditor control as a separate, laterspike, and only after deciding how you want raw-vs-resolved and the two-axes mixing to read — that's a UX call, not just code.
                                                                                                      Want me to prototype the mixin auto (low blast radius, easy to verifyagainst the existing displayMode/showSoftClipping tests), and leave the editor question parked until we've seen that land?
@@ -1249,7 +1249,7 @@ I am thinking about R figure export from our jbrowse genome browser. These were 
    hand-mirre reading is the Canvas2D/SVGfallback; read.slang is the GPU twin, with big "SYNC: change both together" comments). The recipe                                                        path re-derives everything in R, so a third hand-synced copy in R.That's the real cost
                                                                                                                                                                                                   But it splits cleanly into two tiers, and only one is expensive:
                                                                                                                                                                                                   Tier 1 — cheap, low-drift, pure functions of one BAM record:
-  strand, mappingQuality (ramp), inser-by-tag. Every input is a field Ralready has after readGAlignments (flags, mapq, tlen, an arbitrary tag). These port to a few lines                         of R and won't drift much. Even inshe MAD upper/lower you compute overthe read set — r
+  strand, mappingQuality (ramp), insert-by-tag. Every input is a field Ralready has after readGAlignments (flags, mapq, tlen, an arbitrary tag). These port to a few lines                         of R and won't drift much. Even inshe MAD upper/lower you compute overthe read set — r
                                                                                                                                                                                                   Tier 2 — expensive, drift-prone, where your "custom logic" actually lives:
   - Split/chain classification (chain and reconstructing the chain, plusthe inversion/deletion/supplementary precedence                                                                           - interchrom buckets, unmapped-mate
   - Modifications/methylation (MM/ML tag parsing → per-base mod colors)                                                                                                                           - perBaseQuality / perBaseLetter
@@ -1261,7 +1261,7 @@ I am thinking about R figure export from our jbrowse genome browser. These were 
                                                                                                                                                                                                   Ran 5 shell commands
                                                                                                                                                                                                   I checked out the actual R_export2 code to make sure this evaluation isn't running on aimed earlier is real, not hand-wavy:
                                                                                                                                                                                                 - fetch_bam_features really does end = bam$pos + nchar(bam$cigar) — that's the string " → span of 4. And ref_name = ...seqnames(gr)[1] hardcodes a single region. It's a stub.
-- alignments/exportRCode.ts really does hardcode fill = factor(strand) with a two-color scale, ignoring whatever colorBy the user actually set.                                                 - ReadColorCategory is exactly 21 members, and it splits cleanly at the line I describ
+- alignments/exportRCode.ts really does hardcode fill = factor(strand) with a two-color scale, ignoring whatever colorBy the user actually set.                                                 - ReadColorCategory is exactly 21 members, and it splits cleanly at the line I describe
                                                                                                                                                                                                 So the picture is accurate. Here's where I land, with the pushback you asked for.
                                                                                                                                                                                                 The reframe that resolves the coloring question
                                                                                                                                                                                                 You're asking "pure-R vs sidecar for the hard color cases," but I think that's the sechat is this export actually for?

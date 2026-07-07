@@ -80,4 +80,131 @@ in plugins/dotplot-view we have the idea of allocating space for refname labels.
 ## occasionally mouseover on gene glyph does not show cursor pointer with mouseover shading
 
 
-## only show 6ma methylation in chromatin_accessibility_6ma
+## only show 6ma methylation in chromatin_accessibility_6ma3
+
+## add fit to height to jbrowse-img
+
+## error in test
+
+
+PASS default products/jbrowse-web/src/rootModel/rootModel.test.ts
+  ● Console
+
+    console.error
+      Error: assembly name required for JBrowse 1 connection
+          at Object.connect (/home/runner/work/jbrowse-components/jbrowse-components/plugins/legacy-jbrowse/src/JBrowse1Connection/model.ts:38:19)
+          at processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+      26 |     return undefined
+      27 |   }
+    > 28 |   originalError.call(console, ...args)
+         |                 ^
+      29 | }
+      30 |
+      31 | console.warn = (...args) => {
+
+      at console.error (config/jest/console.js:28:17)
+      at Object.connect (plugins/legacy-jbrowse/src/JBrowse1Connection/model.ts:61:19)
+
+PASS default plugins/comparative-adapters/src/PAFAdapter/PAFAdapter.test.ts
+  ● Console
+
+    console.warn
+      unknown not found in this adapter
+
+      42 |     return undefined
+      43 |   }
+    > 44 |   originalWarn.call(console, ...args)
+         |                ^
+      45 | }
+      46 |
+
+      at console.warn (config/jest/console.js:44:16)
+      at plugins/comparative-adapters/src/PAFAdapter/PAFAdapter.ts:88:17
+
+
+PASS jbrowse-img products/jbrowse-img/src/util.test.ts
+  ● Console
+
+    console.error
+      rsvg-convert stderr: boom
+
+      26 |     return undefined
+      27 |   }
+    > 28 |   originalError.call(console, ...args)
+         |                 ^
+      29 | }
+      30 |
+      31 | console.warn = (...args) => {
+
+      at console.error (config/jest/console.js:28:17)
+      at convert (products/jbrowse-img/src/util.ts:41:15)
+      at products/jbrowse-img/src/util.test.ts:58:14
+      at Object.<anonymous> (node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:1824:9)
+      at Object.throwingMatcher [as toThrow] (node_modules/.pnpm/expect@30.4.1/node_modules/expect/build/index.js:2235:93)
+      at Object.<anonymous> (products/jbrowse-img/src/util.test.ts:59:8)3
+
+## copilot
+
+
+
+Use complete, ordered escaping for markdown table cell content:
+
+    Escape backslashes first.
+    Then escape pipe characters.
+
+Escaping backslashes first prevents pre-existing \ from interfering with subsequent \| escaping. In docs/util.ts, update tableCell at line 926 to chain a backslash-global replacement before the pipe replacement, while preserving existing whitespace-collapsing and trimming behavior.
+
+No new imports or helper methods are required.
+Suggested changeset 1
+docs/util.ts
+@@ -920,10 +920,14 @@
+}
+
+// Flatten free-form JSDoc prose into one safe table cell: collapse newlines
+// (a pipe table row can't span lines) and escape literal `|` so it can't be
+// mistaken for a column separator.
+// (a pipe table row can't span lines) and escape markdown metacharacters used
+// here: backslash (escape char) and literal `|` (table column separator).
+export function tableCell(text: string | undefined) {
+  return (text ?? '').replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim()
+  return (text ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/\|/g, '\\|')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+## ci type error
+
+
+
+Run pnpm typecheck
+
+> root@0.0.0 typecheck /home/runner/work/jbrowse-components/jbrowse-components
+> tsgo --noEmit
+
+Error: aws/blat-proxy/src/index.ts(10,8): error TS2307: Cannot find module 'aws-lambda' or its corresponding type declarations.
+Error: aws/blat-proxy/test/proxy.test.ts(1,38): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+Error: aws/blat-proxy/vitest.config.ts(1,30): error TS2307: Cannot find module 'vitest/config' or its corresponding type declarations.
+ ELIFECYCLE  Command failed with exit code 1.
+Error: Process completed with exit code 1.
+
+## err
+
+
+Run pnpm --filter lgv-examples-site smoke
+
+> lgv-examples-site@0.0.0 smoke /home/runner/work/jbrowse-components/jbrowse-components/products/jbrowse-react-linear-genome-view/examples-site
+> node scripts/smoke.mjs
+
+FAIL pan-ukb-gwas
+     console: Error: HTTP 503 fetching https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt
+
+40/41 pages OK
+/home/runner/work/jbrowse-components/jbrowse-components/products/jbrowse-react-linear-genome-view/examples-site:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  lgv-examples-site@0.0.0 smoke: `node scripts/smoke.mjs`
+Exit status 1
+
+## odd scroll behavior on embedded
+
+scrolls per-track, then scrolls page, and continues to be attached to per track scroll even after mouse has left

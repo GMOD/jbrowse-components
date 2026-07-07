@@ -41,3 +41,5 @@ packages/core/src/util/geneticCodes.mito.test.ts
 products/jbrowse-react-linear-genome-view/examples-site/public/panukbPhenotypes.json
 peptidePositioning.ts
 website/scripts/screenshot-specs.ts
+website/scripts/screenshot-spec-helpers.ts
+agent-docs/dotplot-diagonalize-analysis/proto_final.py

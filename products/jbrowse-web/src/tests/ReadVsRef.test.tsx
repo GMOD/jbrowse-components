@@ -31,6 +31,7 @@ test('launch read vs ref panel', async () => {
   fireEvent.click(canvas, { clientX: 200, clientY: 80 })
   fireEvent.contextMenu(canvas, { clientX: 200, clientY: 80 })
 
+  fireEvent.click(await findByText(/Launch/, {}, delay))
   fireEvent.click(await findByText('Linear read vs ref', {}, delay))
   const elt = await findByText('Submit', {}, delay)
 
@@ -56,6 +57,7 @@ test('launch read vs ref dotplot', async () => {
   fireEvent.click(canvas, { clientX: 200, clientY: 80 })
   fireEvent.contextMenu(canvas, { clientX: 200, clientY: 80 })
 
+  fireEvent.click(await findByText(/Launch/, {}, delay))
   fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
   await waitFor(() => {
     expect(session.views.length).toBe(2)
