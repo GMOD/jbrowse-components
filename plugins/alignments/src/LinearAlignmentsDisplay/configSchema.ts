@@ -115,6 +115,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'boolean',
         defaultValue: false,
         description: 'Draw the supporting-read count on each sashimi arc',
+        promotable: true,
       },
       /**
        * #slot
@@ -434,6 +435,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'boolean',
         defaultValue: false,
         description: 'Draw read connections below the coverage band',
+        promotable: true,
       },
       /**
        * #slot
@@ -448,8 +450,18 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       sashimiArcsMode: {
         type: 'stringEnum',
-        model: types.enumeration('SashimiArcsMode', ['up', 'down', 'auto']),
-        defaultValue: 'up',
+        model: types.enumeration('SashimiArcsMode', [
+          'inherit',
+          'up',
+          'down',
+          'auto',
+        ]),
+        // Sentinel promotable slot (like linkedReads/readConnections): `inherit`
+        // follows the session-wide default (else `promotedBase` 'up'), and a
+        // track can pin 'up' back over a session-wide 'down'/'auto' default.
+        defaultValue: 'inherit',
+        promotedBase: 'up',
+        promotable: true,
         description: 'Sashimi junction-arc placement',
       },
       /**

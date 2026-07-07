@@ -415,16 +415,42 @@ export default function stateModelFactory(
           return makeSessionDefaultControl(self, 'readConnections', 'samplot')
         },
         /** #getter */
+        // Resolved through the promotable-slot tiers (getConfResolved): a plain
+        // boolean slot, so a session default of `true` can only be pinned back
+        // off in the "on" direction (see showSoftClipping above).
         get readConnectionsDown(): boolean {
-          return getConf(self, 'readConnectionsDown')
+          return getConfResolved(self, 'readConnectionsDown')
+        },
+        /** #getter */
+        // "make this the default for all tracks" control (pin) for drawing arcs
+        // below the coverage band
+        get readConnectionsDownSessionDefault() {
+          return makeSessionDefaultControl(self, 'readConnectionsDown', true)
         },
         /** #getter */
         get showSashimiArcs(): boolean {
           return getConf(self, 'showSashimiArcs')
         },
         /** #getter */
+        // Sentinel promotable slot (like linkedReads/readConnections): a track
+        // pins 'up' explicitly, else follows the session-wide default, falling
+        // back to 'up'.
         get sashimiArcsMode(): SashimiArcsMode {
-          return getConf(self, 'sashimiArcsMode')
+          return getConfResolved<SashimiArcsMode>(self, 'sashimiArcsMode')
+        },
+        /** #getter */
+        // "make below-coverage placement the default for all tracks" control
+        // (pin): active when 'down' is the session default. Independent of
+        // auto-placement (both share the sashimiArcsMode slot but target
+        // different on-values).
+        get sashimiDownSessionDefault() {
+          return makeSessionDefaultControl(self, 'sashimiArcsMode', 'down')
+        },
+        /** #getter */
+        // "make auto-placement the default for all tracks" control (pin):
+        // active when 'auto' is the session default
+        get sashimiAutoSessionDefault() {
+          return makeSessionDefaultControl(self, 'sashimiArcsMode', 'auto')
         },
         /** #getter */
         get minSashimiScore(): number {
@@ -793,11 +819,21 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Whether to draw the supporting-read count on each sashimi arc
-         * (config slot `showSashimiLabels`, overridable from the track menu).
+         * Whether to draw the supporting-read count on each sashimi arc.
+         * Resolved through the promotable-slot tiers (getConfResolved): a track
+         * configured `true` pins labels on; otherwise it follows the
+         * session-wide default, falling back to off.
          */
-        get showSashimiLabels() {
-          return getConf(self, 'showSashimiLabels')
+        get showSashimiLabels(): boolean {
+          return getConfResolved(self, 'showSashimiLabels')
+        },
+        /**
+         * #getter
+         * "make this the default for all tracks" control (pin) for sashimi
+         * arc labels
+         */
+        get showSashimiLabelsSessionDefault() {
+          return makeSessionDefaultControl(self, 'showSashimiLabels', true)
         },
 
         /**

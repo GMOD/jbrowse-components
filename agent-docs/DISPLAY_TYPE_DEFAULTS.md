@@ -22,8 +22,8 @@ read one section, read [The cascade](#the-cascade).
 | Menu-row `endAdornment` primitive | `packages/core/src/ui/{MenuTypes.ts,CascadingMenu.tsx}` |
 | Compound checkbox row (flat booleans) | `plugins/alignments/src/LinearAlignmentsDisplay/menus/{promotableToggleItem,DefaultForAllAdornment}.tsx` |
 | Adopter: `displayMode` (sentinel) | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts` |
-| Adopter: `heightMode` / `linkedReads` / `readConnections` (sentinel) | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
-| Adopter: `showSoftClipping` / `featureHeight` / `featureSpacing` / `colorBy` (plain) | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
+| Adopter: `heightMode` / `linkedReads` / `readConnections` / `sashimiArcsMode` (sentinel) | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
+| Adopter: `showSoftClipping` / `featureHeight` / `featureSpacing` / `colorBy` / `readConnectionsDown` / `showSashimiLabels` (plain) | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
 
 Tests: `displayMode.test.ts`, `showSoftClipping.test.ts` (both under their
 adopter), `OverrideBadge.test.tsx`, `sessionModelFactory.test.ts` (store
@@ -153,22 +153,28 @@ degrades to "no promoted defaults", never throws.
 
 - **Track menu** (per adopter): the value control plus a "make this the default
   for all tracks like this" affordance. Two shapes, by setting complexity:
-  - **Flat boolean settings** (`linkedReads`, `readConnections`, `showSoftClipping`)
-    use a **compound checkbox row**: an ordinary `type:'checkbox'` menu item
-    (native hover/sizing/keyboard) carrying a trailing **`endAdornment`** — a pin
-    (`DefaultForAllAdornment`, a MUI `ToggleButton`) that promotes the setting's
-    *on-value* as the default. One row expresses both axes. `endAdornment` is a
-    general `BaseMenuItem` field; `CascadingMenu` renders it in a fixed-width slot
-    to the right of the check decoration (reserved on every row when any row has
-    one, so checkboxes stay column-aligned and pins float in their own column).
-    The pin is **always shown** (discoverable) and uses **per-value** semantics —
+  - **Flat boolean settings** (`linkedReads`, `readConnections`, `showSoftClipping`,
+    `readConnectionsDown`, `showSashimiLabels`) use a **compound checkbox row**: an
+    ordinary `type:'checkbox'` menu item (native hover/sizing/keyboard) carrying a
+    trailing **`endAdornment`** — a pin (`DefaultForAllAdornment`, a MUI
+    `ToggleButton`) that promotes the setting's *on-value* as the default. One row
+    expresses both axes. `endAdornment` is a general `BaseMenuItem` field;
+    `CascadingMenu` renders it in a fixed-width slot to the right of the check
+    decoration (reserved on every row when any row has one, so checkboxes stay
+    column-aligned and pins float in their own column). The pin is **always
+    shown** (discoverable) and uses **per-value** semantics —
     `isSlotValueSessionDefault` / `setSlotValueSessionDefault`, bundled by
     `makeSessionDefaultControl(self, slot, onValue)` into a `SessionDefaultControl`
     (`{ active, toggle }`) that the model exposes and `promotableToggleItem`
     consumes. Per-value (not "promote current") is what lets an always-visible pin
     never promote a meaningless off-value and keeps two toggles sharing one slot
-    (arcs `'arc'` vs read cloud `'samplot'`) independent. Its content must
-    `stopPropagation`.
+    (arcs `'arc'` vs read cloud `'samplot'`; sashimi `'down'` vs `'auto'`)
+    independent. Its content must `stopPropagation`.
+  - **Multi-value radio groups sharing one slot** (`sashimiArcsMode`'s
+    `'down'`/`'auto'` options) use the same `SessionDefaultControl` plumbing via
+    `promotableRadioItem` (`menus/promotableToggleItem.tsx`) — a `type:'radio'`
+    row with the same pin `endAdornment`, omitted on the base/un-pinned option
+    (`'up'`) since pinning the base is meaningless with per-value semantics.
   - **Submenu settings** (`colorBy`, feature height, `displayMode`) put the
     "make default" checkbox at the **bottom of their own submenu** (e.g.
     `colorBy.ts` `sessionDefaultSection`) — same principle, room to spell it out.

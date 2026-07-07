@@ -26,6 +26,7 @@ interface ReadConnectionsModel {
   readCloudSessionDefault: SessionDefaultControl
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
+  readConnectionsDownSessionDefault: SessionDefaultControl
   drawLongRange: boolean
   setDrawLongRange: (draw: boolean) => void
   drawInter: boolean
@@ -106,13 +107,14 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
         disabled: !overlayActive,
         disabledHelpText: 'Enable "Show read arcs" or "Show read cloud" first',
         subMenu: [
-          checkboxItem(
-            'Draw below coverage band',
-            model.readConnectionsDown,
-            () => {
+          promotableToggleItem({
+            label: 'Draw arcs below coverage band',
+            checked: model.readConnectionsDown,
+            onToggle: () => {
               model.setReadConnectionsDown(!model.readConnectionsDown)
             },
-          ),
+            sessionDefault: model.readConnectionsDownSessionDefault,
+          }),
           checkboxItem(
             'Show off-screen mate connections',
             model.drawLongRange,

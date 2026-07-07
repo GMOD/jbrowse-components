@@ -2,6 +2,16 @@ import { getSashimiMenuItem } from './sashimi.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
 
+// stateful stand-in for a SessionDefaultControl bundle ({ active, toggle })
+function control() {
+  return {
+    active: false,
+    toggle() {
+      this.active = !this.active
+    },
+  }
+}
+
 function makeModel() {
   return {
     showSashimiArcs: false,
@@ -10,10 +20,13 @@ function makeModel() {
     },
     showSashimiLabels: false,
     setShowSashimiLabels() {},
+    showSashimiLabelsSessionDefault: control(),
     sashimiArcsMode: 'auto' as SashimiArcsMode,
     setSashimiArcsMode(mode: SashimiArcsMode) {
       this.sashimiArcsMode = mode
     },
+    sashimiDownSessionDefault: control(),
+    sashimiAutoSessionDefault: control(),
     minSashimiScore: 0,
     setMinSashimiScore() {},
   }
@@ -59,5 +72,30 @@ describe('sashimi menu', () => {
     }
     below.onClick()
     expect(model.sashimiArcsMode).toBe('down')
+  })
+
+  test('"Below coverage" and "Auto" carry a default-for-all pin, "Above coverage" does not', () => {
+    const model = makeModel()
+    model.showSashimiArcs = true
+    const placement = getSashimiMenuItem(model).subMenu.find(
+      i => 'label' in i && i.label === 'Arc placement',
+    )
+    if (!placement || !('subMenu' in placement)) {
+      throw new Error('no placement submenu')
+    }
+    const byLabel = (label: string) =>
+      placement.subMenu.find(i => 'label' in i && i.label === label)
+    expect(byLabel('Below coverage')?.endAdornment).toBeDefined()
+    expect(byLabel('Auto (minimize overlap)')?.endAdornment).toBeDefined()
+    expect(byLabel('Above coverage')?.endAdornment).toBeUndefined()
+  })
+
+  test('"Show labels" carries a default-for-all pin', () => {
+    const model = makeModel()
+    model.showSashimiArcs = true
+    const showLabels = getSashimiMenuItem(model).subMenu.find(
+      i => 'label' in i && i.label === 'Show labels',
+    )
+    expect(showLabels?.endAdornment).toBeDefined()
   })
 })

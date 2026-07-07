@@ -35,6 +35,7 @@ function makeModel() {
     setReadConnectionsDown(v: boolean) {
       this.readConnectionsDown = v
     },
+    readConnectionsDownSessionDefault: control(),
     drawLongRange: true,
     setDrawLongRange(v: boolean) {
       this.drawLongRange = v
@@ -160,17 +161,15 @@ describe('read-connection band options submenu is disabled until an overlay is a
     expect(submenu.disabled).toBe(true)
     expect(submenu.disabledHelpText).toBeTruthy()
     // items stay defined (discoverable) even while the submenu is disabled
-    expect(findByLabel(model, 'Draw below coverage band')).toBeDefined()
-    expect(
-      findByLabel(model, 'Show off-screen mate connections'),
-    ).toBeDefined()
+    expect(findByLabel(model, 'Draw arcs below coverage band')).toBeDefined()
+    expect(findByLabel(model, 'Show off-screen mate connections')).toBeDefined()
   })
 
   test('enabled and functional when arcs are on', () => {
     const model = makeModel()
     model.readConnections = 'arc'
     expect(bandOptionsSubMenu(model).disabled).toBe(false)
-    checkboxByLabel(model, 'Draw below coverage band').onClick()
+    checkboxByLabel(model, 'Draw arcs below coverage band').onClick()
     expect(model.readConnectionsDown).toBe(true)
   })
 })
@@ -196,5 +195,11 @@ describe('promote-as-default (default for all) pin', () => {
     clickDefaultForAll(model, 'Show read arcs')
     expect(model.arcsSessionDefault.active).toBe(true)
     expect(model.readCloudSessionDefault.active).toBe(false)
+  })
+
+  test('"Draw arcs below coverage band" also carries a pin, even while disabled', () => {
+    const model = makeModel()
+    clickDefaultForAll(model, 'Draw arcs below coverage band')
+    expect(model.readConnectionsDownSessionDefault.active).toBe(true)
   })
 })
