@@ -202,3 +202,51 @@ describe('promotable slot validate hook', () => {
     expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'strand' })
   })
 })
+
+// A sentinel slot's `defaultValue` is a dedicated `'inherit'` member (the "no
+// value — inherit" signal) and `promotedBase` is what it resolves to, so — unlike
+// a plain slot — every real value including `promotedBase` stays pinnable over an
+// opposite session default. Exercises `isConcreteValue`'s sentinel branch and
+// that `getConfResolved` never surfaces the `'inherit'` member.
+describe('promotable sentinel slot', () => {
+  const configSchema = ConfigurationSchema('SentinelDisplay', {
+    mode: {
+      type: 'stringEnum',
+      model: types.enumeration('Mode', ['inherit', 'normal', 'compact']),
+      defaultValue: 'inherit',
+      promotedBase: 'normal',
+      promotable: true,
+    },
+  })
+
+  test('an un-pinned track resolves to promotedBase, never the inherit sentinel', () => {
+    const { display } = createDisplay(configSchema)
+    expect(getConfResolved(display, 'mode')).toBe('normal')
+    expect(isSlotPinned(display, 'mode')).toBe(false)
+  })
+
+  test('an un-pinned track follows a usable session default', () => {
+    const { session, display } = createDisplay(configSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
+    expect(getConfResolved(display, 'mode')).toBe('compact')
+  })
+
+  test('a track can pin promotedBase over an opposite session default', () => {
+    const { session, display } = createDisplay(configSchema, { mode: 'normal' })
+    session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
+    expect(isSlotPinned(display, 'mode')).toBe(true)
+    expect(getConfResolved(display, 'mode')).toBe('normal')
+  })
+
+  test('a promoted inherit sentinel is rejected and falls back to promotedBase', () => {
+    const { session, display } = createDisplay(configSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'mode', 'inherit')
+    expect(getConfResolved(display, 'mode')).toBe('normal')
+  })
+
+  test('a promoted non-enum value is rejected and falls back to promotedBase', () => {
+    const { session, display } = createDisplay(configSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'mode', 'bogus')
+    expect(getConfResolved(display, 'mode')).toBe('normal')
+  })
+})
