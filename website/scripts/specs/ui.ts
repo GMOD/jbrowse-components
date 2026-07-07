@@ -1604,6 +1604,18 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'Archaic introgression',
     settleMs: 6000,
     viewportHeight: 480,
+    // orient the reader: each row is one population haplotype's archaic-ancestry
+    // segments, colored by source
+    annotations: [
+      {
+        type: 'text',
+        x: 360,
+        y: 232,
+        maxWidth: 560,
+        fontSize: 22,
+        text: 'Each row is one population haplotype. Blue = Denisovan segments — carried only by the two Oceanian rows (Bougainville, PapuanHighlands); red = Neanderthal, shared across all populations.',
+      },
+    ],
   },
 
   // Zoomed payoff for the introgression tutorial: a single ~150 kb Denisovan
@@ -1630,7 +1642,18 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'Archaic introgression',
     settleMs: 6000,
-    viewportHeight: 560,
+    viewportHeight: 620,
+    // explain the payoff: one Denisovan haplotype, Oceanian-only
+    annotations: [
+      {
+        type: 'text',
+        x: 360,
+        y: 430,
+        maxWidth: 620,
+        fontSize: 22,
+        text: 'This ~150 kb Denisovan haplotype (blue) is carried by all four Oceanian haplotypes (Bougainville, PapuanHighlands) and absent from the six European/Asian/American haplotypes — which have no archaic segment here, so those rows drop out.',
+      },
+    ],
   },
   {
     mode: 'url',
