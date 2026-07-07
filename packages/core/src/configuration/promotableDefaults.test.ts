@@ -172,4 +172,24 @@ describe('promotable slot validate hook', () => {
     // falls back to base rather than handing a consumer an unrecognized type
     expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'normal' })
   })
+
+  test("a track's own pinned value that fails validate degrades to the base", () => {
+    // a saved session pinned a scheme that's since been removed — the same
+    // stale-name hazard as a promoted default, but on the track's own value
+    const { display } = createDisplay(configSchema, {
+      colorBy: { type: 'a-removed-scheme' },
+    })
+    // an unusable pin reads as un-pinned so every consumer falls back in lockstep
+    expect(isSlotPinned(display, 'colorBy')).toBe(false)
+    expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'normal' })
+  })
+
+  test("a track's own pinned value that fails validate still follows a usable session default", () => {
+    const { session, display } = createDisplay(configSchema, {
+      colorBy: { type: 'a-removed-scheme' },
+    })
+    session.setDisplayTypeDefault('TestDisplay', 'colorBy', { type: 'strand' })
+    // un-pinned by the failed validate, so it inherits the promoted default
+    expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'strand' })
+  })
 })

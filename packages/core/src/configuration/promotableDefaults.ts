@@ -110,7 +110,14 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
   const base = def.promotedBase ?? def.defaultValue
   const own = getConf(self, slot)
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  const pinned = !deepEqual(own, def.defaultValue)
+  // an own value that fails the slot's `validate` hook (e.g. a saved `colorBy`
+  // naming a since-removed scheme) is treated as un-pinned, so it degrades to
+  // the inherited/base value in lockstep with a rejected promoted default rather
+  // than reaching a consumer that assumes every value it sees is valid. A
+  // frozen slot's shape is already trusted (MST-hydrated), so only `validate`
+  // gates `own`, not `promotedUsable`'s full shape battery for the untyped store
+  const pinned =
+    !deepEqual(own, def.defaultValue) && (!def.validate || def.validate(own))
   const inherited = promotedUsable(def, promoted) ? promoted : base
   const value = pinned ? own : inherited
   return { base, pinned, promoted, inherited, value }

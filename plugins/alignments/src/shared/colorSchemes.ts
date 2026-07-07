@@ -137,6 +137,24 @@ export function isModificationScheme(type: ColorSchemeType) {
   return COLOR_SCHEMES[type].shaderScheme === 'modifications'
 }
 
+// A persisted `colorBy` value is only usable once its `.type` still names a
+// registered scheme: the lookups above (colorSchemeLabel, isModificationScheme,
+// the model's colorSchemeIndexFor) are total over ColorSchemeType by design and
+// throw on anything else, so a stale/renamed name from a saved session or
+// session-wide default must be rejected before it reaches them. Wired as the
+// `colorBy` slot's promotable `validate` hook (see promotableDefaults.ts).
+export function isRegisteredColorScheme(
+  value: unknown,
+): value is { type: ColorSchemeType } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    typeof value.type === 'string' &&
+    value.type in COLOR_SCHEMES
+  )
+}
+
 type RadioColorScheme = ColorSchemeDef & {
   menu: Extract<ColorSchemeMenu, { kind: 'radio' }>
 }
