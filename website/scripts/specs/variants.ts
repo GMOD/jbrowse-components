@@ -2,6 +2,7 @@ import {
   DEMO_CONFIG,
   VOLVOX,
   lgvSession,
+  sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
 import type {
@@ -108,27 +109,68 @@ export const variantsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'variants/consequence_impact_sv',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      // zoomed out to ~450kb ("try zooming out more") so the NBPF20
-      // cluster's SV calls sit in flanking context rather than filling the
-      // window, while keeping the cluster roughly centered
-      loc: 'chr1:145,150,000-145,600,000',
-      tracks: [
+    url: sessionSpec(DEMO_CONFIG, {
+      // UCSC ClinVar CNVs (SVs >= 50bp) for medical context: chr1:145Mb is the
+      // 1q21.1 CNV region, so known pathogenic dup/del calls sit alongside the
+      // per-sample HGSVC SVs (reviewer: "add clinvar sv track")
+      sessionTracks: [
         {
-          trackId: 'hgsvc_sv_chr1_snpeff_consequence',
-          displaySnapshot: {
-            type: 'LinearMultiSampleVariantDisplay',
-            height: 500,
+          type: 'FeatureTrack',
+          trackId: 'clinvar_cnv_hg38',
+          name: 'ClinVar CNVs (UCSC)',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'BigBedAdapter',
+            uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb',
           },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          // zoomed out to ~450kb ("try zooming out more") so the NBPF20
+          // cluster's SV calls sit in flanking context rather than filling the
+          // window, while keeping the cluster roughly centered
+          loc: 'chr1:145,150,000-145,600,000',
+          tracks: [
+            {
+              // 1q21.1 is a recurrent-CNV hotspot: ~40 large ClinVar CNVs
+              // overlap here, most spanning multiple Mb, so unfiltered they
+              // paint the whole track. jexl-filter to Pathogenic calls under
+              // 2 Mb so only a handful of candidate deletions/duplications
+              // that fit the window remain.
+              trackId: 'clinvar_cnv_hg38',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                displayMode: 'normal',
+                height: 110,
+                jexlFiltersSetting: [
+                  "jexl:get(feature,'clinSign')=='Pathogenic'",
+                  "jexl:get(feature,'end')-get(feature,'start')<2000000",
+                ],
+              },
+            },
+            {
+              trackId: 'hgsvc_sv_chr1_snpeff_consequence',
+              displaySnapshot: {
+                type: 'LinearMultiSampleVariantDisplay',
+                height: 500,
+              },
+            },
+          ],
         },
       ],
     }),
     readyText: 'chr1',
     settleMs: 8000,
-    viewportHeight: 650,
+    viewportHeight: 800,
     actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="track_menu_icon"][data-trackid="hgsvc_sv_chr1_snpeff_consequence"]',
+      },
       { type: 'waitForText', text: 'Cluster by genotype' },
       { type: 'delay', ms: 300 },
       { type: 'click', text: 'Cluster by genotype' },
