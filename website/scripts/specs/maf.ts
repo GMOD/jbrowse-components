@@ -6,11 +6,31 @@ import {
   cascadeBoxes,
   lgvSession,
   menuCascade,
+  sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
 import type {
   ScreenshotSpec,
 } from '../screenshot-spec-types.ts'
+
+// MANE Select (v1.4, RefSeq/NCBI) as a session track: one curated transcript
+// per gene, so the GAPDH exon/CDS structure lines up above the 470-way heatmap
+// without the isoform clutter of the full RefSeq set. The hg38 assembly in the
+// 470way config carries refNameAliases, so this chr-named BigBed aligns to the
+// numeric ('12') MAF refnames.
+const HG38_MANE_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'mane_hg38',
+  name: 'MANE Select 1.4 (NCBI RefSeq)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BigBedAdapter',
+    bigBedLocation: {
+      uri: 'https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb',
+      locationType: 'UriLocation',
+    },
+  },
+}
 
 export const mafSpecs: ScreenshotSpec[] = [
   {
@@ -215,24 +235,33 @@ export const mafSpecs: ScreenshotSpec[] = [
     // timeout.
     mode: 'url',
     name: 'maf_470way',
-    url: lgvSession(HG38_470WAY, {
-      assembly: 'hg38',
-      loc: '12:6,534,400-6,538,500',
-      tracks: [
+    url: sessionSpec(HG38_470WAY, {
+      sessionTracks: [HG38_MANE_TRACK],
+      views: [
         {
-          trackId: 'hg38.multiz470way',
-          // fit-to-display-height: the `height` config slot pins the whole
-          // display to 600px while rowHeight stays at its default 0 (fit mode),
-          // so all ~470 rows squeeze into 600px at ~1px each. Rows go sub-pixel
-          // but the conserved/divergent banding still reads as a texture, and
-          // the whole phylogeny is visible at once instead of scrolling off.
-          // The top-right legend names the red/blue ramp.
-          displaySnapshot: {
-            type: 'LinearMafDisplay',
-            height: 600,
-            rowIdentityMode: 'heatmap',
-            rowIdentityAutoZoom: false,
-          },
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '12:6,534,400-6,538,500',
+          tracks: [
+            // MANE gene track on top: the exon/CDS structure of GAPDH lines up
+            // with the conserved (blue) coding bands in the heatmap below
+            'mane_hg38',
+            {
+              trackId: 'hg38.multiz470way',
+              // fit-to-display-height: the `height` config slot pins the whole
+              // display to 600px while rowHeight stays at its default 0 (fit
+              // mode), so all ~470 rows squeeze into 600px at ~1px each. Rows go
+              // sub-pixel but the conserved/divergent banding still reads as a
+              // texture, and the whole phylogeny is visible at once instead of
+              // scrolling off. The top-right legend names the red/blue ramp.
+              displaySnapshot: {
+                type: 'LinearMafDisplay',
+                height: 600,
+                rowIdentityMode: 'heatmap',
+                rowIdentityAutoZoom: false,
+              },
+            },
+          ],
         },
       ],
     }),
@@ -264,33 +293,43 @@ export const mafSpecs: ScreenshotSpec[] = [
     // exactly the metric a coding alignment calls for.
     mode: 'url',
     name: 'maf_470way_codon',
-    url: lgvSession(HG38_470WAY, {
-      assembly: 'hg38',
-      // window trimmed to sit fully inside one GAPDH coding exon: the
-      // original ran a few bp past the exon 3' end, so the species that have no
-      // aligned block there drew empty "bridge" e-lines on the right that read as
-      // artifacts. The codon view is now gap-free across the window: reviewers
-      // earlier saw blank columns spanning every row (reference included) where a
-      // reference codon's three bases straddle a MAF alignment-block boundary —
-      // those codons were dropped (computeVisibleCodons required all three in one
-      // block) while the block-agnostic per-base coverage stayed continuous.
-      // computeVisibleCodons/computeCodonConservation now stitch a codon across
-      // blocks (locateCodon resolves each base to whichever block holds it), so
-      // the codon layer lines up with the coverage band above it.
-      loc: '12:6,536,485-6,536,590',
-      tracks: [
+    url: sessionSpec(HG38_470WAY, {
+      sessionTracks: [HG38_MANE_TRACK],
+      views: [
         {
-          trackId: 'hg38.multiz470way',
-          // fit-to-display-height: the ~30 filtered rows fill the track tall
-          // enough to read the per-codon amino acids
-          displaySnapshot: {
-            type: 'LinearMafDisplay',
-            heightOverride: 560,
-            showTranslation: true,
-            showConservation: true,
-            conservationMode: 'codon',
-            subtreeFilter: HG38_470WAY_30,
-          },
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          // window trimmed to sit fully inside one GAPDH coding exon: the
+          // original ran a few bp past the exon 3' end, so the species that have
+          // no aligned block there drew empty "bridge" e-lines on the right that
+          // read as artifacts. The codon view is now gap-free across the window:
+          // reviewers earlier saw blank columns spanning every row (reference
+          // included) where a reference codon's three bases straddle a MAF
+          // alignment-block boundary — those codons were dropped
+          // (computeVisibleCodons required all three in one block) while the
+          // block-agnostic per-base coverage stayed continuous.
+          // computeVisibleCodons/computeCodonConservation now stitch a codon
+          // across blocks (locateCodon resolves each base to whichever block
+          // holds it), so the codon layer lines up with the coverage band above.
+          loc: '12:6,536,485-6,536,590',
+          tracks: [
+            // MANE gene track: confirms the window sits inside a GAPDH coding
+            // exon and lines the CDS up with the per-codon translation below
+            'mane_hg38',
+            {
+              trackId: 'hg38.multiz470way',
+              // fit-to-display-height: the ~30 filtered rows fill the track tall
+              // enough to read the per-codon amino acids
+              displaySnapshot: {
+                type: 'LinearMafDisplay',
+                heightOverride: 560,
+                showTranslation: true,
+                showConservation: true,
+                conservationMode: 'codon',
+                subtreeFilter: HG38_470WAY_30,
+              },
+            },
+          ],
         },
       ],
     }),
