@@ -14,39 +14,19 @@ import {
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const syntenySpecs: ScreenshotSpec[] = [
-  // Human vs chimp synteny (hosted liftOver chain, zoomed to LMNB2). The two
-  // CIGAR display modes are captured as independent DECLARATIVE sessions (the
-  // cigarMode is baked into each session, no menu-driving) then stacked by the
-  // `synteny_human_chimp_cigar_modes` compose spec below. Each also guards the
-  // oversized-block viewport clip — a chromosome-scale block must render at high
-  // zoom instead of a blank canvas.
+  // Human vs chimp synteny (hosted liftOver chain, zoomed to an RB1 intron with
+  // a human-specific L1HS insertion). 'full' cigarMode paints the indel as a
+  // colored wedge. Also guards the oversized-block viewport clip — a
+  // chromosome-scale block must render at high zoom instead of a blank canvas.
   {
     mode: 'url',
-    name: 'synteny_human_chimp_colored',
+    name: 'synteny_human_chimp_cigar_modes',
     url: hg38ChimpSynteny('full'),
     viewportWidth: 1200,
     viewportHeight: 730,
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
     settleMs: 12000,
-  },
-  {
-    mode: 'url',
-    name: 'synteny_human_chimp_transparent',
-    url: hg38ChimpSynteny('matches'),
-    viewportWidth: 1200,
-    viewportHeight: 730,
-    readySelector: '[data-testid="synteny_canvas_done"]',
-    readyTimeout: 60000,
-    settleMs: 12000,
-  },
-  // Stacks the two declarative captures into one before/after figure. Both
-  // panels stay openable live (the doc <Figure links=> points at the two specs
-  // above), and neither the image nor the links can drift from the real states.
-  {
-    mode: 'compose',
-    name: 'synteny_human_chimp_cigar_modes',
-    parts: ['synteny_human_chimp_colored', 'synteny_human_chimp_transparent'],
   },
   // Second human-specific-TE example: an SVA_F retrotransposon inserted in VAPB.
   {

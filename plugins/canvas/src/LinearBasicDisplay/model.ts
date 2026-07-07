@@ -135,7 +135,12 @@ export default function stateModelFactory(
       },
 
       get showIsoformCollapseNotice() {
+        // only surface the notice when the collapse was AUTOMATIC (auto mode
+        // crossing the zoom threshold) — when a session/user explicitly picks
+        // 'longestCoding' they already know isoforms are folded, so the notice
+        // is redundant clutter
         return (
+          this.geneGlyphMode === 'auto' &&
           !self.isoformCollapseNoticeDismissed &&
           [...self.rpcDataMap.values()].some(data => data.isoformsCollapsed)
         )

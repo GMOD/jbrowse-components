@@ -64,8 +64,6 @@ inversion — only a genuine intra-scaffold strand flip is marked. It is an
 overlay, so it composes on top of the base, codon, or per-row identity rendering
 without replacing them.
 
-<Figure src="/img/maf_inversions.png" caption="The inversions overlay: blocks aligning inverted relative to their source scaffold's consensus orientation are marked with a diagonal hatch, surfacing strand flips on top of the normal per-base rendering."/>
-
 ## Codon (amino-acid) view
 
 When the track has a CDS-frames file configured (a UCSC `mafFrames` annotation

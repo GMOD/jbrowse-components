@@ -1,3 +1,5 @@
+import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
+
 import { runCoveragePipeline } from './runCoveragePipeline.ts'
 
 import type { StrandBaseCounts } from './calculateModificationCounts.ts'
@@ -51,7 +53,7 @@ const baseArgs = {
   interbaseArrays,
   gapArrays,
   statusCallback: () => {},
-  stopTokenCheck: () => {},
+  stopTokenCheck: createStopTokenChecker(undefined),
 }
 
 describe('runCoveragePipeline coverage-band gate', () => {

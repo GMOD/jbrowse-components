@@ -174,14 +174,18 @@ export const mafSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'ce11',
           loc: 'chrI:2,999,200-2,999,370',
+          trackLabels: 'offset',
+          colorByCDS: true,
           tracks: [
-            // compact gene lane so the dnj-28 / nduf-5 CDS context sits above
-            // the codon translation without pushing the rows far down
+            // compact gene lane, collapsed to the longest coding transcript, so
+            // the dnj-28 / nduf-5 CDS context sits above the codon translation
+            // without pushing the rows far down
             {
               trackId: 'ce11_ncbi_refseq',
               displaySnapshot: {
                 type: 'LinearBasicDisplay',
                 displayMode: 'compact',
+                geneGlyphMode: 'longestCoding',
               },
             },
             {
@@ -223,6 +227,7 @@ export const mafSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'ce11',
           loc: 'chrI:2,995,000-3,003,000',
+          trackLabels: 'offset',
           tracks: [
             // gene context: the source-chromosome recoloring spans these ce11
             // genes (supr-1 / dnj-28 / nduf-5)
@@ -251,43 +256,6 @@ export const mafSpecs: ScreenshotSpec[] = [
     ],
   },
   {
-    // Inversion (strand-flip) indicator. Filtered to a few species (incl. bruMal2,
-    // which has a genuine intra-scaffold inversion here) at a tall row height so
-    // the flip reads clearly: bruMal2's left block aligns on the opposite strand
-    // from the rest of its scaffold and is hatched + outlined, while its other
-    // blocks (the scaffold's consensus orientation) are left plain. CDS frames
-    // are off (the default) so the only overlay is the inversion cue.
-    mode: 'url',
-    name: 'maf_inversions',
-    url: lgvSession(CE_MAF_FRAMES, {
-      assembly: 'ce11',
-      loc: 'chrI:3,000,300-3,002,800',
-      tracks: [
-        {
-          trackId: 'ce11.26way',
-          // fit-to-display-height: the 5 filtered rows fill the track tall
-          // enough for the strand-flip hatch to read clearly
-          displaySnapshot: {
-            type: 'LinearMafDisplay',
-            heightOverride: 200,
-            showInversions: true,
-            subtreeFilter: ['ce11', 'caeRem4', 'cb4', 'bruMal2', 'triSpi1'],
-          },
-        },
-      ],
-    }),
-    readyText: 'chrI',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    viewportHeight: 460,
-    settleMs: 12000,
-    hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 250, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
-  },
-  {
     // Dense comparative view: the UCSC hg38 470-way multiz (mammals + more), all
     // ~470 species at once over the GAPDH gene with the per-row identity heatmap
     // pinned on (red = divergent, blue = conserved). The coding exons light up as
@@ -303,6 +271,7 @@ export const mafSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: '12:6,534,400-6,538,500',
+          trackLabels: 'offset',
           tracks: [
             // MANE gene track on top: the exon/CDS structure of GAPDH lines up
             // with the conserved (blue) coding bands in the heatmap below
@@ -360,6 +329,8 @@ export const mafSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
+          trackLabels: 'offset',
+          colorByCDS: true,
           // window trimmed to sit fully inside one GAPDH coding exon: the
           // original ran a few bp past the exon 3' end, so the species that have
           // no aligned block there drew empty "bridge" e-lines on the right that

@@ -1127,24 +1127,17 @@
   },
   "maf_470way_codon": {
     "name": "maf_470way_codon",
-    "status": "bad",
-    "note": "add tracklabels:offset. use colorByCds:true",
-    "reviewedAt": "2026-07-07T04:52:22.166Z",
-    "hash": "1d24c8a66dc87480c0db335593be951b7a3c7ba6"
+    "status": "good",
+    "note": "tracklabels:offset + colorByCDS:true applied; regenerated",
+    "reviewedAt": "2026-07-07T05:27:15.500Z",
+    "hash": "5b9c130bd3dcd75544f27b3caab7019ead3b6706"
   },
   "maf_color_by_chromosome": {
     "name": "maf_color_by_chromosome",
-    "status": "bad",
-    "note": "add tracklabels:offset. ",
-    "reviewedAt": "2026-07-07T04:52:47.371Z",
-    "hash": "87bfce83c2bd7fb6d1a6f0f0bbe229a414eb76d0"
-  },
-  "maf_inversions": {
-    "name": "maf_inversions",
-    "status": "bad",
-    "note": "this is a weak screenshot, just delete",
-    "reviewedAt": "2026-07-07T01:54:23.802Z",
-    "hash": "36ef8042f4650c66cd9209bd7e7f877bbbcaedaf"
+    "status": "good",
+    "note": "tracklabels:offset applied; regenerated",
+    "reviewedAt": "2026-07-07T05:27:15.529Z",
+    "hash": "d1ba42d651d1d3bfb14676353c5b3fb2c05aa4ef"
   },
   "sv_cgiab/cnv_log2_baf": {
     "name": "sv_cgiab/cnv_log2_baf",
@@ -1176,10 +1169,10 @@
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
-    "status": "bad",
-    "note": "add tracklabels:offset. use colorByCds:true. maybe longestCoding true also.",
-    "reviewedAt": "2026-07-07T04:52:38.602Z",
-    "hash": "bf96ac9f531a744bd9e3aac5e5b64585f0c5c40b"
+    "status": "good",
+    "note": "tracklabels:offset + colorByCDS:true + longestCoding gene track; regenerated",
+    "reviewedAt": "2026-07-07T05:27:15.568Z",
+    "hash": "ada479e63f3a150b5428afc12ef8ad77fb281bab"
   },
   "gc_content": {
     "name": "gc_content",
@@ -1404,20 +1397,6 @@
     "note": "just make it a single level screenshot, remove second one (and update caption afterwards)",
     "reviewedAt": "2026-07-07T04:55:47.310Z",
     "hash": "0bb8b59dba3d1d6996300c5467ead515c3fe0638"
-  },
-  "synteny_human_chimp_colored": {
-    "name": "synteny_human_chimp_colored",
-    "status": "bad",
-    "note": "delete figure",
-    "reviewedAt": "2026-07-07T04:55:58.794Z",
-    "hash": "1d2e82cfe5d2190d908396e3941c7cffb41b5d6c"
-  },
-  "synteny_human_chimp_transparent": {
-    "name": "synteny_human_chimp_transparent",
-    "status": "bad",
-    "note": "delete figure",
-    "reviewedAt": "2026-07-07T04:55:58.860Z",
-    "hash": "b8b6bc96648b48e74516f730050a076bb4dc4cc6"
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",

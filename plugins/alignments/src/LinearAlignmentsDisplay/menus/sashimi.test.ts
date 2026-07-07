@@ -1,6 +1,7 @@
 import { getSashimiMenuItem } from './sashimi.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 // stateful stand-in for a SessionDefaultControl bundle ({ active, toggle })
 function control() {
@@ -30,6 +31,10 @@ function makeModel() {
     minSashimiScore: 0,
     setMinSashimiScore() {},
   }
+}
+
+function endAdornmentOf(item: MenuItem | undefined) {
+  return item && 'endAdornment' in item ? item.endAdornment : undefined
 }
 
 function labels(model: ReturnType<typeof makeModel>) {
@@ -85,9 +90,9 @@ describe('sashimi menu', () => {
     }
     const byLabel = (label: string) =>
       placement.subMenu.find(i => 'label' in i && i.label === label)
-    expect(byLabel('Below coverage')?.endAdornment).toBeDefined()
-    expect(byLabel('Auto (minimize overlap)')?.endAdornment).toBeDefined()
-    expect(byLabel('Above coverage')?.endAdornment).toBeUndefined()
+    expect(endAdornmentOf(byLabel('Below coverage'))).toBeDefined()
+    expect(endAdornmentOf(byLabel('Auto (minimize overlap)'))).toBeDefined()
+    expect(endAdornmentOf(byLabel('Above coverage'))).toBeUndefined()
   })
 
   test('"Show labels" carries a default-for-all pin', () => {
@@ -96,6 +101,6 @@ describe('sashimi menu', () => {
     const showLabels = getSashimiMenuItem(model).subMenu.find(
       i => 'label' in i && i.label === 'Show labels',
     )
-    expect(showLabels?.endAdornment).toBeDefined()
+    expect(endAdornmentOf(showLabels)).toBeDefined()
   })
 })

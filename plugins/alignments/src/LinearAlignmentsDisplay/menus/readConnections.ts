@@ -48,11 +48,7 @@ interface ReadConnectionsModel {
 export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
   const linked = model.linkedReads !== 'off'
   const overlayActive = model.readConnections !== 'off'
-  return {
-    label: 'Read connections',
-    icon: PolylineIcon,
-    type: 'subMenu' as const,
-    subMenu: [
+  const subMenu: MenuItem[] = [
       // Value checkbox + a trailing "default for all" pin, in one row.
       promotableToggleItem({
         label: 'View as pairs / link supplementary alignments',
@@ -136,6 +132,11 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           ),
         ],
       },
-    ] satisfies MenuItem[],
+    ]
+  return {
+    label: 'Read connections',
+    icon: PolylineIcon,
+    type: 'subMenu' as const,
+    subMenu,
   }
 }

@@ -47,3 +47,9 @@ max-zoomed-out level, and is more noticeable near the plot edge.
 ## more accurate cgiab
 
 look at wakhan, pycnv
+
+## more typescript improvements to cascadingmenu
+
+## add extra large text svg mode
+
+## add linearalignmentsdisplay to bamadapter related config autogen

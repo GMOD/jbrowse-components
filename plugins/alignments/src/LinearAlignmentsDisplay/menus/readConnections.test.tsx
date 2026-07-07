@@ -82,7 +82,7 @@ function bandOptionsSubMenu(model: ReturnType<typeof makeModel>) {
 
 function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
   const item = findByLabel(model, label)
-  if (!item || !('onClick' in item)) {
+  if (!item || !('checked' in item) || !('onClick' in item)) {
     throw new Error(`no ${label} checkbox`)
   }
   return item
@@ -91,7 +91,8 @@ function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
 // A promotable row is a native checkbox item carrying a "default for all"
 // endAdornment (a DefaultForAllAdornment element), always present.
 function endAdornment(model: ReturnType<typeof makeModel>, label: string) {
-  return findByLabel(model, label)?.endAdornment
+  const item = findByLabel(model, label)
+  return item && 'endAdornment' in item ? item.endAdornment : undefined
 }
 
 // Mount the endAdornment and click its pin button to exercise the promote wiring.

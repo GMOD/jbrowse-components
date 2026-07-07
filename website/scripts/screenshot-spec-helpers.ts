@@ -412,8 +412,8 @@ export const RB1_L1_LOCUS = {
 // chimp interval runs AluSz6 -> UCON33 with no SVA (zero SVA anywhere in chimp
 // VAPB). RepeatMasker names it SVA_F at the insertion.
 export const VAPB_SVA_LOCUS = {
-  hg38: 'chr20:58,411,800-58,416,500',
-  panTro6: 'chr20:58,048,700-58,051,800',
+  hg38: 'chr20:58,410,300-58,418,000',
+  panTro6: 'chr20:58,047,200-58,053,300',
 }
 
 // PICALM (Alzheimer's-associated): a ~0.3 kb AluYb8 — a young, human-specific Alu
@@ -422,8 +422,8 @@ export const VAPB_SVA_LOCUS = {
 // the AluY but has no AluYb8 (none anywhere in chimp PICALM). Shows that even a
 // small lineage-specific insertion reads clearly as an indel.
 export const PICALM_ALU_LOCUS = {
-  hg38: 'chr11:85,980,700-85,983,300',
-  panTro6: 'chr11:81,730,000-81,732,500',
+  hg38: 'chr11:85,979,700-85,984,300',
+  panTro6: 'chr11:81,729,000-81,733,500',
 }
 
 // A hosted liftOver chain is one chromosome-scale block; drawn zoomed in it

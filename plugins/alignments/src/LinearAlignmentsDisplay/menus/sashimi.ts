@@ -55,51 +55,52 @@ interface SashimiModel {
 // placement, and score-filter options tune what's already drawn, so they're
 // revealed only when the arcs are on (never shown disabled).
 export function getSashimiMenuItem(model: SashimiModel) {
+  const subMenu: MenuItem[] = [
+    checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
+      model.setShowSashimiArcs(!model.showSashimiArcs)
+    }),
+    ...(model.showSashimiArcs
+      ? [
+          promotableToggleItem({
+            label: 'Show labels',
+            checked: model.showSashimiLabels,
+            onToggle: () => {
+              model.setShowSashimiLabels(!model.showSashimiLabels)
+            },
+            sessionDefault: model.showSashimiLabelsSessionDefault,
+          }),
+          {
+            label: 'Arc placement',
+            type: 'subMenu' as const,
+            subMenu: SASHIMI_MODE_OPTIONS.map(option =>
+              promotableRadioItem({
+                label: option.label,
+                checked: model.sashimiArcsMode === option.value,
+                onClick: () => {
+                  model.setSashimiArcsMode(option.value)
+                },
+                sessionDefault: option.sessionDefaultKey
+                  ? model[option.sessionDefaultKey]
+                  : undefined,
+              }),
+            ),
+          },
+          {
+            label: 'Filter by score...',
+            onClick: () => {
+              getSession(model).queueDialog(handleClose => [
+                SetSashimiScoreDialog,
+                { model, handleClose },
+              ])
+            },
+          },
+        ]
+      : []),
+  ]
   return {
     label: 'Sashimi arcs',
     icon: AltRouteIcon,
     type: 'subMenu' as const,
-    subMenu: [
-      checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
-        model.setShowSashimiArcs(!model.showSashimiArcs)
-      }),
-      ...(model.showSashimiArcs
-        ? [
-            promotableToggleItem({
-              label: 'Show labels',
-              checked: model.showSashimiLabels,
-              onToggle: () => {
-                model.setShowSashimiLabels(!model.showSashimiLabels)
-              },
-              sessionDefault: model.showSashimiLabelsSessionDefault,
-            }),
-            {
-              label: 'Arc placement',
-              type: 'subMenu' as const,
-              subMenu: SASHIMI_MODE_OPTIONS.map(option =>
-                promotableRadioItem({
-                  label: option.label,
-                  checked: model.sashimiArcsMode === option.value,
-                  onClick: () => {
-                    model.setSashimiArcsMode(option.value)
-                  },
-                  sessionDefault: option.sessionDefaultKey
-                    ? model[option.sessionDefaultKey]
-                    : undefined,
-                }),
-              ),
-            },
-            {
-              label: 'Filter by score...',
-              onClick: () => {
-                getSession(model).queueDialog(handleClose => [
-                  SetSashimiScoreDialog,
-                  { model, handleClose },
-                ])
-              },
-            },
-          ]
-        : []),
-    ] satisfies MenuItem[],
+    subMenu,
   }
 }

@@ -40,7 +40,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
      */
     trackLabels: {
       type: 'string',
-      defaultValue: 'overlapping',
+      defaultValue: 'offset',
       model: types.enumeration('trackLabelOptions', [
         'offset',
         'overlapping',

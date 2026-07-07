@@ -55,7 +55,7 @@ The view's hamburger menu controls how the ribbons are drawn:
 - **Square view** — equalize the horizontal scale of the two panels
 - **Add assembly row** — compare three or more assemblies stacked vertically
 
-<Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes and track labels in 'offset' mode. A full-length ~6 kb L1HS (the youngest, human-specific LINE-1 subfamily) inserted in the human lineage: it is absent at the orthologous chimp intron, which retains only the shared L1ME3A and MER21C flanks. Top ('Colored indels') paints the insertion; bottom ('Transparent indels') leaves it as a see-through gap. RepeatMasker names the element at the indel." src="/img/synteny_human_chimp_cigar_modes.png" links="Colored indels=synteny_human_chimp_colored,Transparent indels=synteny_human_chimp_transparent" />
+<Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length ~6 kb L1HS (the youngest, human-specific LINE-1 subfamily) inserted in the human lineage: it is absent at the orthologous chimp intron, which retains only the shared L1ME3A and MER21C flanks. The 'Colored indels' CIGAR display mode paints the insertion as a wedge in the ribbon, and RepeatMasker names the element at the indel." src="/img/synteny_human_chimp_cigar_modes.png" />
 
 ### More lineage-specific insertions
 
