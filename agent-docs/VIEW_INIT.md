@@ -76,7 +76,7 @@ breakpoint, sv-inspector). Same lifecycle, per-view `InitState` shape. Beware:
 `session.setInit(...)` (app-core / jbrowse-web `loadSessionSpec`) is a **different
 `init`** — the workspace dockview layout — not this view-launch spec.
 
-## Known warts (see also the user doc website/docs/initializing_views.md)
+## Known warts (see also the user doc website/docs/automating.md)
 
 - **The URL wire layer duplicates the param list.** `buildJb1SessionSpec`
   (`sessionLoaderHelpers.ts`) and the `SessionLoader.ts` MST props are *all-string*

@@ -1,12 +1,23 @@
 ---
-title: Initializing and launching views
-sidebar_label: Initializing views
+title: Automating JBrowse
+sidebar_label: Automating JBrowse
+description: Launch and preset views from a URL, embedded app, config file, or session spec
 ---
 
-Whether you're launching a view from a URL, an embedded component, or a
-config/session file, the same `init` spec controls what it shows — assembly,
-location, tracks, highlights, and so on. This page covers those fields and links
-to the detailed reference for each surface.
+JBrowse is designed to be driven from the outside: you can open it straight into
+a specific assembly, location, and set of tracks — from a URL link, an embedded
+app, a config file, or a saved session spec. All of these funnel into one `init`
+spec that controls what a view shows — assembly, location, tracks, highlights,
+and so on. This page covers those fields and links to the detailed reference for
+each surface.
+
+:::note
+
+This page covers launching and presetting **views**. For headless static-image
+export see [@jbrowse/img](/docs/jbrowse-img); for the Python/notebook API see
+[JBrowse Jupyter](/docs/jbrowse_jupyter).
+
+:::
 
 ## The `init` fields
 
@@ -36,7 +47,7 @@ display options:
 `init` is applied **once**, when the view attaches, and then cleared — it is a
 launch instruction, not persistent state, so a saved session never retains it.
 
-## Which launch method should I use?
+## Ways to automate a view
 
 | You are…                                  | Use                                            | Reference                                                     |
 | ----------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------- |
@@ -132,6 +143,76 @@ Circular, dotplot, synteny, spreadsheet, breakpoint-split, and SV-inspector
 views each accept their own `init`/session-spec shape with the same
 "applied-once-on-launch" lifecycle. Their fields are documented per view type in
 the [URL query parameter API](/docs/urlparams) session-spec section.
+
+## Headless / puppeteer
+
+When you want a **static image** of a view, reach for
+[@jbrowse/img](/docs/jbrowse-img) first — it renders SVG/PNG/PDF from the command
+line without a browser.
+
+Drive the full JBrowse Web app with puppeteer (or Playwright) when you need
+something `img` can't produce: a real screenshot of the running UI, a transient
+state (an open menu, a hover popover, a loaded track after user interaction), or
+scraped DOM. Because every launch surface above resolves to the same `init`,
+automating a browser is just "navigate to a URL that carries the state, wait for
+it to settle, then act".
+
+Two things bite people driving JBrowse headlessly, both worth knowing up front:
+
+- **WebGL/WebGPU needs a software renderer in headless Chrome.** JBrowse renders
+  tracks on the GPU, and headless Chrome has no GPU — without
+  `--enable-unsafe-swiftshader`, canvases come up blank. Launch with
+  `args: ['--no-sandbox', '--enable-unsafe-swiftshader']`.
+- **"Loaded" is a specific signal, not a guessable selector.** JBrowse shows a
+  `[data-testid="loading-overlay"]` while the session initializes, and each track
+  display flips its `data-testid` from `display-<id>` to `display-<id>-done` once
+  it has actually painted. Wait for those, not for an arbitrary element.
+
+```js
+import puppeteer from 'puppeteer'
+
+const browser = await puppeteer.launch({
+  args: ['--no-sandbox', '--enable-unsafe-swiftshader'],
+})
+const page = await browser.newPage()
+// deviceScaleFactor 2 gives a crisp, retina-resolution capture
+await page.setViewport({ width: 1500, height: 800, deviceScaleFactor: 2 })
+
+// the same URL params documented above put the view into the desired state
+await page.goto(
+  'https://jbrowse.org/code/jb2/main/?config=test_data/config.json' +
+    '&assembly=hg19&loc=chr1:1,000,000-2,000,000&tracks=genes,variants&nav=false',
+  { waitUntil: 'networkidle0' },
+)
+
+// session done initializing: the loading overlay is gone
+await page.waitForFunction(
+  () => !document.querySelector('[data-testid="loading-overlay"]'),
+)
+// every track display has painted (testid ends in "-done")
+await page.waitForFunction(() => {
+  const displays = document.querySelectorAll('[data-testid^="display-"]')
+  const done = document.querySelectorAll('[data-testid$="-done"]')
+  return displays.length > 0 && done.length === displays.length
+})
+
+await page.screenshot({ path: 'view.png' })
+await browser.close()
+```
+
+For a longer-form session (multiple views, per-track display options) encode a
+full session spec rather than individual params — see the session-spec section
+of the [URL query parameter API](/docs/urlparams).
+
+This repo's own screenshot generator does all of this and handles the sharper
+edges — freezing CSS animations so menus/popovers aren't caught mid-transition,
+double-`requestAnimationFrame` before capture so a freshly-composited GPU layer
+is actually rasterized, and a fresh browser per navigation to sidestep
+service-worker caching. For a complete worked example, see
+[`website/scripts/generate-screenshots.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/generate-screenshots.ts)
+and the reusable wait helpers (`waitForLoadingComplete`, `waitForDisplaysDone`,
+`waitForQuiescent`) it imports from
+[`packages/browser-test-utils`](https://github.com/GMOD/jbrowse-components/tree/main/packages/browser-test-utils).
 
 ## See also
 

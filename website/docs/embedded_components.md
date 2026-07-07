@@ -36,8 +36,8 @@ Not sure if you want an embedded view or the full app? See the
 
 ## See also
 
-- [Initializing and launching views](/docs/initializing_views) — the `init`
-  fields (location, highlight, tracks) these components accept at launch
+- [Automating JBrowse](/docs/automating) — the `init` fields (location,
+  highlight, tracks) these components accept at launch
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) — a worked
   example using the `<script>` tag approach
 - [FAQ: embedded views vs. full app](/docs/faq#embedded-views-versus-full-jbrowse-app)
