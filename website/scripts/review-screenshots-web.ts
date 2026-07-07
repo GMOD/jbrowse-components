@@ -90,28 +90,7 @@ function serveMainImage(res: http.ServerResponse, urlPath: string) {
 
 // Validate untrusted request bodies rather than blindly casting; a malformed
 // POST otherwise writes a garbage verdict into the report.
-function parseVerdictBody(
-  raw: string,
-): { name: string; status: 'good' | 'bad'; note: string } | undefined {
-  const body: unknown = JSON.parse(raw)
-  if (
-    typeof body === 'object' &&
-    body !== null &&
-    'name' in body &&
-    typeof body.name === 'string' &&
-    body.name !== '' &&
-    'status' in body &&
-    (body.status === 'good' || body.status === 'bad')
-  ) {
-    const note =
-      'note' in body && typeof body.note === 'string' ? body.note : ''
-    return { name: body.name, status: body.status, note }
-  }
-  return undefined
-}
-
-function parseNameBody(raw: string): string | undefined {
-  const body: unknown = JSON.parse(raw)
+function parseName(body: unknown): string | undefined {
   return typeof body === 'object' &&
     body !== null &&
     'name' in body &&
@@ -119,6 +98,28 @@ function parseNameBody(raw: string): string | undefined {
     body.name !== ''
     ? body.name
     : undefined
+}
+
+function parseVerdictBody(
+  raw: string,
+): { name: string; status: 'good' | 'bad'; note: string } | undefined {
+  const body: unknown = JSON.parse(raw)
+  const name = parseName(body)
+  if (
+    name === undefined ||
+    typeof body !== 'object' ||
+    body === null ||
+    !('status' in body) ||
+    (body.status !== 'good' && body.status !== 'bad')
+  ) {
+    return undefined
+  }
+  const note = 'note' in body && typeof body.note === 'string' ? body.note : ''
+  return { name, status: body.status, note }
+}
+
+function parseNameBody(raw: string): string | undefined {
+  return parseName(JSON.parse(raw))
 }
 
 async function handleVerdict(
@@ -237,8 +238,7 @@ const PAGE = /* html */ `<!doctype html>
   .pill.auto { background: #dbeafe; color: #1e40af; }
   .pill.manual { background: #f3e8ff; color: #6b21a8; }
   .pill.new { background: #cffafe; color: #155e63; }
-  .pill.changed { background: #fde68a; color: #854d0e; }
-  .pill.stale { background: #fde68a; color: #854d0e; }
+  .pill.changed, .pill.stale { background: #fde68a; color: #854d0e; }
   main { padding: 20px; display: flex; flex-direction: column; gap: 18px; max-width: 1400px; margin: 0 auto; }
   .card {
     background: Canvas; border: 1px solid ButtonBorder; border-radius: 10px; overflow: hidden;
@@ -319,7 +319,10 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
 const pill = (cls, text) => '<span class="pill ' + cls + '">' + text + '</span>'
 
-const nameGroup = name => name.split('-')[0] ?? name
+// Most spec names are namespaced with '/' (gallery/x, multiway_synteny/x);
+// only the hand-listed desktop-* names use a hyphen instead. Grouping only on
+// '-' left ~85% of names in a singleton group of their own.
+const nameGroup = name => name.includes('/') ? name.split('/')[0] : (name.includes('-') ? name.split('-')[0] : name)
 
 // Persist the current filter state in the URL query string so a review view can
 // be reloaded, bookmarked, or shared. Only non-default values are written to

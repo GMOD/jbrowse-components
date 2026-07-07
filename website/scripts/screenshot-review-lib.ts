@@ -9,6 +9,7 @@ import {
   saveReport as saveReportFile,
 } from '@jbrowse/browser-test-utils'
 
+import type { ScreenshotSpec } from './screenshot-specs.ts'
 import type { Verdict } from '@jbrowse/browser-test-utils'
 
 export type { Verdict } from '@jbrowse/browser-test-utils'
@@ -62,6 +63,12 @@ const markdownFiles = docRoots
   .filter(d => fs.existsSync(d))
   .flatMap(d => walkMarkdown(d))
 
+// gallery.ts is the single source of truth for /gallery/ and /demos/ (see
+// website/CLAUDE.md); its items reference images via `spec`/`img` fields, not
+// literal "/img/<name>.png" text, so it needs its own scan rather than being
+// added to docRoots.
+const galleryFile = path.resolve(websiteRoot, 'src/lib/gallery.ts')
+
 // Pull the caption="..." attribute out of a <Figure .../> line if present
 function extractFigureCaption(line: string) {
   const m = /caption=("|')([\s\S]*?)\1/.exec(line)
@@ -91,10 +98,63 @@ function imageNamesOnLine(line: string): string[] {
   return names
 }
 
-// Scan every markdown file once, building name -> usages. Re-reading per-name
-// was O(names × files); this is O(files) and shared across both review tools.
-function buildUsageIndex(): Map<string, DocUsage[]> {
+// Mirrors gallery.ts's itemImg(): an item's figure is its explicit `img`
+// (".png" stripped), else its `spec` name. Field order in each object literal
+// isn't guaranteed, so scan the whole item text rather than assuming img/spec
+// comes after label.
+function galleryItemImageName(itemText: string): string | undefined {
+  const img = /\bimg:\s*(['"])([^'"]+)\1/.exec(itemText)
+  if (img) {
+    return img[2]!.replace(/\.png$/, '')
+  }
+  const spec = /\bspec:\s*(['"])([^'"]+)\1/.exec(itemText)
+  return spec?.[2]
+}
+
+// gallery.ts has no markup to walk line-by-line; instead split on each
+// object literal `{ ... }` in the `items:` arrays and pull `label`/`img`/`spec`
+// out of each. Good enough for gallery.ts's own flat, unnested item shape.
+function scanGalleryUsages(): Map<string, DocUsage[]> {
   const index = new Map<string, DocUsage[]>()
+  if (!fs.existsSync(galleryFile)) {
+    return index
+  }
+  const rel = path.relative(websiteRoot, galleryFile)
+  const text = fs.readFileSync(galleryFile, 'utf8')
+  const lines = text.split('\n')
+  let itemStart = -1
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!
+    if (/^\s*\{$/.test(line)) {
+      itemStart = i
+    } else if (/^\s*\},?$/.test(line) && itemStart >= 0) {
+      const itemLines = lines.slice(itemStart, i + 1)
+      const itemText = itemLines.join('\n')
+      const name = galleryItemImageName(itemText)
+      if (name) {
+        const label = /\blabel:\s*(['"])([^'"]*)\1/.exec(itemText)?.[2] ?? ''
+        const usage: DocUsage = {
+          file: rel,
+          line: itemStart + 1,
+          caption: label,
+        }
+        const list = index.get(name)
+        if (list) {
+          list.push(usage)
+        } else {
+          index.set(name, [usage])
+        }
+      }
+      itemStart = -1
+    }
+  }
+  return index
+}
+
+// Scan every markdown file once, building name -> usages. Re-reading per-name
+// would be O(names × files); this is O(files).
+function buildUsageIndex(): Map<string, DocUsage[]> {
+  const index = scanGalleryUsages()
   for (const file of markdownFiles) {
     // a doc file can be deleted/regenerated between the startup scan and now
     // (e.g. autogen rewriting docs/config/*.md); a vanished file is just not a
@@ -152,6 +212,19 @@ export function imageHash(name: string): string | undefined {
 
 const repoRoot = path.resolve(websiteRoot, '..')
 
+// git paths are always repo-root-relative, unlike imgDir (an absolute path
+// that already accounts for where this script happens to be run from).
+const imgGitPrefix = 'website/static/img/'
+
+function gitPathToName(gitPath: string): string {
+  return gitPath.replace(imgGitPrefix, '').replace(/\.png$/, '')
+}
+
+// execFileSync's default maxBuffer (1MB) is close enough to real screenshot
+// sizes (some committed PNGs already exceed 900KB) that git output can get cut
+// off; raise it well past what any single screenshot or file listing needs.
+const gitMaxBuffer = 1024 * 1024 * 50
+
 // Cache of which names exist on origin/main (populated once at startup).
 let mainSet: Set<string> | undefined
 
@@ -160,21 +233,11 @@ function getMainSet(): Set<string> {
     try {
       const out = execFileSync(
         'git',
-        ['ls-tree', '--name-only', '-r', 'origin/main', 'website/static/img/'],
-        { cwd: repoRoot, encoding: 'utf8' },
+        ['ls-tree', '--name-only', '-r', 'origin/main', imgGitPrefix],
+        { cwd: repoRoot, encoding: 'utf8', maxBuffer: gitMaxBuffer },
       )
       mainSet = new Set(
-        out
-          .trim()
-          .split('\n')
-          .filter(Boolean)
-          .map(p => {
-            // strip leading "website/static/img/" and trailing ".png"
-            const rel = p
-              .replace('website/static/img/', '')
-              .replace(/\.png$/, '')
-            return rel
-          }),
+        out.trim().split('\n').filter(Boolean).map(gitPathToName),
       )
     } catch {
       mainSet = new Set()
@@ -198,15 +261,11 @@ function getChangedSet(): Set<string> {
     try {
       const out = execFileSync(
         'git',
-        ['diff', '--name-only', 'origin/main', '--', 'website/static/img/'],
-        { cwd: repoRoot, encoding: 'utf8' },
+        ['diff', '--name-only', 'origin/main', '--', imgGitPrefix],
+        { cwd: repoRoot, encoding: 'utf8', maxBuffer: gitMaxBuffer },
       )
       changedSet = new Set(
-        out
-          .trim()
-          .split('\n')
-          .filter(Boolean)
-          .map(p => p.replace('website/static/img/', '').replace(/\.png$/, '')),
+        out.trim().split('\n').filter(Boolean).map(gitPathToName),
       )
     } catch {
       changedSet = new Set()
@@ -220,10 +279,11 @@ export function mainPngChanged(name: string): boolean {
 }
 
 export function readMainPng(name: string): Buffer | undefined {
-  const gitPath = `website/static/img/${name}.png`
+  const gitPath = `${imgGitPrefix}${name}.png`
   try {
     return execFileSync('git', ['show', `origin/main:${gitPath}`], {
       cwd: repoRoot,
+      maxBuffer: gitMaxBuffer,
     })
   } catch {
     return undefined
@@ -253,7 +313,7 @@ export const desktopAutogenNames = new Set([
 // releases, so their images aren't kept current and shouldn't surface as review
 // work. A figure shared by a blog post AND a live doc (or backed by a spec)
 // stays in — its non-blog usage is what makes it reviewable.
-export function collectScreenshots(specs: { name: string }[]): Screenshot[] {
+export function collectScreenshots(specs: ScreenshotSpec[]): Screenshot[] {
   const specNames = new Set(specs.map(s => s.name))
   const index = getUsageIndex()
   const names = new Set(specNames)
