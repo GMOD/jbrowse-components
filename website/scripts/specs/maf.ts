@@ -155,27 +155,43 @@ export const mafSpecs: ScreenshotSpec[] = [
     // is identifiable rather than inferred from the cell color.
     mode: 'url',
     name: 'maf_codon_tooltip',
-    url: lgvSession(CE_MAF_FRAMES, {
-      assembly: 'ce11',
-      loc: 'chrI:2,999,200-2,999,370',
-      tracks: [
+    url: sessionSpec(CE_MAF_FRAMES, {
+      sessionTracks: [CE11_GENE_TRACK],
+      views: [
         {
-          trackId: 'ce11.26way',
-          displaySnapshot: {
-            type: 'LinearMafDisplay',
-            heightOverride: 470,
-            showTranslation: true,
-          },
+          type: 'LinearGenomeView',
+          assembly: 'ce11',
+          loc: 'chrI:2,999,200-2,999,370',
+          tracks: [
+            // compact gene lane so the dnj-28 / nduf-5 CDS context sits above
+            // the codon translation without pushing the rows far down
+            {
+              trackId: 'ce11_ncbi_refseq',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                displayMode: 'compact',
+              },
+            },
+            {
+              trackId: 'ce11.26way',
+              displaySnapshot: {
+                type: 'LinearMafDisplay',
+                heightOverride: 470,
+                showTranslation: true,
+              },
+            },
+          ],
         },
       ],
     }),
     readyText: 'chrI',
     readyTimeout: 90000,
-    viewportWidth: 1000,
-    viewportHeight: 600,
+    // wider capture so more of the codon alignment is visible (reviewer)
+    viewportWidth: 1250,
+    viewportHeight: 640,
     settleMs: 12000,
     actions: [
-      { type: 'hover', from: { x: 500, y: 300 } },
+      { type: 'hover', from: { x: 600, y: 380 } },
       { type: 'delay', ms: 2000 },
     ],
   },
