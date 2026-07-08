@@ -6,6 +6,7 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   BaseLinearDisplayComponent,
@@ -187,5 +188,64 @@ describe('setLinkedReads color scheme preservation', () => {
     expect(display.linkedReads).toBe('off')
     expect(display.colorBy.type).toBe('tag')
     expect(display.colorBy.tag).toBe('HP')
+  })
+})
+
+// openContextMenu sets coord + block + hit kinds as one unit and resets the
+// read feature. These invariants are what let the menu builder read a block
+// without its hit going missing, and stop a repositioned menu from showing the
+// previous read — behavior otherwise guarded only by a comment.
+describe('openContextMenu atomic state and stale-read reset', () => {
+  test('sets coord and hit fields together', () => {
+    const display = createDisplay()
+    display.openContextMenu({
+      coord: [10, 20],
+      cigarHit: { type: 'mismatch', index: 0, position: 42 },
+    })
+    expect(display.contextMenuCoord).toEqual([10, 20])
+    expect(display.contextMenuCigarHit).toEqual({
+      type: 'mismatch',
+      index: 0,
+      position: 42,
+    })
+  })
+
+  // A consecutive right-click repositions the still-open menu without a clear,
+  // so opening over a new hit must drop the previous read's feature items.
+  test('reopening over a new hit resets the previous read feature', () => {
+    const display = createDisplay()
+    display.setContextMenuFeature(
+      new SimpleFeature({ uniqueId: 'read1', refName: 'ctgA', start: 0, end: 100 }),
+    )
+    expect(display.contextMenuFeature).toBeDefined()
+
+    display.openContextMenu({
+      coord: [1, 2],
+      indicatorHit: {
+        type: 'indicator',
+        position: 5,
+        indicatorType: 'insertion',
+      },
+    })
+    expect(display.contextMenuFeature).toBeUndefined()
+    expect(display.contextMenuIndicatorHit).toEqual({
+      type: 'indicator',
+      position: 5,
+      indicatorType: 'insertion',
+    })
+  })
+
+  test('clearContextMenu wipes all context-menu state', () => {
+    const display = createDisplay()
+    display.openContextMenu({
+      coord: [3, 4],
+      cigarHit: { type: 'mismatch', index: 1, position: 9 },
+    })
+    display.clearContextMenu()
+    expect(display.contextMenuCoord).toBeUndefined()
+    expect(display.contextMenuCigarHit).toBeUndefined()
+    expect(display.contextMenuIndicatorHit).toBeUndefined()
+    expect(display.contextMenuFeature).toBeUndefined()
+    expect(display.contextMenuBlock).toBeUndefined()
   })
 })
