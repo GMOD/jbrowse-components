@@ -48,13 +48,12 @@ interface ColorByMenuOptions {
   includeTagOption?: boolean
   colorOptions?: ColorOption[]
   // Read-connection arc coloring lives here rather than in the Read connections
-  // menu — it's a rare setting and colors belong together. Always shown;
-  // greyed out via `disabled` when no overlay (arcs or read cloud) is active,
-  // since both share this coloring.
+  // menu — it's a rare setting and colors belong together. Omitted (like every
+  // other section here) when no overlay (arcs or read cloud) is active, since
+  // both share this coloring — the caller passes `undefined` in that case.
   arcColor?: {
     current: ArcColorByType
     setColor: (type: ArcColorByType) => void
-    disabled: boolean
   }
   // Supplementary/split-read coloring modifiers. These color how chained
   // supplementary alignments are drawn, so they belong with the color scheme
@@ -393,11 +392,6 @@ function arcColorSection(arcColor: ColorByMenuOptions['arcColor']): MenuItem[] {
           arcColor.current,
           arcColor.setColor,
           'How paired-end arcs and the read-cloud (samplot) overlay are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
-          {
-            disabled: arcColor.disabled,
-            disabledHelpText:
-              'Enable "Show read arcs" or "Show read cloud" first',
-          },
         ),
       ]
     : []

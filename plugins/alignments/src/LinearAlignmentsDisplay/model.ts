@@ -2800,13 +2800,15 @@ export default function stateModelFactory(
           return [
             getColorByMenuItem(self, {
               includeTagOption: true,
-              arcColor: {
-                current: self.arcColorByType,
-                setColor: (type: ArcColorByType) => {
-                  self.setArcColorByType(type)
-                },
-                disabled: self.readConnections === 'off',
-              },
+              arcColor:
+                self.readConnections === 'off'
+                  ? undefined
+                  : {
+                      current: self.arcColorByType,
+                      setColor: (type: ArcColorByType) => {
+                        self.setArcColorByType(type)
+                      },
+                    },
               supplementaryColoring: {
                 flipStrandLongReadChains: self.flipStrandLongReadChains,
                 setFlipStrandLongReadChains: (flag: boolean) => {

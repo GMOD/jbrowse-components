@@ -191,6 +191,42 @@ describe('setLinkedReads color scheme preservation', () => {
   })
 })
 
+// The "Arc color" entry under "Color by..." is omitted (not greyed-out) when no
+// read-connection overlay is active — the caller passes `arcColor: undefined` so
+// arcColorSection drops it, matching every other conditional section in the
+// menu. Guards against reintroducing the always-shown disabled stub.
+interface MenuNode {
+  label?: string
+  subMenu?: MenuNode[]
+}
+function hasMenuLabel(items: MenuNode[], label: string): boolean {
+  return items.some(
+    i =>
+      i.label === label ||
+      (i.subMenu ? hasMenuLabel(i.subMenu, label) : false),
+  )
+}
+
+describe('Arc color menu visibility', () => {
+  test('hidden when no read-connection overlay is active', () => {
+    const display = createDisplay()
+    display.setReadConnections('off')
+    expect(hasMenuLabel(display.trackMenuItems(), 'Arc color')).toBe(false)
+  })
+
+  test('shown for read arcs', () => {
+    const display = createDisplay()
+    display.setReadConnections('arc')
+    expect(hasMenuLabel(display.trackMenuItems(), 'Arc color')).toBe(true)
+  })
+
+  test('shown for read cloud (samplot)', () => {
+    const display = createDisplay()
+    display.setReadConnections('samplot')
+    expect(hasMenuLabel(display.trackMenuItems(), 'Arc color')).toBe(true)
+  })
+})
+
 // openContextMenu sets coord + block + hit kinds as one unit and resets the
 // read feature. These invariants are what let the menu builder read a block
 // without its hit going missing, and stop a repositioned menu from showing the
