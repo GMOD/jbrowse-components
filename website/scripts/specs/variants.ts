@@ -51,7 +51,12 @@ export const variantsSpecs: ScreenshotSpec[] = [
   // co-inherited haplotype blocks group into contiguous same-color bands instead
   // of being scattered row-to-row. Clustering is a real RPC over the genotype
   // matrix, so the figure drives the "Cluster by genotype" → "Run clustering"
-  // actions rather than setting a (stale) precomputed tree in the snapshot.
+  // actions rather than setting a precomputed tree in the snapshot — tried
+  // baking a captured `layout`/`clusterTree` in directly (avoids the ~24s real
+  // RPC), but the 2,504-sample layout + ~40KB newick tree blow past HTTP header
+  // limits once URL-encoded into `session=spec-{...}` (431 Request Header
+  // Fields Too Large). Viable for small values (see synteny's cigarMode) but
+  // not a dataset this size through a URL-based session.
   {
     mode: 'url',
     name: 'variants/consequence_impact_1000g',
@@ -81,7 +86,12 @@ export const variantsSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Run clustering' },
       // real clustering over the full 2,504-sample 1000g callset measured at
       // ~24s locally, right against the 30s default — give it real margin
-      { type: 'waitForText', text: 'Run clustering', hidden: true, timeout: 60000 },
+      {
+        type: 'waitForText',
+        text: 'Run clustering',
+        hidden: true,
+        timeout: 60000,
+      },
       { type: 'delay', ms: 10000 },
     ],
   },
