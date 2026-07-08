@@ -7,7 +7,12 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { panSNContig, panSNSample } from '../pansn.ts'
-import { pafIdentity, parsePAFLine } from '../util.ts'
+import {
+  assemblyByPanSNPrefix,
+  pafIdentity,
+  parsePAFLine,
+  resolvePanSNPrefix,
+} from '../util.ts'
 
 import type { AllVsAllIndexedPAFAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -41,8 +46,7 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
   public static capabilities = ['getFeatures', 'getRefNames']
 
   protected pif: TabixIndexedFile
-  private pansnSeqNamesP?: Promise<string[]>
-  private coarseTierAvailable?: Promise<boolean>
+  private refSeqNamesP?: Promise<string[]>
 
   public constructor(
     config: AllVsAllIndexedPAFAdapterConfig,
@@ -62,55 +66,33 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
     })
   }
 
-  getAssemblyNames() {
-    return this.getConf('assemblyNames') as string[]
-  }
-
-  // JBrowse assembly name -> its PanSN sample prefix in the PAF (identity when
-  // unmapped).
-  private assemblyToPrefix() {
-    return this.getConf('assemblyNameToPanSN') as Record<string, string>
-  }
-
-  // PanSN sample prefix (in the PAF) -> JBrowse assembly name, for the listed
-  // assemblies. A mate whose sample is not a listed assembly falls back to the
-  // bare prefix (one-vs-all draws against every sample in the file, listed or
-  // not).
-  private assemblyByPrefix() {
-    const map = this.assemblyToPrefix()
-    const out: Record<string, string> = {}
-    for (const asm of this.getAssemblyNames()) {
-      out[map[asm] ?? asm] = asm
-    }
-    return out
-  }
-
   public async hasDataForRefName() {
     return true
   }
 
-  // The distinct PanSN seqids in the file, with the tier letter (t/q/T/Q)
-  // stripped and deduped across tiers. Read once from the tabix contig list.
-  private async pansnSeqNames(opts?: BaseOptions) {
-    this.pansnSeqNamesP ??= this.pif
+  // The tabix contig list, read once. Every seqid is a PanSN name prefixed with
+  // its tier letter (fine t/q, coarse T/Q); both the stripped-and-deduped seqid
+  // set and the coarse-tier probe derive from this one fetch.
+  private async refSeqNames(opts?: BaseOptions) {
+    this.refSeqNamesP ??= this.pif
       .getReferenceSequenceNames(opts)
-      .then(names => [...new Set(names.map(n => n.slice(1)))])
       .catch((e: unknown) => {
-        this.pansnSeqNamesP = undefined
+        this.refSeqNamesP = undefined
         throw e
       })
-    return this.pansnSeqNamesP
+    return this.refSeqNamesP
   }
 
-  private async hasCoarseTier(opts?: BaseOptions): Promise<boolean> {
-    this.coarseTierAvailable ??= this.pif
-      .getReferenceSequenceNames(opts)
-      .then(names => names.some(n => n.startsWith('T') || n.startsWith('Q')))
-      .catch((e: unknown) => {
-        this.coarseTierAvailable = undefined
-        throw e
-      })
-    return this.coarseTierAvailable
+  // The distinct PanSN seqids, tier letter (t/q/T/Q) stripped and deduped across
+  // tiers.
+  private async pansnSeqNames(opts?: BaseOptions) {
+    return [...new Set((await this.refSeqNames(opts)).map(n => n.slice(1)))]
+  }
+
+  private async hasCoarseTier(opts?: BaseOptions) {
+    return (await this.refSeqNames(opts)).some(
+      n => n.startsWith('T') || n.startsWith('Q'),
+    )
   }
 
   async getRefNames(opts: BaseOptions = {}) {
@@ -122,8 +104,7 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
     if (assemblyName === undefined) {
       return []
     }
-    const map = this.assemblyToPrefix()
-    const anchorPrefix = map[assemblyName] ?? assemblyName
+    const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
     const set = new Set<string>()
     for (const seq of await this.pansnSeqNames(opts)) {
       if (panSNSample(seq) === anchorPrefix) {
@@ -138,13 +119,9 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName: qref, assemblyName } = query
       const { targetAssemblyName } = opts
-      const map = this.assemblyToPrefix()
-      const asmByPrefix = this.assemblyByPrefix()
-      const anchorPrefix = map[assemblyName] ?? assemblyName
-      const targetPrefix =
-        targetAssemblyName === undefined
-          ? undefined
-          : (map[targetAssemblyName] ?? targetAssemblyName)
+      const asmByPrefix = assemblyByPanSNPrefix(this)
+      const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
+      const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
 
       const coarse = resolveCoarseTier({
         bpPerPx: opts.bpPerPx,

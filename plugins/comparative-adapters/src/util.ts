@@ -23,6 +23,43 @@ export function getAssemblyNamesFromConf(adapter: BaseFeatureDataAdapter) {
   return assemblyNames
 }
 
+// The two all-vs-all PAF adapters (in-memory AllVsAllPAFAdapter and
+// tabix-indexed AllVsAllIndexedPAFAdapter) share this assembly-name <-> PanSN
+// sample-prefix mapping; only the record fetch differs. Free functions rather
+// than a shared base class so each adapter keeps its own concrete config type
+// and getConf's slot-name typing — a base generic over the config can't prove
+// the shared slot names to getConf.
+
+// JBrowse assembly name -> its PanSN sample prefix in the PAF (identity when
+// unmapped).
+function assemblyNameToPanSN(adapter: BaseFeatureDataAdapter) {
+  return adapter.getConf('assemblyNameToPanSN') as Record<string, string>
+}
+
+// Resolve one assembly name to its PanSN sample prefix; undefined passes through
+// so callers can express "no anchor/target supplied".
+export function resolvePanSNPrefix(
+  adapter: BaseFeatureDataAdapter,
+  name: string | undefined,
+) {
+  return name === undefined
+    ? undefined
+    : (assemblyNameToPanSN(adapter)[name] ?? name)
+}
+
+// PanSN sample prefix (in the PAF) -> JBrowse assembly name, for the listed
+// assemblies. Gives a mate a friendly assembly label; a mate whose sample is not
+// a listed assembly falls back to the bare prefix (one-vs-all draws against
+// every sample in the file, listed or not).
+export function assemblyByPanSNPrefix(adapter: BaseFeatureDataAdapter) {
+  const map = assemblyNameToPanSN(adapter)
+  const out: Record<string, string> = {}
+  for (const asm of adapter.getConf('assemblyNames') as string[]) {
+    out[map[asm] ?? asm] = asm
+  }
+  return out
+}
+
 export function parseBed(text: string) {
   const result = new Map<string, BareFeature>()
   for (const line of text.split(/\n|\r\n|\r/)) {

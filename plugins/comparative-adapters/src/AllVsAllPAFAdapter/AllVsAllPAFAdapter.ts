@@ -7,7 +7,11 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { getWeightedMeans, makeSyntenyFeature } from '../PAFAdapter/util.ts'
 import { panSNContig, panSNSample } from '../pansn.ts'
-import { parsePAFLine } from '../util.ts'
+import {
+  assemblyByPanSNPrefix,
+  parsePAFLine,
+  resolvePanSNPrefix,
+} from '../util.ts'
 
 import type { AllVsAllPAFAdapterConfig } from './configSchema.ts'
 import type { PAFRecord } from '../PAFAdapter/util.ts'
@@ -19,6 +23,13 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
   private setupP?: Promise<PAFRecord[]>
 
   public static capabilities = ['getFeatures', 'getRefNames']
+
+  async hasDataForRefName() {
+    // determining this properly is basically a call to getFeatures so is not
+    // really that important, and has to be true or else getFeatures is never
+    // called (BaseAdapter filters it out)
+    return true
+  }
 
   async setup(opts?: BaseOptions) {
     this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
@@ -44,48 +55,11 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     return getWeightedMeans(lines)
   }
 
-  getAssemblyNames() {
-    return this.getConf('assemblyNames') as string[]
-  }
-
-  // JBrowse assembly name -> its PanSN sample prefix in the PAF (identity when
-  // unmapped). Also drives the anchor/target prefix lookups below.
-  private assemblyToPrefix() {
-    return this.getConf('assemblyNameToPanSN') as Record<string, string>
-  }
-
-  // PanSN sample prefix (in the PAF) -> JBrowse assembly name, for the listed
-  // assemblies. Used to give a mate a friendly assembly label; a mate whose
-  // sample is not a listed assembly falls back to the bare prefix (one-vs-all
-  // draws against every sample in the file, listed or not).
-  private assemblyByPrefix() {
-    const map = this.assemblyToPrefix()
-    const out: Record<string, string> = {}
-    for (const asm of this.getAssemblyNames()) {
-      out[map[asm] ?? asm] = asm
-    }
-    return out
-  }
-
-  async hasDataForRefName() {
-    // determining this properly is basically a call to getFeatures so is not
-    // really that important, and has to be true or else getFeatures is never
-    // called (BaseAdapter filters it out)
-    return true
-  }
-
   async getRefNames(opts: BaseOptions = {}) {
     const { assemblyName, targetAssemblyName } = opts
     const feats = await this.setup(opts)
-    const map = this.assemblyToPrefix()
-    const anchorPrefix =
-      assemblyName === undefined
-        ? undefined
-        : (map[assemblyName] ?? assemblyName)
-    const targetPrefix =
-      targetAssemblyName === undefined
-        ? undefined
-        : (map[targetAssemblyName] ?? targetAssemblyName)
+    const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
+    const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
     const set = new Set<string>()
     // Mirror the getFeatures gate: report the anchor-side contig of every side
     // that draws. One-vs-all (no target) reports every anchor contig, including
@@ -114,13 +88,9 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
       const pafRecords = await this.setup(opts)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
       const { targetAssemblyName } = opts
-      const map = this.assemblyToPrefix()
-      const asmByPrefix = this.assemblyByPrefix()
-      const anchorPrefix = map[assemblyName] ?? assemblyName
-      const targetPrefix =
-        targetAssemblyName === undefined
-          ? undefined
-          : (map[targetAssemblyName] ?? targetAssemblyName)
+      const asmByPrefix = assemblyByPanSNPrefix(this)
+      const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
+      const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
 
       for (let i = 0; i < pafRecords.length; i++) {
         const r = pafRecords[i]!

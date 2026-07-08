@@ -31,9 +31,10 @@ cat K12.fa Sakai.fa CFT073.fa NCTC86.fa > all.fa
 minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 ```
 
-`-c` emits the base-level CIGAR the linear synteny view needs, `-X` skips a
-genome's self-hits, and the PanSN prefixes let the adapter tell which record
-belongs to which pair.
+`-c` emits the base-level CIGAR the linear synteny view needs, `-X` skips self-
+and dual-mappings (a sequence against itself, and the redundant reverse of each
+pair — the adapter draws both directions from one record), and the PanSN
+prefixes let the adapter tell which record belongs to which pair.
 
 ## Loading it with AllVsAllPAFAdapter
 
