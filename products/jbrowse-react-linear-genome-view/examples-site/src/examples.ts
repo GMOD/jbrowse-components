@@ -309,7 +309,7 @@ export const examples: ExampleMeta[] = [
     name: 'NextstrainCovid',
     title: 'Nextstrain SARS-CoV-2',
     description:
-      'Browse SARS-CoV-2 in a Nextstrain-like style with inline (FromConfig) data.',
+      'Browse SARS-CoV-2 in a Nextstrain-like style: inline genes with a hosted reference and diversity bigWig.',
     group: 'Real-world demos',
   },
   {
@@ -317,7 +317,7 @@ export const examples: ExampleMeta[] = [
     name: 'NextstrainZika',
     title: 'Nextstrain Zika',
     description:
-      'Inline Zika polyprotein and diversity, plus a streamed BAM of every published Zika genome.',
+      'Zika polyprotein and diversity, plus a CRAM of every published Zika genome.',
     group: 'Real-world demos',
   },
   {
@@ -325,7 +325,7 @@ export const examples: ExampleMeta[] = [
     name: 'NextstrainEbola',
     title: 'Nextstrain Ebola',
     description:
-      'Ebola genes and per-position diversity from the Nextstrain dataset, as inline (FromConfig) data.',
+      'Ebola genes and per-position diversity from the Nextstrain dataset.',
     group: 'Real-world demos',
   },
   {
@@ -333,7 +333,7 @@ export const examples: ExampleMeta[] = [
     name: 'NextstrainMeasles',
     title: 'Nextstrain measles',
     description:
-      'Inline measles genes and diversity, plus a streamed BAM of every published measles genome.',
+      'Measles genes and diversity, plus a CRAM of every published measles genome.',
     group: 'Real-world demos',
   },
   {
@@ -341,7 +341,7 @@ export const examples: ExampleMeta[] = [
     name: 'NextstrainRsvA',
     title: 'Nextstrain RSV-A',
     description:
-      'RSV subgroup A genes and per-position diversity from the Nextstrain dataset, as inline (FromConfig) data.',
+      'RSV subgroup A genes and per-position diversity from the Nextstrain dataset.',
     group: 'Real-world demos',
   },
   {

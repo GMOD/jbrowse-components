@@ -1,59 +1,73 @@
-// Regenerates the inline Nextstrain demo configs under src/examples from live
-// Nextstrain (auspice v2) datasets. Each demo is fully self-contained: the real
-// reference sequence, a gene-annotation FeatureTrack built from
-// meta.genome_annotations, and a per-position diversity (Shannon-entropy)
-// QuantitativeTrack reconstructed from the tree's nucleotide mutations.
+// Regenerates the Nextstrain demo configs under src/examples from live
+// Nextstrain (auspice v2) datasets. The bulk data (reference sequence and the
+// per-position diversity track) is emitted as standard bioinformatics flatfiles
+// hosted on jbrowse.org/demos, so the committed config JSON stays a few KB
+// instead of megabytes of inlined data:
 //
-// The reference sequence is Nextstrain's own published `<name>_root-sequence.json`
-// sidecar (the tree root, coordinate-matched to the dataset by construction).
-// A few datasets don't publish that sidecar, so `ref` gives a fallback GenBank
-// reference from the build repo. New pathogens: extend DATASETS below.
+//   <slug>.fa / <slug>.fa.fai   reference sequence   -> IndexedFastaAdapter
+//   <slug>_entropy.bw           diversity (entropy)  -> BigWigAdapter
+//
+// The small gene-annotation set (a handful of colored features per pathogen)
+// stays inline in the config. The reference sequence is Nextstrain's own
+// published `<name>_root-sequence.json` sidecar (the tree root, coordinate-
+// matched to the dataset by construction); a few datasets don't publish that
+// sidecar, so `ref` gives a fallback GenBank reference from the build repo.
+// New pathogens: extend DATASETS below.
+//
+// The flatfiles are written to ./nextstrain-demos-data/<slug>/ (gitignored) for
+// upload to s3://jbrowse.org/demos/nextstrain/<slug>/. Requires `samtools` and
+// UCSC `bedGraphToBigWig` on PATH.
 //
 // Usage: node scripts/gen-nextstrain-demos.mjs
-import { writeFileSync } from 'node:fs'
+import { execFileSync, execSync } from 'node:child_process'
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
-const exampleDir = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-  'src',
-  'examples',
-)
+const scriptDir = dirname(fileURLToPath(import.meta.url))
+const exampleDir = join(scriptDir, '..', 'src', 'examples')
+const dataDir = join(scriptDir, '..', 'nextstrain-demos-data')
+
+const S3_BASE = 'https://jbrowse.org/demos/nextstrain'
 
 // each entry becomes src/examples/<file>.json, consumed by a matching
 // <name>.tsx / <slug>.astro page. `assembly` is the JBrowse assembly + refName;
-// `url` is the auspice v2 dataset. `ref` is only needed when the dataset has no
+// `slug` is the hosting subdir under s3://jbrowse.org/demos/nextstrain/. `url`
+// is the auspice v2 dataset. `ref` is only needed when the dataset has no
 // published root-sequence sidecar (zika, measles).
 const DATASETS = [
   {
     file: 'nextstrain_covid',
+    slug: 'covid',
     assembly: 'SARS-CoV-2',
     url: 'https://data.nextstrain.org/ncov_open_global_6m.json',
   },
   {
     file: 'nextstrain_zika',
+    slug: 'zika',
     assembly: 'Zika',
     url: 'https://data.nextstrain.org/zika.json',
     ref: 'https://raw.githubusercontent.com/nextstrain/zika/main/phylogenetic/defaults/reference.gb',
     polyprotein: true,
-    genomesBam: 'https://jbrowse.org/demos/nextstrain/zika/zika_genomes.bam',
+    genomesSeqs: 'https://data.nextstrain.org/files/workflows/zika/sequences.fasta.zst',
   },
   {
     file: 'nextstrain_ebola',
+    slug: 'ebola',
     assembly: 'Ebola',
     url: 'https://data.nextstrain.org/ebola.json',
   },
   {
     file: 'nextstrain_measles',
+    slug: 'measles',
     assembly: 'Measles',
     url: 'https://data.nextstrain.org/measles.json',
     ref: 'https://raw.githubusercontent.com/nextstrain/measles/main/phylogenetic/defaults/measles_reference_genome.gb',
-    genomesBam:
-      'https://jbrowse.org/demos/nextstrain/measles/measles_genomes.bam',
+    genomesSeqs: 'https://data.nextstrain.org/files/workflows/measles/sequences.fasta.zst',
   },
   {
     file: 'nextstrain_rsv_a',
+    slug: 'rsv-a',
     assembly: 'RSV-A',
     url: 'https://data.nextstrain.org/rsv_a_genome.json',
   },
@@ -268,15 +282,66 @@ function geneFeatures(annotations, refName, polyprotein) {
   })
 }
 
-function buildConfig({ assembly, data, seq, polyprotein, genomesBam }) {
-  const refName = assembly
+// write the reference as an indexed FASTA (`<slug>.fa` + `.fai`); samtools
+// builds the index so it matches the runtime IndexedFastaAdapter exactly
+function writeFasta(outDir, slug, refName, seq) {
+  const wrapped = seq.match(/.{1,80}/g)?.join('\n') ?? ''
+  const fa = join(outDir, `${slug}.fa`)
+  writeFileSync(fa, `>${refName}\n${wrapped}\n`)
+  execFileSync('samtools', ['faidx', fa])
+  return fa
+}
+
+// write the per-position diversity as a bigWig via UCSC bedGraphToBigWig. The
+// entropy features are already 1bp and start-sorted, exactly one score per base.
+function writeEntropyBigWig(outDir, slug, refName, len, features) {
+  const bedGraph = join(outDir, `${slug}_entropy.bedGraph`)
+  const chromSizes = join(outDir, `${slug}.chrom.sizes`)
+  const bw = join(outDir, `${slug}_entropy.bw`)
+  const lines = features.map(f => `${refName}\t${f.start}\t${f.end}\t${f.score}`)
+  writeFileSync(bedGraph, `${lines.join('\n')}\n`)
+  writeFileSync(chromSizes, `${refName}\t${len}\n`)
+  execFileSync('bedGraphToBigWig', [bedGraph, chromSizes, bw])
+  // only the .bw is hosted; drop the plain-text intermediates
+  rmSync(bedGraph)
+  rmSync(chromSizes)
+  return bw
+}
+
+// align every published NCBI genome (the same sequence set Nextstrain ingests)
+// to the hosted reference and emit a reference-based CRAM. CRAM stores each read
+// as substitutions relative to the reference, so JBrowse renders SNPs directly
+// off the shared assembly sequence — no MD tag / `samtools calmd` needed.
+async function writeGenomesCram(outDir, slug, refFasta, seqsUrl) {
+  const zst = join(outDir, `${slug}_seqs.fasta.zst`)
+  const fasta = join(outDir, `${slug}_seqs.fasta`)
+  const cram = join(outDir, `${slug}_genomes.cram`)
+  const res = await fetch(seqsUrl)
+  if (!res.ok) {
+    throw new Error(`failed to fetch ${seqsUrl}: ${res.status}`)
+  }
+  writeFileSync(zst, Buffer.from(await res.arrayBuffer()))
+  execFileSync('zstd', ['-d', '-f', zst])
+  execSync(
+    `minimap2 -a -x asm20 ${refFasta} ${fasta} | ` +
+      `samtools sort -O cram --reference ${refFasta} -o ${cram} -`,
+    { stdio: ['ignore', 'ignore', 'inherit'] },
+  )
+  execFileSync('samtools', ['index', cram])
+  rmSync(zst)
+  rmSync(fasta)
+  return cram
+}
+
+function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
   const len = seq.length
+  const base = `${S3_BASE}/${slug}`
 
   // optional real-data track: every published genome for this pathogen (NCBI via
-  // Nextstrain), aligned to the reference and hosted on jbrowse.org/demos. This
-  // is the one part that streams at runtime; everything else is inline.
+  // Nextstrain), aligned to the hosted reference as a CRAM. This is the one part
+  // that streams at runtime; everything else is inline or a small flatfile.
   const genomesTrackId = `${assembly}-published-genomes`
-  const publishedGenomesTracks = genomesBam
+  const publishedGenomesTracks = genomesCram
     ? [
         {
           type: 'AlignmentsTrack',
@@ -285,14 +350,14 @@ function buildConfig({ assembly, data, seq, polyprotein, genomesBam }) {
           assemblyNames: [assembly],
           category: ['Nextstrain'],
           adapter: {
-            type: 'BamAdapter',
-            bamLocation: { uri: genomesBam },
-            index: { location: { uri: `${genomesBam}.bai` } },
+            type: 'CramAdapter',
+            cramLocation: { uri: genomesCram },
+            craiLocation: { uri: `${genomesCram}.crai` },
           },
         },
       ]
     : []
-  const publishedGenomesSession = genomesBam
+  const publishedGenomesSession = genomesCram
     ? [
         {
           type: 'AlignmentsTrack',
@@ -313,8 +378,9 @@ function buildConfig({ assembly, data, seq, polyprotein, genomesBam }) {
         type: 'ReferenceSequenceTrack',
         trackId: `${assembly}-ReferenceSequenceTrack`,
         adapter: {
-          type: 'FromConfigSequenceAdapter',
-          features: [{ refName, uniqueId: refName, start: 0, end: len, seq }],
+          type: 'IndexedFastaAdapter',
+          fastaLocation: { uri: `${base}/${slug}.fa` },
+          faiLocation: { uri: `${base}/${slug}.fa.fai` },
         },
       },
     },
@@ -327,11 +393,7 @@ function buildConfig({ assembly, data, seq, polyprotein, genomesBam }) {
         category: ['Annotation'],
         adapter: {
           type: 'FromConfigAdapter',
-          features: geneFeatures(
-            data.meta.genome_annotations,
-            refName,
-            polyprotein,
-          ),
+          features: geneFeats,
         },
         displays: [
           {
@@ -351,8 +413,8 @@ function buildConfig({ assembly, data, seq, polyprotein, genomesBam }) {
         assemblyNames: [assembly],
         category: ['Annotation'],
         adapter: {
-          type: 'FromConfigAdapter',
-          features: entropyFeatures(data.tree, refName),
+          type: 'BigWigAdapter',
+          bigWigLocation: { uri: `${base}/${slug}_entropy.bw` },
         },
       },
       ...publishedGenomesTracks,
@@ -435,28 +497,44 @@ const referenceSequence = async ds => {
 for (const ds of DATASETS) {
   const data = JSON.parse(await fetchText(ds.url))
   const { seq, source } = await referenceSequence(ds)
-  const config = buildConfig({
-    assembly: ds.assembly,
-    data,
-    seq,
-    polyprotein: ds.polyprotein,
-    genomesBam: ds.genomesBam,
-  })
-  const [genes, entropy] = config.tracks
+  const refName = ds.assembly
+  const geneFeats = geneFeatures(
+    data.meta.genome_annotations,
+    refName,
+    ds.polyprotein,
+  )
+  const entropyFeats = entropyFeatures(data.tree, refName)
+
   // the reference must span every annotation/diversity coordinate
   const maxEnd = Math.max(
-    ...genes.adapter.features.map(f => f.end),
-    ...entropy.adapter.features.map(f => f.end),
+    ...geneFeats.map(f => f.end),
+    ...entropyFeats.map(f => f.end),
   )
   if (maxEnd > seq.length) {
     throw new Error(
       `${ds.file}: feature end ${maxEnd} exceeds reference length ${seq.length}`,
     )
   }
+
+  const outDir = join(dataDir, ds.slug)
+  mkdirSync(outDir, { recursive: true })
+  const refFasta = writeFasta(outDir, ds.slug, refName, seq)
+  writeEntropyBigWig(outDir, ds.slug, refName, seq.length, entropyFeats)
+  if (ds.genomesSeqs) {
+    await writeGenomesCram(outDir, ds.slug, refFasta, ds.genomesSeqs)
+  }
+
+  const config = buildConfig({
+    assembly: ds.assembly,
+    slug: ds.slug,
+    geneFeats,
+    seq,
+    genomesCram: ds.genomesSeqs ? `${S3_BASE}/${ds.slug}/${ds.slug}_genomes.cram` : undefined,
+  })
   writeFileSync(join(exampleDir, `${ds.file}.json`), JSON.stringify(config))
   console.log(
-    `wrote ${ds.file}.json — ${seq.length} bp reference (${source}), ` +
-      `${genes.adapter.features.length} genes, ` +
-      `${entropy.adapter.features.length} diversity points`,
+    `wrote ${ds.file}.json + ${ds.slug}/ flatfiles — ${seq.length} bp ` +
+      `reference (${source}), ${geneFeats.length} genes, ` +
+      `${entropyFeats.length} diversity points`,
   )
 }

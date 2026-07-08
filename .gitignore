@@ -15,6 +15,7 @@ yalc.lock
 **/__diff_output__/
 **/dist/
 **/esm/
+**/nextstrain-demos-data/
 lerna-debug.log
 .yarn
 .yarnrc
