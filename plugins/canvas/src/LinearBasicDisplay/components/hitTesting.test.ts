@@ -210,6 +210,25 @@ test('hits subfeature when within subfeature bounds', () => {
   expect(result.subfeature!.featureId).toBe('mRNA1')
 })
 
+test('overlapping same-row subfeatures: topmost (last painted) wins', () => {
+  // A repeat_region's internal body and an LTR share one row and overlap; the
+  // body is registered/painted first (lower subfeatureInfos index), the LTR on
+  // top. Flatbush returns both matches in arbitrary tree order, so the hit must
+  // resolve to the LTR (largest index = last painted) rather than whichever the
+  // index happens to yield first.
+  const parent = makeItem('repeat1', 1000, 5000, 0, 20)
+  const body = makeSub('body', 'repeat1', 1000, 5000, 0, 20)
+  const ltr = makeSub('ltr', 'repeat1', 1000, 2000, 0, 20)
+  const data = makeData([parent], [body, ltr])
+  const result = hit(
+    new Map([[0, data]]),
+    [makeRegion(0, 0, 10000, 0, 800)],
+    120, // ≈1500bp, inside both the body (1000-5000) and the LTR (1000-2000)
+    10,
+  )
+  expect(result.subfeature!.featureId).toBe('ltr')
+})
+
 test('returns null subfeature when outside subfeature but inside feature', () => {
   const parent = makeItem('gene1', 1000, 5000, 0, 30)
   const sub = makeSub('mRNA1', 'gene1', 2000, 3000, 5, 15)

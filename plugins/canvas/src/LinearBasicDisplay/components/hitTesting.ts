@@ -127,6 +127,23 @@ export function buildSubfeatureFlatbushIndex(
   return index
 }
 
+// Flatbush returns overlap matches in tree (Hilbert) order, unrelated to
+// insertion order. When several subfeatures overlap the cursor on one row —
+// the repeat_region case, where LTRs/TSDs are painted over the internal
+// retrotransposon body (see processRepeatRegionLayout) — the one painted last
+// is on top. subfeatureInfos is populated in paint order and the Flatbush index
+// preserves that order, so the largest matching index is the topmost subfeature.
+// Pick it so the hover/tooltip matches what's actually drawn under the cursor.
+function topmostMatch(indices: number[]) {
+  let top: number | undefined
+  for (const i of indices) {
+    if (top === undefined || i > top) {
+      top = i
+    }
+  }
+  return top
+}
+
 // Codons aren't in a Flatbush index (they only exist when zoomed into
 // peptide-level CDS, so the array is bounded by what's on screen); a linear
 // scan mirrors the per-render scan in forEachRenderedPeptide. Returns the codon
@@ -173,7 +190,9 @@ export function performMultiRegionHitDetection(
 
         let subfeature: SubfeatureInfo | null = null
         if (indexes.subfeature) {
-          const idx = indexes.subfeature.search(bpPos, yPos, bpPos, yPos)[0]
+          const idx = topmostMatch(
+            indexes.subfeature.search(bpPos, yPos, bpPos, yPos),
+          )
           if (idx !== undefined) {
             subfeature = data.subfeatureInfos[idx]!
           }
