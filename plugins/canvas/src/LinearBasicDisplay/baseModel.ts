@@ -4,8 +4,8 @@ import {
   ConfigurationReference,
   getConf,
   getConfResolved,
-  getConfSnapshot,
   readConfObject,
+  resolvePromotableConfigSnapshot,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -788,22 +788,20 @@ export default function baseStateModelFactory(
         // RPC call site, matching the pattern used by every other display
         // type. Subclasses extend via the super-capture pattern.
         rpcProps() {
-          // showLabels/showDescriptions are display-only — exclude them so
-          // toggling label visibility doesn't invalidate the RPC cache.
-          // displayMode is also excluded: compact/superCompact scaling and
-          // collapse-mode label decimation are applied on the main thread so
-          // switching modes skips an RPC round-trip.
-          // displayDirectionalChevrons is a promotable `maybeBoolean` — the raw
-          // snapshot is the unresolved sentinel (undefined/true/false), so it's
-          // excluded here and the concrete model re-adds the resolved boolean
-          // (LinearBasicDisplay.rpcProps) for the worker's chevron geometry.
+          // resolvePromotableConfigSnapshot hands the worker concrete values for
+          // every promotable slot (chevrons, subfeatureLabels, ...) instead of
+          // their raw inherit sentinels — so a new promotable worker-slot needs
+          // no rpcProps change here. The three excluded slots are display-only
+          // (never sent to the worker): showLabels/showDescriptions gate label
+          // visibility on the main thread, and displayMode drives compact/
+          // superCompact height scaling + collapse-mode label decimation there,
+          // so excluding them keeps toggling those off the RPC cache key.
           const {
             showLabels: _l,
             showDescriptions: _d,
             displayMode: _dm,
-            displayDirectionalChevrons: _dc,
             ...rest
-          } = getConfSnapshot(self.configuration)
+          } = resolvePromotableConfigSnapshot(self)
           return {
             // jexlFilters carries the effective runtime filters (mirrors the
             // effectiveGeneGlyphMode substitution in the concrete model); reading

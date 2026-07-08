@@ -96,8 +96,11 @@ export default function stateModelFactory(
       isoformCollapseNoticeDismissed: false,
     }))
     .views(self => ({
-      get subfeatureLabels() {
-        return getConf(self, 'subfeatureLabels')
+      // Promotable sentinel enum (see baseConfigSchema.ts): getConfResolved walks
+      // the cascade (pinned track value -> session default -> base 'none') and
+      // always yields a real mode, never the 'inherit' sentinel.
+      get subfeatureLabels(): DisplayConfig['subfeatureLabels'] {
+        return getConfResolved(self, 'subfeatureLabels')
       },
 
       get geneGlyphMode() {
@@ -170,10 +173,11 @@ export default function stateModelFactory(
             ...base,
             displayConfig: {
               ...base.displayConfig,
+              // effectiveGeneGlyphMode is a zoom-dependent transform (not a plain
+              // promotable resolve), so it's substituted here; the promotable
+              // slots (chevrons, subfeatureLabels) are already resolved by the
+              // base rpcProps via resolvePromotableConfigSnapshot.
               geneGlyphMode: self.effectiveGeneGlyphMode,
-              // resolved promotable value (base rpcProps excludes the raw
-              // sentinel); the worker draws chevron geometry from this
-              displayDirectionalChevrons: self.displayDirectionalChevrons,
             },
             showOnlyGenes: self.showOnlyGenes,
           }
@@ -238,16 +242,18 @@ export default function stateModelFactory(
         showSubmenuMenuItems() {
           return [
             ...superShowSubmenuMenuItems(),
-            {
+            promotableToggleItem({
               label: 'Show subfeature labels',
-              type: 'checkbox' as const,
               checked: self.subfeatureLabels !== 'none',
-              onClick: () => {
+              onToggle: () => {
                 self.setSubfeatureLabels(
                   self.subfeatureLabels === 'none' ? 'overlay' : 'none',
                 )
               },
-            },
+              sessionDefault: makeCurrentValueSessionDefaultControl(self, [
+                'subfeatureLabels',
+              ]),
+            }),
             {
               label: 'Show only genes',
               type: 'checkbox' as const,

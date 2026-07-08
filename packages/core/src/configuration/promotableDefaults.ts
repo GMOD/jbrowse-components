@@ -1,6 +1,7 @@
 import { getSlotDefinition } from './slotFacade.ts'
 import {
   getConf,
+  getConfSnapshot,
   getConfigurationSchemaDefinition,
   isSlotDefinitionEntry,
 } from './util.ts'
@@ -176,6 +177,29 @@ export function getConfResolved<T = unknown>(
   slot: string,
 ): T {
   return resolveSlot(self, slot).value as T
+}
+
+/**
+ * #api core/configuration
+ * The display's full config snapshot (`getConfSnapshot`) with every `promotable`
+ * slot overwritten by its resolved value in place. For building a worker payload:
+ * a promotable slot serializes as its raw inherit sentinel — an `'inherit'` enum
+ * member, or the `undefined` of a `maybeBoolean`/`maybeNumber` — which the worker
+ * can't interpret. This hands it concrete values instead, with no per-slot
+ * bookkeeping, so adding a promotable worker-consumed slot needs no rpcProps
+ * change and can't silently ship a sentinel. Main-thread only (getConfResolved
+ * consults the session). Display-only promotable slots the worker never reads
+ * (e.g. displayMode) are still excluded by the caller — resolving them here is a
+ * harmless no-op since they're dropped anyway.
+ */
+export function resolvePromotableConfigSnapshot(
+  self: PromotableDisplay,
+): Record<string, unknown> {
+  const snap = getConfSnapshot(self.configuration)
+  for (const slot of promotableSlots(self)) {
+    snap[slot] = getConfResolved(self, slot)
+  }
+  return snap
 }
 
 /**

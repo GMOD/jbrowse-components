@@ -6,6 +6,7 @@ import {
   areSlotsAtSessionDefault,
   getConfResolved,
   isSlotPinned,
+  resolvePromotableConfigSnapshot,
   setSlotsSessionDefault,
 } from './promotableDefaults.ts'
 
@@ -158,6 +159,42 @@ describe('promotable maybeBoolean slot', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', 'yes')
     expect(getConfResolved(display, 'chevrons')).toBe(true)
+  })
+})
+
+// resolvePromotableConfigSnapshot is the worker-payload safety net: it hands out
+// the config snapshot with every promotable slot resolved in place, so a raw
+// inherit sentinel (an unset maybeBoolean here) never ships to a worker, and a
+// new promotable slot needs no per-slot rpcProps bookkeeping.
+describe('resolvePromotableConfigSnapshot', () => {
+  const configSchema = ConfigurationSchema('SnapshotDisplay', {
+    chevrons: {
+      type: 'maybeBoolean',
+      defaultValue: undefined,
+      promotedBase: true,
+      promotable: true,
+    },
+    // a plain non-promotable slot, to confirm it passes through untouched
+    color: {
+      type: 'color',
+      defaultValue: 'red',
+    },
+  })
+
+  test('resolves an unset promotable slot to the session default, leaves others', () => {
+    const { session, display } = createDisplay(configSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
+    const snap = resolvePromotableConfigSnapshot(display)
+    // the raw snapshot omits the unset maybeBoolean (stripDefault) — resolve
+    // fills it with the concrete session-default value the worker can use
+    expect(snap.chevrons).toBe(false)
+    expect(snap.color).toBe('red')
+  })
+
+  test('keeps a pinned promotable value over the session default', () => {
+    const { session, display } = createDisplay(configSchema, { chevrons: true })
+    session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
+    expect(resolvePromotableConfigSnapshot(display).chevrons).toBe(true)
   })
 })
 

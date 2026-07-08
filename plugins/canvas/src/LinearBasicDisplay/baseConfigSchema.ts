@@ -153,12 +153,22 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       subfeatureLabels: {
         type: 'stringEnum',
         model: types.enumeration('subfeatureLabels', [
+          'inherit',
           'none',
           'below',
           'overlay',
         ]),
-        description: 'subfeature label display mode',
-        defaultValue: 'none',
+        description:
+          'subfeature label display mode. `inherit` (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` pin the track explicitly',
+        // Promotable sentinel enum (see promotableDefaults.ts / displayMode):
+        // `inherit` is the un-pinned state, `promotedBase` ('none') is what it
+        // resolves to when nothing is promoted. Legacy stored none/below/overlay
+        // are still valid members (pinned), so no snapshot migration is needed.
+        // Read through the resolved `subfeatureLabels` getter (getConfResolved),
+        // never raw.
+        defaultValue: 'inherit',
+        promotedBase: 'none',
+        promotable: true,
       },
       /**
        * #slot
