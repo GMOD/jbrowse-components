@@ -34,6 +34,10 @@ const useStyles = makeStyles()(theme => ({
   section: {
     marginTop: theme.spacing(2),
   },
+  heading: {
+    fontWeight: 'bold',
+    marginBottom: theme.spacing(0.5),
+  },
 }))
 
 // Many config values are `{ type: 'x' }` discriminated unions (colorBy,
@@ -124,18 +128,23 @@ const TrackSettingsChangesDialog = observer(
         <DialogContent className={classes.content}>
           {changes.length ? (
             <>
+              <Typography variant="subtitle2" className={classes.heading}>
+                Edited on this track
+              </Typography>
               <DialogContentText>
-                These settings were edited on this track and differ from its
-                default configuration.
+                These settings differ from the track's default configuration.
               </DialogContentText>
               <ChangesTable changes={changes} />
             </>
           ) : null}
           {sessionDefaults.length ? (
             <div className={classes.section}>
+              <Typography variant="subtitle2" className={classes.heading}>
+                Session-wide default
+              </Typography>
               <DialogContentText>
-                These settings come from a session-wide default you set for all
-                tracks of this type, not from an edit to this track.
+                These come from a default you set for all tracks of this type,
+                not from an edit to this track.
               </DialogContentText>
               <ChangesTable changes={sessionDefaults} />
             </div>

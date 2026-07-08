@@ -104,7 +104,7 @@ describe('TrackSettingsChangesDialog session-default section', () => {
       ),
     )
     // framed as a session-wide default, not an edit of this track
-    expect(getByText(/session-wide default/)).toBeTruthy()
+    expect(getByText(/Session-wide default/)).toBeTruthy()
     expect(getByText('compact')).toBeTruthy()
     // no per-track edit section / reset button when there are no edits
     expect(queryByText('Reset to default')).toBeNull()
@@ -157,8 +157,8 @@ describe('TrackSettingsChangesDialog session-default section', () => {
       ),
     )
     // both sources are surfaced, in their own framing
-    expect(getByText(/edited on this track/)).toBeTruthy()
-    expect(getByText(/session-wide default/)).toBeTruthy()
+    expect(getByText(/Edited on this track/)).toBeTruthy()
+    expect(getByText(/Session-wide default/)).toBeTruthy()
     expect(getByText('My genes')).toBeTruthy()
     expect(getByText('compact')).toBeTruthy()
     // each source has its own reset that fires independently
@@ -180,9 +180,9 @@ describe('TrackSettingsChangesDialog session-default section', () => {
         />,
       ),
     )
-    expect(getByText(/edited on this track/)).toBeTruthy()
+    expect(getByText(/Edited on this track/)).toBeTruthy()
     expect(getByText('Reset to default')).toBeTruthy()
-    expect(queryByText(/session-wide default/)).toBeNull()
+    expect(queryByText(/Session-wide default/)).toBeNull()
     expect(queryByText('Clear session default')).toBeNull()
   })
 })

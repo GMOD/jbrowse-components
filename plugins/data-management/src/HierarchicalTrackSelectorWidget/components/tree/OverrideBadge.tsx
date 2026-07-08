@@ -1,7 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import EditIcon from '@mui/icons-material/Edit'
-import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -37,11 +36,10 @@ function openDisplays(model: HierarchicalTrackSelectorModel, trackId: string) {
 }
 
 // shown when a track's effective settings differ from its configured defaults,
-// for either reason: a per-track config edit shadowing an admin track (the
-// pencil, see session.getTrackConfigChanges / updateTrackConfiguration), or a
-// session-wide displayTypeDefault the user promoted (a distinct icon, so a
-// global preference never reads as an individual edit of this track). Clicking
-// opens a dialog listing each changed setting and its source.
+// for either reason: a per-track config edit shadowing an admin track (see
+// session.getTrackConfigChanges / updateTrackConfiguration) or a session-wide
+// displayTypeDefault the user promoted. One pencil marks both; the tooltip and
+// the dialog it opens name the actual source (and its reset) in words.
 const OverrideBadge = observer(function OverrideBadge({
   model,
   trackId,
@@ -109,11 +107,7 @@ const OverrideBadge = observer(function OverrideBadge({
           ])
         }}
       >
-        {edited ? (
-          <EditIcon className={classes.editIcon} />
-        ) : (
-          <SettingsSuggestIcon className={classes.editIcon} />
-        )}
+        <EditIcon className={classes.editIcon} />
       </IconButton>
     </Tooltip>
   )
