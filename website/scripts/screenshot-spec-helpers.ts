@@ -717,17 +717,19 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // Dark theme (bundled volvox coverage + annotations).
+  // Dark theme, human demo (reviewer ask): hg38 TP53 locus via --hub, a tall
+  // NCBI RefSeq gene track over phyloP conservation, rendered with darkStock.
   cliSpec('dark_theme', [
-    '--fasta',
-    'data/volvox/volvox.fa',
-    '--bigwig',
-    'data/volvox/volvox-sorted.bam.coverage.bw',
-    '--gffgz',
-    'data/volvox/volvox.sort.gff3.gz',
-    'height:250',
+    '--hub',
+    'hg38',
+    '--track',
+    'hg38-ncbiRefSeqCurated',
+    'height:220',
+    '--track',
+    'hg38-phyloP100way',
+    'height:140',
     '--loc',
-    'ctgA:1-20000',
+    'chr17:7,665,000-7,690,000',
     '--themeName',
     'darkStock',
     '--width',

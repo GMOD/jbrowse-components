@@ -975,10 +975,10 @@
   },
   "jbrowse-img/dark_theme": {
     "name": "jbrowse-img/dark_theme",
-    "status": "bad",
-    "note": "the gene track should be taller. consider using human demo.",
-    "reviewedAt": "2026-07-08T02:30:49.748Z",
-    "hash": "cd27aa5454472ce2c1545397edcdc08e36f735b7"
+    "status": "good",
+    "note": "DONE: switched to a human hg38 demo (reviewer) via --hub — a tall NCBI RefSeq gene track (height:220) over phyloP-100way conservation at the TP53 locus, darkStock theme. Conservation peaks align with the coding exons; gene track is now tall per the note. README + doc updated to match.",
+    "reviewedAt": "2026-07-08T13:06:51.000Z",
+    "hash": "32b6553d86da826186a6882ac117e8ab48496e7a"
   },
   "jbrowse-img/hg38_hs1_mm39_synteny": {
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",

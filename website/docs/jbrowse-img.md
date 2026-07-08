@@ -393,13 +393,13 @@ jb2export --fasta data/volvox/volvox.fa --loc ctgA:108-208 --refseq \
 the keys above.)
 
 ```bash
-jb2export --fasta data/volvox/volvox.fa \
-  --bigwig data/volvox/volvox-sorted.bam.coverage.bw \
-  --gffgz data/volvox/volvox.sort.gff3.gz height:250 \
-  --loc ctgA:1-20000 --themeName darkStock --width 1200 --out dark.png
+jb2export --hub hg38 \
+  --track hg38-ncbiRefSeqCurated height:220 \
+  --track hg38-phyloP100way height:140 \
+  --loc chr17:7,665,000-7,690,000 --themeName darkStock --width 1200 --out dark.png
 ```
 
-<Figure src="/img/jbrowse-img/dark_theme.png" caption="A coverage and gene track rendered with the darkStock theme" />
+<Figure src="/img/jbrowse-img/dark_theme.png" caption="The hg38 TP53 locus — NCBI RefSeq genes over phyloP conservation — rendered with the darkStock theme" />
 
 ## Track modifiers
 
