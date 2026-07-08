@@ -30,6 +30,26 @@ interface MafFetchSelf extends IAnyStateTreeNode {
 type Needed = { region: Region; displayedRegionIndex: number }[]
 
 /**
+ * Choose which per-region result defines the display's sample set. A
+ * sample-discovery track (no configured `samples`) derives its rows from the
+ * genomes present in each region's blocks, so a region with no alignment blocks
+ * yields zero samples — letting that empty region define the set would blank the
+ * rows and churn `orderedSampleIds` (→ needless refetch). Prefer the first region
+ * that actually discovered samples; fall back to the first result only when every
+ * buffered region is empty (an all-gap viewport, where an empty set is correct).
+ * Configured-samples tracks return the same non-empty set for every region, so
+ * this resolves to the first result for them.
+ */
+export function pickSamplesResult<R extends { samples: Sample[] }>(
+  results: readonly { result: R }[],
+): R | undefined {
+  return (
+    results.find(r => r.result.samples.length > 0)?.result ??
+    results[0]?.result
+  )
+}
+
+/**
  * Shared per-region fetch skeleton for both the detail and summary paths: call
  * one RPC per buffered region, bail on staleness, push the (config-derived)
  * `samples` + tree once, then hand the per-region results to `commit`.
@@ -64,11 +84,11 @@ async function fetchMafRegions<
     if (ctx.isStale()) {
       return
     }
-    const first = results[0]
+    const first = pickSamplesResult(results)
     if (first) {
       self.setSamples({
-        samples: first.result.samples,
-        treeNewick: first.result.treeNewick,
+        samples: first.samples,
+        treeNewick: first.treeNewick,
       })
     }
     commit(results)
