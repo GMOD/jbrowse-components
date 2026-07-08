@@ -48,6 +48,21 @@ in chr1→chrX and **only** `delta-filter -r -q` applied (no `--layout`) yields 
 crisp single diagonal (bottom-right panel of the montage). This is the target
 render. It proves the only missing ingredient is the best-hit filter.
 
+**5. The filter helps the *layout* too, but only modestly — it is not the
+layout's job.** Re-running our diagonalize ordering on the `delta-filter -r -q`
+output vs the unfiltered set (`replay_diagonalize.mjs` logic on `hap1.rq.delta`,
+see repro below): the dominant large-contig backbone
+`13→08→16→15→06→05→01→07→11→12→02→04→10→14` (chr1→chrX) is **identical** either
+way — the layout is already correct on unfiltered data. What filtering changes:
+(a) it sharpens best-chromosome assignment for near-tie contigs (e.g. c23
+confidence chr21 `0.48 → 0.97` once repeat noise is gone; a couple genuine
+coin-flip contigs like c03 chr5↔chr1@0.57 get reassigned), and (b) it drops ~12
+tiny all-secondary contigs (10–227 kb) from the ordering. Consequence: **if the
+filter exists, also feed the filtered alignments into the diagonalize RPC**
+(`DiagonalizeDotplotRpc` / `runDotplotDiagonalize`) for slightly more robust
+ordering — free once the filter is built. But do not expect the filter to "fix"
+a layout; the decisive win is decluttering what's drawn.
+
 ## The gap in our code
 
 The dotplot has only `minAlignmentLength` — a scalar length cutoff — applied
