@@ -815,19 +815,29 @@ export const jbrowseImgSpecs: CliSpec[] = [
   ]),
 
   // color:methylation paints per-base CpG calls from a modified-base CRAM.
-  // COLO829 nanopore (hg38) over a CpG island; --aliases reconciles the
-  // chr20/20 refname styles.
+  // COLO829 nanopore (hg38) over the chr20:18.50-18.51Mb CpG islands (the same
+  // islands the modifications/gallery figures use — a region with real
+  // methylation signal, not the prior featureless window). The UCSC CpG-island
+  // BED on top (reviewer ask) marks the island boundaries, so the methylated
+  // (red) flanks vs the unmethylated (blue) island cores read against the
+  // annotation. --aliases reconciles the chr20/20 refname styles for both the
+  // CRAM and the chr-named CpG BED.
   cliSpec('methylation', [
     '--fasta',
     'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
     '--aliases',
     'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+    // UCSC CpG islands (BedTabix, .csi index); argv order puts it above the
+    // methylation CRAM below.
+    '--bedgz',
+    'https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz',
+    'index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi',
     '--cram',
     'https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram',
     'color:methylation',
     'height:350',
     '--loc',
-    '20:18,500,750-18,503,250',
+    'chr20:18,503,000-18,509,000',
     '--width',
     '1200',
   ]),

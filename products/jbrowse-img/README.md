@@ -239,15 +239,17 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 
 `color:methylation` paints per-base CpG methylation calls from a modified-base
 (`MM`/`ML`) BAM/CRAM — methylated cytosines red, unmethylated blue. This COLO829
-nanopore CRAM (hg38, streamed from the ONT open-data S3) over a CpG island shows
-the methylated-to-unmethylated transition:
+nanopore CRAM (hg38, streamed from the ONT open-data S3) with the UCSC
+CpG-island BED on top shows the methylated flanks giving way to the unmethylated
+island cores, read against the annotated island boundaries:
 
 ```bash
 jb2export \
   --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
   --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
+  --bedgz https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi \
   --cram https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram color:methylation height:350 \
-  --loc 20:18,500,750-18,503,250 --width 1200 --out methylation.png
+  --loc chr20:18,503,000-18,509,000 --width 1200 --out methylation.png
 ```
 
 ![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/methylation.png)

@@ -989,10 +989,10 @@
   },
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
-    "status": "bad",
-    "note": "this is not an interesting area, navigate to a cpg island that is methylation, and show ucsc cpg island track from ~/src/jb2hubs/ucsc2jbrowse/configs ",
-    "reviewedAt": "2026-07-08T02:19:01.901Z",
-    "hash": "8bd521c3c2e3caf8a480e959b7c398f56a9396df"
+    "status": "good",
+    "note": "DONE: moved onto the chr20:18.50-18.51Mb CpG islands (the same region the modifications2/gallery methylation figures use) and added the UCSC CpG-island BED track on top (--bedgz cpgIslandExt.bed.gz). The two islands (CpG:23, CpG:61) are annotated and the COLO829 methylation reads show the methylated (red) flanks vs unmethylated (blue) island cores against the boundaries. README command updated to match.",
+    "reviewedAt": "2026-07-08T13:01:50.000Z",
+    "hash": "e18d49561220f1c6d2128fab445c077b673fa51a"
   },
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
