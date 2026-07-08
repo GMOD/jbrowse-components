@@ -29,6 +29,7 @@ export async function renderToSvg(
     showGridlines = false,
     Wrapper = ({ children }) => children,
     themeName = 'default',
+    fontFamily,
   } = opts
   const session = getSession(model)
   const themeVar = session.getActiveThemeOptions?.(themeName)
@@ -151,6 +152,7 @@ export async function renderToSvg(
     theme: themeVar,
     width: w,
     height: stacked.y + exportMargin,
+    fontFamily,
     Wrapper,
     children: stacked.children,
   })

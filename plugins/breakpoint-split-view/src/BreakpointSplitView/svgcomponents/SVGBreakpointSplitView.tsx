@@ -24,6 +24,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     showGridlines = false,
     Wrapper = ({ children }) => children,
     themeName = 'default',
+    fontFamily,
   } = opts
 
   const session = getSession(model)
@@ -68,6 +69,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     theme,
     width: w,
     height: totalHeightSvg,
+    fontFamily,
     Wrapper,
     children: (
       <>

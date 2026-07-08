@@ -23,7 +23,6 @@ const YScaleBar = observer(function YScaleBar({
   return (
     <g
       fontSize={10}
-      fontFamily="sans-serif"
       textAnchor={isLeft ? 'end' : 'start'}
       stroke={fg}
       strokeWidth={1}

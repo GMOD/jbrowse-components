@@ -23,7 +23,21 @@ export interface BaseExportSvgOptions {
   format: 'svg' | 'png'
   filename: string
   themeName: string
+  fontFamily: string
 }
+
+// Generic CSS families only, so exported text resolves in any SVG renderer
+// (browser, Inkscape, Illustrator) without embedding a named font like Roboto.
+// The 'default' sentinel is the selected default; it maps to no font-family so
+// the renderer decides (see the exportSvg call below).
+const DEFAULT_FONT = 'default'
+const fontFamilyOptions = [
+  { value: DEFAULT_FONT, label: 'Default' },
+  { value: 'sans-serif', label: 'Sans-serif' },
+  { value: 'serif', label: 'Serif' },
+  { value: 'monospace', label: 'Monospace' },
+  { value: 'system-ui, sans-serif', label: 'System UI' },
+]
 
 function LoadingMessage({ format }: { format: string }) {
   return (
@@ -63,6 +77,10 @@ export default function BaseExportSvgDialog({
     'theme',
     session.themeName || 'default',
   )
+  const [fontFamily, setFontFamily] = useExportSvgPreference(
+    'fontfamily',
+    DEFAULT_FONT,
+  )
 
   return (
     <SubmitDialog
@@ -74,7 +92,13 @@ export default function BaseExportSvgDialog({
         setLoading(true)
         setError(undefined)
         try {
-          await exportSvg({ rasterizeLayers, format, filename, themeName })
+          await exportSvg({
+            rasterizeLayers,
+            format,
+            filename,
+            themeName,
+            fontFamily: fontFamily === DEFAULT_FONT ? '' : fontFamily,
+          })
           handleClose()
         } catch (e) {
           console.error(e)
@@ -136,6 +160,22 @@ export default function BaseExportSvgDialog({
             ))}
           </TextField>
         ) : null}
+        <TextField
+          select
+          label="Font"
+          variant="outlined"
+          style={{ minWidth: 200 }}
+          value={fontFamily}
+          onChange={event => {
+            setFontFamily(event.target.value)
+          }}
+        >
+          {fontFamilyOptions.map(({ value, label }) => (
+            <MenuItem key={value} value={value}>
+              {label}
+            </MenuItem>
+          ))}
+        </TextField>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {checkboxes}
           {offscreenCanvas ? (

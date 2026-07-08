@@ -13,7 +13,7 @@ export async function renderToSvg(
   opts: ExportSvgOptions,
 ) {
   await when(() => model.initialized)
-  const { themeName = 'default', Wrapper } = opts
+  const { themeName = 'default', fontFamily, Wrapper } = opts
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
 
@@ -31,6 +31,7 @@ export async function renderToSvg(
     width: figureSize,
     height: figureSize,
     margin: 0,
+    fontFamily,
     Wrapper,
     children: (
       <g transform={`translate(${centerXY}) rotate(${deg})`}>

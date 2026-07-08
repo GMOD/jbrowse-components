@@ -21,6 +21,7 @@ export interface ExportSvgOptions {
   textHeight?: number
   trackLabels?: TrackLabelMode
   themeName?: string
+  fontFamily?: string
   showGridlines?: boolean
   createCanvas?: (width: number, height: number) => HTMLCanvasElement
 }

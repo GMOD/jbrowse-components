@@ -17,7 +17,7 @@ export async function renderToSvg(
   opts: ExportSvgOptions,
 ) {
   await when(() => model.initialized)
-  const { themeName = 'default', Wrapper } = opts
+  const { themeName = 'default', fontFamily, Wrapper } = opts
 
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
@@ -46,6 +46,7 @@ export async function renderToSvg(
     theme,
     width,
     height,
+    fontFamily,
     Wrapper,
     children: (
       <g transform={`translate(${exportMargin} 0)`}>

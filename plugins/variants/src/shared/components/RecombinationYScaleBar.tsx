@@ -26,7 +26,6 @@ export default function RecombinationYScaleBar({
       <g
         fill="none"
         fontSize={9}
-        fontFamily="sans-serif"
         textAnchor="end"
         strokeWidth={1}
       >
@@ -66,7 +65,6 @@ export default function RecombinationYScaleBar({
         y={height / 2}
         fontSize={10}
         fill={fg}
-        fontFamily="sans-serif"
         textAnchor="middle"
         transform={`rotate(-90, 10, ${height / 2})`}
       >

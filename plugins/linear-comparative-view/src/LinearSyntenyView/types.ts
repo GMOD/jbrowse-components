@@ -52,6 +52,7 @@ export interface ExportSvgOptions {
   rulerHeight?: number
   textHeight?: number
   themeName?: string
+  fontFamily?: string
   trackLabels?: TrackLabelMode
   showGridlines?: boolean
 }

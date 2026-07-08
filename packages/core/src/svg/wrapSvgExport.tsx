@@ -15,6 +15,7 @@ export function wrapSvgExport({
   width,
   height,
   margin,
+  fontFamily,
   Wrapper = ({ children }) => children,
   children,
 }: {
@@ -22,13 +23,19 @@ export function wrapSvgExport({
   width: number
   height: number
   margin?: number
+  fontFamily?: string
   Wrapper?: React.FC<{ children: React.ReactNode }>
   children: React.ReactNode
 }) {
   return renderToStaticMarkup(
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <Wrapper>
-        <SVGExportRoot width={width} height={height} margin={margin}>
+        <SVGExportRoot
+          width={width}
+          height={height}
+          margin={margin}
+          fontFamily={fontFamily}
+        >
           {children}
         </SVGExportRoot>
       </Wrapper>

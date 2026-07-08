@@ -35,11 +35,18 @@ export function SVGExportRoot({
   width,
   height,
   margin = exportMargin,
+  fontFamily,
   children,
 }: {
   width: number
   height: number
   margin?: number
+  // Font for the whole export, inherited by every <text> so raw-JSX labels
+  // (ruler, scalebar, axes) and SvgCanvas feature labels stay consistent.
+  // Empty/undefined emits no font-family, leaving the renderer default; a
+  // generic family (sans-serif/serif/monospace) resolves in any SVG viewer
+  // without embedding a named font.
+  fontFamily?: string
   children: React.ReactNode
 }) {
   const totalWidth = width + margin * 2
@@ -50,6 +57,7 @@ export function SVGExportRoot({
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox={`0 0 ${totalWidth} ${height}`}
+      fontFamily={fontFamily ? fontFamily : undefined}
     >
       <SVGBackground width={totalWidth} height={height} />
       {children}

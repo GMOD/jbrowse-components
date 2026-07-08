@@ -28,6 +28,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     fontSize = 13,
     trackLabels = 'offset',
     themeName = 'default',
+    fontFamily,
     showGridlines = false,
     Wrapper = ({ children }) => children,
   } = opts
@@ -84,6 +85,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     theme,
     width: w,
     height,
+    fontFamily,
     Wrapper,
     children: (
       <g transform={`translate(${exportMargin} 0)`}>

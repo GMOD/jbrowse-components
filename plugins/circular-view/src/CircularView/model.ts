@@ -41,6 +41,7 @@ export interface ExportSvgOptions {
   filename?: string
   Wrapper?: FC<{ children: ReactNode }>
   themeName?: string
+  fontFamily?: string
 }
 
 /**

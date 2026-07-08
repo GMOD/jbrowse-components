@@ -34,11 +34,15 @@ function escapeXml(s: string) {
 }
 
 // Parse CSS font shorthand like "10px sans-serif" or "bold 12px monospace"
-// into SVG-compatible font-size and font-family attributes.
+// into SVG-compatible font-size and font-family attributes. The default
+// sans-serif family is left off so feature labels match the raw-JSX <text>
+// elements (ruler, scalebar, etc.), which set no family either; an
+// explicitly-set family (e.g. monospace) is still emitted.
 function fontAttrs(font: string) {
   const m = /(\d+(?:\.\d+)?)px\s+(.+)/.exec(font)
   if (m) {
-    return ` font-size="${m[1]}" font-family="${m[2]}"`
+    const family = m[2] === 'sans-serif' ? '' : ` font-family="${m[2]}"`
+    return ` font-size="${m[1]}"${family}`
   }
   return ` font-size="${Number.parseFloat(font) || 10}"`
 }

@@ -12,6 +12,7 @@ export interface ExportSvgOptions {
   headerHeight?: number
   trackLabels?: TrackLabelMode
   themeName?: string
+  fontFamily?: string
   showGridlines?: boolean
 }
 

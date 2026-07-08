@@ -18,7 +18,6 @@ export default function TlenAxisLabel({
       x={x}
       y={midY}
       fontSize={10}
-      fontFamily="sans-serif"
       textAnchor="middle"
       transform={`rotate(-90, ${x}, ${midY})`}
     >
