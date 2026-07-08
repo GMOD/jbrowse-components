@@ -125,13 +125,6 @@ const AlignmentsDisplayComponent = observer(
                 onClose={() => {
                   model.closeContextMenu()
                 }}
-                slotProps={{
-                  transition: {
-                    onExit: () => {
-                      model.closeContextMenu()
-                    },
-                  },
-                }}
                 anchorReference="anchorPosition"
                 anchorPosition={{
                   top: contextMenuCoord[1],

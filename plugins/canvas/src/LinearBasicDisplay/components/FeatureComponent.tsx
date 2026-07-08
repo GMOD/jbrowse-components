@@ -187,26 +187,24 @@ const ContextMenu = observer(function ContextMenu({
 }) {
   const info = model.contextMenuInfo
   const items = info ? model.contextMenuItems() : []
-  const onClose = () => {
-    model.closeContextMenu()
-  }
-  return (
+  // Mount only while open (no `?? 0` anchor fallback, never fades out an empty
+  // Paper), and let closeContextMenu unmount it — same shape as
+  // LinearAlignmentsDisplay. closeAfterItemClick (Menu default) already closes
+  // before the item callback, so onMenuItemClick just runs it.
+  return info && items.length > 0 ? (
     <Menu
-      open={!!info && items.length > 0}
-      // closeAfterItemClick (Menu default) already closes before the callback,
-      // so the handler just runs it — matches LinearAlignmentsDisplay.
+      open
       onMenuItemClick={callback => {
         callback()
       }}
-      onClose={onClose}
-      anchorReference="anchorPosition"
-      anchorPosition={{
-        top: info?.clientY ?? 0,
-        left: info?.clientX ?? 0,
+      onClose={() => {
+        model.closeContextMenu()
       }}
+      anchorReference="anchorPosition"
+      anchorPosition={{ top: info.clientY, left: info.clientX }}
       menuItems={items}
     />
-  )
+  ) : null
 })
 
 // Labels, highlights, and the peptide canvas derive purely from model/view
