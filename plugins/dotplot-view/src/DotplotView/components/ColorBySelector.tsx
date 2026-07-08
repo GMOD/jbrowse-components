@@ -1,5 +1,4 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { ColorBySwatch } from '@jbrowse/synteny-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
@@ -67,20 +66,7 @@ const ColorBySelector = observer(function ColorBySelector({
     <CascadingMenuButton
       menuItems={[
         ...COLOR_BY_OPTIONS.map(opt => ({
-          label: (
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                width: '100%',
-                justifyContent: 'space-between',
-              }}
-            >
-              {opt.label}
-              <ColorBySwatch colorBy={opt.value} />
-            </span>
-          ),
+          label: opt.label,
           type: 'radio' as const,
           checked: colorBy === opt.value,
           onClick: () => {
