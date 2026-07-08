@@ -58,12 +58,27 @@ export function getFiltersMenuItem(
             () => {
               pairFilters.setDrawProperPairs(!pairFilters.drawProperPairs)
             },
+            {
+              helpText:
+                'Hides concordant read pairs: those the aligner flagged as ' +
+                'properly paired (SAM flag 0x2) AND in normal forward/reverse ' +
+                '(FR) orientation. Discordant pairs (RR/LL/RL orientation, ' +
+                'e.g. inversions or duplications) stay visible even if flagged ' +
+                'proper, so structural-variant signal is not lost.',
+            },
           ),
           checkboxItem(
             'Hide reads without a mate',
             !pairFilters.drawSingletons,
             () => {
               pairFilters.setDrawSingletons(!pairFilters.drawSingletons)
+            },
+            {
+              helpText:
+                'Hides reads whose mate or split/supplementary segment is not ' +
+                'present in the view, so the read stands alone (samtools calls ' +
+                'these "singletons"). Grouped by read name, so it applies to a ' +
+                'plain pileup too.',
             },
           ),
           { type: 'divider' as const },
