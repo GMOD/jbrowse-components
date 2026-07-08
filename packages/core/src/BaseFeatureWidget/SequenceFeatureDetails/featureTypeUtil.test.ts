@@ -133,6 +133,8 @@ describe('getTranscripts/pickDefaultTranscriptIndex', () => {
       type: 'mRNA',
       subfeatures: [{ refName: 'chr1', start: 0, end: 100, type: 'CDS' }],
     }
-    expect(getTranscripts(mrna)).toEqual([])
+    const transcripts = getTranscripts(mrna)
+    expect(transcripts).toEqual([])
+    expect(pickDefaultTranscriptIndex(transcripts)).toBe(0)
   })
 })

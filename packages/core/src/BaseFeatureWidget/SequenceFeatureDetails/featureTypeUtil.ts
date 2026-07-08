@@ -51,10 +51,15 @@ export function getTranscripts(
 // index of the transcript the gene glyph itself would collapse to in
 // 'longestCoding' mode (RenderFeatureDataRPC/glyphs/subfeatures.ts): prefer a
 // coding transcript, then the longest span — so the sequence panel's default
-// matches what the track already drew.
+// matches what the track already drew. A feature that is itself a transcript
+// (clicked directly, not via its container gene) has no nested transcripts to
+// autopick from.
 export function pickDefaultTranscriptIndex(
   transcripts: SimpleFeatureSerialized[],
 ) {
+  if (transcripts.length === 0) {
+    return 0
+  }
   const coding = transcripts.filter(t => featureHasCDS(t))
   const candidates = coding.length > 0 ? coding : transcripts
   const longest = candidates.reduce((a, b) =>
