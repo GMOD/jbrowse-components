@@ -7,15 +7,15 @@ import {
   getRpcSessionId,
   getSession,
 } from '@jbrowse/core/util'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
   computeRenderTransform,
   computeTriangleYScalar,
+  installGlobalFetchAutorun,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun } from 'mobx'
 
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
@@ -578,38 +578,18 @@ export default function stateModelFactory(
           }
         })()
 
-        addDisposer(
-          self,
-          autorun(
-            () => {
-              if (self.isMinimized) {
-                return
-              }
-              const view = getContainingView(self) as LinearGenomeViewModel
-              if (!view.initialized) {
-                return
-              }
-              if (!view.dynamicBlocks.contentBlocks.length) {
-                return
-              }
-              // effectiveResolution is undefined until availableResolutions
-              // arrives from CoreGetInfo; reading it gates the fetch and tracks
-              // resolution (bpPerPx + resolutionBias) so a zoom or step refires.
-              if (self.effectiveResolution === undefined) {
-                return
-              }
-              // Track user settings (normalization + any future rpcProps field)
-              // so a settings change refires the fetch.
-              void self.rpcProps()
-              void self.reloadCounter
-              void self.performHicFetch()
-            },
-            {
-              delay: 1000,
-              name: 'LinearHicDisplayRender',
-            },
-          ),
-        )
+        installGlobalFetchAutorun(self, {
+          // effectiveResolution is undefined until availableResolutions arrives
+          // from CoreGetInfo; reading it gates the fetch and tracks resolution
+          // (bpPerPx + resolutionBias) so a zoom or step refires. The helper
+          // tracks rpcProps() (normalization) + reloadCounter for us.
+          shouldFetch: () => self.effectiveResolution !== undefined,
+          fetch: () => {
+            void self.performHicFetch()
+          },
+          delay: 1000,
+          name: 'LinearHicDisplayRender',
+        })
       },
     }))
 }

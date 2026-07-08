@@ -3,8 +3,10 @@ import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 import FetchMixin from './FetchMixin.ts'
+import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
 
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 export type { FetchContext } from './FetchMixin.ts'
@@ -20,9 +22,11 @@ export type { FetchContext } from './FetchMixin.ts'
  *                 fetchGeneration)
  *
  * Unlike MultiRegionDisplayMixin, this mixin owns no per-region state and
- * installs no autoruns. Fetch triggering is left entirely to the display's
- * own afterAttach autorun so each display can express its own trigger
- * conditions (HiC: viewport change; LD: viewport + showLDTriangle + etc).
+ * installs no autoruns. Fetch triggering is left to the display's own
+ * afterAttach autorun so each display can express its own trigger conditions
+ * (HiC: viewport change; LD: viewport + showLDTriangle + etc). The shared
+ * skeleton of that autorun lives in `installGlobalFetchAutorun` (below) — a
+ * display supplies only its own `shouldFetch` gate + `fetch` action.
  *
  * #stateModel GlobalDataDisplayMixin
  * #category display
@@ -129,3 +133,52 @@ export default function GlobalDataDisplayMixin() {
 export type GlobalDataDisplayMixinType = ReturnType<
   typeof GlobalDataDisplayMixin
 >
+
+interface GlobalFetchAutorunHost extends IAnyStateTreeNode {
+  isMinimized: boolean
+  reloadCounter: number
+  rpcProps?: () => unknown
+}
+
+/**
+ * Install the fetch-trigger autorun for a `GlobalDataDisplayMixin` display.
+ *
+ * Unlike `MultiRegionDisplayMixin` (which installs its four fetch autoruns for
+ * you), this mixin installs none — each global display owns its trigger. But
+ * every global trigger shares the same skeleton: skip while the track is
+ * minimized or the viewport has no content blocks; track `rpcProps()` +
+ * `reloadCounter` so a settings change or a manual `reload()` refires; and
+ * debounce. This helper owns that skeleton so a display supplies only its own
+ * `shouldFetch` gate (reading — and thereby MobX-tracking — its display-specific
+ * fetch inputs) and its `fetch` action.
+ *
+ * Runs through `autorunOnReadyView`, so the body never reads a throwing view
+ * getter (`dynamicBlocks`, `width`) before the view is initialized, and
+ * re-runs automatically once it is.
+ */
+export function installGlobalFetchAutorun(
+  self: GlobalFetchAutorunHost,
+  opts: {
+    shouldFetch: () => boolean
+    fetch: () => void
+    delay: number
+    name: string
+  },
+) {
+  autorunOnReadyView(
+    self,
+    view => {
+      if (
+        !self.isMinimized &&
+        view.dynamicBlocks.contentBlocks.length > 0 &&
+        opts.shouldFetch()
+      ) {
+        // Track user settings + manual reload so either refires the fetch.
+        void self.rpcProps?.()
+        void self.reloadCounter
+        opts.fetch()
+      }
+    },
+    { delay: opts.delay, name: opts.name },
+  )
+}

@@ -328,9 +328,16 @@ export default function MultiRegionDisplayMixin() {
             }
 
             const { assemblyManager } = getSession(self)
-            const trackAssemblyNames = getTrackAssemblyNames(
-              getContainingTrack(self),
-            )
+            const track = getContainingTrack(self)
+            // Skip fetching while the track is minimized (hidden). `minimized`
+            // is exactly what the display's `isMinimized` getter resolves to,
+            // and it's a tracked observable, so un-minimizing re-fires this
+            // autorun and the fetch resumes. Reuses the track already resolved
+            // for the assembly-name check below — no extra getContainingTrack.
+            if (track.minimized) {
+              return
+            }
+            const trackAssemblyNames = getTrackAssemblyNames(track)
             const visibleRegions = view.visibleRegions
             for (const block of visibleRegions) {
               const regionAsm = block.assemblyName

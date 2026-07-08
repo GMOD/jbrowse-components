@@ -22,7 +22,15 @@ export async function fetchArcFeatures(self: ArcDisplayModel) {
   const { rpcManager } = getSession(self)
   const view = getContainingView(self) as LinearGenomeViewModel
 
-  if (!view.initialized || self.error || self.regionTooLarge) {
+  // Skip while the track is minimized (hidden). Read synchronously before the
+  // first await so the fetch autorun tracks it — un-minimizing re-fires and the
+  // fetch resumes. Same gate the MultiRegion/Global fetch paths apply.
+  if (
+    self.isMinimized ||
+    !view.initialized ||
+    self.error ||
+    self.regionTooLarge
+  ) {
     return
   }
   const regions = view.staticBlocks.contentBlocks

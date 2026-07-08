@@ -29,6 +29,7 @@ export {
 export {
   type GlobalDataDisplayMixinType,
   default as GlobalDataDisplayMixin,
+  installGlobalFetchAutorun,
 } from './models/GlobalDataDisplayMixin.ts'
 export {
   type StaleViewportRescaleMixinType,

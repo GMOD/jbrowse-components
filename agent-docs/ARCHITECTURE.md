@@ -449,8 +449,11 @@ MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
     viewportWithinLoadedData: boolean   every visible block ⊆ a loaded region
     displayPhase: 'renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'
                                   computeDisplayPhase(self, () => !isReady || !viewportWithinLoadedData)
-    loadingOverlayVisible: boolean      displayPhase === 'loading'
 ```
+
+There is no `loadingOverlayVisible` model getter — loading-scrim visibility is
+derived once by `DisplayChrome` as `displayPhase === 'loading'` and passed to
+`DisplayLoadingOverlay` as a `visible` prop (see below), not re-encoded per model.
 
 Every display renders its canvas through the shared `DisplayChrome`, which calls
 `useRenderingBackend(factory, model)` internally — the backend hook lives in
@@ -461,13 +464,15 @@ single-sourced in `computeDisplayPhase` (`@jbrowse/render-core/displayPhase`). T
 chrome branches on it: `renderError` and `tooLarge` early-`return` their own
 component (`DisplayRenderErrorOverlay` / `TooLargeMessage`); `error` + `loading`
 are overlays (`DisplayErrorBar` / `DisplayLoadingOverlay`) drawn over the
-still-mounted canvas. `loadingOverlayVisible` is just `displayPhase === 'loading'`
-— so the loading-vs-terminal precedence is no longer re-encoded by subtraction in
-each model (it was triplicated across MultiRegion / Global / sequence). It takes a
+still-mounted canvas. The loading scrim's visibility is just
+`displayPhase === 'loading'`, computed once in the chrome and passed to
+`DisplayLoadingOverlay` as its `visible` prop — so the loading-vs-terminal
+precedence is no longer re-encoded by subtraction in each model (it was
+triplicated across MultiRegion / Global / sequence). It takes a
 render-prop child `({ canvasRef, canvas }) => ReactNode`, so it's agnostic to how
 many canvases a display draws and where they mount; pass a `testid` base and the
 chrome appends `-done` once `canvasDrawn` flips.
-`DisplayLoadingOverlay` reads `loadingOverlayVisible`: `isReady`
+The `loading` phase folds in both fetch- and paint-readiness: `isReady`
 covers track-open through the fetch cycle (hiding once the first frame paints);
 `viewportWithinLoadedData` re-shows the overlay when the viewport extends past
 loaded data — e.g. the pre-refetch debounce after a zoom-out, where `isReady` is
@@ -1527,9 +1532,15 @@ key on a tuple of two displayedRegion indices.
   - Compose `GlobalDataDisplayMixin()` for displays that hold a single
     non-regional dataset (HiC contact matrix, LD triangle, variant matrix).
     Same slot mixin + `FetchMixin` + `RegionTooLargeMixin` plumbing, but
-    **no** fetch autoruns — each display installs its own `afterAttach`
-    autorun expressing its trigger conditions (e.g. HiC: viewport change;
-    LD: viewport + `showLDTriangle` + …).
+    **no** fetch autoruns installed by the mixin — the display installs its own
+    in `afterAttach` via the shared `installGlobalFetchAutorun(self, {
+    shouldFetch, fetch, delay, name })` helper. The helper owns the skeleton
+    every global trigger shares (skip while minimized or with no content blocks;
+    track `rpcProps()` + `reloadCounter`; run through `autorunOnReadyView` so it
+    never reads a view getter pre-init; debounce); the display supplies only its
+    own `shouldFetch` gate — a pure predicate reading its display-specific fetch
+    inputs so MobX tracks them (e.g. HiC: `effectiveResolution !== undefined`;
+    LD: `showLDTriangle && !regionTooLarge`) — and its `fetch` action.
   - Compose `RenderLifecycleMixin()` directly only when neither
     fetch surface is needed (rare — most GPU displays fetch something).
   - Add a cached `renderState` view.

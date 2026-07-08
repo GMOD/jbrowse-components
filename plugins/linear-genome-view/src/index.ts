@@ -101,6 +101,7 @@ export {
   fetchAllRegions,
   fetchEachRegion,
   getDisplayStr,
+  installGlobalFetchAutorun,
   onDisplayedRegionsChange,
   resolveByteLimit,
 } from './BaseLinearDisplay/index.ts'

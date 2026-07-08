@@ -101,15 +101,17 @@ land on non-integer genomic positions. Two consumers:
   false the instant the viewport extends past loaded data (zoom-out / pan beyond
   buffer), _before_ the debounced refetch starts.
 
-The `loadingOverlayVisible` getter packages the whole policy in one place:
-`(!isReady || !viewportWithinLoadedData) && !regionTooLarge && !error`.
+`displayPhase` packages the whole policy in one place: its `loading` term is
+`!isReady || !viewportWithinLoadedData || fetchCanceled`, ranked below the
+terminal `regionTooLarge`/`error`/`renderError` states in `computeDisplayPhase`.
 **Every** display type's loading overlay is the one shared
-`DisplayLoadingOverlay` component reading this getter — alignments, canvas,
-wiggle, multi-wiggle, manhattan, maf (no per-display overlay wrappers).
-`isReady` stays `canvasDrawn && !isLoading` (the render-lifecycle axis) and
-`viewportWithinLoadedData` stays separate rather than folded into `isReady`,
-because the autorun reads `loadedRegions` untracked while the getter reads it
-tracked.
+`DisplayLoadingOverlay` component, made visible by `DisplayChrome` passing
+`visible={displayPhase === 'loading'}` — alignments, canvas, wiggle,
+multi-wiggle, manhattan, maf (no per-display overlay wrappers, no
+`loadingOverlayVisible` getter). `isReady` stays `canvasDrawn && !isLoading` (the
+render-lifecycle axis) and `viewportWithinLoadedData` stays separate rather than
+folded into `isReady`, because the autorun reads `loadedRegions` untracked while
+the getter reads it tracked.
 
 Known gap: the check is spatial only, so wiggle-family displays still have a
 brief un-flagged window on _zoom_ (resolution rebinning is an `isCacheValid`

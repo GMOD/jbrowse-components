@@ -36,9 +36,10 @@ hook merge below):
   handing `canvasRef`/`canvas` to a render-prop body.
 
 The audit confirmed the **state axis is sound and not leaky**: the model owns all
-four terminal states and `loadingOverlayVisible` is defined so they are mutually
-exclusive *by construction* (`… && !regionTooLarge && !error && !renderError`),
-making DisplayChrome's JSX precedence defensive rather than load-bearing. The
+four terminal states and `displayPhase` (via `computeDisplayPhase`) ranks them so
+they are mutually exclusive *by construction* (the `loading` term is a thunk
+evaluated only after `renderError`/`tooLarge`/`error` are ruled out), making
+DisplayChrome's JSX precedence defensive rather than load-bearing. The
 audit then pressure-tested several structural simplifications. They are recorded
 here as rejected.
 
@@ -47,10 +48,10 @@ here as rejected.
 Keep the current layering. Each layer maps to a genuine concern boundary:
 
 - **Render-lifecycle state must be model-side**, not React-local, because
-  `loadingOverlayVisible` is a *join* of render state (`canvasDrawn`,
-  `renderError`) and fetch state (`isLoading`, `error`, `regionTooLarge`). A join
-  of two state machines must live on one observable object, and fetch state is
-  irreducibly MST. This is also why the upload/render autoruns live on the model
+  `displayPhase` is a *join* of render state (`canvasDrawn`, `renderError`) and
+  fetch state (`isLoading`, `error`, `regionTooLarge`). A join of two state
+  machines must live on one observable object, and fetch state is irreducibly
+  MST. This is also why the upload/render autoruns live on the model
   (read its getters directly, survive a WebGL context-loss backend swap without a
   React remount).
 - **DisplayChrome owns the container `<div>`** because `LoadingOverlay`
