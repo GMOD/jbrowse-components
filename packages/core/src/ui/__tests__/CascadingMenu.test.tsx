@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import CascadingMenuButton from '../CascadingMenuButton.tsx'
@@ -193,5 +193,72 @@ describe('CascadingMenu', () => {
     await user.click(screen.getByTestId('menu-button'))
     await user.hover(await screen.findByText('Disabled item'))
     expect(await screen.findByText('Needs a configured adapter')).toBeTruthy()
+  })
+
+  it('should order items by descending priority', async () => {
+    const user = await setup([
+      { label: 'Low', priority: -10, onClick: () => {} },
+      { label: 'High', priority: 100, onClick: () => {} },
+      { label: 'Default', onClick: () => {} },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    await screen.findByText('High')
+    const labels = screen
+      .getAllByRole('menuitem')
+      .map(el => el.textContent)
+    expect(labels).toEqual(['High', 'Default', 'Low'])
+  })
+
+  it('should render an endAdornment on a row', async () => {
+    const user = await setup([
+      {
+        label: 'Item 1',
+        onClick: () => {},
+        endAdornment: <span>adorn-badge</span>,
+      },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    expect(await screen.findByText('adorn-badge')).toBeTruthy()
+  })
+
+  it('should mark the submenu row expanded state via aria', async () => {
+    const user = await setup()
+    await user.click(screen.getByTestId('menu-button'))
+    const row = (await screen.findByText('Submenu')).closest('li')!
+    expect(row).toHaveAttribute('aria-haspopup', 'menu')
+    expect(row).toHaveAttribute('aria-expanded', 'false')
+    await user.hover(within(row).getByText('Submenu'))
+    await waitFor(() => {
+      expect(row).toHaveAttribute('aria-expanded', 'true')
+    })
+  })
+
+  it('should open a help dialog from a row with helpText', async () => {
+    const user = await setup([
+      { label: 'Item 1', helpText: 'the explanation', onClick: () => {} },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    const row = (await screen.findByText('Item 1')).closest('li')!
+    await user.click(within(row).getByRole('button'))
+    expect(await screen.findByText('the explanation')).toBeTruthy()
+  })
+
+  it('should show a checked decoration for a checked checkbox item', async () => {
+    const user = await setup([
+      { label: 'Toggle', type: 'checkbox', checked: true, onClick: () => {} },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    expect(await screen.findByTestId('CheckBoxIcon')).toBeTruthy()
+  })
+
+  it('should render a divider and a subHeader', async () => {
+    const user = await setup([
+      { type: 'subHeader', label: 'Section' },
+      { type: 'divider' },
+      { label: 'Item 1', onClick: () => {} },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    expect(await screen.findByText('Section')).toBeTruthy()
+    expect(screen.getByRole('separator')).toBeTruthy()
   })
 })
