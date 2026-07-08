@@ -268,6 +268,19 @@ export default function baseStateModelFactory(
             types.array(FeatureHighlightModel),
             [],
           ),
+          /**
+           * #property
+           * Squeeze-to-display-height mode (the "Fit to display height" menu
+           * preset): laid-out glyphs are uniformly shrunk so every row fits the
+           * track height without scrolling. A persistent snapshot value so it can
+           * be opened declaratively (a session/spec — or jbrowse-img's
+           * `fitToDisplayHeight` modifier — seeds it in the display snapshot),
+           * and picking any feature-height preset turns it off. The `height`
+           * config slot is never written, so it stays pure user intent. Only ever
+           * shrinks (scale <= 1); a track that already fits is left untouched.
+           * stripDefault so a display not squeezing omits it from its snapshot.
+           */
+          squeezeToDisplayHeight: types.stripDefault(types.boolean, false),
         }),
       )
       .volatile(() => ({
@@ -331,17 +344,6 @@ export default function baseStateModelFactory(
          * #volatile
          */
         heightBeforeExpand: undefined as number | undefined,
-        /**
-         * #volatile
-         * Squeeze-to-display-height mode (the "Fit to display height" menu
-         * preset): laid-out glyphs are uniformly shrunk so every row fits the
-         * track height without scrolling. Volatile — a view preference like
-         * scrollTop; picking any feature-height preset turns it off. The
-         * `height` config slot is never written, so it stays pure user intent.
-         * Only ever shrinks (scale <= 1); a track that already fits is left
-         * untouched.
-         */
-        squeezeToDisplayHeight: false,
         /**
          * #volatile
          */

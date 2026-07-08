@@ -467,6 +467,13 @@ Available `color:type` values:
 | `methylation`              | CpG methylation via MM/ML tags                            |
 | `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG` |
 
+**Feature tracks (GFF3/BED/BigBed)**
+
+| Modifier                 | Example                  | Description                                                                                                    |
+| ------------------------ | ------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `featureHeight:preset`   | `featureHeight:compact`  | Display mode (`normal`, `compact`, `super-compact`)                                                            |
+| `fitToDisplayHeight[:N]` | `fitToDisplayHeight:200` | Shrink glyphs uniformly so every row fits the track height (no scrolling); a number sets that track height too |
+
 **BigWig tracks**
 
 | Modifier                 | Example                | Description                                               |

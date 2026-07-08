@@ -103,6 +103,37 @@ describe('feature modifiers', () => {
     expect(snap.readConnections).toBeUndefined()
     expect(snap.showSashimiArcs).toBeUndefined()
   })
+
+  test('fitToDisplayHeight sets the squeezeToDisplayHeight snapshot value', () => {
+    expect(
+      buildDisplaySnapshot('feature', ['fitToDisplayHeight']).snap
+        .squeezeToDisplayHeight,
+    ).toBe(true)
+    expect(
+      buildDisplaySnapshot('feature', ['fitToDisplayHeight:true']).snap
+        .squeezeToDisplayHeight,
+    ).toBe(true)
+    expect(
+      buildDisplaySnapshot('feature', ['fitToDisplayHeight:false']).snap
+        .squeezeToDisplayHeight,
+    ).toBe(false)
+    expect(
+      buildDisplaySnapshot('feature', []).snap.squeezeToDisplayHeight,
+    ).toBeUndefined()
+  })
+
+  test('fitToDisplayHeight:N sets both the track height and the squeeze', () => {
+    const { snap } = buildDisplaySnapshot('feature', ['fitToDisplayHeight:200'])
+    expect(snap.height).toBe(200)
+    expect(snap.squeezeToDisplayHeight).toBe(true)
+  })
+
+  test('fitToDisplayHeight is ignored on a non-feature track', () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['fitToDisplayHeight']).snap
+        .squeezeToDisplayHeight,
+    ).toBeUndefined()
+  })
 })
 
 describe('wiggle / score modifiers', () => {

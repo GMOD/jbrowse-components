@@ -148,6 +148,7 @@ interface DisplaySnapshot {
   featureSpacing?: number
   // feature (canvas)
   displayMode?: 'normal' | 'compact' | 'superCompact'
+  squeezeToDisplayHeight?: boolean
   // alignments
   groupBy?: { type: string; tag?: string }
   sortedBy?: {
@@ -381,6 +382,23 @@ function applyModifier(
     case 'force': {
       if (booleanize(val1 || 'true')) {
         result.force = true
+      }
+      break
+    }
+    case 'fitToDisplayHeight': {
+      // "Fit to display height" — the feature display uniformly shrinks glyphs
+      // so every row fits the track height. A numeric value
+      // (`fitToDisplayHeight:200`) sets that track height and turns the squeeze
+      // on in one modifier; a bare flag (or `:true`/`:false`) toggles the
+      // squeeze against whatever `height:` was given.
+      if (category === 'feature') {
+        const n = Number(val1)
+        if (val1 && Number.isFinite(n)) {
+          snap.height = n
+          snap.squeezeToDisplayHeight = true
+        } else {
+          snap.squeezeToDisplayHeight = booleanize(val1 || 'true')
+        }
       }
       break
     }
