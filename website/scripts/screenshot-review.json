@@ -128,10 +128,10 @@
   },
   "cnv": {
     "name": "cnv",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-04T17:58:06.992Z",
-    "hash": "f9d2483af41692af5ab1bcf8a9f4f033c95b5770"
+    "status": "bad",
+    "note": "ROOT-CAUSED (fix deferred): PaddingBlocks (elided/boundary blocks + region separators) renders AFTER TrackRenderingContainer in TrackContainer.tsx to mask the track canvas at inter-region positions. The MultiWiggle OverlayColorLegend is inside the display SVG, which is trapped in trackRenderingContainer contain:strict (own stacking context), so PaddingBlocks paints over it. TrackLabel avoids this via zIndex:200 but is a generic TrackContainer child; the legend can not escape the contain:strict from inside. Whole-genome hg19 shows unplaced-contig elided blocks at the far right, coinciding with the top-right legend. Clean fix = render wiggle legend chrome as a TrackContainer-level overlay above PaddingBlocks (portal or overlay-slot); shared LGV arch + needs jbrowse-web rebuild+visual verify.",
+    "reviewedAt": "2026-07-08T18:17:24.408Z",
+    "hash": "f29577b0d36047f3cd2f457091b0ce30cc49491a"
   },
   "smalldel": {
     "name": "smalldel",
@@ -208,9 +208,9 @@
   "sv_cgiab/dotplot_result": {
     "name": "sv_cgiab/dotplot_result",
     "status": "bad",
-    "note": "we may want to use mummerplot algorithm",
-    "reviewedAt": "2026-07-07T04:55:00.329Z",
-    "hash": "2d5c39144a43785af2f26ff58cfd569e0e569d42"
+    "note": "we may want to use mummerplot algorithm. the diagonalization is still just not doing anything meaningful it seems.",
+    "reviewedAt": "2026-07-08T18:15:42.470Z",
+    "hash": "e09050f282c2077ef7292f09b63abfacea8311e3"
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
@@ -654,9 +654,9 @@
   "methylation/colo829_cram_and_bedmethyl": {
     "name": "methylation/colo829_cram_and_bedmethyl",
     "status": "bad",
-    "note": "this is a 'hypomethylated cpg island'...might want a methylated one, look at other screenshots we already have for methylation, they are on cpg islands",
-    "reviewedAt": "2026-07-08T13:14:17.634Z",
-    "hash": "ee5ea609b805b95166bcecbe2079b485f2f08e1b"
+    "note": "this isn't a super 'strong' demo of the bedmethyl. it just is not clear what it is supposed to show. also use multirowxyplot for the bedmethyl",
+    "reviewedAt": "2026-07-08T18:14:58.121Z",
+    "hash": "511324f2cf15945c52b891a3fda1b525845f4fbb"
   },
   "methylation/per_read_mod_bam": {
     "name": "methylation/per_read_mod_bam",
@@ -911,9 +911,9 @@
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T01:03:00.250Z",
-    "hash": "40b32043d21846c32288d56370b791123d8253bb"
+    "note": "Reworked: initial state ungrouped+uncolored; added a 3rd stage showing the group-by RESULT (pileup split into HP 1 / HP 2 / none sections). viewportHeight 700->550, display height 500->300.",
+    "reviewedAt": "2026-07-08T19:35:00.000Z",
+    "hash": "c3f429a281cf3f79c3ddad8aac01a537a045cb10"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -1024,9 +1024,9 @@
   "jbrowse-img/alignments_readgroup": {
     "name": "jbrowse-img/alignments_readgroup",
     "status": "good",
-    "note": "Swapped to HG008-T PacBio HiFi long reads over CUZD1 with sort:base clustering a ~1.8kb somatic deletion (was synthetic short-read RG sort).",
-    "reviewedAt": "2026-07-08T14:20:40.000Z",
-    "hash": "3ce77a09852e2ebd2f042070e21ccb47b7ead200"
+    "note": "",
+    "reviewedAt": "2026-07-08T19:56:19.789Z",
+    "hash": "17134e70539dfc97aaac3cc7fac3164e3f6bb8be"
   },
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
@@ -1043,9 +1043,9 @@
   "jbrowse-img/yeast_synteny": {
     "name": "jbrowse-img/yeast_synteny",
     "status": "bad",
-    "note": "top-numbers overlap (the actual defect) fixed by compact-header work: numbers now sit above the ticks and the ribbon starts cleanly below. Bottom ribbon-to-ruler gap PUNTED: no clean fix generalizes. A multi-way middle view sits between two ribbon levels, and a single coordinate-number line cannot face both. Whole-genome multi-way figures (hg38_hs1_mm39, grape_peach_cacao) are already good because their labels are refNames drawn at the ruler TOP, so ribbons connect tight; the gap only shows on single-region coordinate-number rulers like this 2-way. Not worth a stretch hack.",
-    "reviewedAt": "2026-07-08T02:20:11.851Z",
-    "hash": "bac91b217d1b82084517ff5a97453a04c881975b"
+    "note": "the ruler numbers overlap the tick marks",
+    "reviewedAt": "2026-07-08T18:17:43.193Z",
+    "hash": "23e9ca7bb3f814598203d0c829fe9db741c98229"
   },
   "jbrowse-img/yeast_dotplot": {
     "name": "jbrowse-img/yeast_dotplot",
@@ -1063,17 +1063,17 @@
   },
   "jbrowse-img/skbr3_cov": {
     "name": "jbrowse-img/skbr3_cov",
-    "status": "bad",
-    "note": "the 'refname labels' nearly overlap the interregionpaddinglines",
-    "reviewedAt": "2026-07-08T03:08:25.291Z",
-    "hash": "c2f019fdc90a997f8b31f2faefb57151c5198f9d"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-08T18:16:17.693Z",
+    "hash": "c692632a2a96f116010aa10eaa18f7d5e4cc824f"
   },
   "protein/connected": {
     "name": "protein/connected",
     "status": "good",
     "note": "FIXED: tightened connectedView loc from the full ~19.1kb gene span to ~13.5kb so the gene fills more of the panel after the click-driven recenter.",
-    "reviewedAt": "2026-07-08T02:11:50.856Z",
-    "hash": "7170681d5fd3e37ef8a938fc3fd5f59ba368b464"
+    "reviewedAt": "2026-07-08T18:15:16.368Z",
+    "hash": "0da96e4be24581192b8dcf6ebef5f2dcfd071f89"
   },
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
@@ -1191,8 +1191,8 @@
     "name": "variants/consequence_impact_1000g",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-07T02:08:29.329Z",
-    "hash": "a2564d73e1a996413af3554c19b55a619f531776"
+    "reviewedAt": "2026-07-08T18:15:42.577Z",
+    "hash": "92fe50c3624928d57e7dbfde844ea867228fe4df"
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
@@ -1212,8 +1212,8 @@
     "name": "multiway_synteny/grape_peach_cacao",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-07T01:37:31.442Z",
-    "hash": "49d6084c8f42f514fd3308ac644f0c0c46dcd0cf"
+    "reviewedAt": "2026-07-08T18:14:58.774Z",
+    "hash": "54d14920e50f57c58f15c6fbe079019e77fbadb4"
   },
   "search_feature_highlight": {
     "name": "search_feature_highlight",
@@ -1243,13 +1243,6 @@
     "reviewedAt": "2026-07-07T15:40:14.466Z",
     "hash": "c02d74bd69a91b634e6e4ad9834b95f5b8afe6aa"
   },
-  "gallery/celegans_26way": {
-    "name": "gallery/celegans_26way",
-    "status": "bad",
-    "note": "this captured a 'loading' overlay, there may be a bug where the MAF Loading placeholder over a genuine no-data gap never clears once a 2nd track is present (reproduced 3/3, order-independent, unaffected by settleMs 90000->180000). Screenshot itself unchanged (still MAF-only, uninteresting) pending that investigation. see agent-docs/todo.md",
-    "reviewedAt": "2026-07-08T00:53:10.700Z",
-    "hash": "efd0590d31d90792007a519dce702f73b8052b99"
-  },
   "gallery/copynumber_clustered": {
     "name": "gallery/copynumber_clustered",
     "status": "good",
@@ -1267,9 +1260,9 @@
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
     "status": "good",
-    "note": "FIXED: added a real diamond glyph (GLYPH_INDEX) for the LD index/lead SNP end-to-end (manhattan.slang GPU shader + Canvas2D/SVG fallback), drawn 1.6x larger than other points, and lightened LD_INDEX_SWATCH from #9632b8 to #c951c9 (pinker purple) — matches the LocusZoom convention.",
-    "reviewedAt": "2026-07-08T02:11:50.856Z",
-    "hash": "a7affd960b11246e89fbc5162e76c77a8fc7af2a"
+    "note": "Taller crop (viewportHeight 640) so the FTO gene track below the Manhattan plot is fully visible; the LD-colored GWAS peak sits over the FTO gene.",
+    "reviewedAt": "2026-07-08T19:30:00.000Z",
+    "hash": "275686c987d1417af4a58f1fe74561477a0f4bcb"
   },
   "gallery/hg002_dipcall": {
     "name": "gallery/hg002_dipcall",
@@ -1281,9 +1274,9 @@
   "gallery/hg19_vs_hg38": {
     "name": "gallery/hg19_vs_hg38",
     "status": "good",
-    "note": "remove legend, add autodiagonalize",
-    "reviewedAt": "2026-07-07T04:47:12.088Z",
-    "hash": "073c0707c89f8b8ae5512c2c8d8dd65bf23aa360"
+    "note": "chr11-before-chr10 / chrX-mid-list was the size-sorted chrom.sizes order, not autodiagonalize. Fixed: karyotype-ordered main-chromosome-only chrom.sizes for both hg19+hg38 (test_data), autoDiagonalize off, config sample-data cleaned too. Clean diagonal, natural chr1..22,X,Y on both axes, alt-contig clutter gone. Spec now uses sessionSpec() helper + plain JSON.",
+    "reviewedAt": "2026-07-08T19:50:00.000Z",
+    "hash": "9532ee632abfb0700cfde9680c8877c961bbbb5c"
   },
   "gallery/human_mito": {
     "name": "gallery/human_mito",
@@ -1317,8 +1310,8 @@
     "name": "gallery/yeast_dotplot",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-07T04:47:49.096Z",
-    "hash": "32ca38f6689dd7a1741027aa9458a1ec95b54b54"
+    "reviewedAt": "2026-07-08T18:16:21.487Z",
+    "hash": "a10e4e8d227b8640cff3b542eadb3e482a6c3b42"
   },
   "introgression": {
     "name": "introgression",
