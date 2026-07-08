@@ -116,10 +116,9 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
     const workers = this.getWorkerPool()
     let workerNumber = this.workerAssignments.get(sessionId)
     if (workerNumber === undefined) {
-      const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
-      this.workerAssignments.set(sessionId, workerAssignment)
-      this.lastWorkerAssignment = workerAssignment
-      workerNumber = workerAssignment
+      workerNumber = (this.lastWorkerAssignment + 1) % workers.length
+      this.workerAssignments.set(sessionId, workerNumber)
+      this.lastWorkerAssignment = workerNumber
     }
 
     return workers[workerNumber]!.getWorker()

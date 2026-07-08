@@ -1,14 +1,19 @@
 import { deserializeError } from './serializeError/index.ts'
 
+import type { ErrorObject } from './serializeError/index.ts'
+
 type Listener = (arg: unknown) => void
 
 interface RpcMessageData {
   uid: string
   libRpc?: true
-  error?: string
+  // errors arrive as a serialized ErrorObject, or a bare string for
+  // framework-level failures (e.g. `Unknown RPC method "..."`)
+  error?: string | ErrorObject
   method?: string
   eventName?: string
-  data: unknown
+  // absent on error/event frames; only replies carry a data payload
+  data?: unknown
 }
 
 interface PendingCall {
@@ -93,7 +98,7 @@ export default class RpcClient {
     })
   }
 
-  protected reject(uid: string, error: string | Error) {
+  protected reject(uid: string, error: string | ErrorObject) {
     const p = this.pending.get(uid)
     if (p) {
       p.reject(deserializeError(error))

@@ -18,7 +18,7 @@ rpcManager.call('MyMethod', args)
   → serializeArguments()
   → structured-clone to worker    →  deserializeArguments()
                                       execute() ← your code
-  ← deserializeReturn()          ←  serializeReturn()
+  ← deserializeReturn()          ←  structured-clone back
 result
 ```
 
@@ -195,13 +195,14 @@ override it per-driver in config:
   "configuration": {
     "rpc": {
       "defaultDriver": "WebWorkerRpcDriver",
-      "drivers": {
-        "WebWorkerRpcDriver": { "workerCount": 4 }
-      }
+      "workerCount": 4
     }
   }
 }
 ```
+
+(Older sessions stored `workerCount` under a per-driver `drivers` map; that shape
+is still read and hoisted to the flat `workerCount` slot on load.)
 
 ## See also
 

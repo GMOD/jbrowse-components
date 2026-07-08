@@ -241,14 +241,6 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     rpcDriverClassName: string,
   ): Promise<unknown>
 
-  async serializeReturn(
-    originalReturn: unknown,
-    _args: unknown,
-    _rpcDriverClassName: string,
-  ) {
-    return originalReturn
-  }
-
   async deserializeReturn(
     serializedReturn: unknown,
     _args: unknown,
