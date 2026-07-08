@@ -1,6 +1,6 @@
 export { default as CoreGetRefNames } from './methods/CoreGetRefNames.ts'
 export { default as CoreGetMetadata } from './methods/CoreGetMetadata.ts'
-export { default as CoreGetFileInfo } from './methods/CoreGetFileInfo.ts'
+export { default as CoreGetInfo } from './methods/CoreGetInfo.ts'
 export { default as CoreGetFeatures } from './methods/CoreGetFeatures.ts'
 export { default as CoreGetSequence } from './methods/CoreGetSequence.ts'
 export { default as CoreFreeResources } from './methods/CoreFreeResources.ts'

@@ -53,7 +53,6 @@ describe('RpcServer.handler()', () => {
     await flushPromises()
     expect(sent[0]?.data).toMatchObject({
       uid: '1',
-      method: 'greet',
       data: 'hello',
       libRpc: true,
     })

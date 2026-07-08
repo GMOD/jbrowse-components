@@ -10,9 +10,8 @@ interface RpcMessageData {
   // errors arrive as a serialized ErrorObject, or a bare string for
   // framework-level failures (e.g. `Unknown RPC method "..."`)
   error?: string | ErrorObject
-  method?: string
   eventName?: string
-  // absent on error/event frames; only replies carry a data payload
+  // absent on error frames; carried by replies and events
   data?: unknown
 }
 
@@ -69,16 +68,18 @@ export default class RpcClient {
   }
 
   protected handler(e: MessageEvent<RpcMessageData>) {
-    const { uid, error, method, eventName, data, libRpc } = e.data
+    const { uid, error, eventName, data, libRpc } = e.data
     if (!libRpc) {
       return
     }
+    // three frame kinds share the channel: an error (rejects the call), a
+    // named event (status side-channel), and — the default — a call reply
     if (error) {
       this.reject(uid, error)
-    } else if (method) {
-      this.resolve(uid, data)
     } else if (eventName) {
       this.emit(eventName, data)
+    } else {
+      this.resolve(uid, data)
     }
   }
 

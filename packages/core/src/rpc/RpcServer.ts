@@ -64,7 +64,7 @@ export default class RpcServer {
       // wrap so a synchronous throw inside methodFn still routes to .throw()
       ;(async () => methodFn(data))().then(
         response => {
-          this.reply(uid, method, response)
+          this.reply(uid, response)
         },
         (error: unknown) => {
           this.throw(uid, serializeError(error))
@@ -84,14 +84,14 @@ export default class RpcServer {
     workerSelf!.postMessage({ ...payload, libRpc: true }, transferables)
   }
 
-  protected reply(uid: string, method: string, response: unknown) {
+  protected reply(uid: string, response: unknown) {
     // a renderer may return an rpcResult wrapper carrying transferables for
     // zero-copy; a plain return travels as data with nothing to transfer
     const { value, transferables } = isRpcResult(response)
       ? response
       : { value: response, transferables: [] }
     try {
-      this.post({ uid, method, data: value }, transferables)
+      this.post({ uid, data: value }, transferables)
     } catch (e) {
       this.throw(uid, serializeError(e))
     }
