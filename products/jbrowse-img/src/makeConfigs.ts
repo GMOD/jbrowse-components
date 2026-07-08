@@ -202,6 +202,14 @@ export function makeFastaAssembly(
   )
 }
 
+// A chrom.sizes assembly's display name is its basename without the
+// `.chrom.sizes`/`.sizes` extension, so `hs1.chrom.sizes` shows as `hs1` in the
+// synteny scalebar's assembly-name label — the extension is file-format noise,
+// not part of the assembly name.
+export function chromSizesAssemblyName(chromSizes: string) {
+  return path.basename(chromSizes).replace(/\.(chrom\.)?sizes$/, '')
+}
+
 // Whole-genome comparative views (e.g. a synteny dotplot) need only chromosome
 // sizes, not the sequence itself, so a `.chrom.sizes` assembly skips the
 // multi-GB FASTA/2bit entirely.
@@ -213,7 +221,7 @@ export function makeChromSizesAssembly(
 ): Assembly {
   return withAliasesCytobands(
     {
-      name: path.basename(chromSizes),
+      name: chromSizesAssemblyName(chromSizes),
       sequence: {
         type: 'ReferenceSequenceTrack',
         trackId,

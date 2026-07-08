@@ -35,11 +35,9 @@ describe('buildComparative', () => {
       ['chromSizes', ['c.sizes']],
     ]
     const { assemblies, syntenyTracks } = buildComparative(entries)
-    expect(assemblies.map(a => a.name)).toEqual([
-      'a.sizes',
-      'b.sizes',
-      'c.sizes',
-    ])
+    // the `.sizes` extension is stripped from the assembly name (file-format
+    // noise), so the scalebar label reads `a` not `a.sizes`
+    expect(assemblies.map(a => a.name)).toEqual(['a', 'b', 'c'])
     expect(assemblies[0]!.sequence.adapter).toMatchObject({
       type: 'ChromSizesAdapter',
       chromSizesLocation: { localPath: 'a.sizes' },
@@ -47,12 +45,12 @@ describe('buildComparative', () => {
     // level 0 pairs a/b (paf: upper a = query), level 1 pairs b/c (chain: upper
     // b = target)
     expect(syntenyTracks[0]!.adapter).toMatchObject({
-      queryAssembly: 'a.sizes',
-      targetAssembly: 'b.sizes',
+      queryAssembly: 'a',
+      targetAssembly: 'b',
     })
     expect(syntenyTracks[1]!.adapter).toMatchObject({
-      queryAssembly: 'c.sizes',
-      targetAssembly: 'b.sizes',
+      queryAssembly: 'c',
+      targetAssembly: 'b',
     })
   })
 

@@ -111,7 +111,8 @@ describe('makeChromSizesAssembly', () => {
       undefined,
       'rs',
     )
-    expect(a.name).toBe('hg38.chrom.sizes')
+    // the `.chrom.sizes` extension is stripped from the display name
+    expect(a.name).toBe('hg38')
     expect(a.sequence.adapter).toEqual({
       type: 'ChromSizesAdapter',
       chromSizesLocation: { localPath: 'hg38.chrom.sizes' },
