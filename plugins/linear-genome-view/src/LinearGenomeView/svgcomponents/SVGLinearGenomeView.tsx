@@ -13,7 +13,7 @@ import SVGGridlines from './SVGGridlines.tsx'
 import SVGHeader from './SVGHeader.tsx'
 import SVGHighlights from './SVGHighlights.tsx'
 import SVGTracks from './SVGTracks.tsx'
-import { totalHeight } from './util.ts'
+import { getHeaderLayout, totalHeight } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ExportSvgOptions } from '../types.ts'
@@ -24,10 +24,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
   const {
     textHeight = 18,
-    headerHeight = 40,
-    rulerHeight = 50,
+    rulerHeight = 34,
     fontSize = 13,
-    cytobandHeight = 100,
     trackLabels = 'offset',
     themeName = 'default',
     showGridlines = false,
@@ -39,8 +37,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const visibleTracks = [...pinnedTracks, ...unpinnedTracks].filter(
     t => !t.minimized,
   )
-  const cytobandOffset = +showCytobands * cytobandHeight
-  const offset = headerHeight + rulerHeight + cytobandOffset + 10
+  const { tracksTop } = getHeaderLayout({ fontSize, showCytobands, rulerHeight })
+  const offset = tracksTop
   const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
   const height = tracksHeight + offset + 100
 
@@ -94,8 +92,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
             model={model}
             fontSize={fontSize}
             rulerHeight={rulerHeight}
-            cytobandHeight={cytobandHeight}
-            headerHeight={headerHeight}
           />
         </g>
         {showGridlines ? (

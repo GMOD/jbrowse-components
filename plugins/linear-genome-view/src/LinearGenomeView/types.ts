@@ -19,8 +19,6 @@ export interface ExportSvgOptions {
   fontSize?: number
   rulerHeight?: number
   textHeight?: number
-  headerHeight?: number
-  cytobandHeight?: number
   trackLabels?: TrackLabelMode
   themeName?: string
   showGridlines?: boolean

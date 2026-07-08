@@ -9,6 +9,12 @@ import { useTheme } from '@mui/material'
 import BlockClipGroup from './BlockClipGroup.tsx'
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import {
+  RULER_MAJOR_TICK,
+  RULER_MINOR_TICK,
+  RULER_TICK_FONT_SIZE,
+  getRulerLayout,
+} from './util.ts'
+import {
   REF_NAME_LABEL_FONT_SIZE,
   getScalebarRefNameLabels,
   labelFitsInBlock,
@@ -20,11 +26,6 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
 
-// Tick-number font size and the gap left above its baseline for the tick
-// marks themselves (major-tick line height 6 + a 2px clearance).
-const TICK_FONT_SIZE = 11
-const TICK_MARK_SPACE = 8
-
 function Ruler({
   start,
   end,
@@ -34,7 +35,8 @@ function Ruler({
   minor = true,
   hideText = false,
   widthPx,
-  tickBaselineY,
+  tickTopY,
+  numbersBaselineY,
 }: {
   start: number
   end: number
@@ -44,16 +46,15 @@ function Ruler({
   minor?: boolean
   hideText?: boolean
   widthPx: number
-  // Baseline y for the tick-number text; tick marks sit just above it. Passed
-  // in (rather than hardcoded) so the whole tick row fits inside whatever
-  // rulerHeight budget the caller reserved for it.
-  tickBaselineY: number
+  // Top y of the tick marks; they hang downward toward the tracks.
+  tickTopY: number
+  // Baseline y for the tick-number text, positioned above the tick marks.
+  numbersBaselineY: number
 }) {
   const theme = useTheme()
   const strokeProps = getStrokeProps(theme.palette.text.secondary)
   const fillProps = getFillProps(theme.palette.text.secondary)
   const ticks = makeBlockTicks({ start, end, reversed }, bpPerPx, major, minor)
-  const tickTopY = tickBaselineY - TICK_MARK_SPACE
   return (
     <>
       {ticks.map(({ base, type, x }) => (
@@ -62,7 +63,7 @@ function Ruler({
           x1={x}
           x2={x}
           y1={tickTopY}
-          y2={tickTopY + (type === 'major' ? 6 : 4)}
+          y2={tickTopY + (type === 'major' ? RULER_MAJOR_TICK : RULER_MINOR_TICK)}
           strokeWidth={1}
           {...strokeProps}
         />
@@ -76,8 +77,8 @@ function Ruler({
                 <text
                   key={`label-${base}`}
                   x={x - 3}
-                  y={tickBaselineY}
-                  fontSize={TICK_FONT_SIZE}
+                  y={numbersBaselineY}
+                  fontSize={RULER_TICK_FONT_SIZE}
                   {...fillProps}
                 >
                   {label}
@@ -152,11 +153,11 @@ export default function SVGRuler({
 }: {
   model: LGV
   fontSize: number
-  // Total vertical budget for this ruler (divider bars + tick marks + tick
-  // numbers), matching the caller's own row-height math (e.g. `headerHeight =
-  // fontSize + rulerHeight` in SVGLinearSyntenyView). The tick-number
-  // baseline is anchored to the bottom of this budget (minus a small margin)
-  // so it can never spill into the content that starts right below.
+  // Total vertical budget for this ruler (refName label + tick numbers + tick
+  // marks), matching the caller's own row-height math. The tick marks are
+  // anchored to the bottom of this budget (minus a small margin) so they can
+  // never spill into the content that starts right below; the tick numbers sit
+  // just above the marks.
   rulerHeight: number
 }) {
   const {
@@ -165,7 +166,7 @@ export default function SVGRuler({
     bpPerPx,
   } = model
   const renderRuler = contentBlocks.length < 5
-  const tickBaselineY = rulerHeight - 2
+  const { tickTopY, numbersBaselineY } = getRulerLayout(rulerHeight)
   return (
     <>
       <SVGRegionSeparators model={model} height={rulerHeight} />
@@ -189,7 +190,8 @@ export default function SVGRuler({
               bpPerPx={bpPerPx}
               reversed={reversed}
               widthPx={widthPx}
-              tickBaselineY={tickBaselineY}
+              tickTopY={tickTopY}
+              numbersBaselineY={numbersBaselineY}
             />
           </BlockClipGroup>
         ) : null

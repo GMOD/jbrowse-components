@@ -8,6 +8,7 @@ import { useTheme } from '@mui/material'
 
 import SVGRuler from './SVGRuler.tsx'
 import SVGScalebar from './SVGScalebar.tsx'
+import { getHeaderLayout } from './util.ts'
 import Cytobands from '../components/Cytobands.tsx'
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
 import { getCytobands } from '../components/util.ts'
@@ -21,11 +22,11 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 function CytobandOverview({
   model,
   assembly,
-  rulerHeight,
+  y,
 }: {
   model: LinearGenomeViewModel
   assembly: Assembly | undefined
-  rulerHeight: number
+  y: number
 }) {
   const { width, displayedRegions, minimumBlockWidth } = model
   const overview = createOverviewLayout({
@@ -39,7 +40,7 @@ function CytobandOverview({
     model.dynamicBlocks.contentBlocks,
   )
   return block && span ? (
-    <g transform={`translate(0 ${rulerHeight})`}>
+    <g transform={`translate(0 ${y})`}>
       <Cytobands
         overview={overview}
         cytobands={getCytobands(assembly, block.refName)}
@@ -64,15 +65,11 @@ function CytobandOverview({
 export default function SVGHeader({
   model,
   fontSize,
-  cytobandHeight,
   rulerHeight,
-  headerHeight,
 }: {
   model: LinearGenomeViewModel
   rulerHeight: number
   fontSize: number
-  cytobandHeight: number
-  headerHeight: number
 }) {
   const { assemblyNames, showCytobands } = model
   const { assemblyManager } = getSession(model)
@@ -90,7 +87,11 @@ export default function SVGHeader({
     return null
   }
 
-  const y = +showCytobands * cytobandHeight
+  const { cytobandTop, scalebarLineY, rulerTop } = getHeaderLayout({
+    fontSize,
+    showCytobands,
+    rulerHeight,
+  })
   return (
     <g id="header">
       {assemblyNames.length ? (
@@ -106,27 +107,14 @@ export default function SVGHeader({
       ) : null}
 
       {showCytobands ? (
-        <CytobandOverview
-          model={model}
-          assembly={assembly}
-          rulerHeight={rulerHeight}
-        />
+        <CytobandOverview model={model} assembly={assembly} y={cytobandTop} />
       ) : null}
 
-      <g transform={`translate(0 ${fontSize + y})`}>
+      <g transform={`translate(0 ${scalebarLineY})`}>
         <SVGScalebar model={model} fontSize={fontSize} />
       </g>
-      <g transform={`translate(0 ${rulerHeight + y})`}>
-        {/* Tracks start at headerHeight + rulerHeight + cytobandOffset + 10
-            past this component's own origin (renderToSvg's `offset`), and
-            this group is already translated down by rulerHeight + y, so the
-            space actually left for SVGRuler's own content is headerHeight +
-            10 (the cytoband/y terms cancel) — not rulerHeight itself. */}
-        <SVGRuler
-          model={model}
-          fontSize={fontSize}
-          rulerHeight={headerHeight + 10}
-        />
+      <g transform={`translate(0 ${rulerTop})`}>
+        <SVGRuler model={model} fontSize={fontSize} rulerHeight={rulerHeight} />
       </g>
     </g>
   )
