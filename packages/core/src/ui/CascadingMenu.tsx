@@ -27,6 +27,16 @@ import type { PopoverOrigin } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes.ts'
 
+interface CascadingMenuListProps {
+  menuItems: JBMenuItem[]
+  closeAfterItemClick: boolean
+  onMenuItemClick: (callback: () => void) => void
+  onCloseRoot: () => void
+  // close this menu level and refocus its opener (ArrowLeft); undefined at the
+  // root level where there is nothing to go back to
+  onNavigateBack?: () => void
+}
+
 // Build a `cascading-<kind>-<label>` data-testid, or undefined for non-string
 // labels that can't be slugified
 function makeTestId(kind: string, label: React.ReactNode) {
@@ -72,19 +82,14 @@ function CascadingSubmenu({
   onClose,
 }: {
   title: React.ReactNode
-  onMenuItemClick: (callback: () => void) => void
   Icon: React.ElementType | undefined
   inset: boolean
   disabled?: boolean
   disabledHelpText?: string
-  menuItems: JBMenuItem[]
-  closeAfterItemClick: boolean
-  onCloseRoot: () => void
-  onNavigateBack?: () => void
   isOpen: boolean
   onOpen: () => void
   onClose: () => void
-}) {
+} & CascadingMenuListProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
 
   return (
@@ -94,6 +99,8 @@ function CascadingSubmenu({
           ref={setAnchorEl}
           data-testid={makeTestId('submenu', title)}
           disabled={disabled}
+          aria-haspopup="menu"
+          aria-expanded={isOpen}
           onMouseOver={() => {
             onOpen()
           }}
@@ -146,15 +153,7 @@ function CascadingMenuList({
   menuItems,
   onCloseRoot,
   onNavigateBack,
-}: {
-  menuItems: JBMenuItem[]
-  closeAfterItemClick: boolean
-  onMenuItemClick: (callback: () => void) => void
-  onCloseRoot: () => void
-  // close this menu level and refocus its opener (ArrowLeft); undefined at the
-  // root level where there is nothing to go back to
-  onNavigateBack?: () => void
-}) {
+}: CascadingMenuListProps) {
   const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
   const closeSubmenu = () => {
     setOpenSubmenuIdx(undefined)
@@ -167,7 +166,9 @@ function CascadingMenuList({
   // When any row carries a trailing endAdornment, reserve a fixed-width slot on
   // every row so the checkbox/radio decorations stay column-aligned and the
   // adornments float in their own rightmost column.
-  const hasEndAdornment = menuItems.some(m => 'endAdornment' in m)
+  const hasEndAdornment = menuItems.some(
+    m => 'endAdornment' in m && m.endAdornment,
+  )
 
   const sortedItems = menuItems.toSorted(
     (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
@@ -240,7 +241,7 @@ function CascadingMenuList({
         // a disabled row can't open the help popover (pointer-events:none), so
         // disabledHelpText is surfaced as a hover tooltip instead of the icon button
         return (
-          <DisabledTooltip key={`${item.label}`} item={item}>
+          <DisabledTooltip key={`menuitem-${item.label}`} item={item}>
             <MenuItem
               data-testid={makeTestId('menuitem', item.label)}
               disabled={item.disabled}
@@ -310,6 +311,21 @@ function CascadingMenuList({
   )
 }
 
+interface CascadingMenuProps {
+  onMenuItemClick: (callback: () => void) => void
+  closeAfterItemClick?: boolean
+  menuItems: MenuItemsGetter
+  open: boolean
+  onClose: () => void
+  anchorEl?: Element | null
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
+  anchorReference?: 'anchorEl' | 'anchorPosition' | 'none'
+  anchorPosition?: { top: number; left: number }
+  slotProps?: { transition?: { onExit?: () => void } }
+  style?: React.CSSProperties
+}
+
 const CascadingMenu = observer(function CascadingMenu({
   onMenuItemClick,
   closeAfterItemClick = true,
@@ -323,20 +339,7 @@ const CascadingMenu = observer(function CascadingMenu({
   anchorPosition,
   slotProps,
   style,
-}: {
-  onMenuItemClick: (callback: () => void) => void
-  closeAfterItemClick?: boolean
-  menuItems: MenuItemsGetter
-  open: boolean
-  onClose: () => void
-  anchorEl?: Element | null
-  anchorOrigin?: PopoverOrigin
-  transformOrigin?: PopoverOrigin
-  anchorReference?: 'anchorEl' | 'anchorPosition' | 'none'
-  anchorPosition?: { top: number; left: number }
-  slotProps?: { transition?: { onExit?: () => void } }
-  style?: React.CSSProperties
-}) {
+}: CascadingMenuProps) {
   const items = Array.isArray(menuItems) ? menuItems : menuItems()
 
   return (
