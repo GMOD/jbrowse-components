@@ -79,7 +79,9 @@ export const variantsSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Run clustering' },
       { type: 'delay', ms: 500 },
       { type: 'click', text: 'Run clustering' },
-      { type: 'waitForText', text: 'Run clustering', hidden: true },
+      // real clustering over the full 2,504-sample 1000g callset measured at
+      // ~24s locally, right against the 30s default — give it real margin
+      { type: 'waitForText', text: 'Run clustering', hidden: true, timeout: 60000 },
       { type: 'delay', ms: 10000 },
     ],
   },
