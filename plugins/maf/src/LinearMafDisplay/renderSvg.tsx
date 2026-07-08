@@ -42,6 +42,7 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 export async function renderSvg(
   model: LinearMafDisplayModel,
@@ -202,18 +203,24 @@ function MafSvgBody({
         ) : null}
       </g>
       {showCoverage && coverageTicks ? (
-        <g transform={`translate(${YSCALE_AXIS_X}, 0)`}>
-          <YScaleBar ticks={coverageTicks} orientation="left" />
-        </g>
+        <LeftAxis y={0} ticks={coverageTicks} />
       ) : null}
       {showConservation ? (
-        <g transform={`translate(${YSCALE_AXIS_X}, ${coverageDisplayHeight})`}>
-          <YScaleBar
-            ticks={conservationTicks(conservationHeight)}
-            orientation="left"
-          />
-        </g>
+        <LeftAxis
+          y={coverageDisplayHeight}
+          ticks={conservationTicks(conservationHeight)}
+        />
       ) : null}
     </SvgClipRect>
+  )
+}
+
+// A left-orientation y-axis in the shared axis gutter (YSCALE_AXIS_X), at a
+// vertical band offset — coverage sits at y=0, conservation below it.
+function LeftAxis({ y, ticks }: { y: number; ticks: YScaleTicks }) {
+  return (
+    <g transform={`translate(${YSCALE_AXIS_X}, ${y})`}>
+      <YScaleBar ticks={ticks} orientation="left" />
+    </g>
   )
 }
