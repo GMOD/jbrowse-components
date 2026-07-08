@@ -51,7 +51,7 @@ is safe to remove.** So nothing is removed.
 ## In-tree is already solved; external is the whole problem
 
 For **in-tree** consumers the compiler *is* the contract test: remove a symbol an
-in-tree plugin composes and `tsgo` fails in the same PR. An in-tree export
+in-tree plugin composes and `tsc` fails in the same PR. An in-tree export
 snapshot mostly reinvents that — low value.
 
 The unsolved problem is **external** plugins:

@@ -19,7 +19,7 @@ type WiggleDisplayModel = Instance<
 // The concrete display models jb2export can drive (one per supported track
 // type). Typing this union — rather than the loose
 // `view.tracks[number].displays[number]`, whose pluggable element type permits
-// any property access — is what lets tsgo catch a residual action call to a
+// any property access — is what lets tsc catch a residual action call to a
 // method that exists on no display (e.g. a renamed setFeatureDensityStatsLimit).
 export type TrackDisplay =
   | LinearAlignmentsDisplayModel

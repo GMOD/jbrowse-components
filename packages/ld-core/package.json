@@ -24,7 +24,7 @@
     "esm"
   ],
   "scripts": {
-    "build:esm": "tsgo --build tsconfig.build.esm.json",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
     "build": "pnpm build:esm",
     "test": "cd ../..; jest --passWithNoTests packages/ld-core",
     "clean": "rimraf esm *.tsbuildinfo",

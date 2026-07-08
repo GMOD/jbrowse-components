@@ -40,7 +40,7 @@ export interface PlainTrackConfig {
 // The two casts are load-bearing, don't "simplify" them: our MST fork types
 // `isStateTreeNode`'s parameter as a state-tree node (not `unknown`), so `base`
 // (a plain interface) must widen through `unknown` to be passed, and
-// `getSnapshot` of that returns `unknown`. eslint's type service and `tsgo`
+// `getSnapshot` of that returns `unknown`. eslint's type service and `tsc`
 // disagree on which assertions are redundant here; this exact form is the one
 // both accept.
 function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
