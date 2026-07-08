@@ -1,7 +1,8 @@
 import type React from 'react'
 
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getContainingView, measureText } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SVGErrorBox,
@@ -19,6 +20,7 @@ import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import { buildSectionRenders } from './sectionLayout.ts'
+import GroupLabelBox from './svgcomponents/GroupLabelBox.tsx'
 import { getMismatchContrastMap } from '../shared/util.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
@@ -26,49 +28,6 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { Theme } from '@mui/material'
-
-// Static equivalent of the on-screen GroupLabelsOverlay chip (no
-// collapse/expand affordances — those are interactive-only). A background box
-// behind the text, not bare text, so the label stays legible over a busy
-// pileup/coverage background.
-function GroupLabelBox({
-  x,
-  y,
-  text,
-  theme,
-}: {
-  x: number
-  y: number
-  text: string
-  theme: Theme
-}) {
-  const fontSize = 11
-  const paddingX = 4
-  const height = 16
-  const width = measureText(text, fontSize) + paddingX * 2
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        rx={3}
-        fill={theme.palette.background.paper}
-        fillOpacity={0.85}
-      />
-      <text
-        x={x + paddingX}
-        y={y + height - 4}
-        fontSize={fontSize}
-        fill={theme.palette.text.secondary}
-      >
-        {text}
-      </text>
-    </g>
-  )
-}
 
 export async function renderSvg(
   model: LinearAlignmentsDisplayModel,

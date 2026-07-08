@@ -74,3 +74,15 @@ look at wakhan, pycnv
 
 ## mouseover sequencefeaturepanel connect to linaergenomeview3
 
+
+## audit
+
+const baseState = model.renderState
+  if (
+    !baseState ||
+    model.sourceSections.every(s => s.laidOutPileupMap.size === 0)
+  ) {
+    return null
+  }
+
+## serialized entire nextstrain into json, do not want. that may have emulated the preexisting sarscov2 pattern but that is bad. just upload normal flatfiles to s3://jbrowse.org/demos/nextstrain
