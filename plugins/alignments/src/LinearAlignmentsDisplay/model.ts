@@ -2689,6 +2689,13 @@ export default function stateModelFactory(
             self.contextMenuCigarHit = args.cigarHit
             self.contextMenuIndicatorHit = args.indicatorHit
             self.contextMenuFeature = undefined
+            // Pin the hover to the menu's target read so its highlight box
+            // (highlightBoxes, keyed on featureIdUnderMouse) stays on while the
+            // menu is open — the caller cleared mouseover state first, so this
+            // re-boxes just the read the menu acts on. Undefined for
+            // coverage/indicator hits, which have no read to box. Mirrors canvas
+            // LinearBasicDisplay.showContextMenuForFeature.
+            self.featureIdUnderMouse = args.featureId
             if (args.featureId !== undefined) {
               void fetchAndDo(args.featureId, feat => {
                 self.setContextMenuFeature(feat)
