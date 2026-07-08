@@ -81,6 +81,152 @@ async function copyText(self: ContextMenuModel, text: string, what: string) {
   }
 }
 
+// Cigar and coverage-indicator hits build the identical two-item submenu: sort
+// the pileup by what's under the cursor, or open its details widget. `block` is
+// captured once by getContextMenuItems and read inside the onClicks because
+// clearContextMenu nulls self.contextMenuBlock before they fire.
+function sortAndDetailsSubMenu({
+  self,
+  block,
+  label,
+  sortLabel,
+  sortType,
+  position,
+  detailsLabel,
+  openDetails,
+}: {
+  self: ContextMenuModel
+  block: ResolvedBlock | undefined
+  label: string
+  sortLabel: string
+  sortType: string
+  position: number
+  detailsLabel: string
+  openDetails: (block: ResolvedBlock) => void
+}): MenuItem {
+  return {
+    label,
+    type: 'subMenu',
+    subMenu: [
+      {
+        label: sortLabel,
+        icon: SwapVertIcon,
+        onClick: () => {
+          if (block) {
+            self.setSortedByAtPosition(sortType, position, block.refName)
+          }
+        },
+      },
+      {
+        label: detailsLabel,
+        icon: MenuOpenIcon,
+        onClick: () => {
+          if (block) {
+            openDetails(block)
+          }
+        },
+      },
+    ],
+  }
+}
+
+// Quick per-read filters (read name / HP / RG) plus a clear item, shown only
+// when a filter is active. Each coexists with the others (setTagFilter merges).
+function getFilterSubMenu(self: ContextMenuModel, feat: Feature): MenuItem[] {
+  const readName = feat.get('name')
+  const hp = getReadTag(feat, 'HP')
+  const rg = getReadTag(feat, 'RG')
+  const sub: MenuItem[] = []
+  if (readName) {
+    sub.push({
+      label: 'Filter for this read',
+      icon: FilterAltIcon,
+      onClick: () => {
+        self.setFilterBy({ ...self.filterBy, readName })
+      },
+    })
+  }
+  if (hp !== undefined) {
+    sub.push({
+      label: `Filter for this haplotype (HP:${hp})`,
+      icon: FilterAltIcon,
+      onClick: () => {
+        setTagFilter(self, 'HP', hp)
+      },
+    })
+  }
+  if (rg !== undefined) {
+    sub.push({
+      label: `Filter for this read group (RG:${rg})`,
+      icon: FilterAltIcon,
+      onClick: () => {
+        setTagFilter(self, 'RG', rg)
+      },
+    })
+  }
+  const hasReadOrTagFilter =
+    self.filterBy.readName !== undefined ||
+    (self.filterBy.tagFilters?.length ?? 0) > 0
+  if (hasReadOrTagFilter) {
+    sub.push({
+      label: 'Clear read/tag filters',
+      icon: FilterAltOffIcon,
+      onClick: () => {
+        self.setFilterBy({
+          flagInclude: self.filterBy.flagInclude,
+          flagExclude: self.filterBy.flagExclude,
+        })
+      },
+    })
+  }
+  return sub
+}
+
+// Copy read name / 1-based location / raw sequence / full feature JSON, each
+// present only when the underlying field exists (feature info always is).
+function getCopySubMenu(self: ContextMenuModel, feat: Feature): MenuItem[] {
+  const readName = feat.get('name')
+  const refName = feat.get('refName')
+  const seq = feat.get('seq')
+  const sub: MenuItem[] = []
+  if (readName) {
+    sub.push({
+      label: 'Copy read name',
+      onClick: () => {
+        void copyText(self, String(readName), 'read name')
+      },
+    })
+  }
+  if (refName) {
+    const locString = `${refName}:${feat.get('start') + 1}-${feat.get('end')}`
+    sub.push({
+      label: 'Copy location',
+      subLabel: 'e.g. to paste into the location search box',
+      onClick: () => {
+        void copyText(self, locString, 'location')
+      },
+    })
+  }
+  if (seq) {
+    sub.push({
+      label: 'Copy read sequence',
+      subLabel: 'raw read bases, e.g. to paste into BLAT/BLAST',
+      onClick: () => {
+        void copyText(self, String(seq), 'read sequence')
+      },
+    })
+  }
+  sub.push({
+    label: 'Copy feature info',
+    subLabel: 'all fields as JSON',
+    onClick: () => {
+      const { uniqueId, ...rest } = feat.toJSON()
+      void copyText(self, JSON.stringify(rest, null, 4), 'feature info')
+    },
+  })
+  return sub
+}
+
 // Right-click menu over the pileup: sort/details for the CIGAR op or coverage
 // indicator under the cursor, plus mate-view and feature-detail actions for the
 // read itself. Split out of the model to mirror trackMenuItems (menus/index.ts).
@@ -96,77 +242,39 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
     const isInterbase = ['insertion', 'softclip', 'hardclip'].includes(
       cigarHit.type,
     )
-    const sortType = isInterbase ? cigarHit.type : 'basePair'
-    const sortLabel = isInterbase
-      ? `Sort by ${typeLabel.toLowerCase()} at position`
-      : 'Sort by base at position'
-    items.push({
-      label: typeLabel,
-      type: 'subMenu',
-      subMenu: [
-        {
-          label: sortLabel,
-          icon: SwapVertIcon,
-          onClick: () => {
-            if (block) {
-              self.setSortedByAtPosition(
-                sortType,
-                cigarHit.position,
-                block.refName,
-              )
-            }
-          },
-        },
-        {
-          label: `Open ${typeLabel.toLowerCase()} details`,
-          icon: MenuOpenIcon,
-          onClick: () => {
-            if (block) {
-              openCigarWidget(self, cigarHit, block.refName)
-            }
-          },
-        },
-      ],
-    })
+    items.push(
+      sortAndDetailsSubMenu({
+        self,
+        block,
+        label: typeLabel,
+        sortLabel: isInterbase
+          ? `Sort by ${typeLabel.toLowerCase()} at position`
+          : 'Sort by base at position',
+        sortType: isInterbase ? cigarHit.type : 'basePair',
+        position: cigarHit.position,
+        detailsLabel: `Open ${typeLabel.toLowerCase()} details`,
+        openDetails: b => openCigarWidget(self, cigarHit, b.refName),
+      }),
+    )
   }
 
   if (indicatorHit) {
     const typeLabel =
       CIGAR_TYPE_LABELS[indicatorHit.indicatorType] ??
       indicatorHit.indicatorType
-    items.push({
-      label: `Coverage ${typeLabel}`,
-      type: 'subMenu',
-      subMenu: [
-        {
-          label: `Sort by ${typeLabel.toLowerCase()} at position`,
-          icon: SwapVertIcon,
-          onClick: () => {
-            if (block) {
-              self.setSortedByAtPosition(
-                indicatorHit.indicatorType,
-                indicatorHit.position,
-                block.refName,
-              )
-            }
-          },
-        },
-        {
-          label: `Open ${typeLabel.toLowerCase()} details`,
-          icon: MenuOpenIcon,
-          onClick: () => {
-            if (block) {
-              openIndicatorWidget(
-                self,
-                indicatorHit,
-                block.refName,
-                block.rpcData,
-              )
-            }
-          },
-        },
-      ],
-    })
+    items.push(
+      sortAndDetailsSubMenu({
+        self,
+        block,
+        label: `Coverage ${typeLabel}`,
+        sortLabel: `Sort by ${typeLabel.toLowerCase()} at position`,
+        sortType: indicatorHit.indicatorType,
+        position: indicatorHit.position,
+        detailsLabel: `Open ${typeLabel.toLowerCase()} details`,
+        openDetails: b =>
+          openIndicatorWidget(self, indicatorHit, b.refName, b.rpcData),
+      }),
+    )
   }
 
   if (feat) {
@@ -211,52 +319,7 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         ],
       })
     }
-    const readName = feat.get('name')
-    const hp = getReadTag(feat, 'HP')
-    const rg = getReadTag(feat, 'RG')
-    const filterSubMenu: MenuItem[] = []
-    if (readName) {
-      filterSubMenu.push({
-        label: 'Filter for this read',
-        icon: FilterAltIcon,
-        onClick: () => {
-          self.setFilterBy({ ...self.filterBy, readName })
-        },
-      })
-    }
-    if (hp !== undefined) {
-      filterSubMenu.push({
-        label: `Filter for this haplotype (HP:${hp})`,
-        icon: FilterAltIcon,
-        onClick: () => {
-          setTagFilter(self, 'HP', hp)
-        },
-      })
-    }
-    if (rg !== undefined) {
-      filterSubMenu.push({
-        label: `Filter for this read group (RG:${rg})`,
-        icon: FilterAltIcon,
-        onClick: () => {
-          setTagFilter(self, 'RG', rg)
-        },
-      })
-    }
-    const hasReadOrTagFilter =
-      self.filterBy.readName !== undefined ||
-      (self.filterBy.tagFilters?.length ?? 0) > 0
-    if (hasReadOrTagFilter) {
-      filterSubMenu.push({
-        label: 'Clear read/tag filters',
-        icon: FilterAltOffIcon,
-        onClick: () => {
-          self.setFilterBy({
-            flagInclude: self.filterBy.flagInclude,
-            flagExclude: self.filterBy.flagExclude,
-          })
-        },
-      })
-    }
+    const filterSubMenu = getFilterSubMenu(self, feat)
     if (filterSubMenu.length) {
       items.push({
         label: 'Filter',
@@ -265,49 +328,11 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         subMenu: filterSubMenu,
       })
     }
-    const seq = feat.get('seq')
-    const copySubMenu: MenuItem[] = []
-    if (readName) {
-      copySubMenu.push({
-        label: 'Copy read name',
-        onClick: () => {
-          void copyText(self, String(readName), 'read name')
-        },
-      })
-    }
-    const refName = feat.get('refName')
-    if (refName) {
-      const locString = `${refName}:${feat.get('start') + 1}-${feat.get('end')}`
-      copySubMenu.push({
-        label: 'Copy location',
-        subLabel: 'e.g. to paste into the location search box',
-        onClick: () => {
-          void copyText(self, locString, 'location')
-        },
-      })
-    }
-    if (seq) {
-      copySubMenu.push({
-        label: 'Copy read sequence',
-        subLabel: 'raw read bases, e.g. to paste into BLAT/BLAST',
-        onClick: () => {
-          void copyText(self, String(seq), 'read sequence')
-        },
-      })
-    }
-    copySubMenu.push({
-      label: 'Copy feature info',
-      subLabel: 'all fields as JSON',
-      onClick: () => {
-        const { uniqueId, ...rest } = feat.toJSON()
-        void copyText(self, JSON.stringify(rest, null, 4), 'feature info')
-      },
-    })
     items.push({
       label: 'Copy',
       icon: ContentCopyIcon,
       type: 'subMenu',
-      subMenu: copySubMenu,
+      subMenu: getCopySubMenu(self, feat),
     })
   }
 

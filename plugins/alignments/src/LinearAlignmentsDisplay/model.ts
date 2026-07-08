@@ -2602,23 +2602,24 @@ export default function stateModelFactory(
 
           /**
            * #action
+           * Open the right-click menu over a hit. Coord, block, and the two hit
+           * kinds always travel as a unit — set atomically so a consumer can
+           * never read a block without its hit (the split-state class of bug
+           * that silently no-op'd position sorts). The read feature is fetched
+           * separately (async, off an RPC) and reset here so a repositioned menu
+           * doesn't inherit the prior read's items.
            */
-          setContextMenuCoord(coord?: [number, number]) {
-            self.contextMenuCoord = coord
-          },
-
-          /**
-           * #action
-           */
-          setContextMenuCigarHit(hit?: CigarHitResult) {
-            self.contextMenuCigarHit = hit
-          },
-
-          /**
-           * #action
-           */
-          setContextMenuIndicatorHit(hit?: IndicatorHitResult) {
-            self.contextMenuIndicatorHit = hit
+          openContextMenu(args: {
+            coord: [number, number]
+            block?: ResolvedBlock
+            cigarHit?: CigarHitResult
+            indicatorHit?: IndicatorHitResult
+          }) {
+            self.contextMenuCoord = args.coord
+            self.contextMenuBlock = args.block
+            self.contextMenuCigarHit = args.cigarHit
+            self.contextMenuIndicatorHit = args.indicatorHit
+            self.contextMenuFeature = undefined
           },
 
           /**
@@ -2630,13 +2631,6 @@ export default function stateModelFactory(
             self.contextMenuCigarHit = undefined
             self.contextMenuIndicatorHit = undefined
             self.contextMenuBlock = undefined
-          },
-
-          /**
-           * #action
-           */
-          setContextMenuBlock(block?: ResolvedBlock) {
-            self.contextMenuBlock = block
           },
 
           /**

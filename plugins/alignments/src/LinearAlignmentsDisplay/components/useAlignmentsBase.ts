@@ -179,15 +179,15 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (show) {
       e.preventDefault()
       model.clearMouseoverState()
-      model.setContextMenuCoord([e.clientX, e.clientY])
-      model.setContextMenuBlock(resolved)
-      model.setContextMenuCigarHit(cigarHit)
-      model.setContextMenuIndicatorHit(indicatorHit)
-      // Clear the previous read first: consecutive right-clicks reposition the
-      // same open menu without a close/clear, so an indicator-only hit must not
-      // inherit the prior read's feature items (and the async fetch below
-      // shouldn't leave stale items visible until it resolves).
-      model.setContextMenuFeature(undefined)
+      // Coord + block + hits set atomically (openContextMenu also resets the
+      // read feature); the read itself is then fetched async below. A
+      // repositioned menu must not inherit the prior read's feature items.
+      model.openContextMenu({
+        coord: [e.clientX, e.clientY],
+        block: resolved,
+        cigarHit,
+        indicatorHit,
+      })
       if (featureId !== undefined) {
         void model.setContextMenuFeatureById(featureId)
       }
