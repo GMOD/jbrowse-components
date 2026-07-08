@@ -244,9 +244,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'delay', ms: 500 },
-      // The flag/tag dialog now lives under the "Filter by..." submenu.
-      ...menuCascade(['Filter by...', 'Edit read name / tag / flag filters...']),
-      { type: 'click', text: 'Edit read name / tag / flag filters...' },
+      // The flag/tag dialog lives under the "Filter by..." submenu.
+      ...menuCascade(['Filter by...', 'Edit filters...']),
+      { type: 'click', text: 'Edit filters...' },
       { type: 'delay', ms: 1000 },
     ],
   },

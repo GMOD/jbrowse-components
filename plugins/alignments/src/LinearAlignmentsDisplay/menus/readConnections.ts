@@ -35,12 +35,12 @@ interface ReadConnectionsModel {
   setShowBezierConnections: (flag: boolean) => void
 }
 
-// Everything about pairing/connecting reads lives here, so the concept is in one
-// place rather than split across "Show...". Singleton/proper-pair filtering is
-// plain SAM-flag filtering (it also thins coverage), so it lives under "Filter
-// by..." rather than here. The arc/cloud band options are always present but
-// greyed out (disabled submenu + disabledHelpText) until an overlay is active,
-// so the settings are discoverable instead of vanishing.
+// Everything about pairing/connecting reads lives here (arcs, read cloud, linked
+// reads, bezier). Proper-pair / singleton visibility is a per-read-category
+// toggle, so it sits in "Show..." (see reads.ts), not here. The arc/cloud band
+// options are always present but greyed out (disabled submenu + disabledHelpText)
+// until an overlay is active, so the settings are discoverable instead of
+// vanishing.
 export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
   const linked = model.linkedReads !== 'off'
   const overlayActive = model.readConnections !== 'off'

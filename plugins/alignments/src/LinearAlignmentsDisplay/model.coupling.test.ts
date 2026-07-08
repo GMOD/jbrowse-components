@@ -271,29 +271,36 @@ describe('pileup-only menus grey out when the pileup is hidden', () => {
   )
 })
 
-// The proper-pair / singleton flag filters live under "Filter by..." now, not
-// under "Read connections" — one home for "which reads are shown".
-describe('filter menu unification', () => {
-  test('pair filters live under "Filter by...", not "Read connections"', () => {
+// Proper-pair / singleton visibility reads as a "Show..." toggle, so it lives in
+// the Show menu (not Read connections, not the filter submenu). "Filter by..."
+// wraps the flag/tag dialog.
+describe('read-category toggles + filter submenu', () => {
+  test('proper-pairs / mate-less toggles are under "Show...", not "Read connections"', () => {
     const display = createDisplay()
     const items = display.trackMenuItems()
-    const filterBy = findMenu(items, 'Filter by...')
-    expect(hasMenuLabel(filterBy?.subMenu ?? [], 'Hide proper pairs')).toBe(true)
-    expect(
-      hasMenuLabel(filterBy?.subMenu ?? [], 'Hide reads without a mate'),
-    ).toBe(true)
+    const show = findMenu(items, 'Show...')
+    expect(hasMenuLabel(show?.subMenu ?? [], 'Show proper pairs')).toBe(true)
+    expect(hasMenuLabel(show?.subMenu ?? [], 'Show reads without a mate')).toBe(
+      true,
+    )
 
     const readConnections = findMenu(items, 'Read connections')
     expect(
-      hasMenuLabel(readConnections?.subMenu ?? [], 'Hide proper pairs'),
+      hasMenuLabel(readConnections?.subMenu ?? [], 'Show proper pairs'),
     ).toBe(false)
   })
 
-  test('the pair-filter checkbox flips the model slot', () => {
+  test('"Show proper pairs" flips the model slot', () => {
     const display = createDisplay()
     display.setDrawProperPairs(true)
-    findMenu(display.trackMenuItems(), 'Hide proper pairs')?.onClick?.()
+    findMenu(display.trackMenuItems(), 'Show proper pairs')?.onClick?.()
     expect(display.drawProperPairs).toBe(false)
+  })
+
+  test('"Filter by..." wraps the Edit filters dialog', () => {
+    const display = createDisplay()
+    const filterBy = findMenu(display.trackMenuItems(), 'Filter by...')
+    expect(hasMenuLabel(filterBy?.subMenu ?? [], 'Edit filters...')).toBe(true)
   })
 })
 
