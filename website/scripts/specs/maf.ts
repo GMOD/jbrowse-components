@@ -4,9 +4,6 @@ import {
   HG38_470WAY,
   HG38_470WAY_30,
   HG38_NCBI_GENE_TRACK,
-  cascadeBoxes,
-  lgvSession,
-  menuCascade,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
@@ -76,9 +73,9 @@ export const mafSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'ce11',
-          // wider window (~3.5kb) so the per-species mismatch columns read as a
+          // wider window (~6kb) so the per-species mismatch columns read as a
           // conservation pattern under the genes, not just a handful of bases
-          loc: 'chrI:2,998,300-3,001,800',
+          loc: 'chrI:2,997,000-3,003,000',
           tracks: [
             {
               trackId: 'ce11_ncbi_refseq',
@@ -110,59 +107,6 @@ export const mafSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'hover', from: { x: 250, y: 100 } },
       { type: 'delay', ms: 2000 },
-    ],
-  },
-  {
-    // The conservation (percent identity) band on the real 26-way alignment:
-    // toggle it on via the track menu (top frame) and the per-base
-    // identity-to-reference profile appears above the rows (bottom frame).
-    // Zoomed out across several kb so the sliding-window profile — conserved
-    // (coding) vs divergent regions — is the readable signal, not the bases.
-    mode: 'url',
-    name: 'maf_conservation',
-    url: lgvSession(CE_MAF, {
-      assembly: 'ce11',
-      loc: 'chrI:2,998,500-3,001,800',
-      tracks: [
-        {
-          trackId: 'ce11.26way',
-          // fit-to-display-height; rows shrink to make room when the
-          // conservation band is toggled on below
-          displaySnapshot: {
-            type: 'LinearMafDisplay',
-            heightOverride: 320,
-          },
-        },
-      ],
-    }),
-    readyText: 'chrI',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    viewportHeight: 560,
-    settleMs: 10000,
-    hideTooltip: true,
-    stages: [
-      {
-        actions: [
-          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          ...menuCascade(['Show...', 'Show conservation (% identity)']),
-        ],
-        annotations: cascadeBoxes([
-          'Show...',
-          'Show conservation (% identity)',
-        ]),
-      },
-      {
-        actions: [
-          { type: 'click', text: 'Show conservation (% identity)' },
-          // wait for the menu to close — keyed on a menu-only label, since the
-          // conservation band now carries an on-canvas "Conservation" title that
-          // would otherwise keep that text visible forever
-          { type: 'waitForText', text: 'Show...', hidden: true },
-          { type: 'hover', from: { x: 250, y: 100 } },
-          { type: 'delay', ms: 2500 },
-        ],
-      },
     ],
   },
   {

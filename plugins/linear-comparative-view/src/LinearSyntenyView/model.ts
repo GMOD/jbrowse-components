@@ -116,7 +116,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * canvas. Dismissible via the legend's close button; re-enable from the
          * color-by (palette) menu.
          */
-        showColorLegend: types.stripDefault(types.boolean, true),
+        showColorLegend: types.stripDefault(types.boolean, false),
         /**
          * #property
          * Fade alignment blocks by per-feature identity (lower identity = more

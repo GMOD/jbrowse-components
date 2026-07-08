@@ -310,8 +310,10 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    // shorter window — the add-track form is short
-    viewportHeight: 620,
+    // shorter/narrower window — the add-track form is short and the LGV pane
+    // behind it is mostly empty
+    viewportWidth: 1300,
+    viewportHeight: 520,
     actions: [
       { type: 'click', text: 'File' },
       { type: 'waitForText', text: 'Open track...' },

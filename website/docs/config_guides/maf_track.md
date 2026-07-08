@@ -65,8 +65,6 @@ versus divergent regions stand out without having to read individual bases. It
 is computed from the alignment itself, so it appears at the zoom levels where
 the per-species rows are loaded. Toggle it from the track menu.
 
-<Figure src="/img/maf_conservation.png" caption="Enabling the conservation band from the track menu (top), and the resulting percent-identity profile on the 26-way alignment drawn above the rows on a 0–100% scale (bottom) — high over the conserved exon, dropping off in the divergent flanks."/>
-
 This is a true identity metric and is distinct from the score shaded into the
 zoomed-out summary bars, which comes from the UCSC `bigMafSummary` — a
 normalized alignment score rather than a percent identity.

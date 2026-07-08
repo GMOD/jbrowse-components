@@ -451,8 +451,8 @@ export const HG38_PANTRO6_CONFIG = 'test_data/hg38_panTro6_synteny/config.json'
 // downstream), so it renders as a clean human-specific transposon insertion; the
 // RepeatMasker track labels it "L1HS" exactly at the insertion.
 export const RB1_L1_LOCUS = {
-  hg38: 'chr13:48,462,800-48,474,200',
-  panTro6: 'chr13:29,451,800-29,457,000',
+  hg38: 'chr13:48,459,000-48,477,500',
+  panTro6: 'chr13:29,450,000-29,459,000',
 }
 
 // VAPB (ALS8 / spinal muscular atrophy gene): a full-length ~2 kb SVA_F — a
@@ -461,8 +461,8 @@ export const RB1_L1_LOCUS = {
 // chimp interval runs AluSz6 -> UCON33 with no SVA (zero SVA anywhere in chimp
 // VAPB). RepeatMasker names it SVA_F at the insertion.
 export const VAPB_SVA_LOCUS = {
-  hg38: 'chr20:58,410,300-58,418,000',
-  panTro6: 'chr20:58,047,200-58,053,300',
+  hg38: 'chr20:58,408,000-58,420,000',
+  panTro6: 'chr20:58,045,500-58,055,000',
 }
 
 // PICALM (Alzheimer's-associated): a ~0.3 kb AluYb8 — a young, human-specific Alu
@@ -471,8 +471,8 @@ export const VAPB_SVA_LOCUS = {
 // the AluY but has no AluYb8 (none anywhere in chimp PICALM). Shows that even a
 // small lineage-specific insertion reads clearly as an indel.
 export const PICALM_ALU_LOCUS = {
-  hg38: 'chr11:85,979,700-85,984,300',
-  panTro6: 'chr11:81,729,000-81,733,500',
+  hg38: 'chr11:85,978,000-85,986,000',
+  panTro6: 'chr11:81,727,500-81,735,000',
 }
 
 // A hosted liftOver chain is one chromosome-scale block; drawn zoomed in it
@@ -483,9 +483,6 @@ export const PICALM_ALU_LOCUS = {
 export function hg38ChimpSynteny(
   cigarMode: 'matches' | 'full',
   locus: { hg38: string; panTro6: string } = RB1_L1_LOCUS,
-  // squeeze the gene rows to one thin lane per feature — for isoform-dense loci
-  // (e.g. PICALM) whose full transcript stack would otherwise dwarf the ribbon
-  geneDisplayMode?: 'superCompact',
 ) {
   // collapse each gene to its single longest coding transcript: MANE isn't
   // available for panTro6, so geneGlyphMode 'longestCoding' is the way to cut
@@ -494,7 +491,11 @@ export function hg38ChimpSynteny(
     trackId: id,
     displaySnapshot: {
       geneGlyphMode: 'longestCoding',
-      ...(geneDisplayMode ? { displayMode: geneDisplayMode } : {}),
+      // default featureHeight (10px) reads as a bare sliver at this zoom —
+      // these loci have few, widely-spaced exons and no isoform stacking to
+      // fill a row, so there's nothing else shrinking them (verified
+      // autoHeight/height are not the cause: pinning both had no effect)
+      featureHeight: 18,
     },
   })
   return sessionSpec(HG38_PANTRO6_CONFIG, {
@@ -503,9 +504,6 @@ export function hg38ChimpSynteny(
         type: 'LinearSyntenyView',
         cigarMode,
         drawCurves: true,
-        // the floating color legend is redundant here — the caption names the
-        // colors, and in the transparent panel the indel chips wouldn't apply
-        showColorLegend: false,
         tracks: [['hg38_panTro6_synteny']],
         views: [
           {

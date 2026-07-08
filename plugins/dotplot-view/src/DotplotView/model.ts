@@ -227,7 +227,7 @@ export default function stateModelFactory(pm: PluginManager) {
            * Dismissible via the legend's close button; re-enable from the
            * color-by (palette) menu.
            */
-          showColorLegend: types.stripDefault(types.boolean, true),
+          showColorLegend: types.stripDefault(types.boolean, false),
         }),
       )
       .volatile(() => ({

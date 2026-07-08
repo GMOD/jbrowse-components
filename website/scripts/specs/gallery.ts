@@ -207,7 +207,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
     url: '?config=https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:40484345-40515236","type":"LinearGenomeView","tracks":["1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf",{"trackId":"HG02031.final","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}},{"trackId":"HG02030.final","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}},{"trackId":"HG02032.final","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}}]}]}',
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 1000,
+    viewportHeight: 1150,
   },
   {
     mode: 'url',

@@ -1579,7 +1579,7 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     // tall enough for the gene track + both wiggles + the CN-labeled CNV calls
     // track to all fit (the gene track pushes the CNV calls down)
-    viewportHeight: 780,
+    viewportHeight: 880,
     settleMs: 20000,
   },
 

@@ -45,7 +45,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'synteny_te_picalm_alu',
-    url: hg38ChimpSynteny('full', PICALM_ALU_LOCUS, 'superCompact'),
+    url: hg38ChimpSynteny('full', PICALM_ALU_LOCUS),
     viewportWidth: 1200,
     viewportHeight: 730,
     readySelector: '[data-testid="synteny_canvas_done"]',
@@ -123,8 +123,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // the MCScan reference, so only grape-adjacent pairs are direct); the
     // grape-cacao band is direct. autoDiagonalize reorders/flips each lower axis
     // to follow the one above, so the ribbons run near-diagonal instead of
-    // crossing into a hairball. showColorLegend:false hides the floating legend.
-    // Mirrors the hosted config's defaultSession init otherwise.
+    // crossing into a hairball. Mirrors the hosted config's defaultSession init
+    // otherwise.
     url: sessionSpec(
       encodeURIComponent(
         'https://jbrowse.org/demos/grape_peach_cacao/config.json',
@@ -142,7 +142,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             drawCurves: false,
             colorBy: 'reference',
             autoDiagonalize: true,
-            showColorLegend: false,
           },
         ],
       },
@@ -176,9 +175,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
             tracks: [['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava']],
             drawCurves: false,
             colorBy: 'default',
-            // legend would read just "match" here (whole-genome zoom drops the
-            // sub-pixel indels, and default red is self-evident) — hide it
-            showColorLegend: false,
             // drop short minimap2 alignments so the shared backbone reads as
             // clean ribbons instead of a dense noise band
             minAlignmentLength: 10000,
@@ -636,7 +632,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           views: [{ assembly: 'R64' }, { assembly: 'YJM1447' }],
           tracks: ['dotplot_track'],
           autoDiagonalize: true,
-          showColorLegend: false,
         },
       ],
     }),
