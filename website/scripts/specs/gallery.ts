@@ -104,23 +104,39 @@ export const gallerySpecs: ScreenshotSpec[] = [
       views: [
         {
           assembly: 'hg38',
-          loc: '12:6533000-6536000',
+          // zoomed out a bit so the promoter/TSS peak reads in gene context
+          loc: '12:6530000-6539000',
           type: 'LinearGenomeView',
           tracks: [
-            'ncbi_refseq_109_hg38_latest',
-            'gencode_promoter_hg38_ucsc',
+            {
+              trackId: 'ncbi_refseq_109_hg38_latest',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                geneGlyphMode: 'longestCoding',
+              },
+            },
+            {
+              trackId: 'gencode_promoter_hg38_ucsc',
+              // single-row promoter windows — a short lane is plenty
+              displaySnapshot: { type: 'LinearBasicDisplay', height: 50 },
+            },
             {
               trackId: 'catlas_scatac_celltypes_hg38',
               displaySnapshot: {
                 type: 'MultiLinearWiggleDisplay',
-                height: 220,
+                height: 150,
               },
             },
             {
               trackId: 'PAY22766-nanopore',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
-                colorBy: { type: 'modifications' },
+                // fiber-seq is a 6mA (code 'a') assay — hide the incidental 5mC
+                // ('m') / 5hmC ('h') calls so the legend shows only 6mA
+                colorBy: {
+                  type: 'modifications',
+                  modifications: { hiddenModifications: ['m', 'h'] },
+                },
                 displayMode: 'compact',
                 showLegend: true,
               },
@@ -131,7 +147,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 820,
+    viewportHeight: 900,
   },
   {
     mode: 'url',
@@ -290,7 +306,11 @@ export const gallerySpecs: ScreenshotSpec[] = [
                     height: 150,
                   },
                 },
-                'pacbio_vcf',
+                {
+                  trackId: 'pacbio_vcf',
+                  // short variant lane — only the BND call sits here
+                  displaySnapshot: { type: 'LinearVariantDisplay', height: 90 },
+                },
               ],
             },
             {
@@ -305,7 +325,11 @@ export const gallerySpecs: ScreenshotSpec[] = [
                     height: 150,
                   },
                 },
-                'pacbio_vcf',
+                {
+                  trackId: 'pacbio_vcf',
+                  // short variant lane — only the BND call sits here
+                  displaySnapshot: { type: 'LinearVariantDisplay', height: 90 },
+                },
               ],
             },
           ],

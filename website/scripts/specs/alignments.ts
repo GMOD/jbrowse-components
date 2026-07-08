@@ -368,7 +368,17 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // above the sashimi arcs (gene track too short to see)
           displaySnapshot: { type: 'LinearBasicDisplay', height: 120 },
         },
-        'Pairend_StrandSpecific_51mer_Human_hg19',
+        {
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          // flagship sashimi shot: label each junction arc with its supporting-
+          // read count, and use 'auto' placement so arcs split above/below by
+          // strand instead of all stacking upward
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            showSashimiLabels: true,
+            sashimiArcsMode: 'auto',
+          },
+        },
       ],
     }),
     readyText: 'B2M',

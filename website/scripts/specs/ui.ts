@@ -478,6 +478,9 @@ export const uiSpecs: ScreenshotSpec[] = [
                   // window so only the junction breakends show
                   displaySnapshot: {
                     type: 'LinearVariantDisplay',
+                    // only a handful of junction breakends survive the filter, so
+                    // keep the variant lane short
+                    height: 90,
                     jexlFiltersSetting: [
                       "jexl:get(feature,'end')-get(feature,'start') < 100000",
                     ],
@@ -495,6 +498,7 @@ export const uiSpecs: ScreenshotSpec[] = [
                   trackId: 'breast_cancer_sniffles_hg19',
                   displaySnapshot: {
                     type: 'LinearVariantDisplay',
+                    height: 90,
                     jexlFiltersSetting: [
                       "jexl:get(feature,'end')-get(feature,'start') < 100000",
                     ],
@@ -511,9 +515,9 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'SKBR3',
-    // both panels + connecting splines fit comfortably now that the pileups are
-    // shorter
-    viewportHeight: 760,
+    // taller viewport so both panels, the shortened variant lanes, and the
+    // connecting splines are fully captured
+    viewportHeight: 1000,
     readyTimeout: 60000,
     settleMs: 15000,
   },
@@ -1559,8 +1563,8 @@ export const uiSpecs: ScreenshotSpec[] = [
   // Set-default-session dialog: admin mode, Admin -> Set default session. The
   // dialog is a simple confirm ("Set current session as default" / "Clear
   // default session"); persisting the choice needs the real admin-server.
-  // Two-stage figure (show what to click to open it): stage 1 rings the
-  // "Set default session" item in the open Admin menu (the menu only appears in
+  // Two-stage figure (show what to click to open it): stage 1 boxes the
+  // "Admin" menu button that reveals the option (the menu only appears in
   // admin mode); stage 2 is the resulting dialog.
   {
     mode: 'url',
@@ -1583,7 +1587,7 @@ export const uiSpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Set default session' },
           { type: 'delay', ms: 300 },
         ],
-        annotations: [{ type: 'box', anchor: { text: 'Set default session' } }],
+        annotations: [{ type: 'box', anchor: { text: 'Admin' } }],
       },
       {
         actions: [
@@ -1710,7 +1714,14 @@ export const uiSpecs: ScreenshotSpec[] = [
       assembly: 'hg19',
       loc: 'chr11:5,875,140-6,784,158',
       tracks: [
-        'ncbi_gff_hg19',
+        {
+          trackId: 'ncbi_gff_hg19',
+          // descriptions add noise on the context gene track; names suffice here
+          displaySnapshot: {
+            type: 'LinearBasicDisplay',
+            showDescriptions: false,
+          },
+        },
         {
           trackId: 'roadmap_chromhmm_multirow_hg19',
           displaySnapshot: {

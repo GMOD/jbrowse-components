@@ -309,23 +309,27 @@ export const featuresSpecs: ScreenshotSpec[] = [
   // Gene feature-details sequence panel on a human gene (reviewer asked for a
   // human example over the volvox EDEN one, and a gene other than SELENOP —
   // that one's reserved for the transl_except/selenocysteine demo below in
-  // feature_detail_protein). PTEN (chr10, minus strand) is used here instead;
-  // the type selector is set to the collapsed-intron + up/down-stream variant
-  // so the panel shows the flanking sequence alongside the exon structure.
+  // feature_detail_protein). HBB (β-globin, chr11, minus strand) is used here:
+  // reviewer asked for a *small* gene so the sequence panel shows short UTR,
+  // CDS, and intron segments all at once rather than PTEN's huge exons. HBB is
+  // the classic compact 3-exon gene (~1.6 kb, two small introns, short 5'/3'
+  // UTRs). The type selector is set to the collapsed-intron + up/down-stream
+  // variant so the panel shows the flanking sequence alongside the exon
+  // structure.
   //
   // Uses config_demo's hg38 + ncbi_refseq_109_hg38_latest (labels by gene
   // symbol and exposes real CDS subfeatures, unlike the hg19 ncbi_gff / Gencode
   // tracks the earlier FAF1 attempt tried). geneGlyphMode 'longestCoding' draws a
   // single transcript, labeled with its gene symbol as a real floating DOM
-  // label (LinearBasicDisplay always renders one — same affordance the
-  // collapse-introns PTEN click uses), so the click targets it by text rather
-  // than a pixel coordinate that drifts whenever the glyph's layout changes.
+  // label (LinearBasicDisplay always renders one), so the click targets it by
+  // text rather than a pixel coordinate that drifts whenever the glyph's layout
+  // changes.
   {
     mode: 'url',
     name: 'feature_detail_sequence',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr10:87,863,113-87,971,930',
+      loc: 'chr11:5,224,000-5,228,500',
       tracks: [
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
@@ -342,7 +346,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportHeight: 900,
     actions: [
-      { type: 'click', text: 'PTEN' },
+      { type: 'click', text: 'HBB' },
       { type: 'waitForText', text: 'Show feature sequence' },
       { type: 'delay', ms: 1000 },
       { type: 'click', text: 'Show feature sequence' },
@@ -425,6 +429,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
       // (no DOM text / overlay div to target), so a coordinate click is required
       { type: 'click', from: { x: 430, y: 314 } },
       { type: 'waitForText', text: 'extrafield' },
+      // the coordinate click leaves the cursor on the gene, so the hover overlay
+      // shades it in the capture — move the pointer off the track to clear it
+      { type: 'hover', from: { x: 750, y: 30 } },
       { type: 'delay', ms: 2000 },
     ],
     // ring the formatDetails-generated hyperlink in the feature-details panel,

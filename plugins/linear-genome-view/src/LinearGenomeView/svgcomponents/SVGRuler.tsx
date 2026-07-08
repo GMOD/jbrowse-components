@@ -70,11 +70,18 @@ function Ruler({
             .filter(({ type }) => type === 'major')
             .map(({ base, x }) => {
               const label = getTickDisplayStr(base + 1, bpPerPx)
-              return labelFitsInBlock(x - 3, tickLabelWidth(label), widthPx) ? (
+              const width = tickLabelWidth(label)
+              // center the label on its major tick (textAnchor middle at x), so
+              // the SVG export matches the on-screen scalebar, which centers via
+              // a zero-width flex tick (ScalebarCoordinateLabels). The fit test
+              // uses the centered span [x - width/2, x + width/2] so a label near
+              // either block edge is dropped rather than clipped.
+              return labelFitsInBlock(x - width / 2, width, widthPx) ? (
                 <text
                   key={`label-${base}`}
-                  x={x - 3}
+                  x={x}
                   y={numbersBaselineY}
+                  textAnchor="middle"
                   fontSize={RULER_TICK_FONT_SIZE}
                   fill={color}
                 >
