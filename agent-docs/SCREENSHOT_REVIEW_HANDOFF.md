@@ -39,6 +39,16 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
 
 ## Useful facts learned
 
+- **jbrowse-img (CliSpec) gene tracks: use `--hub <genome> --track <trackId>`,
+  NOT a raw `--gffgz <url>`.** `--hub hg38` supplies the assembly (with built-in
+  refName aliases — no `--fasta`/`--aliases` needed) plus a bonus ideogram, and
+  `--track hg38-ncbiRefSeqCurated` adds a *pre-configured* hosted NCBI RefSeq
+  track. A raw UCSC `hg38.gff.gz` also carries RefSeqGene `match`/`region`
+  features that have no `Name` → they render as bare-UUID full-width bars. Find
+  hosted trackIds with `jb2export list <genome> <filter>` (e.g. `list hg38
+  refseq`). `hg19-ncbiRefSeqCurated`/`hg38-ncbiRefSeqCurated` are the standard
+  gene tracks; `--track` tokens stack above `--bam`/`--cram`/`--hic` in argv
+  order (so gene-on-top = list `--track` before the data track).
 - **NCBI gene tracks already in `config_demo.json`** (no rehosting needed to
   "add a gene track"): `ncbi_refseq_109_hg38_latest` (hg38), `ncbi_gff_hg19`
   (hg19). Add the trackId as the first entry in the session `tracks` array.
