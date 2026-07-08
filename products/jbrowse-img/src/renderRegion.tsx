@@ -253,12 +253,11 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
     }
   }
 
-  for (const track of trackList) {
-    applyTrackOpts(track, view)
-  }
-
-  // Hosted trackIds from --track (present in a --hub/--config config). The token
-  // is resolved to a real trackId (accepting the assembly-name-prefix shorthand),
+  // Hosted trackIds from --track (present in a --hub/--config config) go first,
+  // so they land above the file-type (--bam/--gffgz/--hic/...) tracks added
+  // below — argv order top-to-bottom, same convention as every other stacked
+  // view in this CLI (synteny levels, multi-way assemblies). The token is
+  // resolved to a real trackId (accepting the assembly-name-prefix shorthand),
   // then the display category comes from that track's own type so modifiers
   // (height:, color:, …) route to the right display slots.
   for (const [, [trackInput, ...displayOpts]] of showTracks) {
@@ -275,6 +274,10 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
         displayOpts,
       )
     }
+  }
+
+  for (const track of trackList) {
+    applyTrackOpts(track, view)
   }
 
   const svg = await renderLinearToSvg(view, {
@@ -343,6 +346,7 @@ const renderDotplot: ModeRenderer = async ctx => {
         views: comparativeViews(ctx).slice(0, 2),
         tracks,
         ...(ctx.opts.autoDiagonalize ? { autoDiagonalize: true } : {}),
+        ...(ctx.opts.showColorLegend ? { showColorLegend: true } : {}),
       }
   const view = await addInitView<DotplotViewModel>(ctx, 'DotplotView', init)
   const svg = await renderDotplotToSvg(view, {
@@ -357,8 +361,15 @@ const renderDotplot: ModeRenderer = async ctx => {
 // don't clobber the view's own defaults. The full set lives in --spec; these are
 // the busy-comparison knobs the simple subcommand exposes directly.
 function syntenyViewKnobs(opts: Opts) {
-  const { autoDiagonalize, drawCurves, minAlignmentLength, colorBy, alpha } =
-    opts
+  const {
+    autoDiagonalize,
+    drawCurves,
+    minAlignmentLength,
+    colorBy,
+    alpha,
+    cigarMode,
+    showColorLegend,
+  } = opts
   return {
     ...(autoDiagonalize ? { autoDiagonalize: true } : {}),
     ...(drawCurves ? { drawCurves: true } : {}),
@@ -366,6 +377,8 @@ function syntenyViewKnobs(opts: Opts) {
     ...(colorBy ? { colorBy } : {}),
     ...(alpha === undefined ? {} : { alpha }),
     ...(opts.levelHeights ? { levelHeights: opts.levelHeights } : {}),
+    ...(cigarMode ? { cigarMode } : {}),
+    ...(showColorLegend ? { showColorLegend: true } : {}),
   }
 }
 

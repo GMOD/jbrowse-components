@@ -141,4 +141,8 @@ globalThis.__JBROWSE_HITBOX_DEBUG = false                                       
                           show chevrons
                           etc3
 
-## mouseover sequencefeaturepanel connect to linaergenomeview
+## mouseover sequencefeaturepanel connect to linaergenomeview3
+
+## svg export should just use black for primary text, it uses weird greyish text maybe due to getStrokeProps?3
+
+## increase density of svg ruler see hic jbrowse-img hic

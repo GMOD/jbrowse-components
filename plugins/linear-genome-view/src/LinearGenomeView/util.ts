@@ -169,15 +169,23 @@ function refLabelLayout(
 ) {
   const regionEnd = regionEndPx.get(displayedRegionIndex)
   const labelStartPx = sticky ? offsetPx : block.offsetPx
+  // A non-sticky label's transform anchors at the same x as the region
+  // divider drawn just to its left (SVGRegionSeparators, a 3px bar centered
+  // on this same block.offsetPx edge), so paddingLeft must clear that bar's
+  // width or the label text starts on top of it. Sticky labels sit at the
+  // viewport's own left edge, with no divider to clear.
+  const paddingLeft = sticky ? 0 : 4
   const maxWidth =
-    regionEnd === undefined ? undefined : regionEnd - labelStartPx - 2
+    regionEnd === undefined
+      ? undefined
+      : regionEnd - labelStartPx - paddingLeft - 1
   if (maxWidth !== undefined && maxWidth < 20) {
     return undefined
   }
   const transform = sticky
     ? Math.max(0, -offsetPx)
     : block.offsetPx - offsetPx - 1
-  return { transform, maxWidth }
+  return { transform, maxWidth, paddingLeft }
 }
 
 /**
@@ -231,7 +239,7 @@ export function getScalebarRefNameLabels({
       displayedRegionIndex: idx,
       transform: layout.transform,
       maxWidth: layout.maxWidth,
-      paddingLeft: sticky ? 0 : 1,
+      paddingLeft: layout.paddingLeft,
       text: withPrefix ? `${prefix}:${block.refName}` : block.refName,
     })
   }

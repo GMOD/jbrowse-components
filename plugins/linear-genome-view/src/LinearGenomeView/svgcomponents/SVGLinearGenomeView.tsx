@@ -95,6 +95,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
             fontSize={fontSize}
             rulerHeight={rulerHeight}
             cytobandHeight={cytobandHeight}
+            headerHeight={headerHeight}
           />
         </g>
         {showGridlines ? (

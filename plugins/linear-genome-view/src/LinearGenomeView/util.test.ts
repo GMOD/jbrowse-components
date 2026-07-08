@@ -292,7 +292,7 @@ describe('getScalebarRefNameLabels', () => {
         refName: 'chr1',
         displayedRegionIndex: 0,
         transform: 0,
-        maxWidth: 1598,
+        maxWidth: 1599,
         paddingLeft: 0,
         text: 'chr1',
       },

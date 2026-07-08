@@ -56,7 +56,12 @@ export default function LinearGCContentDisplay(pluginManager: PluginManager) {
       // whiskers) and hides negative GC-skew as if it were positive.
       summaryScoreMode: {
         type: 'stringEnum',
-        model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
+        model: types.enumeration('Score type', [
+          'max',
+          'min',
+          'avg',
+          'whiskers',
+        ]),
         defaultValue: 'avg',
       },
     },

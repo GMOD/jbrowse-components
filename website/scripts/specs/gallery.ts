@@ -153,7 +153,8 @@ export const gallerySpecs: ScreenshotSpec[] = [
       tracks: [
         'ncbi_refseq_109_hg38_latest',
         {
-          trackId: 'NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted',
+          trackId:
+            'NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
             colorBy: { type: 'modifications' },

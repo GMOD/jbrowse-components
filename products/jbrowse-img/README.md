@@ -342,7 +342,7 @@ jb2export --fasta data/volvox/volvox.fa --aliases data/volvox/volvox.aliases.txt
 
 A `--hic` track draws the contact matrix as a triangular heatmap. This example
 streams the public hg19 demo `.hic` and shows the TAD structure along chr1, with
-the NCBI RefSeq gene track (via `--hub`/`--track`) underneath for context:
+the NCBI RefSeq gene track (via `--hub`/`--track`) on top for context:
 
 ```bash
 jb2export --hub hg19 \
@@ -359,7 +359,7 @@ Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`) render their glyphs with
 labels. Reproducible with the bundled volvox annotations:
 
 ```bash
-jb2export --fasta data/volvox/volvox.fa --gffgz data/volvox/volvox.sort.gff3.gz \
+jb2export --fasta data/volvox/volvox.fa --gffgz data/volvox/volvox.sort.gff3.gz height:250 \
   --loc ctgA:1-50000 --width 1200 --out genes.png
 ```
 
@@ -387,7 +387,7 @@ the keys above.)
 ```bash
 jb2export --fasta data/volvox/volvox.fa \
   --bigwig data/volvox/volvox-sorted.bam.coverage.bw \
-  --gffgz data/volvox/volvox.sort.gff3.gz \
+  --gffgz data/volvox/volvox.sort.gff3.gz height:250 \
   --loc ctgA:1-20000 --themeName darkStock --width 1200 --out dark.png
 ```
 
@@ -908,6 +908,8 @@ Options:
   --colorBy             Color synteny ribbons, e.g. "query" tints by query chromosome
   --alpha               Ribbon opacity 0-1 (lower reveals density)
   --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
+  --cigarMode           CIGAR-level indel detail in synteny ribbons: 'off' (blocks only), 'matches' (indels see-through), or 'full' (indels colored) [default: full]
+  --showColorLegend     Show the floating colorBy legend [default: false]
 
 Examples:
   jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg
@@ -953,6 +955,8 @@ Options:
   --colorBy             Color synteny ribbons, e.g. "query" tints by query chromosome
   --alpha               Ribbon opacity 0-1 (lower reveals density)
   --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
+  --cigarMode           CIGAR-level indel detail in synteny ribbons: 'off' (blocks only), 'matches' (indels see-through), or 'full' (indels colored) [default: full]
+  --showColorLegend     Show the floating colorBy legend [default: false]
 
 Examples:
   jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg

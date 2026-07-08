@@ -30,6 +30,7 @@ export default function SVGView({
   trackLabels,
   trackLabelOffset,
   contentTop,
+  rulerHeight = contentTop,
   tracksHeight,
   showGridlines,
 }: {
@@ -40,6 +41,10 @@ export default function SVGView({
   trackLabels: TrackLabelMode
   trackLabelOffset: number
   contentTop: number
+  // The ruler's own content budget, when it's smaller than the full
+  // contentTop gap (e.g. breakpoint-split reserves extra header padding
+  // above contentTop that the ruler doesn't use). Defaults to contentTop.
+  rulerHeight?: number
   tracksHeight: number
   showGridlines: boolean
 }) {
@@ -54,7 +59,7 @@ export default function SVGView({
         >
           {view.assemblyNames.join(', ')}
         </text>
-        <SVGRuler model={view} fontSize={fontSize} />
+        <SVGRuler model={view} fontSize={fontSize} rulerHeight={rulerHeight} />
       </g>
       {showGridlines ? (
         <g transform={`translate(${trackLabelOffset} ${contentTop})`}>

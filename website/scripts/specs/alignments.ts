@@ -506,6 +506,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           ...menuCascade(['Color by...', 'Color by methylation']),
         ],
         annotations: cascadeBoxes([
+          'Color by...',
           'Color by methylation',
           'Color by modification type',
         ]),

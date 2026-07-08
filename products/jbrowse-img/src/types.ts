@@ -38,6 +38,8 @@ export interface Opts {
   colorBy?: string
   alpha?: number
   levelHeights?: number[]
+  cigarMode?: 'off' | 'matches' | 'full'
+  showColorLegend?: boolean
   // N-way comparative views: a session-spec JSON (inline or path to .json,
   // the same shape as the web's `&session=spec-`) that supplies the view's
   // sub-views and level-indexed tracks directly. Assemblies and synteny-track

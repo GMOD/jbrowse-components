@@ -66,11 +66,13 @@ export default function SVGHeader({
   fontSize,
   cytobandHeight,
   rulerHeight,
+  headerHeight,
 }: {
   model: LinearGenomeViewModel
   rulerHeight: number
   fontSize: number
   cytobandHeight: number
+  headerHeight: number
 }) {
   const { assemblyNames, showCytobands } = model
   const { assemblyManager } = getSession(model)
@@ -115,7 +117,16 @@ export default function SVGHeader({
         <SVGScalebar model={model} fontSize={fontSize} />
       </g>
       <g transform={`translate(0 ${rulerHeight + y})`}>
-        <SVGRuler model={model} fontSize={fontSize} />
+        {/* Tracks start at headerHeight + rulerHeight + cytobandOffset + 10
+            past this component's own origin (renderToSvg's `offset`), and
+            this group is already translated down by rulerHeight + y, so the
+            space actually left for SVGRuler's own content is headerHeight +
+            10 (the cytoband/y terms cancel) — not rulerHeight itself. */}
+        <SVGRuler
+          model={model}
+          fontSize={fontSize}
+          rulerHeight={headerHeight + 10}
+        />
       </g>
     </g>
   )

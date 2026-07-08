@@ -15,6 +15,7 @@ import {
   buildHelp,
   comparativeOptionNames,
   getBoolean,
+  getCigarMode,
   getNumber,
   getNumberList,
   getOptionalNumber,
@@ -133,6 +134,8 @@ async function main() {
       colorBy: getString(rest, 'colorBy'),
       alpha: getOptionalNumber(rest, 'alpha'),
       levelHeights: getNumberList(rest, 'levelHeights'),
+      cigarMode: getCigarMode(rest),
+      showColorLegend: getBoolean(rest, 'showColorLegend'),
       spec: getString(rest, 'spec'),
       trackList,
     })

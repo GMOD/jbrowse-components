@@ -86,6 +86,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
                 trackLabels={trackLabels}
                 trackLabelOffset={trackLabelOffset}
                 contentTop={offset}
+                rulerHeight={rulerHeight}
                 tracksHeight={tracksHeights[idx]!}
                 showGridlines={showGridlines}
               />

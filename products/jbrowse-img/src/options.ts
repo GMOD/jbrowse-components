@@ -113,6 +113,16 @@ const comparativeOptionDefs: OptionDef[] = [
     description:
       'Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)',
   },
+  {
+    name: 'cigarMode',
+    description:
+      "CIGAR-level indel detail in synteny ribbons: 'off' (blocks only), 'matches' (indels see-through), or 'full' (indels colored) [default: full]",
+  },
+  {
+    name: 'showColorLegend',
+    description: 'Show the floating colorBy legend',
+    default: false,
+  },
 ]
 
 // Comparative options accepted only by the dotplot/synteny subcommands; exposed
@@ -217,6 +227,13 @@ const trackLabelModes: TrackLabelMode[] = ['offset', 'overlay', 'left', 'none']
 export function getTrackLabels(rest: Record<string, unknown>) {
   const v = getString(rest, 'trackLabels')
   return trackLabelModes.find(mode => mode === v)
+}
+
+export const cigarModes = ['off', 'matches', 'full'] as const
+
+export function getCigarMode(rest: Record<string, unknown>) {
+  const v = getString(rest, 'cigarMode')
+  return cigarModes.find(mode => mode === v)
 }
 
 export const knownOptions = new Set([
