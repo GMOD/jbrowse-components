@@ -54,7 +54,12 @@ export async function renderSvg(
   const view = getContainingView(model) as LinearGenomeViewModel
   const height = opts.overrideHeight ?? model.height
   return (
-    <SvgChrome error={model.error} width={view.width} height={height}>
+    <SvgChrome
+      error={model.error}
+      regionTooLarge={model.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
       <MafSvgBody model={model} view={view} height={height} opts={opts} />
     </SvgChrome>
   )

@@ -182,23 +182,30 @@ afterEach(() => {
 describe('MultiLinearWiggleDisplay zero-feature loading', () => {
   // Regression: a MultiQuantitativeTrack fed a plain feature adapter (the
   // modkit bedMethyl use-case) over a region the file doesn't cover returns
-  // zero sources. renderState used to `return undefined` on
-  // sources.length === 0, which — unlike the single-wiggle path — never reached
-  // the resolveRenderState stub, so canvasDrawn never flipped and the loading
-  // overlay spun forever. After a zero-feature fetch renderState must resolve to
-  // the stub so the canvas clears and the display settles into NoDataMessage.
-  it('renderState falls back to a stub after a zero-feature fetch', async () => {
+  // zero sources / zero features. renderState must still resolve (to the
+  // EMPTY_PLOT_DOMAIN stub) so renderBlocks runs, clears the canvas, and flips
+  // canvasDrawn — otherwise the display spins on the loading overlay forever.
+  // "Still loading" is now the render callback's `rpcDataMap.size === 0`
+  // first-paint gate, not a nullable renderState: the state is a stub both
+  // before and after the fetch; what changes is that a (zero-feature) region
+  // entry has loaded, so the size gate passes and the stub paints.
+  it('renderState stays a stub through a zero-feature fetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyMultiWiggleData())
     const { display } = createDisplay()
 
-    expect(display.renderState).toBeUndefined()
+    // before the fetch: nothing loaded (the first-paint gate holds), stub state
+    expect(display.rpcDataMap.size).toBe(0)
+    expect(display.renderState).toBeDefined()
 
     jest.advanceTimersByTime(700)
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
     })
 
+    // after the zero-feature fetch: an (empty) region entry exists, so the size
+    // gate passes and the stub paints; the score domain stays undefined.
+    expect(display.rpcDataMap.size).toBeGreaterThan(0)
     expect(display.numSources).toBe(0)
     expect(display.domain).toBeUndefined()
     expect(display.renderState).toBeDefined()

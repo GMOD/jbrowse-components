@@ -31,7 +31,12 @@ export async function renderSvg(
   const view = getContainingView(model) as LGV
   const height = opts?.overrideHeight ?? model.height
   return (
-    <SvgChrome error={model.error} width={view.width} height={height}>
+    <SvgChrome
+      error={model.error}
+      regionTooLarge={model.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
       <MultiWiggleSvgBody
         model={model}
         view={view}
@@ -56,12 +61,11 @@ function MultiWiggleSvgBody({
   const { offsetPx } = view
   // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
   const scalebarLeft = Math.max(-offsetPx, 0)
-  const { rpcDataMap, domain, numSources, renderState } = model
+  const { rpcDataMap, renderState } = model
 
-  if (rpcDataMap.size === 0 || !domain || numSources === 0 || !renderState) {
-    return null
-  }
-
+  // No data-size gate: renderState is always defined (a [0,1] stub until
+  // autoscale resolves), so an empty region paints an empty plot; the per-source
+  // scales draw only where a real domain exists (MultiWiggleSvgScales).
   const { hierarchy, showTree, treeAreaWidth } = model
   const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
   const scalesEl = (

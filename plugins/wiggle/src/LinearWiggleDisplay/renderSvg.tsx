@@ -31,7 +31,12 @@ export async function renderSvg(
   const view = getContainingView(model) as LGV
   const height = opts?.overrideHeight ?? model.height
   return (
-    <SvgChrome error={model.error} width={view.width} height={height}>
+    <SvgChrome
+      error={model.error}
+      regionTooLarge={model.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
       <WiggleSvgBody model={model} view={view} height={height} opts={opts} />
     </SvgChrome>
   )
@@ -53,19 +58,18 @@ function WiggleSvgBody({
   const scalebarLeft = Math.max(-offsetPx, 0)
   const { ticks, rpcDataMap, domain, renderState } = model
 
-  if (rpcDataMap.size === 0 || !domain || !renderState) {
-    return null
-  }
-
+  // No data-size gate: renderState is always defined (a [0,1] stub until
+  // autoscale resolves), so an empty region paints an empty plot. The axis and
+  // legend are drawn only once a real `domain` / `ticks` exist.
   let legendEl: React.ReactNode = null
   if (model.isDensityMode) {
-    legendEl = (
+    legendEl = domain ? (
       <ScoreLegend
         domain={domain}
         scaleType={model.scaleType}
         canvasWidth={view.width}
       />
-    )
+    ) : null
   } else if (ticks) {
     legendEl = (
       <g transform={`translate(${scalebarLeft})`}>

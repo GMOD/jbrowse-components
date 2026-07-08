@@ -1738,9 +1738,6 @@ export default function stateModelFactory(
          */
         get renderState() {
           const view = getContainingView(self) as LGV
-          if (!view.initialized) {
-            return undefined
-          }
           const palette = self.colorPalette
           return {
             scrollTop: self.scrollTop,
@@ -2632,13 +2629,13 @@ export default function stateModelFactory(
                 sections: self.sourceSections,
               })
             },
-            render: b => {
-              const state = self.renderState
-              if (!state || self.laidOutPileupMap.size === 0) {
-                return false
-              }
-              return b.renderBlocks(self.renderBlocks, state)
-            },
+            // size === 0 keeps first paint gated until data arrives, so the
+            // loading overlay stays up (canvasDrawn stays false); an empty but
+            // loaded region has size > 0 and paints an empty pileup.
+            render: b =>
+              self.laidOutPileupMap.size === 0
+                ? false
+                : b.renderBlocks(self.renderBlocks, self.renderState),
           })
         },
       }))

@@ -61,7 +61,12 @@ export async function renderSvg(
   const view = getContainingView(model) as LGV
   const height = opts?.overrideHeight ?? model.height
   return (
-    <SvgChrome error={model.error} width={view.width} height={height}>
+    <SvgChrome
+      error={model.error}
+      regionTooLarge={model.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
       <CanvasFeaturesSvgBody
         model={model}
         view={view}
@@ -83,10 +88,6 @@ function CanvasFeaturesSvgBody({
   height: number
   opts: ExportSvgDisplayOptions | undefined
 }) {
-  if (model.laidOutDataMap.size === 0) {
-    return null
-  }
-
   const visibleRegions = view.visibleRegions
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
   // canvas spans the viewport (visibleRegions coords are viewport-relative and

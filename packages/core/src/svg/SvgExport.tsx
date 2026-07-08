@@ -84,25 +84,58 @@ export function SVGErrorBox({
   )
 }
 
+// Neutral informational box for a soft terminal state (region too large): the
+// calm counterpart to SVGErrorBox's red-alarm styling. Keeps the track's
+// reserved height and labels a state that would otherwise export as a silent
+// blank.
+export function SVGMessageBox({
+  message,
+  width,
+  height,
+}: {
+  message: string
+  width: number
+  height: number
+}) {
+  return (
+    <>
+      <rect x={0} y={0} width={width} height={height} fill="#f2f2f2" />
+      <text x={10} y={height / 2} fill="#555555" fontSize={14}>
+        {message}
+      </text>
+    </>
+  )
+}
+
 // SVG-export counterpart of DisplayChrome (BaseLinearDisplay/components): the
-// shared terminal-state gate every display's `renderSvg` ends in — render a
-// themed SVGErrorBox on error, otherwise the children. The display body is an
-// ordinary child component, rendered (and thus painted) only in the non-error
-// branch. The readiness wait stays an explicit `await awaitSvgReady(model)` in
-// each `renderSvg` (the one genuinely async step), so this component is sync.
+// single terminal-state gate every display's `renderSvg` ends in. It renders the
+// terminal state itself — a themed SVGErrorBox on error, a "region too large"
+// message next — and only paints the children when the display has renderable
+// data. The body is an ordinary child component, so it never runs in a terminal
+// state and no `renderSvg` re-detects one from empty/absent data. The readiness
+// wait stays an explicit `await awaitSvgReady(model)` in each `renderSvg` (the
+// one genuinely async step), so this component is sync.
 export function SvgChrome({
   error,
+  regionTooLarge,
   width,
   height,
   children,
 }: {
   error: unknown
+  regionTooLarge?: boolean
   width: number
   height: number
   children: React.ReactNode
 }) {
   return error ? (
     <SVGErrorBox error={error} width={width} height={height} />
+  ) : regionTooLarge ? (
+    <SVGMessageBox
+      message="Region too large to render"
+      width={width}
+      height={height}
+    />
   ) : (
     <>{children}</>
   )

@@ -1,11 +1,11 @@
+/* eslint-disable react-refresh/only-export-components */
 import type React from 'react'
-
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SVGErrorBox,
+  SvgChrome,
   SvgClipRect,
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -33,35 +33,49 @@ export async function renderSvg(
   model: LinearAlignmentsDisplayModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  const theme = createJBrowseTheme(opts?.theme)
-  const view = getContainingView(model) as LinearGenomeViewModel
   // svgReady waits for ALL visible regions, not just the first to stream in, so
   // whole-genome / multi-region exports aren't partially drawn.
   await awaitSvgReady(model)
-
-  if (model.error) {
-    return (
-      <SVGErrorBox
-        error={model.error}
-        width={view.width}
-        height={model.height}
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const height = opts?.overrideHeight ?? model.height
+  return (
+    <SvgChrome
+      error={model.error}
+      regionTooLarge={model.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
+      <AlignmentsSvgBody
+        model={model}
+        view={view}
+        height={height}
+        opts={opts}
       />
-    )
-  }
+    </SvgChrome>
+  )
+}
 
+// An empty (zero-read) region draws an empty pileup + coverage axis here, so
+// this body renders unconditionally — there's no data-size gate. Readiness and
+// the error terminal are already handled upstream (awaitSvgReady / SvgChrome).
+function AlignmentsSvgBody({
+  model,
+  view,
+  height,
+  opts,
+}: {
+  model: LinearAlignmentsDisplayModel
+  view: LinearGenomeViewModel
+  height: number
+  opts?: ExportSvgDisplayOptions
+}) {
+  const theme = createJBrowseTheme(opts?.theme)
   const baseState = model.renderState
-  if (
-    !baseState ||
-    model.sourceSections.every(s => s.laidOutPileupMap.size === 0)
-  ) {
-    return null
-  }
-
   // canvas spans the viewport (visibleRegions coords are viewport-relative and
   // clipped to view.width below), matching the on-screen canvas rather than the
   // full-genome totalWidthPx
   const canvasWidth = view.width
-  const displayHeight = model.height
+  const displayHeight = height
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const { coverageTicks } = model
 

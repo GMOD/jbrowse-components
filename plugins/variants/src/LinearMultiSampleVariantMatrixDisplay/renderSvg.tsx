@@ -30,7 +30,12 @@ export async function renderSvg(
   const view = getContainingView(model) as LGV
   const height = opts?.overrideHeight ?? model.height
   return (
-    <SvgChrome error={model.error} width={view.width} height={height}>
+    <SvgChrome
+      error={model.error}
+      regionTooLarge={model.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
       <VariantMatrixSvgBody
         model={model}
         view={view}
@@ -53,7 +58,9 @@ function VariantMatrixSvgBody({
   opts: ExportSvgDisplayOptions | undefined
 }) {
   const cellData = model.cellData as MatrixCellData | undefined
-  if (!cellData || cellData.numCells === 0) {
+  // narrow the nullable cell data; an empty (numCells === 0) matrix still
+  // paints nothing — drawVariantMatrixBlocks handles it.
+  if (!cellData) {
     return null
   }
 

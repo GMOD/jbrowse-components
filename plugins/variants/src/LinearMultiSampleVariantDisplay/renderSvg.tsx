@@ -32,7 +32,12 @@ export async function renderSvg(
   const view = getContainingView(model) as LGV
   const height = opts?.overrideHeight ?? model.height
   return (
-    <SvgChrome error={model.error} width={view.width} height={height}>
+    <SvgChrome
+      error={model.error}
+      regionTooLarge={model.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
       <VariantSvgBody model={model} view={view} height={height} opts={opts} />
     </SvgChrome>
   )

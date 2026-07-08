@@ -33,7 +33,12 @@ export async function renderSvg(
   const view = getContainingView(self) as LGV
   const height = opts.overrideHeight ?? self.height
   return (
-    <SvgChrome error={self.error} width={view.width} height={height}>
+    <SvgChrome
+      error={self.error}
+      regionTooLarge={self.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
       <HicSvgBody self={self} view={view} height={height} opts={opts} />
     </SvgChrome>
   )
@@ -58,7 +63,9 @@ function HicSvgBody({
     yScalar,
     colorMaxScore,
   } = self
-  if (!rpcData || rpcData.numContacts === 0) {
+  // narrow the nullable fetch result; an empty (numContacts === 0) result
+  // still paints an empty matrix — drawHicBlocks handles it.
+  if (!rpcData) {
     return null
   }
 

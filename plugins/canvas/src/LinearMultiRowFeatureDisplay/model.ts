@@ -320,11 +320,8 @@ export default function stateModelFactory(
        * #getter
        * Render state passed to the GPU/Canvas2D backend each frame.
        */
-      get renderState(): MultiRowRenderState | undefined {
+      get renderState(): MultiRowRenderState {
         const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view.initialized) {
-          return undefined
-        }
         return {
           canvasWidth: view.width,
           canvasHeight: self.height,
@@ -529,11 +526,7 @@ export default function stateModelFactory(
             return { instanceBuffer: buffer, instanceCount: count }
           },
           b => {
-            const state = self.renderState
-            if (!state) {
-              return false
-            }
-            b.renderBlocks(self.renderBlocks, self.rpcDataMap, state)
+            b.renderBlocks(self.renderBlocks, self.rpcDataMap, self.renderState)
             return true
           },
         )

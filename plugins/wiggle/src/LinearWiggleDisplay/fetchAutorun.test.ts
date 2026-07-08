@@ -356,23 +356,30 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     expect(JSON.stringify(display.rpcProps())).toBe(before)
   })
 
-  // Regression: a region containing zero features (e.g. GWAS at a window
-  // with no SNPs) must not strand the loading overlay forever. Before fetch
-  // completes renderState is undefined (overlay stays). After a zero-feature
-  // fetch the domain is undefined but renderState falls back to a stub so
-  // renderBlocks runs, the canvas is cleared, and canvasDrawn can flip.
-  it('renderState falls back to a stub after a zero-feature fetch', async () => {
+  // Regression: a region containing zero features (e.g. GWAS at a window with
+  // no SNPs) must not strand the loading overlay forever. renderState always
+  // resolves (to the EMPTY_PLOT_DOMAIN stub) so renderBlocks runs, clears the
+  // canvas, and canvasDrawn can flip once data loads; "still loading" is the
+  // render callback's `rpcDataMap.size === 0` first-paint gate, not a nullable
+  // renderState. So the state is a stub before and after the fetch — what
+  // changes is that a (zero-feature) region entry has loaded.
+  it('renderState stays a stub through a zero-feature fetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
     const { display } = createDisplay()
 
-    expect(display.renderState).toBeUndefined()
+    // before the fetch: nothing loaded (the first-paint gate holds), stub state
+    expect(display.rpcDataMap.size).toBe(0)
+    expect(display.renderState).toBeDefined()
 
     jest.advanceTimersByTime(400)
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
     })
 
+    // after the zero-feature fetch: a region entry exists so the size gate
+    // passes and the stub paints; the score domain stays undefined.
+    expect(display.rpcDataMap.size).toBeGreaterThan(0)
     expect(display.domain).toBeUndefined()
     expect(display.renderState).toBeDefined()
   })

@@ -35,7 +35,12 @@ export async function renderSvg(
   const view = getContainingView(self) as LGV
   const height = opts.overrideHeight ?? self.height
   return (
-    <SvgChrome error={self.error} width={view.width} height={height}>
+    <SvgChrome
+      error={self.error}
+      regionTooLarge={self.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
       <LdSvgBody self={self} view={view} height={height} opts={opts} />
     </SvgChrome>
   )
@@ -65,7 +70,9 @@ function LdSvgBody({
     yScalar,
   } = self
 
-  if (!rpcData || rpcData.numCells === 0) {
+  // narrow the nullable fetch result; an empty (numCells === 0) result still
+  // paints an empty triangle — drawLDBlocks handles it.
+  if (!rpcData) {
     return null
   }
 

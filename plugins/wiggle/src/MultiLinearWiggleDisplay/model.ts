@@ -176,28 +176,21 @@ export default function stateModelFactory(
         // rows stack edge-to-edge for maximum density. Don't "unify" with
         // LinearWiggleDisplay's inset — the divergence is intentional.
         const height = self.height
-        // Don't short-circuit on an empty source list: it means either "still
-        // loading" (no fetch has completed) or "fetch completed with zero
-        // features". Only resolveRenderState can tell them apart, via
-        // rpcDataMap.size — no data → undefined (keep the loading overlay up),
-        // has data → a [0,1] stub that renders empty, clears the canvas, and
-        // flips canvasDrawn so the overlay resolves to the NoDataMessage instead
-        // of spinning forever (a region the bedMethyl file doesn't cover). An
-        // early `return undefined` here bypassed that stub path and left the
-        // display loading indefinitely.
-        return resolveRenderState(
-          self.domain,
-          self.rpcDataMap.size > 0,
-          domain =>
-            makeRenderState(
-              domain,
-              self.scaleType,
-              self.renderingType,
-              width,
-              height,
-              self.isOverlay ? 1 : self.numSources,
-              self.scatterPointSize,
-            ),
+        // Always defined: until autoscale resolves a domain, resolveRenderState
+        // returns a [0,1] stub so an uncovered region still renders (clears the
+        // canvas, flips canvasDrawn, resolves the overlay to the NoDataMessage
+        // instead of spinning forever). "Still loading" is expressed separately
+        // by the render callback's `rpcDataMap.size === 0` first-paint gate.
+        return resolveRenderState(self.domain, domain =>
+          makeRenderState(
+            domain,
+            self.scaleType,
+            self.renderingType,
+            width,
+            height,
+            self.isOverlay ? 1 : self.numSources,
+            self.scatterPointSize,
+          ),
         )
       },
 
@@ -296,11 +289,13 @@ export default function stateModelFactory(
             backend,
             data => buildSourceRenderData(data, self.gpuProps()),
             (b, encoded) => {
-              const state = self.renderState
-              if (!state) {
+              // size === 0 gates first paint until data lands (keep the loading
+              // overlay up); once loaded, renderState is always a real-or-stub
+              // state, so an uncovered region paints a cleared canvas.
+              if (self.rpcDataMap.size === 0) {
                 return false
               }
-              b.renderBlocks(self.renderBlocks, encoded, state)
+              b.renderBlocks(self.renderBlocks, encoded, self.renderState)
               return true
             },
           )

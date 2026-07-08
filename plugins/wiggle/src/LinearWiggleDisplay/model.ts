@@ -164,19 +164,16 @@ export default function stateModelFactory(
         const view = getContainingView(self) as LGV
         const width = view.trackWidthPx
         const height = self.height - 2 * YSCALEBAR_LABEL_OFFSET
-        return resolveRenderState(
-          self.domain,
-          self.rpcDataMap.size > 0,
-          domain =>
-            makeRenderState(
-              domain,
-              self.scaleType,
-              self.renderingType,
-              width,
-              height,
-              1,
-              self.scatterPointSize,
-            ),
+        return resolveRenderState(self.domain, domain =>
+          makeRenderState(
+            domain,
+            self.scaleType,
+            self.renderingType,
+            width,
+            height,
+            1,
+            self.scatterPointSize,
+          ),
         )
       },
 
@@ -354,11 +351,13 @@ export default function stateModelFactory(
           backend,
           data => buildSourceRenderData(data, self.gpuProps()),
           (b, encoded) => {
-            const state = self.renderState
-            if (!state) {
+            // size === 0 gates first paint until data lands (keep the loading
+            // overlay up); once loaded, renderState is always a real-or-stub
+            // state, so an empty region paints a cleared canvas.
+            if (self.rpcDataMap.size === 0) {
               return false
             }
-            b.renderBlocks(self.renderBlocks, encoded, state)
+            b.renderBlocks(self.renderBlocks, encoded, self.renderState)
             return true
           },
         )

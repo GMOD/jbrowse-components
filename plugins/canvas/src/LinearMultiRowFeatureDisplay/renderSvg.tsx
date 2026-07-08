@@ -24,7 +24,12 @@ export async function renderSvg(
   const view = getContainingView(self) as LinearGenomeViewModel
   const height = opts.overrideHeight ?? self.height
   return (
-    <SvgChrome error={self.error} width={view.width} height={height}>
+    <SvgChrome
+      error={self.error}
+      regionTooLarge={self.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
       <MultiRowSvgBody self={self} view={view} height={height} opts={opts} />
     </SvgChrome>
   )
@@ -41,13 +46,9 @@ function MultiRowSvgBody({
   height: number
   opts: ExportSvgDisplayOptions
 }) {
-  const state = self.renderState
-  if (!state) {
-    return null
-  }
   const el = paintLayer(view.width, height, opts, ctx => {
     drawMultiRowBlocks(ctx, self.rpcDataMap, self.renderBlocks, {
-      ...state,
+      ...self.renderState,
       canvasHeight: height,
     })
   })

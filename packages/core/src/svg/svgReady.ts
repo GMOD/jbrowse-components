@@ -10,6 +10,9 @@ import { when } from 'mobx'
 export interface SvgExportable {
   svgReady: boolean
   error: unknown
+  // the too-large terminal state; `SvgChrome` renders it as a message box so an
+  // over-budget region exports a labeled note instead of a silent blank.
+  regionTooLarge: boolean
 }
 
 /**

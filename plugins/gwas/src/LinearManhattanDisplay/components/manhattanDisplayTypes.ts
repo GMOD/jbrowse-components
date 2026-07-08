@@ -21,7 +21,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   renderBlocks: RenderBlock[]
   regionRefNames: ReadonlyMap<number, string>
   flatbushes: ReadonlyMap<number, Flatbush>
-  renderState: ManhattanRenderState | undefined
+  renderState: ManhattanRenderState
   scatterPointSize: number
   featureUnderMouse: ManhattanHit | undefined
   colorBy: 'normal' | 'ld'

@@ -36,20 +36,18 @@ const LinearManhattanDisplayComponent = observer(
     }>()
 
     function hitAt(event: React.MouseEvent<HTMLDivElement>) {
-      const state = model.renderState
-      if (state) {
-        const rect = event.currentTarget.getBoundingClientRect()
-        return findManhattanHit(
-          event.clientX - rect.left,
-          event.clientY - rect.top - YSCALEBAR_LABEL_OFFSET,
-          model.renderBlocks,
-          model.rpcDataMap,
-          model.flatbushes,
-          state,
-          model.regionRefNames,
-        )
-      }
-      return undefined
+      // renderState is always defined; an empty rpcDataMap/flatbush set simply
+      // yields no hit, so no separate loading guard is needed here.
+      const rect = event.currentTarget.getBoundingClientRect()
+      return findManhattanHit(
+        event.clientX - rect.left,
+        event.clientY - rect.top - YSCALEBAR_LABEL_OFFSET,
+        model.renderBlocks,
+        model.rpcDataMap,
+        model.flatbushes,
+        model.renderState,
+        model.regionRefNames,
+      )
     }
 
     function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {

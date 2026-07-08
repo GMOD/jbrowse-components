@@ -860,25 +860,91 @@ dotplot are monolithic (uploadX + render). Whether a plugin needs a
 `drawXxxToCtx` wrapper depends only on whether there's transformation
 between raw data and paint, not on its upload pattern.
 
-SVG export in `renderSvg.tsx` follows this recipe:
+Every display's `renderSvg.tsx` follows the **same shape**: an async wrapper that
+awaits readiness and mounts the error-gated chrome, plus a sync body component
+that paints. Aligning them means a reader learns one file and knows all twelve.
 
 ```tsx
-await awaitSvgReady(model)
-if (model.error) return <SVGErrorBox …/>
-const renderBlocks = buildRenderBlocks(view.visibleRegions)
-const node = paintLayer(totalWidth, height, opts, ctx => {
-  drawXxxBlocks(ctx, model.rpcDataMap, renderBlocks, state)
-  // OR, for multi-source: drawXxxToCtx(ctx, sources, renderBlocks, state)
-})
+export async function renderSvg(model, opts?) {
+  await awaitSvgReady(model)
+  const view = getContainingView(model) as LGV
+  const height = opts?.overrideHeight ?? model.height
+  return (
+    <SvgChrome
+      error={model.error}
+      regionTooLarge={model.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
+      <XxxSvgBody model={model} view={view} height={height} opts={opts} />
+    </SvgChrome>
+  )
+}
+
+function XxxSvgBody({ model, view, height, opts }) {
+  // Render naturally — no data-size gate. Narrow only a genuinely-nullable
+  // fetch input the body destructures (e.g. `if (!model.rpcData) return null`);
+  // empty data paints an empty track.
+  const renderBlocks = buildRenderBlocks(view.visibleRegions)
+  return paintLayer(width, height, opts, ctx => {
+    drawXxxBlocks(ctx, model.rpcDataMap, renderBlocks, state)
+    // OR, for multi-source: drawXxxToCtx(ctx, sources, renderBlocks, state)
+  })
+}
 ```
 
-Two invariants hold for **every** GPU display, no exceptions: gate the read with
-`awaitSvgReady(model)` (the one shared helper, `@jbrowse/core/util/svgExport`,
-re-exported from `@jbrowse/plugin-linear-genome-view` — never re-inline
-`when(() => …)`), and on `model.error` return `<SVGErrorBox>` rather than `null`,
-so an errored track shows feedback instead of vanishing from the export. The
-duck-typed model interfaces each `extends SvgExportable` (`{ svgReady; error }`)
-so a missing field is a compile error, not a runtime hang.
+Three invariants hold for **every** GPU display, no exceptions:
+
+- **Gate the read with `awaitSvgReady(model)`** (the one shared helper,
+  re-exported from `@jbrowse/plugin-linear-genome-view` — never re-inline
+  `when(() => …)`). The duck-typed model interfaces each `extends SvgExportable`
+  (`{ svgReady; error; regionTooLarge }`) so a missing field is a compile error,
+  not a runtime hang.
+- **`SvgChrome` is the single terminal-state gate** — pass it `error` **and**
+  `regionTooLarge`; never hand-roll `if (model.error) return …` or infer
+  too-large from empty data. It renders the terminal itself (`SVGErrorBox` on
+  error, an `SVGMessageBox` "region too large" next) and paints the children
+  only when there's renderable data, so a body never runs in a terminal state.
+  An over-budget or errored track exports a labeled box, not a silent blank.
+- **Render empty naturally — never gate on data size.** `awaitSvgReady` +
+  `SvgChrome` already own "still loading" and the terminal states, so a
+  `laidOutMap.size === 0` / `numContacts === 0` / `numCells === 0` check in the
+  body only ever fired for a *loaded-but-empty* region, and returning `null`
+  there wrongly dropped a legitimate empty render (e.g. alignments' coverage
+  axis). Every draw function is empty-safe (self-guards or map-lookup), so the
+  body just draws.
+
+The **only** guard a body keeps is a TypeScript narrow for an input that is
+genuinely `undefined` after `svgReady` — and there are just two kinds left:
+
+- **Nullable fetch result** — HiC / LD (`if (!rpcData)`), multi-variant /
+  multi-variant-matrix (`if (!cellData)`). The monolithic-blob fetch stores
+  `null` until the single dataset lands; the body destructures fields off it.
+  Drop any `&& numContacts === 0` size clause — the narrow alone is enough.
+- **Genuinely-loading `renderState`** — **MAF** only, whose `renderState` is
+  `undefined` until its sources resolve (`if (!state) return null`). Sequence is
+  the sibling case with a *terminal* rather than a loading gate: `if (zoomedOut)`
+  (past base resolution it shows nothing and fetches nothing).
+
+Everything else made `renderState` **non-nullable** and deleted its guard:
+
+- **alignments / multi-row-feature** — `renderState` was `undefined` *only*
+  pre-`view.initialized`, unreachable at either real reader (SVG export
+  post-`awaitSvgReady`; the on-screen render autorun installed at canvas mount).
+  Rule of thumb: if a `renderState` getter's sole `undefined` trigger is
+  `!view.initialized`, drop it and return a value.
+- **wiggle / multi-wiggle / manhattan** — `renderState` used to fold the
+  first-paint gate into itself via `resolveRenderState(domain, hasData, …)`
+  (returning `undefined` when neither existed). That gate moved to the render
+  callback's `rpcDataMap.size === 0` check (the same one alignments uses), and
+  `resolveRenderState(domain, build)` now always builds — real domain, else an
+  inert `EMPTY_PLOT_DOMAIN` (`[0,1]`) stub so a loaded-but-scoreless region still
+  runs `renderBlocks` to clear the canvas + flip `canvasDrawn`. Nothing is
+  plotted against the stub and the axis/legend is gated on the *real* `domain`,
+  so it never shows a fake scale. This is the one place a placeholder domain is
+  unavoidable: the GPU render-state can't be constructed without a domain, yet an
+  empty region must still paint (clear). Result: these three render empty
+  naturally like alignments, with no body guard.
 
 #### The `svgReady` gate (single source of truth for "safe to export")
 

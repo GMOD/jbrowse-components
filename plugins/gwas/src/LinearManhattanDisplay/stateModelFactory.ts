@@ -226,20 +226,16 @@ export function stateModelFactory(
        * Using self.height directly would drift the hit-test off the rendered
        * points.
        */
-      get renderState(): ManhattanRenderState | undefined {
+      get renderState(): ManhattanRenderState {
         const view = self.view
         const canvasWidth = view.trackWidthPx
         const canvasHeight = self.height - 2 * YSCALEBAR_LABEL_OFFSET
-        return resolveRenderState(
-          self.domain,
-          self.rpcDataMap.size > 0,
-          domainY => ({
-            domainY,
-            canvasWidth,
-            canvasHeight,
-            pointDiameterPx: self.scatterPointSize,
-          }),
-        )
+        return resolveRenderState(self.domain, domainY => ({
+          domainY,
+          canvasWidth,
+          canvasHeight,
+          pointDiameterPx: self.scatterPointSize,
+        }))
       },
       /**
        * #getter
@@ -508,12 +504,14 @@ export function stateModelFactory(
           backend,
           data => data,
           b => {
-            const state = self.renderState
-            if (state) {
-              b.renderBlocks(self.renderBlocks, self.rpcDataMap, state)
-              return true
+            // size === 0 gates first paint until data lands (keep the loading
+            // overlay up); once loaded, renderState is always a real-or-stub
+            // state, so an empty region paints a cleared canvas.
+            if (self.rpcDataMap.size === 0) {
+              return false
             }
-            return false
+            b.renderBlocks(self.renderBlocks, self.rpcDataMap, self.renderState)
+            return true
           },
         )
       },
