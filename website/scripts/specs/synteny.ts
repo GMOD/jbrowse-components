@@ -372,12 +372,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: 'chr1',
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
     readyTimeout: 90000,
     viewportWidth: 1800,
-    // canvasDrawn doesn't reliably flip for this whole-genome WebGL dotplot, so
-    // gate on the grid labels then settle long for the heavy whole-genome PIF
-    // fetch to paint its dots
+    // gate on the WebGL canvas `settled` test-id (canvas painted + no display
+    // still fetching), then settle long for the heavy whole-genome PIF fetch to
+    // paint its dots. (A `readyText: 'chr1'` gate is unreliable here: the axis
+    // labels wrap their refName in an SVG <title>, and puppeteer's ::-p-text
+    // matches that non-rendered <title> element, which fails the visible: true
+    // wait — plus substrings like the chr1_..._random contig collide.)
     settleMs: 60000,
   },
 
