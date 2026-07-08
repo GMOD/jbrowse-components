@@ -12,6 +12,7 @@
     "check-doc-imports": "node --experimental-strip-types scripts/check-doc-imports.ts",
     "check-sidebar": "node --experimental-strip-types scripts/check-sidebar.ts",
     "check-links": "node --experimental-strip-types scripts/check-links.ts",
+    "snapshot": "node --experimental-strip-types scripts/snapshot.ts",
     "screenshots": "node --experimental-strip-types scripts/generate-screenshots.ts",
     "screenshots:build": "pnpm --filter @jbrowse/web build && node --experimental-strip-types scripts/generate-screenshots.ts",
     "gen:gallery-links": "node --experimental-strip-types scripts/gen-gallery-links.ts",
