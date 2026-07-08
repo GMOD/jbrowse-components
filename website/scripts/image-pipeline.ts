@@ -41,18 +41,25 @@ function moveIntoPlace(tmpPath: string, outputPath: string) {
   fs.rmSync(tmpPath, { force: true })
 }
 
+export type CommitResult =
+  | { status: 'new' }
+  | { status: 'updated'; detail: string }
+  | { status: 'kept' }
+
 // Move a freshly captured PNG into place only when its content actually changed
 // (or with force / for a brand-new spec), so a regen doesn't rewrite every PNG.
+// Returns what happened so callers can roll it into an end-of-run summary.
 export function commitScreenshot(
   tmpPath: string,
   outputPath: string,
   name: string,
   { force, diffThreshold }: { force: boolean; diffThreshold: number },
-) {
+): CommitResult {
   const isNew = !fs.existsSync(outputPath)
   if (force || isNew) {
     moveIntoPlace(tmpPath, outputPath)
     console.log(`  ✓ ${name}.png${isNew ? ' (new)' : ''}`)
+    return isNew ? { status: 'new' } : { status: 'updated', detail: 'forced' }
   } else {
     const frac = pngDiffFraction(tmpPath, outputPath)
     if (frac !== null && frac < diffThreshold) {
@@ -60,11 +67,13 @@ export function commitScreenshot(
       console.log(
         `  ≈ ${name}.png (kept; ${(frac * 100).toFixed(3)}% < ${diffThreshold * 100}% threshold)`,
       )
+      return { status: 'kept' }
     } else {
       moveIntoPlace(tmpPath, outputPath)
       const detail =
         frac === null ? 'resized' : `${(frac * 100).toFixed(2)}% diff`
       console.log(`  ✓ ${name}.png (updated, ${detail})`)
+      return { status: 'updated', detail }
     }
   }
 }

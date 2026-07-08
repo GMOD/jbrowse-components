@@ -41,6 +41,7 @@ import {
   specs,
 } from './screenshot-specs.ts'
 
+import type { CommitResult } from './image-pipeline.ts'
 import type {
   Annotation,
   BrowserScreenshotSpec,
@@ -537,7 +538,7 @@ async function captureSpec(
   const renderPath = await renderSpecToTemp(page, spec, port)
   const outputPath = path.join(outDir, `${spec.name}.png`)
   fs.mkdirSync(path.dirname(outputPath), { recursive: true })
-  commitScreenshot(renderPath, outputPath, spec.name, {
+  return commitScreenshot(renderPath, outputPath, spec.name, {
     force,
     diffThreshold: spec.diffThreshold ?? diffThreshold,
   })
@@ -574,7 +575,7 @@ async function captureCliSpec(spec: CliSpec) {
   const renderPath = await renderCliSpecToTemp(spec)
   const baseName = spec.name.replace(/^jbrowse-img\//, '')
   const outputPath = path.join(jbrowseImgOutDir, `${baseName}.png`)
-  commitScreenshot(renderPath, outputPath, spec.name, {
+  return commitScreenshot(renderPath, outputPath, spec.name, {
     force,
     diffThreshold: spec.diffThreshold ?? diffThreshold,
   })
@@ -597,7 +598,7 @@ async function captureComposeSpec(spec: ComposeSpec) {
   execFileSync('convert', [...partPaths, '-append', renderPath])
   optimizePng(renderPath)
   const outputPath = path.join(outDir, `${spec.name}.png`)
-  commitScreenshot(renderPath, outputPath, spec.name, {
+  return commitScreenshot(renderPath, outputPath, spec.name, {
     force,
     diffThreshold: spec.diffThreshold ?? diffThreshold,
   })
@@ -690,10 +691,12 @@ async function main() {
 
   let passed = 0
   let failed = 0
+  let kept = 0
   let started = 0
   const total = filteredSpecs.length
   const failures: { name: string; error: string }[] = []
   const flaky: { name: string; frac: number }[] = []
+  const changed: { name: string; result: CommitResult }[] = []
 
   // Zero-padded `[ 7/40]` so the counter column stays aligned as it grows,
   // keeping the interleaved per-worker lines readable.
@@ -786,14 +789,26 @@ async function main() {
     }
     console.log(`${progress()} → ${spec.name}`)
     try {
+      let result: CommitResult | undefined
       if (spec.mode === 'compose') {
-        await captureComposeSpec(spec)
+        result = await captureComposeSpec(spec)
       } else if (spec.mode === 'cli') {
-        await (check ? checkCliSpec(spec) : captureCliSpec(spec))
+        if (check) {
+          await checkCliSpec(spec)
+        } else {
+          result = await captureCliSpec(spec)
+        }
       } else if (check) {
         await checkSpec(spec)
       } else {
-        await withFreshPage(spec, page => captureSpec(page, spec, port))
+        result = await withFreshPage(spec, page => captureSpec(page, spec, port))
+      }
+      if (result) {
+        if (result.status === 'kept') {
+          kept++
+        } else {
+          changed.push({ name: spec.name, result })
+        }
       }
       passed++
     } catch (err) {
@@ -835,9 +850,19 @@ async function main() {
 
   console.log(
     `\n${passed} ${check ? 'checked' : 'succeeded'}, ${failed} failed${
-      check ? `, ${flaky.length} flaky` : ''
+      check ? `, ${flaky.length} flaky` : `, ${kept} unchanged`
     }`,
   )
+  if (changed.length > 0) {
+    printReport(
+      `UPDATED SCREENSHOTS (${changed.length})`,
+      changed.map(({ name, result }) =>
+        result.status === 'updated'
+          ? `• ${name}.png (${result.detail})`
+          : `• ${name}.png (new)`,
+      ),
+    )
+  }
   if (flaky.length > 0) {
     printReport(
       `FLAKY SPECS (${flaky.length}) — nondeterministic renders`,
