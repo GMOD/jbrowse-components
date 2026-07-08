@@ -1,4 +1,4 @@
-import { getFillProps } from '@jbrowse/core/util'
+import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -33,12 +33,12 @@ const LegendItemText = function ({
   source,
   idx,
   rowHeight,
-  textFillProps,
+  fill,
 }: {
   source: Source
   idx: number
   rowHeight: number
-  textFillProps: ReturnType<typeof getFillProps>
+  fill: string
 }) {
   const { color, name, label } = source
   const svgFontSize = Math.min(rowHeight, 12)
@@ -48,7 +48,7 @@ const LegendItemText = function ({
       x={color ? COLOR_BOX_WIDTH + 2 : 0}
       fontSize={svgFontSize}
       dominantBaseline="central"
-      {...textFillProps}
+      fill={fill}
     >
       {label ?? name}
     </text>
@@ -77,7 +77,7 @@ const MultiSampleVariantColorLegend = observer(
     const hasColors = sources?.some(s => s.color) ?? false
     const legendWidth = labelWidth + (hasColors ? COLOR_BOX_WIDTH + 5 : 0)
 
-    const textFillProps = getFillProps(theme.palette.text.primary)
+    const fill = stripAlpha(theme.palette.text.primary)
 
     const visibleSources = sources?.slice(startIdx, endIdx)
 
@@ -106,7 +106,7 @@ const MultiSampleVariantColorLegend = observer(
                 source={source}
                 idx={startIdx + i}
                 rowHeight={rowHeight}
-                textFillProps={textFillProps}
+                fill={fill}
               />
             ))
           : null}

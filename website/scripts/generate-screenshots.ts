@@ -50,6 +50,7 @@ import type {
   EmbeddedSpec,
   ScreenshotAction,
   ScreenshotSpec,
+  SessionUrlSpec,
 } from './screenshot-specs.ts'
 import type { Server } from 'node:http'
 import type { Page } from 'puppeteer'
@@ -165,6 +166,47 @@ const VOLVOX_CONFIG = 'test_data/volvox/config.json'
 // Maximum time to wait for canvas displays to signal paint-complete via their
 // *-done testids. Acts as a timeout (proceed if it expires), not a fixed floor.
 const DEFAULT_SETTLE_MS = 2500
+// Default ceiling for the ready-selector / loading-overlay / quiescent waits.
+// Slow remote-data specs raise it via spec.readyTimeout.
+const DEFAULT_READY_TIMEOUT_MS = 30000
+
+// Build a per-process temp PNG path for a spec, sanitizing '/' in the name and
+// tagging with the pid (and an optional suffix) so concurrent workers and the
+// two captures of a --check run never collide on one path.
+function tempPath(prefix: string, name: string, suffix = '') {
+  return path.join(
+    os.tmpdir(),
+    `${prefix}-${process.pid}-${name.replaceAll('/', '_')}${suffix}.png`,
+  )
+}
+
+// Wait out a spec's readiness signals before capture: its readyText/readySelector
+// become visible, the loading overlay clears, any in-track "Loading…"/"Rendering…"
+// indicator quiesces, and canvas displays signal paint-complete. readyText is
+// only the track label (present well before a slow remote BAM finishes), so the
+// spec's readyTimeout gates every wait here — the fixed default otherwise cut off
+// slow whole-genome-alignment blocks mid-load and captured a "Loading" panel.
+async function waitForReady(page: Page, spec: SessionUrlSpec | EmbeddedSpec) {
+  const readyTimeout = spec.readyTimeout ?? DEFAULT_READY_TIMEOUT_MS
+  const readySelectors = [
+    spec.readyText ? textSelector(spec.readyText) : undefined,
+    spec.readySelector,
+  ].filter((s): s is string => s !== undefined)
+  for (const selector of readySelectors) {
+    await waitForVisible(page, selector, { timeout: readyTimeout }).catch(
+      async (e: unknown) => {
+        await debugDump(page, spec.name)
+        throw e
+      },
+    )
+  }
+  await waitForLoadingComplete(page, {
+    waitForDownloads: true,
+    timeout: readyTimeout,
+  })
+  await waitForQuiescent(page, { timeout: readyTimeout })
+  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
+}
 
 // Guard against capturing a view that rendered no content. The ViewContainer
 // always renders its header chrome, so a screenshot with header-but-empty-body
@@ -251,34 +293,7 @@ async function captureUrl(
     timeout: 60000,
   })
 
-  const readyTimeout = spec.readyTimeout ?? 30000
-  const readySelectors = [
-    spec.readyText ? textSelector(spec.readyText) : undefined,
-    spec.readySelector,
-  ].filter((s): s is string => s !== undefined)
-  for (const selector of readySelectors) {
-    await waitForVisible(page, selector, { timeout: readyTimeout }).catch(
-      async (e: unknown) => {
-        await debugDump(page, spec.name)
-        throw e
-      },
-    )
-  }
-
-  // readyText is just the track label, which appears as soon as the track is
-  // added — well before a slow remote BAM finishes downloading. Slow specs
-  // bump readyTimeout, so reuse it here too, otherwise the loading-overlay wait
-  // throws at its 30s default while the data is still in flight.
-  await waitForLoadingComplete(page, {
-    waitForDownloads: true,
-    timeout: readyTimeout,
-  })
-  // Wait out any in-track "Loading…"/"Rendering…" indicator (e.g. a slow remote
-  // MAF block that paints its own label). waitForQuiescent returns as soon as the
-  // label clears, so use the spec's readyTimeout — the fixed 30s default cut off
-  // slow whole-genome-alignment blocks mid-load and captured a "Loading" panel.
-  await waitForQuiescent(page, { timeout: readyTimeout })
-  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
+  await waitForReady(page, spec)
 }
 
 // Apply the shared pre-shot steps (hide stray tooltip, draw/clear callouts,
@@ -429,32 +444,10 @@ async function captureEmbeddedToTemp(
       waitUntil: 'domcontentloaded',
       timeout: 60000,
     })
-    const readyTimeout = spec.readyTimeout ?? 30000
-    const readySelectors = [
-      spec.readyText ? textSelector(spec.readyText) : undefined,
-      spec.readySelector,
-    ].filter((s): s is string => s !== undefined)
-    for (const selector of readySelectors) {
-      await waitForVisible(page, selector, { timeout: readyTimeout }).catch(
-        async (e: unknown) => {
-          await debugDump(page, spec.name)
-          throw e
-        },
-      )
-    }
-    await waitForLoadingComplete(page, {
-      waitForDownloads: true,
-      timeout: readyTimeout,
-    })
-    await waitForQuiescent(page, { timeout: readyTimeout })
-    await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
+    await waitForReady(page, spec)
     await waitForRasterize(page)
 
-    const safeSpecName = spec.name.replaceAll('/', '_')
-    const renderPath = path.join(
-      os.tmpdir(),
-      `jb-final-${process.pid}-${safeSpecName}${suffix}.png`,
-    )
+    const renderPath = tempPath('jb-final', spec.name, suffix)
     const el = await page.$('#root')
     if (!el) {
       throw new Error('embedded harness #root not found')
@@ -504,18 +497,14 @@ async function renderSpecToTemp(
   await runActions(page, spec.name, spec.actions)
   await assertViewsRendered(page, spec.name)
 
-  const safeSpecName = spec.name.replaceAll('/', '_')
-  const renderPath = path.join(
-    os.tmpdir(),
-    `jb-final-${process.pid}-${safeSpecName}${suffix}.png`,
-  )
+  const renderPath = tempPath('jb-final', spec.name, suffix)
 
   if (spec.stages && spec.stages.length > 0) {
     // capture each stage to a temp file, then stack them vertically with
     // ImageMagick (`convert f0 f1 -append`), the same composition the hand-made
     // two-stage teaching figures used
     const stageFiles = spec.stages.map((_, i) =>
-      path.join(os.tmpdir(), `jb-shot-${process.pid}-${safeSpecName}-${i}.png`),
+      tempPath('jb-shot', spec.name, `-${i}`),
     )
     for (const [i, stage] of spec.stages.entries()) {
       if (stage.closeMenusFirst) {
@@ -564,11 +553,7 @@ async function captureSpec(
 // involved, so this bypasses the puppeteer pipeline entirely. `suffix` keeps
 // the two captures of a --check run from colliding on the same temp path.
 async function renderCliSpecToTemp(spec: CliSpec, suffix = '') {
-  const safeSpecName = spec.name.replaceAll('/', '_')
-  const renderPath = path.join(
-    os.tmpdir(),
-    `jb-img-${process.pid}-${safeSpecName}${suffix}.png`,
-  )
+  const renderPath = tempPath('jb-img', spec.name, suffix)
   await execFileAsync(
     'npx',
     [
@@ -629,10 +614,7 @@ async function captureComposeSpec(spec: ComposeSpec) {
   if (missing.length > 0) {
     throw new Error(`missing part image(s): ${missing.join(', ')}`)
   }
-  const renderPath = path.join(
-    os.tmpdir(),
-    `jb-compose-${process.pid}-${spec.name}.png`,
-  )
+  const renderPath = tempPath('jb-compose', spec.name)
   execFileSync('convert', [...partPaths, '-append', renderPath])
   optimizePng(renderPath)
   const outputPath = path.join(outDir, `${spec.name}.png`)
@@ -731,7 +713,11 @@ async function main() {
   let failed = 0
   let kept = 0
   let started = 0
-  const total = filteredSpecs.length
+  // --check skips compose specs (a deterministic append has nothing to verify),
+  // so exclude them from the counter denominator or [n/total] never reaches total.
+  const total = check
+    ? filteredSpecs.filter(s => s.mode !== 'compose').length
+    : filteredSpecs.length
   const failures: { name: string; error: string }[] = []
   const flaky: { name: string; frac: number }[] = []
   const changed: { name: string; result: CommitResult }[] = []

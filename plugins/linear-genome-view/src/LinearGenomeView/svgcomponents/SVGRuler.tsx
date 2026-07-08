@@ -1,10 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
-import {
-  getFillProps,
-  getStrokeProps,
-  getTickDisplayStr,
-  stripAlpha,
-} from '@jbrowse/core/util'
+import { getTickDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import BlockClipGroup from './BlockClipGroup.tsx'
@@ -53,8 +48,7 @@ function Ruler({
   numbersBaselineY: number
 }) {
   const theme = useTheme()
-  const strokeProps = getStrokeProps(theme.palette.text.secondary)
-  const fillProps = getFillProps(theme.palette.text.secondary)
+  const color = stripAlpha(theme.palette.text.secondary)
   const ticks = makeBlockTicks({ start, end, reversed }, bpPerPx, major, minor)
   return (
     <>
@@ -68,7 +62,7 @@ function Ruler({
             tickTopY + (type === 'major' ? RULER_MAJOR_TICK : RULER_MINOR_TICK)
           }
           strokeWidth={1}
-          {...strokeProps}
+          stroke={color}
         />
       ))}
       {!hideText
@@ -82,7 +76,7 @@ function Ruler({
                   x={x - 3}
                   y={numbersBaselineY}
                   fontSize={RULER_TICK_FONT_SIZE}
-                  {...fillProps}
+                  fill={color}
                 >
                   {label}
                 </text>

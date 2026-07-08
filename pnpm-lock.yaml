@@ -2007,8 +2007,8 @@ importers:
         specifier: ^43.1.0
         version: 43.1.0
       electron-chromedriver:
-        specifier: ^43.0.0
-        version: 43.0.0
+        specifier: ^43.1.0
+        version: 43.1.0
       esbuild:
         specifier: ^0.28.1
         version: 0.28.1
@@ -5212,8 +5212,8 @@ packages:
   '@types/express-oauth-server@2.0.10':
     resolution: {integrity: sha512-heFQB5l/Vf2yejCBE9uMt/M32xF3wwMU21DIlSSnbFGVPq4tKEdk/89bkUdguTWNoRtH9wK4kmt+B7c+CH5g0g==}
 
-  '@types/express-serve-static-core@5.1.1':
-    resolution: {integrity: sha512-v4zIMr/cX7/d2BpAEX3KNKL/JrT1s43s96lLvvdTmza1oEvDudCqK9aF/djc/SWgy8Yh0h30TZx5VpzqFCxk5A==}
+  '@types/express-serve-static-core@5.1.2':
+    resolution: {integrity: sha512-d3KvEXBSo/lOAMc2u6fkyDHBvetBHeqD7wm/AcXfLpSOQwlmG9D/aQ0SFswVjv05p7ullQS7Mjohj6/VdbZuTg==}
 
   '@types/express@5.0.6':
     resolution: {integrity: sha512-sKYVuV7Sv9fbPIt/442koC7+IIwK5olP1KWeD88e/idgoJqDm3JV/YUiPwkoKK92ylff2MGxSz1CSjsXelx0YA==}
@@ -6610,8 +6610,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-chromedriver@43.0.0:
-    resolution: {integrity: sha512-YNQNXrPOh3MaYpPguorHoDccHPrPsAMrNIDrYpinGLK24C9X4PmC0rRs75ADYJYs6S/Dc8xa38Y1RFDl0C49rQ==}
+  electron-chromedriver@43.1.0:
+    resolution: {integrity: sha512-ktykDkwvzDR6P0rnYy/QZAin+L70EPSwe2agiytRntWsU8JHETTHvpEkC4D65y2R2qw/FKWXVYbJ2R5Ins747g==}
     engines: {node: '>=10.12.0'}
     hasBin: true
 
@@ -9547,8 +9547,8 @@ packages:
     resolution: {integrity: sha512-FVDYdxtnj0G6Qm/DhNPSb8Ju59ULcup3tuJxkFb5K8Bv2pUXILbf0xZWU8PX8Ov19OXljbUyveOFwRMwkXzO+A==}
     engines: {node: '>=16'}
 
-  tough-cookie@6.0.1:
-    resolution: {integrity: sha512-LktZQb3IeoUWB9lqR5EWTHgW/VTITCXg4D21M+lvybRVdylLrRMnqaIONLVb5mav8vM19m44HIcGq4qASeu2Qw==}
+  tough-cookie@6.0.2:
+    resolution: {integrity: sha512-exgYmnmL/sJpR3upZfXG5PoatXQii55xAiXGXzY+sROLZ/Y+SLcp9PgJNI9Vz37HpQ74WvDcLT8eqm+kV3FzrA==}
     engines: {node: '>=16'}
 
   tr46@0.0.3:
@@ -12967,7 +12967,7 @@ snapshots:
 
   '@types/connect-history-api-fallback@1.5.4':
     dependencies:
-      '@types/express-serve-static-core': 5.1.1
+      '@types/express-serve-static-core': 5.1.2
       '@types/node': 26.1.0
 
   '@types/connect@3.4.38':
@@ -13011,7 +13011,7 @@ snapshots:
       '@types/express': 5.0.6
       '@types/oauth2-server': 3.0.18
 
-  '@types/express-serve-static-core@5.1.1':
+  '@types/express-serve-static-core@5.1.2':
     dependencies:
       '@types/node': 26.1.0
       '@types/qs': 6.15.1
@@ -13021,7 +13021,7 @@ snapshots:
   '@types/express@5.0.6':
     dependencies:
       '@types/body-parser': 1.19.6
-      '@types/express-serve-static-core': 5.1.1
+      '@types/express-serve-static-core': 5.1.2
       '@types/serve-static': 2.2.0
 
   '@types/file-saver-es@2.0.3': {}
@@ -14469,7 +14469,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-chromedriver@43.0.0:
+  electron-chromedriver@43.1.0:
     dependencies:
       '@electron/get': 2.0.3
       extract-zip: 2.0.1
@@ -16075,7 +16075,7 @@ snapshots:
       parse5: 8.0.1
       saxes: 6.0.0
       symbol-tree: 3.2.4
-      tough-cookie: 6.0.1
+      tough-cookie: 6.0.2
       undici: 7.28.0
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
@@ -18037,7 +18037,7 @@ snapshots:
     dependencies:
       tldts: 6.1.86
 
-  tough-cookie@6.0.1:
+  tough-cookie@6.0.2:
     dependencies:
       tldts: 7.4.7
 
@@ -18506,7 +18506,7 @@ snapshots:
       '@types/bonjour': 3.5.13
       '@types/connect-history-api-fallback': 1.5.4
       '@types/express': 5.0.6
-      '@types/express-serve-static-core': 5.1.1
+      '@types/express-serve-static-core': 5.1.2
       '@types/serve-index': 1.9.4
       '@types/serve-static': 2.2.0
       '@types/ws': 8.18.1

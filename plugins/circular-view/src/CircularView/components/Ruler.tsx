@@ -1,9 +1,8 @@
 import {
-  getFillProps,
   getSession,
-  getStrokeProps,
   polarToCartesian,
   radToDeg,
+  stripAlpha,
   toLocale,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
@@ -83,7 +82,7 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
           radiusPx,
           largeArc,
         )}
-        {...getStrokeProps(theme.palette.text.secondary)}
+        stroke={stripAlpha(theme.palette.text.secondary)}
         strokeWidth={2}
         strokeDasharray="2,2"
         fill="none"
@@ -132,7 +131,7 @@ const RulerLabel = observer(function RulerLabel({
       textAnchor={textAnchor}
       dominantBaseline="middle"
       transform={`translate(${textXY}) rotate(${rotation})`}
-      {...getFillProps(color)}
+      fill={stripAlpha(color)}
     >
       {text}
       <title>{title || text}</title>
@@ -178,7 +177,7 @@ const RegionRulerArc = observer(function RegionRulerArc({
       />
       <path
         d={sliceArcPath(slice, radiusPx + 1, region.start, region.end)}
-        {...getStrokeProps(color)}
+        stroke={stripAlpha(color)}
         strokeWidth={2}
         fill="none"
       />

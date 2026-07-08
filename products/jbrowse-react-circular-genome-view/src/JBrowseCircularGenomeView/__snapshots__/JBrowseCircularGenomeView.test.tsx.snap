@@ -99,7 +99,6 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   <text
                     dominant-baseline="middle"
                     fill="#996600"
-                    fill-opacity="1"
                     font-size="0.8rem"
                     font-weight="500"
                     letter-spacing="0.0075em"
@@ -117,13 +116,11 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                     d="M 124.18309886183789 0 A 124.18309886183789 124.18309886183789 0 1 1 -83.9297439650367 -91.52726435818121"
                     fill="none"
                     stroke="#996600"
-                    stroke-opacity="1"
                     stroke-width="2"
                   />
                   <text
                     dominant-baseline="middle"
                     fill="#666600"
-                    fill-opacity="1"
                     font-size="0.8rem"
                     font-weight="500"
                     letter-spacing="0.0075em"
@@ -141,7 +138,6 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                     d="M -76.23131743422664 -98.03177181491303 A 124.18309886183789 124.18309886183789 0 0 1 123.77412860245514 -10.070110805343754"
                     fill="none"
                     stroke="#666600"
-                    stroke-opacity="1"
                     stroke-width="2"
                   />
                 </g>

@@ -63,7 +63,7 @@ export function commitScreenshot(
     if (frac !== null && frac < diffThreshold) {
       fs.rmSync(tmpPath, { force: true })
       console.log(
-        `  ≈ ${name}.png (kept; ${(frac * 100).toFixed(3)}% < ${diffThreshold * 100}% threshold)`,
+        `  ≈ ${name}.png (kept; ${(frac * 100).toFixed(3)}% < ${(diffThreshold * 100).toFixed(3)}% threshold)`,
       )
       return { status: 'kept' }
     } else {

@@ -962,58 +962,58 @@
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
     "status": "good",
-    "note": "Font consistency fixed: jbrowse-img now defaults --fontFamily=serif, applied to the SVG root so ruler/track-labels and gene labels share one font. Regenerated. (was: mix of fonts)",
-    "reviewedAt": "2026-07-08T13:31:05.000Z",
-    "hash": "07077e6af0a838bab155d5a68f0075ab874b989f"
+    "note": "consider adding showOnlyGenes to ncbi gene track",
+    "reviewedAt": "2026-07-08T20:20:00.750Z",
+    "hash": "ae9ac8045bd7c5f55e52e92b40096668bdbeb917"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
     "status": "good",
     "note": "DONE: per-group HP:1 / HP:2 labels are shown on the left of each grouped subtrack in the current build; note was stale.",
-    "reviewedAt": "2026-07-08T12:36:18.000Z",
-    "hash": "b8faf0950c025e1cbeae16146e2f6046b323d0e0"
+    "reviewedAt": "2026-07-08T20:20:00.831Z",
+    "hash": "f95b203765cb3630404e67b3d3665bc20c6eeb77"
   },
   "jbrowse-img/dark_theme": {
     "name": "jbrowse-img/dark_theme",
-    "status": "good",
-    "note": "DONE: switched to a human hg38 demo (reviewer) via --hub — a tall NCBI RefSeq gene track (height:220) over phyloP-100way conservation at the TP53 locus, darkStock theme. Conservation peaks align with the coding exons; gene track is now tall per the note. README + doc updated to match.",
-    "reviewedAt": "2026-07-08T13:06:51.000Z",
-    "hash": "32b6553d86da826186a6882ac117e8ab48496e7a"
+    "status": "bad",
+    "note": "is there another gene we can use like PTEN, this one has many isoforms",
+    "reviewedAt": "2026-07-08T20:10:00.908Z",
+    "hash": "21e93800b47f28416cd7c5b649d6507e98d52113"
   },
   "jbrowse-img/hg38_hs1_mm39_synteny": {
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
     "status": "good",
     "note": "DONE: transparent indels already set (cigarMode:matches); regenerated (stale PNG) + assembly names now hg38/hs1/mm39 (no .chrom.sizes).",
-    "reviewedAt": "2026-07-08T12:31:41.000Z",
-    "hash": "499d10a21856899b4c1339406c6e215f42b11f78"
+    "reviewedAt": "2026-07-08T20:11:13.692Z",
+    "hash": "6d7934ec95b1eaaa0bc417898b3c4d00b320fc88"
   },
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
     "status": "good",
     "note": "DONE: moved onto the chr20:18.50-18.51Mb CpG islands (the same region the modifications2/gallery methylation figures use) and added the UCSC CpG-island BED track on top (--bedgz cpgIslandExt.bed.gz). The two islands (CpG:23, CpG:61) are annotated and the COLO829 methylation reads show the methylated (red) flanks vs unmethylated (blue) island cores against the boundaries. README command updated to match.",
-    "reviewedAt": "2026-07-08T13:01:50.000Z",
-    "hash": "e18d49561220f1c6d2128fab445c077b673fa51a"
+    "reviewedAt": "2026-07-08T20:11:18.560Z",
+    "hash": "1102438827b47badb0e2522adb407e6db9616928"
   },
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
     "status": "good",
     "note": "DONE: transparent indels already set (cigarMode:matches); committed PNG was stale showing the old assembly-prefixed first refname label -- regenerated to plain chr1/chr2. Stripped the .chrom.sizes extension from chrom.sizes assembly names (makeConfigs.ts) so the blurb reads hs1/mm39.",
-    "reviewedAt": "2026-07-08T12:31:41.000Z",
-    "hash": "a69d1ec53a14bc5ef237c2701c07edaf240abbde"
+    "reviewedAt": "2026-07-08T20:11:16.495Z",
+    "hash": "e2e6ba2093c05d8212303af31074dcf721eb588b"
   },
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
-    "status": "good",
-    "note": "Verified autoDiagonalize is genuinely reordering the grape chromosomes (compared against a render without --autoDiagonalize -- the order differs). The remaining tangled look is real biology: grape underwent an ancestral genome triplication, so a single peach chromosome maps onto multiple grape chromosome fragments -- a clean diagonal is not achievable regardless of algorithm quality. No change made. [Regenerated after stripping .chrom.sizes from assembly names -> blurb now reads peach/grape.]",
-    "reviewedAt": "2026-07-08T02:55:28.418Z",
-    "hash": "9c11a16eaf56c381e0940a4f97457ff231ab2a49"
+    "status": "bad",
+    "note": "I still dont believe this is auto-diagonalizing in an optimal way, there are ribbons crossing over each other all over the place",
+    "reviewedAt": "2026-07-08T20:11:04.526Z",
+    "hash": "32a8cf62a5be799beea594e094dc80be7d2f0e78"
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
-    "status": "good",
-    "note": "Merged gene_track+sequence into one human base-level TP53 exon figure (CDS + reference sequence + 6-frame translation); taller.",
-    "reviewedAt": "2026-07-08T14:20:40.000Z",
-    "hash": "1ad529560e8142fe11659eaf493efc56c3d885a7"
+    "status": "bad",
+    "note": "previous agent said they merged sequence track into this but i dont see the sequence track. it is still rendering volvox data also",
+    "reviewedAt": "2026-07-08T20:10:34.930Z",
+    "hash": "2a16ab28b38c8c3e6509b2611f61731ff37c5f69"
   },
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
@@ -1024,9 +1024,9 @@
   "jbrowse-img/alignments_readgroup": {
     "name": "jbrowse-img/alignments_readgroup",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T19:56:19.789Z",
-    "hash": "17134e70539dfc97aaac3cc7fac3164e3f6bb8be"
+    "note": "this is not plotting ",
+    "reviewedAt": "2026-07-08T20:20:09.231Z",
+    "hash": "aea78bf7cfa1811f007553893ae0f64903d4b0f8"
   },
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
@@ -1043,16 +1043,16 @@
   "jbrowse-img/yeast_synteny": {
     "name": "jbrowse-img/yeast_synteny",
     "status": "bad",
-    "note": "the ruler numbers overlap the tick marks",
-    "reviewedAt": "2026-07-08T18:17:43.193Z",
-    "hash": "23e9ca7bb3f814598203d0c829fe9db741c98229"
+    "note": "we may want the tick mark labels centered on the major ticks",
+    "reviewedAt": "2026-07-08T20:13:06.768Z",
+    "hash": "3f58071f9f5061baf6a01060c2cb30da05cf7152"
   },
   "jbrowse-img/yeast_dotplot": {
     "name": "jbrowse-img/yeast_dotplot",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T03:20:57.695Z",
-    "hash": "6710fc568cfbe5fb357f4df04dbaf4162145b36f"
+    "reviewedAt": "2026-07-08T20:12:34.050Z",
+    "hash": "1975984c41698928d7e5c7b291beea1a67bf67c8"
   },
   "jbrowse-img/variants": {
     "name": "jbrowse-img/variants",
@@ -1091,10 +1091,10 @@
   },
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
-    "status": "good",
-    "note": "Swapped to 1000 Genomes phase 3 chr11 (2,504 samples) over HBB + NCBI RefSeq gene track (was synthetic volvox VCF).",
-    "reviewedAt": "2026-07-08T14:20:40.000Z",
-    "hash": "c8462d319173fb5fced577e19b49763bf2dbea94"
+    "status": "bad",
+    "note": "still plotting volvox",
+    "reviewedAt": "2026-07-08T20:11:27.605Z",
+    "hash": "69ea81eab5c1029c48e19c121068beaae503f9c9"
   },
   "chromhmm": {
     "name": "chromhmm",
@@ -1105,17 +1105,17 @@
   },
   "jbrowse-img/alignments_snpcov": {
     "name": "jbrowse-img/alignments_snpcov",
-    "status": "good",
-    "note": "DONE: added the hosted NCBI RefSeq Curated gene track via --hub hg38 --track hg38-ncbiRefSeqCurated (user: prefer NCBI gff over MANE; --hub avoids the raw-GFF RefSeqGene match/region features that render as bare-UUID full-width bars) and widened to the full BRCA1 span so the exome coverage humps land one-per-exon against the gene model with flat intronic gaps — the exome-capture signature.",
-    "reviewedAt": "2026-07-08T12:52:45.000Z",
-    "hash": "8db9b954ed4f83a7291cb681397a1f9089e1f4aa"
+    "status": "bad",
+    "note": "is there another simpler gene like pten that we can use. this one has many many isoforms.",
+    "reviewedAt": "2026-07-08T20:09:38.523Z",
+    "hash": "9a1808af3e85cf05815b576582b2703c5933822d"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
     "status": "good",
     "note": "DONE: gene track (NCBI RefSeq) already renders on top of the Hi-C heatmap in the current build; note was stale.",
-    "reviewedAt": "2026-07-08T12:36:18.000Z",
-    "hash": "ca2fddd579767558a1780549e14bce88f5608d4d"
+    "reviewedAt": "2026-07-08T20:11:09.195Z",
+    "hash": "1e5c0857ca4b55ec55816693f06db81429a327cd"
   },
   "maf_470way": {
     "name": "maf_470way",
@@ -1191,8 +1191,8 @@
     "name": "variants/consequence_impact_1000g",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T18:15:42.577Z",
-    "hash": "92fe50c3624928d57e7dbfde844ea867228fe4df"
+    "reviewedAt": "2026-07-08T20:13:08.310Z",
+    "hash": "7f799149abb0882548e8976392fa321b361a7fed"
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
