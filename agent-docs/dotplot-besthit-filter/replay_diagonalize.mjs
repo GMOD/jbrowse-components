@@ -11,7 +11,7 @@ const alns = []
 for (const l of lines) {
   const f = l.split('\t')
   const q = f[0]
-  if (q[0] !== 'q') continue
+  if (q[0] !== 'q') {continue}
   const queryRefName = q.slice(1) // strip 'q' prefix
   const refStart = +f[7]
   const refEnd = +f[8]
@@ -25,9 +25,9 @@ console.log('q-alignments:', alns.length)
 const queryGroups = new Map()
 for (const a of alns) {
   const len = a.refEnd - a.refStart
-  if (!queryGroups.has(a.queryRefName)) queryGroups.set(a.queryRefName, new Map())
+  if (!queryGroups.has(a.queryRefName)) {queryGroups.set(a.queryRefName, new Map())}
   const g = queryGroups.get(a.queryRefName)
-  if (!g.has(a.refRefName)) g.set(a.refRefName, { bases: 0, wsum: 0, ssum: 0 })
+  if (!g.has(a.refRefName)) {g.set(a.refRefName, { bases: 0, wsum: 0, ssum: 0 })}
   const d = g.get(a.refRefName)
   d.bases += len
   d.wsum += ((a.refStart + a.refEnd) / 2) * len

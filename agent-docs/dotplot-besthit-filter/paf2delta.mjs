@@ -11,23 +11,23 @@ for (const l of fs.readFileSync('/tmp/contig.lens', 'utf8').split('\n').filter(B
 }
 
 const raw = execSync('zcat /tmp/hap1.pif.gz', { maxBuffer: 1 << 30 }).toString()
-const CANON = new Set([...Array(22)].map((_, i) => `chr${i + 1}`).concat(['chrX', 'chrY']))
+const CANON = new Set([...new Array(22)].map((_, i) => `chr${i + 1}`).concat(['chrX', 'chrY']))
 
 // group q-lines by (chr ref, contig qry)
 const pairs = new Map()
 let kept = 0
 for (const l of raw.split('\n')) {
-  if (!l || l[0] !== 'q') continue
+  if (!l?.startsWith('q')) {continue}
   const f = l.split('\t')
   const contig = f[0].slice(1)
-  const qs = +f[2], qe = +f[3], strand = f[4]
+  const qs = +f[2]; const qe = +f[3]; const strand = f[4]
   const chr = f[5]
-  const rs = +f[7] + 1, re = +f[8] // delta is 1-based inclusive
-  if (!CANON.has(chr)) continue          // whole chromosomes only
-  if (!ctgLen.has(contig)) continue
+  const rs = +f[7] + 1; const re = +f[8] // delta is 1-based inclusive
+  if (!CANON.has(chr)) {continue}          // whole chromosomes only
+  if (!ctgLen.has(contig)) {continue}
   kept++
-  const key = chr + '\t' + contig
-  if (!pairs.has(key)) pairs.set(key, [])
+  const key = `${chr  }\t${  contig}`
+  if (!pairs.has(key)) {pairs.set(key, [])}
   // reverse strand: query coords decreasing
   const [aQs, aQe] = strand === '-' ? [qe, qs + 1] : [qs + 1, qe]
   pairs.get(key).push([rs, re, aQs, aQe])
@@ -44,13 +44,13 @@ for (const [key, alns] of pairs) {
     out.push('0')
   }
 }
-fs.writeFileSync('/tmp/hap1.delta', out.join('\n') + '\n')
+fs.writeFileSync('/tmp/hap1.delta', `${out.join('\n')  }\n`)
 console.error('wrote /tmp/hap1.delta')
 
 // Rfile: canonical chromosome order
 const rlines = [...CANON].map(c => `${c} ${chrLen.get(c)} +`)
-fs.writeFileSync('/tmp/ref.order', rlines.join('\n') + '\n')
+fs.writeFileSync('/tmp/ref.order', `${rlines.join('\n')  }\n`)
 // Qfile: all contigs (natural order), lets layout reorder them
 const qlines = [...ctgLen].map(([c, s]) => `${c} ${s} +`)
-fs.writeFileSync('/tmp/qry.order', qlines.join('\n') + '\n')
+fs.writeFileSync('/tmp/qry.order', `${qlines.join('\n')  }\n`)
 console.error('wrote ref.order / qry.order')
