@@ -18,7 +18,7 @@ per-cell-type segmentation BEDs into a single **multi-row bigBed**, and how to
 configure the **multi-row feature display** so the file draws as one color-coded
 row per cell type.
 
-<Figure src="/img/chromhmm.png" caption="The multi-row feature display showing dense ChromHMM chromatin-state annotations from ENCODE. Each row is a cell type; each feature is colored by its chromatin state via the BED itemRgb field."/>
+<Figure src="/img/chromhmm.png" caption="The multi-row feature display showing dense ChromHMM chromatin-state annotations from ENCODE. Each row is a cell type; each feature is colored by its chromatin state via the BED itemRgb field. The white regions aren't gaps — Quiescent/Low, the most common state genome-wide, is white in the standard 15-state palette (the same convention UCSC and other browsers use)."/>
 
 ## The idea: one file, one row per cell type
 

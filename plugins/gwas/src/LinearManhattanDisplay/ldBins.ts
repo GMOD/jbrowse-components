@@ -22,7 +22,7 @@ const LD_BIN_DEFS: (LdSwatch & { min: number })[] = [
 
 export const LD_INDEX_SWATCH: LdSwatch = {
   label: 'Index SNP',
-  color: '#9632b8',
+  color: '#c951c9',
 }
 export const LD_MISSING_SWATCH: LdSwatch = {
   label: 'No LD data',

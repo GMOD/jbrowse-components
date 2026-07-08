@@ -71,6 +71,15 @@ export default function LinearGCContentTrackDisplayF(
         model: types.enumeration('gcMode', ['content', 'skew']),
         defaultValue: 'content',
       },
+      // GCContentAdapter never emits real per-bin min/max, so the inherited
+      // 'whiskers' default has no summary to draw — it just forces posColor-only
+      // rendering (buildSourceRenderData skips the bicolor pos/neg split for
+      // whiskers) and hides negative GC-skew as if it were positive.
+      summaryScoreMode: {
+        type: 'stringEnum',
+        model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
+        defaultValue: 'avg',
+      },
     },
     {
       /**

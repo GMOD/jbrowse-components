@@ -199,18 +199,6 @@ export const gallerySpecs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
-    name: 'gallery/1000g_trio',
-    // absolute config url (matches the `multisv` spec): the screenshot server
-    // has no /genomes/ path, and a root-relative config 404s against it.
-    // readConnections:'arc' on each alignments track turns on the paired-end arc
-    // band (routed to the config slot by showTrackGeneric at track-show time).
-    url: '?config=https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:40484345-40515236","type":"LinearGenomeView","tracks":["1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf",{"trackId":"HG02031.final","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}},{"trackId":"HG02030.final","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}},{"trackId":"HG02032.final","displaySnapshot":{"type":"LinearAlignmentsDisplay","readConnections":"arc"}}]}]}',
-    readyTimeout: 120000,
-    settleMs: 15000,
-    viewportHeight: 1150,
-  },
-  {
-    mode: 'url',
     name: 'gallery/encode_multibigwig',
     // ENCODE Broad-Histone H3K27ac for five cell lines, over the HBB locus where
     // erythroid K562 shows strong signal. Uses the UCSC-hosted encodeDCC bigWigs

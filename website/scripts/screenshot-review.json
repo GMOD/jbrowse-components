@@ -103,15 +103,16 @@
   "sv_synteny/linear_synteny_genes": {
     "name": "sv_synteny/linear_synteny_genes",
     "status": "good",
-    "note": "Both levels render (level-1 was a stale PNG, fixed by the 2D tracks nesting). Third view (j99) flipped via declarative [rev] loc-string suffix so level-1 ribbons draw parallel instead of crossing in an X.",
-    "reviewedAt": "2026-06-19T00:00:00.000Z"
+    "note": "FIXED: showColorLegend now defaults to false app-wide (LinearSyntenyView + DotplotView model.ts) instead of a per-spec override — removes the floating Default match/insertion/deletion legend box.",
+    "reviewedAt": "2026-07-08T01:21:33.038Z",
+    "hash": "630c7b4bacc31323ee88df7b0812068b688bd0bc"
   },
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-04T17:58:08.999Z",
-    "hash": "d0d49433174ee6ea3a29763ec82cd72eab645f5c"
+    "reviewedAt": "2026-07-08T01:03:05.267Z",
+    "hash": "3a7dbae1340540be32680bfd42ff4deb9e38e088"
   },
   "sv_inspector_begin": {
     "name": "sv_inspector_begin",
@@ -148,8 +149,8 @@
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-04T17:55:32.988Z",
-    "hash": "ea960743b3b292e08ef187a7b798223b303d97b6"
+    "reviewedAt": "2026-07-08T01:04:58.896Z",
+    "hash": "9f741805d751ac89a3303d053281353d750303cf"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -193,15 +194,15 @@
   "sv_cgiab/deletion_linear_view": {
     "name": "sv_cgiab/deletion_linear_view",
     "status": "good",
-    "note": "RESOLVED: already sorted by base at the deletion center (sortedBy 122836434 + center line); reviewer note was an optional enhancement.",
-    "reviewedAt": "2026-07-02T02:59:43.870Z",
-    "hash": "a85ebc6001543e1e92ed7bc06527ecf386ed45e9"
+    "note": "",
+    "reviewedAt": "2026-07-08T01:10:20.949Z",
+    "hash": "6b40816c58fe192a028f5abf2218d46d0c69ebbc"
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
     "status": "bad",
-    "note": " ideally use real normalized depth, not indexcov",
-    "reviewedAt": "2026-07-07T02:02:28.261Z",
+    "note": " ideally use real normalized depth, not indexcov. might just skip for now, pending work on sv_cgiab/cnv_log2ratio_genome",
+    "reviewedAt": "2026-07-08T00:55:47.022Z",
     "hash": "d8634221ed031dfd15a0b031331813face20f827"
   },
   "sv_cgiab/dotplot_result": {
@@ -253,8 +254,8 @@
     "name": "alignments_sort_by_base",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-07T13:56:57.315Z",
-    "hash": "638477effe6b98327afe8d43cdd6ccc53e0c5038"
+    "reviewedAt": "2026-07-08T01:01:57.120Z",
+    "hash": "6f8e50f4682c7281f8f62f8a3ff8b5e1a0fda42c"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -382,9 +383,9 @@
   "multiwig/addtrack": {
     "name": "multiwig/addtrack",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T04:54:15.039Z",
-    "hash": "33ad6e2fe3f503d24f7b9c05404269183d689709"
+    "note": "FIXED: viewport 1500x620 -> 1300x520 (both frames) to cut the excess blank space around the LGV pane and add-track form; callout annotations still land correctly at the smaller size.",
+    "reviewedAt": "2026-07-08T01:41:25.869Z",
+    "hash": "67ca26e8db15060a27bdc94d5a324ad3783e3751"
   },
   "plugin_store": {
     "name": "plugin_store",
@@ -470,10 +471,10 @@
   },
   "feature_detail_sequence": {
     "name": "feature_detail_sequence",
-    "status": "good",
-    "note": "use the partial introns for this",
-    "reviewedAt": "2026-07-04T19:59:06.482Z",
-    "hash": "f473a912270c773bb0be455068d49500818a2f33"
+    "status": "bad",
+    "note": "this can use some other non selenop gene like pten, and also show 'up+downstream'",
+    "reviewedAt": "2026-07-08T01:40:32.909Z",
+    "hash": "424fd6ca79f57922128aa6a21d4267d52d382bed"
   },
   "hic_track": {
     "name": "hic_track",
@@ -489,10 +490,10 @@
   },
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T19:39:51.915Z",
-    "hash": "1184605ee66b9ff73f92adbfffda4dd96b9d5dec"
+    "status": "bad",
+    "note": " it would be good to 'show curves' true in the synteny view, and also to zoom in on the larger insertion",
+    "reviewedAt": "2026-07-08T01:06:41.000Z",
+    "hash": "d9cd1f5602a2c31adb7e147155df0887973321b1"
   },
   "recent_tracks": {
     "name": "recent_tracks",
@@ -654,8 +655,8 @@
     "name": "methylation/colo829_cram_and_bedmethyl",
     "status": "bad",
     "note": "this is a 'hypomethylated cpg island'...might want a methylated one",
-    "reviewedAt": "2026-07-07T04:54:05.815Z",
-    "hash": "652969bd3244902456619530cd89df496c46032a"
+    "reviewedAt": "2026-07-08T01:04:57.230Z",
+    "hash": "ee5ea609b805b95166bcecbe2079b485f2f08e1b"
   },
   "methylation/per_read_mod_bam": {
     "name": "methylation/per_read_mod_bam",
@@ -836,9 +837,9 @@
   "alignments/modifications2": {
     "name": "alignments/modifications2",
     "status": "bad",
-    "note": "we may need a 'inset' of the track menu open, or a two part screenshot with the track menu open first,  showing the two different colorby options that the user would interactively choose from",
-    "reviewedAt": "2026-07-07T15:20:01.373Z",
-    "hash": "50d5e2102ac9bdfb060028f343ec7531a1278ecc"
+    "note": "the annotation text boxes may want to be moved to far right. also we may want an 'inset' of the track menu open, or a two part screenshot with the track menu open first,  showing the two different colorby options (color by modifications and color by methylation in red boxes) that the user would interactively choose from",
+    "reviewedAt": "2026-07-08T02:15:40.523Z",
+    "hash": "98a1394e1c55e32a0e43fa6933a312c1599e9bfc"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -860,13 +861,6 @@
     "note": "",
     "reviewedAt": "2026-06-21T20:39:13.250Z"
   },
-  "maf_conservation": {
-    "name": "maf_conservation",
-    "status": "bad",
-    "note": "I feel like i dont care about conservation. just delete this figure",
-    "reviewedAt": "2026-07-07T20:19:17.858Z",
-    "hash": "6f92189b463691a0b57dac27e6aa19dc3b04167e"
-  },
   "rnaseq/single_read": {
     "name": "rnaseq/single_read",
     "status": "good",
@@ -875,17 +869,17 @@
   },
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T04:54:40.356Z",
-    "hash": "2bf29a55ceab990b499bcba24f0eb3944832f744"
+    "status": "bad",
+    "note": "the red box is not circling the linear genome view SV_85 feature ",
+    "reviewedAt": "2026-07-08T01:10:45.637Z",
+    "hash": "245f459cda5be1b55455ccfce34dd2fdb81f6e6a"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T04:55:41.443Z",
-    "hash": "ff55001999fed76171957d7378393d3ec555c3a4"
+    "status": "bad",
+    "note": "potentially add the cgiab benchmark vcf on both levels",
+    "reviewedAt": "2026-07-08T01:11:14.529Z",
+    "hash": "0235370c10a7b28b02a40e2cf992d304f8ec05fb"
   },
   "sv_inspector_importform_filtered": {
     "name": "sv_inspector_importform_filtered",
@@ -910,16 +904,16 @@
   "maf_track": {
     "name": "maf_track",
     "status": "good",
-    "note": "DONE: added ce11 RefSeq gene lane (compact) + zoomed out to ~3.5kb so conserved alignment blocks line up with coding exons; caption updated",
-    "reviewedAt": "2026-07-07T04:53:08.799Z",
-    "hash": "8dc18e9386ae6710a08efe6f94256dad657e4462"
+    "note": "FIXED: widened loc from ~3.5kb to 6kb (chrI:2,997,000-3,003,000) so several conserved coding blocks + coverage pattern are visible, not just one gene.",
+    "reviewedAt": "2026-07-08T01:23:10.083Z",
+    "hash": "ffa8c812e7d2dd3591ab5809dccf1516120a3d6e"
   },
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-04T20:02:53.979Z",
-    "hash": "d1a907f834b41deb7ad3eb41cde49d140e8212af"
+    "reviewedAt": "2026-07-08T01:03:00.250Z",
+    "hash": "40b32043d21846c32288d56370b791123d8253bb"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -930,9 +924,9 @@
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
     "status": "bad",
-    "note": "add arcs with arcs shown below. we can also capture a 'show proper pairs:false' potentially as a second screenshot. make bezier curves a bit more dramatic sweeps",
-    "reviewedAt": "2026-07-07T04:50:36.018Z",
-    "hash": "5840435481439658d988cc2c4758197ab534b493"
+    "note": "we can capture using 'showproperpairs:false' potentially. make bezier curves a bit more dramatic sweeps",
+    "reviewedAt": "2026-07-08T01:09:01.711Z",
+    "hash": "2c7fb688369d4cc789a9ab19e0d4a1694482d3e4"
   },
   "trio-hapibd-painting": {
     "name": "trio-hapibd-painting",
@@ -1072,9 +1066,9 @@
   "protein/connected": {
     "name": "protein/connected",
     "status": "good",
-    "note": "zoom in a bit on the gene. use tracklabels:offset",
-    "reviewedAt": "2026-07-07T01:57:09.655Z",
-    "hash": "47873e4602dc1f4c85d8f232a08d36ff6c5ff47d"
+    "note": "FIXED: tightened connectedView loc from the full ~19.1kb gene span to ~13.5kb so the gene fills more of the panel after the click-driven recenter.",
+    "reviewedAt": "2026-07-08T02:11:50.856Z",
+    "hash": "7170681d5fd3e37ef8a938fc3fd5f59ba368b464"
   },
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
@@ -1087,8 +1081,8 @@
     "name": "feature_detail_protein",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-04T17:58:04.308Z",
-    "hash": "85dc8f7d847b08e97df166a937cfa0625bd5b7d7"
+    "reviewedAt": "2026-07-08T01:40:10.426Z",
+    "hash": "d425796332d989ae4b06846ec0832bf4b115d53e"
   },
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
@@ -1100,9 +1094,9 @@
   "chromhmm": {
     "name": "chromhmm",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-06T22:47:12.294Z",
-    "hash": "d973db527707d5d74c360e576f815e15e103cc14"
+    "note": "Not a bug: confirmed the white regions are the literal itemRgb-driven color for ChromHMM state 15 (Quiescent/Low), the standard 15-state Roadmap/UCSC palette convention (and the most common state genome-wide) — not empty/gap rendering. Clarified in the chromhmm tutorial figure caption.",
+    "reviewedAt": "2026-07-08T02:11:50.856Z",
+    "hash": "f6a5ae9780b07949805046b5c0f02b9405f4475b"
   },
   "jbrowse-img/alignments_snpcov": {
     "name": "jbrowse-img/alignments_snpcov",
@@ -1141,23 +1135,23 @@
   },
   "sv_cgiab/cnv_log2_baf": {
     "name": "sv_cgiab/cnv_log2_baf",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T14:58:33.423Z",
-    "hash": "2fff3be7bdd52b0a76df98c0bbe2754ce4047a53"
+    "status": "bad",
+    "note": "browser window needs to be taller, resolution needs to be higher for the log2 track. refer to other screenshot though we may need to wait until labserver is available",
+    "reviewedAt": "2026-07-08T01:09:52.318Z",
+    "hash": "6faa686f3d7696357d545edac11d4e2c84cfb98c"
   },
   "sv_cgiab/cnv_log2ratio_genome": {
     "name": "sv_cgiab/cnv_log2ratio_genome",
     "status": "bad",
-    "note": "the multiwiggle depth should ideally be raw depths not indexcov. we may want to make this screenshot wider. the baf values are also probably confusing for anyone without proper background, and the 'whiskers' are confusing too. also we are not plotting folded b-allele frequency anymore",
-    "reviewedAt": "2026-07-07T20:20:31.631Z",
+    "note": "the multiwiggle depth should ideally be raw depths not indexcov. can use aws cli to 'aws s3 ls' in cgiab demos folder if it helps. we can also consider using a production grade cnv detector like cnvpytor or an R tool or something to get the best signal to plot. we may not want to do that now because we cant access our labserver to run analysis. we may want to make this screenshot wider. the baf values are also probably confusing for anyone without proper background, and the 'whiskers' are confusing too. also we are not plotting folded b-allele frequency anymore",
+    "reviewedAt": "2026-07-08T00:55:29.276Z",
     "hash": "dd8cd99c72cea070e59453d3d0df80251e7737cc"
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
     "status": "bad",
-    "note": "the split reads should all sort to bottom of layout i think?",
-    "reviewedAt": "2026-07-07T02:03:05.778Z",
+    "note": "the split reads should all sort to bottom of layout i think, this would make things look clearer. may want to use 'fit to display height' for the reads also. ",
+    "reviewedAt": "2026-07-08T00:56:03.163Z",
     "hash": "3e23d02091529a924d15d59d0d5ecd103f8bdd43"
   },
   "sv_cgiab/driver_chr17_loh": {
@@ -1177,16 +1171,16 @@
   "gc_content": {
     "name": "gc_content",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-03T12:40:33.519Z",
-    "hash": "0bb1bfb36b2cfeecef5c03f92d4c655f75ca78c3"
+    "note": "FIXED: root-caused — LinearGCContentTrackDisplay/LinearGCContentDisplay inherited summaryScoreMode:whiskers from LinearWiggleDisplay, and buildSourceRenderData skips the bicolor pos/neg split entirely in whiskers mode (posColor only), so GC skew rendered monochrome despite useBicolor/bicolorPivot already defaulting correctly. GCContentAdapter never emits real per-bin min/max, so whiskers mode was pointless there anyway — defaulted summaryScoreMode to avg in both display config schemas. Skew now shows the real two-arm blue/red replichore profile. Replication-fork annotation left as a follow-up.",
+    "reviewedAt": "2026-07-08T02:11:50.856Z",
+    "hash": "74958493fbd20d523acbf51a2a285d9148c38a97"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T02:04:35.176Z",
-    "hash": "ba4bd354361c1c6e5555479150549067d0aa57e1"
+    "note": "FIXED: viewportHeight 780->880 so the CN-labeled CNV calls track has clearance below it instead of being cropped at the frame edge.",
+    "reviewedAt": "2026-07-08T01:38:03.653Z",
+    "hash": "23826a9210d143c49d735e0f535baba0b69e2f67"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
@@ -1199,8 +1193,8 @@
     "name": "variants/consequence_impact_sv",
     "status": "bad",
     "note": "not a super powerful screenshot, might delete or find another region. the clinvar cnv do not seem to match up with what is shown",
-    "reviewedAt": "2026-07-07T14:02:14.814Z",
-    "hash": "cb23af28bf105b068e4d529b1138d211772bd779"
+    "reviewedAt": "2026-07-08T01:06:44.248Z",
+    "hash": "cff20ee646cc6c094ef2473afb3ab64fb2dd4bff"
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
@@ -1240,16 +1234,9 @@
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
     "status": "bad",
-    "note": "please use real human data for this screenshot. you can look at our other generate-screenshot examples, many are short paired end reads, can just re-use it potentially",
-    "reviewedAt": "2026-07-07T15:20:31.733Z",
-    "hash": "6540124494f7be6b2beb979ac0aefed8af43143a"
-  },
-  "gallery/1000g_trio": {
-    "name": "gallery/1000g_trio",
-    "status": "good",
-    "note": "add arcs to all three and make browser taller",
-    "reviewedAt": "2026-07-07T04:43:15.243Z",
-    "hash": "88695d45e7b94e14d300bf42be52312404f248f2"
+    "note": "this captured a blank white 'view panel' of volvox. also please use real human data for this screenshot. you can look at our other generate-screenshot examples, many are short paired end reads, can just re-use it potentially",
+    "reviewedAt": "2026-07-08T01:03:58.406Z",
+    "hash": "f06e4f3a35f344052049c3dc267f907a366dcc71"
   },
   "gallery/breakpoint_multihop": {
     "name": "gallery/breakpoint_multihop",
@@ -1261,16 +1248,16 @@
   "gallery/cactus_447way": {
     "name": "gallery/cactus_447way",
     "status": "bad",
-    "note": "unclear what is even happening in this figure. we might just want to delete or focus on something smaller like the ultra conserved elements from ~/src/jb2hubs",
-    "reviewedAt": "2026-07-07T04:43:10.448Z",
-    "hash": "f3c46eb28aba41c8358af0e1a87960d78d066b8a"
+    "note": "unclear what is even happening in this figure. the 447 way figures in general are very complex. we might just want to delete or focus on something smaller like the ultra conserved elements from ~/src/jb2hubs",
+    "reviewedAt": "2026-07-08T01:07:07.134Z",
+    "hash": "0c6592e962c5e464f093b1c39f91b8ce17494651"
   },
   "gallery/celegans_26way": {
     "name": "gallery/celegans_26way",
     "status": "bad",
-    "note": "Fixed the config bug this exposed: ce11.ncbiRefSeq.sorted.gff pointed at a dead cross-bucket S3 file (wrong filename); repointed at the correct co-located file + reuploaded config.json + CloudFront invalidation (real, independent fix). Did NOT add the gene track here though: doing so exposes a separate real bug where the MAF Loading placeholder over a genuine no-data gap never clears once a 2nd track is present (reproduced 3/3, order-independent, unaffected by settleMs 90000->180000). Screenshot itself unchanged (still MAF-only, uninteresting) pending that investigation.",
-    "reviewedAt": "2026-07-07T20:20:00.057Z",
-    "hash": "45f71c55f7087eeefd72838ca03ff71d1a72c5d1"
+    "note": "this captured a 'loading' overlay, there may be a bug where the MAF Loading placeholder over a genuine no-data gap never clears once a 2nd track is present (reproduced 3/3, order-independent, unaffected by settleMs 90000->180000). Screenshot itself unchanged (still MAF-only, uninteresting) pending that investigation. see agent-docs/todo.md",
+    "reviewedAt": "2026-07-08T00:53:10.700Z",
+    "hash": "efd0590d31d90792007a519dce702f73b8052b99"
   },
   "gallery/copynumber_clustered": {
     "name": "gallery/copynumber_clustered",
@@ -1296,9 +1283,9 @@
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T01:26:31.712Z",
-    "hash": "390e06aecdb68c01aa6adf336fb143df4c31ddb4"
+    "note": "FIXED: added a real diamond glyph (GLYPH_INDEX) for the LD index/lead SNP end-to-end (manhattan.slang GPU shader + Canvas2D/SVG fallback), drawn 1.6x larger than other points, and lightened LD_INDEX_SWATCH from #9632b8 to #c951c9 (pinker purple) — matches the LocusZoom convention.",
+    "reviewedAt": "2026-07-08T02:11:50.856Z",
+    "hash": "a7affd960b11246e89fbc5162e76c77a8fc7af2a"
   },
   "gallery/hg002_dipcall": {
     "name": "gallery/hg002_dipcall",
@@ -1324,16 +1311,16 @@
   "gallery/nanopore_methylation": {
     "name": "gallery/nanopore_methylation",
     "status": "good",
-    "note": "add ucsc cpg island bed file track",
-    "reviewedAt": "2026-07-07T04:47:17.855Z",
-    "hash": "36b6fd18b5d51f4783bd88580ceac833637b4390"
+    "note": "",
+    "reviewedAt": "2026-07-08T01:07:56.069Z",
+    "hash": "13bc3403657a0233cd1778ef0ac54d7812411e75"
   },
   "gallery/sarscov2_polyprotein": {
     "name": "gallery/sarscov2_polyprotein",
     "status": "good",
-    "note": "DONE: subfeatureLabels:below so mature-peptide labels stagger below instead of overlapping",
-    "reviewedAt": "2026-07-07T04:48:35.553Z",
-    "hash": "7aedc25b5323b07f21af20b0e39f5683863f760e"
+    "note": "",
+    "reviewedAt": "2026-07-08T01:08:03.607Z",
+    "hash": "1b68580493a94590a9c82b8c7403ec0000040915"
   },
   "gallery/scatac_catlas": {
     "name": "gallery/scatac_catlas",
@@ -1360,15 +1347,15 @@
     "name": "introgression_locus",
     "status": "bad",
     "note": "if it is possible to zoom out a bit more to show surrounding region, reduce wordiness, say why this is interesting (e.g. medical implication) and add citation, that would be good",
-    "reviewedAt": "2026-07-07T04:49:06.959Z",
-    "hash": "e687f4b2d22fbd3837b37211d1ca00d88609db5a"
+    "reviewedAt": "2026-07-08T01:04:47.530Z",
+    "hash": "2baf9b2858bda73419194383f5481baa4da14f23"
   },
   "inversion_long_read": {
     "name": "inversion_long_read",
-    "status": "bad",
-    "note": "potentially remove the short reads and then just focus on the long reads",
-    "reviewedAt": "2026-07-07T01:33:08.673Z",
-    "hash": "97989ab4c6d86c68d1c29780072eacb10224c74b"
+    "status": "good",
+    "note": "FIXED: dropped the short-read (Illumina) track and its annotations, kept only the Nanopore long-read track + VCF, widened loc 3.3kb -> 5.5kb, and shrunk viewportHeight to match.",
+    "reviewedAt": "2026-07-08T02:11:50.856Z",
+    "hash": "4b6b4fa5516622caeef3845cba9e89b4097d128c"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
@@ -1394,29 +1381,29 @@
   "synteny_human_chimp_cigar_modes": {
     "name": "synteny_human_chimp_cigar_modes",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T14:41:58.744Z",
-    "hash": "043787c6c62077f661e3a278f453eb6ea847073e"
+    "note": "FIXED: widened RB1_L1_LOCUS ~1.7x (both genomes) for more flanking context; bumped gene-track featureHeight 10->18 so the RB1 exon glyphs read as real bars instead of a hairline sliver (root-caused: NOT an autoHeight/fit-to-height bug — pinning autoHeight:false + explicit height had zero visual effect, confirming featureHeight is what was actually thin). Legend removal now comes from the showColorLegend default flip, not a per-call override.",
+    "reviewedAt": "2026-07-08T01:36:42.665Z",
+    "hash": "0b60622777da90a8d406260eb4a8fa082569e19b"
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T14:46:02.954Z",
-    "hash": "a8ea09dc78cff511b5bac775a7d8634a23e14a3f"
+    "note": "FIXED: widened VAPB_SVA_LOCUS ~1.7x for more flanking context; same featureHeight 10->18 fix via the shared hg38ChimpSynteny() genes() helper.",
+    "reviewedAt": "2026-07-08T01:36:42.666Z",
+    "hash": "9d50d8cb84797afc4b8d6ddcc645a51316136525"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T14:46:02.956Z",
-    "hash": "4fec0ab874aa0008ac990e53ec8ccd4764561e4e"
+    "note": "FIXED: widened PICALM_ALU_LOCUS ~1.7x; dropped the superCompact geneDisplayMode override (no longer needed/used) in favor of featureHeight 10->18 on the shared genes() helper — same root cause as the other two hg38ChimpSynteny figures.",
+    "reviewedAt": "2026-07-08T01:36:42.666Z",
+    "hash": "810a04907f1b33a9409fb8903100e584b3c740e6"
   },
   "gallery/directrna_actb": {
     "name": "gallery/directrna_actb",
     "status": "bad",
-    "note": "way too many chaotic sasimi arcs here. need ncbi gene track to contextualize, may need to use supercompact rendering, and filter low sashimi scores",
-    "reviewedAt": "2026-07-07T04:46:18.069Z",
-    "hash": "f2007a66ca967168f6665e710da19d87a62d1124"
+    "note": "way too many chaotic sasimi arcs here. need hg38 ncbi gene track to contextualize, may need to use supercompact rendering, increase coverage area height, and filter low sashimi scores",
+    "reviewedAt": "2026-07-08T02:16:33.341Z",
+    "hash": "b1880286413cca8c64520e83dad3d081f98625ca"
   }
 }

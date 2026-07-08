@@ -458,17 +458,13 @@ export const svSpecs: ScreenshotSpec[] = [
   // reads only *infer* an inversion (from discordant pair orientation + a few
   // split reads at the breakpoints). Here a ~1.2 kb pure inversion (HGSV_10047,
   // chr1:197,787,660-197,788,855, called by the 1KGP Illumina ensemble AND by the
-  // 1000G-ONT consortium's SV callers) is shown with BOTH technologies:
-  //   - HG00151 Illumina high-coverage (short paired-end): the inverted segment
-  //     reads as a cluster of same-orientation / split pairs arcing over the two
-  //     breakpoints.
-  //   - HG00151 Oxford Nanopore (long reads): single reads span the whole inverted
-  //     segment, so each crosses both breakpoints and splits into a forward + a
-  //     reverse-strand supplementary alignment — the split junctions arc in magenta
-  //     (the split-read inversion color), directly reading out the inversion that
-  //     short reads can only triangulate.
-  // HG00151 is Illumina-genotyped 0/1 here; the ONT reads are the minimap2
-  // alignment (supplementary/split reads intact — see HG00151_ONT_1000G_ADAPTER).
+  // 1000G-ONT consortium's SV callers) is shown with HG00151 Oxford Nanopore
+  // (long) reads: single reads span the whole inverted segment, so each crosses
+  // both breakpoints and splits into a forward + a reverse-strand supplementary
+  // alignment — the split junctions arc in magenta (the split-read inversion
+  // color), directly reading out the inversion that short reads can only
+  // triangulate. The ONT reads are the minimap2 alignment (supplementary/split
+  // reads intact — see HG00151_ONT_1000G_ADAPTER).
   {
     mode: 'url',
     name: 'inversion_long_read',
@@ -486,26 +482,9 @@ export const svSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: '1:197,786,600-197,789,900',
+          loc: '1:197,785,500-197,791,000',
           tracks: [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-            {
-              trackId: 'HG00151.final',
-              displaySnapshot: {
-                // link supplementary alignments (View as pairs): chains each
-                // pair + its split segments onto one row, so a paired split read
-                // that crosses the inversion junction paints magenta
-                linkedReads: 'normal',
-                readConnections: 'arc',
-                // normal read height (with a tall track) so the chevron read
-                // directions on the aberrant/split pairs stay legible
-                height: 1000,
-                coverageHeight: 70,
-                featureHeight: 7,
-                colorBy: { type: 'pairOrientation' },
-                showLegend: true,
-              },
-            },
             {
               trackId: 'HG00151_ONT_1000g',
               displaySnapshot: {
@@ -518,6 +497,7 @@ export const svSpecs: ScreenshotSpec[] = [
                 height: 560,
                 coverageHeight: 70,
                 colorBy: { type: 'pairOrientation' },
+                showLegend: true,
               },
             },
           ],
@@ -526,33 +506,14 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG00151 Nanopore',
     readyTimeout: 90000,
-    viewportHeight: 1900,
+    viewportHeight: 800,
     settleMs: 40000,
     annotations: [
       {
         type: 'text',
         x: 60,
-        y: 330,
-        text: 'Short reads (Illumina): the inversion is only inferred — aberrant pairs cluster at the breakpoints.',
-        maxWidth: 470,
-      },
-      {
-        type: 'text',
-        x: 560,
-        y: 560,
-        text: 'Purple marks split/supplementary alignments that point in opposite directions.',
-        maxWidth: 360,
-      },
-      {
-        type: 'arrow',
-        from: { x: 600, y: 650 },
-        to: { x: 520, y: 845 },
-      },
-      {
-        type: 'text',
-        x: 60,
-        y: 1300,
-        text: 'Long reads (Nanopore): one read spans the inversion — reverse-strand core between forward flanks, magenta arcs at the split junctions.',
+        y: 300,
+        text: 'One read spans the inversion — reverse-strand core between forward flanks, magenta arcs at the split junctions.',
         maxWidth: 470,
       },
     ],

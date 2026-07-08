@@ -7,9 +7,14 @@ import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegio
 import { appendPointMarker } from '@jbrowse/wiggle-core'
 
 import { scoreToY } from './manhattanRenderingBackendTypes.ts'
+import { GLYPH_INDEX, GLYPH_INSERTION } from '../ManhattanRPC/rpcTypes.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+
+// Must match INDEX_GLYPH_SCALE in manhattan.slang: LocusZoom draws the
+// index/lead SNP visibly larger than the other points.
+const INDEX_GLYPH_SCALE = 1.6
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -78,11 +83,20 @@ export function drawManhattanBlocks(
       const widthPx = Math.abs(xEnd - xStart)
       if (widthPx > pointDiameterPx) {
         ctx.rect(left, y - r, widthPx, pointDiameterPx)
-      } else if (glyphs[i] === 1) {
+      } else if (glyphs[i] === GLYPH_INSERTION) {
         // Insertion: inverted triangle (apex pointing down) at the point.
         ctx.moveTo(xStart - r, y - r)
         ctx.lineTo(xStart + r, y - r)
         ctx.lineTo(xStart, y + r)
+        ctx.closePath()
+      } else if (glyphs[i] === GLYPH_INDEX) {
+        // LD index/lead SNP: diamond (LocusZoom convention), drawn larger so
+        // it reads as "the one that matters" at a glance.
+        const ri = r * INDEX_GLYPH_SCALE
+        ctx.moveTo(xStart, y - ri)
+        ctx.lineTo(xStart + ri, y)
+        ctx.lineTo(xStart, y + ri)
+        ctx.lineTo(xStart - ri, y)
         ctx.closePath()
       } else {
         appendPointMarker(ctx, xStart, y, pointDiameterPx)

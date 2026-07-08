@@ -1,6 +1,13 @@
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+// Per-feature glyph classes — shared numeric contract between the RPC
+// executor, the LD evaluator, and both renderers (GPU shader glyph IDs match
+// these values; see manhattan.slang).
+export const GLYPH_POINT = 0
+export const GLYPH_INSERTION = 1
+export const GLYPH_INDEX = 2
+
 export interface GetManhattanDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
@@ -29,10 +36,10 @@ export interface ManhattanRpcResult {
   // (deletions, duplications), which renderers draw as a span rather than a
   // disc.
   ends: Uint32Array
-  // Per-feature glyph class chosen from the SV type: 0 = point (SNP or
-  // non-insertion point → disc), 1 = insertion (inverted triangle). Ranged
-  // SVs draw as a bar based on their pixel width regardless of this code, so
-  // only the point-marker shape is type-driven.
+  // Per-feature glyph class: 0 = point (SNP or non-insertion point → disc),
+  // 1 = insertion (inverted triangle), 2 = LD index/lead SNP (diamond, 'ld'
+  // coloring mode only). Ranged SVs draw as a bar based on their pixel width
+  // regardless of this code, so only the point-marker shape is type-driven.
   glyphs: Uint8Array
   scores: Float32Array
   // Per-feature ABGR colors (uint32). Always populated, even when the user's

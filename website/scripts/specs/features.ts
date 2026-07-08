@@ -523,7 +523,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
             zoomToBaseLevel: false,
             connectedView: {
               assembly: 'hg38',
-              loc: 'chr17:7,668,421-7,687,550',
+              loc: 'chr17:7,671,000-7,684,500',
               tracks: ['hg38-ncbiRefSeq', 'clinvar_ncbi_hg38'],
             },
           },

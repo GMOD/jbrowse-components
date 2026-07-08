@@ -11,6 +11,7 @@ import {
 import { buildLdToIndex } from './ldToIndex.ts'
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
+import { GLYPH_INSERTION, GLYPH_POINT } from './rpcTypes.ts'
 
 import type { LDRecordSource } from './ldToIndex.ts'
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
@@ -24,6 +25,7 @@ export function buildManhattanResult(
   evalColor: (f: Feature) => number,
   evalR2?: (f: Feature) => number,
   report?: ProgressReporter,
+  evalGlyph?: (f: Feature) => number,
 ): ManhattanRpcResult {
   const n = features.length
   const positions = new Uint32Array(n)
@@ -51,7 +53,11 @@ export function buildManhattanResult(
       // T2T-scale cumulative coordinates.
       positions[count] = f.get('start')
       ends[count] = f.get('end')
-      glyphs[count] = f.get('svtype') === 'INS' ? 1 : 0
+      glyphs[count] = evalGlyph
+        ? evalGlyph(f)
+        : f.get('svtype') === 'INS'
+          ? GLYPH_INSERTION
+          : GLYPH_POINT
       scores[count] = score
       if (score < scoreMin) {
         scoreMin = score
@@ -134,6 +140,7 @@ export async function executeGetManhattanData({
 
   let evalColor: (f: Feature) => number
   let evalR2: ((f: Feature) => number) | undefined
+  let evalGlyph: ((f: Feature) => number) | undefined
   let indexFound: boolean | undefined
   if (colorBy === 'ld' && indexSnp && ldAdapterConfig) {
     const ldAdapter = (
@@ -146,6 +153,7 @@ export async function executeGetManhattanData({
     const ldEval = makeLdEvaluator(ld, indexSnp, region.refName)
     evalColor = ldEval.evalColor
     evalR2 = ldEval.evalR2
+    evalGlyph = ldEval.evalGlyph
     indexFound = ld.indexFound
   } else {
     evalColor = makeColorEvaluator(color, pluginManager.jexl)
@@ -161,6 +169,7 @@ export async function executeGetManhattanData({
       statusCallback,
       stopTokenCheck,
     }),
+    evalGlyph,
   )
   result.indexFound = indexFound
 

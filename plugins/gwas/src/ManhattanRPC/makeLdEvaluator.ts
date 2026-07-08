@@ -1,4 +1,5 @@
 import { lookupR2, matchesIndexSnp, posKey } from './ldToIndex.ts'
+import { GLYPH_INDEX, GLYPH_POINT } from './rpcTypes.ts'
 import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 
 import type { LdToIndex } from './ldToIndex.ts'
@@ -38,6 +39,11 @@ export function makeLdEvaluator(
     evalR2(feature: Feature) {
       compute(feature)
       return r2
+    },
+    // Index SNP renders as the diamond glyph (GLYPH_INDEX) instead of a disc.
+    evalGlyph(feature: Feature) {
+      compute(feature)
+      return isIndex ? GLYPH_INDEX : GLYPH_POINT
     },
   }
 }

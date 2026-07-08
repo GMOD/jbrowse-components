@@ -225,7 +225,7 @@ export const gallerySections: readonly GallerySection[] = [
     items: [
       {
         label: '1000 genomes extended trio',
-        spec: 'gallery/1000g_trio',
+        spec: 'multi-sv-trio',
         description:
           'A 1000 Genomes trio (mother, child, father) coverage beneath the ensemble structural-variant VCF.',
       },

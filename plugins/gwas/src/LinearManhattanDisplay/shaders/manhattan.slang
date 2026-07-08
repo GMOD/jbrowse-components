@@ -1,6 +1,7 @@
 // Manhattan plot scatter renderer. Glyph per feature:
 //   - ranged SV wider than a point  → horizontal bar from start→end
 //   - insertion (glyph==1)          → inverted triangle marker
+//   - LD index/lead SNP (glyph==2)  → diamond marker
 //   - everything else (SNP/point)   → filled circle (disc)
 // All are a 6-vertex quad; the fragment shader carves the shape. GWAS scores
 // are conventionally pre-transformed (e.g. -log10 p), so we only do linear Y
@@ -40,8 +41,8 @@ struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
   float2 localPos : TEXCOORD0;
-  // Shape discriminator passed to the fragment shader: 0 = disc, 1 = inverted
-  // triangle, 2 = solid bar.
+  // Shape discriminator passed to the fragment shader: 0 = disc, 1 = diamond,
+  // 2 = inverted triangle, 3 = solid bar.
   float  shape    : TEXCOORD1;
 };
 
@@ -49,13 +50,17 @@ struct VsOut {
 // SMALL_POINT_MAX_DIAMETER (and the disc SDF) come from the shared pointGlyph
 // module so they stay in lockstep with wiggle.slang.
 static const float SHAPE_DISC = 0.0;
-static const float SHAPE_TRI = 1.0;
-// >1.5 in the fragment shader = flat solid fill (ranged-SV bar, or the tiny
+static const float SHAPE_DIAMOND = 1.0;
+static const float SHAPE_TRI = 2.0;
+// >2.5 in the fragment shader = flat solid fill (ranged-SV bar, or the tiny
 // square below).
-static const float SHAPE_BAR = 2.0;
+static const float SHAPE_BAR = 3.0;
 // 1/sqrt(5): normalizes the two slanted edges of the inverted triangle so the
 // edge functions read as true perpendicular distances for antialiasing.
 static const float INV_SQRT5 = 0.4472136;
+// LocusZoom draws the index/lead SNP visibly larger than the other points so
+// it reads as "the one that matters" at a glance, not just a color swap.
+static const float INDEX_GLYPH_SCALE = 1.6;
 
 [shader("vertex")]
 VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
@@ -101,9 +106,9 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
     o.position = float4(x, y, 0.0, 1.0);
     o.localPos = local;
     o.shape = SHAPE_BAR;
-  } else if (inst.glyph != 1u && u.pointRadius * 2.0 <= SMALL_POINT_MAX_DIAMETER) {
-    // tiny SNP point: crisp filled square (no AA disc). Insertions keep their
-    // triangle marker even when small.
+  } else if (inst.glyph == 0u && u.pointRadius * 2.0 <= SMALL_POINT_MAX_DIAMETER) {
+    // tiny SNP point: crisp filled square (no AA disc). Insertions and the LD
+    // index/lead SNP keep their distinct marker even when small.
     float dx = local.x * u.pointRadius * 2.0 / u.viewportWidth;
     float dy = local.y * u.pointRadius * 2.0 / u.canvasHeight;
     o.position = float4(startClipX + dx, centerClipY + dy, 0.0, 1.0);
@@ -111,31 +116,38 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
     o.shape = SHAPE_BAR;
   } else {
     float expand = discExpand(u.pointRadius);
-    float halfPx = u.pointRadius * expand;
+    float glyphScale = inst.glyph == 2u ? INDEX_GLYPH_SCALE : 1.0;
+    float halfPx = u.pointRadius * expand * glyphScale;
     float dx = local.x * halfPx * 2.0 / u.viewportWidth;
     float dy = local.y * halfPx * 2.0 / u.canvasHeight;
     o.position = float4(startClipX + dx, centerClipY + dy, 0.0, 1.0);
     o.localPos = local * expand;
-    o.shape = inst.glyph == 1u ? SHAPE_TRI : SHAPE_DISC;
+    o.shape = inst.glyph == 1u ? SHAPE_TRI : (inst.glyph == 2u ? SHAPE_DIAMOND : SHAPE_DISC);
   }
   return o;
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  if (fragIn.shape > 1.5) {
+  if (fragIn.shape > 2.5) {
     // Ranged-SV bar: solid fill, no marker AA.
     return fragIn.color;
   }
   float2 p = fragIn.localPos;
   float alpha;
-  if (fragIn.shape > 0.5) {
+  if (fragIn.shape > 1.5) {
     // Inverted triangle: top edge (-1,1)-(1,1), apex (0,-1). Each edge's signed
     // distance is positive inside; the min is the SDF used for the AA fade.
     float dTop = 1.0 - p.y;
     float dLeft = (2.0 * p.x + p.y + 1.0) * INV_SQRT5;
     float dRight = (-2.0 * p.x + p.y + 1.0) * INV_SQRT5;
     float coverage = min(dTop, min(dLeft, dRight));
+    float aa = fwidth(coverage);
+    alpha = smoothstep(-aa, aa, coverage);
+  } else if (fragIn.shape > 0.5) {
+    // Diamond (rhombus): L1-norm distance from center, positive inside,
+    // zero at the four edges — the LocusZoom-style lead-SNP marker.
+    float coverage = 1.0 - (abs(p.x) + abs(p.y));
     float aa = fwidth(coverage);
     alpha = smoothstep(-aa, aa, coverage);
   } else {

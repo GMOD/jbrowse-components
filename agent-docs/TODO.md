@@ -139,4 +139,6 @@ globalThis.__JBROWSE_HITBOX_DEBUG = false                                       
 
                           ## promotable preferences for plugins/canvas
                           show chevrons
-                          etc
+                          etc3
+
+## mouseover sequencefeaturepanel connect to linaergenomeview
