@@ -55,11 +55,16 @@ function currentCompactnessLabel(model: FeatureHeightModel) {
       : 'the custom height'
 }
 
-export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
+export function getFeatureHeightMenuItem(
+  model: FeatureHeightModel,
+  opts?: { disabled?: boolean; disabledHelpText?: string },
+) {
   return {
     label: 'Set feature height...',
     icon: HeightIcon,
     type: 'subMenu' as const,
+    disabled: opts?.disabled,
+    disabledHelpText: opts?.disabledHelpText,
     subMenu: [
       ...Object.values(COMPACTNESS_PRESETS).map(preset => ({
         label: preset.label,

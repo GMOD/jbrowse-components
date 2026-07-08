@@ -33,16 +33,12 @@ interface ReadConnectionsModel {
   setDrawInter: (draw: boolean) => void
   showBezierConnections: boolean
   setShowBezierConnections: (flag: boolean) => void
-  drawSingletons: boolean
-  drawProperPairs: boolean
-  setDrawSingletons: (arg: boolean) => void
-  setDrawProperPairs: (arg: boolean) => void
 }
 
 // Everything about pairing/connecting reads lives here, so the concept is in one
-// place rather than split across "Show...". The singleton/proper-pair filters
-// apply in plain pileup too (they're per-name/per-read, not pairing-specific),
-// so they're always shown; the arc/cloud band options are always present but
+// place rather than split across "Show...". Singleton/proper-pair filtering is
+// plain SAM-flag filtering (it also thins coverage), so it lives under "Filter
+// by..." rather than here. The arc/cloud band options are always present but
 // greyed out (disabled submenu + disabledHelpText) until an overlay is active,
 // so the settings are discoverable instead of vanishing.
 export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
@@ -57,12 +53,6 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
         model.setLinkedReads(linked ? 'off' : 'normal')
       },
       sessionDefault: model.pairsSessionDefault,
-    }),
-    checkboxItem('Show singletons', model.drawSingletons, () => {
-      model.setDrawSingletons(!model.drawSingletons)
-    }),
-    checkboxItem('Show proper pairs', model.drawProperPairs, () => {
-      model.setDrawProperPairs(!model.drawProperPairs)
     }),
     // Arcs and read cloud share one band and the read cloud repurposes the
     // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two

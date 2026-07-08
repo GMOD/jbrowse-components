@@ -197,6 +197,9 @@ describe('setLinkedReads color scheme preservation', () => {
 // menu. Guards against reintroducing the always-shown disabled stub.
 interface MenuNode {
   label?: string
+  disabled?: boolean
+  disabledHelpText?: string
+  onClick?: () => void
   subMenu?: MenuNode[]
 }
 function hasMenuLabel(items: MenuNode[], label: string): boolean {
@@ -204,6 +207,18 @@ function hasMenuLabel(items: MenuNode[], label: string): boolean {
     i =>
       i.label === label ||
       (i.subMenu ? hasMenuLabel(i.subMenu, label) : false),
+  )
+}
+function findMenu(items: MenuNode[], label: string): MenuNode | undefined {
+  return items.reduce<MenuNode | undefined>(
+    (acc, i) =>
+      acc ??
+      (i.label === label
+        ? i
+        : i.subMenu
+          ? findMenu(i.subMenu, label)
+          : undefined),
+    undefined,
   )
 }
 
@@ -224,6 +239,59 @@ describe('Arc color menu visibility', () => {
     const display = createDisplay()
     display.setReadConnections('samplot')
     expect(hasMenuLabel(display.trackMenuItems(), 'Arc color')).toBe(true)
+  })
+})
+
+// Sort and feature-height act only on the pileup rows, so they grey out (with a
+// tip) when the pileup band is hidden — mirrors the disabled band-options
+// pattern. Group-by and filters are NOT gated: both still affect the coverage
+// band when the pileup is off.
+describe('pileup-only menus grey out when the pileup is hidden', () => {
+  test.each(['Sort by...', 'Set feature height...'])(
+    '%s is enabled with the pileup shown, disabled when hidden',
+    label => {
+      const display = createDisplay()
+      display.setShowPileup(true)
+      expect(findMenu(display.trackMenuItems(), label)?.disabled).toBeFalsy()
+
+      display.setShowPileup(false)
+      const item = findMenu(display.trackMenuItems(), label)
+      expect(item?.disabled).toBe(true)
+      expect(item?.disabledHelpText).toBeTruthy()
+    },
+  )
+
+  test.each(['Group by...', 'Filter by...'])(
+    '%s stays enabled with the pileup hidden (still affects coverage)',
+    label => {
+      const display = createDisplay()
+      display.setShowPileup(false)
+      expect(findMenu(display.trackMenuItems(), label)?.disabled).toBeFalsy()
+    },
+  )
+})
+
+// The proper-pair / singleton flag filters live under "Filter by..." now, not
+// under "Read connections" — one home for "which reads are shown".
+describe('filter menu unification', () => {
+  test('pair filters live under "Filter by...", not "Read connections"', () => {
+    const display = createDisplay()
+    const items = display.trackMenuItems()
+    const filterBy = findMenu(items, 'Filter by...')
+    expect(hasMenuLabel(filterBy?.subMenu ?? [], 'Show proper pairs')).toBe(true)
+    expect(hasMenuLabel(filterBy?.subMenu ?? [], 'Show singletons')).toBe(true)
+
+    const readConnections = findMenu(items, 'Read connections')
+    expect(
+      hasMenuLabel(readConnections?.subMenu ?? [], 'Show proper pairs'),
+    ).toBe(false)
+  })
+
+  test('the pair-filter checkbox flips the model slot', () => {
+    const display = createDisplay()
+    display.setDrawProperPairs(true)
+    findMenu(display.trackMenuItems(), 'Show proper pairs')?.onClick?.()
+    expect(display.drawProperPairs).toBe(false)
   })
 })
 

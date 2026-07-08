@@ -38,7 +38,10 @@ const INTERBASE_SORT_LABEL: Record<string, string> = {
   hardclip: 'Hard clip',
 }
 
-export function getSortByMenuItem(model: SortByModel) {
+export function getSortByMenuItem(
+  model: SortByModel,
+  opts?: { disabled?: boolean; disabledHelpText?: string },
+) {
   const sortType = model.sortedBy?.type
   const activeLabel = sortType ? INTERBASE_SORT_LABEL[sortType] : undefined
   const interbaseLabel = activeLabel
@@ -48,6 +51,8 @@ export function getSortByMenuItem(model: SortByModel) {
     label: 'Sort by...',
     type: 'subMenu' as const,
     icon: SwapVertIcon,
+    disabled: opts?.disabled,
+    disabledHelpText: opts?.disabledHelpText,
     subMenu: [
       {
         label: 'Start location',

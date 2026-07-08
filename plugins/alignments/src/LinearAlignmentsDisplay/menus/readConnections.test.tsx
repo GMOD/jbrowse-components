@@ -48,14 +48,6 @@ function makeModel() {
     setShowBezierConnections(v: boolean) {
       this.showBezierConnections = v
     },
-    drawSingletons: true,
-    setDrawSingletons(v: boolean) {
-      this.drawSingletons = v
-    },
-    drawProperPairs: true,
-    setDrawProperPairs(v: boolean) {
-      this.drawProperPairs = v
-    },
   }
 }
 

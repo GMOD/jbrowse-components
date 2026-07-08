@@ -2826,11 +2826,28 @@ export default function stateModelFactory(
                 },
               },
             }),
-            getSortByMenuItem(self),
-            getFiltersMenuItem(self),
+            getSortByMenuItem(self, {
+              disabled: !self.showPileup,
+              disabledHelpText: 'Turn on "Show pileup" to sort reads',
+            }),
+            getFiltersMenuItem(self, {
+              pairFilters: {
+                drawProperPairs: self.drawProperPairs,
+                setDrawProperPairs: (v: boolean) => {
+                  self.setDrawProperPairs(v)
+                },
+                drawSingletons: self.drawSingletons,
+                setDrawSingletons: (v: boolean) => {
+                  self.setDrawSingletons(v)
+                },
+              },
+            }),
             getGroupByMenuItem(self),
             getReadsMenuItem(self),
-            getFeatureHeightMenuItem(self),
+            getFeatureHeightMenuItem(self, {
+              disabled: !self.showPileup,
+              disabledHelpText: 'Turn on "Show pileup" to change feature height',
+            }),
             getCoverageMenuItem(self),
             getReadConnectionsMenuItem(self),
             getSashimiMenuItem(self),
