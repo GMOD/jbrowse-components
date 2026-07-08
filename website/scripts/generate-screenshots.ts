@@ -369,9 +369,24 @@ function serveEmbeddedHarness(html: string, umdPath: string) {
   return new Promise<{ server: Server; port: number }>((resolve, reject) => {
     const server = http.createServer((req, res) => {
       const url = req.url ?? '/'
-      if (url.startsWith('/jbrowse.umd.js')) {
+      if (url.startsWith('/jbrowse.umd.js.map')) {
+        // Bundle carries a sourceMappingURL; serve the sibling map (devtools
+        // only) so it doesn't 404.
+        if (fs.existsSync(`${umdPath}.map`)) {
+          res.writeHead(200, { 'content-type': 'application/json' })
+          fs.createReadStream(`${umdPath}.map`).pipe(res)
+        } else {
+          res.writeHead(404)
+          res.end()
+        }
+      } else if (url.startsWith('/jbrowse.umd.js')) {
         res.writeHead(200, { 'content-type': 'application/javascript' })
         fs.createReadStream(umdPath).pipe(res)
+      } else if (url.startsWith('/favicon.ico')) {
+        // The browser auto-requests a favicon for the bare harness page; answer
+        // empty so it doesn't log a spurious 404.
+        res.writeHead(204)
+        res.end()
       } else if (url === '/' || url.startsWith('/index')) {
         res.writeHead(200, { 'content-type': 'text/html' })
         res.end(html)
