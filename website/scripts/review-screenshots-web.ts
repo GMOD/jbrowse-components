@@ -14,7 +14,7 @@ import {
   saveReport,
   websiteRoot,
 } from './screenshot-review-lib.ts'
-import { specs } from './screenshot-specs.ts'
+import { screenshotLiveUrls, specs } from './screenshot-specs.ts'
 
 import type { Verdict } from './screenshot-review-lib.ts'
 
@@ -29,7 +29,8 @@ function buildSpecPayload() {
     const verdict = report[shot.name]
     // an approval/denial only resurfaces once the reviewed image changes
     const stale = isVerdictStale(verdict, imageHash(shot.name))
-    return { ...shot, verdict, stale }
+    const liveUrl = screenshotLiveUrls[shot.name]
+    return { ...shot, verdict, stale, ...(liveUrl ? { liveUrl } : {}) }
   })
 }
 
@@ -266,6 +267,7 @@ const PAGE = /* html */ `<!doctype html>
   .usage .loc { font-family: ui-monospace, monospace; font-size: 12px; color: LinkText; }
   .usage .caption { font-style: italic; margin-top: 2px; }
   .noref { font-size: 13px; color: #b45309; }
+  .livelink { font-size: 13px; color: LinkText; align-self: flex-start; }
   .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   button { padding: 7px 14px; border-radius: 6px; border: 1px solid ButtonBorder; background: ButtonFace; color: ButtonText; cursor: pointer; font-size: 14px; }
   button.approve { border-color: #22c55e; color: #16a34a; }
@@ -438,6 +440,7 @@ function card(spec) {
         (isNew(spec) ? ' ' + pill('new', 'new') : '') +
         (isChanged(spec) ? ' ' + pill('changed', 'changed') : '') + '</h2>' +
       renderUsages(spec.usages) +
+      (spec.liveUrl ? '<a class="livelink" href="' + esc(spec.liveUrl) + '" target="_blank" rel="noopener">Open live in JBrowse ↗</a>' : '') +
       '<input class="note" placeholder="note (optional)" value="' + esc(v ? v.note : '') + '" onchange="saveNote(this)" />' +
       '<div class="actions">' +
         '<button class="approve ' + (status === 'good' ? 'active' : '') + '" onclick="setVerdict(this,\\'good\\')">✓ Approve</button>' +
