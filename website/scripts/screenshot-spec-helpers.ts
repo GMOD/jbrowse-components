@@ -760,22 +760,24 @@ export const jbrowseImgSpecs: CliSpec[] = [
 
   // snpcov collapses the alignments display to coverage-only by sizing the
   // coverage band to fill the whole track (no read pileup below). Real human
-  // data (reviewer ask): NA12878 1000-Genomes exome CRAM (hg38) over a BRCA1
-  // exon, deep exome coverage with real heterozygous SNPs standing out as
-  // colored fractions of the coverage bar.
+  // data (reviewer ask): NA12878 1000-Genomes exome CRAM (hg38) over the full
+  // BRCA1 span. The hosted NCBI RefSeq gene track on top (--hub, reviewer ask)
+  // shows the exome capture's coverage humps landing one-per-exon against the
+  // gene model, with flat intronic gaps between — the defining exome pattern.
+  // --hub hg38 supplies the assembly (with its own refName aliases) plus the
+  // pre-configured hg38-ncbiRefSeqCurated track, so no raw --gffgz (whose
+  // RefSeqGene `match`/`region` features render as bare-UUID full-width bars).
   cliSpec('alignments_snpcov', [
-    '--fasta',
-    'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-    // hg38.prefix.fa.gz's refnames are un-prefixed ('17'); the CRAM uses
-    // 'chr17' — aliases reconcile the two, same as the methylation cliSpec
-    '--aliases',
-    'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+    '--hub',
+    'hg38',
+    '--track',
+    'hg38-ncbiRefSeqCurated',
     '--cram',
     'https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
     'snpcov',
     'height:200',
     '--loc',
-    'chr17:43,044,000-43,045,500',
+    'chr17:43,044,295-43,125,483',
     '--width',
     '1200',
   ]),
