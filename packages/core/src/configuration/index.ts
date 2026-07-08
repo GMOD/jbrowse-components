@@ -30,7 +30,12 @@ export {
   getSlotInheritedValue,
   isSlotPinned,
   isSlotValueSessionDefault,
+  makeCurrentValueSessionDefaultControl,
+  makeSessionDefaultControl,
   setSlotValueSessionDefault,
   setSlotsSessionDefault,
 } from './promotableDefaults.ts'
-export type { PromotableDisplay } from './promotableDefaults.ts'
+export type {
+  PromotableDisplay,
+  SessionDefaultControl,
+} from './promotableDefaults.ts'

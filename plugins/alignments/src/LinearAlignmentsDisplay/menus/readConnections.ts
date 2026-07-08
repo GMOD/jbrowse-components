@@ -1,10 +1,11 @@
+import { promotableToggleItem } from '@jbrowse/core/ui'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
-import { checkboxItem } from './menuHelpers.ts'
-import { promotableToggleItem } from './promotableToggleItem.tsx'
 
-import type { SessionDefaultControl } from './sessionDefaultControl.ts'
+import { checkboxItem } from './menuHelpers.ts'
+
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
+import type { SessionDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export const PAIR_OVERLAY_OPTIONS: {

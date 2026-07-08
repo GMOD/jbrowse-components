@@ -793,10 +793,15 @@ export default function baseStateModelFactory(
           // displayMode is also excluded: compact/superCompact scaling and
           // collapse-mode label decimation are applied on the main thread so
           // switching modes skips an RPC round-trip.
+          // displayDirectionalChevrons is a promotable `maybeBoolean` — the raw
+          // snapshot is the unresolved sentinel (undefined/true/false), so it's
+          // excluded here and the concrete model re-adds the resolved boolean
+          // (LinearBasicDisplay.rpcProps) for the worker's chevron geometry.
           const {
             showLabels: _l,
             showDescriptions: _d,
             displayMode: _dm,
+            displayDirectionalChevrons: _dc,
             ...rest
           } = getConfSnapshot(self.configuration)
           return {

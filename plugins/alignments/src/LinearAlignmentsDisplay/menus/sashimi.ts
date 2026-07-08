@@ -1,16 +1,14 @@
 import { lazy } from 'react'
 
+import { promotableRadioItem, promotableToggleItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import AltRouteIcon from '@mui/icons-material/AltRoute'
 
-import { checkboxItem } from './menuHelpers.ts'
-import {
-  promotableRadioItem,
-  promotableToggleItem,
-} from './promotableToggleItem.tsx'
 
-import type { SessionDefaultControl } from './sessionDefaultControl.ts'
+import { checkboxItem } from './menuHelpers.ts'
+
 import type { SashimiArcsMode } from '../constants.ts'
+import type { SessionDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const SetSashimiScoreDialog = lazy(

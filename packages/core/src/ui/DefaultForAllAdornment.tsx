@@ -1,7 +1,8 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import PushPinIcon from '@mui/icons-material/PushPin'
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined'
 import { ToggleButton, Tooltip } from '@mui/material'
+
+import { makeStyles } from '../util/tss-react/index.ts'
 
 const useStyles = makeStyles()(theme => ({
   // compact enough to sit inline with the value check: drop the default
@@ -14,13 +15,16 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Trailing "default for all tracks" control for a promotable setting, rendered
-// as a menu item's `endAdornment` to the right of the value check. A real MUI
-// ToggleButton (native button a11y + a clear selected background) with a pin —
-// distinct from the value checkbox — reads as "pinned as the default":
-// unselected = outline pin, selected = filled pin on an accent-tinted button.
-// Always shown so the capability is discoverable. stopPropagation keeps the
-// click from toggling the row value or dismissing the menu.
+// Trailing "default for all tracks of this type" control for a promotable
+// setting, rendered as a menu item's `endAdornment` to the right of the value
+// check. A real MUI ToggleButton (native button a11y + a clear selected
+// background) with a pin — distinct from the value checkbox — reads as "pinned
+// as the default": unselected = outline pin, selected = filled pin on an
+// accent-tinted button. Always shown so the capability is discoverable.
+// stopPropagation keeps the click from toggling the row value or dismissing the
+// menu. The wording says "of this type" because a promoted default is scoped to
+// the display type (e.g. every LinearAlignmentsDisplay), not literally all
+// tracks.
 export function DefaultForAllAdornment({
   isDefault,
   onToggleDefault,
@@ -33,8 +37,8 @@ export function DefaultForAllAdornment({
     <Tooltip
       title={
         isDefault
-          ? 'Default for all alignments tracks (click to clear)'
-          : 'Make this the default for all alignments tracks'
+          ? 'Default for all tracks of this type (click to clear)'
+          : 'Make this the default for all tracks of this type'
       }
     >
       <ToggleButton

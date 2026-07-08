@@ -1,12 +1,13 @@
 import { lazy } from 'react'
 
+import { promotableToggleItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { checkboxItem } from './menuHelpers.ts'
-import { promotableToggleItem } from './promotableToggleItem.tsx'
 
-import type { SessionDefaultControl } from './sessionDefaultControl.ts'
+import { checkboxItem } from './menuHelpers.ts'
+
+import type { SessionDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const SetMaxHeightDialog = lazy(

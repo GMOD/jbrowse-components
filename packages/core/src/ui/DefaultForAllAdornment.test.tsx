@@ -1,8 +1,8 @@
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
+import { createJBrowseTheme } from './theme.ts'
 
 const theme = createJBrowseTheme()
 
@@ -48,10 +48,7 @@ describe('DefaultForAllAdornment', () => {
             rowClick()
           }}
         >
-          <DefaultForAllAdornment
-            isDefault={false}
-            onToggleDefault={() => {}}
-          />
+          <DefaultForAllAdornment isDefault={false} onToggleDefault={() => {}} />
         </div>
       </ThemeProvider>,
     )

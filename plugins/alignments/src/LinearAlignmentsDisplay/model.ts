@@ -11,6 +11,7 @@ import {
   areSlotsAtSessionDefault,
   getConf,
   getConfResolved,
+  makeSessionDefaultControl,
   setSlotsSessionDefault,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -68,7 +69,6 @@ import {
   getReadsMenuItem,
   getSashimiMenuItem,
   getSortByMenuItem,
-  makeSessionDefaultControl,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {

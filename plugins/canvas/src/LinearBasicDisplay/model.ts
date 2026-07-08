@@ -3,11 +3,14 @@ import { lazy } from 'react'
 import {
   areSlotsAtSessionDefault,
   getConf,
+  getConfResolved,
   getSlotInheritedValue,
   isSlotPinned,
+  makeCurrentValueSessionDefaultControl,
   readConfObject,
   setSlotsSessionDefault,
 } from '@jbrowse/core/configuration'
+import { promotableToggleItem } from '@jbrowse/core/ui'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
@@ -101,8 +104,11 @@ export default function stateModelFactory(
         return getConf(self, 'geneGlyphMode')
       },
 
-      get displayDirectionalChevrons() {
-        return getConf(self, 'displayDirectionalChevrons')
+      // Promotable `maybeBoolean` slot (see baseConfigSchema.ts): getConfResolved
+      // walks the cascade (pinned track value -> session default -> base `true`)
+      // and always yields a concrete boolean, never the unset sentinel.
+      get displayDirectionalChevrons(): boolean {
+        return getConfResolved(self, 'displayDirectionalChevrons')
       },
 
       // true when the current displayMode is already the session-wide default
@@ -165,6 +171,9 @@ export default function stateModelFactory(
             displayConfig: {
               ...base.displayConfig,
               geneGlyphMode: self.effectiveGeneGlyphMode,
+              // resolved promotable value (base rpcProps excludes the raw
+              // sentinel); the worker draws chevron geometry from this
+              displayDirectionalChevrons: self.displayDirectionalChevrons,
             },
             showOnlyGenes: self.showOnlyGenes,
           }
@@ -247,16 +256,18 @@ export default function stateModelFactory(
                 self.setShowOnlyGenes(!self.showOnlyGenes)
               },
             },
-            {
+            promotableToggleItem({
               label: 'Show chevrons',
-              type: 'checkbox' as const,
               checked: self.displayDirectionalChevrons,
-              onClick: () => {
+              onToggle: () => {
                 self.setDisplayDirectionalChevrons(
                   !self.displayDirectionalChevrons,
                 )
               },
-            },
+              sessionDefault: makeCurrentValueSessionDefaultControl(self, [
+                'displayDirectionalChevrons',
+              ]),
+            }),
           ]
         },
 

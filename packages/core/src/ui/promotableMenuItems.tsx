@@ -1,12 +1,12 @@
 import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
 
-import type { SessionDefaultControl } from './sessionDefaultControl.ts'
-import type { CheckboxMenuItem, RadioMenuItem } from '@jbrowse/core/ui'
+import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
+import type { SessionDefaultControl } from '../configuration/promotableDefaults.ts'
 
 // A promotable setting as one native checkbox menu row: the value toggles the
 // track (inheriting native hover/sizing/keyboard), and a trailing pin
-// (endAdornment) promotes the setting's on-value as the session-wide default for
-// this display type. The pin is always shown so the capability is discoverable.
+// (endAdornment) promotes the setting as the session-wide default for this
+// display type. The pin is always shown so the capability is discoverable.
 export function promotableToggleItem({
   label,
   checked,
@@ -36,10 +36,9 @@ export function promotableToggleItem({
   }
 }
 
-// A radio row in a promotable-value group (e.g. one option of a multi-value
-// enum slot). `sessionDefault` is omitted for the base/un-pinned value (e.g.
-// 'up' in sashimiArcsMode) — only the non-base values are pinnable, mirroring
-// the arcs/read-cloud pins sharing the readConnections slot.
+// A radio row in a promotable-value group (e.g. one option of a multi-value enum
+// slot). `sessionDefault` is omitted for the base/un-pinned value (e.g. the
+// `up`/`normal` base of a mode enum) — only the non-base values are pinnable.
 export function promotableRadioItem({
   label,
   subLabel,

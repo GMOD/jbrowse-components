@@ -96,6 +96,71 @@ describe('promotable maybeNumber slot', () => {
   })
 })
 
+// A promotable `maybeBoolean` slot: its `undefined` default is the "unset —
+// inherit" sentinel, so BOTH `true` and `false` stay pinnable over an opposite
+// session default — the symmetry a plain boolean (whose default doubles as the
+// inherit signal) can't offer. `promotedBase` supplies the value the unset
+// sentinel resolves to; `matchesSlotShape` keys the shape check on the `type`.
+describe('promotable maybeBoolean slot', () => {
+  const configSchema = ConfigurationSchema('MaybeBooleanDisplay', {
+    chevrons: {
+      type: 'maybeBoolean',
+      description: 'a promotable on/off setting defaulting to on',
+      defaultValue: undefined,
+      promotedBase: true,
+      promotable: true,
+    },
+  })
+
+  test('an un-pinned track resolves to promotedBase, never undefined', () => {
+    const { display } = createDisplay(configSchema)
+    expect(getConfResolved(display, 'chevrons')).toBe(true)
+    expect(isSlotPinned(display, 'chevrons')).toBe(false)
+  })
+
+  test('an un-pinned track follows an off session default', () => {
+    const { session, display } = createDisplay(configSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
+    expect(getConfResolved(display, 'chevrons')).toBe(false)
+  })
+
+  test('a track can pin ON over an OFF session default (the symmetry win)', () => {
+    const { session, display } = createDisplay(configSchema, { chevrons: true })
+    session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
+    expect(isSlotPinned(display, 'chevrons')).toBe(true)
+    expect(getConfResolved(display, 'chevrons')).toBe(true)
+  })
+
+  test('a track can pin OFF over an ON session default', () => {
+    const { session, display } = createDisplay(configSchema, {
+      chevrons: false,
+    })
+    session.setDisplayTypeDefault('TestDisplay', 'chevrons', true)
+    expect(isSlotPinned(display, 'chevrons')).toBe(true)
+    expect(getConfResolved(display, 'chevrons')).toBe(false)
+  })
+
+  test('setSlotsSessionDefault promotes and clears the current resolved value', () => {
+    const { session, display } = createDisplay(configSchema, {
+      chevrons: false,
+    })
+    setSlotsSessionDefault(display, ['chevrons'], true)
+    expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(false)
+    expect(areSlotsAtSessionDefault(display, ['chevrons'])).toBe(true)
+
+    setSlotsSessionDefault(display, ['chevrons'], false)
+    expect(
+      session.getDisplayTypeDefault('TestDisplay', 'chevrons'),
+    ).toBeUndefined()
+  })
+
+  test('ignores a non-boolean session default instead of rejecting every value', () => {
+    const { session, display } = createDisplay(configSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'chevrons', 'yes')
+    expect(getConfResolved(display, 'chevrons')).toBe(true)
+  })
+})
+
 // A frozen (object-valued) promotable slot's equality must be structural, not
 // key-order-sensitive: a promoted default and a track's own pinned value can be
 // built by different code paths and still land with keys in a different order.

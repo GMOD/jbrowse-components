@@ -48,6 +48,16 @@ const slotTypes: Record<string, SlotTypeSpec> = {
   // consumer (GPU packing, jexl, the editor) instead of forcing each to defend
   // against `undefined`.
   maybeNumber: { model: types.maybe(types.number) },
+  // a boolean that may be unset (`undefined`). Its reason to exist is
+  // `promotable` slots (see promotableDefaults.ts): a plain boolean spends its
+  // `false`-or-`true` default as the "inherit" signal, so a track can't pin that
+  // value back over an opposite session default. A boolean has no spare in-band
+  // value for "unset" — exactly the `maybeNumber` justification above — so an
+  // undefined-defaulted boolean lets `undefined` mean "inherit" while both `true`
+  // and `false` stay pinnable. Pair with `promotedBase` for the value `undefined`
+  // resolves to. Read promotable slots with `getConfResolved` (never raw), which
+  // always yields a concrete boolean.
+  maybeBoolean: { model: types.maybe(types.boolean) },
   string: { model: types.string, fallbackDefault: '' },
   text: { model: types.string, fallbackDefault: '' },
   fileLocation: {
@@ -92,7 +102,8 @@ export interface ConfigSlotDefinition {
   promotable?: boolean
   /**
    * For a `promotable` slot whose `defaultValue` is a dedicated **inherit
-   * sentinel** (e.g. displayMode's `'inherit'`) rather than a real value: the
+   * sentinel** — either a spare enum member (displayMode's `'inherit'`) or the
+   * `undefined` of a `maybeBoolean`/`maybeNumber` — rather than a real value: the
    * concrete value that sentinel resolves to when a track inherits and nothing
    * is promoted. This is the CSS model — `defaultValue` is the `inherit` keyword
    * (the un-pinned/stripped state), `promotedBase` is `initial` (the value at
@@ -140,10 +151,14 @@ export default function ConfigSlot({
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
   }
-  // `maybeNumber` intentionally defaults to `undefined` (the "unset" state);
-  // every other slot type must declare a concrete default so a missing one is
-  // caught as an authoring mistake.
-  if (defaultValue === undefined && type !== 'maybeNumber') {
+  // `maybeNumber`/`maybeBoolean` intentionally default to `undefined` (the
+  // "unset" state); every other slot type must declare a concrete default so a
+  // missing one is caught as an authoring mistake.
+  if (
+    defaultValue === undefined &&
+    type !== 'maybeNumber' &&
+    type !== 'maybeBoolean'
+  ) {
     throw new Error("no 'defaultValue' provided")
   }
 

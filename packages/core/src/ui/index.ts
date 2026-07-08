@@ -52,4 +52,9 @@ export {
   isCompactable,
 } from './buildAllTracksMenu.ts'
 export { default as Crosshairs } from './Crosshairs.tsx'
+export { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
+export {
+  promotableRadioItem,
+  promotableToggleItem,
+} from './promotableMenuItems.tsx'
 export const VIEW_HEADER_HEIGHT = 28

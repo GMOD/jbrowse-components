@@ -91,19 +91,22 @@ function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
   const { type, model, defaultValue } = def
   return type === 'stringEnum' && model
     ? typeof value === 'string' && getEnumerationValues(model).includes(value)
-    : typeof defaultValue === 'object' && defaultValue !== null
-      ? // object/array slot (e.g. `colorBy`): match null-ness and array-ness —
-        // `typeof value === typeof defaultValue` would admit `null` (typeof
-        // null === 'object') and an array against an object default
-        typeof value === 'object' &&
-        value !== null &&
-        Array.isArray(value) === Array.isArray(defaultValue)
-      : // `maybeNumber` is the only slot type whose `defaultValue` is `undefined`
-        // (its "unset" state — see ConfigSlot); match its real value type, since
-        // `typeof value === typeof undefined` would reject every number
-        defaultValue === undefined
-        ? typeof value === 'number'
-        : typeof value === typeof defaultValue
+    : // `maybeNumber`/`maybeBoolean` default to `undefined` (their "unset"
+      // state — see ConfigSlot), so their shape is keyed on the declared `type`,
+      // not `defaultValue` — `typeof value === typeof undefined` would reject
+      // every real value
+      type === 'maybeNumber'
+      ? typeof value === 'number'
+      : type === 'maybeBoolean'
+        ? typeof value === 'boolean'
+        : typeof defaultValue === 'object' && defaultValue !== null
+          ? // object/array slot (e.g. `colorBy`): match null-ness and array-ness
+            // — `typeof value === typeof defaultValue` would admit `null` (typeof
+            // null === 'object') and an array against an object default
+            typeof value === 'object' &&
+            value !== null &&
+            Array.isArray(value) === Array.isArray(defaultValue)
+          : typeof value === typeof defaultValue
 }
 
 interface SlotResolution {
@@ -246,6 +249,59 @@ export function setSlotValueSessionDefault(
     slot,
     on ? value : undefined,
   )
+}
+
+/**
+ * #api core/configuration
+ * The state + action for one "make this the default for all tracks of this type"
+ * menu control, bundled so a row consumes it as a single prop instead of a
+ * separate is-default getter and toggle action. `active` = the promotion is
+ * currently in effect; `toggle` promotes it, or clears it when already active.
+ */
+export interface SessionDefaultControl {
+  active: boolean
+  toggle: () => void
+}
+
+/**
+ * #api core/configuration
+ * Per-value control: "make `slot === onValue` the session default". The meaning
+ * is per-value ("make arcs the default"), independent of the track's current
+ * value — so an always-visible control never promotes a meaningless value, and
+ * two toggles sharing one slot (arcs vs read cloud) stay independent.
+ */
+export function makeSessionDefaultControl(
+  self: PromotableDisplay,
+  slot: string,
+  onValue: unknown,
+): SessionDefaultControl {
+  const active = isSlotValueSessionDefault(self, slot, onValue)
+  return {
+    active,
+    toggle: () => {
+      setSlotValueSessionDefault(self, slot, onValue, !active)
+    },
+  }
+}
+
+/**
+ * #api core/configuration
+ * Promote-current control: "make this track's current resolved value(s) the
+ * session default". Use for a symmetric setting (a `maybeBoolean` toggle, or a
+ * multi-mode slot like displayMode) where the pin means "whatever I'm showing",
+ * not a fixed on-value. Groups multiple slots behind one control.
+ */
+export function makeCurrentValueSessionDefaultControl(
+  self: PromotableDisplay,
+  slots: string[],
+): SessionDefaultControl {
+  const active = areSlotsAtSessionDefault(self, slots)
+  return {
+    active,
+    toggle: () => {
+      setSlotsSessionDefault(self, slots, !active)
+    },
+  }
 }
 
 /**

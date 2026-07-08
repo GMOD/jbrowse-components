@@ -164,10 +164,18 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       displayDirectionalChevrons: {
-        type: 'boolean',
+        type: 'maybeBoolean',
         description:
-          'Display directional chevrons on intron lines to indicate strand direction',
-        defaultValue: true,
+          'Display directional chevrons on intron lines to indicate strand direction. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false pins the track (including pinning on over an off session default)',
+        // Promotable via the `maybeBoolean` sentinel: `undefined` (unset) is the
+        // inherit state, `promotedBase` (true) is what it resolves to when
+        // nothing is promoted. A legacy stored boolean is already a valid
+        // pinned value, so no snapshot migration is needed. Read through the
+        // resolved `displayDirectionalChevrons` getter (getConfResolved), never
+        // raw. See promotableDefaults.ts.
+        defaultValue: undefined,
+        promotedBase: true,
+        promotable: true,
       },
       /**
        * #slot

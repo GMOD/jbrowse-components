@@ -140,6 +140,7 @@ const valueComponents: Record<string, React.ComponentType<any>> = {
   color: ColorEditor,
   stringEnum: StringEnumEditor,
   boolean: BooleanEditor,
+  maybeBoolean: BooleanEditor,
   frozen: JsonEditor,
 }
 
