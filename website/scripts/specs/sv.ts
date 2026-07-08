@@ -424,10 +424,16 @@ export const svSpecs: ScreenshotSpec[] = [
               displaySnapshot: {
                 showBezierConnections: true,
                 linkedReads: 'normal',
+                // hide the normally-paired reads so only the abnormal
+                // same-orientation (LL/RR) inverted-duplication pairs and their
+                // bezier curves remain, decluttering the view (reviewer)
+                drawProperPairs: false,
                 // also draw the coverage-band arcs, below the coverage (reviewer)
                 readConnections: 'arc',
                 readConnectionsDown: true,
-                height: 1300,
+                // proper pairs hidden, so the abnormal-pair stack is short —
+                // sized to it instead of the old 1300px full-depth band
+                height: 650,
                 coverageHeight: 120,
                 featureHeight: 9,
                 colorBy: { type: 'pairOrientation' },
@@ -440,7 +446,7 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    viewportHeight: 1600,
+    viewportHeight: 1000,
     settleMs: 30000,
     annotations: [
       {
