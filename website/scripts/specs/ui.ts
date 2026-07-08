@@ -520,10 +520,14 @@ export const uiSpecs: ScreenshotSpec[] = [
 
   // Read-vs-reference of a SKBR3 PacBio read spanning a ~634bp insertion
   // (purple box labeled "634" in the pileup, row 1 of the ngmlr track at this
-  // locus). Driven live via rightclick -> Launch view -> Linear read vs ref
-  // (buildReadVsRefSpec.ts) instead of a frozen share-link session, so the
-  // inline-config fix actually gets exercised. Read glyphs are canvas-drawn;
-  // the rightclick coordinate was located by probing this same session.
+  // locus) — checked against the other reads piled up at this same site and
+  // 634bp is already effectively the largest consistently-supported insertion
+  // there (up to 636bp on a couple of reads, within noise). Driven live via
+  // rightclick -> Launch view -> Linear read vs ref (buildReadVsRefSpec.ts)
+  // instead of a frozen share-link session, so the inline-config fix actually
+  // gets exercised. Read glyphs are canvas-drawn; the rightclick coordinate
+  // was located by probing this same session. "Show curved lines" is then
+  // turned on via the synteny view's "View options" menu.
   {
     mode: 'url',
     name: 'read_vs_ref_insertion',
@@ -548,6 +552,12 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Set window size' },
       { type: 'click', text: 'Submit' },
       { type: 'waitForText', text: 'Reference sequence' },
+      { type: 'delay', ms: 1000 },
+      { type: 'click', selector: '[aria-label="View options"]' },
+      { type: 'waitForText', text: 'Show...' },
+      { type: 'hover', text: 'Show...' },
+      { type: 'waitForText', text: 'Show curved lines' },
+      { type: 'click', text: 'Show curved lines' },
       { type: 'delay', ms: 2000 },
     ],
   },
@@ -1627,15 +1637,18 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'Archaic introgression',
     settleMs: 6000,
-    viewportHeight: 480,
+    // extra height below the track so the caption sits clear of the data
+    // instead of overlapping the rows
+    viewportHeight: 580,
     // orient the reader: each row is one population haplotype's archaic-ancestry
-    // segments, colored by source
+    // segments, colored by source. Placed below the view (not overlapping the
+    // track rows it's describing).
     annotations: [
       {
         type: 'text',
-        x: 360,
-        y: 232,
-        maxWidth: 560,
+        x: 40,
+        y: 475,
+        maxWidth: 1420,
         fontSize: 22,
         text: 'Each row is one population haplotype. Blue = Denisovan segments — carried only by the two Oceanian rows (Bougainville, PapuanHighlands); red = Neanderthal, shared across all populations.',
       },
@@ -1646,13 +1659,16 @@ export const uiSpecs: ScreenshotSpec[] = [
   // haplotype on chr13 carried by all four Oceanian haplotypes (Bougainville +
   // PapuanHighlands, blue) and absent from the other six rows, shown against
   // NCBI RefSeq genes for genomic context. The base-pair counterpart to the
-  // whole-arm population view above.
+  // whole-arm population view above. Zoomed out further than the original
+  // 600kb crop so the tract reads in its surrounding genomic context rather
+  // than filling the whole width; caption trimmed and given a citation for the
+  // Melanesian-Denisovan finding instead of just describing the picture.
   {
     mode: 'url',
     name: 'introgression_locus',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr13:104,500,000-105,100,000',
+      loc: 'chr13:104,200,000-105,400,000',
       tracks: [
         'ncbi_refseq_109_hg38',
         {
@@ -1666,16 +1682,19 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'Archaic introgression',
     settleMs: 6000,
-    viewportHeight: 620,
-    // explain the payoff: one Denisovan haplotype, Oceanian-only
+    // extra height below the track so the caption sits clear of the data
+    viewportHeight: 640,
+    // explain the payoff — why it's interesting (Melanesians carry the most
+    // Denisovan ancestry of any population) with a citation — placed below
+    // the view rather than boxed over the track rows
     annotations: [
       {
         type: 'text',
-        x: 360,
-        y: 430,
-        maxWidth: 620,
+        x: 40,
+        y: 495,
+        maxWidth: 1420,
         fontSize: 22,
-        text: 'This ~150 kb Denisovan haplotype (blue) is carried by all four Oceanian haplotypes (Bougainville, PapuanHighlands) and absent from the six European/Asian/American haplotypes — which have no archaic segment here, so those rows drop out.',
+        text: 'Melanesians (Bougainville, PapuanHighlands) carry the most Denisovan ancestry of any population — up to ~4–6% of their genome, from ancient interbreeding in Asia/Oceania. This ~150 kb tract is present in all four sampled haplotypes but absent elsewhere. (Vernot et al. 2016, Science)',
       },
     ],
   },

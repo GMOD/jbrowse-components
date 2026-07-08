@@ -481,31 +481,66 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyText: 'CpG',
     readyTimeout: 60000,
     settleMs: 35000,
-    // label the two rows: top is modifications mode (only called
-    // mods, at MM-tag positions); bottom is methylation mode (every CpG on the
-    // read inspected, methylated red vs unmethylated blue)
-    annotations: [
+    // the annotation SVG overlay is pinned to the live page viewport (100vh),
+    // not the post-capture crop — a viewport shorter than crop clips any
+    // annotation below the viewport's own height, which is what cut off the
+    // second row's callout when only `crop` (not `viewportHeight`) was raised
+    viewportHeight: 900,
+    // tall enough for stage 1's open "Color by..." menu (modifications-mode
+    // track) plus the two-row comparison below it in stage 2
+    crop: { x: 0, y: 0, width: 1500, height: 900 },
+    stages: [
       {
-        type: 'text',
-        anchor: {
-          selector:
-            '[data-testid^="trackRenderingContainer-"][data-testid$="-human_chr20_mod_call_5mC_5hmC_CG_cram_modifications"]',
-        },
-        dx: -360,
-        dy: -10,
-        maxWidth: 360,
-        text: 'Modifications mode: marks only the bases the basecaller flagged as modified (the MM/ML tags) — here, called 5mC.',
+        // top frame: the live "Color by..." menu on the modifications-mode
+        // track, boxing the two modes the reader is about to compare below —
+        // this is the choice point a user would actually click through
+        // (reviewer asked to show the menu route, not just the two results)
+        actions: [
+          {
+            type: 'click',
+            selector:
+              '[data-testid="track_menu_icon"][data-trackid="human_chr20_mod_call_5mC_5hmC_CG_cram_modifications"]',
+          },
+          // hover 'Color by...' to open its submenu; wait on the first of the
+          // two target items rather than clicking anything
+          ...menuCascade(['Color by...', 'Color by methylation']),
+        ],
+        annotations: cascadeBoxes([
+          'Color by methylation',
+          'Color by modification type',
+        ]),
       },
       {
-        type: 'text',
-        anchor: {
-          selector:
-            '[data-testid^="trackRenderingContainer-"][data-testid$="-human_chr20_mod_call_5mC_5hmC_CG_cram"]',
-        },
-        dx: -360,
-        dy: -10,
-        maxWidth: 360,
-        text: 'Methylation mode: scores every CpG on each read — red = methylated, blue = unmethylated — so this hypomethylated CpG island reads as a blue block.',
+        // bottom frame: the two rows already set to those two modes
+        // declaratively. Callouts anchor to each row but are pushed to the
+        // right side of the track (dx positive), clear of the CpG island /
+        // hypomethylated block the callouts describe, which sits left-of-
+        // center — the previous left-anchored boxes sat right on top of it.
+        closeMenusFirst: true,
+        annotations: [
+          {
+            type: 'text',
+            anchor: {
+              selector:
+                '[data-testid^="trackRenderingContainer-"][data-testid$="-human_chr20_mod_call_5mC_5hmC_CG_cram_modifications"]',
+            },
+            dx: 270,
+            dy: -10,
+            maxWidth: 340,
+            text: 'Modifications mode: marks only the bases the basecaller flagged as modified (the MM/ML tags) — here, called 5mC.',
+          },
+          {
+            type: 'text',
+            anchor: {
+              selector:
+                '[data-testid^="trackRenderingContainer-"][data-testid$="-human_chr20_mod_call_5mC_5hmC_CG_cram"]',
+            },
+            dx: 270,
+            dy: -10,
+            maxWidth: 340,
+            text: 'Methylation mode: red = methylated CpGs, blue = unmethylated. This island is hypomethylated, so it reads as a blue block.',
+          },
+        ],
       },
     ],
   },

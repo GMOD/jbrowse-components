@@ -307,11 +307,11 @@ export const featuresSpecs: ScreenshotSpec[] = [
     ],
   },
   // Gene feature-details sequence panel on a human gene (reviewer asked for a
-  // human example over the volvox EDEN one + a demo of the transl_except
-  // functionality, split below into feature_detail_protein). SELENOP
-  // (selenoprotein P, chr5, minus strand) is used for both: here the type
-  // selector is set to "Genomic w/ full introns +/-" so the panel shows the
-  // upstream flank, exons/introns, UTR, and downstream flank color-coded.
+  // human example over the volvox EDEN one, and a gene other than SELENOP —
+  // that one's reserved for the transl_except/selenocysteine demo below in
+  // feature_detail_protein). PTEN (chr10, minus strand) is used here instead;
+  // the type selector is set to the collapsed-intron + up/down-stream variant
+  // so the panel shows the flanking sequence alongside the exon structure.
   //
   // Uses config_demo's hg38 + ncbi_refseq_109_hg38_latest (labels by gene
   // symbol and exposes real CDS subfeatures, unlike the hg19 ncbi_gff / Gencode
@@ -325,7 +325,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     name: 'feature_detail_sequence',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr5:42,799,000-42,812,500',
+      loc: 'chr10:87,863,113-87,971,930',
       tracks: [
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
@@ -342,19 +342,20 @@ export const featuresSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportHeight: 900,
     actions: [
-      { type: 'click', text: 'SELENOP' },
+      { type: 'click', text: 'PTEN' },
       { type: 'waitForText', text: 'Show feature sequence' },
       { type: 'delay', ms: 1000 },
       { type: 'click', text: 'Show feature sequence' },
       { type: 'delay', ms: 2000 },
       { type: 'click', selector: '[aria-label="Sequence type"]' },
       { type: 'delay', ms: 1000 },
-      // partial (collapsed) introns keep 10bp of each intron so the exon
-      // structure reads without huge intronic runs dominating the sequence.
-      // exact xpath so it doesn't also match the "+/- up+down stream" variant
+      // collapsed introns keep 10bp of each intron so the exon structure reads
+      // without huge intronic runs dominating the sequence, and the
+      // up/down-stream variant additionally shows the flanking sequence
       {
         type: 'click',
-        selector: '[data-testid="sequence_type_gene_collapsed_intron"]',
+        selector:
+          '[data-testid="sequence_type_gene_updownstream_collapsed_intron"]',
       },
       { type: 'delay', ms: 3000 },
     ],

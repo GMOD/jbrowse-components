@@ -751,16 +751,23 @@ export const jbrowseImgSpecs: CliSpec[] = [
   ]),
 
   // snpcov collapses the alignments display to coverage-only by sizing the
-  // coverage band to fill the whole track (no read pileup below).
+  // coverage band to fill the whole track (no read pileup below). Real human
+  // data (reviewer ask): NA12878 1000-Genomes exome CRAM (hg38) over a BRCA1
+  // exon, deep exome coverage with real heterozygous SNPs standing out as
+  // colored fractions of the coverage bar.
   cliSpec('alignments_snpcov', [
     '--fasta',
-    'data/volvox/volvox.fa',
-    '--bam',
-    'data/volvox/volvox-sorted.bam',
+    'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+    // hg38.prefix.fa.gz's refnames are un-prefixed ('17'); the CRAM uses
+    // 'chr17' — aliases reconcile the two, same as the methylation cliSpec
+    '--aliases',
+    'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+    '--cram',
+    'https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
     'snpcov',
     'height:200',
     '--loc',
-    'ctgA:1-20000',
+    'chr17:43,044,000-43,045,500',
     '--width',
     '1200',
   ]),

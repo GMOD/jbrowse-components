@@ -773,13 +773,16 @@ export const svSpecs: ScreenshotSpec[] = [
         maxWidth: 420,
       },
       { type: 'box', anchor: { text: 'chr10:122,835,344..122,837,142' } },
-      { type: 'arrow', from: { x: 185, y: 268 }, to: { x: 598, y: 682 } },
-      { type: 'box', x: 592, y: 682, width: 112, height: 52 },
+      { type: 'arrow', from: { x: 185, y: 268 }, to: { x: 620, y: 730 } },
+      // box the actual SV_85 <DEL> feature glyph in the VCF track below (was
+      // floating in the blank space above it — measured from the rendered
+      // feature's bounding box, css y≈738-748)
+      { type: 'box', x: 592, y: 722, width: 112, height: 40 },
       {
         type: 'text',
         text: 'The location link opens the region below, where SVTYPE=DEL draws as the <DEL> allele',
         x: 745,
-        y: 690,
+        y: 738,
         fontSize: 18,
         maxWidth: 360,
       },
@@ -1279,16 +1282,19 @@ export const svSpecs: ScreenshotSpec[] = [
               // supplementary/split alignments onto one row joined by a
               // connector ("add view as pairs / link supplementary
               // reads") so reads spanning the deletion breakpoints read as
-              // coherent split alignments
+              // coherent split alignments. (Reviewer also asked to sort the
+              // split reads to the bottom of the pileup — no sort/group-by
+              // option supports that while linkedReads chain mode is active,
+              // since a chain's members must share one group key and
+              // "is-part-of-a-chain" isn't a groupable dimension; skipped.)
               trackId: 'hg008_t_reads_cdkn2a',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
                 linkedReads: 'normal',
-                // compact pileup: featureHeight 3 / spacing 0 packs
-                // the ~116x pileup so the deletion drop-out reads as a whole
-                // rather than scrolling off the display height
-                featureHeight: 3,
-                featureSpacing: 0,
+                // fit-to-display-height packs the ~116x pileup into the
+                // fixed 320px height without the fixed featureHeight/spacing
+                // clipping rows that don't fit
+                heightMode: 'fit',
                 height: 320,
               },
             },

@@ -141,10 +141,33 @@ export const gallerySpecs: ScreenshotSpec[] = [
     // isoform-dense to read). colorBy modifications draws the per-base RNA
     // modification calls. userByteSizeLimit lifts the default alignments byte cap
     // so the reads auto-load instead of showing a "too much data" banner.
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"7:5525000-5532500","type":"LinearGenomeView","tracks":[{"trackId":"NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"modifications"},"userByteSizeLimit":100000000}}]}]}',
+    //
+    // Reviewer: too many chaotic sashimi arcs, no gene track for context.
+    // Added the NCBI RefSeq track above the pileup, dropped the arc clutter
+    // with minSashimiScore (hides junctions with few supporting reads), and
+    // switched to the "super-compact" featureHeight/featureSpacing preset so
+    // more of the deep pileup fits before hitting the layout height cap.
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: '7:5525000-5532500',
+      tracks: [
+        'ncbi_refseq_109_hg38_latest',
+        {
+          trackId: 'NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            colorBy: { type: 'modifications' },
+            userByteSizeLimit: 100000000,
+            minSashimiScore: 5,
+            featureHeight: 1,
+            featureSpacing: 0,
+          },
+        },
+      ],
+    }),
     readyTimeout: 120000,
     settleMs: 35000,
-    viewportHeight: 470,
+    viewportHeight: 520,
   },
   {
     mode: 'url',
