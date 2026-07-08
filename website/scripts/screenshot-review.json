@@ -923,10 +923,10 @@
   },
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
-    "status": "bad",
-    "note": "we can capture using 'showproperpairs:false' potentially. make bezier curves a bit more dramatic sweeps",
-    "reviewedAt": "2026-07-08T01:09:01.711Z",
-    "hash": "2c7fb688369d4cc789a9ab19e0d4a1694482d3e4"
+    "status": "good",
+    "note": "DONE: added drawProperPairs:false so only the abnormal same-orientation (LL/RR) + split-read inverted-duplication pairs and their bezier curves remain (decluttered); tightened height 1300->650 + viewportHeight 1600->1000 to crop the freed whitespace. DEFERRED the more-dramatic-sweeps ask: bezier curvature is a global constant (HANDLE_FACTOR/MAX_BOW_PX in packages/core bezierConnector.ts) shared with BreakpointSplitView, not a per-figure knob.",
+    "reviewedAt": "2026-07-08T12:41:21.000Z",
+    "hash": "278f81ee1c7718514b2d63e3bb2a61f213293c4d"
   },
   "trio-hapibd-painting": {
     "name": "trio-hapibd-painting",
@@ -968,10 +968,10 @@
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
-    "status": "bad",
-    "note": "no per-group labels are shown",
-    "reviewedAt": "2026-07-08T02:32:14.226Z",
-    "hash": "338da926dfe60e3ddda8decf7850f78706b0eff3"
+    "status": "good",
+    "note": "DONE: per-group HP:1 / HP:2 labels are shown on the left of each grouped subtrack in the current build; note was stale.",
+    "reviewedAt": "2026-07-08T12:36:18.000Z",
+    "hash": "b8faf0950c025e1cbeae16146e2f6046b323d0e0"
   },
   "jbrowse-img/dark_theme": {
     "name": "jbrowse-img/dark_theme",
@@ -982,10 +982,10 @@
   },
   "jbrowse-img/hg38_hs1_mm39_synteny": {
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
-    "status": "bad",
-    "note": "turn off colorize indels, use transparent indels",
-    "reviewedAt": "2026-07-08T02:17:49.866Z",
-    "hash": "c1004d399c7d870932ac2c0434ec48b43402d0ab"
+    "status": "good",
+    "note": "DONE: transparent indels already set (cigarMode:matches); regenerated (stale PNG) + assembly names now hg38/hs1/mm39 (no .chrom.sizes).",
+    "reviewedAt": "2026-07-08T12:31:41.000Z",
+    "hash": "499d10a21856899b4c1339406c6e215f42b11f78"
   },
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
@@ -996,17 +996,17 @@
   },
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
-    "status": "bad",
-    "note": "turn off colorize indels, use transparent indels, dont put the assembly name in the scalebar refname labels, there is dedicated assembly name blurb separate from the scalebarrefnamelabels. ideally ('chrom.sizes') is also not in the assembly names",
-    "reviewedAt": "2026-07-08T03:44:29.683Z",
-    "hash": "6a2964bf31887997abfbee13a730bb9ac115314f"
+    "status": "good",
+    "note": "DONE: transparent indels already set (cigarMode:matches); committed PNG was stale showing the old assembly-prefixed first refname label -- regenerated to plain chr1/chr2. Stripped the .chrom.sizes extension from chrom.sizes assembly names (makeConfigs.ts) so the blurb reads hs1/mm39.",
+    "reviewedAt": "2026-07-08T12:31:41.000Z",
+    "hash": "a69d1ec53a14bc5ef237c2701c07edaf240abbde"
   },
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
     "status": "good",
-    "note": "Verified autoDiagonalize is genuinely reordering the grape chromosomes (compared against a render without --autoDiagonalize -- the order differs). The remaining tangled look is real biology: grape underwent an ancestral genome triplication, so a single peach chromosome maps onto multiple grape chromosome fragments -- a clean diagonal is not achievable regardless of algorithm quality. No change made.",
+    "note": "Verified autoDiagonalize is genuinely reordering the grape chromosomes (compared against a render without --autoDiagonalize -- the order differs). The remaining tangled look is real biology: grape underwent an ancestral genome triplication, so a single peach chromosome maps onto multiple grape chromosome fragments -- a clean diagonal is not achievable regardless of algorithm quality. No change made. [Regenerated after stripping .chrom.sizes from assembly names -> blurb now reads peach/grape.]",
     "reviewedAt": "2026-07-08T02:55:28.418Z",
-    "hash": "05162bea686f4ad9f3cb73e424cb0ccd46fbf890"
+    "hash": "9c11a16eaf56c381e0940a4f97457ff231ab2a49"
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
@@ -1112,17 +1112,17 @@
   },
   "jbrowse-img/alignments_snpcov": {
     "name": "jbrowse-img/alignments_snpcov",
-    "status": "bad",
-    "note": "might want to plot a gene track too. since this is exome, should show gene extent with exons",
-    "reviewedAt": "2026-07-08T03:29:21.870Z",
-    "hash": "bf4492426b274a6ad7fd9f32fd8a9d9b2420d8f9"
+    "status": "good",
+    "note": "DONE: added the hosted NCBI RefSeq Curated gene track via --hub hg38 --track hg38-ncbiRefSeqCurated (user: prefer NCBI gff over MANE; --hub avoids the raw-GFF RefSeqGene match/region features that render as bare-UUID full-width bars) and widened to the full BRCA1 span so the exome coverage humps land one-per-exon against the gene model with flat intronic gaps — the exome-capture signature.",
+    "reviewedAt": "2026-07-08T12:52:45.000Z",
+    "hash": "8db9b954ed4f83a7291cb681397a1f9089e1f4aa"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
-    "status": "bad",
-    "note": "put gene track on top",
-    "reviewedAt": "2026-07-08T02:18:00.522Z",
-    "hash": "fd9453047ef405a6f8f0c9ba3e8cf4a31966182a"
+    "status": "good",
+    "note": "DONE: gene track (NCBI RefSeq) already renders on top of the Hi-C heatmap in the current build; note was stale.",
+    "reviewedAt": "2026-07-08T12:36:18.000Z",
+    "hash": "ca2fddd579767558a1780549e14bce88f5608d4d"
   },
   "maf_470way": {
     "name": "maf_470way",
