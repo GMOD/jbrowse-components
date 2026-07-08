@@ -28,6 +28,9 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { Theme } from '@mui/material'
+
+type RenderSection = LinearAlignmentsDisplayModel['renderSections'][number]
 
 export async function renderSvg(
   model: LinearAlignmentsDisplayModel,
@@ -77,7 +80,10 @@ function AlignmentsSvgBody({
   const canvasWidth = view.width
   const displayHeight = height
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  const { coverageTicks } = model
+  const { coverageTicks, insertSizeTicks, renderSections } = model
+  // anchors the left-edge scale bars / group labels to the content; non-zero
+  // only when scrolled before the genome start
+  const contentLeft = Math.max(-view.offsetPx, 0)
 
   // SVG export renders the full display from y=0 with no Y scroll. Reuse the
   // model's renderState — only viewport-related fields are overridden. The
@@ -101,7 +107,7 @@ function AlignmentsSvgBody({
   // shows the full track height regardless of Y scroll).
   const labels = computeVisibleLabels({
     view,
-    sections: model.renderSections,
+    sections: renderSections,
     height: displayHeight,
     featureHeight: model.featureHeight,
     featureSpacing: model.featureSpacing,
@@ -135,55 +141,103 @@ function AlignmentsSvgBody({
         <SashimiArcsSvg model={model} view={view} />
         <PileupBezierArcsSvg model={model} view={view} />
       </SvgClipRect>
-      {model.showCoverage && coverageTicks
-        ? // anchors scale bars to left edge of content; non-zero x only when
-          // scrolled before genome start. One bar per section's coverage band
-          // (export is always at scrollTop 0, so `coverageTop` is the
-          // section's final y) — mirrors the on-screen `CoverageAxisHost`.
-          model.renderSections.map(section => (
-            <g
-              key={section.groupKey || 'ungrouped'}
-              transform={`translate(${Math.max(-view.offsetPx, 0)}, ${section.coverageTop})`}
-            >
-              <YScaleBar ticks={coverageTicks} orientation="left" />
-            </g>
-          ))
-        : null}
-      {model.insertSizeTicks ? (
-        // 50 matches the on-screen SVG width for the insert-size scale bar.
-        // Down mode puts the TLEN scalebar on the left (matches PileupComponent).
-        model.readConnectionsDown ? (
-          <g transform="translate(45)">
-            <YScaleBar ticks={model.insertSizeTicks} orientation="left" />
-            <TlenAxisLabel
-              yTop={model.insertSizeTicks.yTop}
-              yBottom={model.insertSizeTicks.yBottom}
-              x={11}
-            />
-          </g>
-        ) : (
-          <g transform={`translate(${canvasWidth - 50})`}>
-            <YScaleBar ticks={model.insertSizeTicks} orientation="right" />
-            <TlenAxisLabel
-              yTop={model.insertSizeTicks.yTop}
-              yBottom={model.insertSizeTicks.yBottom}
-            />
-          </g>
-        )
+      {model.showCoverage && coverageTicks ? (
+        <CoverageScaleBars
+          sections={renderSections}
+          ticks={coverageTicks}
+          left={contentLeft}
+        />
       ) : null}
-      {model.isGrouped
-        ? // Rendered last (highest z-order) so a group's label box always sits
-          // on top of the pileup/coverage/arcs it's labeling.
-          model.renderSections.map(section => (
-            <GroupLabelBox
-              key={section.groupKey || 'ungrouped'}
-              x={Math.max(-view.offsetPx, 0) + 4}
-              y={section.coverageTop + 1}
-              text={section.label || 'ungrouped'}
-              theme={theme}
-            />
-          ))
-        : null}
+      {insertSizeTicks ? (
+        <InsertSizeScaleBar
+          ticks={insertSizeTicks}
+          down={model.readConnectionsDown}
+          canvasWidth={canvasWidth}
+        />
+      ) : null}
+      {model.isGrouped ? (
+        <GroupLabelBoxes
+          sections={renderSections}
+          left={contentLeft}
+          theme={theme}
+        />
+      ) : null}
+    </>
+  )
+}
+
+// One left-orientation coverage y-axis per stacked section's coverage band.
+// Export is always at scrollTop 0, so each `coverageTop` is the section's final
+// y — mirrors the on-screen `CoverageAxisHost`.
+function CoverageScaleBars({
+  sections,
+  ticks,
+  left,
+}: {
+  sections: RenderSection[]
+  ticks: NonNullable<LinearAlignmentsDisplayModel['coverageTicks']>
+  left: number
+}) {
+  return (
+    <>
+      {sections.map(section => (
+        <g
+          key={section.groupKey || 'ungrouped'}
+          transform={`translate(${left}, ${section.coverageTop})`}
+        >
+          <YScaleBar ticks={ticks} orientation="left" />
+        </g>
+      ))}
+    </>
+  )
+}
+
+// Insert-size (TLEN) scale bar, samplot mode only. Down mode puts it on the
+// left (matches PileupComponent), up mode on the right; 45/50 match the
+// on-screen SVG axis width.
+function InsertSizeScaleBar({
+  ticks,
+  down,
+  canvasWidth,
+}: {
+  ticks: NonNullable<LinearAlignmentsDisplayModel['insertSizeTicks']>
+  down: boolean
+  canvasWidth: number
+}) {
+  return (
+    <g transform={`translate(${down ? 45 : canvasWidth - 50})`}>
+      <YScaleBar ticks={ticks} orientation={down ? 'left' : 'right'} />
+      <TlenAxisLabel
+        yTop={ticks.yTop}
+        yBottom={ticks.yBottom}
+        x={down ? 11 : undefined}
+      />
+    </g>
+  )
+}
+
+// Group name boxes, one per section. Rendered last (highest z-order) so a
+// group's label always sits on top of the pileup/coverage/arcs it labels.
+function GroupLabelBoxes({
+  sections,
+  left,
+  theme,
+}: {
+  sections: RenderSection[]
+  left: number
+  theme: Theme
+}) {
+  return (
+    <>
+      {sections.map(section => (
+        <GroupLabelBox
+          key={section.groupKey || 'ungrouped'}
+          x={left + 4}
+          y={section.coverageTop + 1}
+          text={section.label || 'ungrouped'}
+          theme={theme}
+        />
+      ))}
     </>
   )
 }
