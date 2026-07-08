@@ -35,17 +35,31 @@ export function locstr(
     : `${includeAsm ? `{${assemblyName}}` : ''}${refName}:${toLocale(coord)}`
 }
 
-// Bundling blocks + bpPerPx + hide as one axis prevents the H/V mix-up that
-// used to produce wrong border sizing — the three values must come from the
-// same view (`bpPerPx` drives the tick-label precision string).
-export interface AxisBundle {
-  blocks: ContentBlock[]
-  bpPerPx: number
-  hide: Set<string>
+// Axis labels render at fontSize 11 (see Axes.tsx); measure at the same size so
+// the reserved border width isn't a systematic ~10% underestimate.
+function stringLenPx(a: string) {
+  return measureText(a.slice(0, 30), 11)
 }
 
-function stringLenPx(a: string) {
-  return measureText(a.slice(0, 30))
+// A region contributes two axis labels: its refName and the tick string at its
+// end coordinate. The minimal shape needed for both (IRegion satisfies it).
+interface LabelRegion {
+  refName: string
+  end: number
+}
+
+// Widest axis label in px across all regions — the longer of each region's
+// refName or its end-coordinate tick string (bpPerPx sets the tick precision).
+// Depends only on regions + zoom, never on the viewport width, so the border it
+// sizes can't feed back into itself (viewWidth = width - border).
+export function axisLabelWidthPx(regions: LabelRegion[], bpPerPx: number) {
+  return max(
+    regions.flatMap(r => [
+      stringLenPx(r.refName),
+      stringLenPx(getTickDisplayStr(r.end, bpPerPx)),
+    ]),
+    0,
+  )
 }
 
 // Maps each tick's (refName, base) to an `alongPx` offset within the view —
@@ -70,19 +84,6 @@ export function computeTickPositions(
     })?.offsetPx
     return px === undefined ? [] : [{ tick, alongPx: px - offsetPx }]
   })
-}
-
-export function pxWidthForBlocks({ blocks, bpPerPx, hide }: AxisBundle) {
-  const widths: number[] = []
-  for (const b of blocks) {
-    if (!hide.has(b.key)) {
-      widths.push(
-        stringLenPx(b.refName),
-        stringLenPx(getTickDisplayStr(b.end, bpPerPx)),
-      )
-    }
-  }
-  return max(widths)
 }
 
 // Approximate px footprint of a block label along its axis. Two labels closer

@@ -26,15 +26,14 @@ import { observable } from 'mobx'
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import {
+  axisLabelWidthPx,
   computeTickPositions,
   getBlockLabelKeysToHide,
   makeTicks,
-  pxWidthForBlocks,
 } from './components/util.ts'
 import { LS_CURSOR_MODE } from './types.ts'
 
 import type { Dotplot1DViewModel } from './1dview.ts'
-import type { AxisBundle } from './components/util.ts'
 import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
 import type {
   DotplotGeometryData,
@@ -65,6 +64,20 @@ function axisTicks(view: Dotplot1DViewModel) {
   return dynamicBlocks.contentBlocks.length > MAX_TICK_BLOCKS
     ? []
     : makeTicks(staticBlocks.contentBlocks, bpPerPx)
+}
+
+// Fixed px an axis needs beyond its widest label: the 7px tick-label inset
+// (labels anchor at border - 7) plus the rotated assembly-name title parked at
+// x=12. The floor keeps room for that title on a short-label axis (e.g.
+// self-vs-self "ctgA").
+const BORDER_LABEL_EXTRA = 25
+const MIN_BORDER = 50
+
+function borderPx(view: Dotplot1DViewModel) {
+  return Math.max(
+    axisLabelWidthPx(view.displayedRegions, view.bpPerPx) + BORDER_LABEL_EXTRA,
+    MIN_BORDER,
+  )
 }
 
 // Resolve a region's refName to the assembly's canonical name, falling back to
@@ -252,14 +265,6 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #volatile
          */
-        borderX: 100,
-        /**
-         * #volatile
-         */
-        borderY: 100,
-        /**
-         * #volatile
-         */
         importFormSyntenyTrackSelections:
           observable.array<ImportFormSyntenyTrack>(),
         /**
@@ -301,6 +306,22 @@ export default function stateModelFactory(pm: PluginManager) {
             throw new Error('width not initialized')
           }
           return self.volatileWidth
+        },
+        /**
+         * #getter
+         * Left margin: fits the vertical (vview) axis labels. Derived purely
+         * from that axis's regions + zoom — never from viewWidth — so it can't
+         * feed back through viewWidth = width - borderX into a render loop.
+         */
+        get borderX() {
+          return borderPx(self.vview)
+        },
+        /**
+         * #getter
+         * Bottom margin: fits the horizontal (hview) axis labels. See borderX.
+         */
+        get borderY() {
+          return borderPx(self.hview)
         },
       }))
       .views(self => ({
@@ -412,7 +433,7 @@ export default function stateModelFactory(pm: PluginManager) {
           return self.height - self.borderY
         },
         // Block-label keys whose tick labels would overlap and are hidden.
-        // Cached as views so the border autorun and the axis components share
+        // Cached as a view so the horizontal and vertical axis components share
         // one computation per axis instead of recomputing it independently.
         get hblockLabelKeysToHide() {
           return getBlockLabelKeysToHide(
@@ -633,18 +654,6 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        setBorderX(n: number) {
-          self.borderX = n
-        },
-        /**
-         * #action
-         */
-        setBorderY(n: number) {
-          self.borderY = n
-        },
-        /**
-         * #action
-         */
         setWidth(newWidth: number) {
           self.volatileWidth = newWidth
           return self.volatileWidth
@@ -798,50 +807,21 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #action
-         * Calculate borders synchronously for a given zoom level
-         */
-        calculateBorders() {
-          if (self.volatileWidth === undefined) {
-            return { borderX: self.borderX, borderY: self.borderY }
-          }
-          const { vview, hview } = self
-          const padding = 40
-          const hAxis: AxisBundle = {
-            blocks: hview.dynamicBlocks.contentBlocks,
-            bpPerPx: hview.bpPerPx,
-            hide: self.hblockLabelKeysToHide,
-          }
-          const vAxis: AxisBundle = {
-            blocks: vview.dynamicBlocks.contentBlocks,
-            bpPerPx: vview.bpPerPx,
-            hide: self.vblockLabelKeysToHide,
-          }
-
-          return {
-            borderX: Math.max(pxWidthForBlocks(vAxis) + padding, 50),
-            borderY: Math.max(pxWidthForBlocks(hAxis) + padding, 50),
-          }
-        },
-        /**
-         * #action
          */
         showAllRegions() {
           const { hview, vview } = self
           // When locked, use the larger maxBpPerPx so both assemblies fit.
-          // Re-evaluated on each call because maxBpPerPx depends on viewWidth
-          // which changes after setBorderX/Y below.
           const getMax = (v: typeof hview) =>
             self.lockAspectRatio
               ? Math.max(hview.maxBpPerPx, vview.maxBpPerPx)
               : v.maxBpPerPx
 
-          // First pass: zoom so calculateBorders sees the right bpPerPx
+          // Two passes: the first zoom settles bpPerPx, which the derived
+          // border getters read, which shifts viewWidth/viewHeight and hence
+          // maxBpPerPx; the second re-fits against the settled border. No
+          // border state to set — borderX/borderY follow bpPerPx reactively.
           hview.zoomTo(getMax(hview))
           vview.zoomTo(getMax(vview))
-          const { borderX, borderY } = this.calculateBorders()
-          self.setBorderX(borderX)
-          self.setBorderY(borderY)
-          // Second pass: re-zoom with updated dimensions, then center
           hview.zoomTo(getMax(hview))
           vview.zoomTo(getMax(vview))
           vview.center()

@@ -318,26 +318,9 @@ function setupAspectLockAutorun(self: DotplotViewModel) {
   )
 }
 
-function setupBorderAutorun(self: DotplotViewModel) {
-  addDisposer(
-    self,
-    autorun(
-      function dotplotBorderAutorun() {
-        if (self.volatileWidth !== undefined) {
-          const { borderX, borderY } = self.calculateBorders()
-          self.setBorderX(borderX)
-          self.setBorderY(borderY)
-        }
-      },
-      { name: 'DotplotBorder' },
-    ),
-  )
-}
-
 export function doAfterAttach(self: DotplotViewModel) {
   setupInitAutorun(self)
   setupLocalStorageAutorun(self)
   setupRegionsAutorun(self)
   setupAspectLockAutorun(self)
-  setupBorderAutorun(self)
 }

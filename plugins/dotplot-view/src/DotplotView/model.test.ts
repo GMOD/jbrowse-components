@@ -2,8 +2,9 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-// self-vs-self layout: both axes show ctgA at bpPerPx=1, offsetPx=0.
-// height 600 - borderY 100 => viewHeight 500.
+// self-vs-self layout: both axes show ctgA at bpPerPx=1, offsetPx=0. borderY is
+// now derived from the axis labels, so tests read model.viewHeight rather than
+// assuming a fixed border.
 function setup() {
   const session = createTestSession({
     sessionSnapshot: {

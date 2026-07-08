@@ -1,17 +1,9 @@
 import { makeContentBlock } from '@jbrowse/core/util/blockTypes'
 
-import { getBlockLabelKeysToHide, pxWidthForBlocks } from './util.ts'
+import { axisLabelWidthPx, getBlockLabelKeysToHide } from './util.ts'
 
-function block(refName: string, end: number, key = refName) {
-  return makeContentBlock({
-    key,
-    offsetPx: 0,
-    widthPx: 100,
-    assemblyName: 'a',
-    refName,
-    start: 0,
-    end,
-  })
+function region(refName: string, end: number) {
+  return { refName, end }
 }
 
 // label position along the axis is `round(length - offsetPx + viewOffsetPx)`;
@@ -28,44 +20,28 @@ function posBlock(key: string, offsetPx: number, len: number) {
   })
 }
 
-describe('pxWidthForBlocks', () => {
+describe('axisLabelWidthPx', () => {
   test('returns max label width across refName and tick string', () => {
-    const result = pxWidthForBlocks({
-      blocks: [block('chr1', 1_000_000)],
-      bpPerPx: 1,
-      hide: new Set(),
-    })
-    expect(result).toBeGreaterThan(0)
+    expect(axisLabelWidthPx([region('chr1', 1_000_000)], 1)).toBeGreaterThan(0)
   })
 
-  test('hidden blocks do not contribute width', () => {
-    const all = pxWidthForBlocks({
-      blocks: [block('chr1', 1_000), block('verylongname123', 1_000)],
-      bpPerPx: 1,
-      hide: new Set(),
-    })
-    const hidden = pxWidthForBlocks({
-      blocks: [block('chr1', 1_000), block('verylongname123', 1_000)],
-      bpPerPx: 1,
-      hide: new Set(['verylongname123']),
-    })
-    expect(hidden).toBeLessThan(all)
+  test('empty regions yield zero (no border-independent input)', () => {
+    expect(axisLabelWidthPx([], 1)).toBe(0)
   })
 
-  // Locks in correct axis<->bpPerPx pairing — a regression of the swap bug
-  // (calling with the *other* axis's bpPerPx) would change the result here.
+  test('the widest region label wins', () => {
+    const short = axisLabelWidthPx([region('chr1', 1_000)], 1)
+    const long = axisLabelWidthPx(
+      [region('chr1', 1_000), region('verylongname123', 1_000)],
+      1,
+    )
+    expect(long).toBeGreaterThan(short)
+  })
+
   test('bpPerPx changes tick-label precision and so the result', () => {
-    const fine = pxWidthForBlocks({
-      blocks: [block('chr1', 1_234_567)],
-      bpPerPx: 1,
-      hide: new Set(),
-    })
-    const coarse = pxWidthForBlocks({
-      blocks: [block('chr1', 1_234_567)],
-      bpPerPx: 1_000_000,
-      hide: new Set(),
-    })
-    // "1,234,567" (bpPerPx=1) is a wider tick label than "1 Mb" (bpPerPx=1e6).
+    // "1,234,567" (bpPerPx=1) is a wider tick label than "1.23M" (bpPerPx=1e6).
+    const fine = axisLabelWidthPx([region('chr1', 1_234_567)], 1)
+    const coarse = axisLabelWidthPx([region('chr1', 1_234_567)], 1_000_000)
     expect(fine).toBeGreaterThan(coarse)
   })
 })
