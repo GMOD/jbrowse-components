@@ -38,7 +38,11 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const visibleTracks = [...pinnedTracks, ...unpinnedTracks].filter(
     t => !t.minimized,
   )
-  const { tracksTop } = getHeaderLayout({ fontSize, showCytobands, rulerHeight })
+  const { tracksTop } = getHeaderLayout({
+    fontSize,
+    showCytobands,
+    rulerHeight,
+  })
   const offset = tracksTop
   const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
   const height = tracksHeight + offset + 100

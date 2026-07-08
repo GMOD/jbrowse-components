@@ -33,8 +33,20 @@ export default function SVGScalebar({
   return (
     <>
       <line x1={x0} x2={x1} y1={0} y2={0} {...strokeProps} />
-      <line x1={x0} x2={x0} y1={-SVG_SCALEBAR_CAP} y2={SVG_SCALEBAR_CAP} {...strokeProps} />
-      <line x1={x1} x2={x1} y1={-SVG_SCALEBAR_CAP} y2={SVG_SCALEBAR_CAP} {...strokeProps} />
+      <line
+        x1={x0}
+        x2={x0}
+        y1={-SVG_SCALEBAR_CAP}
+        y2={SVG_SCALEBAR_CAP}
+        {...strokeProps}
+      />
+      <line
+        x1={x1}
+        x2={x1}
+        y1={-SVG_SCALEBAR_CAP}
+        y2={SVG_SCALEBAR_CAP}
+        {...strokeProps}
+      />
       <text
         x={(x0 + x1) / 2}
         y={SVG_SCALEBAR_CAP}

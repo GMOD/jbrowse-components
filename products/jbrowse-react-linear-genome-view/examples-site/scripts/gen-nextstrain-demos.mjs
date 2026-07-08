@@ -14,7 +14,12 @@ import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
-const exampleDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'examples')
+const exampleDir = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'src',
+  'examples',
+)
 
 // each entry becomes src/examples/<file>.json, consumed by a matching
 // <name>.tsx / <slug>.astro page. `assembly` is the JBrowse assembly + refName;
@@ -44,7 +49,8 @@ const DATASETS = [
     assembly: 'Measles',
     url: 'https://data.nextstrain.org/measles.json',
     ref: 'https://raw.githubusercontent.com/nextstrain/measles/main/phylogenetic/defaults/measles_reference_genome.gb',
-    genomesBam: 'https://jbrowse.org/demos/nextstrain/measles/measles_genomes.bam',
+    genomesBam:
+      'https://jbrowse.org/demos/nextstrain/measles/measles_genomes.bam',
   },
   {
     file: 'nextstrain_rsv_a',
@@ -55,11 +61,36 @@ const DATASETS = [
 
 // auspice's default color ramp; sampled evenly to color genes left-to-right
 const COLOR_RAMP = [
-  '#511EA8', '#4334BF', '#4041C7', '#3F50CC', '#3F5ED0', '#4066D0', '#4174CE',
-  '#4784C7', '#4B8AC3', '#529AB6', '#59A4A9', '#63AC99', '#6DB388', '#7CB879',
-  '#8BBB69', '#9ABE5C', '#A6BE4F', '#B1BD4D', '#BDBB48', '#C7B944', '#CFB541',
-  '#D9AD3D', '#DFA43A', '#E29E39', '#E68E35', '#E67932', '#E4632E', '#DF4B29',
-  '#DE3C26', '#DC2F24',
+  '#511EA8',
+  '#4334BF',
+  '#4041C7',
+  '#3F50CC',
+  '#3F5ED0',
+  '#4066D0',
+  '#4174CE',
+  '#4784C7',
+  '#4B8AC3',
+  '#529AB6',
+  '#59A4A9',
+  '#63AC99',
+  '#6DB388',
+  '#7CB879',
+  '#8BBB69',
+  '#9ABE5C',
+  '#A6BE4F',
+  '#B1BD4D',
+  '#BDBB48',
+  '#C7B944',
+  '#CFB541',
+  '#D9AD3D',
+  '#DFA43A',
+  '#E29E39',
+  '#E68E35',
+  '#E67932',
+  '#E4632E',
+  '#DF4B29',
+  '#DE3C26',
+  '#DC2F24',
 ]
 
 // pull the ORIGIN sequence out of a GenBank flatfile (base-count lines and
@@ -74,7 +105,9 @@ function gbSequence(gb) {
 
 function parseMut(m) {
   const mm = /^([A-Za-z-])(\d+)([A-Za-z-])$/.exec(m)
-  return mm ? { from: mm[1].toUpperCase(), pos: +mm[2], to: mm[3].toUpperCase() } : undefined
+  return mm
+    ? { from: mm[1].toUpperCase(), pos: +mm[2], to: mm[3].toUpperCase() }
+    : undefined
 }
 
 const isBase = b => b === 'A' || b === 'C' || b === 'G' || b === 'T'
@@ -123,7 +156,10 @@ function entropyFeatures(tree, refName) {
   }
   dfs(tree, {})
 
-  const positions = new Set([...Object.keys(rootBase), ...Object.keys(overCounts)])
+  const positions = new Set([
+    ...Object.keys(rootBase),
+    ...Object.keys(overCounts),
+  ])
   const features = []
   for (const posStr of positions) {
     const dist = {}
@@ -209,7 +245,15 @@ function geneFeatures(annotations, refName, polyprotein) {
     // the parent bounds from the spliced segments
     const start = g.start ?? Math.min(...g.segments.map(s => s.start))
     const end = g.end ?? Math.max(...g.segments.map(s => s.end))
-    const feature = { refName, name: g.name, uniqueId: i, start: start - 1, end, strand, fill }
+    const feature = {
+      refName,
+      name: g.name,
+      uniqueId: i,
+      start: start - 1,
+      end,
+      strand,
+      fill,
+    }
     if (g.segments) {
       feature.subfeatures = g.segments.map((s, j) => ({
         refName,
@@ -283,7 +327,11 @@ function buildConfig({ assembly, data, seq, polyprotein, genomesBam }) {
         category: ['Annotation'],
         adapter: {
           type: 'FromConfigAdapter',
-          features: geneFeatures(data.meta.genome_annotations, refName, polyprotein),
+          features: geneFeatures(
+            data.meta.genome_annotations,
+            refName,
+            polyprotein,
+          ),
         },
         displays: [
           {
@@ -335,7 +383,10 @@ function buildConfig({ assembly, data, seq, polyprotein, genomesBam }) {
             type: 'FeatureTrack',
             configuration: `${assembly}-nextstrain-annotations`,
             displays: [
-              { type: 'LinearBasicDisplay', configuration: `${assembly}-nextstrain-color-display` },
+              {
+                type: 'LinearBasicDisplay',
+                configuration: `${assembly}-nextstrain-color-display`,
+              },
             ],
           },
           ...publishedGenomesSession,
@@ -398,7 +449,9 @@ for (const ds of DATASETS) {
     ...entropy.adapter.features.map(f => f.end),
   )
   if (maxEnd > seq.length) {
-    throw new Error(`${ds.file}: feature end ${maxEnd} exceeds reference length ${seq.length}`)
+    throw new Error(
+      `${ds.file}: feature end ${maxEnd} exceeds reference length ${seq.length}`,
+    )
   }
   writeFileSync(join(exampleDir, `${ds.file}.json`), JSON.stringify(config))
   console.log(

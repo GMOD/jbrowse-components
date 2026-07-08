@@ -4,7 +4,6 @@ import { promotableToggleItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-
 import { checkboxItem } from './menuHelpers.ts'
 
 import type { SessionDefaultControl } from '@jbrowse/core/configuration'

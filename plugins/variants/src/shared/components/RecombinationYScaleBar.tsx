@@ -23,12 +23,7 @@ export default function RecombinationYScaleBar({
   const content = (
     <>
       <rect x={0} y={0} width={Y_AXIS_WIDTH} height={height} fill={bg} />
-      <g
-        fill="none"
-        fontSize={9}
-        textAnchor="end"
-        strokeWidth={1}
-      >
+      <g fill="none" fontSize={9} textAnchor="end" strokeWidth={1}>
         <path
           stroke={fg}
           d={`M${Y_AXIS_WIDTH - 6},${yTop}H${Y_AXIS_WIDTH - 0.5}V${yBottom}H${Y_AXIS_WIDTH - 6}`}

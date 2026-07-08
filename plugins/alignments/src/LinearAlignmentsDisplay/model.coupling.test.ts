@@ -215,7 +215,12 @@ describe('openContextMenu atomic state and stale-read reset', () => {
   test('reopening over a new hit resets the previous read feature', () => {
     const display = createDisplay()
     display.setContextMenuFeature(
-      new SimpleFeature({ uniqueId: 'read1', refName: 'ctgA', start: 0, end: 100 }),
+      new SimpleFeature({
+        uniqueId: 'read1',
+        refName: 'ctgA',
+        start: 0,
+        end: 100,
+      }),
     )
     expect(display.contextMenuFeature).toBeDefined()
 

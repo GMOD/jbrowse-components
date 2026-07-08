@@ -7,8 +7,9 @@ import webpack from 'webpack'
 // Keeping these in one place ensures fixes like the .mjs fullySpecified rule
 // below stay in sync across all products.
 export default function umdConfig({ filename, library, cssUse }) {
+  const mode = process.env.NODE_ENV || 'production'
   return {
-    mode: process.env.NODE_ENV || 'production',
+    mode,
     entry: './src/webpack.ts',
     devtool: 'source-map',
     output: {
@@ -42,7 +43,13 @@ export default function umdConfig({ filename, library, cssUse }) {
           test: /\.m?[tj]sx?$/,
           exclude: /node_modules/,
           loader: 'babel-loader',
-          options: { rootMode: 'upward' },
+          // Babel's own envName defaults independently of webpack's `mode`
+          // (falls back to 'development' when NODE_ENV is unset, even though
+          // `mode` above falls back to 'production') — pin it to `mode` so
+          // @babel/preset-react's automatic runtime can't pick the dev jsxDEV
+          // transform while webpack bundles the production react runtime
+          // (which has no jsxDEV export), a mismatch that crashes at runtime.
+          options: { rootMode: 'upward', envName: mode },
         },
         // only react-app imports a .css file (dockview); css-loader resolves it
         // and style-loader injects it into the DOM

@@ -1,7 +1,6 @@
 import { promotableToggleItem } from '@jbrowse/core/ui'
 import PolylineIcon from '@mui/icons-material/Polyline'
 
-
 import { checkboxItem } from './menuHelpers.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'

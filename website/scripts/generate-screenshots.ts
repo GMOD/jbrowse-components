@@ -801,7 +801,9 @@ async function main() {
       } else if (check) {
         await checkSpec(spec)
       } else {
-        result = await withFreshPage(spec, page => captureSpec(page, spec, port))
+        result = await withFreshPage(spec, page =>
+          captureSpec(page, spec, port),
+        )
       }
       if (result) {
         if (result.status === 'kept') {

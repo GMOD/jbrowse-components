@@ -64,7 +64,9 @@ function Ruler({
           x1={x}
           x2={x}
           y1={tickTopY}
-          y2={tickTopY + (type === 'major' ? RULER_MAJOR_TICK : RULER_MINOR_TICK)}
+          y2={
+            tickTopY + (type === 'major' ? RULER_MAJOR_TICK : RULER_MINOR_TICK)
+          }
           strokeWidth={1}
           {...strokeProps}
         />

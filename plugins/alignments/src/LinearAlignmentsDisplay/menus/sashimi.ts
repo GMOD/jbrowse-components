@@ -4,7 +4,6 @@ import { promotableRadioItem, promotableToggleItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import AltRouteIcon from '@mui/icons-material/AltRoute'
 
-
 import { checkboxItem } from './menuHelpers.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'

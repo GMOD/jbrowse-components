@@ -253,7 +253,9 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         sortType: isInterbase ? cigarHit.type : 'basePair',
         position: cigarHit.position,
         detailsLabel: `Open ${typeLabel.toLowerCase()} details`,
-        openDetails: b => openCigarWidget(self, cigarHit, b.refName),
+        openDetails: b => {
+          openCigarWidget(self, cigarHit, b.refName)
+        },
       }),
     )
   }
@@ -271,8 +273,9 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         sortType: indicatorHit.indicatorType,
         position: indicatorHit.position,
         detailsLabel: `Open ${typeLabel.toLowerCase()} details`,
-        openDetails: b =>
-          openIndicatorWidget(self, indicatorHit, b.refName, b.rpcData),
+        openDetails: b => {
+          openIndicatorWidget(self, indicatorHit, b.refName, b.rpcData)
+        },
       }),
     )
   }

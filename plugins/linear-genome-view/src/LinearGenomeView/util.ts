@@ -170,11 +170,11 @@ function refLabelLayout(
   const regionEnd = regionEndPx.get(displayedRegionIndex)
   const labelStartPx = sticky ? offsetPx : block.offsetPx
   // A non-sticky label's transform anchors at the same x as the region
-  // divider drawn just to its left (SVGRegionSeparators, a 3px bar centered
-  // on this same block.offsetPx edge), so paddingLeft must clear that bar's
-  // width or the label text starts on top of it. Sticky labels sit at the
-  // viewport's own left edge, with no divider to clear.
-  const paddingLeft = sticky ? 0 : 4
+  // divider drawn just to its left (SVGRegionSeparators, a 3px bar spanning
+  // local [0,3] from this same block.offsetPx edge), so paddingLeft must clear
+  // that bar plus a few px of breathing room, else the text visually touches
+  // the divider. Sticky labels sit at the viewport's own left edge, no divider.
+  const paddingLeft = sticky ? 0 : 7
   const maxWidth =
     regionEnd === undefined
       ? undefined

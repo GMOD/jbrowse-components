@@ -48,7 +48,10 @@ describe('DefaultForAllAdornment', () => {
             rowClick()
           }}
         >
-          <DefaultForAllAdornment isDefault={false} onToggleDefault={() => {}} />
+          <DefaultForAllAdornment
+            isDefault={false}
+            onToggleDefault={() => {}}
+          />
         </div>
       </ThemeProvider>,
     )

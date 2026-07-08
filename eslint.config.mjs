@@ -23,6 +23,7 @@ export default defineConfig(
 
       // Config and tooling
       'config/jest',
+      'agent-docs',
       'infrastructure',
       'jest.config.js',
       'website/scripts/flip-review.mjs',

@@ -203,9 +203,7 @@ describe('CascadingMenu', () => {
     ])
     await user.click(screen.getByTestId('menu-button'))
     await screen.findByText('High')
-    const labels = screen
-      .getAllByRole('menuitem')
-      .map(el => el.textContent)
+    const labels = screen.getAllByRole('menuitem').map(el => el.textContent)
     expect(labels).toEqual(['High', 'Default', 'Low'])
   })
 
