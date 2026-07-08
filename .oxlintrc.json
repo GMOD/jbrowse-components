@@ -1,0 +1,83 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "import", "react", "oxc"],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "es2026": true,
+    "node": true
+  },
+  "rules": {
+    "eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrors": "none",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "import/export": "off",
+    "react/no-unescaped-entities": "off",
+    "unicorn/no-new-array": "off",
+    "unicorn/no-empty-file": "off",
+    "unicorn/no-useless-spread": "off",
+    "oxc/erasing-op": "off",
+    "eslint/no-unsafe-optional-chaining": "off"
+  },
+  "ignorePatterns": [
+    "**/build",
+    "**/dist*",
+    "**/esm",
+    "**/public",
+    "**/.astro",
+    "config/jest",
+    "agent-docs",
+    "infrastructure",
+    "jest.config.js",
+    "babel.config.cjs",
+    "eslint.config.mjs",
+    "products/**/webpack.config.js",
+    "products/**/webpack.config.mjs",
+    "**/umd_plugin.js",
+    "packages/core/src/util/map-obj",
+    "packages/core/src/util/nanoid.js",
+    "packages/core/src/util/nanoid.ts",
+    "packages/core/src/ReExports/material-ui-colors.js",
+    "packages/tree-sidebar/src/d3-hierarchy2",
+    "plugins/variants/src/d3-hierarchy2",
+    "plugins/wiggle/src/d3-hierarchy2",
+    "packages/core/src/util/p-limit.ts",
+    "scripts/analyze_cpuprof.ts",
+    "scripts/getSuggestions.js",
+    "scripts/ribbon-plot-pif.mjs",
+    "scripts/ribbon-plot.mjs",
+    "scripts/verify-hs1-mm39-dotplot.mjs",
+    "scripts/verify-hs1-mm39.mjs",
+    "scripts/announce.mjs",
+    "products/jbrowse-desktop/scripts",
+    "products/jbrowse-web/scripts",
+    "products/jbrowse-img/src/bin.js",
+    "aws",
+    "products/jbrowse-aws-lambda-functions",
+    "**/test_data",
+    "test/data",
+    "packages/__mocks__",
+    "webpack",
+    "website/blog",
+    "website/docs",
+    "website/static",
+    "website/.astro",
+    "docs",
+    "benchmarks",
+    "auth_test_utils",
+    "component_tests",
+    "embedded_demos",
+    "plugin-development-tools",
+    "products/jbrowse-cli/lib",
+    "products/jbrowse-cli/bundle"
+  ]
+}

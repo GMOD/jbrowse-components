@@ -138,6 +138,8 @@ jobs:
           node-version: '24'
       - name: Install deps
         run: pnpm install --frozen-lockfile
+      - name: Fast lint (oxlint) — fail fast before slower checks
+        run: pnpm lint:fast
       - name: Check @jbrowse/core exports are up-to-date
         run: |
           node packages/core/scripts/generateExports.mjs

@@ -3,6 +3,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
+    "noUncheckedIndexedAccess": true,
     "lib": ["esnext"],
     "target": "esnext",
     "moduleResolution": "nodenext",
