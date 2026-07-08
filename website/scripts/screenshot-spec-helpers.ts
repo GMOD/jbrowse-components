@@ -688,17 +688,22 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '800',
   ]),
 
-  // Gene/feature track (bundled volvox annotations).
+  // Gene/feature track over the reference sequence: hosted hg38 NCBI RefSeq
+  // (--hub, --track) with --refseq adding the DNA-base + six-frame-translation
+  // sequence track below it. Zoomed to a TP53 coding exon so the CDS lines up
+  // with the reference bases and translation frames (docs "Gene tracks and the
+  // reference sequence"). Supersedes the old standalone `sequence` refseq spec.
   cliSpec('gene_track', [
-    '--fasta',
-    'data/volvox/volvox.fa',
-    '--gffgz',
-    'data/volvox/volvox.sort.gff3.gz',
-    'height:250',
+    '--hub',
+    'hg38',
+    '--track',
+    'hg38-ncbiRefSeqCurated',
+    'height:110',
+    '--refseq',
     '--loc',
-    'ctgA:1-50000',
+    'chr17:7,676,045-7,676,130',
     '--width',
-    '1200',
+    '1500',
   ]),
 
   // Hi-C contact matrix: the public hg19 demo .hic streamed from S3. The
@@ -717,35 +722,24 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // Dark theme, human demo (reviewer ask): hg38 TP53 locus via --hub, a tall
+  // Dark theme, human demo (reviewer ask): hg38 PTEN locus via --hub — a clean
+  // single-canonical-transcript gene (unlike TP53's isoform thicket) — a tall
   // NCBI RefSeq gene track over phyloP conservation, rendered with darkStock.
   cliSpec('dark_theme', [
     '--hub',
     'hg38',
     '--track',
     'hg38-ncbiRefSeqCurated',
-    'height:220',
+    'height:100',
     '--track',
     'hg38-phyloP100way',
     'height:140',
     '--loc',
-    'chr17:7,665,000-7,690,000',
+    'chr10:87,860,000-87,975,000',
     '--themeName',
     'darkStock',
     '--width',
     '1200',
-  ]),
-
-  // Reference-sequence track zoomed to base level: --refseq shows the DNA
-  // bases and the six-frame translation (green start codons, red stops).
-  cliSpec('sequence', [
-    '--fasta',
-    'data/volvox/volvox.fa',
-    '--loc',
-    'ctgA:108-208',
-    '--refseq',
-    '--width',
-    '1500',
   ]),
 
   // Plain alignments pileup (bundled volvox BAM).
@@ -763,7 +757,8 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // snpcov collapses the alignments display to coverage-only by sizing the
   // coverage band to fill the whole track (no read pileup below). Real human
   // data (reviewer ask): NA12878 1000-Genomes exome CRAM (hg38) over the full
-  // BRCA1 span. The hosted NCBI RefSeq gene track on top (--hub, reviewer ask)
+  // PTEN span — a clean single-canonical-transcript gene (unlike BRCA1's isoform
+  // thicket). The hosted NCBI RefSeq gene track on top (--hub, reviewer ask)
   // shows the exome capture's coverage humps landing one-per-exon against the
   // gene model, with flat intronic gaps between — the defining exome pattern.
   // --hub hg38 supplies the assembly (with its own refName aliases) plus the
@@ -779,7 +774,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'snpcov',
     'height:200',
     '--loc',
-    'chr17:43,044,295-43,125,483',
+    'chr10:87,863,438-87,971,930',
     '--width',
     '1200',
   ]),

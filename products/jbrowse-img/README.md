@@ -375,7 +375,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:110 --refseq \
   --loc chr17:7,676,045-7,676,130 --width 1500 --out gene_track.png
 ```
 
-![A TP53 coding exon at base level: the NCBI RefSeq CDS above the reference sequence track's DNA bases and six-frame translation](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/gene_track.png)
+![A TP53 coding exon at base level: the reference sequence track's DNA bases and six-frame translation above the NCBI RefSeq CDS](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/gene_track.png)
 
 ### Themes
 
@@ -385,12 +385,12 @@ the keys above.)
 
 ```bash
 jb2export --hub hg38 \
-  --track hg38-ncbiRefSeqCurated height:220 \
+  --track hg38-ncbiRefSeqCurated height:100 \
   --track hg38-phyloP100way height:140 \
-  --loc chr17:7,665,000-7,690,000 --themeName darkStock --width 1200 --out dark.png
+  --loc chr10:87,860,000-87,975,000 --themeName darkStock --width 1200 --out dark.png
 ```
 
-![The hg38 TP53 locus — NCBI RefSeq genes over phyloP conservation — rendered with the darkStock theme](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/dark_theme.png)
+![The hg38 PTEN locus — NCBI RefSeq genes over phyloP conservation — rendered with the darkStock theme](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/dark_theme.png)
 
 ## Track modifiers
 

@@ -52,8 +52,8 @@
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
     "status": "good",
-    "note": "Implemented: each samplot pair now draws as two colored squares (insert-size/orientation color) at the read positions joined by a black connector line — the classic samplot look (new arcMarker GPU pass + arc.slang flat line black + drawCanvas.ts). Load hang was stale (refactor landed). Regenerated.",
-    "reviewedAt": "2026-07-02T02:58:39.021Z",
+    "note": "",
+    "reviewedAt": "2026-07-08T21:21:39.906Z",
     "hash": "5432e571f224e7f24b36fe442419d08df674f15b"
   },
   "dotplot": {
@@ -64,9 +64,9 @@
   },
   "alignments_track_arcs": {
     "name": "alignments_track_arcs",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-24T12:41:14.642Z",
+    "status": "bad",
+    "note": "you can consider adding 'labels' and 'auto' (upper and lower sashimi args) for this flagship sashimi screenshot",
+    "reviewedAt": "2026-07-08T21:13:30.363Z",
     "hash": "f15f47386dd21104ce8326692f53e27fdbe656a0"
   },
   "sv_inspector_importform_loaded": {
@@ -154,9 +154,10 @@
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
-    "status": "good",
-    "note": "jexl filter drops megabase inversions; only junction breakends show",
-    "reviewedAt": "2026-06-20T19:15:00.000Z"
+    "status": "bad",
+    "note": "the screen is not tall enough to capture this accurately now, please increase browser viewport height. consider also making the variant tracks less tall",
+    "reviewedAt": "2026-07-08T21:22:30.634Z",
+    "hash": "00ef408378784a3d510da1c7de3f9562ba4d38a8"
   },
   "alignment_clipping_indicators": {
     "name": "alignment_clipping_indicators",
@@ -260,15 +261,16 @@
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
     "status": "good",
-    "note": "remove the quick 'HP' and 'RG' chips",
-    "reviewedAt": "2026-07-04T20:01:09.583Z",
+    "note": "",
+    "reviewedAt": "2026-07-08T21:13:47.419Z",
     "hash": "7faf29aea6cb6f1bfba10e25102707aca8842b6a"
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-21T15:37:07.481Z"
+    "note": "arc ",
+    "reviewedAt": "2026-07-08T21:14:25.497Z",
+    "hash": "383e4858524bc71d9ad7a7cafdcf253692e38665"
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
@@ -404,8 +406,9 @@
   "alignments/compact": {
     "name": "alignments/compact",
     "status": "good",
-    "note": "fixed: region chr1:161,172,613-161,181,745 (HG002 reads present, Compact boxed)",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-07-08T21:13:42.704Z",
+    "hash": "7b08634e5637053a76640e1441404344bcceb972"
   },
   "bookmark_widget_edit_colors": {
     "name": "bookmark_widget_edit_colors",
@@ -415,9 +418,9 @@
   },
   "customized_feature_details": {
     "name": "customized_feature_details",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-04T17:58:04.374Z",
+    "status": "bad",
+    "note": "unclear why the gene has mouseover shading enabled",
+    "reviewedAt": "2026-07-08T21:22:54.953Z",
     "hash": "c9ed9ac5ccc4038f8c8aa70e4b413a13d6b61a3e"
   },
   "customized_theme": {
@@ -471,9 +474,9 @@
   },
   "feature_detail_sequence": {
     "name": "feature_detail_sequence",
-    "status": "good",
-    "note": "Swapped SELENOP -> PTEN, sequence type -> collapsed-intron + up/down-stream. Verified visually.",
-    "reviewedAt": "2026-07-08T02:55:28.416Z",
+    "status": "bad",
+    "note": "use a 'smaller' gene so we see in the sequence feature panel that it shows small utr, small cds, small intron, etc",
+    "reviewedAt": "2026-07-08T21:24:44.507Z",
     "hash": "e0adb957542d935f30cb5aab46c6f5cc5f640be2"
   },
   "hic_track": {
@@ -653,10 +656,10 @@
   },
   "methylation/colo829_cram_and_bedmethyl": {
     "name": "methylation/colo829_cram_and_bedmethyl",
-    "status": "bad",
-    "note": "this isn't a super 'strong' demo of the bedmethyl. it just is not clear what it is supposed to show. also use multirowxyplot for the bedmethyl",
-    "reviewedAt": "2026-07-08T18:14:58.121Z",
-    "hash": "511324f2cf15945c52b891a3fda1b525845f4fbb"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-08T21:04:16.372Z",
+    "hash": "3bed0b03745189bb685f3e501cd8c3596e4307f1"
   },
   "methylation/per_read_mod_bam": {
     "name": "methylation/per_read_mod_bam",
@@ -830,15 +833,15 @@
   "alignments/haplotype": {
     "name": "alignments/haplotype",
     "status": "good",
-    "note": "DONE in prior session: zoomed to 1:63,005,000-63,008,000 with groupBy/colorBy HP, plus companion alignments/haplotype_groupby figure; verdict was stale.",
-    "reviewedAt": "2026-07-02T02:58:36.869Z",
+    "note": "",
+    "reviewedAt": "2026-07-08T21:13:51.251Z",
     "hash": "4650422207c98a34d7862bf8fd5b3652bd599bae"
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
-    "status": "good",
-    "note": "Reworked into a two-stage figure: stage 1 shows the live \"Color by...\" menu with \"Color by methylation\" and \"Color by modification type\" boxed (the actual choice point), stage 2 is the existing two-row comparison with callouts moved to the right side of each track (previously left-anchored, overlapping the CpG island / hypomethylated block the callouts describe). Root-caused a real bug in the process: the annotation SVG overlay is sized to the live page viewport (100vh), not the post-capture crop -- a spec that raises crop without also raising viewportHeight silently clips any annotation below the viewport height. Fixed by adding a matching viewportHeight. Also boxed the \"Color by...\" parent item itself (not just its two children) per follow-up request.",
-    "reviewedAt": "2026-07-08T02:59:06.422654Z",
+    "status": "bad",
+    "note": "we should make this one screenshot instead of two, and the one screenshot should use an  ultra wide screen, zoom out the lineargenomeview a bit more, and use smaller text annotation blurbs, and have arrows pointiing from the menu's red box annotation boxes to the respective track that use the settings that are using those settings",
+    "reviewedAt": "2026-07-08T21:21:24.952Z",
     "hash": "a6ea017d85d9ed40e22887f5808a6c9cee7acd01"
   },
   "gene_track_collapse_introns": {
@@ -911,8 +914,8 @@
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
     "status": "good",
-    "note": "Reworked: initial state ungrouped+uncolored; added a 3rd stage showing the group-by RESULT (pileup split into HP 1 / HP 2 / none sections). viewportHeight 700->550, display height 500->300.",
-    "reviewedAt": "2026-07-08T19:35:00.000Z",
+    "note": "",
+    "reviewedAt": "2026-07-08T21:14:15.712Z",
     "hash": "c3f429a281cf3f79c3ddad8aac01a537a045cb10"
   },
   "gene_track_selenocysteine": {
@@ -943,9 +946,10 @@
   },
   "default_session_form": {
     "name": "default_session_form",
-    "status": "good",
-    "note": "fixed: converted to a two-stage figure (reviewer). Stage 1 shows the open Admin menu with the \"Set default session\" item ringed (the click path — the Admin menu only appears in admin mode); stage 2 is the resulting confirm dialog (Set current session as default / Clear default session). Regenerated + verified.",
-    "reviewedAt": "2026-06-22T12:00:00.000Z"
+    "status": "bad",
+    "note": "instead of circling 'Set default session' circle the 'Admin'",
+    "reviewedAt": "2026-07-08T21:23:18.839Z",
+    "hash": "4da051d0e4fe352705297e488048807398a0c632"
   },
   "assembly_manager": {
     "name": "assembly_manager",
@@ -975,24 +979,24 @@
   },
   "jbrowse-img/dark_theme": {
     "name": "jbrowse-img/dark_theme",
-    "status": "bad",
-    "note": "is there another gene we can use like PTEN, this one has many isoforms",
-    "reviewedAt": "2026-07-08T20:10:00.908Z",
-    "hash": "21e93800b47f28416cd7c5b649d6507e98d52113"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-08T20:54:56.734Z",
+    "hash": "14a6e02c887f3178294a7503a3f98a6fcd89aa89"
   },
   "jbrowse-img/hg38_hs1_mm39_synteny": {
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
     "status": "good",
-    "note": "DONE: transparent indels already set (cigarMode:matches); regenerated (stale PNG) + assembly names now hg38/hs1/mm39 (no .chrom.sizes).",
-    "reviewedAt": "2026-07-08T20:11:13.692Z",
-    "hash": "6d7934ec95b1eaaa0bc417898b3c4d00b320fc88"
+    "note": "",
+    "reviewedAt": "2026-07-08T20:44:18.598Z",
+    "hash": "7406fdaa188636d03e7c22bdc816ebfafde1960a"
   },
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
     "status": "good",
     "note": "DONE: moved onto the chr20:18.50-18.51Mb CpG islands (the same region the modifications2/gallery methylation figures use) and added the UCSC CpG-island BED track on top (--bedgz cpgIslandExt.bed.gz). The two islands (CpG:23, CpG:61) are annotated and the COLO829 methylation reads show the methylated (red) flanks vs unmethylated (blue) island cores against the boundaries. README command updated to match.",
-    "reviewedAt": "2026-07-08T20:11:18.560Z",
-    "hash": "1102438827b47badb0e2522adb407e6db9616928"
+    "reviewedAt": "2026-07-08T20:42:56.693Z",
+    "hash": "942fe3b7df0094487015585bdc900a9fce4d1725"
   },
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
@@ -1010,10 +1014,10 @@
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
-    "status": "bad",
-    "note": "previous agent said they merged sequence track into this but i dont see the sequence track. it is still rendering volvox data also",
-    "reviewedAt": "2026-07-08T20:10:34.930Z",
-    "hash": "2a16ab28b38c8c3e6509b2611f61731ff37c5f69"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-08T20:54:56.734Z",
+    "hash": "97d2871b3b6eb018eb1fa2a41c8267e285da0ad8"
   },
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
@@ -1044,8 +1048,8 @@
     "name": "jbrowse-img/yeast_synteny",
     "status": "bad",
     "note": "we may want the tick mark labels centered on the major ticks",
-    "reviewedAt": "2026-07-08T20:13:06.768Z",
-    "hash": "3f58071f9f5061baf6a01060c2cb30da05cf7152"
+    "reviewedAt": "2026-07-08T20:43:45.802Z",
+    "hash": "7827914631c1df142f6254f9036b774b9cad7e6c"
   },
   "jbrowse-img/yeast_dotplot": {
     "name": "jbrowse-img/yeast_dotplot",
@@ -1058,15 +1062,15 @@
     "name": "jbrowse-img/variants",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T02:21:40.098Z",
-    "hash": "0aea928f356f598e9481be0ec2ab1d7dd1539c44"
+    "reviewedAt": "2026-07-08T20:43:41.283Z",
+    "hash": "06f37bcd9690b3821f818660cf5a748831b7226e"
   },
   "jbrowse-img/skbr3_cov": {
     "name": "jbrowse-img/skbr3_cov",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T18:16:17.693Z",
-    "hash": "c692632a2a96f116010aa10eaa18f7d5e4cc824f"
+    "reviewedAt": "2026-07-08T20:43:48.727Z",
+    "hash": "72401d16ab440ed837b19fed71b8bf3455b0d225"
   },
   "protein/connected": {
     "name": "protein/connected",
@@ -1085,30 +1089,30 @@
   "feature_detail_protein": {
     "name": "feature_detail_protein",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T01:40:10.426Z",
+    "note": "add a red box around the 'sequence feature panel'",
+    "reviewedAt": "2026-07-08T21:24:12.217Z",
     "hash": "d425796332d989ae4b06846ec0832bf4b115d53e"
   },
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
     "status": "bad",
-    "note": "still plotting volvox",
-    "reviewedAt": "2026-07-08T20:11:27.605Z",
-    "hash": "69ea81eab5c1029c48e19c121068beaae503f9c9"
+    "note": "still plotting volvox? not sure why or if outdated. we tried to make the generate-screenshots code copy the files to the website static img folder for review",
+    "reviewedAt": "2026-07-08T20:43:29.213Z",
+    "hash": "b8879c841fe8ce8faa01330359d4527cf3cb746b"
   },
   "chromhmm": {
     "name": "chromhmm",
-    "status": "good",
-    "note": "Not a bug: confirmed the white regions are the literal itemRgb-driven color for ChromHMM state 15 (Quiescent/Low), the standard 15-state Roadmap/UCSC palette convention (and the most common state genome-wide) — not empty/gap rendering. Clarified in the chromhmm tutorial figure caption.",
-    "reviewedAt": "2026-07-08T02:11:50.856Z",
+    "status": "bad",
+    "note": "remove showDescriptions on the gene track",
+    "reviewedAt": "2026-07-08T21:22:41.842Z",
     "hash": "f6a5ae9780b07949805046b5c0f02b9405f4475b"
   },
   "jbrowse-img/alignments_snpcov": {
     "name": "jbrowse-img/alignments_snpcov",
-    "status": "bad",
-    "note": "is there another simpler gene like pten that we can use. this one has many many isoforms.",
-    "reviewedAt": "2026-07-08T20:09:38.523Z",
-    "hash": "9a1808af3e85cf05815b576582b2703c5933822d"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-08T20:54:56.734Z",
+    "hash": "501311f9051e8fcd0d728fa4cd77d6fa3eec7646"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
@@ -1224,37 +1228,37 @@
   },
   "feature_height_default_pin": {
     "name": "feature_height_default_pin",
-    "status": "good",
-    "note": "DONE (already fixed): single-frame capture of the track menu + Set-feature-height submenu with the 'Use Compact as default' toggle boxed",
-    "reviewedAt": "2026-07-07T04:51:38.019Z",
+    "status": "bad",
+    "note": "expand the use of this red shading in the text boxes across other demos",
+    "reviewedAt": "2026-07-08T21:25:01.215Z",
     "hash": "de1e5c6cb85b634101045a08c8bfe4c013703247"
   },
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
     "status": "good",
-    "note": "The blank-white capture was a stale/broken render -- a plain --force regen against the current build now renders the volvox_sv_cram pileup correctly (colored SV cluster on the left, matching the doc's caption). Kept volvox rather than swapping to human data: the doc's code block right above the figure shows the literal volvox_sv_cram JSON verbatim, so the figure needs to match that exact session, not a different track.",
-    "reviewedAt": "2026-07-08T02:55:28.418Z",
+    "note": "",
+    "reviewedAt": "2026-07-08T21:23:49.229Z",
     "hash": "6540124494f7be6b2beb979ac0aefed8af43143a"
   },
   "gallery/breakpoint_multihop": {
     "name": "gallery/breakpoint_multihop",
-    "status": "good",
-    "note": "Recentered the BND junction in both panels (chr3:186,700,648 / chr6:56,758,392) — was ~70% across, crowded toward the right edge; now ~50%.",
-    "reviewedAt": "2026-07-07T15:40:14.466Z",
+    "status": "bad",
+    "note": "reduce the height of the variant tracks",
+    "reviewedAt": "2026-07-08T21:25:14.930Z",
     "hash": "c02d74bd69a91b634e6e4ad9834b95f5b8afe6aa"
   },
   "gallery/copynumber_clustered": {
     "name": "gallery/copynumber_clustered",
     "status": "good",
-    "note": "are you sure this isnt referenced any gallery? reference it in gallery",
-    "reviewedAt": "2026-07-07T00:57:38.563Z",
+    "note": "",
+    "reviewedAt": "2026-07-08T21:25:21.572Z",
     "hash": "15e061d4d005400a283d025c8651ba814e4fa6f7"
   },
   "gallery/fiberseq_gapdh": {
     "name": "gallery/fiberseq_gapdh",
-    "status": "good",
-    "note": "Added GENCODE promoter-window track, catlas single-cell ATAC (orthogonal accessibility — GAPDH promoter reads open across all 16 cell types, confirming the 6mA signal), compact mode + showLegend on the alignments track.",
-    "reviewedAt": "2026-07-07T15:40:14.468Z",
+    "status": "bad",
+    "note": "zoom out more. use longestCoding for the gene track. reduce height of the gencode promoter track. reduce height of the single-cell atac track too. say where the data came from in the captions. then increase browser viewport height. and only show 6ma modifications in the legend. the legend has 5mc and 5hmc too",
+    "reviewedAt": "2026-07-08T21:27:24.786Z",
     "hash": "fc27a0018c0a2e5d8bbd89c5c65ba49e8ca9a511"
   },
   "gallery/gwas_bmi_fto": {
@@ -1308,10 +1312,10 @@
   },
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T18:16:21.487Z",
-    "hash": "a10e4e8d227b8640cff3b542eadb3e482a6c3b42"
+    "status": "bad",
+    "note": "might consider auto-diagonalizing",
+    "reviewedAt": "2026-07-08T20:42:06.095Z",
+    "hash": "c167e8862586816e16e010fdd47cb28036c0cb3e"
   },
   "introgression": {
     "name": "introgression",
@@ -1378,9 +1382,9 @@
   },
   "gallery/directrna_actb": {
     "name": "gallery/directrna_actb",
-    "status": "good",
-    "note": "Added the NCBI RefSeq gene track for context, set minSashimiScore to drop low-support junction noise, and switched to the super-compact featureHeight/featureSpacing preset so more of the deep pileup fits.",
-    "reviewedAt": "2026-07-08T02:55:28.419Z",
+    "status": "bad",
+    "note": "is this supposed to be showing per-read modifications? not sure if it is. if this data is not in the file, update the caption. consider also using another gene, this just has a ridiculously high coverage",
+    "reviewedAt": "2026-07-08T21:26:16.321Z",
     "hash": "145d97ddddcb64344aca578ccc9addb6870043c4"
   }
 }

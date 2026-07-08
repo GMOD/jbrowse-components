@@ -18,10 +18,12 @@ export const methylationSpecs: ScreenshotSpec[] = [
   // chr20, so the earlier chr9 CDKN2A move had no bedmethyl data there — 0 rows,
   // which is why nothing lined up.) The COLO829 nanopore reads' per-base CpG
   // methylation calls (colorBy methylation) line up with the modkit bedmethyl
-  // summary below. The bedmethyl uses the multi-row-density renderer (a
-  // value-gradient heatmap), not the default two-color xyplot whose negColor
-  // never shows for an all-positive 0-100 methylation percentage (don't use
-  // twocolor — it only showed the one red color).
+  // summary below. The bedmethyl uses the multi-row XY plot (reviewer ask): each
+  // modification row is its own quantitative 0-100% xyplot, so the actual
+  // methylation level per position is readable (unlike the density heatmap's
+  // value-gradient, where exact levels can't be read off). This is distinct from
+  // the single-row default twocolor xyplot whose negColor never shows for an
+  // all-positive 0-100 percentage — multirowxy has no such issue.
   {
     mode: 'url',
     name: 'methylation/colo829_cram_and_bedmethyl',
@@ -49,10 +51,10 @@ export const methylationSpecs: ScreenshotSpec[] = [
           trackId: 'COLO829_tumor.ht_modkit.bed_multi',
           displaySnapshot: {
             type: 'MultiLinearWiggleDisplay',
-            defaultRendering: 'multirowdensity',
+            defaultRendering: 'multirowxy',
             minScore: 0,
             maxScore: 100,
-            height: 150,
+            height: 200,
           },
         },
       ],
