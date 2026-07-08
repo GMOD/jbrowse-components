@@ -11,15 +11,12 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import { buildClusteredLayout } from '@jbrowse/tree-sidebar'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import SamplesPerPixelField from './SamplesPerPixelField.tsx'
-import {
-  clusterScoreMatrixArgs,
-  useClusterSamplingOptions,
-} from './clusterOptions.ts'
+import { useClusterSamplingOptions } from './clusterOptions.ts'
+import { runWiggleClustering } from '../../runWiggleClustering.ts'
 
 import type { ReducedModel } from './types.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
@@ -117,30 +114,18 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
               } else {
                 setStatus('Initializing')
                 setLoading(true)
-                const { rpcManager } = getSession(model)
-                const sessionId = getRpcSessionId(model)
                 const stopToken = createStopToken()
                 setStopToken(stopToken)
-                const ret = await rpcManager.call(
-                  sessionId,
-                  'MultiWiggleClusterScoreMatrix',
-                  {
-                    ...clusterScoreMatrixArgs(model, samplesPerPixel),
-                    stopToken,
-                    statusCallback: (arg: RpcStatus) => {
-                      setStatus(arg)
-                    },
+                await runWiggleClustering({
+                  model,
+                  rpcManager: getSession(model).rpcManager,
+                  sessionId: getRpcSessionId(model),
+                  samplesPerPixel,
+                  stopToken,
+                  statusCallback: (arg: RpcStatus) => {
+                    setStatus(arg)
                   },
-                )
-
-                model.setLayoutAndClusterTree(
-                  buildClusteredLayout(
-                    sourcesWithoutLayout,
-                    model.layout,
-                    ret.order,
-                  ),
-                  ret.tree,
-                )
+                })
                 handleClose()
               }
             } catch (e) {

@@ -3,8 +3,8 @@ import { createStopToken } from '@jbrowse/core/util/stopToken'
 
 import { runGenotypeClustering } from './runGenotypeClustering.ts'
 
-import type { ClusterGenotypeMatrixCaller } from './runGenotypeClustering.ts'
 import type { ReducedModel } from './components/MultiSampleVariantClusterDialog/types.ts'
+import type { ClusterGenotypeMatrixCaller } from './runGenotypeClustering.ts'
 
 // adapterConfig is forwarded to the RPC call opaquely (never read by
 // runGenotypeClustering), so a minimal real config instance stands in for a

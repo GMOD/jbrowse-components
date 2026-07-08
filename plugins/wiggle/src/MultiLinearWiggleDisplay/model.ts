@@ -81,6 +81,20 @@ const WiggleClusterDialog = lazy(
  * #stateModel MultiLinearWiggleDisplay
  * Wiggle display overlaying/stacking multiple quantitative subtracks in one
  * area, with optional clustering and a tree sidebar.
+ *
+ * #example
+ * `runClustering` is a transient declarative launch spec, the same idea as
+ * `LinearGenomeView`'s `init`: set it to run the real "Cluster columns" RPC
+ * once automatically (no dialog) as soon as subtrack data is available, and
+ * it clears itself afterwards so a saved session never re-triggers it.
+ * ```js
+ * displays: [
+ *   {
+ *     type: 'MultiLinearWiggleDisplay',
+ *     runClustering: true,
+ *   },
+ * ]
+ * ```
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
@@ -96,6 +110,12 @@ export default function stateModelFactory(
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
+        // Transient declarative launch spec, same idea as LinearGenomeView's
+        // `init`: session/config sets this to run the real "Cluster columns"
+        // RPC once automatically (no dialog), applied by
+        // getWiggleClusterAutorun and cleared afterwards so a saved session
+        // never re-triggers it.
+        runClustering: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -320,6 +340,10 @@ export default function stateModelFactory(
         selectFeature(feat: NonNullable<typeof self.featureUnderMouse>) {
           openFeatureWidget(self, wiggleFeatureWidgetData(feat))
         },
+
+        setRunClustering(arg?: boolean) {
+          self.runClustering = arg
+        },
       }
     })
     .actions(self => {
@@ -372,6 +396,16 @@ export default function stateModelFactory(
               await import('@jbrowse/tree-sidebar')
             if (isAlive(self)) {
               setupTreeDrawingAutorun(self)
+            }
+          } catch (e) {
+            console.error(e)
+          }
+
+          try {
+            const { getWiggleClusterAutorun } =
+              await import('./getWiggleClusterAutorun.ts')
+            if (isAlive(self)) {
+              getWiggleClusterAutorun(self)
             }
           } catch (e) {
             console.error(e)
