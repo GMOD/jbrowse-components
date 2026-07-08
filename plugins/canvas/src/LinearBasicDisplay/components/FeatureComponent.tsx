@@ -112,7 +112,7 @@ export interface LinearBasicDisplayModel {
   soloApplied: boolean
   applySolo: () => void
   clearSolo: () => void
-  showContextMenuForFeature: (
+  openContextMenu: (
     featureInfo: FlatbushItem,
     displayedRegionIndex: number,
     clientX: number,
@@ -193,9 +193,10 @@ const ContextMenu = observer(function ContextMenu({
   return (
     <Menu
       open={!!info && items.length > 0}
+      // closeAfterItemClick (Menu default) already closes before the callback,
+      // so the handler just runs it — matches LinearAlignmentsDisplay.
       onMenuItemClick={callback => {
         callback()
-        onClose()
       }}
       onClose={onClose}
       anchorReference="anchorPosition"
@@ -338,26 +339,11 @@ const FeatureBody = observer(function FeatureBody({
   const width = view.initialized ? view.trackWidthPx : undefined
   const height = model.height
 
-  const openContextMenu = useCallback(
-    (
-      feature: FlatbushItem,
-      displayedRegionIndex: number,
-      clientX: number,
-      clientY: number,
-    ) => {
-      // contextMenuInfo (set here) is all the menu needs — it carries
-      // featureId/startBp/endBp/type plus the click position synchronously, and
-      // each item that needs the full feature re-fetches it on click. Opening
-      // the menu immediately avoids gating the right-click on an RPC round-trip.
-      model.showContextMenuForFeature(
-        feature,
-        displayedRegionIndex,
-        clientX,
-        clientY,
-      )
-    },
-    [model],
-  )
+  // model.openContextMenu (a stable MST action) is passed straight to the
+  // overlays and called from handleContextMenu — no wrapper needed. It sets
+  // contextMenuInfo synchronously (featureId/startBp/endBp/type + click
+  // position); each item that needs the full feature re-fetches on click, so
+  // the menu opens immediately without an RPC round-trip.
 
   // The model owns the upload/render autorun and the GPU backend lifecycle —
   // see startRenderingBackend / stopRenderingBackend / renderNow on the base
@@ -486,9 +472,9 @@ const FeatureBody = observer(function FeatureBody({
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const result = hitTestAtEvent(e)
     if (isHitFeature(result)) {
-      // showContextMenuForFeature pins the hover box to this feature itself.
+      // openContextMenu pins the hover box to this feature itself.
       e.preventDefault()
-      openContextMenu(
+      model.openContextMenu(
         result.feature,
         result.displayedRegionIndex,
         e.clientX,
@@ -538,7 +524,7 @@ const FeatureBody = observer(function FeatureBody({
         <Overlays
           model={model}
           view={view}
-          openContextMenu={openContextMenu}
+          openContextMenu={model.openContextMenu}
           onLabelMouseOver={onLabelMouseOver}
         />
       </OverlayScrollLayer>

@@ -235,13 +235,13 @@ describe('openContextMenu atomic state and stale-read reset', () => {
     })
   })
 
-  test('clearContextMenu wipes all context-menu state', () => {
+  test('closeContextMenu wipes all context-menu state', () => {
     const display = createDisplay()
     display.openContextMenu({
       coord: [3, 4],
       cigarHit: { type: 'mismatch', index: 1, position: 9 },
     })
-    display.clearContextMenu()
+    display.closeContextMenu()
     expect(display.contextMenuCoord).toBeUndefined()
     expect(display.contextMenuCigarHit).toBeUndefined()
     expect(display.contextMenuIndicatorHit).toBeUndefined()

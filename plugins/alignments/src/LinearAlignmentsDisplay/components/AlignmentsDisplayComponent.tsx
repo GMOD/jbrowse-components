@@ -123,12 +123,12 @@ const AlignmentsDisplayComponent = observer(
                   callback()
                 }}
                 onClose={() => {
-                  model.clearContextMenu()
+                  model.closeContextMenu()
                 }}
                 slotProps={{
                   transition: {
                     onExit: () => {
-                      model.clearContextMenu()
+                      model.closeContextMenu()
                     },
                   },
                 }}

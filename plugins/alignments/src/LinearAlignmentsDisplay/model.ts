@@ -2603,7 +2603,7 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          clearContextMenu() {
+          closeContextMenu() {
             self.contextMenuCoord = undefined
             self.contextMenuFeature = undefined
             self.contextMenuCigarHit = undefined
@@ -2694,7 +2694,7 @@ export default function stateModelFactory(
             // menu is open — the caller cleared mouseover state first, so this
             // re-boxes just the read the menu acts on. Undefined for
             // coverage/indicator hits, which have no read to box. Mirrors canvas
-            // LinearBasicDisplay.showContextMenuForFeature.
+            // LinearBasicDisplay.openContextMenu.
             self.featureIdUnderMouse = args.featureId
             if (args.featureId !== undefined) {
               void fetchAndDo(args.featureId, feat => {

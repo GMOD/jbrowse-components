@@ -111,7 +111,7 @@ test('a base-pair cigar hit sorts by base at that position', () => {
   expect(model.sortCalls).toEqual([['basePair', 42, 'ctgA']])
 })
 
-// The menu closes (clearContextMenu) before the clicked item's callback runs,
+// The menu closes (closeContextMenu) before the clicked item's callback runs,
 // so an onClick that read model.contextMenuBlock live would see undefined and
 // silently skip the sort. The item must capture the block when it's built.
 test('sort still fires when the block is cleared before the click', () => {

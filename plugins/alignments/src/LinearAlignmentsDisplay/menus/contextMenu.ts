@@ -38,7 +38,7 @@ interface ContextMenuModel extends IAnyStateTreeNode {
   // The block under the right-click (refName + worker result + bp range), the
   // single source of the position sort's refName and the indicator widget's
   // rpcData. Captured once when the menu is built so its onClicks operate on a
-  // snapshot — clearContextMenu runs before the click callback, so reading it
+  // snapshot — closeContextMenu runs before the click callback, so reading it
   // live would see undefined.
   contextMenuBlock: ResolvedBlock | undefined
   filterBy: FilterBy
@@ -84,7 +84,7 @@ async function copyText(self: ContextMenuModel, text: string, what: string) {
 // Cigar and coverage-indicator hits build the identical two-item submenu: sort
 // the pileup by what's under the cursor, or open its details widget. `block` is
 // captured once by getContextMenuItems and read inside the onClicks because
-// clearContextMenu nulls self.contextMenuBlock before they fire.
+// closeContextMenu nulls self.contextMenuBlock before they fire.
 function sortAndDetailsSubMenu({
   self,
   block,

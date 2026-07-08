@@ -1700,7 +1700,7 @@ export default function baseStateModelFactory(
           /**
            * #action
            */
-          showContextMenuForFeature(
+          openContextMenu(
             featureInfo: FlatbushItem,
             displayedRegionIndex: number,
             clientX: number,
