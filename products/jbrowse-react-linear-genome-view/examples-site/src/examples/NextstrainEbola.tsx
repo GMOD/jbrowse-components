@@ -5,9 +5,9 @@ import {
   createViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
-import config from './nextstrain_covid.json'
+import config from './nextstrain_ebola.json'
 
-export default function NextstrainCovid() {
+export default function NextstrainEbola() {
   const { assembly, tracks, defaultSession, location } = config
   const [state] = useState(() =>
     createViewState({ assembly, tracks, defaultSession, location }),

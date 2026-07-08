@@ -313,6 +313,38 @@ export const examples: ExampleMeta[] = [
     group: 'Real-world demos',
   },
   {
+    slug: 'nextstrain-zika',
+    name: 'NextstrainZika',
+    title: 'Nextstrain Zika',
+    description:
+      'Inline Zika polyprotein and diversity, plus a streamed BAM of every published Zika genome.',
+    group: 'Real-world demos',
+  },
+  {
+    slug: 'nextstrain-ebola',
+    name: 'NextstrainEbola',
+    title: 'Nextstrain Ebola',
+    description:
+      'Ebola genes and per-position diversity from the Nextstrain dataset, as inline (FromConfig) data.',
+    group: 'Real-world demos',
+  },
+  {
+    slug: 'nextstrain-measles',
+    name: 'NextstrainMeasles',
+    title: 'Nextstrain measles',
+    description:
+      'Inline measles genes and diversity, plus a streamed BAM of every published measles genome.',
+    group: 'Real-world demos',
+  },
+  {
+    slug: 'nextstrain-rsv-a',
+    name: 'NextstrainRsvA',
+    title: 'Nextstrain RSV-A',
+    description:
+      'RSV subgroup A genes and per-position diversity from the Nextstrain dataset, as inline (FromConfig) data.',
+    group: 'Real-world demos',
+  },
+  {
     slug: 'locus-zoom-ld',
     name: 'LocusZoomLD',
     title: 'LocusZoom-style LD',
