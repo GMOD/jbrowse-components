@@ -58,19 +58,31 @@ export function truncateRefName(refName: string) {
 const BORDER_CHROME = 25
 const MIN_BORDER = 50
 
+// Approximate px footprint of a block label along its axis. Two labels closer
+// than this collide, so a region spanning fewer than this many px can't own an
+// uncrowded label slot — the greedy hider (getBlockLabelKeysToHide) drops it.
+const LABEL_PX = 12
+
 // Axis margin px, sized to the widest label — the longer of each region's
-// (truncated) refName or its exact end-coordinate tick — across all regions.
-// Depends only on regions + zoom, never on the viewport width, so it can't feed
-// back into itself through viewWidth = width - border.
+// (truncated) refName or its exact end-coordinate tick. Only regions at least
+// LABEL_PX tall on screen count: smaller ones (unplaced *_random contigs at
+// whole-genome zoom) are collision-hidden and must not inflate the margin. A
+// contig you zoom into grows past LABEL_PX and reclaims its space. Depends only
+// on regions + zoom, never viewport width, so it stays acyclic (viewWidth =
+// width - border).
 export function axisBorderPx(
-  regions: { refName: string; end: number }[],
+  regions: { refName: string; start: number; end: number }[],
   bpPerPx: number,
 ) {
   const labelWidth = max(
-    regions.flatMap(r => [
-      measureText(truncateRefName(r.refName), AXIS_LABEL_FONT),
-      measureText(getTickDisplayStr(r.end, bpPerPx), AXIS_LABEL_FONT),
-    ]),
+    regions.flatMap(r =>
+      (r.end - r.start) / bpPerPx >= LABEL_PX
+        ? [
+            measureText(truncateRefName(r.refName), AXIS_LABEL_FONT),
+            measureText(getTickDisplayStr(r.end, bpPerPx), AXIS_LABEL_FONT),
+          ]
+        : [],
+    ),
     0,
   )
   return Math.max(labelWidth + BORDER_CHROME, MIN_BORDER)
@@ -99,10 +111,6 @@ export function computeTickPositions(
     return px === undefined ? [] : [{ tick, alongPx: px - offsetPx }]
   })
 }
-
-// Approximate px footprint of a block label along its axis. Two labels closer
-// than this collide.
-const LABEL_PX = 12
 
 interface Interval {
   start: number

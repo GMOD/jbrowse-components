@@ -6,8 +6,8 @@ import {
   truncateRefName,
 } from './util.ts'
 
-function region(refName: string, end: number) {
-  return { refName, end }
+function region(refName: string, end: number, start = 0) {
+  return { refName, start, end }
 }
 
 // label position along the axis is `round(length - offsetPx + viewOffsetPx)`;
@@ -56,10 +56,24 @@ describe('axisBorderPx', () => {
     )
   })
 
+  test('a region too small to show a label does not inflate the border', () => {
+    const bpPerPx = 1_000_000 // chr1 spans 20px; the contig spans 0.5px
+    const withContig = axisBorderPx(
+      [
+        region('chr1', 20_000_000),
+        region('chr1_random_unplaced', 20_500_000, 20_000_000),
+      ],
+      bpPerPx,
+    )
+    const chr1Only = axisBorderPx([region('chr1', 20_000_000)], bpPerPx)
+    expect(withContig).toBe(chr1Only)
+  })
+
   test('bpPerPx changes tick-label precision and so the border', () => {
-    // "1,234,567" (bpPerPx=1) is a wider tick than "1.23M" (bpPerPx=1e6)
+    // "1,234,567" (bpPerPx=1) is a wider tick than "1.23M" (bpPerPx=1000);
+    // both spans stay above LABEL_PX so the filter keeps them
     const fine = axisBorderPx([region('chr1', 1_234_567)], 1)
-    const coarse = axisBorderPx([region('chr1', 1_234_567)], 1_000_000)
+    const coarse = axisBorderPx([region('chr1', 1_234_567)], 1_000)
     expect(fine).toBeGreaterThan(coarse)
   })
 })
