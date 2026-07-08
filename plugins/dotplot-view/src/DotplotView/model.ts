@@ -26,7 +26,7 @@ import { observable } from 'mobx'
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import {
-  axisLabelWidthPx,
+  axisBorderPx,
   computeTickPositions,
   getBlockLabelKeysToHide,
   makeTicks,
@@ -66,20 +66,6 @@ function axisTicks(view: Dotplot1DViewModel) {
     : makeTicks(staticBlocks.contentBlocks, bpPerPx)
 }
 
-// Fixed px an axis needs beyond its widest label: the 7px tick-label inset
-// (labels anchor at border - 7) plus the rotated assembly-name title parked at
-// x=12. The floor keeps room for that title on a short-label axis (e.g.
-// self-vs-self "ctgA").
-const BORDER_LABEL_EXTRA = 25
-const MIN_BORDER = 50
-
-function borderPx(view: Dotplot1DViewModel) {
-  return Math.max(
-    axisLabelWidthPx(view.displayedRegions, view.bpPerPx) + BORDER_LABEL_EXTRA,
-    MIN_BORDER,
-  )
-}
-
 // Resolve a region's refName to the assembly's canonical name, falling back to
 // the raw name when the assembly isn't loaded or has no alias for it. Takes a
 // plain node (not DotplotViewModel) to avoid a self-referential type cycle when
@@ -111,6 +97,7 @@ export interface ExportSvgOptions {
   filename?: string
   Wrapper?: React.FC<{ children: React.ReactNode }>
   themeName?: string
+  fontFamily?: string
 }
 
 /**
@@ -314,14 +301,14 @@ export default function stateModelFactory(pm: PluginManager) {
          * feed back through viewWidth = width - borderX into a render loop.
          */
         get borderX() {
-          return borderPx(self.vview)
+          return axisBorderPx(self.vview.displayedRegions, self.vview.bpPerPx)
         },
         /**
          * #getter
          * Bottom margin: fits the horizontal (hview) axis labels. See borderX.
          */
         get borderY() {
-          return borderPx(self.hview)
+          return axisBorderPx(self.hview.displayedRegions, self.hview.bpPerPx)
         },
       }))
       .views(self => ({

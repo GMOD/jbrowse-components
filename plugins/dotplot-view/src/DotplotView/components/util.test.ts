@@ -1,6 +1,10 @@
 import { makeContentBlock } from '@jbrowse/core/util/blockTypes'
 
-import { axisLabelWidthPx, getBlockLabelKeysToHide } from './util.ts'
+import {
+  axisBorderPx,
+  getBlockLabelKeysToHide,
+  truncateRefName,
+} from './util.ts'
 
 function region(refName: string, end: number) {
   return { refName, end }
@@ -20,28 +24,42 @@ function posBlock(key: string, offsetPx: number, len: number) {
   })
 }
 
-describe('axisLabelWidthPx', () => {
-  test('returns max label width across refName and tick string', () => {
-    expect(axisLabelWidthPx([region('chr1', 1_000_000)], 1)).toBeGreaterThan(0)
+describe('truncateRefName', () => {
+  test('short names pass through unchanged', () => {
+    expect(truncateRefName('chr1')).toBe('chr1')
+    expect(truncateRefName('scaffold9')).toBe('scaffold9')
   })
 
-  test('empty regions yield zero (no border-independent input)', () => {
-    expect(axisLabelWidthPx([], 1)).toBe(0)
+  test('long names are middle-elided, keeping prefix and suffix', () => {
+    expect(truncateRefName('scaffold_1234')).toBe('scaf…1234')
+  })
+})
+
+describe('axisBorderPx', () => {
+  test('empty regions fall back to the minimum border', () => {
+    expect(axisBorderPx([], 1)).toBe(50)
   })
 
-  test('the widest region label wins', () => {
-    const short = axisLabelWidthPx([region('chr1', 1_000)], 1)
-    const long = axisLabelWidthPx(
-      [region('chr1', 1_000), region('verylongname123', 1_000)],
+  test('the widest region label drives the border', () => {
+    const short = axisBorderPx([region('chr1', 1_000)], 1)
+    const long = axisBorderPx(
+      [region('chr1', 1_000), region('a_long_scaffold_name', 1_000)],
       1,
     )
     expect(long).toBeGreaterThan(short)
   })
 
-  test('bpPerPx changes tick-label precision and so the result', () => {
-    // "1,234,567" (bpPerPx=1) is a wider tick label than "1.23M" (bpPerPx=1e6).
-    const fine = axisLabelWidthPx([region('chr1', 1_234_567)], 1)
-    const coarse = axisLabelWidthPx([region('chr1', 1_234_567)], 1_000_000)
+  test('a truncated long name does not grow the border without bound', () => {
+    // both names truncate to the same 9-char display, so the border matches
+    expect(axisBorderPx([region('scaffold_1234', 1_000)], 1)).toBe(
+      axisBorderPx([region('scaffold_9999', 1_000)], 1),
+    )
+  })
+
+  test('bpPerPx changes tick-label precision and so the border', () => {
+    // "1,234,567" (bpPerPx=1) is a wider tick than "1.23M" (bpPerPx=1e6)
+    const fine = axisBorderPx([region('chr1', 1_234_567)], 1)
+    const coarse = axisBorderPx([region('chr1', 1_234_567)], 1_000_000)
     expect(fine).toBeGreaterThan(coarse)
   })
 })

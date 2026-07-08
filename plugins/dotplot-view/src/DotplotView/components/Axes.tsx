@@ -3,7 +3,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { tickLabel } from './util.ts'
+import { AXIS_LABEL_FONT, tickLabel, truncateRefName } from './util.ts'
 
 import type { Tick } from './util.ts'
 import type { DotplotViewModel } from '../model.ts'
@@ -78,12 +78,13 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
               key={b.key}
               x={xoff}
               y={1}
-              fontSize={11}
+              fontSize={AXIS_LABEL_FONT}
               dominantBaseline="hanging"
               textAnchor="end"
               {...fill}
             >
-              {b.refName}
+              <title>{b.refName}</title>
+              {truncateRefName(b.refName)}
             </text>
           )
         })}
@@ -105,7 +106,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
               x={x - 7}
               y={0}
               transform={`rotate(${rotate},${x},0)`}
-              fontSize={11}
+              fontSize={AXIS_LABEL_FONT}
               dominantBaseline="middle"
               textAnchor="end"
               {...fill}
@@ -168,11 +169,12 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
               key={b.key}
               x={borderX}
               y={yoff}
-              fontSize={11}
+              fontSize={AXIS_LABEL_FONT}
               textAnchor="end"
               {...fill}
             >
-              {b.refName}
+              <title>{b.refName}</title>
+              {truncateRefName(b.refName)}
             </text>
           )
         })}
@@ -198,7 +200,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
                 x={borderX - 7}
                 textAnchor="end"
                 dominantBaseline="hanging"
-                fontSize={11}
+                fontSize={AXIS_LABEL_FONT}
                 {...fill}
               >
                 {tickLabel(tick, bpPerPx)}

@@ -35,31 +35,45 @@ export function locstr(
     : `${includeAsm ? `{${assemblyName}}` : ''}${refName}:${toLocale(coord)}`
 }
 
-// Axis labels render at fontSize 11 (see Axes.tsx); measure at the same size so
-// the reserved border width isn't a systematic ~10% underestimate.
-function stringLenPx(a: string) {
-  return measureText(a.slice(0, 30), 11)
+// One source of truth for the axis label/tick font, imported by both the
+// renderer (Axes.tsx) and the border sizing here so the reserved width can
+// never drift from what's actually drawn.
+export const AXIS_LABEL_FONT = 10
+
+// Cap the *displayed* refName so one long scaffold name can't blow up the axis
+// margin. Only refNames are capped (tick coordinates stay exact); the full name
+// is still shown on hover. Middle-elided to keep both a numbered scaffold's
+// prefix and its distinguishing suffix (scaffold_1234 -> scaf…1234).
+const LABEL_SIDE_CHARS = 4
+export function truncateRefName(refName: string) {
+  return refName.length > LABEL_SIDE_CHARS * 2 + 1
+    ? `${refName.slice(0, LABEL_SIDE_CHARS)}…${refName.slice(-LABEL_SIDE_CHARS)}`
+    : refName
 }
 
-// A region contributes two axis labels: its refName and the tick string at its
-// end coordinate. The minimal shape needed for both (IRegion satisfies it).
-interface LabelRegion {
-  refName: string
-  end: number
-}
+// Fixed px an axis needs beyond its widest label: the 7px tick-label inset
+// (labels anchor at border - 7) plus the rotated assembly title parked at x=12.
+// The floor keeps room for that title on a short-label axis (e.g. self-vs-self
+// "ctgA").
+const BORDER_CHROME = 25
+const MIN_BORDER = 50
 
-// Widest axis label in px across all regions — the longer of each region's
-// refName or its end-coordinate tick string (bpPerPx sets the tick precision).
-// Depends only on regions + zoom, never on the viewport width, so the border it
-// sizes can't feed back into itself (viewWidth = width - border).
-export function axisLabelWidthPx(regions: LabelRegion[], bpPerPx: number) {
-  return max(
+// Axis margin px, sized to the widest label — the longer of each region's
+// (truncated) refName or its exact end-coordinate tick — across all regions.
+// Depends only on regions + zoom, never on the viewport width, so it can't feed
+// back into itself through viewWidth = width - border.
+export function axisBorderPx(
+  regions: { refName: string; end: number }[],
+  bpPerPx: number,
+) {
+  const labelWidth = max(
     regions.flatMap(r => [
-      stringLenPx(r.refName),
-      stringLenPx(getTickDisplayStr(r.end, bpPerPx)),
+      measureText(truncateRefName(r.refName), AXIS_LABEL_FONT),
+      measureText(getTickDisplayStr(r.end, bpPerPx), AXIS_LABEL_FONT),
     ]),
     0,
   )
+  return Math.max(labelWidth + BORDER_CHROME, MIN_BORDER)
 }
 
 // Maps each tick's (refName, base) to an `alongPx` offset within the view —
