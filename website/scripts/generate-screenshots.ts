@@ -590,10 +590,33 @@ async function captureCliSpec(spec: CliSpec) {
   const renderPath = await renderCliSpecToTemp(spec)
   const baseName = spec.name.replace(/^jbrowse-img\//, '')
   const outputPath = path.join(jbrowseImgOutDir, `${baseName}.png`)
-  return commitScreenshot(renderPath, outputPath, spec.name, {
+  const result = commitScreenshot(renderPath, outputPath, spec.name, {
     force,
     diffThreshold: spec.diffThreshold ?? diffThreshold,
   })
+  // jb2export writes into products/jbrowse-img/img — the README/npm copy served
+  // via raw.github. The docs site and the screenshot-review UI instead read the
+  // website's own mirror at static/img/jbrowse-img (spec name `jbrowse-img/x`
+  // resolves to outDir/jbrowse-img/x.png), which generate-img-doc.ts otherwise
+  // only refreshes on `pnpm autogen`, and only for README-referenced names. Sync
+  // the fresh capture here too so a plain `pnpm screenshots` doesn't leave the
+  // review UI showing a stale (or, for a non-README spec like `sequence`,
+  // missing) jbrowse-img image.
+  mirrorFile(outputPath, path.join(outDir, `${spec.name}.png`))
+  return result
+}
+
+// Copy a committed jb2export image into the website static mirror, only when the
+// bytes differ, so an unchanged spec doesn't churn the tracked website copy.
+function mirrorFile(src: string, dest: string) {
+  if (fs.existsSync(src)) {
+    const upToDate =
+      fs.existsSync(dest) && fs.readFileSync(dest).equals(fs.readFileSync(src))
+    if (!upToDate) {
+      fs.mkdirSync(path.dirname(dest), { recursive: true })
+      fs.copyFileSync(src, dest)
+    }
+  }
 }
 
 // Stack the committed PNGs of `spec.parts` into one figure (top to bottom) with
