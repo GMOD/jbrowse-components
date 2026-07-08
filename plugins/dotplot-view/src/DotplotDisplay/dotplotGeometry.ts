@@ -104,10 +104,11 @@ export function buildLineSegments(
     )
     const color = colorFn(data, i)
 
-    // Walk directions come from the actual endpoint order, not strand, so the
-    // CIGAR sub-segments trace toward (x2,y2) even when a region is reversed
-    // (e.g. after auto-diagonalize flips a query region, giving y1 > y2). Matches
-    // the synteny renderer's rev1/rev2 derivation.
+    // Strand is already baked into the endpoints upstream (the worker swaps the
+    // H-axis start/end for reverse-strand features), so the walk direction is
+    // fully determined by endpoint order — no separate strand factor needed. This
+    // also tracks reversed regions (e.g. auto-diagonalize flips a query region,
+    // giving y1 > y2) that a hardcoded direction would walk the wrong way.
     const rev1 = x1 < x2 ? 1 : -1
     const rev2 = y1 < y2 ? 1 : -1
 
