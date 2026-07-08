@@ -1,9 +1,4 @@
-import {
-  DEMO_CONFIG,
-  VOLVOX,
-  lgvSession,
-  sessionSpec,
-} from '../screenshot-spec-helpers.ts'
+import { DEMO_CONFIG, VOLVOX, lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 

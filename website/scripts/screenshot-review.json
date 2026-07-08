@@ -253,9 +253,9 @@
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T01:01:57.120Z",
-    "hash": "6f8e50f4682c7281f8f62f8a3ff8b5e1a0fda42c"
+    "note": "the 'context menu' covers ",
+    "reviewedAt": "2026-07-08T15:24:06.857Z",
+    "hash": "fe77bb6811102670e21d27ee809721741eaef15c"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -654,8 +654,8 @@
   "methylation/colo829_cram_and_bedmethyl": {
     "name": "methylation/colo829_cram_and_bedmethyl",
     "status": "bad",
-    "note": "this is a 'hypomethylated cpg island'...might want a methylated one",
-    "reviewedAt": "2026-07-08T01:04:57.230Z",
+    "note": "this is a 'hypomethylated cpg island'...might want a methylated one, look at other screenshots we already have for methylation, they are on cpg islands",
+    "reviewedAt": "2026-07-08T13:14:17.634Z",
     "hash": "ee5ea609b805b95166bcecbe2079b485f2f08e1b"
   },
   "methylation/per_read_mod_bam": {
@@ -961,10 +961,10 @@
   },
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
-    "status": "bad",
-    "note": "seems like there is a mix of fonts used for gene labels vs other things. please be consistent, probably the global font with serifs is best.",
-    "reviewedAt": "2026-07-08T02:32:05.749Z",
-    "hash": "e4c4664fb08f2fb7e74ea7bd1c57a5f467c59043"
+    "status": "good",
+    "note": "Font consistency fixed: jbrowse-img now defaults --fontFamily=serif, applied to the SVG root so ruler/track-labels and gene labels share one font. Regenerated. (was: mix of fonts)",
+    "reviewedAt": "2026-07-08T13:31:05.000Z",
+    "hash": "07077e6af0a838bab155d5a68f0075ab874b989f"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
@@ -1010,10 +1010,10 @@
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
-    "status": "bad",
-    "note": "need to show larger height. consider using human example also, and combining with jbrowse-img/sequence to reduce number of screenshots",
-    "reviewedAt": "2026-07-08T02:34:01.584Z",
-    "hash": "03a5da4d943eee022cb1fc2e95090884aa76938b"
+    "status": "good",
+    "note": "Merged gene_track+sequence into one human base-level TP53 exon figure (CDS + reference sequence + 6-frame translation); taller.",
+    "reviewedAt": "2026-07-08T14:20:40.000Z",
+    "hash": "1ad529560e8142fe11659eaf493efc56c3d885a7"
   },
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
@@ -1023,10 +1023,10 @@
   },
   "jbrowse-img/alignments_readgroup": {
     "name": "jbrowse-img/alignments_readgroup",
-    "status": "bad",
-    "note": "we might just delete this screenshot. if we do want to rescue it, use long reads or something, because the short reads are hard to see the sort pattern",
-    "reviewedAt": "2026-07-08T02:33:28.765Z",
-    "hash": "59d38e01f07891ade06f8a1f4e00b8529e82c54e"
+    "status": "good",
+    "note": "Swapped to HG008-T PacBio HiFi long reads over CUZD1 with sort:base clustering a ~1.8kb somatic deletion (was synthetic short-read RG sort).",
+    "reviewedAt": "2026-07-08T14:20:40.000Z",
+    "hash": "3ce77a09852e2ebd2f042070e21ccb47b7ead200"
   },
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
@@ -1043,7 +1043,7 @@
   "jbrowse-img/yeast_synteny": {
     "name": "jbrowse-img/yeast_synteny",
     "status": "bad",
-    "note": "the synteny ribbons overlap the numbers on the top. it might be good for the ribbons to go a little lower also, so it connects close to the ruler on the bottom. i am not that concerned if it overlaps the assemblyname on the bottom row. ensure the calculations are precise",
+    "note": "top-numbers overlap (the actual defect) fixed by compact-header work: numbers now sit above the ticks and the ribbon starts cleanly below. Bottom ribbon-to-ruler gap PUNTED: no clean fix generalizes. A multi-way middle view sits between two ribbon levels, and a single coordinate-number line cannot face both. Whole-genome multi-way figures (hg38_hs1_mm39, grape_peach_cacao) are already good because their labels are refNames drawn at the ruler TOP, so ribbons connect tight; the gap only shows on single-region coordinate-number rulers like this 2-way. Not worth a stretch hack.",
     "reviewedAt": "2026-07-08T02:20:11.851Z",
     "hash": "bac91b217d1b82084517ff5a97453a04c881975b"
   },
@@ -1068,13 +1068,6 @@
     "reviewedAt": "2026-07-08T03:08:25.291Z",
     "hash": "c2f019fdc90a997f8b31f2faefb57151c5198f9d"
   },
-  "jbrowse-img/sequence": {
-    "name": "jbrowse-img/sequence",
-    "status": "bad",
-    "note": "consider deleting this one and just merging with e.g. jbrowse-img/gene_track",
-    "reviewedAt": "2026-07-08T02:34:13.282Z",
-    "hash": "1b642f4b31ce0500b881b28db226481c6c73b64d"
-  },
   "protein/connected": {
     "name": "protein/connected",
     "status": "good",
@@ -1098,10 +1091,10 @@
   },
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
-    "status": "bad",
-    "note": "pretty uninteresting screenshot. change to use human data 1kg example, add ncbi gene track",
-    "reviewedAt": "2026-07-08T02:19:15.473Z",
-    "hash": "b2d101cf242bfde261896823b0874e20e5845a10"
+    "status": "good",
+    "note": "Swapped to 1000 Genomes phase 3 chr11 (2,504 samples) over HBB + NCBI RefSeq gene track (was synthetic volvox VCF).",
+    "reviewedAt": "2026-07-08T14:20:40.000Z",
+    "hash": "c8462d319173fb5fced577e19b49763bf2dbea94"
   },
   "chromhmm": {
     "name": "chromhmm",
@@ -1201,13 +1194,6 @@
     "reviewedAt": "2026-07-07T02:08:29.329Z",
     "hash": "a2564d73e1a996413af3554c19b55a619f531776"
   },
-  "variants/consequence_impact_sv": {
-    "name": "variants/consequence_impact_sv",
-    "status": "bad",
-    "note": "not a super powerful screenshot, might delete or find another region. the clinvar cnv do not seem to match up with what is shown",
-    "reviewedAt": "2026-07-08T01:06:44.248Z",
-    "hash": "cff20ee646cc6c094ef2473afb3ab64fb2dd4bff"
-  },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
     "status": "good",
@@ -1257,13 +1243,6 @@
     "reviewedAt": "2026-07-07T15:40:14.466Z",
     "hash": "c02d74bd69a91b634e6e4ad9834b95f5b8afe6aa"
   },
-  "gallery/cactus_447way": {
-    "name": "gallery/cactus_447way",
-    "status": "bad",
-    "note": "unclear what is even happening in this figure. the 447 way figures in general are very complex. we might just want to delete or focus on something smaller like the ultra conserved elements from ~/src/jb2hubs",
-    "reviewedAt": "2026-07-08T01:07:07.134Z",
-    "hash": "0c6592e962c5e464f093b1c39f91b8ce17494651"
-  },
   "gallery/celegans_26way": {
     "name": "gallery/celegans_26way",
     "status": "bad",
@@ -1277,13 +1256,6 @@
     "note": "are you sure this isnt referenced any gallery? reference it in gallery",
     "reviewedAt": "2026-07-07T00:57:38.563Z",
     "hash": "15e061d4d005400a283d025c8651ba814e4fa6f7"
-  },
-  "gallery/encode_multibigwig": {
-    "name": "gallery/encode_multibigwig",
-    "status": "bad",
-    "note": "this isnt a very interesting screenshot. need something more biologically interesting. look at encode papers if needed",
-    "reviewedAt": "2026-07-07T01:26:14.795Z",
-    "hash": "c996eafd9b8b79495280f00b38bd20a49505992f"
   },
   "gallery/fiberseq_gapdh": {
     "name": "gallery/fiberseq_gapdh",

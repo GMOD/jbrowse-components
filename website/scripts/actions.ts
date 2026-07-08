@@ -212,6 +212,7 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     // readable selector so a timeout names what was missing
     await waitForVisible(page, action.selector, {
       hidden: action.hidden,
+      timeout: action.timeout,
     }).catch(() => {
       throw new Error(
         `waitForSelector: ${action.hidden ? 'still visible' : 'never found'} "${action.selector}"`,
@@ -220,6 +221,7 @@ export async function runAction(page: Page, action: ScreenshotAction) {
   } else if (action.type === 'waitForText' && action.text) {
     await waitForVisible(page, textSelector(action.text), {
       hidden: action.hidden,
+      timeout: action.timeout,
     }).catch(() => {
       throw new Error(
         `waitForText: ${action.hidden ? 'text still visible' : 'never found visible text'} "${action.text}"`,
