@@ -131,6 +131,7 @@ const TreeSidebar = observer(function TreeSidebar({
           }}
         />
         <canvas
+          data-testid="tree_sidebar_dendrogram"
           ref={treeCanvasRef}
           style={{
             width: treeAreaWidth,

@@ -242,6 +242,19 @@ function getGenotypeMapForFeature(
  *   },
  * ]
  * ```
+ *
+ * `runClustering` is a transient declarative launch spec, the same idea as
+ * `LinearGenomeView`'s `init`: set it to run the real "Cluster by genotype"
+ * RPC once automatically (no dialog) as soon as sources are available, and it
+ * clears itself afterwards so a saved session never re-triggers it.
+ * ```js
+ * displays: [
+ *   {
+ *     type: 'LinearMultiSampleVariantDisplay',
+ *     runClustering: true,
+ *   },
+ * ]
+ * ```
  */
 export default function MultiSampleVariantBaseModelF(
   configSchema: AnyConfigurationSchemaType,
@@ -275,6 +288,12 @@ export default function MultiSampleVariantBaseModelF(
             undefined,
           ),
           lineZoneHeight: types.stripDefault(types.number, 0),
+          // Transient declarative launch spec, same idea as LinearGenomeView's
+          // `init`: session/config sets this to run the real "Cluster by
+          // genotype" RPC once automatically (no dialog), applied by
+          // getMultiSampleVariantClusterAutorun and cleared afterwards so a
+          // saved session never re-triggers it.
+          runClustering: types.maybe(types.boolean),
         }),
       )
       // Legacy props from old BaseLinearDisplay snapshots (blockState,
@@ -601,6 +620,9 @@ export default function MultiSampleVariantBaseModelF(
         setLayoutAndPendingClusterTree(layout: Source[], tree: string) {
           self.layout = layout
           self.pendingClusterTree = tree
+        },
+        setRunClustering(arg?: boolean) {
+          self.runClustering = arg
         },
         /**
          * #action

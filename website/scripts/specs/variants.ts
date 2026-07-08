@@ -49,14 +49,12 @@ export const variantsSpecs: ScreenshotSpec[] = [
   // Clustered so the 2,504 sample rows are reordered by genotype similarity with
   // a dendrogram in the left sidebar ("add clustering if it helps") —
   // co-inherited haplotype blocks group into contiguous same-color bands instead
-  // of being scattered row-to-row. Clustering is a real RPC over the genotype
-  // matrix, so the figure drives the "Cluster by genotype" → "Run clustering"
-  // actions rather than setting a precomputed tree in the snapshot — tried
-  // baking a captured `layout`/`clusterTree` in directly (avoids the ~24s real
-  // RPC), but the 2,504-sample layout + ~40KB newick tree blow past HTTP header
-  // limits once URL-encoded into `session=spec-{...}` (431 Request Header
-  // Fields Too Large). Viable for small values (see synteny's cigarMode) but
-  // not a dataset this size through a URL-based session.
+  // of being scattered row-to-row. `runClustering: true` runs the real
+  // clustering RPC declaratively (see getMultiSampleVariantClusterAutorun) —
+  // no dialog-driving actions needed. `readySelector` waits on the dendrogram
+  // itself (only rendered once the RPC result lands), so this stays correct
+  // however long real clustering over the full callset takes (~24s locally),
+  // rather than guessing a fixed timeout.
   {
     mode: 'url',
     name: 'variants/consequence_impact_1000g',
@@ -69,31 +67,16 @@ export const variantsSpecs: ScreenshotSpec[] = [
           displaySnapshot: {
             type: 'LinearMultiSampleVariantDisplay',
             height: 500,
+            runClustering: true,
           },
         },
       ],
     }),
     readyText: 'chr1',
-    settleMs: 8000,
+    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
+    readyTimeout: 60000,
+    settleMs: 2000,
     viewportHeight: 650,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Cluster by genotype' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Cluster by genotype' },
-      { type: 'waitForText', text: 'Run clustering' },
-      { type: 'delay', ms: 500 },
-      { type: 'click', text: 'Run clustering' },
-      // real clustering over the full 2,504-sample 1000g callset measured at
-      // ~24s locally, right against the 30s default — give it real margin
-      {
-        type: 'waitForText',
-        text: 'Run clustering',
-        hidden: true,
-        timeout: 60000,
-      },
-      { type: 'delay', ms: 10000 },
-    ],
   },
 
   // Multi-sample variant display colored by population: the 1000 Genomes phase 3

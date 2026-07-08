@@ -10,11 +10,10 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import { buildClusteredLayout } from '@jbrowse/tree-sidebar'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { expandSourcesToHaplotypes } from '../../getSources.ts'
+import { runGenotypeClustering } from '../../runGenotypeClustering.ts'
 
 import type { ReducedModel } from './types.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
@@ -35,15 +34,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
   const [error, setError] = useState<unknown>()
   const [stopToken, setStopToken] = useState<StopToken>()
   const { rpcManager } = getSession(model)
-  const {
-    sourcesVolatile,
-    minorAlleleFrequencyFilter,
-    maxMissingnessFilter,
-    filters,
-    adapterConfig,
-    renderingMode,
-    sampleInfo,
-  } = model
+  const { sourcesVolatile, renderingMode } = model
   const isHaplotypeClustering = renderingMode === 'phased'
 
   return (
@@ -85,41 +76,18 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
               if (!view.initialized) {
                 return
               }
-              if (sourcesVolatile) {
-                const sessionId = getRpcSessionId(model)
-                const stopToken = createStopToken()
-                setStopToken(stopToken)
-                const ret = await rpcManager.call(
-                  sessionId,
-                  'MultiSampleVariantClusterGenotypeMatrix',
-                  {
-                    regions: view.dynamicBlocks.contentBlocks,
-                    sources: sourcesVolatile,
-                    minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
-                    maxMissingnessFilter: maxMissingnessFilter ?? 1,
-                    filters,
-                    adapterConfig,
-                    stopToken,
-                    renderingMode,
-                    sampleInfo,
-                    statusCallback: (status: RpcStatus) => {
-                      setProgress(statusMessageText(status) ?? '')
-                    },
-                  },
-                )
-
-                const baseSources =
-                  isHaplotypeClustering && sampleInfo
-                    ? expandSourcesToHaplotypes({
-                        sources: sourcesVolatile,
-                        sampleInfo,
-                      })
-                    : sourcesVolatile
-                model.setLayoutAndPendingClusterTree(
-                  buildClusteredLayout(baseSources, model.layout, ret.order),
-                  ret.tree,
-                )
-              }
+              const stopToken = createStopToken()
+              setStopToken(stopToken)
+              await runGenotypeClustering({
+                model,
+                rpcManager,
+                sessionId: getRpcSessionId(model),
+                regions: view.dynamicBlocks.contentBlocks,
+                stopToken,
+                statusCallback: (status: RpcStatus) => {
+                  setProgress(statusMessageText(status) ?? '')
+                },
+              })
               handleClose()
             } catch (e) {
               if (!isAbortException(e) && isAlive(model)) {
