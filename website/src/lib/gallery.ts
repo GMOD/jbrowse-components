@@ -289,12 +289,6 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'Single-cell ATAC accessibility by cell type (CATlas) around the INS locus, one coverage row per cell type.',
       },
-      {
-        label: 'ENCODE H3K27ac multi-wiggle (5 cell lines)',
-        spec: 'gallery/encode_multibigwig',
-        description:
-          'ENCODE H3K27ac for five cell lines in one multi-wiggle track; K562 marks the active β-globin locus.',
-      },
     ],
   },
   {
@@ -336,12 +330,6 @@ export const gallerySections: readonly GallerySection[] = [
     id: 'maf',
     title: 'Multiple genome alignment (MAF)',
     items: [
-      {
-        label: 'hg38 447-way Cactus alignment (BRCA1)',
-        spec: 'gallery/cactus_447way',
-        description:
-          'The UCSC 447-way Cactus mammalian alignment over BRCA1, all species fit to the display height with a conservation track.',
-      },
       {
         label: 'C. elegans 26-way alignment (conservation band)',
         spec: 'gallery/celegans_26way',

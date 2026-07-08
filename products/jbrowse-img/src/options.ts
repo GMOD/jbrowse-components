@@ -6,7 +6,7 @@ import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 export interface OptionDef {
   name: string
   description: string
-  default?: number | boolean
+  default?: number | boolean | string
 }
 
 export const optionDefs: OptionDef[] = [
@@ -56,6 +56,12 @@ export const optionDefs: OptionDef[] = [
     name: 'themeName',
     description:
       'Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal',
+  },
+  {
+    name: 'fontFamily',
+    description:
+      'Font family for all text (serif, sans-serif, monospace, or a named family)',
+    default: 'serif',
   },
   {
     name: 'showGridlines',

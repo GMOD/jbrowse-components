@@ -84,11 +84,6 @@ HIGH the same way a stop-gained SNV does.
 
 <Figure caption="1000 Genomes phase 3 chr1 genotypes (2,504 samples) colored by consequence impact. Real SnpEff annotations against a real Ensembl database — red columns are stop-gained/splice-site variants, orange missense, yellow synonymous/splice-region, and grey (the majority) intronic or intergenic." src="/img/variants/consequence_impact_1000g.png" />
 
-The effect is even more visible on structural variants, since each call renders
-as a wide bar rather than a thin line:
-
-<Figure caption="Real HGSVC structural variant calls on chr1, colored by consequence impact. This window lands on NBPF20, a well-documented structural-variation hotspot — the dense red bars are real exon-disrupting deletions predicted HIGH impact by SnpEff." src="/img/variants/consequence_impact_sv.png" />
-
 Set it declaratively in the display configuration with the built-in
 `impactColor` Jexl function:
 

@@ -858,6 +858,7 @@ Options:
   --tracks          Path to JSON file with an array of track configs
   --cytobands       Path to cytoband file for the assembly
   --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlay, left, or none
   --refseq          Show the reference sequence track [default: false]
@@ -904,6 +905,7 @@ Options:
   --tracks              Path to JSON file with an array of track configs
   --cytobands           Path to cytoband file for the assembly
   --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines       Show genomic coordinate gridlines in the output [default: false]
   --trackLabels         Track label position: offset, overlay, left, or none
   --refseq              Show the reference sequence track [default: false]
@@ -951,6 +953,7 @@ Options:
   --tracks              Path to JSON file with an array of track configs
   --cytobands           Path to cytoband file for the assembly
   --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --fontFamily          Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines       Show genomic coordinate gridlines in the output [default: false]
   --trackLabels         Track label position: offset, overlay, left, or none
   --refseq              Show the reference sequence track [default: false]
@@ -998,6 +1001,7 @@ Options:
   --tracks          Path to JSON file with an array of track configs
   --cytobands       Path to cytoband file for the assembly
   --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlay, left, or none
   --refseq          Show the reference sequence track [default: false]

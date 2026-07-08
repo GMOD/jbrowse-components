@@ -223,20 +223,6 @@ export const gallerySpecs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
-    name: 'gallery/encode_multibigwig',
-    // ENCODE Broad-Histone H3K27ac for five cell lines, over the HBB locus where
-    // erythroid K562 shows strong signal. Uses the UCSC-hosted encodeDCC bigWigs
-    // (an inline MultiWiggleAdapter) because the original encodeproject.org URLs
-    // now 403.
-    // no per-source `color`: a `#` hex value would be read as a URL fragment and
-    // truncate the session; the multiwiggle palette colors the rows instead
-    url: '?config=test_data%2Fconfig_demo.json&session=spec-{"sessionTracks":[{"type":"MultiQuantitativeTrack","trackId":"encode_h3k27ac_multi","name":"ENCODE H3K27ac (5 cell lines)","assemblyNames":["hg19"],"adapter":{"type":"MultiWiggleAdapter","subadapters":[{"type":"BigWigAdapter","source":"GM12878","bigWigLocation":{"uri":"https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneGm12878H3k27acStdSig.bigWig","locationType":"UriLocation"}},{"type":"BigWigAdapter","source":"K562","bigWigLocation":{"uri":"https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneK562H3k27acStdSig.bigWig","locationType":"UriLocation"}},{"type":"BigWigAdapter","source":"H1-hESC","bigWigLocation":{"uri":"https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneH1hescH3k27acStdSig.bigWig","locationType":"UriLocation"}},{"type":"BigWigAdapter","source":"NHLF","bigWigLocation":{"uri":"https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneNhlfH3k27acStdSig.bigWig","locationType":"UriLocation"}},{"type":"BigWigAdapter","source":"HSMM","bigWigLocation":{"uri":"https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHistone/wgEncodeBroadHistoneHsmmH3k27acStdSig.bigWig","locationType":"UriLocation"}}]}}],"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"11:5220000-5320000","tracks":[{"trackId":"encode_h3k27ac_multi","displaySnapshot":{"type":"MultiLinearWiggleDisplay","defaultRendering":"multirowxy","height":400}}]}]}',
-    readyTimeout: 90000,
-    settleMs: 12000,
-    viewportHeight: 550,
-  },
-  {
-    mode: 'url',
     name: 'gallery/celegans_26way',
     // no rowHeight: the slot defaults to 0 (fit-to-display-height), so all 26
     // species fit the viewport with no scroll. Long settle: the MAF coverage band
@@ -267,18 +253,6 @@ export const gallerySpecs: ScreenshotSpec[] = [
     readyTimeout: 240000,
     settleMs: 90000,
     viewportHeight: 500,
-  },
-  {
-    mode: 'url',
-    name: 'gallery/cactus_447way',
-    // ~5kb: a 447-way MAF over the full BRCA1 gene trips the "too much data"
-    // guard, so zoom to a slice that auto-loads. A fixed 500px display height
-    // fits all 447 species into a compact fit-to-height band, so the whole
-    // alignment reads as one conservation block rather than scrolling off-screen.
-    url: '?config=https://jbrowse.org/ucsc/hg38/config.json&session=spec-{"views":[{"assembly":"hg38","loc":"chr17:43050000-43055000","type":"LinearGenomeView","tracks":[{"trackId":"hg38-cactus447way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true,"height":500}}]}]}',
-    readyTimeout: 180000,
-    settleMs: 15000,
-    viewportHeight: 640,
   },
   // Bare-config gallery cards: each opens the config's own defaultSession (no
   // session spec), the same view the /gallery/ link opens.

@@ -285,6 +285,7 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
     createCanvas: (w: number, h: number) =>
       createCanvas(w, h) as unknown as HTMLCanvasElement,
     themeName,
+    fontFamily: opts.fontFamily,
     showGridlines,
     trackLabels,
   })
@@ -352,6 +353,7 @@ const renderDotplot: ModeRenderer = async ctx => {
   const svg = await renderDotplotToSvg(view, {
     rasterizeLayers: !ctx.opts.noRasterize,
     themeName: ctx.opts.themeName,
+    fontFamily: ctx.opts.fontFamily,
   })
   throwOnDisplayError(view.tracks.flatMap(t => t.displays))
   return svg
@@ -398,6 +400,7 @@ const renderSynteny: ModeRenderer = async ctx => {
   const svg = await renderSyntenyToSvg(view, {
     rasterizeLayers: !ctx.opts.noRasterize,
     themeName: ctx.opts.themeName,
+    fontFamily: ctx.opts.fontFamily,
     trackLabels: ctx.opts.trackLabels,
     showGridlines: ctx.opts.showGridlines,
   })
@@ -419,6 +422,7 @@ const renderCircular: ModeRenderer = async ctx => {
   const svg = await renderCircularToSvg(view, {
     rasterizeLayers: !ctx.opts.noRasterize,
     themeName: ctx.opts.themeName,
+    fontFamily: ctx.opts.fontFamily,
   })
   throwOnDisplayError(view.tracks.flatMap(t => t.displays))
   return svg

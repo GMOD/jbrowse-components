@@ -21,6 +21,10 @@ export interface Opts {
   trackList?: Entry[]
   tracks?: string
   themeName?: string
+  // Font family applied to the whole SVG root so every <text> (ruler, track
+  // labels, and SvgCanvas feature labels) renders in one consistent font
+  // instead of relying on each SVG viewer's default. Defaults to serif.
+  fontFamily?: string
   showGridlines?: boolean
   trackLabels?: TrackLabelMode
   refseq?: boolean
