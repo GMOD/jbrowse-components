@@ -221,48 +221,17 @@ export const gallerySpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     viewportHeight: 600,
   },
-  {
-    mode: 'url',
-    name: 'gallery/celegans_26way',
-    // no rowHeight: the slot defaults to 0 (fit-to-display-height), so all 26
-    // species fit the viewport with no scroll. Long settle: the MAF coverage band
-    // paints a canvas "Loading" placeholder the DOM-based waitForQuiescent can't
-    // see, and the headless (swiftshader) build is slow to resolve it.
-    // Gene track NOT added: fixed the config's dead ce11.ncbiRefSeq.sorted.gff
-    // adapter (was pointing cross-bucket at a 404'd jbrowse.org/ucsc/ce11/...
-    // wrong filename; repointed at the correct co-located
-    // jbrowse.org/demos/ce/ce11.ncbiRefSeq.sorted.gff.gz+.tbi, verified via
-    // jb2export, re-uploaded config.json + CloudFront invalidation — real fix,
-    // independently good). But adding that track to THIS spec exposes a
-    // separate, real bug: the MAF coverage/conservation canvas's "Loading"
-    // placeholder over a real no-alignment-data gap never gets cleared once a
-    // second track is present (reproduced 3/3, order-independent, unaffected
-    // by settleMs 90000->180000 — so the display's "done" signal fires but the
-    // stale placeholder paint is never overdrawn). Worth its own investigation;
-    // not chased further here. See agent-docs/TODO.md.
-    url: lgvSession('https://jbrowse.org/demos/ce/config.json', {
-      assembly: 'ce11',
-      loc: 'chrI:2998500-3001800',
-      tracks: [
-        {
-          trackId: 'ce11.26way',
-          displaySnapshot: { type: 'LinearMafDisplay', showConservation: true },
-        },
-      ],
-    }),
-    readyTimeout: 240000,
-    settleMs: 90000,
-    viewportHeight: 500,
-  },
   // Bare-config gallery cards: each opens the config's own defaultSession (no
   // session spec), the same view the /gallery/ link opens.
   {
     mode: 'url',
     name: 'gallery/gwas_bmi_fto',
+    // taller crop so the FTO gene track below the Manhattan plot is visible (the
+    // GWAS peak sits over an FTO intron — the point of the figure)
     url: '?config=test_data%2Fgwas%2Flocuszoom_ld.json',
     readyTimeout: 90000,
     settleMs: 10000,
-    viewportHeight: 500,
+    viewportHeight: 640,
   },
   {
     mode: 'url',
@@ -270,10 +239,29 @@ export const gallerySpecs: ScreenshotSpec[] = [
     // config's DotplotView defaultSession has empty displayedRegions, so open an
     // explicit whole-genome dotplot over the liftOver chain. Both assemblies'
     // chrom.sizes + the chain load from UCSC (see the config).
-    url: '?config=test_data%2Fhg19_vs_hg38%2Fconfig.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"hg38"},{"assembly":"hg19"}],"tracks":["hg19ToHg38.over.chain.gz-1645073157673"],"autoDiagonalize":true,"showColorLegend":false}]}',
+    // No autoDiagonalize: hg19 and hg38 are the same species, so their
+    // homologous chromosomes already line up 1:1 on the diagonal in natural
+    // karyotype order (chr1..chr22, X, Y — the config's chrom.sizes are now
+    // karyotype-ordered, main chromosomes only). Auto-diagonalizing only reorders
+    // the axes into a confusing sequence (chr11 before chr10, chrX mid-list) for
+    // no gain — it's meant for de-novo/fragmented assemblies with no canonical order.
+    url: sessionSpec('test_data/hg19_vs_hg38/config.json', {
+      views: [
+        {
+          type: 'DotplotView',
+          views: [{ assembly: 'hg38' }, { assembly: 'hg19' }],
+          tracks: ['hg19ToHg38.over.chain.gz-1645073157673'],
+          showColorLegend: false,
+        },
+      ],
+    }),
     readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 10000,
+    // the chain file carries liftOver entries for alt/random contigs that the
+    // karyotype-subset assemblies omit, so the dotplot shows a (benign,
+    // dismissable) render warning; clear it for a clean gallery card
+    actions: [{ type: 'click', text: 'Dismiss' }, { type: 'delay', ms: 500 }],
   },
   {
     mode: 'url',

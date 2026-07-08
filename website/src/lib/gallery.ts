@@ -327,18 +327,6 @@ export const gallerySections: readonly GallerySection[] = [
     ],
   },
   {
-    id: 'maf',
-    title: 'Multiple genome alignment (MAF)',
-    items: [
-      {
-        label: 'C. elegans 26-way alignment (conservation band)',
-        spec: 'gallery/celegans_26way',
-        description:
-          'A 26-way whole-genome alignment across Caenorhabditis species with a conservation band.',
-      },
-    ],
-  },
-  {
     id: 'instances',
     title: 'Full example instances and hubs',
     items: [

@@ -622,9 +622,12 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               trackId: 'hg002_nanopore_hp',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
-                height: 500,
+                height: 300,
                 userByteSizeLimit: 200_000_000,
-                colorBy: { type: 'tag', tag: 'HP' },
+                // start ungrouped and uncolored: the figure demonstrates the
+                // group-by mechanic itself, so the reads are plain until the
+                // dialog is submitted (reviewer: initial state shouldn't already
+                // have the color-by/group-by settings applied)
               },
             },
           ],
@@ -633,13 +636,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 90000,
-    viewportHeight: 700,
+    viewportHeight: 550,
     settleMs: 15000,
     hideTooltip: true,
-    // Two-stage figure: stage 1 is the menu path (track menu ->
+    // Three-stage figure: stage 1 is the menu path (track menu ->
     // Group by... submenu, the inner item boxed); stage 2 is the dialog that item
-    // opens, with the Tag dimension chosen and HP entered so the haplotype example
-    // is concrete. Reads start colored by HP (colorBy tag HP) in both frames.
+    // opens, with the Tag dimension chosen and HP entered; stage 3 submits it and
+    // shows the RESULT — the pileup split into HP 1 / HP 2 / undefined sections.
     stages: [
       {
         actions: [
@@ -687,6 +690,17 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           },
           // let the optional "Found values" tag preview resolve
           { type: 'delay', ms: 1500 },
+        ],
+      },
+      {
+        actions: [
+          // submit the dialog -> the pileup regroups into HP sections
+          {
+            type: 'click',
+            selector: '[role="dialog"] button[type="submit"]',
+          },
+          { type: 'waitForSelector', selector: '[data-testid="pileup-display-done"]' },
+          { type: 'delay', ms: 2000 },
         ],
       },
     ],
