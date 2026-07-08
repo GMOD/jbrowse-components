@@ -58,6 +58,29 @@ test('a boundary event after the latch window releases to the page', () => {
   expect(e.prevented).toBe(false)
 })
 
+test('continuous over-scroll at the boundary stays latched past the window', () => {
+  const latch = createScrollLatch(200)
+  latch.scroll(wheelEvent(0), 50, 60, 100) // consume, panel reaches max=100
+  // keep pushing into the boundary every 50ms; the panel never moves again but
+  // the gesture never pauses, so the page must stay suppressed the whole time
+  for (const t of [50, 100, 150, 200, 250, 300, 350, 400]) {
+    const e = wheelEvent(t)
+    expect(latch.scroll(e, 100, 30, 100)).toBe(null)
+    expect(e.prevented).toBe(true)
+  }
+})
+
+test('a gesture that starts at the boundary chains to the page immediately', () => {
+  const latch = createScrollLatch(200)
+  // never scrolled the panel; continuous events at the boundary should all
+  // release to the page since the gesture never latched onto the panel
+  for (const t of [0, 50, 100, 150]) {
+    const e = wheelEvent(t)
+    expect(latch.scroll(e, 100, 30, 100)).toBe(null)
+    expect(e.prevented).toBe(false)
+  }
+})
+
 test('each consumed scroll refreshes the latch window', () => {
   const latch = createScrollLatch(200)
   latch.scroll(wheelEvent(0), 0, 60, 100) // consume

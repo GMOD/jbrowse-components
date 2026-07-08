@@ -11,7 +11,12 @@
 const LATCH_TIMEOUT_MS = 200
 
 export function createScrollLatch(timeoutMs = LATCH_TIMEOUT_MS) {
-  let lastConsumed = -Infinity
+  // timestamp of the previous wheel event (any event, not just ones that
+  // moved the panel) and whether the current gesture has latched onto this
+  // panel by actually scrolling it. A gap > timeoutMs between events marks a
+  // pause, i.e. the start of a new gesture.
+  let lastEvent = -Infinity
+  let latched = false
   return {
     // Apply one wheel event to a vertical panel with native-style latching.
     // Given the current scroll offset, the delta (already normalized to
@@ -21,24 +26,36 @@ export function createScrollLatch(timeoutMs = LATCH_TIMEOUT_MS) {
     // gesture, so the page only takes over after the gesture pauses. The whole
     // boundary/latch/preventDefault contract lives here so no caller can derive
     // it incorrectly — they just apply the returned offset.
+    //
+    // Latching keys off gesture continuity, not panel movement: once a
+    // continuous gesture has scrolled the panel it stays latched — suppressing
+    // page scroll — through any amount of continued over-scroll at the
+    // boundary, and only releases after the wheel events actually pause. A
+    // gesture that *starts* at the boundary never latches, so it chains to the
+    // page immediately (native behavior).
     scroll(e: WheelEvent, cur: number, delta: number, max: number, min = 0) {
+      if (e.timeStamp - lastEvent >= timeoutMs) {
+        latched = false
+      }
+      lastEvent = e.timeStamp
       const next = Math.max(min, Math.min(max, cur + delta))
       if (next !== cur) {
+        latched = true
         e.preventDefault()
-        lastConsumed = e.timeStamp
         return next
       }
-      if (e.timeStamp - lastConsumed < timeoutMs) {
+      if (latched) {
         e.preventDefault()
       }
       return null
     },
-    // Forget the last-consumed timestamp so the next event is treated as a
-    // fresh gesture. Called when the pointer leaves the panel: a gesture the
-    // browser has latched to this element must not keep the page suppressed
-    // once the cursor is elsewhere.
+    // Forget the gesture state so the next event is treated as a fresh gesture.
+    // Called when the pointer leaves the panel: a gesture the browser has
+    // latched to this element must not keep the page suppressed once the cursor
+    // is elsewhere.
     reset() {
-      lastConsumed = -Infinity
+      lastEvent = -Infinity
+      latched = false
     },
   }
 }
