@@ -14,6 +14,13 @@ reference, so JBrowse renders coverage and per-base mismatches straight off the
 shared assembly sequence — showing how the published genomes vary against the
 reference with no MD tag needed.
 
+The **Sample genotypes** track is a multi-sample variant matrix: the generator
+reconstructs each phylogeny tip's genotype at every variable site (walking the
+tree's nucleotide mutations root→tip) into a bgzipped/tabixed VCF plus a
+`samplesTsv` of each tip's metadata, rendered by
+`LinearMultiSampleVariantMatrixDisplay` as samples × sites colored by region —
+the genotype table behind the Nextstrain tree, in genome coordinates.
+
 Zika is a flavivirus: its genome is one long ORF translated into a single
 polyprotein, then cleaved into mature peptides (C, prM, E, NS1–NS5). Rather than
 show a dozen unrelated genes, the annotation track models this as one

@@ -15,6 +15,13 @@ position from the phylogeny's nucleotide mutations. The same generator produces
 the [Zika](../nextstrain-zika/), [Ebola](../nextstrain-ebola/),
 [measles](../nextstrain-measles/), and [RSV-A](../nextstrain-rsv-a/) demos.
 
+The **Sample genotypes** track is a multi-sample variant matrix. The generator
+reconstructs each phylogeny tip's genotype at every variable site (walking the
+tree's nucleotide mutations root→tip) and writes a bgzipped/tabixed VCF plus a
+`samplesTsv` of each tip's metadata. JBrowse's
+`LinearMultiSampleVariantMatrixDisplay` renders it as samples × sites, colored by
+region — the genotype table behind the Nextstrain tree, in genome coordinates.
+
 Because the whole config is a plain JS object, it can be imported, generated, or
 templated by your own code. See [default session](../default-session/) for the
 session structure and

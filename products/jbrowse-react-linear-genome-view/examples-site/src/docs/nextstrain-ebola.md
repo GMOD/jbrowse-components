@@ -8,5 +8,12 @@ on `jbrowse.org/demos`. The config is generated from the live
 `genome_annotations`, and the diversity track is reconstructed per position from
 the phylogeny's nucleotide mutations.
 
+The **Sample genotypes** track is a multi-sample variant matrix: the generator
+reconstructs each phylogeny tip's genotype at every variable site (walking the
+tree's nucleotide mutations root→tip) into a bgzipped/tabixed VCF plus a
+`samplesTsv` of each tip's metadata, rendered by
+`LinearMultiSampleVariantMatrixDisplay` as samples × sites colored by region —
+the genotype table behind the Nextstrain tree, in genome coordinates.
+
 See [the config guide](https://jbrowse.org/jb2/docs/config_guide) for the
 track/assembly shapes.

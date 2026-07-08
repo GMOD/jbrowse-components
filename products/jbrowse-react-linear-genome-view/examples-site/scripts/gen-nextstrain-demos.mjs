@@ -213,6 +213,57 @@ function entropyFeatures(tree, refName) {
   return features
 }
 
+// Reconstruct each tip's genotype by walking root->tip and recording, per tip,
+// the nucleotide it carries at every mutated position (the accumulated overrides
+// at the leaf); positions not overridden are the ancestral/reference base. This
+// is the genotype table behind the Nextstrain tree, in genome coordinates.
+function genotypeData(tree) {
+  const rootBase = {} // pos -> ancestral base (shallowest mutation's from-base)
+  const tips = [] // { name, meta, muts: { pos: base } }
+  const overrides = {}
+  const dfs = node => {
+    const applied = []
+    const muts = node.branch_attrs?.mutations?.nuc || []
+    for (const raw of muts) {
+      const m = parseMut(raw)
+      if (m) {
+        if (!(m.pos in overrides) && !(m.pos in rootBase)) {
+          rootBase[m.pos] = m.from
+        }
+        applied.push([m.pos, overrides[m.pos]])
+        overrides[m.pos] = m.to
+      }
+    }
+    const children = node.children || []
+    if (children.length === 0) {
+      const na = node.node_attrs || {}
+      tips.push({
+        name: node.name,
+        meta: {
+          region: na.region?.value ?? '',
+          country: na.country?.value ?? '',
+          date: na.num_date?.value ? String(Math.floor(na.num_date.value)) : '',
+        },
+        muts: { ...overrides },
+      })
+    } else {
+      for (const ch of children) {
+        dfs(ch)
+      }
+    }
+    for (let i = applied.length - 1; i >= 0; i--) {
+      const [pos, prev] = applied[i]
+      if (prev === undefined) {
+        delete overrides[pos]
+      } else {
+        overrides[pos] = prev
+      }
+    }
+  }
+  dfs(tree)
+  return { rootBase, tips }
+}
+
 const rampColor = (i, n) =>
   COLOR_RAMP[Math.round((i / Math.max(1, n - 1)) * (COLOR_RAMP.length - 1))]
 
@@ -333,6 +384,72 @@ async function writeGenomesCram(outDir, slug, refFasta, seqsUrl) {
   return cram
 }
 
+// emit the reconstructed per-tip genotypes as a bgzipped+tabixed VCF plus a
+// samplesTsv of each tip's metadata, so JBrowse's multi-sample variant matrix
+// renders samples x sites colored/grouped by region — the genotype table behind
+// the Nextstrain tree, in genome coordinates.
+function writeGenotypeVcf(outDir, slug, refName, len, tree) {
+  const { rootBase, tips } = genotypeData(tree)
+  const samples = tips.map(t => t.name)
+  const positions = Object.keys(rootBase)
+    .map(Number)
+    .filter(pos => isBase(rootBase[pos]))
+    .sort((a, b) => a - b)
+
+  const rows = []
+  for (const pos of positions) {
+    const ref = rootBase[pos]
+    const altIndex = {} // base -> 1-based ALT index
+    const alts = []
+    const calls = tips.map(tip => {
+      const base = pos in tip.muts ? tip.muts[pos] : ref
+      if (!isBase(base)) {
+        return '.'
+      }
+      if (base === ref) {
+        return '0'
+      }
+      if (!(base in altIndex)) {
+        alts.push(base)
+        altIndex[base] = alts.length
+      }
+      return String(altIndex[base])
+    })
+    if (alts.length > 0) {
+      rows.push(
+        `${refName}\t${pos}\t.\t${ref}\t${alts.join(',')}\t.\t.\t.\tGT\t` +
+          calls.join('\t'),
+      )
+    }
+  }
+
+  const vcf = join(outDir, `${slug}_genotypes.vcf`)
+  writeFileSync(
+    vcf,
+    [
+      '##fileformat=VCFv4.3',
+      `##contig=<ID=${refName},length=${len}>`,
+      '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
+      `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${samples.join('\t')}`,
+      ...rows,
+      '',
+    ].join('\n'),
+  )
+  execFileSync('bgzip', ['-f', vcf])
+  execFileSync('tabix', ['-p', 'vcf', `${vcf}.gz`])
+
+  const tsv = join(outDir, `${slug}_samples.tsv`)
+  writeFileSync(
+    tsv,
+    [
+      'name\tregion\tcountry\tdate',
+      ...tips.map(t => `${t.name}\t${t.meta.region}\t${t.meta.country}\t${t.meta.date}`),
+      '',
+    ].join('\n'),
+  )
+  return { samples: samples.length, sites: rows.length }
+}
+
 function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
   const len = seq.length
   const base = `${S3_BASE}/${slug}`
@@ -417,6 +534,19 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
           bigWigLocation: { uri: `${base}/${slug}_entropy.bw` },
         },
       },
+      {
+        type: 'VariantTrack',
+        name: 'Sample genotypes',
+        trackId: `${assembly}-genotypes`,
+        assemblyNames: [assembly],
+        category: ['Nextstrain'],
+        adapter: {
+          type: 'VcfTabixAdapter',
+          vcfGzLocation: { uri: `${base}/${slug}_genotypes.vcf.gz` },
+          index: { location: { uri: `${base}/${slug}_genotypes.vcf.gz.tbi` } },
+          samplesTsvLocation: { uri: `${base}/${slug}_samples.tsv` },
+        },
+      },
       ...publishedGenomesTracks,
     ],
     location: `${assembly}:1..${len.toLocaleString('en-US')}`,
@@ -448,6 +578,18 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
               {
                 type: 'LinearBasicDisplay',
                 configuration: `${assembly}-nextstrain-color-display`,
+              },
+            ],
+          },
+          {
+            type: 'VariantTrack',
+            configuration: `${assembly}-genotypes`,
+            displays: [
+              {
+                type: 'LinearMultiSampleVariantMatrixDisplay',
+                displayId: `${assembly}-genotypes-LinearMultiSampleVariantMatrixDisplay`,
+                height: 400,
+                colorBy: 'region',
               },
             ],
           },
@@ -520,6 +662,7 @@ for (const ds of DATASETS) {
   mkdirSync(outDir, { recursive: true })
   const refFasta = writeFasta(outDir, ds.slug, refName, seq)
   writeEntropyBigWig(outDir, ds.slug, refName, seq.length, entropyFeats)
+  const gt = writeGenotypeVcf(outDir, ds.slug, refName, seq.length, data.tree)
   if (ds.genomesSeqs) {
     await writeGenomesCram(outDir, ds.slug, refFasta, ds.genomesSeqs)
   }
@@ -535,6 +678,7 @@ for (const ds of DATASETS) {
   console.log(
     `wrote ${ds.file}.json + ${ds.slug}/ flatfiles — ${seq.length} bp ` +
       `reference (${source}), ${geneFeats.length} genes, ` +
-      `${entropyFeats.length} diversity points`,
+      `${entropyFeats.length} diversity points, ` +
+      `${gt.samples}×${gt.sites} genotype matrix`,
   )
 }

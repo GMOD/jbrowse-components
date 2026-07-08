@@ -14,5 +14,12 @@ the same hosted reference. CRAM stores each read as differences from the
 reference, so JBrowse renders coverage and per-base mismatches straight off the
 shared assembly sequence — no MD tag needed.
 
+The **Sample genotypes** track is a multi-sample variant matrix: the generator
+reconstructs each phylogeny tip's genotype at every variable site (walking the
+tree's nucleotide mutations root→tip) into a bgzipped/tabixed VCF plus a
+`samplesTsv` of each tip's metadata, rendered by
+`LinearMultiSampleVariantMatrixDisplay` as samples × sites colored by region —
+the genotype table behind the Nextstrain tree, in genome coordinates.
+
 See [the config guide](https://jbrowse.org/jb2/docs/config_guide) for the
 track/assembly shapes.
