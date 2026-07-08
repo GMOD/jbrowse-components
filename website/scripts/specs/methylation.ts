@@ -8,25 +8,29 @@ import {
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const methylationSpecs: ScreenshotSpec[] = [
-  // CRAM modifications + bedmethyl together over a CpG island (chr20 18.49-18.51Mb,
-  // the same island the `modifications` figure uses) so there is a clear
-  // methylated/unmethylated transition — the old chr20:10Mb window had little
-  // signal. The COLO829 nanopore reads' per-base CpG methylation calls
-  // (colorBy methylation) line up with the modkit bedmethyl summary below. The
-  // bedmethyl uses the multi-row-density renderer (a value-gradient heatmap), not
-  // the default two-color xyplot whose negColor never shows for an all-positive
-  // 0-100 methylation percentage (don't use twocolor — it only showed
-  // the one red color).
+  // CRAM modifications + bedmethyl together over a chr20:21.505-21.514Mb window
+  // that captures a methylation *contrast* the reviewer asked for: the leftmost
+  // CpG island (UCSC "CpG: 158", chr20:21,505,294-21,506,966) is hypomethylated
+  // (~20%), while the adjacent CpG:26/33/214 island cluster
+  // (chr20:21,507,762-21,513,742) is densely methylated (~90%, silenced) in the
+  // COLO829 melanoma line — so the reads read out red/methylated across the
+  // cluster and drop to blue over CpG:158. (The bedmethyl demo file only covers
+  // chr20, so the earlier chr9 CDKN2A move had no bedmethyl data there — 0 rows,
+  // which is why nothing lined up.) The COLO829 nanopore reads' per-base CpG
+  // methylation calls (colorBy methylation) line up with the modkit bedmethyl
+  // summary below. The bedmethyl uses the multi-row-density renderer (a
+  // value-gradient heatmap), not the default two-color xyplot whose negColor
+  // never shows for an all-positive 0-100 methylation percentage (don't use
+  // twocolor — it only showed the one red color).
   {
     mode: 'url',
     name: 'methylation/colo829_cram_and_bedmethyl',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      // ~2.6kb window over the chr20:18,507,440-18,508,160 CpG island (the prior
-      // window sat in the gap between islands, so the CpG-island track was
-      // empty); the island's hypomethylated core gives the methylated/
-      // unmethylated transition the figure is about (reviewer: show the island)
-      loc: 'chr20:18,506,400-18,509,000',
+      // ~8.8kb window spanning the hypomethylated CpG:158 island (~20%) and the
+      // densely-methylated CpG:26/33/214 cluster (~90%) so the methylated/
+      // unmethylated transition is visible against the UCSC island boundaries
+      loc: 'chr20:21,505,200-21,514,000',
       tracks: [
         // UCSC CpG-island annotation on top so the methylated/unmethylated
         // transition can be read against the island boundary (reviewer)
@@ -54,8 +58,10 @@ export const methylationSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'COLO829',
-    readyTimeout: 60000,
-    settleMs: 35000,
+    // remote ONT CRAM: alignments finish ~15s, bedmethyl ~5s (both settle well
+    // under these caps now that the empty-region loading hang is fixed)
+    readyTimeout: 90000,
+    settleMs: 30000,
   },
 
   // ONT HG002 fiber-seq (6mA) at the GAPDH promoter, modifications mode. The

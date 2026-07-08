@@ -170,15 +170,21 @@ export default function stateModelFactory(
       },
 
       get renderState() {
-        if (self.sources.length === 0) {
-          return undefined
-        }
         const view = getContainingView(self) as LGV
         const width = view.trackWidthPx
         // Full height, no YSCALEBAR_LABEL_OFFSET inset (unlike single-wiggle):
         // rows stack edge-to-edge for maximum density. Don't "unify" with
         // LinearWiggleDisplay's inset — the divergence is intentional.
         const height = self.height
+        // Don't short-circuit on an empty source list: it means either "still
+        // loading" (no fetch has completed) or "fetch completed with zero
+        // features". Only resolveRenderState can tell them apart, via
+        // rpcDataMap.size — no data → undefined (keep the loading overlay up),
+        // has data → a [0,1] stub that renders empty, clears the canvas, and
+        // flips canvasDrawn so the overlay resolves to the NoDataMessage instead
+        // of spinning forever (a region the bedMethyl file doesn't cover). An
+        // early `return undefined` here bypassed that stub path and left the
+        // display loading indefinitely.
         return resolveRenderState(
           self.domain,
           self.rpcDataMap.size > 0,

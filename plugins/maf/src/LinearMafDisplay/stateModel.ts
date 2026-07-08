@@ -853,7 +853,20 @@ export default function stateModelFactory(
        */
       get renderState(): MafGPURenderState | undefined {
         const view = self.lgv
-        if (!view.initialized || !self.sources) {
+        // Return undefined only while genuinely still loading (no fetch has
+        // landed). A sample-discovery track — no configured `samples`, so rows
+        // come from whichever genomes appear in the region's blocks — yields
+        // zero sources over a region with no alignment blocks. Gating solely on
+        // `!self.sources` there kept renderState undefined after the fetch
+        // completed, so the render callback returned false, canvasDrawn never
+        // flipped, and the loading overlay spun forever. Once a region has
+        // loaded, still build a state so renderBlocks clears the canvas and
+        // canvasDrawn flips (nrow floors at 1, so the row-height math is safe
+        // with zero sources).
+        if (
+          !view.initialized ||
+          (!self.sources && self.loadedRegions.size === 0)
+        ) {
           return undefined
         }
         return {
