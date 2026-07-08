@@ -29,9 +29,12 @@ interface FiltersMenuOptions {
 }
 
 // One home for "which reads are shown": the read-name/tag/flag dialog plus the
-// per-read-category flag toggles (proper pairs, singletons). Those are ordinary
-// SAM-flag filters that also thin the coverage histogram, so they belong here,
-// not under "Read connections" where they used to hide.
+// two read-category filters (hide proper pairs, hide reads with no mate). Those
+// thin the coverage histogram too, so they belong here, not under "Read
+// connections" where they used to hide. Phrased as "Hide..." so they read as
+// filters, not visibility toggles that belong under "Show...". The model slots
+// (drawProperPairs / drawSingletons) stay show-oriented, so the checked state is
+// inverted here: checked = filtered out.
 export function getFiltersMenuItem(
   model: FiltersModel,
   options: FiltersMenuOptions = {},
@@ -50,15 +53,19 @@ export function getFiltersMenuItem(
         type: 'subMenu' as const,
         subMenu: [
           checkboxItem(
-            'Show proper pairs',
-            pairFilters.drawProperPairs,
+            'Hide proper pairs',
+            !pairFilters.drawProperPairs,
             () => {
               pairFilters.setDrawProperPairs(!pairFilters.drawProperPairs)
             },
           ),
-          checkboxItem('Show singletons', pairFilters.drawSingletons, () => {
-            pairFilters.setDrawSingletons(!pairFilters.drawSingletons)
-          }),
+          checkboxItem(
+            'Hide reads without a mate',
+            !pairFilters.drawSingletons,
+            () => {
+              pairFilters.setDrawSingletons(!pairFilters.drawSingletons)
+            },
+          ),
           { type: 'divider' as const },
           {
             label: 'Edit read name / tag / flag filters...',

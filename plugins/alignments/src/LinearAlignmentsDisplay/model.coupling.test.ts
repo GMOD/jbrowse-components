@@ -278,19 +278,21 @@ describe('filter menu unification', () => {
     const display = createDisplay()
     const items = display.trackMenuItems()
     const filterBy = findMenu(items, 'Filter by...')
-    expect(hasMenuLabel(filterBy?.subMenu ?? [], 'Show proper pairs')).toBe(true)
-    expect(hasMenuLabel(filterBy?.subMenu ?? [], 'Show singletons')).toBe(true)
+    expect(hasMenuLabel(filterBy?.subMenu ?? [], 'Hide proper pairs')).toBe(true)
+    expect(
+      hasMenuLabel(filterBy?.subMenu ?? [], 'Hide reads without a mate'),
+    ).toBe(true)
 
     const readConnections = findMenu(items, 'Read connections')
     expect(
-      hasMenuLabel(readConnections?.subMenu ?? [], 'Show proper pairs'),
+      hasMenuLabel(readConnections?.subMenu ?? [], 'Hide proper pairs'),
     ).toBe(false)
   })
 
   test('the pair-filter checkbox flips the model slot', () => {
     const display = createDisplay()
     display.setDrawProperPairs(true)
-    findMenu(display.trackMenuItems(), 'Show proper pairs')?.onClick?.()
+    findMenu(display.trackMenuItems(), 'Hide proper pairs')?.onClick?.()
     expect(display.drawProperPairs).toBe(false)
   })
 })

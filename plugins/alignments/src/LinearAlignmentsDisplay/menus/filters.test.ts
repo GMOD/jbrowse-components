@@ -34,24 +34,31 @@ describe('filters menu', () => {
     expect(
       subMenuOf(item).flatMap(i => ('label' in i ? [i.label] : ['<divider>'])),
     ).toEqual([
-      'Show proper pairs',
-      'Show singletons',
+      'Hide proper pairs',
+      'Hide reads without a mate',
       '<divider>',
       'Edit read name / tag / flag filters...',
     ])
   })
 
-  test('proper-pairs checkbox reflects and flips the model', () => {
+  // "Hide proper pairs" is checked = filtered out, the inverse of the
+  // show-oriented drawProperPairs slot.
+  test('"Hide proper pairs" is unchecked while shown and hides on click', () => {
     const controls = pairFilters()
-    const proper = subMenuOf(
-      getFiltersMenuItem(baseModel(), { pairFilters: controls }),
-    ).find(i => 'label' in i && i.label === 'Show proper pairs')
-    if (!proper || !('checked' in proper) || !('onClick' in proper)) {
-      throw new Error('no proper-pairs checkbox')
+    const hideProper = () =>
+      subMenuOf(
+        getFiltersMenuItem(baseModel(), { pairFilters: controls }),
+      ).find(i => 'label' in i && i.label === 'Hide proper pairs')
+    const item = hideProper()
+    if (!item || !('checked' in item) || !('onClick' in item)) {
+      throw new Error('no hide-proper-pairs checkbox')
     }
-    expect(proper.checked).toBe(true)
-    proper.onClick()
+    expect(item.checked).toBe(false)
+    item.onClick()
     expect(controls.drawProperPairs).toBe(false)
+
+    const afterHide = hideProper()
+    expect(afterHide && 'checked' in afterHide && afterHide.checked).toBe(true)
   })
 
   test('without pair filters (synteny) it stays a single "Edit filters..." action', () => {
