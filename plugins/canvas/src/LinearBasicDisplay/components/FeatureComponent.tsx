@@ -17,7 +17,11 @@ import IsoformCollapseNotice from './IsoformCollapseNotice.tsx'
 import OverflowIndicator from './OverflowIndicator.tsx'
 import PeptideCanvas from './PeptideCanvas.tsx'
 import SoloSelectionChip from './SoloSelectionChip.tsx'
-import { hoverTooltip, performMultiRegionHitDetection } from './hitTesting.ts'
+import {
+  hoverTooltip,
+  isHitFeature,
+  performMultiRegionHitDetection,
+} from './hitTesting.ts'
 import {
   useFloatingLabels,
   useHighlightOverlays,
@@ -454,18 +458,25 @@ const FeatureBody = observer(function FeatureBody({
     }
   }
 
+  // Both handlers hit-test at the event coordinates rather than reading
+  // model.hoveredFeature. Hover is suppressed while a context menu is open (see
+  // handleMouseMove) and cleared when it closes (closeContextMenu), so a
+  // click/right-click on a still-stationary cursor right after dismissing a
+  // menu would otherwise find no hover — deselecting, or falling through to the
+  // native browser menu — instead of acting on the feature under the cursor.
+  // When hover is current these resolve to the identical feature.
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const { hoveredFeature, hoveredSubfeature, hoveredRegionIndex } = model
+    const result = hitTestAtEvent(e)
     // Ctrl/Cmd+click builds the "show only these features" collection instead
     // of opening the feature details, so several features can be tagged while
     // they're all still visible, then isolated together via the context menu.
-    if ((e.ctrlKey || e.metaKey) && hoveredFeature) {
-      model.toggleSoloFeature(hoveredFeature.featureId)
-    } else if (hoveredFeature && hoveredRegionIndex !== undefined) {
+    if ((e.ctrlKey || e.metaKey) && isHitFeature(result)) {
+      model.toggleSoloFeature(result.feature.featureId)
+    } else if (isHitFeature(result)) {
       model.selectFeatureById(
-        hoveredFeature.featureId,
-        hoveredSubfeature ?? undefined,
-        hoveredRegionIndex,
+        result.feature.featureId,
+        result.subfeature ?? undefined,
+        result.displayedRegionIndex,
       )
     } else {
       model.clearSelection()
@@ -473,10 +484,16 @@ const FeatureBody = observer(function FeatureBody({
   }
 
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const { hoveredFeature, hoveredRegionIndex } = model
-    if (hoveredFeature && hoveredRegionIndex !== undefined) {
+    const result = hitTestAtEvent(e)
+    if (isHitFeature(result)) {
+      // showContextMenuForFeature pins the hover box to this feature itself.
       e.preventDefault()
-      openContextMenu(hoveredFeature, hoveredRegionIndex, e.clientX, e.clientY)
+      openContextMenu(
+        result.feature,
+        result.displayedRegionIndex,
+        e.clientX,
+        e.clientY,
+      )
     }
   }
 
