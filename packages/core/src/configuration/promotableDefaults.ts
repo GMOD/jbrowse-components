@@ -287,6 +287,17 @@ export interface SessionDefaultControl {
   toggle: () => void
 }
 
+// Setting/clearing a session-wide default is otherwise a silent state change, so
+// surface it as a snackbar — the user asked for the pin click to be unmistakable.
+function notifyDefaultToggled(self: PromotableDisplay, promoted: boolean): void {
+  getSession(self).notify(
+    promoted
+      ? 'Pinned as the default for all tracks of this type'
+      : 'Cleared the default for all tracks of this type',
+    'info',
+  )
+}
+
 /**
  * #api core/configuration
  * Per-value control: "make `slot === onValue` the session default". The meaning
@@ -304,6 +315,7 @@ export function makeSessionDefaultControl(
     active,
     toggle: () => {
       setSlotValueSessionDefault(self, slot, onValue, !active)
+      notifyDefaultToggled(self, !active)
     },
   }
 }
@@ -324,6 +336,7 @@ export function makeCurrentValueSessionDefaultControl(
     active,
     toggle: () => {
       setSlotsSessionDefault(self, slots, !active)
+      notifyDefaultToggled(self, !active)
     },
   }
 }

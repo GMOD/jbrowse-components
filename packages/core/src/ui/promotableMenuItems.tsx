@@ -66,6 +66,12 @@ export function promotableRadioItem({
         <DefaultForAllAdornment
           isDefault={sessionDefault.active}
           onToggleDefault={() => {
+            // pinning a value also selects it for this track, so the radio and
+            // the pin light up together (clearing the pin leaves the current
+            // selection alone)
+            if (!sessionDefault.active) {
+              onClick()
+            }
             sessionDefault.toggle()
           }}
         />
