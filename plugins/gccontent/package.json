@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.11.2",
+    "@jbrowse/mobx-state-tree": "^5.12.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/wiggle-core": "workspace:^",
