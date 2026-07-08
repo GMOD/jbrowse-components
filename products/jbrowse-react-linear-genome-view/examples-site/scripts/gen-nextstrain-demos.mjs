@@ -388,8 +388,7 @@ async function writeGenomesCram(outDir, slug, refFasta, seqsUrl) {
 // samplesTsv of each tip's metadata, so JBrowse's multi-sample variant matrix
 // renders samples x sites colored/grouped by region — the genotype table behind
 // the Nextstrain tree, in genome coordinates.
-function writeGenotypeVcf(outDir, slug, refName, len, tree) {
-  const { rootBase, tips } = genotypeData(tree)
+function writeGenotypeVcf(outDir, slug, refName, len, { rootBase, tips }) {
   const samples = tips.map(t => t.name)
   const positions = Object.keys(rootBase)
     .map(Number)
@@ -448,6 +447,76 @@ function writeGenotypeVcf(outDir, slug, refName, len, tree) {
     ].join('\n'),
   )
   return { samples: samples.length, sites: rows.length }
+}
+
+// sanitize a tip name for newick/FASTA (drop whitespace and newick delimiters)
+const safeName = name => name.replace(/[\s(),:;]+/g, '_')
+
+// Pick n tip names spread evenly across the tree's DFS order (deterministic).
+function subsampleTipNames(tips, n) {
+  if (tips.length <= n) {
+    return new Set(tips.map(t => t.name))
+  }
+  const keep = new Set()
+  const step = tips.length / n
+  for (let i = 0; i < n; i++) {
+    keep.add(tips[Math.floor(i * step)].name)
+  }
+  return keep
+}
+
+// Newick of the tree pruned to `keep`, collapsing internal nodes that lose all
+// but one surviving child (summing branch lengths). Branch length = delta of
+// node_attrs.div (nucleotide divergence) from parent.
+function buildNewick(tree, keep) {
+  const div = n => n.node_attrs?.div ?? 0
+  const rec = (node, parentDiv) => {
+    const bl = Math.max(0, div(node) - parentDiv)
+    const children = node.children || []
+    if (children.length === 0) {
+      return keep.has(node.name) ? { nwk: safeName(node.name), len: bl } : undefined
+    }
+    const kids = children.map(c => rec(c, div(node))).filter(Boolean)
+    if (kids.length === 0) {
+      return undefined
+    }
+    if (kids.length === 1) {
+      return { nwk: kids[0].nwk, len: bl + kids[0].len }
+    }
+    const inner = kids.map(k => `${k.nwk}:${k.len.toFixed(6)}`).join(',')
+    return { nwk: `(${inner})`, len: bl }
+  }
+  const r = rec(tree, div(tree))
+  return r ? `${r.nwk};\n` : ';\n'
+}
+
+// Reconstruct each kept tip's sequence in reference coordinates: the reference
+// with that tip's nucleotide mutations applied. Nextstrain sequences are already
+// reference-aligned, so this is a gap-free MSA (deletions arrive as '-' muts).
+function reconstructMsaFasta(seq, tips, keep) {
+  const rows = []
+  for (const tip of tips) {
+    if (keep.has(tip.name)) {
+      const chars = seq.split('')
+      for (const posStr in tip.muts) {
+        const pos = +posStr
+        if (pos >= 1 && pos <= chars.length) {
+          chars[pos - 1] = tip.muts[posStr]
+        }
+      }
+      rows.push(`>${safeName(tip.name)}\n${chars.join('')}`)
+    }
+  }
+  return `${rows.join('\n')}\n`
+}
+
+// write a subsampled MSA (<slug>_msa.fasta) + matching pruned tree (<slug>.nwk)
+// for react-msaview; the MSA and tree share the exact same tip set.
+function writeMsaTree(outDir, slug, seq, tips, tree, nTips = 80) {
+  const keep = subsampleTipNames(tips, nTips)
+  writeFileSync(join(outDir, `${slug}_msa.fasta`), reconstructMsaFasta(seq, tips, keep))
+  writeFileSync(join(outDir, `${slug}.nwk`), buildNewick(tree, keep))
+  return keep.size
 }
 
 function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
@@ -662,7 +731,9 @@ for (const ds of DATASETS) {
   mkdirSync(outDir, { recursive: true })
   const refFasta = writeFasta(outDir, ds.slug, refName, seq)
   writeEntropyBigWig(outDir, ds.slug, refName, seq.length, entropyFeats)
-  const gt = writeGenotypeVcf(outDir, ds.slug, refName, seq.length, data.tree)
+  const genotypes = genotypeData(data.tree)
+  const gt = writeGenotypeVcf(outDir, ds.slug, refName, seq.length, genotypes)
+  const msaTips = writeMsaTree(outDir, ds.slug, seq, genotypes.tips, data.tree)
   if (ds.genomesSeqs) {
     await writeGenomesCram(outDir, ds.slug, refFasta, ds.genomesSeqs)
   }
@@ -679,6 +750,7 @@ for (const ds of DATASETS) {
     `wrote ${ds.file}.json + ${ds.slug}/ flatfiles — ${seq.length} bp ` +
       `reference (${source}), ${geneFeats.length} genes, ` +
       `${entropyFeats.length} diversity points, ` +
-      `${gt.samples}×${gt.sites} genotype matrix`,
+      `${gt.samples}×${gt.sites} genotype matrix, ` +
+      `${msaTips}-tip MSA+tree`,
   )
 }

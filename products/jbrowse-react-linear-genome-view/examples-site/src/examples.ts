@@ -345,6 +345,14 @@ export const examples: ExampleMeta[] = [
     group: 'Real-world demos',
   },
   {
+    slug: 'nextstrain-msa',
+    name: 'NextstrainMsa',
+    title: 'Nextstrain MSA + tree',
+    description:
+      'The Nextstrain tree + reconstructed reference-coordinate MSA, embedded with react-msaview.',
+    group: 'Real-world demos',
+  },
+  {
     slug: 'locus-zoom-ld',
     name: 'LocusZoomLD',
     title: 'LocusZoom-style LD',
