@@ -218,16 +218,19 @@ jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
 
 <Figure src="/img/jbrowse-img/alignments_pileup.png" caption="A coverage histogram over a read pileup, with mismatches highlighted" />
 
-Track modifiers color, sort, and group the reads. Here the reads are colored and
-sorted by their read-group (`RG`) tag:
+Track modifiers color, sort, and group the reads. `sort:base` orders the pileup
+by the base each read carries at the center position — here, HG008-T PacBio HiFi
+reads over the `CUZD1` gene, where the sort pulls every read carrying a ~1.8 kb
+somatic deletion into one contiguous band so the heterozygous deletion (and its
+coverage dip) pops out of the pileup:
 
 ```bash
-jb2export --fasta data/volvox/volvox.fa \
-  --bam data/volvox/volvox-rg.bam color:tag:RG sort:tag:RG height:300 \
-  --loc ctgA:1000-2000 --width 1200 --out readgroup.png
+jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:55 \
+  --bam https://jbrowse.org/demos/cgiab/HG008-T_chr10_CUZD1_deletion.bam sort:base height:420 \
+  --loc chr10:122,830,900-122,840,000 --width 1200 --out sorted.png
 ```
 
-<Figure src="/img/jbrowse-img/alignments_readgroup.png" caption="Reads colored and sorted by their read-group tag" />
+<Figure src="/img/jbrowse-img/alignments_readgroup.png" caption="HG008-T PacBio HiFi reads over CUZD1, sorted by the base at the center position so the reads carrying a ~1.8 kb somatic deletion cluster into one band" />
 
 `group:tag:HP` splits the pileup into one stacked sub-track per haplotype. This
 HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors
@@ -332,19 +335,22 @@ jb2export --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.filtered.vcf.
 
 ### Multi-sample variant matrix
 
-A VCF with many samples can render as a genotype matrix — one column per
-variant, one row per sample — with the `display:multivariant` modifier (the
-`LinearMultiSampleVariantDisplay`). `display:multivariantmatrix` selects the
-index-spaced matrix variant. Reproducible with the bundled 1094-sample volvox
-VCF (`--aliases` reconciles its `contigA` refname with the FASTA's `ctgA`):
+A VCF with many samples renders as a genotype matrix — one row per sample, each
+alt genotype painted over the reference background — with the
+`display:multivariant` modifier (the `LinearMultiSampleVariantDisplay`);
+`display:multivariantmatrix` selects the index-spaced matrix variant. This
+example draws the 1000 Genomes phase 3 chr11 callset (2,504 samples) over the
+HBB β-globin locus, with the NCBI RefSeq gene track (via `--hub`/`--track`) for
+context. Common variants read as solid vertical bands, rarer ones as sparse
+speckle:
 
 ```bash
-jb2export --fasta data/volvox/volvox.fa --aliases data/volvox/volvox.aliases.txt \
-  --vcfgz data/volvox/volvox.test.vcf.gz display:multivariant height:500 force:true \
-  --loc ctgA:2900-3300 --width 1200 --out multisample.png
+jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
+  --vcfgz https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr11.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz display:multivariant height:450 force:true \
+  --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample.png
 ```
 
-<Figure src="/img/jbrowse-img/multisample_variants.png" caption="A multi-sample variant genotype matrix: variants on x, samples on y, alt genotypes painted over the reference background" />
+<Figure src="/img/jbrowse-img/multisample_variants.png" caption="The 1000 Genomes phase 3 chr11 callset (2,504 samples) as a multi-sample genotype matrix over the HBB locus, with the NCBI RefSeq gene track above" />
 
 ### Hi-C tracks
 
@@ -361,30 +367,21 @@ jb2export --hub hg19 \
 
 <Figure src="/img/jbrowse-img/hic.png" caption="Hi-C contact matrix as a triangular heatmap showing TAD structure along hg19 chr1" />
 
-### Gene / feature tracks
+### Gene tracks and the reference sequence
 
-Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`) render their glyphs with
-labels. Reproducible with the bundled volvox annotations:
-
-```bash
-jb2export --fasta data/volvox/volvox.fa --gffgz data/volvox/volvox.sort.gff3.gz height:250 \
-  --loc ctgA:1-50000 --width 1200 --out genes.png
-```
-
-<Figure src="/img/jbrowse-img/gene_track.png" caption="A gene/feature track rendered with glyphs and labels (volvox annotations)" />
-
-### Reference sequence track
-
-`--refseq` adds the assembly's reference-sequence track. Zoomed in to base level
-it shows the DNA bases and the six-frame translation (green start codons, red
-stops):
+Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`, or a hosted `--track`) render
+their glyphs with labels, and `--refseq` adds the assembly's reference-sequence
+track — which, zoomed to base level, shows the DNA bases and the six-frame
+translation (green start codons, red stops). This human example zooms into a
+`TP53` coding exon so the NCBI RefSeq CDS lines up with the reference sequence
+and its translation frames:
 
 ```bash
-jb2export --fasta data/volvox/volvox.fa --loc ctgA:108-208 --refseq \
-  --width 1500 --out sequence.png
+jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:110 --refseq \
+  --loc chr17:7,676,045-7,676,130 --width 1500 --out gene_track.png
 ```
 
-<Figure src="/img/jbrowse-img/sequence.png" caption="The reference sequence track at base level, showing DNA bases and the six-frame translation" />
+<Figure src="/img/jbrowse-img/gene_track.png" caption="A TP53 coding exon at base level: the NCBI RefSeq CDS above the reference sequence track's DNA bases and six-frame translation" />
 
 ### Themes
 
