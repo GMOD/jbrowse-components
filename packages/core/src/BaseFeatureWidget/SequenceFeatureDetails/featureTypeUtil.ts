@@ -1,7 +1,12 @@
 import type { SequenceDisplayMode } from './model.ts'
-import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type {
+  SimpleFeatureSerialized,
+  SimpleFeatureSerializedNoId,
+} from '../../util/index.ts'
 
-export function featureHasCDS(feature: SimpleFeatureSerialized) {
+// these predicates only ever read type/subfeatures, so they accept a bare
+// subfeature (no guaranteed uniqueId) as readily as a full feature
+export function featureHasCDS(feature: SimpleFeatureSerializedNoId) {
   if (feature.type?.toLowerCase() === 'mature_protein_region_of_cds') {
     return true
   }
@@ -13,19 +18,53 @@ export function featureHasCDS(feature: SimpleFeatureSerialized) {
   )
 }
 
-export function featureHasExon(feature: SimpleFeatureSerialized) {
+export function featureHasExon(feature: SimpleFeatureSerializedNoId) {
   return (
     feature.subfeatures?.some(sub => sub.type?.toLowerCase() === 'exon') ??
     false
   )
 }
 
-export function featureHasExonOrCDS(feature: SimpleFeatureSerialized) {
+export function featureHasExonOrCDS(feature: SimpleFeatureSerializedNoId) {
   return featureHasExon(feature) || featureHasCDS(feature)
 }
 
-export function getDefaultMode(
+// A container feature's (e.g. a gene's) direct subfeatures that are
+// themselves transcripts (have their own exon/CDS). An actual transcript's
+// exon/CDS children don't have exon/CDS of their own, so this bottoms out
+// one level down without a type-name allowlist. Synthesizes a uniqueId the
+// same way FeatureDetails does for nested subfeature cards, since a
+// subfeature isn't guaranteed one by its type.
+export function getTranscripts(
   feature: SimpleFeatureSerialized,
+): SimpleFeatureSerialized[] {
+  return (
+    feature.subfeatures
+      ?.filter(sub => featureHasExonOrCDS(sub))
+      .map((sub, idx) => ({
+        ...sub,
+        uniqueId: `${feature.uniqueId}_${idx}`,
+      })) ?? []
+  )
+}
+
+// index of the transcript the gene glyph itself would collapse to in
+// 'longestCoding' mode (RenderFeatureDataRPC/glyphs/subfeatures.ts): prefer a
+// coding transcript, then the longest span — so the sequence panel's default
+// matches what the track already drew.
+export function pickDefaultTranscriptIndex(
+  transcripts: SimpleFeatureSerialized[],
+) {
+  const coding = transcripts.filter(t => featureHasCDS(t))
+  const candidates = coding.length > 0 ? coding : transcripts
+  const longest = candidates.reduce((a, b) =>
+    b.end - b.start > a.end - a.start ? b : a,
+  )
+  return transcripts.indexOf(longest)
+}
+
+export function getDefaultMode(
+  feature: SimpleFeatureSerializedNoId,
 ): SequenceDisplayMode {
   return featureHasCDS(feature)
     ? 'cds'

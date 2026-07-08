@@ -33,11 +33,6 @@ export default function SequenceBody({
 }) {
   return (
     <div>
-      {feature.type === 'gene' ? (
-        <Typography>
-          Note: inspect subfeature sequences for protein/CDS computations
-        </Typography>
-      ) : null}
       {error ? (
         <ErrorBanner error={error} />
       ) : !sequence ? (

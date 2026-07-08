@@ -316,8 +316,10 @@ export const featuresSpecs: ScreenshotSpec[] = [
   // Uses config_demo's hg38 + ncbi_refseq_109_hg38_latest (labels by gene
   // symbol and exposes real CDS subfeatures, unlike the hg19 ncbi_gff / Gencode
   // tracks the earlier FAF1 attempt tried). geneGlyphMode 'longestCoding' draws a
-  // single transcript so the coordinate click lands unambiguously on the MANE
-  // mRNA row (canvas-drawn glyphs have no DOM label to target by text).
+  // single transcript, labeled with its gene symbol as a real floating DOM
+  // label (LinearBasicDisplay always renders one — same affordance the
+  // collapse-introns PTEN click uses), so the click targets it by text rather
+  // than a pixel coordinate that drifts whenever the glyph's layout changes.
   {
     mode: 'url',
     name: 'feature_detail_sequence',
@@ -340,10 +342,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportHeight: 900,
     actions: [
-      // Coordinate click on the single MANE transcript row (canvas glyph, no DOM
-      // label) — lands on a CDS exon of the SELENOP transcript line, below the
-      // CCDC152 neighbor gene above it.
-      { type: 'click', from: { x: 637, y: 211 } },
+      { type: 'click', text: 'SELENOP' },
       { type: 'waitForText', text: 'Show feature sequence' },
       { type: 'delay', ms: 1000 },
       { type: 'click', text: 'Show feature sequence' },
@@ -365,8 +364,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
   // in-frame UGA stop codons that NCBI RefSeq annotates as
   // `transl_except=(...,aa:Sec)` translate to selenocysteine (U), highlighted
   // amber in the peptide with a legend noting "10 selenocysteines (U) from
-  // transl_except". Same setup/transcript click as feature_detail_sequence; only
-  // the type selector differs (Protein).
+  // transl_except". Same setup/gene-label click as feature_detail_sequence;
+  // only the type selector differs (Protein).
   {
     mode: 'url',
     name: 'feature_detail_protein',
@@ -389,7 +388,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportHeight: 900,
     actions: [
-      { type: 'click', from: { x: 637, y: 211 } },
+      { type: 'click', text: 'SELENOP' },
       { type: 'waitForText', text: 'Show feature sequence' },
       { type: 'delay', ms: 1000 },
       { type: 'click', text: 'Show feature sequence' },
