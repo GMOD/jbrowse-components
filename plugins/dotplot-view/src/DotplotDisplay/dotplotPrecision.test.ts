@@ -60,6 +60,42 @@ describe('buildLineSegments cumBp precision', () => {
     expect(segs.baseV).toBe(7e8)
   })
 
+  test('CIGAR sub-segments trace toward (x2,y2) in a reversed region', () => {
+    // A reversed query region (e.g. after auto-diagonalize) flips the vertical
+    // endpoints so y1 > y2. The CIGAR walk must derive its vertical direction
+    // from the endpoints, not from strand, or the detailed segments splay away
+    // from y2. Ref span 250 (100M 50D 100M), query span 200, V decreasing.
+    const M = (len: number) => (len << 4) | 0 // CIGAR_M
+    const D = (len: number) => (len << 4) | 2 // CIGAR_D
+    const data: DotplotRpcData = {
+      p11: new Float64Array([1_000]),
+      p12: new Float64Array([1_250]),
+      p21: new Float64Array([5_000]),
+      p22: new Float64Array([4_800]),
+      strands: new Int8Array([1]),
+      starts: new Uint32Array([0]),
+      ends: new Uint32Array([250]),
+      identities: new Float32Array([-1]),
+      meanIdentities: new Float32Array([-1]),
+      mappingQuals: new Float32Array([-1]),
+      refNames: ['chr1'],
+      mateRefNames: ['chr2'],
+      parsedCigars: [[M(100), D(50), M(100)]],
+      totalFeatureCount: 1,
+      skippedFeatureCount: 0,
+    }
+    const segs = buildLineSegments(data, () => 0, true, 0, 1, 1, 0, 0)
+    const last = segs.instanceCount - 1
+    // final sub-segment lands exactly on the feature's (x2,y2) endpoint
+    expect(segs.x2[last]).toBeCloseTo(1_250)
+    expect(segs.y2[last]).toBeCloseTo(4_800)
+    // vertical walk is monotonically downward (reversed), never above the start
+    for (let i = 0; i < segs.instanceCount; i++) {
+      expect(segs.y1[i]!).toBeLessThanOrEqual(5_000)
+      expect(segs.y2[i]!).toBeLessThanOrEqual(5_000)
+    }
+  })
+
   test('window-relative Float32 upload is sub-pixel vs absolute Float64', () => {
     // Reproduces the GPU upload + shader reconstruction at genome scale:
     //   stored  = Float32(cumBp - base)

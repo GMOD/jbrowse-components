@@ -70,7 +70,7 @@ export function buildLineSegments(
   baseH: number,
   baseV: number,
 ): DotplotGeometryData {
-  const { p11, p12, p21, p22, starts, ends, strands, parsedCigars } = data
+  const { p11, p12, p21, p22, starts, ends, parsedCigars } = data
   const count = p11.length
   const bpPerPxHInv = 1 / bpPerPxH
   const bpPerPxVInv = 1 / bpPerPxV
@@ -103,7 +103,13 @@ export function buildLineSegments(
       Math.abs(y2 - y1) * bpPerPxVInv,
     )
     const color = colorFn(data, i)
-    const strand = strands[i]!
+
+    // Walk directions come from the actual endpoint order, not strand, so the
+    // CIGAR sub-segments trace toward (x2,y2) even when a region is reversed
+    // (e.g. after auto-diagonalize flips a query region, giving y1 > y2). Matches
+    // the synteny renderer's rev1/rev2 derivation.
+    const rev1 = x1 < x2 ? 1 : -1
+    const rev2 = y1 < y2 ? 1 : -1
 
     if (cigar.length > 0 && drawCigar && featureWidthPx >= MIN_CIGAR_PX_WIDTH) {
       visitCigarRenderedSegments(
@@ -112,8 +118,8 @@ export function buildLineSegments(
         y1,
         bpPerPxH,
         bpPerPxV,
-        strand,
-        1,
+        rev1,
+        rev2,
         (_op, seg1Start, seg1End, seg2Start, seg2End) => {
           writeSegment(buf, n, seg1Start, seg2Start, seg1End, seg2End, color)
           n++
