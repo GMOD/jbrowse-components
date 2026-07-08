@@ -1,4 +1,4 @@
-import { getFillProps, getSession } from '@jbrowse/core/util'
+import { getSession, stripAlpha } from '@jbrowse/core/util'
 import {
   createOverviewLayout,
   getContentBlocksPxSpan,
@@ -81,7 +81,7 @@ export default function SVGHeader({
     ? assemblyManager.get(cytobandAssemblyName)
     : undefined
   const theme = useTheme()
-  const fillProps = getFillProps(theme.palette.text.primary)
+  const fill = stripAlpha(theme.palette.text.primary)
   const visibleRegions = model.dynamicBlocks.contentBlocks
   if (!visibleRegions.length) {
     return null
@@ -100,7 +100,7 @@ export default function SVGHeader({
           y={0}
           dominantBaseline="hanging"
           fontSize={fontSize}
-          {...fillProps}
+          fill={fill}
         >
           {assemblyNames.join(', ')}
         </text>

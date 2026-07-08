@@ -3,6 +3,7 @@ import {
   getFillProps,
   getStrokeProps,
   getTickDisplayStr,
+  stripAlpha,
 } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
@@ -105,7 +106,7 @@ function SVGRefNameLabels({
   fontSize: number
 }) {
   const theme = useTheme()
-  const fillProps = getFillProps(theme.palette.text.primary)
+  const fill = stripAlpha(theme.palette.text.primary)
   const { labels } = getScalebarRefNameLabels({
     blocks: model.staticBlocks.blocks,
     offsetPx: model.offsetPx,
@@ -121,7 +122,7 @@ function SVGRefNameLabels({
             y={fontSize}
             fontSize={REF_NAME_LABEL_FONT_SIZE}
             fontWeight="bold"
-            {...fillProps}
+            fill={fill}
           >
             {text}
           </text>

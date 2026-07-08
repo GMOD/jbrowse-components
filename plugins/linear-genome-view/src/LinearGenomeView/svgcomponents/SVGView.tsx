@@ -1,4 +1,4 @@
-import { getFillProps } from '@jbrowse/core/util'
+import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import SVGGridlines from './SVGGridlines.tsx'
@@ -55,7 +55,7 @@ export default function SVGView({
         <text
           x={0}
           fontSize={fontSize}
-          {...getFillProps(theme.palette.text.primary)}
+          fill={stripAlpha(theme.palette.text.primary)}
         >
           {view.assemblyNames.join(', ')}
         </text>

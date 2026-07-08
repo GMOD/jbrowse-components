@@ -1,4 +1,4 @@
-import { coarseStripHTML, getFillProps } from '@jbrowse/core/util'
+import { coarseStripHTML, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import type { TrackLabelMode } from '../types.ts'
@@ -17,7 +17,7 @@ export default function SVGTrackLabel({
   x: number
 }) {
   const theme = useTheme()
-  const fillProps = getFillProps(theme.palette.text.primary)
+  const fill = stripAlpha(theme.palette.text.primary)
   const xoff = trackLabels === 'overlay' ? 5 : 0
   const yoff = trackLabels === 'offset' ? 5 : 0
   const name = coarseStripHTML(trackName)
@@ -29,7 +29,7 @@ export default function SVGTrackLabel({
         fontSize={fontSize}
         dominantBaseline="hanging"
         textAnchor="end"
-        {...fillProps}
+        fill={fill}
       >
         {name}
       </text>
@@ -39,7 +39,7 @@ export default function SVGTrackLabel({
         y={yoff}
         fontSize={fontSize}
         dominantBaseline="hanging"
-        {...fillProps}
+        fill={fill}
       >
         {name}
       </text>

@@ -1,4 +1,4 @@
-import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
+import { stripAlpha } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -32,9 +32,10 @@ function tickLen(tick: Tick) {
 // color, shared by the horizontal and vertical axes.
 function useAxisColors() {
   const theme = useTheme()
+  const color = stripAlpha(theme.palette.text.primary)
   return {
-    fill: getFillProps(theme.palette.text.primary),
-    stroke: getStrokeProps(theme.palette.text.primary),
+    fill: { fill: color },
+    stroke: { stroke: color },
   }
 }
 

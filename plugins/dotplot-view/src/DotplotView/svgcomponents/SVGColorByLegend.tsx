@@ -1,4 +1,9 @@
-import { getFillProps, getStrokeProps, measureText } from '@jbrowse/core/util'
+import {
+  getFillProps,
+  getStrokeProps,
+  measureText,
+  stripAlpha,
+} from '@jbrowse/core/util'
 import { colorByShortLabel, getColorBySwatch } from '@jbrowse/synteny-core'
 import { useTheme } from '@mui/material'
 
@@ -25,7 +30,7 @@ export function SVGColorByLegend({
   const theme = useTheme()
   const swatch = getColorBySwatch(colorBy, { pointBased: true })
   const title = colorByShortLabel[colorBy]
-  const text = theme.palette.text.primary
+  const text = stripAlpha(theme.palette.text.primary)
   const gradientId = `colorby-ramp-${colorBy}`
 
   const rampRow =
