@@ -58,8 +58,9 @@ function VariantMatrixSvgBody({
   opts: ExportSvgDisplayOptions | undefined
 }) {
   const cellData = model.cellData as MatrixCellData | undefined
-  // narrow the nullable cell data; an empty (numCells === 0) matrix still
-  // paints nothing — drawVariantMatrixBlocks handles it.
+  // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
+  // this narrows the single nullable fetch blob for TS only — unreachable at
+  // runtime. An empty (numCells === 0) matrix still paints nothing.
   if (!cellData) {
     return null
   }

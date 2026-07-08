@@ -302,6 +302,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady").
+       * Synteny is not an LGV display — it composes only `BaseDisplay` with its
+       * own fetch — so it has no `MultiRegionDisplayMixin`/`GlobalDataDisplayMixin`
+       * `svgReady`; this is the equivalent. Stale-safe: goes false during an
+       * in-place refetch (`refetching`) so an export fired right after a
+       * zoom/pan waits for fresh ribbons instead of capturing stale ones. No
+       * `regionTooLarge` state (synteny never gates on region size).
+       */
+      get svgReady() {
+        return (this.ready && !this.refetching) || !!self.error
+      },
+      /**
+       * #getter
        */
       get view() {
         return getContainingView(self) as LinearSyntenyViewModel

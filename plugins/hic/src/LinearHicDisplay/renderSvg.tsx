@@ -63,8 +63,9 @@ function HicSvgBody({
     yScalar,
     colorMaxScore,
   } = self
-  // narrow the nullable fetch result; an empty (numContacts === 0) result
-  // still paints an empty matrix — drawHicBlocks handles it.
+  // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
+  // this narrows the single nullable fetch blob for TS only — unreachable at
+  // runtime. An empty (numContacts === 0) result still paints an empty matrix.
   if (!rpcData) {
     return null
   }

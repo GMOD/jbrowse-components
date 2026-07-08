@@ -76,6 +76,9 @@ function MafSvgBody({
   height: number
   opts: ExportSvgDisplayOptions
 }) {
+  // svgReady requires loadedRegions.size > 0, and renderState is undefined only
+  // pre-init / pre-load, so this narrows for TS only — unreachable in export
+  // (the on-screen render autorun is where the real undefined branch lives).
   const state = model.renderState
   if (!state) {
     return null

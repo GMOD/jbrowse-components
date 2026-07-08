@@ -1,7 +1,7 @@
 import { SVGErrorBox } from '@jbrowse/core/svg/SvgExport'
+import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { when } from 'mobx'
 
 import { drawDotplotInstances } from './drawDotplot.ts'
 
@@ -24,7 +24,7 @@ export async function renderSvg(
   model: DotplotRenderModel,
   opts?: PaintLayerOpts,
 ) {
-  await when(() => !!model.geometry || !!model.error)
+  await awaitSvgReady(model)
   const view = getContainingView(model) as unknown as RenderSvgView
   const { viewWidth, viewHeight, hview, vview, lineWidth } = view
   if (model.error) {

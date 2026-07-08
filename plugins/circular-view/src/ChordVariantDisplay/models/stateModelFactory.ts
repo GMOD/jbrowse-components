@@ -98,6 +98,18 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
 
       /**
        * #getter
+       * Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady").
+       * Chord displays are non-rectangular (radial), so they keep a bespoke
+       * `<DisplayError>` error UI instead of `SvgChrome`, but still expose
+       * `svgReady` + await it via the shared `awaitSvgReady` — no inlined
+       * `when()`. No `regionTooLarge` state.
+       */
+      get svgReady() {
+        return this.ready || self.error !== undefined
+      },
+
+      /**
+       * #getter
        */
       get radiusPx() {
         return (getContainingView(self) as CircularViewModel).radiusPx

@@ -882,9 +882,10 @@ export async function renderSvg(model, opts?) {
 }
 
 function XxxSvgBody({ model, view, height, opts }) {
-  // Render naturally — no data-size gate. Narrow only a genuinely-nullable
-  // fetch input the body destructures (e.g. `if (!model.rpcData) return null`);
-  // empty data paints an empty track.
+  // Render naturally — no data-size gate. The only guard is a TS narrow for a
+  // single nullable fetch object the body destructures (e.g. `if (!model.rpcData)
+  // return null`) — unreachable at runtime after svgReady; empty data paints an
+  // empty track.
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   return paintLayer(width, height, opts, ctx => {
     drawXxxBlocks(ctx, model.rpcDataMap, renderBlocks, state)
@@ -914,19 +915,40 @@ Three invariants hold for **every** GPU display, no exceptions:
   axis). Every draw function is empty-safe (self-guards or map-lookup), so the
   body just draws.
 
-The **only** guard a body keeps is a TypeScript narrow for an input that is
-genuinely `undefined` after `svgReady` — and there are just two kinds left:
+The **only** guard a body keeps is a single TypeScript narrow, and it means the
+same thing everywhere it appears: `awaitSvgReady` + `SvgChrome` already guarantee
+the data is present and non-terminal when the body runs, but TS can't see that
+invariant through the field's type. **Every such narrow is runtime-unreachable in
+the export path** — a type formality, not a loading branch. A body needs one only
+when it **destructures fields off a single nullable object**; bodies that iterate
+the `rpcDataMap` (an `ObservableMap`) or read individually-guarded getters need
+none, because iterating an empty map is already valid. So "nullable fetch" is
+**not a category a display *is*** — it's just the shape (single blob vs per-region
+map) its fetch happens to take. There is no "nullable-fetch vs loading"
+divergence; both are the one narrow above.
 
-- **Nullable fetch result** — HiC / LD (`if (!rpcData)`), multi-variant /
+- **Single nullable fetch object** — HiC / LD (`if (!rpcData)`), multi-variant /
   multi-variant-matrix (`if (!cellData)`). The monolithic-blob fetch stores
-  `null` until the single dataset lands; the body destructures fields off it.
-  Drop any `&& numContacts === 0` size clause — the narrow alone is enough.
-- **Genuinely-loading `renderState`** — **MAF** only, whose `renderState` is
-  `undefined` until its sources resolve (`if (!state) return null`). Sequence is
-  the sibling case with a *terminal* rather than a loading gate: `if (zoomedOut)`
-  (past base resolution it shows nothing and fetches nothing).
+  `null` until the dataset lands, and the body destructures fields off it.
+  `svgReady`'s `dataLoaded` (`= rpcData !== null`) / spatial-coverage disjunct is
+  exactly what makes the `SvgChrome` pass (`!error && !regionTooLarge`) imply the
+  object is set. Drop any `&& numContacts === 0` size clause — the narrow alone is
+  enough, and even it never fires.
+- **MAF's `renderState`** is the *same* narrow, **not** a distinct "still loading"
+  category: `renderState` is `undefined` only while `!view.initialized ||
+  (!sources && loadedRegions.size === 0)`, and `svgReady` requires
+  `loadedRegions.size > 0`, so `if (!state) return null` is unreachable here too.
+  (On-screen the render autorun legitimately sees `undefined` pre-load — a real
+  branch there, just not in export.) Sequence is the genuinely-different case: a
+  *terminal* gate (`if (zoomedOut)`) wired through `svgReadyExtraTerminal`, not a
+  data narrow.
 
-Everything else made `renderState` **non-nullable** and deleted its guard:
+These narrows stay (rather than being deleted like alignments' below) only
+because the field is `T | null` at the type level and can't be made non-nullable
+without a fake empty-blob sentinel — `dataLoaded` already carries the "is it
+loaded" signal, so a sentinel would just duplicate it. Where a getter's
+`undefined` came from view-shape alone, it *was* made non-nullable and the guard
+deleted:
 
 - **alignments / multi-row-feature** — `renderState` was `undefined` *only*
   pre-`view.initialized`, unreachable at either real reader (SVG export
@@ -993,11 +1015,27 @@ regionTooLarge`. The `loadedRegionSignature` freshness compare (a region-key
 string, the single-array analog of `loadedRegions`) is what makes an export
 fired right after a pan/zoom wait for fresh arcs instead of capturing stale ones
 — closing the in-place-refetch gap earlier writeups (and `plugins/arc/CLAUDE.md`)
-still describe as open. The non-LGV views are a different category — radial / dotplot canvas with
-no rectangular width/height or per-region axis — so they keep a bespoke gate and
-their own error UI instead of `SvgChrome` + `SVGErrorBox`: dotplot
-(`!!geometry || !!error`), multi-LGV-synteny (`featureData != null || error`),
-circular chord (`ready || error`, renders `<DisplayError>`).
+still describe as open.
+
+**Multi-LGV synteny** is *non-LGV* (a `LinearSyntenyView` level composing only
+`BaseDisplay` with its own fetch — no MultiRegion/Global mixin) yet
+*rectangular*, so it keeps the shared `SvgChrome` + `awaitSvgReady` contract with
+its own `svgReady` getter: `(ready && !refetching) || error` (`ready` =
+`featureData !== undefined`; `refetching` makes it stale-safe, closing the same
+in-place-refetch gap as arc). It has no `regionTooLarge` state, so its
+`SvgChrome` is passed `error` only. **`SvgChrome` is not LGV-specific** — it is
+the terminal chrome for *any* rectangular display, and synteny is the proof.
+
+**Bespoke error UI, shared gate — no `SvgChrome`.** The *non-rectangular* views
+keep their own error UI (they have no rectangular width/height axis to host a
+message box), but still expose a `svgReady` getter and await it via the shared
+`awaitSvgReady` — **not** an inlined `when()`: dotplot
+(`svgReady = !!geometry || !!error`, hand-rolled `SVGErrorBox` on a square
+canvas) and circular chord (`svgReady = ready || error !== undefined`, renders
+`<DisplayError>`). So the readiness gate is now uniform across **every** display
+(LGV, arc, synteny, dotplot, circular) — no `renderSvg` inlines `when()` — while
+the error chrome splits: `SvgChrome` for rectangular displays, bespoke for
+radial/square ones.
 
 `paintLayer` (in `@jbrowse/core/util/paintLayer`) decides between a 2× DPR
 raster canvas (when `opts.rasterizeLayers`) or an `SvgCanvas`, and returns

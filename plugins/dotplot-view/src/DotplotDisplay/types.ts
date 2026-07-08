@@ -25,4 +25,5 @@ export interface DotplotRpcData {
 export interface DotplotRenderModel extends IAnyStateTreeNode {
   geometry: DotplotGeometryData | undefined
   error: unknown
+  svgReady: boolean
 }

@@ -1,7 +1,7 @@
 import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
+import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { when } from 'mobx'
 
 import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
 
@@ -13,7 +13,7 @@ export async function renderSvg(
   model: LinearSyntenyDisplayModel,
   opts?: PaintLayerOpts,
 ) {
-  await when(() => model.featureData != null || !!model.error)
+  await awaitSvgReady(model)
   const view = getContainingView(model) as LinearSyntenyViewModel
   const data = model.renderInstanceData
   const params = model.renderParams
@@ -23,8 +23,11 @@ export async function renderSvg(
   // canvas is pre-scaled), so the same draw path runs identically here and in
   // the interactive Canvas2D backend. Horizontal overdraw is clipped by the
   // enclosing SVGSyntenyLevel's SvgClipRect, so no per-display clip is needed.
+  // Narrow the genuinely-nullable derived data (undefined until instanceData +
+  // colors resolve); no data-size gate — drawSyntenyTrack draws nothing for an
+  // instanceCount of 0, so an empty level paints empty naturally.
   const body =
-    data && params && data.instanceCount > 0
+    data && params
       ? paintLayer(view.width, model.height, opts, ctx => {
           drawSyntenyTrack(ctx, data, params, view.width, view.overdrawPx)
         })

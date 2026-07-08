@@ -90,6 +90,18 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             ]
           : self.fetchWarnings
       },
+      /**
+       * #getter
+       * Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady").
+       * Dotplot is non-rectangular (square canvas), so it keeps a bespoke
+       * `SVGErrorBox` error UI instead of `SvgChrome`, but still exposes
+       * `svgReady` + awaits it via the shared `awaitSvgReady` — no inlined
+       * `when()`. No `regionTooLarge` state. (Not stale-safe against
+       * `isRefetching` yet — a possible follow-up, like synteny's gate.)
+       */
+      get svgReady() {
+        return !!self.geometry || !!self.error
+      },
     }))
     .views(self => ({
       /**

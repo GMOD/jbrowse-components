@@ -25,6 +25,7 @@ export interface Block {
 export interface ChordDisplayModel {
   error: unknown
   ready: boolean
+  svgReady: boolean
   features: Feature[] | undefined
   blocksForRefs: Record<string, Block>
   selectedFeatureId: string | undefined

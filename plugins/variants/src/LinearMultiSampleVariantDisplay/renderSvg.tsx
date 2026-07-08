@@ -56,6 +56,9 @@ function VariantSvgBody({
 }) {
   const cellData = model.cellData as
     { perRegionCellData: Record<number, VariantCellData> } | undefined
+  // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
+  // this narrows the single nullable fetch blob for TS only — unreachable at
+  // runtime. An empty (numCells === 0) region still paints nothing.
   if (!cellData) {
     return null
   }

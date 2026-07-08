@@ -70,8 +70,9 @@ function LdSvgBody({
     yScalar,
   } = self
 
-  // narrow the nullable fetch result; an empty (numCells === 0) result still
-  // paints an empty triangle — drawLDBlocks handles it.
+  // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
+  // this narrows the single nullable fetch blob for TS only — unreachable at
+  // runtime. An empty (numCells === 0) result still paints an empty triangle.
   if (!rpcData) {
     return null
   }
