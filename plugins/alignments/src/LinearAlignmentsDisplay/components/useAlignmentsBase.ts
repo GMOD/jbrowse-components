@@ -179,18 +179,15 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     if (show) {
       e.preventDefault()
       model.clearMouseoverState()
-      // Coord + block + hits set atomically (openContextMenu also resets the
-      // read feature); the read itself is then fetched async below. A
-      // repositioned menu must not inherit the prior read's feature items.
+      // One atomic call: coord + block + hits, plus the async read fetch when
+      // the hit carries one. A repositioned menu can't inherit the prior read.
       model.openContextMenu({
         coord: [e.clientX, e.clientY],
         block: resolved,
         cigarHit,
         indicatorHit,
+        featureId,
       })
-      if (featureId !== undefined) {
-        void model.setContextMenuFeatureById(featureId)
-      }
     }
   }
 

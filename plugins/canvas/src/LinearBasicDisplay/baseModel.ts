@@ -1712,6 +1712,15 @@ export default function baseStateModelFactory(
               clientX,
               clientY,
             }
+            // Pin the hover to the menu's target so its highlight box always
+            // matches the feature the menu acts on — for every entry point
+            // (canvas or label right-click), and even when no mousemove
+            // preceded this open. The menu is feature-level, so box the whole
+            // feature (subfeature cleared) and drop the tooltip so it doesn't
+            // overlap the menu. closeContextMenu clears all of this again.
+            self.featureIdUnderMouse = featureInfo.featureId
+            self.subfeatureIdUnderMouse = null
+            self.hoveredRegionIndex = displayedRegionIndex
             self.mouseoverExtraInformation = undefined
           },
         }

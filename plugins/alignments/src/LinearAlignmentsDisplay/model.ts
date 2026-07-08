@@ -2602,28 +2602,6 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Open the right-click menu over a hit. Coord, block, and the two hit
-           * kinds always travel as a unit — set atomically so a consumer can
-           * never read a block without its hit (the split-state class of bug
-           * that silently no-op'd position sorts). The read feature is fetched
-           * separately (async, off an RPC) and reset here so a repositioned menu
-           * doesn't inherit the prior read's items.
-           */
-          openContextMenu(args: {
-            coord: [number, number]
-            block?: ResolvedBlock
-            cigarHit?: CigarHitResult
-            indicatorHit?: IndicatorHitResult
-          }) {
-            self.contextMenuCoord = args.coord
-            self.contextMenuBlock = args.block
-            self.contextMenuCigarHit = args.cigarHit
-            self.contextMenuIndicatorHit = args.indicatorHit
-            self.contextMenuFeature = undefined
-          },
-
-          /**
-           * #action
            */
           clearContextMenu() {
             self.contextMenuCoord = undefined
@@ -2691,11 +2669,31 @@ export default function stateModelFactory(
           },
           /**
            * #action
+           * Open the right-click menu over a hit. Coord, block, and the two hit
+           * kinds always travel as a unit — set atomically so a consumer can
+           * never read a block without its hit (the split-state class of bug
+           * that silently no-op'd position sorts). The read feature is reset now
+           * and, when the hit carries one, populated by an async RPC fetch — so
+           * "open the menu for this hit and its read" stays a single call and a
+           * repositioned menu can't inherit the prior read's items.
            */
-          async setContextMenuFeatureById(featureId: string) {
-            await fetchAndDo(featureId, feat => {
-              self.setContextMenuFeature(feat)
-            })
+          openContextMenu(args: {
+            coord: [number, number]
+            block?: ResolvedBlock
+            cigarHit?: CigarHitResult
+            indicatorHit?: IndicatorHitResult
+            featureId?: string
+          }) {
+            self.contextMenuCoord = args.coord
+            self.contextMenuBlock = args.block
+            self.contextMenuCigarHit = args.cigarHit
+            self.contextMenuIndicatorHit = args.indicatorHit
+            self.contextMenuFeature = undefined
+            if (args.featureId !== undefined) {
+              void fetchAndDo(args.featureId, feat => {
+                self.setContextMenuFeature(feat)
+              })
+            }
           },
         }
       })
