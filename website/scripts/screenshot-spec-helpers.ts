@@ -852,32 +852,29 @@ export const jbrowseImgSpecs: CliSpec[] = [
   ]),
 
   // Multi-sample variant genotype matrix: display:multivariant selects the
-  // LinearMultiSampleVariantDisplay for a 1094-sample VCF (volvox.test.vcf.gz,
-  // refname contigA reconciled to ctgA via --aliases). Each column is a variant,
-  // each row a sample; alt genotypes paint over the reference background.
+  // LinearMultiSampleVariantDisplay. Each column is a variant, each row a
+  // sample; alt genotypes paint over the reference background. This draws the
+  // real 1000 Genomes phase-3 chr11 callset (2,504 samples) over the HBB
+  // β-globin locus, with the hosted NCBI RefSeq gene track (via --hub/--track)
+  // for context — common variants read as solid vertical bands, rarer ones as
+  // sparse speckle. Matches the README command exactly.
   //
-  // NOTE (screenshot review): the reviewer wants human 1000 Genomes data here.
-  // Two blockers make that more than a locus swap, both confirmed by testing:
-  //  1. jb2export's static SSR renders the per-sample genotype MATRIX empty for
-  //     the 1000 Genomes phase-3 callset even with the data fully loaded locally
-  //     and rows at 1px — only volvox's simpler path paints cells. So the
-  //     multivariant matrix render needs a jb2export fix first.
-  //  2. Even once it paints, real population data is reference-dominant (grey);
-  //     the compelling view colors rows by population (colorBy:'population'),
-  //     which needs the adapter's samplesTsv — a small jb2export CLI feature
-  //     (a samplesTsv: modifier -> samplesTsvLocation) that has to land with it.
+  // (The old volvox stand-in and its "SSR renders the matrix empty for real
+  // data" note are gone: the SSR path paints real 1000 Genomes genotypes fine —
+  // verified by rendering both display:multivariant and display:multivariantmatrix
+  // against the phase-3 chr11 VCF.)
   cliSpec('multisample_variants', [
-    '--fasta',
-    'data/volvox/volvox.fa',
-    '--aliases',
-    'data/volvox/volvox.aliases.txt',
+    '--hub',
+    'hg19',
+    '--track',
+    'hg19-ncbiRefSeqCurated',
     '--vcfgz',
-    'data/volvox/volvox.test.vcf.gz',
+    'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr11.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz',
     'display:multivariant',
-    'height:500',
+    'height:450',
     'force:true',
     '--loc',
-    'ctgA:2950-4250',
+    'chr11:5,246,000-5,251,000',
     '--width',
     '1200',
   ]),

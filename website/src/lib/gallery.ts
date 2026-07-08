@@ -197,13 +197,7 @@ export const gallerySections: readonly GallerySection[] = [
         label: 'Fiber-seq 6mA (GAPDH promoter)',
         spec: 'gallery/fiberseq_gapdh',
         description:
-          'ONT single-molecule fiber-seq (HG002) over the GAPDH promoter, each read colored per-base by its 6mA (A+a) calls in modifications mode.',
-      },
-      {
-        label: 'Direct RNA-seq nanopore modifications (ACTB)',
-        spec: 'gallery/directrna_actb',
-        description:
-          'Nanopore direct-RNA reads over the ACTB housekeeping gene with per-base modification calls.',
+          'ONT single-molecule fiber-seq (HG002, chromatin-accessibility open dataset) over the GAPDH promoter, each read colored per-base by its 6mA (A+a) calls; single-cell ATAC (CATlas, Zhang et al. 2021) above corroborates the open promoter.',
       },
     ],
   },
