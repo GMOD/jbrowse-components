@@ -40,6 +40,7 @@ function makeModel(
     contextMenuCigarHit?: CigarHitResult
     contextMenuIndicatorHit?: IndicatorHitResult
     contextMenuBlock?: ResolvedBlock
+    contextMenuGenomicPos?: number
     contextMenuFeature?: Feature
     filterBy?: FilterBy
   } = {},
@@ -53,6 +54,7 @@ function makeModel(
     contextMenuCigarHit: undefined,
     contextMenuIndicatorHit: undefined,
     contextMenuBlock: makeBlock('ctgA') as ResolvedBlock | undefined,
+    contextMenuGenomicPos: undefined as number | undefined,
     filterBy: defaultFilterBy,
     // Record every call and apply it, so successive quick-filter clicks read the
     // accumulated filterBy (the coexistence path this suite guards).
@@ -151,6 +153,44 @@ test('sort is a no-op without a block', () => {
   })
   firstSubMenuItem(run(model)[0]).onClick()
   expect(model.sortCalls).toEqual([])
+})
+
+test('a read hit offers a "Sort by" submenu anchored at the clicked column', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({ name: 'readABC' }),
+    contextMenuGenomicPos: 150,
+  })
+  const sortBy = findSubMenu(run(model), 'Sort by')
+  expect(sortBy.map(i => i.label)).toEqual(['Read strand', 'Base pair'])
+
+  sortBy.find(i => i.label === 'Read strand')!.onClick()
+  sortBy.find(i => i.label === 'Base pair')!.onClick()
+  expect(model.sortCalls).toEqual([
+    ['strand', 150, 'ctgA'],
+    ['basePair', 150, 'ctgA'],
+  ])
+})
+
+test('the read "Sort by" fires after the block is cleared (captured pos/refName)', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({ name: 'readABC' }),
+    contextMenuGenomicPos: 150,
+  })
+  const sortBy = findSubMenu(run(model), 'Sort by')
+  const strand = sortBy.find(i => i.label === 'Read strand')!
+  model.contextMenuBlock = undefined
+  model.contextMenuGenomicPos = undefined
+  strand.onClick()
+  expect(model.sortCalls).toEqual([['strand', 150, 'ctgA']])
+})
+
+test('no "Sort by" submenu without a clicked position', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({ name: 'readABC' }),
+  })
+  expect(run(model).map(i => (i as { label: string }).label)).not.toContain(
+    'Sort by',
+  )
 })
 
 test('filter for this read sets the read name (QNAME), keeping flags', () => {

@@ -516,6 +516,12 @@ export default function stateModelFactory(
           contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
           /**
            * #volatile
+           * Genomic column under a right-click, anchoring the read menu's "sort
+           * at the clicked position" items. Set with the block/hits as a unit.
+           */
+          contextMenuGenomicPos: undefined as number | undefined,
+          /**
+           * #volatile
            * The block under a right-click (refName + block-level worker result +
            * bp range). The position sort reads its refName and the
            * indicator/coverage detail items read its rpcData to open the
@@ -2647,6 +2653,7 @@ export default function stateModelFactory(
             self.contextMenuCigarHit = undefined
             self.contextMenuIndicatorHit = undefined
             self.contextMenuBlock = undefined
+            self.contextMenuGenomicPos = undefined
           },
 
           /**
@@ -2718,12 +2725,14 @@ export default function stateModelFactory(
           openContextMenu(args: {
             coord: [number, number]
             block?: ResolvedBlock
+            genomicPos?: number
             cigarHit?: CigarHitResult
             indicatorHit?: IndicatorHitResult
             featureId?: string
           }) {
             self.contextMenuCoord = args.coord
             self.contextMenuBlock = args.block
+            self.contextMenuGenomicPos = args.genomicPos
             self.contextMenuCigarHit = args.cigarHit
             self.contextMenuIndicatorHit = args.indicatorHit
             self.contextMenuFeature = undefined

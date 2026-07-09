@@ -161,6 +161,17 @@ function hitTestCigarItem(
   )
 }
 
+// Single site for the canvas-X → genomicPos transform; `reversed` is handled
+// here and nowhere else. Used by the hit-test pipeline and by the right-click
+// handler to anchor a "sort at the clicked column" action.
+export function canvasXToGenomicPos(canvasX: number, resolved: ResolvedBlock) {
+  const bpSpan = resolved.bpRange[1] - resolved.bpRange[0]
+  const frac = (canvasX - resolved.blockStartPx) / resolved.blockWidth
+  return resolved.reversed
+    ? resolved.bpRange[1] - frac * bpSpan
+    : resolved.bpRange[0] + frac * bpSpan
+}
+
 export function performHitTest(
   canvasX: number,
   canvasY: number,
@@ -187,14 +198,9 @@ export function performHitTest(
   const coverageY = canvasY - coverageTopOffset
 
   if (resolved) {
-    // Single site for the canvas-X → genomicPos transform.
-    // reversed is handled here and nowhere else in the hit-test pipeline.
     const bpSpan = resolved.bpRange[1] - resolved.bpRange[0]
     const bpPerPx = bpSpan / resolved.blockWidth
-    const frac = (canvasX - resolved.blockStartPx) / resolved.blockWidth
-    const genomicPos = resolved.reversed
-      ? resolved.bpRange[1] - frac * bpSpan
-      : resolved.bpRange[0] + frac * bpSpan
+    const genomicPos = canvasXToGenomicPos(canvasX, resolved)
 
     // Indicator and coverage tooltips work at all zoom levels.
     // hitTestInterbase fires over the interbase histogram bars + indicator

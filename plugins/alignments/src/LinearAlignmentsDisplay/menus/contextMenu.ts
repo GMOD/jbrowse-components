@@ -42,6 +42,9 @@ interface ContextMenuModel extends IAnyStateTreeNode {
   // snapshot — closeContextMenu runs before the click callback, so reading it
   // live would see undefined.
   contextMenuBlock: ResolvedBlock | undefined
+  // Genomic column under the right-click, anchoring the read menu's "sort at the
+  // clicked position" items. Captured into the onClicks like contextMenuBlock.
+  contextMenuGenomicPos: number | undefined
   filterBy: FilterBy
   setFilterBy: (filterBy: FilterBy) => void
   setSortedByAtPosition: (type: string, pos: number, refName: string) => void
@@ -287,6 +290,35 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         self.selectFeature(feat)
       },
     })
+    // Sort the pileup at the clicked column — the same criteria as the track
+    // menu's center-line sorts, but anchored where the user right-clicked
+    // (`pos`/`refName` snapshotted like `block`, since closeContextMenu clears
+    // them before the onClick fires). Only the position-anchored criteria
+    // appear here; "start location" / "longest reads first" are whole-pileup
+    // orderings with no clicked position to anchor on.
+    if (block && self.contextMenuGenomicPos !== undefined) {
+      const pos = self.contextMenuGenomicPos
+      const { refName } = block
+      items.push({
+        label: 'Sort by',
+        icon: SwapVertIcon,
+        type: 'subMenu',
+        subMenu: [
+          {
+            label: 'Read strand',
+            onClick: () => {
+              self.setSortedByAtPosition('strand', pos, refName)
+            },
+          },
+          {
+            label: 'Base pair',
+            onClick: () => {
+              self.setSortedByAtPosition('basePair', pos, refName)
+            },
+          },
+        ],
+      })
+    }
     const mateFields = getMateFields(feat)
     if (mateFields) {
       items.push({
