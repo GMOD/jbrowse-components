@@ -396,7 +396,13 @@ export interface LDSnp {
 export interface LDMatrixResult {
   snps: LDSnp[]
   ldValues: Float32Array
+  // The metric actually represented by ldValues. Usually equals the requested
+  // metric, but a pre-computed file lacking a D' column downgrades a 'dprime'
+  // request to 'r2' rather than silently mislabeling r² as D'.
   metric: LDMetric
+  // Whether D' is available. Always true for genotype-computed LD; false for a
+  // pre-computed PLINK file with no DP column, so the display can disable D'.
+  hasDprime: boolean
   filterStats: FilterStats
   recombination: RecombinationData
 }
@@ -406,6 +412,7 @@ function emptyLDResult(metric: LDMetric): LDMatrixResult {
     snps: [],
     ldValues: new Float32Array(0),
     metric,
+    hasDprime: true,
     filterStats: {
       totalVariants: 0,
       passedVariants: 0,
@@ -744,5 +751,12 @@ export async function getLDMatrix({
     encodedGenotypes,
   )
 
-  return { snps, ldValues, metric: ldMetric, filterStats, recombination }
+  return {
+    snps,
+    ldValues,
+    metric: ldMetric,
+    hasDprime: true,
+    filterStats,
+    recombination,
+  }
 }

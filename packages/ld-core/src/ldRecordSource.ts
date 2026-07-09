@@ -1,4 +1,4 @@
-import type { PlinkLDRecord } from './plinkLDTypes.ts'
+import type { PlinkLDHeader, PlinkLDRecord } from './plinkLDTypes.ts'
 
 // Structural contract for a pre-computed LD adapter, shared across plugin
 // boundaries via this neutral package: the GWAS worker (r²-to-index coloring)
@@ -16,6 +16,8 @@ export interface LDRecordSource {
     query: { refName: string; start: number; end: number },
     opts?: object,
   ): Promise<PlinkLDRecord[]>
+  // Resolved column layout — `dprimeIdx >= 0` iff the file carries a D' column.
+  getHeader(opts?: object): Promise<PlinkLDHeader>
 }
 
 // Runtime narrowing at the RPC boundary, where getAdapter yields an untyped
@@ -29,6 +31,8 @@ export function isLDRecordSource(adapter: unknown): adapter is LDRecordSource {
     'getLDRecords' in adapter &&
     typeof adapter.getLDRecords === 'function' &&
     'getLDRecordsInRegion' in adapter &&
-    typeof adapter.getLDRecordsInRegion === 'function'
+    typeof adapter.getLDRecordsInRegion === 'function' &&
+    'getHeader' in adapter &&
+    typeof adapter.getHeader === 'function'
   )
 }

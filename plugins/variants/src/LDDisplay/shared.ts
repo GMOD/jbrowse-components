@@ -226,6 +226,23 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
+       * Metric the loaded data actually represents. A pre-computed file with no
+       * D' column downgrades a 'dprime' request to 'r2', so the legend and the
+       * metric radios read this rather than the raw requested `ldMetric`.
+       */
+      get effectiveLdMetric(): LDMetric {
+        return self.rpcData?.metric ?? getConf(self, 'ldMetric')
+      },
+      /**
+       * #getter
+       * Whether the D' metric can be shown — false only for a pre-computed file
+       * lacking a DP column, which disables the D' option.
+       */
+      get dprimeAvailable(): boolean {
+        return self.rpcData?.hasDprime ?? true
+      },
+      /**
+       * #getter
        * Array index of the focal SNP in the current `snps`, or -1 if none is
        * selected or the locus is no longer present after a re-fetch.
        */
@@ -473,7 +490,7 @@ export default function sharedModelFactory(
        * #method
        */
       legendItems(): LegendItem[] {
-        const metric = self.ldMetric === 'dprime' ? "D'" : 'R²'
+        const metric = self.effectiveLdMetric === 'dprime' ? "D'" : 'R²'
         const range = self.signedLD ? '-1 to 1' : '0 to 1'
         return [{ label: `${metric}: ${range}` }]
       },
@@ -510,7 +527,7 @@ export default function sharedModelFactory(
                 {
                   label: 'R² (squared correlation)',
                   type: 'radio',
-                  checked: self.ldMetric === 'r2',
+                  checked: self.effectiveLdMetric === 'r2',
                   onClick: () => {
                     self.setLDMetric('r2')
                   },
@@ -518,7 +535,11 @@ export default function sharedModelFactory(
                 {
                   label: "D' (normalized D)",
                   type: 'radio',
-                  checked: self.ldMetric === 'dprime',
+                  checked: self.effectiveLdMetric === 'dprime',
+                  disabled: !self.dprimeAvailable,
+                  helpText: self.dprimeAvailable
+                    ? undefined
+                    : "This LD file has no D' (DP) column",
                   onClick: () => {
                     self.setLDMetric('dprime')
                   },

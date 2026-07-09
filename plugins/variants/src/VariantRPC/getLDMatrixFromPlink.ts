@@ -105,6 +105,11 @@ export async function getLDMatrixFromPlink({
     )
   }
 
+  // D' is only present if the file has a DP column. Without it, a 'dprime'
+  // request must fall back to r² rather than mislabel r² as D' in the legend.
+  const hasDprime = (await dataAdapter.getHeader()).dprimeIdx >= 0
+  const metric: LDMetric = ldMetric === 'dprime' && !hasDprime ? 'r2' : ldMetric
+
   const allRecords: PlinkLDRecord[] = []
   for (const region of regions) {
     const records = await dataAdapter.getLDRecordsInRegion({
@@ -136,7 +141,7 @@ export async function getLDMatrixFromPlink({
     const i = indexByKey.get(snpKey(record.chrA, record.bpA))
     const j = indexByKey.get(snpKey(record.chrB, record.bpB))
     if (i !== undefined && j !== undefined && i !== j) {
-      ldValues[lowerTriIndex(i, j)] = metricValue(record, ldMetric)
+      ldValues[lowerTriIndex(i, j)] = metricValue(record, metric)
       if (Math.abs(i - j) === 1) {
         adjacentR2[Math.min(i, j)] = finiteOrZero(record.r2)
       }
@@ -157,7 +162,8 @@ export async function getLDMatrixFromPlink({
   return {
     snps,
     ldValues,
-    metric: ldMetric,
+    metric,
+    hasDprime,
     filterStats,
     recombination: buildRecombination(snps, adjacentR2),
   }

@@ -21,6 +21,7 @@ function emptyResult(signedLD: boolean, metric: LDMetric): LDDataResult {
     numCells: 0,
     uniformW: 0,
     metric,
+    hasDprime: true,
     signedLD,
     snps: [],
   }
@@ -159,6 +160,7 @@ export async function executeRenderLDData({
     numCells,
     uniformW,
     metric: ldData.metric,
+    hasDprime: ldData.hasDprime,
     signedLD,
     snps: ldData.snps,
     filterStats: ldData.filterStats,

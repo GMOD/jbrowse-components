@@ -23,6 +23,9 @@ export interface LDDataResult {
   numCells: number
   uniformW: number
   metric: LDMetric
+  // Whether D' is selectable — false only for a pre-computed file with no DP
+  // column, so the display can disable the D' metric option.
+  hasDprime: boolean
   signedLD: boolean
   snps: LDSnp[]
   filterStats?: FilterStats

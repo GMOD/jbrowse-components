@@ -31,6 +31,13 @@ test('exposes refNames from the file', async () => {
   expect(await adapter.getRefNames()).toEqual(['1'])
 })
 
+// dprimeIdx < 0 is what makes the display disable the D' metric and downgrade
+// a 'dprime' request to r² — an R2-only file must report no D' column.
+test('getHeader reports no D column for an R2-only file', async () => {
+  const adapter = makeAdapter('./test_data/example.ld')
+  expect((await adapter.getHeader()).dprimeIdx).toBe(-1)
+})
+
 // getLDRecords keeps every pair whose A-side is in the region; the triangle
 // display needs both endpoints in view, so getLDRecordsInRegion drops pairs
 // reaching outside it (rsC at 1500, rsD at 2000).
