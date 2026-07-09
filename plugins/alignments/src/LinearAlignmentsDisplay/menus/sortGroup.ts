@@ -53,6 +53,19 @@ function getSortMode(model: SortByModel): SortMode {
       : 'position'
 }
 
+// The base-pair sort always keys off one column; the label names it so the
+// center-line mechanic is explicit. When a sort is live, the parenthetical
+// becomes the concrete 1-based coordinate it's sorting at (from `sortedBy`, no
+// live center-line lookup needed).
+function getBasePairLabel(model: SortByModel, active: boolean) {
+  const sorted = model.sortedBy
+  const where =
+    active && sorted
+      ? `${sorted.refName}:${(sorted.pos + 1).toLocaleString('en-US')}`
+      : 'center line'
+  return `Base pair (${where})`
+}
+
 export function getSortByMenuItem(
   model: SortByModel,
   opts?: { disabled?: boolean; disabledHelpText?: string },
@@ -79,6 +92,15 @@ export function getSortByMenuItem(
         },
       },
       {
+        label: 'Longest reads first',
+        type: 'radio' as const,
+        checked: mode === 'length',
+        onClick: () => {
+          model.clearSortedBy()
+          model.setLargeFeaturesFirst(true)
+        },
+      },
+      {
         label: 'Read strand',
         type: 'radio' as const,
         checked: mode === 'strand',
@@ -87,7 +109,7 @@ export function getSortByMenuItem(
         },
       },
       {
-        label: 'Base under center line',
+        label: getBasePairLabel(model, mode === 'basePair'),
         type: 'radio' as const,
         checked: mode === 'basePair',
         onClick: () => {
@@ -104,15 +126,6 @@ export function getSortByMenuItem(
             SortByTagDialog,
             { model, handleClose },
           ])
-        },
-      },
-      {
-        label: 'Longest reads first',
-        type: 'radio' as const,
-        checked: mode === 'length',
-        onClick: () => {
-          model.clearSortedBy()
-          model.setLargeFeaturesFirst(true)
         },
       },
     ],
