@@ -11,7 +11,8 @@ import type { RenderSvgModel } from './renderSvg.tsx'
 import type { MultiRowGetFeaturesResult } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type {
   ClusterHierarchyNode,
-  HierarchyNode, NewickNode 
+  HierarchyNode,
+  NewickNode,
 } from '@jbrowse/tree-sidebar'
 
 // renderSvg calls getContainingView(self) to reach the LGV; the model is a plain
@@ -98,7 +99,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     },
     sources: [{ name: 'a' }, { name: 'b' }],
     rowHeight: 50,
-    sidebarOffset: 0,
+    treeAreaWidth: 80,
     showTree: false,
     hierarchy: undefined,
     ...overrides,
@@ -130,7 +131,7 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
         makeModel({
           showTree: true,
           hierarchy: makeHierarchy(),
-          sidebarOffset: 40,
+          treeAreaWidth: 40,
         }),
         {},
       ),

@@ -1,7 +1,7 @@
 import type React from 'react'
 
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
+import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 
@@ -32,22 +32,19 @@ const SvgVariantOverlay = ({
   showTree: boolean
   treeAreaWidth: number
 }) => {
-  const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
   return (
     <SvgClipRect id={id} width={width} height={height}>
       {content}
-      {sources.length > 1 && canDisplayLabels ? (
-        <SvgRowLabels
-          sources={sources}
-          rowHeight={rowHeight}
-          labelOffset={labelOffset}
-          scrollTop={scrollTop}
-          availableHeight={availableHeight}
-        />
-      ) : null}
-      {showTree && hierarchy ? (
-        <SvgTreePath hierarchy={hierarchy} scrollTop={scrollTop} />
-      ) : null}
+      <SvgTreeSidebar
+        showTree={showTree}
+        hierarchy={hierarchy}
+        sources={sources}
+        rowHeight={rowHeight}
+        treeAreaWidth={treeAreaWidth}
+        showLabels={sources.length > 1 && canDisplayLabels}
+        scrollTop={scrollTop}
+        availableHeight={availableHeight}
+      />
     </SvgClipRect>
   )
 }

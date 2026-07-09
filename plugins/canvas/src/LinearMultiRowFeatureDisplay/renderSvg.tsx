@@ -6,7 +6,7 @@ import {
   SvgClipRect,
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
-import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
+import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { drawMultiRowBlocks } from './rendering/drawMultiRowBlocks.ts'
 
@@ -35,7 +35,7 @@ export interface RenderSvgModel extends SvgExportable {
   renderState: MultiRowRenderState
   sources: MultiRowSource[]
   rowHeight: number
-  sidebarOffset: number
+  treeAreaWidth: number
   showTree: boolean
   hierarchy: ClusterHierarchyNode | undefined
 }
@@ -85,17 +85,14 @@ function MultiRowSvgBody({
       >
         {el}
       </SvgClipRect>
-      {self.showTree && self.hierarchy ? (
-        <SvgTreePath hierarchy={self.hierarchy} />
-      ) : null}
-      {self.sources.length ? (
-        <SvgRowLabels
-          sources={self.sources}
-          rowHeight={self.rowHeight}
-          labelOffset={self.sidebarOffset}
-          availableHeight={height}
-        />
-      ) : null}
+      <SvgTreeSidebar
+        showTree={self.showTree}
+        hierarchy={self.hierarchy}
+        sources={self.sources}
+        rowHeight={self.rowHeight}
+        treeAreaWidth={self.treeAreaWidth}
+        availableHeight={height}
+      />
     </>
   )
 }

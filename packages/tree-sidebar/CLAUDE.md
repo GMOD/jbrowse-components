@@ -6,3 +6,18 @@
 provide (`hierarchy`, `leaves`, `descendants`, `links`, `sum`, `sort`, and a
 `clusterLayout`/`assign*Y` dendrogram layout). d3-hierarchy is pure ESM and
 breaks Jest, so it isn't used as an npm dependency — don't reintroduce it.
+
+## SVG export: render the sidebar via `SvgTreeSidebar`, never `SvgRowLabels` alone
+
+A clusterable display's `renderSvg` must paint its left sidebar through
+`SvgTreeSidebar` (tree + row labels together), not by dropping in `SvgRowLabels`
+by itself. The two are coupled: the labels are offset right by `treeAreaWidth`
+to clear the dendrogram, so rendering labels without also rendering
+`SvgTreePath` leaves a blank reserved gutter where the on-screen tree is (the
+bug that hit `LinearMultiRowFeatureDisplay`). `SvgTreeSidebar` owns the single
+`showTree && hierarchy` gate that drives both the label offset and whether the
+tree draws, so they can't disagree. Adopted by
+`LinearMultiRowFeatureDisplay/renderSvg` and variants' `SvgVariantOverlay`;
+`LinearMafDisplay/renderSvg` and `MultiLinearWiggleDisplay` still hand-roll the
+pair (split across files / mixed with a color legend) and should migrate when
+touched.
