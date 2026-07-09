@@ -1,10 +1,25 @@
 import {
+  FORCE_LOAD_HEADROOM,
   TOO_MANY_FEATURES_REASON,
   bytesTooLargeReason,
   evaluateRegionTooLarge,
+  raiseLimitPast,
   resolveByteLimit,
 } from './featureDensityUtils.ts'
 import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
+
+describe('raiseLimitPast', () => {
+  it('raises the limit past the estimate by the shared headroom, rounded up', () => {
+    expect(raiseLimitPast(1_000_000)).toBe(Math.ceil(1_000_000 * FORCE_LOAD_HEADROOM))
+    expect(raiseLimitPast(3)).toBe(Math.ceil(3 * FORCE_LOAD_HEADROOM))
+  })
+
+  it('always returns strictly more than the estimate so a re-check clears', () => {
+    for (const estimate of [1, 100, 5_000_000]) {
+      expect(raiseLimitPast(estimate)).toBeGreaterThan(estimate)
+    }
+  })
+})
 
 describe('resolveByteLimit', () => {
   it('prefers the user force-load override over everything', () => {

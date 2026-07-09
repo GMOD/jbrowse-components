@@ -1,5 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { raiseLimitPast } from './featureDensityUtils.ts'
+
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 
 /**
@@ -87,7 +89,7 @@ export default function RegionTooLargeMixin() {
        */
       setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
         if (stats?.bytes) {
-          self.userByteSizeLimit = Math.ceil(stats.bytes * 1.5)
+          self.userByteSizeLimit = raiseLimitPast(stats.bytes)
         }
         self.regionTooLargeState = false
         self.regionTooLargeReasonState = ''

@@ -42,6 +42,18 @@ export function resolveByteLimit({
   )
 }
 
+/**
+ * Force-load raises the tripped gate's limit this far past the offending
+ * estimate: enough that the just-confirmed request clears and a small zoom-out
+ * doesn't immediately re-trip the banner. One constant so the byte and density
+ * force-load paths use identical headroom.
+ */
+export const FORCE_LOAD_HEADROOM = 1.5
+
+export function raiseLimitPast(estimate: number) {
+  return Math.ceil(estimate * FORCE_LOAD_HEADROOM)
+}
+
 export interface RegionTooLargeStatus {
   tooLarge: boolean
   reason: string
