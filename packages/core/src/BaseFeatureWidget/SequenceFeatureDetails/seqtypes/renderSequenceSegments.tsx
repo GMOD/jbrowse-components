@@ -40,7 +40,6 @@ export function renderSequenceSegments({
   const { charactersPerRow, showCoordinates } = model
   let currStart = 0
   let currRemainder = 0
-  let coord = coordStart
   const nodes: React.ReactNode[] = []
   for (const { key, str, color } of segments) {
     const { segments: chunks, remainder } = splitString({
@@ -57,13 +56,12 @@ export function renderSequenceSegments({
           color={color}
           strand={mult}
           start={currStart}
-          coordStart={coord}
+          coordStart={coordStart + currStart}
           chunks={chunks}
         />,
       )
       currRemainder = remainder
       currStart += str.length * mult
-      coord += str.length * mult
     }
   }
   return nodes
