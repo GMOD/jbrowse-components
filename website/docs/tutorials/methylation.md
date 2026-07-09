@@ -17,7 +17,7 @@ When a BAM or CRAM file carries base modification tags (MM/ML as specified in
 the
 [SAM format specification](https://samtools.github.io/hts-specs/SAMtags.pdf)),
 JBrowse 2 can color individual bases on each read by their modification
-probability. This works out of the box — no extra config is needed.
+probability, with no extra configuration required.
 
 Turn on modification or methylation coloring from the track menu. Each
 modification type renders in its own color, with intensity reflecting the

@@ -298,10 +298,8 @@ BAF (allelic state) is the conventional two-panel somatic-CNV view.
 
 Restricting to germline-heterozygous sites is deliberate: at a homozygous site
 the alt fraction is ~0 or ~1 regardless of copy number, so it carries no
-allelic-imbalance signal and would only drown out the LOH split this track
-exists to show. Balanced regions then sit at a single 0.5 band that splits
-toward 0 and 1 under LOH — which is why somatic CNV callers all work from
-germline-het sites.
+allelic-imbalance signal and would only drown out the LOH split. Balanced
+regions then sit at a single 0.5 band that splits toward 0 and 1 under LOH.
 
 ### A cleaner BAF: haplotype-phase correction with Wakhan
 
@@ -366,10 +364,10 @@ walkthrough.
 
 ### From signal to calls
 
-The depth ratio and BAF built here are exactly the signals production
-somatic-CNV callers compute internally; on top, they add segmentation,
-purity/ploidy estimation, and integer copy-number assignment. For this PacBio
-HiFi data the long-read-aware choices are
+The depth ratio and BAF built here are the same signals production somatic-CNV
+callers compute internally; on top, they add segmentation, purity/ploidy
+estimation, and integer copy-number assignment. For this PacBio HiFi data the
+long-read-aware choices are
 [HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV) (PacBio; emits a depth
 bigWig, a copy-number-segmentation bedGraph, a CNV VCF, and a MAF bigWig —
 productionized versions of the two tracks above) and
@@ -585,11 +583,10 @@ partial imbalance a 2+1 gain produces rather than a full haplotype loss.
 `SMAD4` on 18q is lost with LOH (CN 1, 0+1), the mirror image of the TP53 event,
 though the shift here is far more muted than the chr17 example.
 
-<Figure caption="Chromosome 18: log2 ratio (top) over BAF (bottom) over the CNV calls. The centromere-proximal ~22 Mb is noisy mapping-bias signal and uncalled (noCNV); CNA_48, the single-copy loss with LOH, spans nearly the rest of the chromosome but reads as only a modest negative log2 dip and a sparse BAF lift off 0 — both far weaker than the TP53 event on chr17, illustrating how tumor purity can dilute the same underlying allelic-loss signature." src="/img/sv_cgiab/driver_smad4_loh.png" />
+<Figure caption="Chromosome 18: log2 ratio (top) over BAF (bottom) over the CNV calls. The centromere-proximal ~22 Mb is noisy mapping-bias signal and uncalled (noCNV); CNA_48, the single-copy loss with LOH, spans nearly the rest of the chromosome but reads as only a modest negative log2 dip and a sparse BAF lift off 0 — both far weaker than the TP53 event on chr17 (tumor purity dilutes the same allelic-loss signature)." src="/img/sv_cgiab/driver_smad4_loh.png" />
 
-How far the BAF bands separate from 0.5 also depends on tumor purity —
-normal-cell contamination pulls the split back toward 0.5 — which is why the
-same allelic state can read strong or muted between loci. Dedicated callers
+The same allelic state can read strong or muted between loci, depending on tumor
+purity. Dedicated callers
 ([HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV),
 [Wakhan](https://github.com/KolmogorovLab/Wakhan)) model purity and ploidy
 explicitly; this walkthrough just reads the raw signal off the tracks. See also

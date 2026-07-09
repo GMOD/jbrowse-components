@@ -8,9 +8,9 @@ guide_category: Tutorials
 
 Population-genetic scans — **Fst** (differentiation between groups),
 **nucleotide diversity (π)** within a group, and **dxy** (divergence between
-groups) — are per-window statistics along the genome. That is exactly the shape
-of a wiggle track, so once you compute them from a multi-sample VCF you can load
-them straight into JBrowse and read the peaks and troughs against genes.
+groups) — are per-window statistics along the genome, which is the natural shape
+of a wiggle track. Once you compute them from a multi-sample VCF you can load
+them into JBrowse and read the peaks and troughs against genes.
 
 JBrowse does no population-genetic inference itself; it draws the windowed
 statistic your tool produced. This tutorial is an end-to-end **reproducible
@@ -262,32 +262,28 @@ standard diversity window-for-window on a shared axis:
 }
 ```
 
-Across the inverted region on `2L`, inverted-arrangement π runs mildly below
-standard (about 14% lower on average, versus roughly equal outside) — the
-reduced within-arrangement diversity expected under recombination suppression.
-The effect is subtle because `In(2L)t` is an old, gene-flux-rich cosmopolitan
-inversion; the differentiation between arrangements shows up far more strongly
-in the Fst scan than in within-group π.
+On the shared axis, inverted-arrangement π reads mildly below standard across
+the inverted region on `2L` (about 14% lower on average, versus roughly equal
+outside). The contrast between arrangements is far stronger in the Fst scan than
+in within-group π.
 
 ## Reading the signals
 
 Navigate to chromosome arm **`2L`**. The `In(2L)t` Fst track rises across the
 whole inverted region — roughly `2L:2,200,000–13,200,000` — and peaks near the
-breakpoints: the inversion suppresses recombination between arrangements, so
-inverted and standard lines diverge across the entire span rather than at a
-single locus. This is the recombination-suppression footprint of a segregating
-inversion, the fly analog of any large balanced polymorphism.
+breakpoints, so the differentiation reads as a broad plateau rather than a
+single spike. (The inversion suppresses recombination between arrangements
+across this span.)
 
-<Figure src="/img/popgen/fst_in2lt_2L.png" caption="The two scans over the whole 2L arm, each its own auto-scaled quantitative track. Top: Fst between In(2L)t-inverted and standard-arrangement DGRP lines rises into an elevated plateau across the inverted region (~2.2–13.2 Mb) with peaks near the breakpoints, then drops sharply back to background past the distal breakpoint — the inversion suppresses recombination between arrangements, so the two groups diverge across the entire span rather than at a single locus. Bottom: whole-panel nucleotide diversity (π). Data is the exact pipeline output from this tutorial, hosted at jbrowse.org/demos/popgen."/>
+<Figure src="/img/popgen/fst_in2lt_2L.png" caption="Two quantitative tracks over the whole 2L arm, each auto-scaled to its own data. Top: Fst between In(2L)t-inverted and standard-arrangement lines — an elevated plateau across the inverted region (~2.2–13.2 Mb) that drops back to background past the distal breakpoint. Bottom: whole-panel nucleotide diversity (π). Output from this tutorial's pipeline, hosted at jbrowse.org/demos/popgen."/>
 
-Then search **`Cyp6g1`** (on `2R`) and inspect its window in the π track:
-diversity collapses into a sharp, deep valley over the locus — the gene's window
-drops to ~0.0004, under 10% of the `2R` average of ~0.0049, between
-high-diversity flanks (~0.008–0.009). This is the classic hard-sweep signature:
-the DDT/neonicotinoid-resistance haplotype rose to near-fixation in this derived
-population, and hitchhiking stripped variation from the region around it.
+Then use the search box to jump to **`Cyp6g1`** (on `2R`) and inspect its window
+in the π track: diversity drops into a sharp, deep valley over the locus,
+falling to ~0.0004 — under 10% of the `2R` average of ~0.0049 — between
+high-diversity flanks (~0.008–0.009). The valley marks a selective sweep at this
+insecticide-resistance gene.
 
-<Figure src="/img/popgen/pi_cyp6g1.png" caption="Whole-panel π zoomed to the Cyp6g1 locus on 2R. Diversity plunges into a deep valley across ~12.13–12.20 Mb — the boxed Cyp6g1 window falls to ~0.0004, under a tenth of the arm-wide average — flanked by high-diversity windows (~0.008–0.009) on both sides. The individually rendered NCBI RefSeq genes give the gene-level context that a whole-arm view can't. This is the recombination-hitchhiking footprint of the insecticide-resistance sweep at Cyp6g1."/>
+<Figure src="/img/popgen/pi_cyp6g1.png" caption="Whole-panel π zoomed to the Cyp6g1 locus on 2R, over the NCBI RefSeq gene track. Diversity drops into a deep valley across ~12.13–12.20 Mb — the boxed Cyp6g1 window falls to ~0.0004, under a tenth of the arm-wide average — flanked by high-diversity windows (~0.008–0.009). The valley marks a selective sweep at this insecticide-resistance gene."/>
 
 Other well-documented resistance and selection loci make good places to look
 next, each read the same way — signal against gene:

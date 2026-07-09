@@ -202,13 +202,13 @@ copies:
 The painting is the clean, readable summary; the genotype rows are the raw,
 statistically-phased evidence it is built from, and that evidence is noisy. If
 you read the inherited copy site-by-site straight off the genotypes it flickers
-between the two parental copies every few kb — those flickers are phasing switch
+between the two parental copies every few kb; those flickers are phasing switch
 errors, not crossovers. hap-ibd's length threshold filters most of them out,
-which is exactly why we trust its block-step over the raw genotypes. It does not
-filter all of them, though: many of the painting's smaller boundaries do not
-survive a check against the genotype transmission, so treat the two crossovers
-above as the well-supported ones and the rest as approximate. The next section
-is about why.
+which is why we trust its block-step over the raw genotypes. It does not filter
+all of them, though: many of the painting's smaller boundaries do not survive a
+check against the genotype transmission, so treat the two crossovers above as
+the well-supported ones and the rest as approximate. The next section is about
+why.
 
 ## A caveat on the input data
 

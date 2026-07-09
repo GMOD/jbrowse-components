@@ -26,7 +26,7 @@ gene annotation (an NCBI GFF) sits above it.
 
 The more reads that stack up over a region, the more highly expressed it is. The
 coverage histogram along the top of the track is JBrowse's running per-position
-read count, so tall coverage marks highly-transcribed genes at a glance.
+read count, so tall coverage flags a highly-transcribed gene.
 
 Turn on the **compact** display to pack the full read stack into view:
 
@@ -83,8 +83,8 @@ like:
 10M 500N 10M 500N 10M 500N 10M 500N 10M
 ```
 
-Both render identically in JBrowse — the splice arcs and per-read connectors
-come straight from these CIGAR skips.
+Both render identically in JBrowse, since the splice arcs and per-read
+connectors are derived from these CIGAR skips.
 
 ## Loading your own RNA-seq data
 
@@ -104,8 +104,8 @@ JBrowse Web from **Add track**, or add it to a config as an `AlignmentsTrack`:
 }
 ```
 
-The splice arcs and per-read splicing shown above come for free from the CIGAR
-strings — no extra configuration is needed. See the
+JBrowse computes the splice arcs and per-read splicing shown above from the
+CIGAR strings automatically, with no extra configuration. See the
 [alignments track config guide](/docs/config_guides/alignments_track) for
 adapter and display options. For a precomputed coverage signal (e.g. a
 strand-specific BigWig produced by your aligner), load it separately as a

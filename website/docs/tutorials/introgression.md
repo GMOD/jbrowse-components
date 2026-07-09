@@ -8,8 +8,8 @@ guide_category: Tutorials
 
 Archaic introgression callers emit, per individual haplotype, the genomic
 segments they call as Neanderthal- or Denisovan-derived. That output is a set of
-intervals with a per-haplotype label and a source — exactly the shape the
-**multi-row feature display** draws: one labeled row per haplotype, features
+intervals with a per-haplotype label and a source, which is what the **multi-row
+feature display** is built to draw: one labeled row per haplotype, features
 colored by source. This tutorial takes a published callset, reshapes it into one
 BED, and configures the display. JBrowse does no inference; it draws the
 segments the caller produced.
