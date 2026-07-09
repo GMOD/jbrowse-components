@@ -7,10 +7,12 @@ This guide sets up a self-hosted JBrowse web instance: you'll use the
 tracks, and serve the result as a static site. It's the right path if you want a
 genome browser you host and share via a URL.
 
-Prefer to skip the command line and web server?
-[JBrowse desktop](/docs/quickstart_desktop) opens local files straight from a
-GUI. Adding a genome view to your own web app instead? See
-[embedded components](/docs/embedded_components).
+Other ways to run JBrowse:
+
+- [JBrowse desktop](/docs/quickstart_desktop) — open local files without a web
+  server
+- [Embedded components](/docs/embedded_components) — embed a view in your own
+  web app
 
 ## TLDR
 
@@ -86,11 +88,11 @@ For production, place the folder in your web server's static directory (e.g.
 
 ## Adding tracks
 
-The examples below run from inside the `jbrowse2/` directory, so they omit
-`--out` — it defaults to the current directory. To write to a production path
-instead, add `--out /var/www/html/jbrowse2` (it accepts either a directory,
-updating the `config.json` inside, or a path to a specific config file). Run
-`jbrowse add-track --help` for the full set of options.
+The examples below run from inside `jbrowse2/`, so they omit `--out` (which
+defaults to the current directory). To write elsewhere, add
+`--out /var/www/html/jbrowse2` — either a directory containing `config.json` or
+a path to a specific config file. Run `jbrowse add-track --help` for all
+options.
 
 For the full list of supported formats and the adapter each maps to, see
 [Supported file types](/docs/config_guides/file_types).
@@ -120,6 +122,8 @@ samtools index file.bam   # or file.cram
 jbrowse add-track file.bam --load copy
 ```
 
+See the [alignments track guide](/docs/user_guides/alignments_track).
+
 <Figure caption="JBrowse 2 linear genome view with alignments track" src="/img/volvox_alignments.png"/>
 
 ### VCF
@@ -142,18 +146,14 @@ bgzip file.sorted.vcf
 tabix file.sorted.vcf.gz
 ```
 
-You can also use `bcftools` to bgzip and index in one step:
-
-```bash
-bcftools view file.vcf --output-type z > file.vcf.gz
-bcftools index --tbi file.vcf.gz
-```
-
 See https://www.htslib.org/ for more on `bgzip`, `tabix`, and `bcftools`.
 
 :::
 
 <Figure caption="JBrowse 2 linear genome view with variant track" src="/img/volvox_variants.png"/>
+
+For multi-sample VCFs, see the
+[multi-sample variant guide](/docs/user_guides/multivariant_track).
 
 ### BigWig / BigBed
 
@@ -163,6 +163,8 @@ No external index needed:
 jbrowse add-track file.bw --load copy
 ```
 
+See the [quantitative track guide](/docs/user_guides/quantitative_track).
+
 ### GFF3
 
 ```bash
@@ -170,6 +172,8 @@ jbrowse sort-gff yourfile.gff | bgzip > yourfile.sorted.gff.gz
 tabix yourfile.sorted.gff.gz
 jbrowse add-track yourfile.sorted.gff.gz --load copy
 ```
+
+See the [gene track guide](/docs/user_guides/gene_track).
 
 ### Synteny (PAF)
 
@@ -183,10 +187,9 @@ jbrowse add-assembly grape.fa --load copy -n grape
 jbrowse add-assembly peach.fa --load copy -n peach
 ```
 
-Note: `--assemblyNames` order is `query,target` — the **reverse** of the
-`minimap2` argument order (`minimap2 target query`). For
-`minimap2 grape.fa peach.fa`, peach is the query, so load with
-`--assemblyNames peach,grape`:
+Note: `--assemblyNames` takes `query,target` — the **reverse** of minimap2's
+`target query` order. Above, `minimap2 grape.fa peach.fa` makes peach the query,
+so load with `--assemblyNames peach,grape`:
 
 ```bash
 jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --load copy
@@ -204,8 +207,13 @@ for moderately diverged ones. See the
 Other supported synteny formats: `.delta` (MUMmer/NUCmer), `.chain` (UCSC),
 `.anchors` and `.anchors.simple` (MCScan), and `.out` (MashMap). Add them the
 same way — `jbrowse add-track alignment.delta --assemblyNames query,target ...`.
-For large alignments, convert to indexed PIF first with `jbrowse make-pif` (see
-the [synteny tutorial](/docs/tutorials/synteny_visualization)).
+For large alignments, convert to indexed PIF first with `jbrowse make-pif`.
+
+See also the [linear synteny view](/docs/user_guides/linear_synteny_view),
+[dotplot view](/docs/user_guides/dotplot_view),
+[synteny visualization tutorial](/docs/tutorials/synteny_visualization),
+[all-vs-all synteny](/docs/tutorials/allvsall_synteny), and
+[multi-way synteny](/docs/tutorials/multiway_synteny).
 
 ## Indexing feature names for searching
 
@@ -219,6 +227,15 @@ This indexes GFF3 and VCF tracks (tabix-indexed or plain). Once complete, names
 can be typed directly into the location search box. See the
 [text-index docs](/docs/cli#jbrowse-text-index) and
 [FAQ](/docs/faq#text-searching) for more.
+
+## Tutorials
+
+- [Synteny visualization](/docs/tutorials/synteny_visualization)
+- [Cancer structural variants](/docs/tutorials/sv_visualization_cgiab)
+- [Population genomics](/docs/tutorials/population_genomics)
+- [DNA methylation](/docs/tutorials/methylation)
+- [RNA-seq](/docs/tutorials/rnaseq)
+- [All tutorials](/docs/)
 
 ## See also
 
