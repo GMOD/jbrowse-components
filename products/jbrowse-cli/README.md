@@ -73,6 +73,7 @@ Use "jbrowse <command> --help" for more information about a command.
 
 ```
 
+
 ## jbrowse create
 
 ```
@@ -99,6 +100,8 @@ Options:
   -t, --tag                  Version of JBrowse 2 to install. Format is v1.0.0.
                              Defaults to latest
 
+Examples:
+
 # Download latest release from github, and put in specific path
 $ jbrowse create /path/to/new/installation
 
@@ -114,6 +117,7 @@ $ jbrowse create /path/to/new/installation --tag v1.0.0
 # List available versions
 $ jbrowse create --listVersions
 ```
+
 
 ## jbrowse add-assembly
 
@@ -192,6 +196,8 @@ Options:
   -f, --force                Overwrite existing assembly and skip file existence
                              checks
 
+Examples:
+
 # add assembly to installation in current directory. assumes .fai file also exists, and copies GRCh38.fa and GRCh38.fa.fai to current directory
 $ jbrowse add-assembly GRCh38.fa --load copy
 
@@ -217,6 +223,7 @@ $ jbrowse add-assembly https://example.com/data/sample.2bit
 $ jbrowse add-assembly myfile.fa.gz --load copy
 ```
 
+
 ## jbrowse add-track
 
 ```
@@ -225,7 +232,7 @@ Add a track to a JBrowse 2 configuration
 Usage: jbrowse add-track <track> [options]
 
 Options:
-  -h, --help
+  -h, --help                 Show help
 
   -t, --trackType            Type of track, by default inferred from track file
 
@@ -259,8 +266,9 @@ Options:
       --trackId              trackId for the track, by default inferred from
                              filename
 
-  -l, --load                 How to manage the track (copy, symlink, move,
-                             inPlace)
+  -l, --load                 How to manage the track file relative to
+                             config.json. Required for local files, omit for
+                             URLs [choices: copy, symlink, move, inPlace]
 
   -f, --force                Overwrite existing track and any existing files
 
@@ -286,6 +294,8 @@ text-index.
 For synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target — the
 reverse of the minimap2/nucmer input order.
 
+Examples:
+
 # copy /path/to/my.bam and /path/to/my.bam.bai to current directory and adds track to config.json
 $ jbrowse add-track /path/to/my.bam --load copy
 
@@ -304,6 +314,7 @@ $ jbrowse add-track https://mywebsite.com/my.bam
 # --load inPlace adds a track without doing file operations
 $ jbrowse add-track /url/relative/path.bam --load inPlace
 ```
+
 
 ## jbrowse text-index
 
@@ -374,6 +385,8 @@ Only tracks with an indexable adapter type (e.g. Gff3TabixAdapter,
 VcfTabixAdapter) are indexed; tracks with other adapter types are skipped
 automatically.
 
+Examples:
+
 # indexes all tracks that it can find in the current directory's config.json
 $ jbrowse text-index
 
@@ -393,6 +406,7 @@ $ jbrowse text-index -a hg19 --force
 $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
 
+
 ## jbrowse admin-server
 
 ```
@@ -401,7 +415,7 @@ Start up a small admin server for JBrowse configuration
 Usage: jbrowse admin-server [options]
 
 Options:
-  -h, --help
+  -h, --help                 Show help
 
   -p, --port                 Specified port to start the server on (default:
                              9090)
@@ -417,9 +431,21 @@ disk, authorized by a one-time key printed in the startup URL. It is meant for
 local configuration only: run it on a trusted machine and do not expose the port
 to untrusted networks or the public internet.
 
+Examples:
+
+# start the admin server for the JBrowse install in the current directory
 $ jbrowse admin-server
+
+# start on a specific port
 $ jbrowse admin-server -p 8888
+
+# point at a specific JBrowse installation directory
+$ jbrowse admin-server --root /path/to/jb2/
+
+# raise the body size limit for very large config updates
+$ jbrowse admin-server --bodySizeLimit 100mb
 ```
+
 
 ## jbrowse upgrade
 
@@ -447,6 +473,8 @@ Options:
 
   -u, --url                  A direct URL to a JBrowse 2 release
 
+Examples:
+
 # Upgrades current directory to latest jbrowse release
 $ jbrowse upgrade
 
@@ -466,6 +494,7 @@ $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 $ jbrowse upgrade --nightly
 ```
 
+
 ## jbrowse make-pif
 
 ```
@@ -474,7 +503,7 @@ creates pairwise indexed PAF (PIF), with bgzip and tabix
 Usage: jbrowse make-pif <file> [options]
 
 Options:
-  -h, --help
+  -h, --help                 Show help
 
       --out                  Where to write the output file. will write
                              ${file}.pif.gz and ${file}.pif.gz.tbi
@@ -499,20 +528,38 @@ TBI index cannot address coordinates beyond 2^29 (~536 Mb), so a CSI index is
 required for large chromosomes (e.g. some plant and amphibian genomes). Requires
 sh, sort, bgzip, and tabix on the PATH.
 
-$ jbrowse make-pif input.paf # creates input.pif.gz in same directory
+Examples:
 
-$ jbrowse make-pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also
+# creates input.pif.gz and input.pif.gz.tbi in the same directory
+$ jbrowse make-pif input.paf
+
+# specify the output file, also creates output.pif.gz.tbi
+$ jbrowse make-pif input.paf --out output.pif.gz
+
+# use a CSI index for assemblies with chromosomes longer than ~512 Mb
+$ jbrowse make-pif input.paf --csi
+
+# strip CIGAR and emit only the coarse whole-genome tier
+$ jbrowse make-pif input.paf --coarse 0
+
+# emit only the per-row CIGAR fine tier, skipping the coarse tier
+$ jbrowse make-pif input.paf --no-coarse
 ```
+
 
 ## jbrowse sort-gff
 
 ```
-Helper utility to sort GFF (and GTF, which shares the same refname/start column layout) files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep
+Helper utility to sort GFF (and GTF, which shares the same refname/start column
+layout) files for tabix. Moves all lines starting with # to the top of the file,
+and sort by refname and start position using unix utilities sort and grep
 
 Usage: jbrowse sort-gff [file] [options]
 
 Options:
-  -h, --help
+  -h, --help                 Show help
+
+Examples:
 
 # sort gff and pipe to bgzip
 $ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz
@@ -526,15 +573,20 @@ $ jbrowse sort-gff input.gtf | bgzip > sorted.gtf.gz
 $ tabix -p gff sorted.gtf.gz
 ```
 
+
 ## jbrowse sort-bed
 
 ```
-Helper utility to sort BED files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep
+Helper utility to sort BED files for tabix. Moves all lines starting with # to
+the top of the file, and sort by refname and start position using unix utilities
+sort and grep
 
 Usage: jbrowse sort-bed [file] [options]
 
 Options:
-  -h, --help
+  -h, --help                 Show help
+
+Examples:
 
 # sort bed and pipe to bgzip
 $ jbrowse sort-bed input.bed | bgzip > sorted.bed.gz
@@ -542,6 +594,7 @@ $ tabix sorted.bed.gz
 
 # OR pipe data via stdin: cat file.bed | jbrowse sort-bed | bgzip > sorted.bed.gz
 ```
+
 
 ## jbrowse add-connection
 
@@ -551,7 +604,7 @@ Add a connection to a JBrowse 2 configuration
 Usage: jbrowse add-connection <connectionUrlOrPath> [options]
 
 Options:
-  -h, --help
+  -h, --help                 Show help
 
   -t, --type                 Type of connection (e.g. JBrowse1Connection,
                              UCSCTrackHubConnection, custom)
@@ -577,23 +630,38 @@ Options:
   -f, --force                Overwrite existing connection if one with the same
                              id exists
 
+Examples:
+
+# add a JBrowse 1 data directory connection (type inferred from the jbrowse/data path)
 $ jbrowse add-connection https://mysite.com/jbrowse/data/ -a hg19
+
+# force the JBrowse1Connection type for a non-standard data folder path
 $ jbrowse add-connection https://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection -a hg38
+
+# add a UCSC track hub (type inferred from the hub.txt filename)
 $ jbrowse add-connection https://mysite.com/path/to/hub.txt
+
+# force the UCSCTrackHubConnection type for a hub file not named hub.txt
 $ jbrowse add-connection https://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection
+
+# add a custom connection type with extra config
 $ jbrowse add-connection https://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' -a hg19
+
+# set an explicit id/name and write to a specific config file
 $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json
 ```
+
 
 ## jbrowse add-track-json
 
 ```
-Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration
+Add a track configuration directly from a JSON hunk to the JBrowse 2
+configuration
 
 Usage: jbrowse add-track-json <track> [options]
 
 Options:
-  -h, --help
+  -h, --help                 Show help
 
   -u, --update               Update the contents of an existing track, matched
                              based on trackId
@@ -603,27 +671,50 @@ Options:
 
       --out                  Synonym for target
 
+Examples:
+
+# add a track from a JSON file
 $ jbrowse add-track-json track.json
+
+# update an existing track (matched by trackId) with new JSON contents
 $ jbrowse add-track-json track.json --update
+
+# pass the track config inline instead of via a file
+$ jbrowse add-track-json '{"type":"FeatureTrack","trackId":"genes","assemblyNames":["hg38"],"adapter":{"type":"Gff3TabixAdapter","gffGzLocation":{"uri":"genes.gff.gz"}}}'
+
+# write to a config.json in a specific installation directory
+$ jbrowse add-track-json track.json --out /path/to/jb2/
 ```
+
 
 ## jbrowse remove-track
 
 ```
-Remove a track configuration from a JBrowse 2 configuration. Be aware that this can cause crashes in saved sessions that refer to this track!
+Remove a track configuration from a JBrowse 2 configuration. Be aware that this
+can cause crashes in saved sessions that refer to this track!
 
 Usage: jbrowse remove-track <trackId> [options]
 
 Options:
-  -h, --help
+  -h, --help                 Show help
 
       --target               Path to config file in JB2 installation directory
                              to write out to
 
       --out                  Synonym for target
 
-$ jbrowse remove-track trackId
+Examples:
+
+# remove a track from the config.json in the current directory
+$ jbrowse remove-track my_track_id
+
+# remove a track from a config.json in a specific installation directory
+$ jbrowse remove-track my_track_id --out /path/to/jb2/
+
+# remove a track from a specific config file
+$ jbrowse remove-track my_track_id --target /path/to/jb2/config.json
 ```
+
 
 ## jbrowse set-default-session
 
@@ -637,8 +728,9 @@ Options:
                              format (required, unless using
                              delete/currentSession flags)
 
-  -n, --name                 Give a name for the default session [default: New
-                             Default Session]
+  -n, --name                 Give a name for the default session (overrides any
+                             name in the session file; defaults to "New Default
+                             Session")
 
   -c, --currentSession       List out the current default session
 
@@ -651,12 +743,22 @@ Options:
 
   -h, --help                 Show help
 
+Examples:
+
 # set default session for the config.json in your current directory
 $ jbrowse set-default-session --session /path/to/default/session.json
 
 # make session.json the defaultSession on the specified target config.json file
 $ jbrowse set-default-session --target /path/to/jb2/installation/config.json --session session.json
 
-# print current default session
-$ jbrowse set-default-session --currentSession # Prints out current default session
+# override the name stored in the session file
+$ jbrowse set-default-session --session session.json --name "My default view"
+
+# print the current default session
+$ jbrowse set-default-session --currentSession
+
+# remove the existing default session
+$ jbrowse set-default-session --delete
 ```
+
+

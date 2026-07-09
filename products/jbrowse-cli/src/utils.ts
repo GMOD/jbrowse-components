@@ -320,7 +320,11 @@ function wrapText(text: string, width: number, indent: string) {
       }
     }
   }
-  return lines.join(`\n${indent}`)
+  // indent continuation lines, but leave blank paragraph-separator lines empty
+  // rather than filling them with trailing indent whitespace
+  return lines
+    .map((line, i) => (i === 0 || !line ? line : indent + line))
+    .join('\n')
 }
 
 // the subset of a parseArgs option definition that printHelp renders (the
