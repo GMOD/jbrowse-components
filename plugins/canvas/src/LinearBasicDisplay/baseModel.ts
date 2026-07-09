@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { promotableRadioItem } from '@jbrowse/core/ui'
+import { Highlighter } from '@jbrowse/core/ui/Icons'
 import {
   getContainingTrack,
   getContainingView,
@@ -1538,6 +1539,50 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
+        // Additively highlight one rendered feature (right-click "Highlight
+        // feature"). Unlike setFeatureHighlights, which replaces the set so a new
+        // search supersedes the old one, manual highlights accumulate so a user
+        // can mark several features at once; skip the add if this feature already
+        // resolves to a stored highlight (idempotent re-highlight).
+        addFeatureHighlightForItem(
+          item: Pick<FlatbushItem, 'startBp' | 'endBp' | 'name'>,
+          refName: string,
+        ) {
+          const already = self.featureHighlights.some(h =>
+            featureMatchesHighlight(item, refName, h),
+          )
+          if (!already) {
+            self.featureHighlights.push({
+              refName,
+              start: item.startBp,
+              end: item.endBp,
+              name: item.name,
+            })
+          }
+        },
+
+        /**
+         * #action
+         */
+        // Drop every stored highlight that this rendered feature resolves to,
+        // using the same predicate the overlay boxes with. Matching by
+        // resolution (not exact signature) lets the menu's "Remove highlight"
+        // also clear a search-originated highlight, whose stored span/name is
+        // trix's — not the rendered item's exact span.
+        removeFeatureHighlightsForItem(
+          item: Pick<FlatbushItem, 'startBp' | 'endBp' | 'name'>,
+          refName: string,
+        ) {
+          self.featureHighlights = cast(
+            self.featureHighlights.filter(
+              h => !featureMatchesHighlight(item, refName, h),
+            ),
+          )
+        },
+
+        /**
+         * #action
+         */
         clearFeatureHighlights() {
           self.featureHighlights.clear()
         },
@@ -2329,10 +2374,11 @@ export default function baseStateModelFactory(
             return []
           }
           const {
-            item: { featureId, startBp, endBp },
+            item: { featureId, startBp, endBp, name },
             displayedRegionIndex,
           } = info
           const pinned = self.pinnedFeatureIdSet.has(featureId)
+          const highlighted = self.highlightedFeatureIdSet.has(featureId)
           const inSoloSet = self.soloFeatureIdSet.has(featureId)
           const soloCount = self.soloFeatureIds.length
           const hiddenCount = self.hiddenFeatureIds.length
@@ -2365,6 +2411,21 @@ export default function baseStateModelFactory(
                     },
                     0.2,
                   )
+                }
+              },
+            },
+            {
+              label: highlighted ? 'Remove highlight' : 'Highlight feature',
+              icon: Highlighter,
+              onClick: () => {
+                const region = self.loadedRegions.get(displayedRegionIndex)
+                if (region) {
+                  const item = { startBp, endBp, name }
+                  if (highlighted) {
+                    self.removeFeatureHighlightsForItem(item, region.refName)
+                  } else {
+                    self.addFeatureHighlightForItem(item, region.refName)
+                  }
                 }
               },
             },

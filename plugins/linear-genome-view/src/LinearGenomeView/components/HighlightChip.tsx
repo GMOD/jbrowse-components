@@ -1,10 +1,12 @@
+import type { ComponentType } from 'react'
+
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { Box, Tooltip, Typography } from '@mui/material'
 
-import type { SvgIconComponent } from '@mui/icons-material'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Colord } from '@jbrowse/core/util/colord'
+import type { SvgIconProps } from '@mui/material'
 
 // Shared chip drawn inside a highlight band: an icon tinted to the band color
 // plus an optional inline label, wrapped in a context menu. Used by both the
@@ -17,7 +19,7 @@ export default function HighlightChip({
   tooltip,
   menuItems,
 }: {
-  icon: SvgIconComponent
+  icon: ComponentType<SvgIconProps>
   color: Colord
   label?: string
   labelsVisible?: boolean

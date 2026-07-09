@@ -284,6 +284,12 @@ export function useHighlightOverlays(
       }
       const rect = getItemRect(item, vr)
       if (rect) {
+        // Clamp the outset top into the content edge: ScrollLockedOverlay clips
+        // at content y=0, so a box outset above a top-row feature (topPx≈0)
+        // would lose its top border to that clip. Pull the top down to 0 and
+        // shrink height by the same amount to keep the bottom edge fixed.
+        const top = Math.max(0, rect.topPx - yPadding)
+        const height = rect.heightPx + yPadding * 2 - (top - (rect.topPx - yPadding))
         overlays.push(
           <div
             key={`${key}-${vr.displayedRegionIndex}`}
@@ -291,9 +297,9 @@ export function useHighlightOverlays(
             className={cx(classes.overlayBase, className)}
             style={{
               left: rect.leftPx - xPadding,
-              top: rect.topPx - yPadding,
+              top,
               width: rect.width + extraWidth + xPadding * 2,
-              height: rect.heightPx + yPadding * 2,
+              height,
             }}
           />,
         )

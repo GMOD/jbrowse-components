@@ -1,5 +1,5 @@
+import { Highlighter } from '@jbrowse/core/ui/Icons'
 import CloseIcon from '@mui/icons-material/Close'
-import LinkIcon from '@mui/icons-material/Link'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -27,7 +27,7 @@ const Highlight = observer(function Highlight({
   return coords ? (
     <HighlightBand coords={coords} background={bandColor.toRgbString()}>
       <HighlightChip
-        icon={LinkIcon}
+        icon={Highlighter}
         color={bandColor}
         label={highlight.label}
         labelsVisible={model.labelsVisible}

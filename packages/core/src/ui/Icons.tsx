@@ -34,6 +34,24 @@ export function DNA(props: SvgIconProps) {
   )
 }
 
+// highlighter from https://lucide.dev/ — a stroke-only icon, so fill="none" is
+// set on each path (MUI's .MuiSvgIcon-root CSS forces fill:currentColor, which
+// would beat a fill="none" attribute on the root svg and paint the strokes in)
+export function Highlighter(props: SvgIconProps) {
+  return (
+    <SvgIcon
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path fill="none" d="m9 11-6 6v3h9l3-3" />
+      <path fill="none" d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4" />
+    </SvgIcon>
+  )
+}
+
 export function Cable(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>

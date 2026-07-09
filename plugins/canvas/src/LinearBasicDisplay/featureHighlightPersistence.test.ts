@@ -219,6 +219,72 @@ describe('feature highlight declarative persistence', () => {
     expect([...display.highlightedFeatureIdSet]).toEqual(['gene-1'])
   })
 
+  it('addFeatureHighlightForItem accumulates rather than replacing', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({ featureHighlights: [brca1] })
+
+    display.addFeatureHighlightForItem(
+      { startBp: 5000, endBp: 6000, name: 'TP53' },
+      'ctgA',
+    )
+    expect(getSnapshot(display.featureHighlights)).toEqual([
+      brca1,
+      { refName: 'ctgA', start: 5000, end: 6000, name: 'TP53' },
+    ])
+  })
+
+  it('addFeatureHighlightForItem is idempotent for an already-highlighted feature', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({ featureHighlights: [brca1] })
+
+    display.addFeatureHighlightForItem(
+      { startBp: 1000, endBp: 2000, name: 'BRCA1' },
+      'ctgA',
+    )
+    expect(getSnapshot(display.featureHighlights)).toEqual([brca1])
+  })
+
+  it('removeFeatureHighlightsForItem drops an exact manual highlight', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({ featureHighlights: [brca1] })
+
+    display.removeFeatureHighlightsForItem(
+      { startBp: 1000, endBp: 2000, name: 'BRCA1' },
+      'ctgA',
+    )
+    expect(display.featureHighlights.length).toBe(0)
+  })
+
+  it('removeFeatureHighlightsForItem clears a search-drifted highlight by span', () => {
+    const { createDisplay } = createTestEnvironment()
+    // a search highlight whose stored name is trix's indexed description, not
+    // the rendered feature's Name — removal must still match on span overlap
+    const searchDrift: FeatureHighlight = {
+      refName: 'ctgA',
+      start: 1000,
+      end: 2000,
+      name: 'protein kinase',
+    }
+    const { display } = createDisplay({ featureHighlights: [searchDrift] })
+
+    display.removeFeatureHighlightsForItem(
+      { startBp: 1000, endBp: 2000, name: 'BRCA1' },
+      'ctgA',
+    )
+    expect(display.featureHighlights.length).toBe(0)
+  })
+
+  it('removeFeatureHighlightsForItem leaves an unrelated highlight in place', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({ featureHighlights: [brca1] })
+
+    display.removeFeatureHighlightsForItem(
+      { startBp: 5000, endBp: 6000, name: 'TP53' },
+      'ctgA',
+    )
+    expect(getSnapshot(display.featureHighlights)).toEqual([brca1])
+  })
+
   it('merges the highlight with existing user pins', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay({
