@@ -62,6 +62,7 @@ import {
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
 import { featureMatchesHighlight } from './featureHighlight.ts'
+import { resolveFitLadder } from './fitLadder.ts'
 import { createIncrementalLayout, scaleLaidOutData } from './layout.ts'
 import {
   canMorph,
@@ -70,6 +71,7 @@ import {
   easeInOutCubic,
   interpolateYData,
   maxBottom,
+  rowGeometrySignature,
 } from './yMorph.ts'
 import {
   HEIGHT_MULTIPLIERS,
@@ -91,6 +93,7 @@ import type {
 } from './components/hitTesting.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
 import type { FeatureHighlight } from './featureHighlight.ts'
+import type { FitStage } from './fitLadder.ts'
 import type { IncrementalLayout } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 // rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
@@ -1086,27 +1089,21 @@ export default function baseStateModelFactory(
          * `full`, scale 1. Read off the unscaled candidate heights so it can't feed
          * back on its own `scale`. The bodies squeeze is floored at `fitMinScale`
          * (keeping boxes visible); a stack too dense to fit even there overflows
-         * and scrolls.
+         * and scrolls. The ladder walk + squeeze math live in `resolveFitLadder`.
          */
-        get fitStage(): {
-          level: 'full' | 'labels' | 'bodies'
-          layout: Map<number, FeatureDataResult>
-          scale: number
-        } {
-          const h = self.height
+        get fitStage(): FitStage {
           const base = self.baseLaidOutDataMap
-          return !self.fitHeightToDisplay || maxBottom(base) <= h
-            ? { level: 'full', layout: base, scale: 1 }
-            : maxBottom(self.fitLabelsOnlyLayout) <= h
-              ? { level: 'labels', layout: self.fitLabelsOnlyLayout, scale: 1 }
-              : {
-                  level: 'bodies',
-                  layout: self.fitBodiesOnlyLayout,
-                  scale: Math.max(
-                    self.fitMinScale,
-                    Math.min(1, h / maxBottom(self.fitBodiesOnlyLayout)),
-                  ),
-                }
+          return self.fitHeightToDisplay
+            ? resolveFitLadder(
+                [
+                  { level: 'full', layout: () => base },
+                  { level: 'labels', layout: () => self.fitLabelsOnlyLayout },
+                  { level: 'bodies', layout: () => self.fitBodiesOnlyLayout },
+                ],
+                self.height,
+                self.fitMinScale,
+              )
+            : { level: 'full', layout: base, scale: 1 }
         },
       }))
       .views(self => ({
@@ -2314,44 +2311,33 @@ export default function baseStateModelFactory(
             // These prevs are only compared once prevLayout is non-undefined,
             // which can't happen until after the first guarded run has set them.
             let prevLayout: Map<number, FeatureDataResult> | undefined
-            let prevMode: string | undefined
-            let prevShowLabels: boolean | undefined
-            let prevShowDescriptions: boolean | undefined
-            let prevFitScale: number | undefined
+            let prevGeometry: string | undefined
             // autorunOnReadyView gates on view.initialized — laidOutDataMap is
-            // empty until then, and renderedShowLabels/renderedShowDescriptions
-            // read view.width (which throws pre-measure), so the body must not
-            // run until the view is ready. prevs stay undefined until the first
-            // ready run seeds them; they're only compared once prevLayout is
-            // non-undefined, which can't happen before that first run.
+            // empty until then, and rowGeometrySignature reads renderedShow*
+            // which read view.width (which throws pre-measure), so the body must
+            // not run until the view is ready. prevs stay undefined until the
+            // first ready run seeds them; they're only compared once prevLayout
+            // is non-undefined, which can't happen before that first run.
             autorunOnReadyView(
               self,
               () => {
                 const current = self.laidOutDataMap
-                const mode = self.displayMode
-                // Track what's actually reserved/drawn, not the raw config
-                // flags: in fit mode a zoom step can cross a fitStage level
-                // boundary (auto-dropping descriptions or names) which rescales
-                // every row without the raw showLabels/effectiveShowDescriptions
-                // changing. renderedShow* flip exactly at those crossings, so
-                // the change is treated like a mode change (snap) below.
-                const showLabels = self.renderedShowLabels
-                const showDescriptions = self.renderedShowDescriptions
-                // A fit-to-height rescale (e.g. a drag-resize) is a uniform
-                // fit, not a row re-pack, so treat it like a mode change:
-                // snap rather than morph, else every resize frame animates.
-                const fitScale = self.fitScale
-                const scaleUnchanged =
-                  mode === prevMode &&
-                  showLabels === prevShowLabels &&
-                  showDescriptions === prevShowDescriptions &&
-                  fitScale === prevFitScale
+                // Same row heights/scale as the previous layout means the change
+                // is a same-scale zoom re-pack (row *assignment* only) and can
+                // morph; a changed signature rescaled every row (mode/label/fit-
+                // level change, or a fit squeeze) and must snap. See
+                // rowGeometrySignature for why it reads the rendered, not raw,
+                // label/description flags.
+                const geometry = rowGeometrySignature({
+                  displayMode: self.displayMode,
+                  renderedShowLabels: self.renderedShowLabels,
+                  renderedShowDescriptions: self.renderedShowDescriptions,
+                  fitScale: self.fitScale,
+                })
+                const scaleUnchanged = geometry === prevGeometry
                 const from = prevLayout
                 prevLayout = current
-                prevMode = mode
-                prevShowLabels = showLabels
-                prevShowDescriptions = showDescriptions
-                prevFitScale = fitScale
+                prevGeometry = geometry
                 // Not a real layout-to-layout transition (first data, an
                 // empty map on nav) — nothing to morph or snap.
                 if (
