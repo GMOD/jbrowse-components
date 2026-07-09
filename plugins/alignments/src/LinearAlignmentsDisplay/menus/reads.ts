@@ -27,12 +27,6 @@ interface ReadsModel {
   softClippingSessionDefault: SessionDefaultControl
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
-  mismatchAlpha: boolean
-  toggleMismatchAlpha: () => void
-  showLowFreqMismatches: boolean
-  toggleShowLowFreqMismatches: () => void
-  showOutline: boolean
-  setShowOutline: (v: boolean | undefined) => void
   drawProperPairs: boolean
   setDrawProperPairs: (v: boolean) => void
   drawSingletons: boolean
@@ -115,23 +109,6 @@ export function getReadsMenuItem(model: ReadsModel) {
               model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
             },
           ),
-          checkboxItem(
-            'Show mismatches faded by base quality',
-            model.mismatchAlpha,
-            () => {
-              model.toggleMismatchAlpha()
-            },
-          ),
-          checkboxItem(
-            'Show low-frequency mismatches',
-            model.showLowFreqMismatches,
-            () => {
-              model.toggleShowLowFreqMismatches()
-            },
-          ),
-          checkboxItem('Show outlines', model.showOutline, () => {
-            model.setShowOutline(!model.showOutline)
-          }),
           {
             label: 'Set max layout height...',
             onClick: () => {

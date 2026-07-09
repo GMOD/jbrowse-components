@@ -843,13 +843,6 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get mismatchAlpha() {
-          return !!getConf(self, 'mismatchAlpha')
-        },
-
-        /**
-         * #getter
-         */
         get showLowFreqMismatches() {
           return !!getConf(self, 'showLowFreqMismatches')
         },
@@ -2051,13 +2044,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setShowOutline(show: boolean | undefined) {
-            self.configuration.setSlot('showOutline', show)
-          },
-
-          /**
-           * #action
-           */
           toggleSoftClipping() {
             self.configuration.setSlot(
               'showSoftClipping',
@@ -2077,26 +2063,6 @@ export default function stateModelFactory(
               self,
               ['featureHeight', 'featureSpacing', 'heightMode'],
               promote,
-            )
-          },
-
-          /**
-           * #action
-           */
-          toggleMismatchAlpha() {
-            self.configuration.setSlot(
-              'mismatchAlpha',
-              !getConf(self, 'mismatchAlpha'),
-            )
-          },
-
-          /**
-           * #action
-           */
-          toggleShowLowFreqMismatches() {
-            self.configuration.setSlot(
-              'showLowFreqMismatches',
-              !self.showLowFreqMismatches,
             )
           },
 
