@@ -74,9 +74,3 @@ export function radToDeg(radians: number) {
 export function polarToCartesian(rho: number, theta: number) {
   return [rho * Math.cos(theta), rho * Math.sin(theta)] as [number, number]
 }
-
-export function cartesianToPolar(x: number, y: number) {
-  const rho = Math.hypot(x, y)
-  const theta = Math.atan(y / x)
-  return [rho, theta] as [number, number]
-}
