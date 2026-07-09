@@ -107,6 +107,7 @@ function createDisplay(displayConfig: Record<string, unknown> = {}) {
         self.view = view
         return view
       },
+      notify(_message: string, _level?: string) {},
       setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
         const forType = { ...self.displayTypeDefaults[displayType] }
         if (value === undefined) {
