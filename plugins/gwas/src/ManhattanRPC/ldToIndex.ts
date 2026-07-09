@@ -1,15 +1,5 @@
 import type { Region } from '@jbrowse/core/util'
-import type { PlinkLDRecord } from '@jbrowse/ld-core'
-
-// Both PlinkLDAdapter and PlinkLDTabixAdapter expose this — structural typing
-// keeps the GWAS worker decoupled from the variants plugin (only the record
-// type is shared, via @jbrowse/ld-core).
-export interface LDRecordSource {
-  getLDRecords(
-    query: { refName: string; start: number; end: number },
-    opts?: object,
-  ): Promise<PlinkLDRecord[]>
-}
+import type { LDRecordSource } from '@jbrowse/ld-core'
 
 // PLINK BP is the 1-based variant position; JBrowse features are 0-based start.
 // The position key therefore uses start+1 so it lines up with `chr:bp` ids.
@@ -61,7 +51,8 @@ export async function buildLdToIndex({
   region,
   indexSnp,
 }: {
-  adapter: LDRecordSource
+  // Only the A-side scan is needed here, so accept the narrower capability.
+  adapter: Pick<LDRecordSource, 'getLDRecords'>
   region: Region
   indexSnp: string
 }): Promise<LdToIndex> {

@@ -1,7 +1,6 @@
 import { buildLdToIndex, posKey } from './ldToIndex.ts'
 
-import type { LDRecordSource } from './ldToIndex.ts'
-import type { PlinkLDRecord } from '@jbrowse/ld-core'
+import type { LDRecordSource, PlinkLDRecord } from '@jbrowse/ld-core'
 
 function rec(p: Partial<PlinkLDRecord>): PlinkLDRecord {
   return {
@@ -16,7 +15,9 @@ function rec(p: Partial<PlinkLDRecord>): PlinkLDRecord {
   }
 }
 
-function source(records: PlinkLDRecord[]): LDRecordSource {
+function source(
+  records: PlinkLDRecord[],
+): Pick<LDRecordSource, 'getLDRecords'> {
   return { getLDRecords: () => Promise.resolve(records) }
 }
 

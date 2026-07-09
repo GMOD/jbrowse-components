@@ -7,9 +7,16 @@ import { filterRecordsInRegion } from './filterRecordsInRegion.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
-import type { PlinkLDHeader, PlinkLDRecord } from '@jbrowse/ld-core'
+import type {
+  LDRecordSource,
+  PlinkLDHeader,
+  PlinkLDRecord,
+} from '@jbrowse/ld-core'
 
-export default class PlinkLDAdapter extends BaseAdapter {
+export default class PlinkLDAdapter
+  extends BaseAdapter
+  implements LDRecordSource
+{
   private configured?: Promise<{
     records: PlinkLDRecord[]
     header: PlinkLDHeader

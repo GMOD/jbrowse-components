@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { isLDRecordSource } from '@jbrowse/ld-core'
 
 import type {
   FilterStats,
@@ -7,7 +8,6 @@ import type {
   LDSnp,
   RecombinationData,
 } from './getLDMatrix.ts'
-import type PlinkLDAdapter from '../PlinkLDAdapter/PlinkLDAdapter.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -94,8 +94,16 @@ export async function getLDMatrixFromPlink({
 }): Promise<LDMatrixResult> {
   const { regions, adapterConfig, sessionId, ldMetric = 'r2' } = args
 
-  const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
-  const dataAdapter = adapter.dataAdapter as PlinkLDAdapter
+  const { dataAdapter } = await getAdapter(
+    pluginManager,
+    sessionId,
+    adapterConfig,
+  )
+  if (!isLDRecordSource(dataAdapter)) {
+    throw new Error(
+      `Adapter type "${adapterConfig.type}" cannot supply pre-computed LD records`,
+    )
+  }
 
   const allRecords: PlinkLDRecord[] = []
   for (const region of regions) {

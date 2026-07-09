@@ -7,13 +7,13 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
+import { isLDRecordSource } from '@jbrowse/ld-core'
 
 import { buildLdToIndex } from './ldToIndex.ts'
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
 import { GLYPH_INSERTION, GLYPH_POINT } from './rpcTypes.ts'
 
-import type { LDRecordSource } from './ldToIndex.ts'
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
@@ -143,9 +143,16 @@ export async function executeGetManhattanData({
   let evalGlyph: ((f: Feature) => number) | undefined
   let indexFound: boolean | undefined
   if (colorBy === 'ld' && indexSnp && ldAdapterConfig) {
-    const ldAdapter = (
-      await getAdapter(pluginManager, sessionId, ldAdapterConfig)
-    ).dataAdapter as unknown as LDRecordSource
+    const { dataAdapter: ldAdapter } = await getAdapter(
+      pluginManager,
+      sessionId,
+      ldAdapterConfig,
+    )
+    if (!isLDRecordSource(ldAdapter)) {
+      throw new Error(
+        `Adapter type "${ldAdapterConfig.type}" cannot supply LD records for coloring`,
+      )
+    }
     const ld = await updateStatus('Loading LD data', statusCallback, () =>
       buildLdToIndex({ adapter: ldAdapter, region, indexSnp }),
     )

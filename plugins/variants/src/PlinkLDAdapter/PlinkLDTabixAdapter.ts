@@ -8,9 +8,16 @@ import { filterRecordsInRegion } from './filterRecordsInRegion.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
-import type { PlinkLDHeader, PlinkLDRecord } from '@jbrowse/ld-core'
+import type {
+  LDRecordSource,
+  PlinkLDHeader,
+  PlinkLDRecord,
+} from '@jbrowse/ld-core'
 
-export default class PlinkLDTabixAdapter extends BaseAdapter {
+export default class PlinkLDTabixAdapter
+  extends BaseAdapter
+  implements LDRecordSource
+{
   private configured?: Promise<{
     ld: TabixIndexedFile
     header: PlinkLDHeader
