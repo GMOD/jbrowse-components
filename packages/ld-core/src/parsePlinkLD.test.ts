@@ -56,4 +56,9 @@ describe('parsePlinkLDLine', () => {
   it('returns null on malformed positions', () => {
     expect(parsePlinkLDLine('1 . rs1 1 . rs2 0.85', header)).toBeNull()
   })
+
+  it('coerces an unparseable r2 to 0 (NaN must not leak downstream)', () => {
+    expect(parsePlinkLDLine('1 100 rs1 1 200 rs2 nan', header)?.r2).toBe(0)
+    expect(parsePlinkLDLine('1 100 rs1 1 200 rs2', header)?.r2).toBe(0)
+  })
 })
