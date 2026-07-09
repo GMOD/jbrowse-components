@@ -1,8 +1,6 @@
 import { useImperativeHandle, useState } from 'react'
 import type { Ref } from 'react'
 
-import { observer } from 'mobx-react'
-
 import JBrowseApp from '../JBrowseApp/index.ts'
 import createViewState from '../createViewState.ts'
 
@@ -50,7 +48,7 @@ export interface JBrowseProps {
  * React `key` to swap assemblies/plugins). For imperative control after launch
  * (session.addView, navToLocString, ...) take a `ref` to the live engine.
  */
-const JBrowse = observer(function JBrowse({
+function JBrowse({
   assemblies,
   tracks,
   internetAccounts,
@@ -71,18 +69,20 @@ const JBrowse = observer(function JBrowse({
         internetAccounts,
         aggregateTextSearchAdapters,
         configuration,
-        // `views` is the single initial-state mechanism; with none given,
-        // createViewState falls back to an empty session
-        defaultSession: views?.length
-          ? {
-              name: sessionName,
-              views: views.map((v, i) => ({
-                id: v.id ?? `view-${i}`,
-                type: v.type,
-                init: v.init,
-              })),
-            }
-          : undefined,
+        // `views` is the single initial-state mechanism; with none given, the
+        // session opens empty but still honors `sessionName`
+        defaultSession: {
+          name: sessionName,
+          ...(views?.length
+            ? {
+                views: views.map((v, i) => ({
+                  id: v.id ?? `view-${i}`,
+                  type: v.type,
+                  init: v.init,
+                })),
+              }
+            : {}),
+        },
       },
       plugins,
       onChange,
@@ -93,6 +93,6 @@ const JBrowse = observer(function JBrowse({
   useImperativeHandle(ref, () => state, [state])
 
   return <JBrowseApp viewState={state} />
-})
+}
 
 export default JBrowse

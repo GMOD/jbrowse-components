@@ -50,3 +50,19 @@ test('<JBrowse /> maps the views prop into session.views', () => {
   expect(views).toHaveLength(1)
   expect(views[0]!.type).toBe('LinearGenomeView')
 })
+
+test('<JBrowse /> honors sessionName without any views', () => {
+  const ref = createRef<ViewModel>()
+  render(
+    <Suspense fallback={<div>Loading...</div>}>
+      <JBrowse
+        ref={ref}
+        assemblies={assemblies}
+        tracks={[]}
+        sessionName="my session"
+      />
+    </Suspense>,
+  )
+
+  expect(ref.current!.session.name).toBe('my session')
+})
