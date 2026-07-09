@@ -172,10 +172,9 @@ describe('canvas display fit-to-display-height', () => {
       start: 0,
       end: 10_000,
     })
-    // Height above MIN_FIT_HEIGHT (so the fitHeight floor doesn't confound
-    // canExpand) and chosen so base(355)*(97/355) rounds just ABOVE 97 in
-    // float — the exact case the clamp guards. Content stacks well past it, so
-    // the base layout overflows.
+    // Height above MIN_FIT_HEIGHT and chosen so base(355)*(97/355) rounds just
+    // ABOVE 97 in float — the exact case the clamp guards. Content stacks well
+    // past it, so the base layout overflows.
     display.setHeight(97)
     expect(display.baseLaidOutDataMap.size).toBeGreaterThan(0)
     expect(display.fitScale).toBe(1)
@@ -183,23 +182,46 @@ describe('canvas display fit-to-display-height', () => {
 
     display.setHeightMode('fit')
     // Fit scales content to fit; maxY must land exactly on height, so the
-    // expand button, overflow flag, and scrollbar all stay off.
+    // overflow flag and scrollbar stay off.
     expect(display.fitScale).toBeLessThan(1)
     expect(display.maxY).toBe(display.height)
     expect(display.hasOverflow).toBe(false)
     expect(display.scrollableHeight).toBe(0)
-    expect(display.canExpand).toBe(false)
   })
 
-  it('entering fit mode clears a stale expand/restore marker', () => {
+  // fitHeight (the grow-mode target / sparse-track floor) resolves to
+  // MIN_FIT_HEIGHT when there's no content, rather than collapsing to a sliver.
+  it('fitHeight floors at MIN_FIT_HEIGHT with no content', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setHeight(30)
-    display.expandToFit()
-    expect(display.heightBeforeExpand).toBe(30)
+    expect(display.maxY).toBe(0)
+    expect(display.fitHeight).toBe(50)
+  })
 
-    display.setHeightMode('fit')
-    expect(display.heightBeforeExpand).toBeUndefined()
+  // A manual drag-resize leaves grow mode, otherwise the CanvasAutoHeight
+  // autorun snaps the height straight back and the drag appears to do nothing.
+  it('a manual drag-resize leaves grow mode so the height sticks', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setHeightMode('grow')
+    expect(display.autoHeight).toBe(true)
+    display.resizeHeight(50)
+    expect(display.autoHeight).toBe(false)
+    expect(display.heightMode).toBe('fixed')
+  })
+
+  // Grow, like fit, resets scroll on entry so the sticky GPU canvas can't be
+  // stranded at an offset the reconfigured height no longer supports.
+  it('entering grow mode resets scroll to the top', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    display.setHeight(97)
+    display.setScrollTop(120)
+    expect(display.scrollTop).toBe(120)
+
+    display.setHeightMode('grow')
+    expect(display.scrollTop).toBe(0)
   })
 })
 

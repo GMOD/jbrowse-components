@@ -17,9 +17,8 @@ describe('per-track scroll', () => {
     })
   })
 
-  // expandToFit / collapseFromExpand are exercised against the real MST model
-  // in ../expandToFit.test.ts (this file's closures pre-dated that harness).
-
+  // The resizeHeight override is exercised against the real MST model in
+  // ../fitToDisplayHeight.test.ts; the closures below isolate the arithmetic.
   describe('resizeHeight under auto-fit', () => {
     // Models the interplay between the resizeHeight override and the
     // CanvasAutoHeight autorun: a drag must turn auto-fit off, otherwise the
