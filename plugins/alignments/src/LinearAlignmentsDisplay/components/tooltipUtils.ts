@@ -59,6 +59,12 @@ export function pct(n: number, total = 1) {
   return `${((n / (total || 1)) * 100).toFixed(1)}%`
 }
 
+// "5bp" when the range collapses, "5-8bp" otherwise. Shared by the interbase,
+// coverage, and deletion tooltip rows so they render length spans identically.
+export function formatLenRange(minLen: number, maxLen: number) {
+  return minLen === maxLen ? `${minLen}bp` : `${minLen}-${maxLen}bp`
+}
+
 const PAIR_ORIENTATION_NAMES = ['', 'LR', 'RL', 'RR', 'LL'] as const
 
 function getPairTypeDescription(

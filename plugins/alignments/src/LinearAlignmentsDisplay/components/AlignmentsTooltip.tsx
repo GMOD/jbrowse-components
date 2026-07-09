@@ -7,7 +7,7 @@ import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { formatSashimiLocation, pct } from './tooltipUtils.ts'
+import { formatLenRange, formatSashimiLocation, pct } from './tooltipUtils.ts'
 import { getModificationName } from '../../shared/modificationData.ts'
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
@@ -121,10 +121,7 @@ function InterbaseTooltip({
           <td />
         </tr>
         {Object.entries(interbaseData).map(([type, data]) => {
-          const sizeStr =
-            data.minLen === data.maxLen
-              ? `${data.minLen}bp`
-              : `${data.minLen}-${data.maxLen}bp`
+          const sizeStr = formatLenRange(data.minLen, data.maxLen)
 
           return (
             <tr key={type}>
@@ -249,11 +246,7 @@ export function CoverageTooltipContents({
           <tr>
             {hasModifications && <td />}
             <td>
-              Deletion (
-              {deletions.minLen === deletions.maxLen
-                ? `${deletions.minLen}bp`
-                : `${deletions.minLen}-${deletions.maxLen}bp`}
-              )
+              Deletion ({formatLenRange(deletions.minLen, deletions.maxLen)})
             </td>
             <td className={classes.td}>
               {deletions.count}/{depth + deletions.count} (
@@ -265,10 +258,7 @@ export function CoverageTooltipContents({
         )}
         {interbaseEntries.map(([type, data]) => {
           const typeLabel = getInterbaseTypeLabel(type)
-          const sizeStr =
-            data.minLen === data.maxLen
-              ? `${data.minLen}bp`
-              : `${data.minLen}-${data.maxLen}bp`
+          const sizeStr = formatLenRange(data.minLen, data.maxLen)
           const shouldShowSeq = data.topSeq && data.minLen <= 10
 
           return (

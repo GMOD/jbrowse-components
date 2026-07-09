@@ -10,8 +10,8 @@ const BAR_HIT_HALF_WIDTH_PX = 3
 // Vertical slack (px) below the drawn bar bottom.
 const BAR_HIT_PAD_PX = 2
 
-// Finds the interbase position nearest genomicPos within tolerance, or -1.
-function nearestPosition(
+// Index of the interbase position nearest genomicPos within tolerance, or -1.
+function nearestPositionIndex(
   positions: Uint32Array,
   genomicPos: number,
   toleranceBp: number,
@@ -19,11 +19,10 @@ function nearestPosition(
   let best = -1
   let bestDist = Infinity
   for (let i = 0; i < positions.length; i++) {
-    const pos = positions[i]!
-    const dist = Math.abs(genomicPos - pos)
+    const dist = Math.abs(genomicPos - positions[i]!)
     if (dist < toleranceBp && dist < bestDist) {
       bestDist = dist
-      best = pos
+      best = i
     }
   }
   return best
@@ -54,16 +53,15 @@ export function hitTestInterbase(
     canvasY <= INDICATOR_TRIANGLE_H
   ) {
     const { indicatorPositions, indicatorColorTypes } = rpcData
-    const pos = nearestPosition(
+    const idx = nearestPositionIndex(
       indicatorPositions,
       genomicPos,
       Math.max(1, bpPerPx * 5),
     )
-    if (pos >= 0) {
-      const idx = indicatorPositions.indexOf(pos)
+    if (idx >= 0) {
       hit = {
         type: 'indicator',
-        position: pos,
+        position: indicatorPositions[idx]!,
         indicatorType: interbaseTypeName(indicatorColorTypes[idx] ?? 1),
       }
     }
@@ -87,12 +85,13 @@ export function hitTestInterbase(
       interbaseCovColorTypes,
       interbaseMaxCount,
     } = rpcData
-    const pos = nearestPosition(
+    const nearestIdx = nearestPositionIndex(
       interbaseCovPositions,
       genomicPos,
       bpPerPx * BAR_HIT_HALF_WIDTH_PX,
     )
-    if (pos >= 0) {
+    if (nearestIdx >= 0) {
+      const pos = interbaseCovPositions[nearestIdx]!
       const interbaseHeight =
         (coverageLayout(coverageHeight).effectiveH / 2) *
         (interbaseMaxCount / domainMax)

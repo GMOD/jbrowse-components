@@ -1,7 +1,7 @@
 import { openFeatureWidget } from '@jbrowse/core/util'
 
 import { CIGAR_TYPE_LABELS } from './alignmentComponentUtils.ts'
-import { getTooltipBin, pct } from './tooltipUtils.ts'
+import { formatLenRange, getTooltipBin, pct } from './tooltipUtils.ts'
 import { getModificationName } from '../../shared/modificationData.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -37,8 +37,8 @@ export function openIndicatorWidget(
     featureData.count = `${interbaseEntry.count}/${tooltipBin.interbaseDepth} (${pct(interbaseEntry.count, tooltipBin.interbaseDepth)})`
     featureData.size =
       interbaseEntry.minLen === interbaseEntry.maxLen
-        ? `${interbaseEntry.minLen}bp`
-        : `${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp (avg ${interbaseEntry.avgLen.toFixed(1)}bp)`
+        ? formatLenRange(interbaseEntry.minLen, interbaseEntry.maxLen)
+        : `${formatLenRange(interbaseEntry.minLen, interbaseEntry.maxLen)} (avg ${interbaseEntry.avgLen.toFixed(1)}bp)`
     if (interbaseEntry.topSeq) {
       featureData['top sequence'] =
         `${interbaseEntry.topSeq} (${interbaseEntry.topSeqCount}/${interbaseEntry.count} reads)`
@@ -75,10 +75,6 @@ export function openCoverageWidget(
   for (const [base, snpEntry] of Object.entries(tooltipBin.snps)) {
     featureData[`SNP ${base.toUpperCase()}`] =
       `${snpEntry.count}/${tooltipBin.depth} (${pct(snpEntry.count, tooltipBin.depth)}) (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
-  }
-  for (const [type, interbaseEntry] of Object.entries(tooltipBin.interbase)) {
-    featureData[type] =
-      `${interbaseEntry.count}/${tooltipBin.interbaseDepth} (${pct(interbaseEntry.count, tooltipBin.interbaseDepth)}) (${interbaseEntry.minLen}-${interbaseEntry.maxLen}bp)`
   }
   const modifications =
     modType && tooltipBin.modifications?.[modType]
