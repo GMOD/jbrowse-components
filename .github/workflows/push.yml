@@ -19,45 +19,22 @@ permissions:
 env:
   CLOUDFRONT_DISTRIBUTION_ID: E13LGELJOT4GQO
 
-jobs:
-  check_commit_message:
-    name: Check Commit Message
-    runs-on: ubuntu-latest
-    outputs:
-      skip_jobs: ${{ steps.check_message.outputs.skip_jobs }}
-    steps:
-      - name: Check commit message
-        id: check_message
-        env:
-          COMMIT_MSG: ${{ github.event.head_commit.message }}
-        run: |
-          # Use env variable for safe expansion of special characters like quotes.
-          if [[ "$COMMIT_MSG" == *"[update docs only]"* ]]; then
-            echo "skip_jobs=true" >> $GITHUB_OUTPUT
-            echo "Commit message contains [update docs only], skipping regular push jobs"
-          else
-            echo "skip_jobs=false" >> $GITHUB_OUTPUT
-            echo "Running regular push jobs"
-          fi
+# A commit with '[update docs only]' in its message skips CI. Each job gates on
+# this inline via its `if:` rather than depending on a separate gate job, which
+# would serialize the whole pipeline behind one cold runner. (Job-level `if:`
+# can't read workflow `env`, so the expression is repeated verbatim.)
 
+jobs:
   test:
     name: Test
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get update && sudo apt-get -y install tabix
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '24'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - name: Test codebase
         id: tests
         run: pnpm test-ci
@@ -99,28 +76,19 @@ jobs:
 
   typecheck:
     name: Typecheck
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '24'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - name: Typecheck codebase
         run: pnpm typecheck
 
   lint:
     name: Lint
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Install system dependencies
@@ -130,14 +98,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '24'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - name: Fast lint (oxlint) — fail fast before slower checks
         run: pnpm lint:fast
       - name: Check @jbrowse/core exports are up-to-date
@@ -202,28 +163,19 @@ jobs:
 
   format:
     name: Format
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '24'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - name: Check codebase format
         run: pnpm prettier --check .
 
   typecheck_infrastructure:
     name: Typecheck infrastructure
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -241,30 +193,22 @@ jobs:
 
   typecheck_aws:
     name: Typecheck AWS Lambdas
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: ./.github/actions/setup
         with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '24'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-        working-directory: aws/blat-proxy
+          working-directory: aws/blat-proxy
       - name: Typecheck blat-proxy Lambda
         run: pnpm run typecheck
         working-directory: aws/blat-proxy
 
   spellcheck:
     name: Spell check
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -275,8 +219,7 @@ jobs:
 
   build_and_pack_artifacts:
     name: Build and pack artifacts
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Install system dependencies
@@ -286,16 +229,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '24'
-
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-
+      - uses: ./.github/actions/setup
       - name: Pack artifacts for component tests
         run: node --experimental-strip-types scripts/pack.ts
       - name: Test build
@@ -309,25 +243,17 @@ jobs:
 
   deploy:
     name: Build and deploy jbrowse-web to S3
-    needs: check_commit_message
     # Skip the per-branch S3 preview for Dependabot branches — nobody shares a
     # preview URL for a dep bump. Build/smoke jobs still run to catch breakage.
     if:
-      needs.check_commit_message.outputs.skip_jobs != 'true' &&
-      !startsWith(github.ref_name, 'dependabot/')
+      ${{ !contains(github.event.head_commit.message, '[update docs only]') &&
+      !startsWith(github.ref_name, 'dependabot/') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '24'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - name: Sanitize branch/tag name for S3 path safety
         env:
           REF_NAME: ${{ github.ref_name }}
@@ -365,32 +291,23 @@ jobs:
       # fixed, unversioned prefix, so each deploys to the prefix root. No
       # --delete: the canonical site overlays the prefix without touching any
       # historical per-ref Storybook subdirs (e.g. /storybook/lgv/v3.0.0/).
-      - name: Build and deploy LGV examples-site
+      - name: Build and deploy examples-sites
         if:
           github.ref == 'refs/heads/main' || startsWith(github.ref,
           'refs/tags/')
         run: |
-          pnpm --filter lgv-examples-site build
-          aws s3 sync products/jbrowse-react-linear-genome-view/examples-site/dist s3://jbrowse.org/storybook/lgv
-          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/lgv/*"
-
-      - name: Build and deploy React App examples-site
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: |
-          pnpm --filter app-examples-site build
-          aws s3 sync products/jbrowse-react-app/examples-site/dist s3://jbrowse.org/storybook/app
-          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/app/*"
-
-      - name: Build and deploy CGV examples-site
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: |
-          pnpm --filter cgv-examples-site build
-          aws s3 sync products/jbrowse-react-circular-genome-view/examples-site/dist s3://jbrowse.org/storybook/cgv
-          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/cgv/*"
+          # site filter -> product dir -> public S3 prefix
+          for entry in \
+            "lgv-examples-site:jbrowse-react-linear-genome-view:lgv" \
+            "app-examples-site:jbrowse-react-app:app" \
+            "cgv-examples-site:jbrowse-react-circular-genome-view:cgv"; do
+            IFS=: read -r filter dir prefix <<<"$entry"
+            pnpm --filter "$filter" build
+            aws s3 sync "products/$dir/examples-site/dist" "s3://jbrowse.org/storybook/$prefix"
+          done
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/storybook/lgv/*" "/storybook/app/*" "/storybook/cgv/*"
 
   # Builds each Astro examples-site with Vite/Rollup (whose strict ESM surfaces
   # circular-dependency init-order errors that webpack tolerates), then loads
@@ -399,8 +316,7 @@ jobs:
   # See products/jbrowse-react-linear-genome-view/examples-site/MIGRATION.md.
   examples_site_smoke:
     name: Smoke-test ${{ matrix.site }} examples-site
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -410,14 +326,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '24'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - name: Typecheck examples-site
         run: pnpm --filter ${{ matrix.site }} typecheck
       - name: Build examples-site
@@ -435,22 +344,14 @@ jobs:
   # products/jbrowse-web/browser-tests/crossBackendGate.ts.
   cross_backend_gate:
     name: Cross-backend render gate
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get update && sudo apt-get -y install tabix
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '24'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - name: Build jbrowse-web
         run: |
           cd products/jbrowse-web/
@@ -479,23 +380,15 @@ jobs:
 
   buildwebsite:
     name: Build website
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: ./.github/actions/setup
         with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '24'
-
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-        working-directory: website
+          working-directory: website
       - name: Typecheck website
         run: pnpm typecheck
         working-directory: website
@@ -518,8 +411,8 @@ jobs:
   # code, create issues/PRs, access secrets, or call GitHub APIs.
   component_tests:
     name: Test embedded components
-    needs: [check_commit_message, build_and_pack_artifacts]
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    needs: build_and_pack_artifacts
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     permissions: {}
     steps:
@@ -545,8 +438,8 @@ jobs:
   # This job has no permissions since it installs npm packages without a lockfile.
   test_cli_compat:
     name: Test CLI on Node 18
-    needs: [check_commit_message, build_and_pack_artifacts]
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    needs: build_and_pack_artifacts
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     permissions: {}
     steps:
@@ -572,8 +465,8 @@ jobs:
   # This job has no permissions since it installs npm packages without a lockfile.
   test_jbrowse_img:
     name: Test @jbrowse/img
-    needs: [check_commit_message, build_and_pack_artifacts]
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    needs: build_and_pack_artifacts
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     permissions: {}
     steps:
@@ -596,23 +489,16 @@ jobs:
 
   windows_electron_e2e:
     name: Windows Electron E2E Tests
-    needs: [check_commit_message, test, typecheck, lint, format]
+    needs: [test, typecheck, lint, format]
     if:
-      needs.check_commit_message.outputs.skip_jobs != 'true' && github.ref ==
-      'refs/heads/main'
+      ${{ !contains(github.event.head_commit.message, '[update docs only]') &&
+      github.ref == 'refs/heads/main' }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
-        with:
-          node-version: '24'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - name: Build and test Electron on Windows
         run: pnpm test:e2e:ci:win
         working-directory: products/jbrowse-desktop
