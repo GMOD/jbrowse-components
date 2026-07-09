@@ -51,7 +51,7 @@ const tracks = [
     type: 'FeatureTrack',
     trackId: 'repeats_hg38',
     name: 'Repeats',
-    assemblyNames: ['hg38'],
+    assemblyNames: ['GRCh38'],
     category: ['Annotation'],
     adapter: {
       type: 'BigBedAdapter',
@@ -86,7 +86,7 @@ const tracks = [
     trackId: 'hg38.100way.phyloP100way',
     name: 'hg38.100way.phyloP100way',
     category: ['Conservation'],
-    assemblyNames: ['hg38'],
+    assemblyNames: ['GRCh38'],
     adapter: {
       type: 'BigWigAdapter',
       uri: 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
@@ -103,10 +103,12 @@ export default function HumanDemo() {
         {
           type: 'LinearGenomeView',
           init: {
-            loc: '1:100,000-110,000',
+            loc: 'chr7:155,799,529..155,812,871',
             assembly: 'hg38',
             tracks: [
+              'genes',
               'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
+              'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',
               'hg38.100way.phyloP100way',
             ],
           },

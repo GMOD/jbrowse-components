@@ -111,6 +111,14 @@ export const examples: ExampleMeta[] = [
       'Inspect a structural-variant VCF with a paired spreadsheet + circular view.',
     group: 'View types',
   },
+  {
+    slug: 'multi-view-session',
+    name: 'MultiViewSession',
+    title: 'Multiple views in one session',
+    description:
+      'Stack a circular SV overview and a linear detail view — the app manages both at once.',
+    group: 'View types',
+  },
 
   // --- Plugins ---
   {

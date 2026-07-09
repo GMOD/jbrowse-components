@@ -9,8 +9,10 @@ embed carries at once:
 - **phyloP100way conservation** as a quantitative (BigWig) track
 
 Every file is fetched directly over HTTP range requests from public buckets — no
-server-side component is required. The `defaultSession` opens a linear genome
-view at a locus on chromosome 1 with the exome and conservation tracks showing.
+server-side component is required. The view opens at the _SHH_ locus with the
+gene model, exome alignments, variant calls, and conservation tracks showing —
+the same region the [linear genome view landing demo](https://jbrowse.org/storybook/lgv/)
+uses.
 
 This uses the same managed `<JBrowse>` component as the
 [basic example](../basic-example/), just with a fuller `assemblies`/`tracks`. On
