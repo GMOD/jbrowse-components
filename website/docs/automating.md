@@ -5,16 +5,15 @@ description:
   Launch and preset views from a URL, embedded app, config file, or session spec
 ---
 
-JBrowse is designed to be driven from the outside: you can open it straight into
-a specific assembly, location, and set of tracks — from a URL link, an embedded
-app, a config file, or a saved session spec. All of these funnel into one `init`
-spec that controls what a view shows — assembly, location, tracks, highlights,
-and so on. This page covers those fields and links to the detailed reference for
-each surface.
+You can open JBrowse directly into a specific assembly, location, and set of
+tracks from a URL link, an embedded app, a config file, or a saved session spec.
+Each of these populates the same `init` object on a view, which sets the
+assembly, location, tracks, and highlights it shows. This page describes those
+fields and links to the reference for each one.
 
 :::note
 
-This page covers launching and presetting **views**. For headless static-image
+This page covers launching and presetting views. For headless static-image
 export see [@jbrowse/img](/docs/jbrowse-img); for the Python/notebook API see
 [JBrowse Jupyter](/docs/jbrowse_jupyter).
 
@@ -25,8 +24,7 @@ export see [@jbrowse/img](/docs/jbrowse-img); for the Python/notebook API see
 ```typescript
 {
   assembly: string        // required: assembly name
-  loc?: string            // initial location, e.g. 'chr1:1,000-2,000'
-                          //   (omit to show the whole genome)
+  loc?: string            // initial location, e.g. 'chr1:1,000-2,000' (omit loc to show the whole genome)
   tracks?: TrackInit[]    // tracks to open (id strings, or objects — see below)
   tracklist?: boolean     // open the track selector drawer (default: false)
   nav?: boolean           // show the navigation header (default: true)
@@ -45,21 +43,24 @@ display options:
 }
 ```
 
-`init` is applied **once**, when the view attaches, and then cleared — it is a
-launch instruction, not persistent state, so a saved session never retains it.
+`init` is applied once when the view attaches, then cleared. It is a launch
+instruction rather than persistent state, so a saved session never retains it.
 
 ## Ways to automate a view
 
-| You are…                                  | Use                                            | Reference                                                     |
-| ----------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------- |
-| Linking to JBrowse Web with a location    | **URL query parameters**                       | [URL query parameter API](/docs/urlparams)                    |
-| Embedding a view in your own web page/app | **`createViewState({ location, … })`**         | [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) |
-| Shipping a preset view in a config file   | **`defaultSession`** in config.json            | [Default session](/docs/config_guides/default_session)        |
-| Programmatically opening a preset session | **a session spec** (`init` in a view snapshot) | [URL params → session spec](/docs/urlparams)                  |
+- Link to JBrowse Web at a location with
+  [URL query parameters](/docs/urlparams).
+- Embed a view in your own page or app by passing `location` (and related
+  fields) to `createViewState` — see
+  [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view).
+- Ship a preset view in a config file with a `defaultSession` in config.json —
+  see [Default session](/docs/config_guides/default_session).
+- Open a preset session programmatically with a session spec, which is an `init`
+  block inside a view snapshot — see
+  [URL params → session spec](/docs/urlparams).
 
-All four resolve to the same `init` fields above and run the same code path, so
-behavior (navigation, track opening, highlighting, the loading spinner) is
-identical regardless of how you launched.
+All of these set the same `init` fields, so navigation, track opening, and
+highlighting behave the same way whichever one you use.
 
 ## URL parameters
 
@@ -141,34 +142,32 @@ for programmatic `createViewState`/session-JSON launches. See the
 ## Other view types
 
 Circular, dotplot, synteny, spreadsheet, breakpoint-split, and SV-inspector
-views each accept their own `init`/session-spec shape with the same
-"applied-once-on-launch" lifecycle. Their fields are documented per view type in
-the [URL query parameter API](/docs/urlparams) session-spec section.
+views each accept their own `init`/session-spec shape, applied once on launch in
+the same way. Their fields are documented per view type in the
+[URL query parameter API](/docs/urlparams) session-spec section.
 
 ## Headless / puppeteer
 
-When you want a **static image** of a view, reach for
+When you want a static image of a view, reach for
 [@jbrowse/img](/docs/jbrowse-img) first — it renders SVG/PNG/PDF from the
 command line without a browser.
 
 Drive the full JBrowse Web app with puppeteer (or Playwright) when you need
 something `img` can't produce: a real screenshot of the running UI, a transient
 state (an open menu, a hover popover, a loaded track after user interaction), or
-scraped DOM. Because every launch surface above resolves to the same `init`,
-automating a browser is just "navigate to a URL that carries the state, wait for
-it to settle, then act".
+scraped DOM. Since the URL parameters above set the initial state, the pattern
+is to navigate to a URL carrying that state, wait for it to settle, then act.
 
-Two things bite people driving JBrowse headlessly, both worth knowing up front:
+Two things commonly trip people up when driving JBrowse headlessly.
 
-- **WebGL/WebGPU needs a software renderer in headless Chrome.** JBrowse renders
-  tracks on the GPU, and headless Chrome has no GPU — without
-  `--enable-unsafe-swiftshader`, canvases come up blank. Launch with
-  `args: ['--no-sandbox', '--enable-unsafe-swiftshader']`.
-- **"Loaded" is a specific signal, not a guessable selector.** JBrowse shows a
-  `[data-testid="loading-overlay"]` while the session initializes, and each
-  track display flips its `data-testid` from `display-<id>` to
-  `display-<id>-done` once it has actually painted. Wait for those, not for an
-  arbitrary element.
+The first is GPU rendering. JBrowse renders tracks on the GPU, and headless
+Chrome has no GPU, so canvases come up blank without a software renderer. Launch
+with `args: ['--no-sandbox', '--enable-unsafe-swiftshader']`.
+
+The second is knowing when a view has finished loading. JBrowse shows a
+`[data-testid="loading-overlay"]` while the session initializes, and each track
+display changes its `data-testid` from `display-<id>` to `display-<id>-done`
+once it has painted. Wait for those rather than an arbitrary element.
 
 ```js
 import puppeteer from 'puppeteer'
@@ -206,11 +205,12 @@ For a longer-form session (multiple views, per-track display options) encode a
 full session spec rather than individual params — see the session-spec section
 of the [URL query parameter API](/docs/urlparams).
 
-This repo's own screenshot generator does all of this and handles the sharper
-edges — freezing CSS animations so menus/popovers aren't caught mid-transition,
-double-`requestAnimationFrame` before capture so a freshly-composited GPU layer
-is actually rasterized, and a fresh browser per navigation to sidestep
-service-worker caching. For a complete worked example, see
+This repo's own screenshot generator does all of this and handles several
+finicky details: freezing CSS animations so menus and popovers aren't caught
+mid-transition, calling `requestAnimationFrame` twice before capture so a
+freshly-composited GPU layer is actually rasterized, and using a fresh browser
+per navigation to sidestep service-worker caching. For a complete worked
+example, see
 [`website/scripts/generate-screenshots.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/generate-screenshots.ts)
 and the reusable wait helpers (`waitForLoadingComplete`, `waitForDisplaysDone`,
 `waitForQuiescent`) it imports from
