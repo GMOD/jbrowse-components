@@ -466,20 +466,21 @@ export default function stateModelFactory(
           return getConf(self, 'readConnectionsHeight')
         },
         /** #getter */
-        // Resolved through the promotable-slot tiers (getConfResolved): a track
-        // configured `true` pins soft clipping on; otherwise it follows the
-        // session-wide default, falling back to off. A boolean slot can't store
-        // an explicit "off", so a session default of "on" can't be pinned back
-        // off on a single track — the pin only works in the "on" direction.
+        // Resolved through the promotable-slot tiers (getConfResolved): an
+        // explicit track value pins soft clipping on or off; otherwise it
+        // follows the session-wide default, falling back to off. A `maybeBoolean`
+        // slot, so (unlike the old plain boolean) an explicit "off" can be pinned
+        // back over a session default of "on".
         get showSoftClipping(): boolean {
           return getConfResolved(self, 'showSoftClipping')
         },
 
         /** #getter */
-        // "make soft clipping the default for all tracks" control (pin): active
-        // when `true` is the session default for this display type
+        // "make the current soft-clipping state the default for all tracks"
+        // control (pin): symmetric, so it promotes whichever value the track
+        // currently shows.
         get softClippingSessionDefault() {
-          return makeSessionDefaultControl(self, 'showSoftClipping', true)
+          return makeCurrentValueSessionDefaultControl(self, ['showSoftClipping'])
         },
       }))
       .volatile(() => {

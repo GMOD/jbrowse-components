@@ -511,9 +511,16 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       showSoftClipping: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Draw soft-clipped read portions',
+        type: 'maybeBoolean',
+        description:
+          'Draw soft-clipped read portions. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false pins the track (either direction, including pinning off over an on session default)',
+        // Promotable via the `maybeBoolean` sentinel: `undefined` (unset) is the
+        // inherit state, `promotedBase` (false) is what it resolves to when
+        // nothing is promoted. A legacy stored boolean is already a valid pinned
+        // value, so no snapshot migration is needed. Read through the resolved
+        // `showSoftClipping` getter (getConfResolved), never raw.
+        defaultValue: undefined,
+        promotedBase: false,
         promotable: true,
       },
     },

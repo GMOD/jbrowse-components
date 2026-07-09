@@ -24,8 +24,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // the promote/clear actions run against the actual MST model. The test Session
 // backs get/setDisplayTypeDefault with the same nested-object store BaseSession
 // uses (round-trip-tested in sessionModelFactory.test.ts); here we exercise how
-// the display reads it. showSoftClipping stays a plain boolean that transparently
-// consults that store — no tri-state/frozen slot.
+// the display reads it. showSoftClipping is a promotable `maybeBoolean` slot,
+// resolved through getConfResolved (track pin -> session default -> off).
 function createDisplay(displayConfig: Record<string, unknown> = {}) {
   console.warn = jest.fn()
   const pluginManager = new PluginManager()
@@ -172,6 +172,20 @@ describe('alignments showSoftClipping session default', () => {
     // pinned on regardless of the session default; not "affected by a default"
     expect(display.showSoftClipping).toBe(true)
     expect(display.sessionDefaultChanges()).toEqual([])
+  })
+
+  it('a track can pin off over an on session default (symmetric maybeBoolean)', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'showSoftClipping',
+      true,
+    )
+    expect(display.showSoftClipping).toBe(true)
+    // The capability the old plain-boolean slot lacked: an explicit off is a
+    // real pin, not the un-set sentinel, so it wins over the on default.
+    display.toggleSoftClipping()
+    expect(display.showSoftClipping).toBe(false)
   })
 
   it('reacts to the session default changing after creation', () => {
