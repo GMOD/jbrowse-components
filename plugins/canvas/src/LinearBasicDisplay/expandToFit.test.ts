@@ -180,6 +180,22 @@ describe('canvas display expand-to-fit', () => {
     expect(display.heightBeforeExpand).toBeUndefined()
   })
 
+  it('entering a non-fixed mode resets scroll to the top', () => {
+    const display = createDisplay()
+    display.setScrollTop(300)
+    display.setHeightMode('grow')
+    expect(display.scrollTop).toBe(0)
+
+    display.setScrollTop(300)
+    display.setHeightMode('fit')
+    expect(display.scrollTop).toBe(0)
+
+    // fixed leaves scroll alone (the clamp autorun corrects if it overflows)
+    display.setScrollTop(300)
+    display.setHeightMode('fixed')
+    expect(display.scrollTop).toBe(300)
+  })
+
   it('a manual drag-resize turns auto-fit off', () => {
     const display = createDisplay()
     display.setHeightMode('grow')

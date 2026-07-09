@@ -1116,8 +1116,8 @@ export default function baseStateModelFactory(
          */
         // Height that fits the laid-out content: the content height (maxY)
         // clamped to MIN_FIT_HEIGHT (so a sparse track doesn't collapse) and the
-        // maxHeight cap. Backs the manual expand-to-fit button; the persistent
-        // grow mode reads `grownHeight` (a tighter cap).
+        // maxHeight cap. Feeds `grownHeight` (the grow-mode target, a tighter
+        // cap) and `canExpand` (whether the overflow indicator has room to grow).
         get fitHeight() {
           return Math.min(Math.max(this.maxY, MIN_FIT_HEIGHT), self.maxHeight)
         },
@@ -1128,8 +1128,8 @@ export default function baseStateModelFactory(
         // Target track height for the persistent `grow` mode: `fitHeight` capped
         // at GROW_MAX_HEIGHT so a dense track doesn't grow to thousands of px
         // (content past the cap scrolls). Shared cap + `grownHeight` getter name
-        // with the alignments display. A one-shot expand-to-fit still uses the
-        // looser `fitHeight` (an explicit "show it all now" beats the cap).
+        // with the alignments display. The overflow indicator enters grow mode,
+        // so it targets this too — there is no separate one-shot expand height.
         get grownHeight() {
           return Math.min(this.fitHeight, GROW_MAX_HEIGHT)
         },
@@ -1284,42 +1284,6 @@ export default function baseStateModelFactory(
         },
       }))
       .actions(self => ({
-        /**
-         * #action
-         */
-        // The "Expand to fit features" indicator enters persistent `grow` mode
-        // (rather than a one-shot resize) so the track keeps fitting as the user
-        // zooms/pans and new data loads — the same mode the "Auto height" track
-        // menu radio drives. The pre-grow height is stashed so toggling the
-        // indicator back off restores it non-destructively. Writes the heightMode
-        // slot directly because setHeightMode is defined in a later actions block;
-        // its only grow side effect (clearing heightBeforeExpand) is one we
-        // deliberately override here anyway.
-        expandToFit() {
-          const prev = self.height
-          self.configuration.setSlot('heightMode', 'grow')
-          self.heightBeforeExpand = prev
-          // Show the content from the top. Without this, a track scrolled down
-          // before growing keeps its old scrollTop; if the grow removes overflow
-          // the GPU canvas paints at that now-invalid offset (top features
-          // clipped, blank below) until a DOM scroll event syncs it back.
-          self.setScrollTop(0)
-        },
-
-        /**
-         * #action
-         */
-        // Toggle the indicator back off: leave grow mode and restore the height
-        // the track had before growing. Writes the slot directly (setHeightMode
-        // is a later block); 'fixed' has no side effects to duplicate.
-        collapseFromExpand() {
-          self.configuration.setSlot('heightMode', 'fixed')
-          if (self.heightBeforeExpand !== undefined) {
-            self.setHeight(self.heightBeforeExpand)
-            self.heightBeforeExpand = undefined
-          }
-        },
-
         /**
          * #action
          */
@@ -1761,17 +1725,18 @@ export default function baseStateModelFactory(
          * #action
          */
         // Set the track-height strategy by writing the unified `heightMode` slot;
-        // mutual exclusion is inherent to the single enum. grow/fit both
-        // drive the height, so a pending manual expand/restore marker is stale;
-        // fit additionally has no scroll extent, so a stale scrollTop would
-        // leave the GPU canvas painted at an invalid offset. The `laidOutDataMap`
+        // mutual exclusion is inherent to the single enum. The `laidOutDataMap`
         // getter does the actual fit reactively.
         setHeightMode(mode: HeightMode) {
           self.configuration.setSlot('heightMode', mode)
+          // Entering a non-fixed mode (grow/fit) resets transient state a
+          // reconfigured height contradicts: a pending manual expand/restore
+          // marker is stale, and a leftover scrollTop can strand the sticky GPU
+          // canvas at an out-of-range offset (fit has no scroll extent; grow can
+          // remove overflow, leaving the old offset painting clipped/blank until
+          // a DOM scroll event syncs it). Mirrors the alignments setHeightMode.
           if (mode !== 'fixed') {
             self.clearHeightBeforeExpand()
-          }
-          if (mode === 'fit') {
             self.setScrollTop(0)
           }
         },
@@ -1856,6 +1821,36 @@ export default function baseStateModelFactory(
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         */
+        // The "Expand to fit features" indicator enters persistent `grow` mode
+        // (rather than a one-shot resize) so the track keeps fitting as the user
+        // zooms/pans and new data loads — the same mode the "Auto height" track
+        // menu radio drives. Stashes the pre-grow height so toggling the
+        // indicator back off restores it non-destructively; setHeightMode clears
+        // that marker on entry, so restash after.
+        expandToFit() {
+          const prev = self.height
+          self.setHeightMode('grow')
+          self.heightBeforeExpand = prev
+        },
+
+        /**
+         * #action
+         */
+        // Toggle the indicator back off: leave grow mode and restore the height
+        // the track had before growing. setHeightMode('fixed') keeps
+        // heightBeforeExpand (only non-fixed modes clear it), so the restore
+        // below can read it.
+        collapseFromExpand() {
+          self.setHeightMode('fixed')
+          if (self.heightBeforeExpand !== undefined) {
+            self.setHeight(self.heightBeforeExpand)
+            self.heightBeforeExpand = undefined
+          }
+        },
+
         /**
          * #action
          */
