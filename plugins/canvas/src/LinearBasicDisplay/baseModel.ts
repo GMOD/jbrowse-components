@@ -62,7 +62,7 @@ import {
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
 import { featureMatchesHighlight } from './featureHighlight.ts'
-import { resolveFitLadder } from './fitLadder.ts'
+import { resolveFitLadder, snapFittedContentHeight } from './fitLadder.ts'
 import { createIncrementalLayout, scaleLaidOutData } from './layout.ts'
 import {
   canMorph,
@@ -1210,17 +1210,10 @@ export default function baseStateModelFactory(
          */
         get maxY() {
           const raw = maxBottom(self.laidOutDataMap)
-          // Fit mode scales content to exactly fill the track, but the
-          // base*scale round-trip rounds a hair above `height` in ~5% of float
-          // cases — which would spuriously mark the track as overflowing and
-          // open a sub-pixel scrollbar. Snap that away while
-          // squeezing. A larger overflow means the min-box floor (fitMinScale)
-          // stopped the squeeze short of fitting, so it's real and must scroll —
-          // keep it.
-          const max =
-            self.fitScale < 1 && raw - self.height < 1
-              ? Math.min(raw, self.height)
-              : raw
+          // Snap away a sub-pixel float-epsilon overflow while the fit squeeze is
+          // active, so a fitted track doesn't spuriously scroll (see
+          // snapFittedContentHeight).
+          const max = snapFittedContentHeight(raw, self.height, self.fitScale < 1)
           // During a Y morph hold the height at the taller of the old/new
           // layout so features animating up from a deeper row aren't clipped at
           // the bottom; it settles to the destination height when the morph

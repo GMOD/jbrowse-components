@@ -1,4 +1,8 @@
-import { fitSqueezeScale, resolveFitLadder } from './fitLadder.ts'
+import {
+  fitSqueezeScale,
+  resolveFitLadder,
+  snapFittedContentHeight,
+} from './fitLadder.ts'
 import {
   makeFeatureData,
   makeFlatbushItem,
@@ -59,6 +63,29 @@ describe('fitSqueezeScale', () => {
         expect(s).toBeLessThanOrEqual(1)
       }
     }
+  })
+})
+
+describe('snapFittedContentHeight', () => {
+  it('swallows a sub-pixel overflow while squeezing', () => {
+    // The multiply-then-measure round-trip that lands a hair over the track.
+    expect(snapFittedContentHeight(100.4, 100, true)).toBe(100)
+  })
+
+  it('never rounds a fitting stack up to the track height', () => {
+    // Below the track — a squeeze that fit with room to spare stays as measured.
+    expect(snapFittedContentHeight(96, 100, true)).toBe(96)
+  })
+
+  it('keeps a real (>=1px) overflow so it scrolls', () => {
+    // The min-box floor stopped the squeeze short of fitting.
+    expect(snapFittedContentHeight(130, 100, true)).toBe(130)
+  })
+
+  it('leaves the raw height untouched when not squeezing', () => {
+    // A rung that fit (scale 1) or non-fit mode: overflow here is genuine.
+    expect(snapFittedContentHeight(100.4, 100, false)).toBe(100.4)
+    expect(snapFittedContentHeight(130, 100, false)).toBe(130)
   })
 })
 
