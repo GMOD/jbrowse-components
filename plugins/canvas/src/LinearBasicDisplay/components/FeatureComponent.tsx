@@ -264,7 +264,7 @@ const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
         visibleRegions={visibleRegions}
         viewInitialized={view.initialized}
         width={width}
-        height={model.hasOverflow ? model.maxY : model.height}
+        height={model.contentHeight}
         bpPerPx={bpPerPx}
       />
     </>
