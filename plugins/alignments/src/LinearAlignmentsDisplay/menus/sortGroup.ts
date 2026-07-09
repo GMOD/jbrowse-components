@@ -35,9 +35,11 @@ interface SortByModel {
 // modes use, so the two config slots never both hold state. "Start location" is
 // the default/unsorted order, so it doubles as the reset — no separate "Clear".
 //
-// A base-pair sort can also be set by a context-menu "sort at position" on a
-// specific base/indel/clip; those interbase types keep the "Base pair" radio
-// checked (that pileup is still ordered by what's under the center line).
+// Strand / base pair / tag all anchor on the read column under the view's center
+// line, so `setSortedBy` reveals the center line when applied (the label doesn't
+// need to spell out the mechanic). A base-pair sort can also come from a
+// context-menu "sort at position"; those interbase types keep "Base pair"
+// checked.
 
 type SortMode = 'position' | 'strand' | 'basePair' | 'tag' | 'length'
 
@@ -51,19 +53,6 @@ function getSortMode(model: SortByModel): SortMode {
     : type === 'basePair' || isInterbaseType(type)
       ? 'basePair'
       : 'position'
-}
-
-// The base-pair sort always keys off one column; the label names it so the
-// center-line mechanic is explicit. When a sort is live, the parenthetical
-// becomes the concrete 1-based coordinate it's sorting at (from `sortedBy`, no
-// live center-line lookup needed).
-function getBasePairLabel(model: SortByModel, active: boolean) {
-  const sorted = model.sortedBy
-  const where =
-    active && sorted
-      ? `${sorted.refName}:${(sorted.pos + 1).toLocaleString('en-US')}`
-      : 'center line'
-  return `Base pair (${where})`
 }
 
 export function getSortByMenuItem(
@@ -109,7 +98,7 @@ export function getSortByMenuItem(
         },
       },
       {
-        label: getBasePairLabel(model, mode === 'basePair'),
+        label: 'Base pair',
         type: 'radio' as const,
         checked: mode === 'basePair',
         onClick: () => {

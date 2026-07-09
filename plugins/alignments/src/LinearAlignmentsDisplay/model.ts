@@ -2127,6 +2127,9 @@ export default function stateModelFactory(
                 assemblyName: centerLineInfo.assemblyName,
                 tag,
               })
+              // The sort anchors on the column under the center line, so reveal
+              // it — the user sees exactly where the pileup is being ordered.
+              view.setShowCenterLine(true)
             } else if (needsPos) {
               getSession(self).notify(
                 'Cannot sort: the view center line is not over a valid position. Scroll so the center line is within a region and try again.',
