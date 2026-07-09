@@ -10,12 +10,13 @@ function mm(position: number, qual: number): MismatchData {
 }
 
 describe('mismatch quality plumbing', () => {
-  test('buildMismatchArrays carries per-base quality, clamped to a byte', () => {
+  test('buildMismatchArrays carries per-base quality (already byte-valued)', () => {
     const { mismatchQuals } = buildMismatchArrays(
-      [mm(10, 0), mm(11, 37), mm(12, 300)],
+      [mm(10, 0), mm(11, 37), mm(12, 255)],
       0,
     )
-    // 0 = no quality, 37 = a real Phred value, 300 clamps to the byte max.
+    // qual comes straight from the BAM/CRAM QUAL byte array: 0 = no quality,
+    // 37 = a real Phred value, 255 = the byte max (missing-QUAL sentinel).
     expect(Array.from(mismatchQuals)).toEqual([0, 37, 255])
   })
 
