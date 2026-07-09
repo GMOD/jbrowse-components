@@ -216,7 +216,7 @@ const PAGE = /* html */ `<!doctype html>
   header {
     position: sticky; top: 0; z-index: 10;
     background: Canvas; border-bottom: 1px solid ButtonBorder;
-    padding: 12px 20px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+    padding: 12px 20px; display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;
   }
   header h1 { font-size: 16px; margin: 0; }
   header input[type=search] { padding: 6px 10px; width: 220px; border: 1px solid ButtonBorder; border-radius: 6px; background: Field; color: FieldText; }
