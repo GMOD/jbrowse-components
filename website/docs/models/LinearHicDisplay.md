@@ -45,6 +45,7 @@ Hi-C display that renders contact matrix using WebGL
 | [rpcData](#volatile-rpcdata)                                     | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [availableNormalizations](#volatile-availablenormalizations)     | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [availableResolutions](#volatile-availableresolutions)           | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [view](#getter-view)                                             | Getters    | the containing LGV, typed once here so downstream getters don't repeat the `getContainingView` cast                                                                                                                                                                                                                                                                                                      |
 | [resolutionBias](#getter-resolutionbias)                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [useLogScale](#getter-uselogscale)                               | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [useColorPercentile](#getter-usecolorpercentile)                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -189,7 +190,8 @@ and docs.
 [statusMessage](../fetchmixin#volatile-statusmessage),
 [statusProgress](../fetchmixin#volatile-statusprogress),
 [fetchCanceled](../fetchmixin#volatile-fetchcanceled),
-[regionStatuses](../fetchmixin#volatile-regionstatuses)
+[regionStatuses](../fetchmixin#volatile-regionstatuses),
+[lastStatusMs](../fetchmixin#volatile-laststatusms)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
@@ -198,6 +200,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[throttleStatus](../fetchmixin#action-throttlestatus),
 [resetStatus](../fetchmixin#action-resetstatus),
 [stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
@@ -271,6 +274,15 @@ availableResolutions: undefined as number[] | undefined
 
 <details>
 <summary>LinearHicDisplay - Getters</summary>
+
+#### getter: view
+
+the containing LGV, typed once here so downstream getters don't repeat the
+`getContainingView` cast
+
+```ts
+type view = ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>
+```
 
 #### getter: selectedNormalization
 

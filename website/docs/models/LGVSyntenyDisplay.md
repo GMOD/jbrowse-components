@@ -119,6 +119,7 @@ and docs.
 [isChainMode](../linearalignmentsdisplay#getter-ischainmode),
 [showLinkedReadLines](../linearalignmentsdisplay#getter-showlinkedreadlines),
 [fitHeightToDisplay](../linearalignmentsdisplay#getter-fitheighttodisplay),
+[autoHeight](../linearalignmentsdisplay#getter-autoheight),
 [scaleType](../linearalignmentsdisplay#getter-scaletype),
 [autoscaleType](../linearalignmentsdisplay#getter-autoscaletype),
 [minScore](../linearalignmentsdisplay#getter-minscore),
@@ -136,13 +137,13 @@ and docs.
 [isFitting](../linearalignmentsdisplay#getter-isfitting),
 [featureHeight](../linearalignmentsdisplay#getter-featureheight),
 [featureSpacing](../linearalignmentsdisplay#getter-featurespacing),
-[isCompactnessDefault](../linearalignmentsdisplay#getter-iscompactnessdefault),
 [maxHeight](../linearalignmentsdisplay#getter-maxheight),
 [showSashimiLabels](../linearalignmentsdisplay#getter-showsashimilabels),
 [showSashimiLabelsSessionDefault](../linearalignmentsdisplay#getter-showsashimilabelssessiondefault),
 [chainIdMap](../linearalignmentsdisplay#getter-chainidmap),
-[mismatchAlpha](../linearalignmentsdisplay#getter-mismatchalpha),
 [showLowFreqMismatches](../linearalignmentsdisplay#getter-showlowfreqmismatches),
+[mismatchAlpha](../linearalignmentsdisplay#getter-mismatchalpha),
+[mismatchAlphaSessionDefault](../linearalignmentsdisplay#getter-mismatchalphasessiondefault),
 [showLegend](../linearalignmentsdisplay#getter-showlegend),
 [sortedBy](../linearalignmentsdisplay#getter-sortedby),
 [largeFeaturesFirst](../linearalignmentsdisplay#getter-largefeaturesfirst),
@@ -181,6 +182,7 @@ and docs.
 [scrollModel](../linearalignmentsdisplay#getter-scrollmodel),
 [pileupViewportHeight](../linearalignmentsdisplay#getter-pileupviewportheight),
 [pileupContentHeight](../linearalignmentsdisplay#getter-pileupcontentheight),
+[grownHeight](../linearalignmentsdisplay#getter-grownheight),
 [scalebarOverlapLeft](../linearalignmentsdisplay#getter-scalebaroverlapleft),
 [showOutline](../linearalignmentsdisplay#getter-showoutline),
 [visibleLabels](../linearalignmentsdisplay#getter-visiblelabels),
@@ -223,11 +225,8 @@ and docs.
 [setColorByDefault](../linearalignmentsdisplay#action-setcolorbydefault),
 [updateColorTagMap](../linearalignmentsdisplay#action-updatecolortagmap),
 [setFilterBy](../linearalignmentsdisplay#action-setfilterby),
-[setShowOutline](../linearalignmentsdisplay#action-setshowoutline),
 [toggleSoftClipping](../linearalignmentsdisplay#action-togglesoftclipping),
-[setCompactnessDefault](../linearalignmentsdisplay#action-setcompactnessdefault),
-[toggleMismatchAlpha](../linearalignmentsdisplay#action-togglemismatchalpha),
-[toggleShowLowFreqMismatches](../linearalignmentsdisplay#action-toggleshowlowfreqmismatches),
+[setMismatchAlpha](../linearalignmentsdisplay#action-setmismatchalpha),
 [setSortedBy](../linearalignmentsdisplay#action-setsortedby),
 [setSortedByAtPosition](../linearalignmentsdisplay#action-setsortedbyatposition),
 [clearSortedBy](../linearalignmentsdisplay#action-clearsortedby),
@@ -245,6 +244,7 @@ and docs.
 [setMaxHeight](../linearalignmentsdisplay#action-setmaxheight),
 [setCompactness](../linearalignmentsdisplay#action-setcompactness),
 [setFitHeightToDisplay](../linearalignmentsdisplay#action-setfitheighttodisplay),
+[setHeightMode](../linearalignmentsdisplay#action-setheightmode),
 [setFittedHeightPx](../linearalignmentsdisplay#action-setfittedheightpx),
 [setShowSashimiArcs](../linearalignmentsdisplay#action-setshowsashimiarcs),
 [setReadConnections](../linearalignmentsdisplay#action-setreadconnections),
@@ -276,18 +276,15 @@ and docs.
 [setMouseoverExtraInformation](../linearalignmentsdisplay#action-setmouseoverextrainformation),
 [setHoverState](../linearalignmentsdisplay#action-sethoverstate),
 [setContextMenuFeature](../linearalignmentsdisplay#action-setcontextmenufeature),
-[setContextMenuCoord](../linearalignmentsdisplay#action-setcontextmenucoord),
-[setContextMenuCigarHit](../linearalignmentsdisplay#action-setcontextmenucigarhit),
-[setContextMenuIndicatorHit](../linearalignmentsdisplay#action-setcontextmenuindicatorhit),
-[clearContextMenu](../linearalignmentsdisplay#action-clearcontextmenu),
-[setContextMenuBlock](../linearalignmentsdisplay#action-setcontextmenublock),
+[closeContextMenu](../linearalignmentsdisplay#action-closecontextmenu),
 [selectFeature](../linearalignmentsdisplay#action-selectfeature),
 [startRenderingBackend](../linearalignmentsdisplay#action-startrenderingbackend),
 [selectFeatureById](../linearalignmentsdisplay#action-selectfeaturebyid),
-[setContextMenuFeatureById](../linearalignmentsdisplay#action-setcontextmenufeaturebyid),
+[openContextMenu](../linearalignmentsdisplay#action-opencontextmenu),
 [getByteEstimateConfig](../linearalignmentsdisplay#action-getbyteestimateconfig),
 [fetchNeeded](../linearalignmentsdisplay#action-fetchneeded),
-[renderSvg](../linearalignmentsdisplay#action-rendersvg)
+[renderSvg](../linearalignmentsdisplay#action-rendersvg),
+[resizeHeight](../linearalignmentsdisplay#action-resizeheight)
 
 ### Available via [BaseDisplay](../basedisplay)
 
@@ -398,7 +395,8 @@ and docs.
 [statusMessage](../fetchmixin#volatile-statusmessage),
 [statusProgress](../fetchmixin#volatile-statusprogress),
 [fetchCanceled](../fetchmixin#volatile-fetchcanceled),
-[regionStatuses](../fetchmixin#volatile-regionstatuses)
+[regionStatuses](../fetchmixin#volatile-regionstatuses),
+[lastStatusMs](../fetchmixin#volatile-laststatusms)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
@@ -407,6 +405,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[throttleStatus](../fetchmixin#action-throttlestatus),
 [resetStatus](../fetchmixin#action-resetstatus),
 [stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),

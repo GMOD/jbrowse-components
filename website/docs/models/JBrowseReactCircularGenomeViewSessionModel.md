@@ -16,13 +16,9 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 | ------------------------------------------ | ---------- | -------------------------- |
 | [view](#property-view)                     | Properties |                            |
 | [version](#getter-version)                 | Getters    |                            |
-| [assemblies](#getter-assemblies)           | Getters    |                            |
 | [assemblyNames](#getter-assemblynames)     | Getters    |                            |
-| [connections](#getter-connections)         | Getters    |                            |
 | [assemblyManager](#getter-assemblymanager) | Getters    |                            |
 | [views](#getter-views)                     | Getters    |                            |
-| [themeOptions](#getter-themeoptions)       | Getters    |                            |
-| [theme](#getter-theme)                     | Getters    |                            |
 | [addView](#action-addview)                 | Actions    | replaces view in this case |
 | [removeView](#action-removeview)           | Actions    | does nothing               |
 
@@ -153,6 +149,11 @@ and docs.
 [getTrackListMenuItems](../trackmenusessionmixin#method-gettracklistmenuitems),
 [getTrackActionMenuItems](../trackmenusessionmixin#method-gettrackactionmenuitems)
 
+### Available via [EmbeddedSessionThemeMixin](../embeddedsessionthememixin)
+
+**Getters:** [themeOptions](../embeddedsessionthememixin#getter-themeoptions),
+[theme](../embeddedsessionthememixin#getter-theme)
+
 <details>
 <summary>JBrowseReactCircularGenomeViewSessionModel - Properties</summary>
 
@@ -160,9 +161,10 @@ and docs.
 
 ```ts
 // type signature
-type view = IAnyModelType
+type view = IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>
 // code
-view: pluginManager.getViewType('CircularView').stateModel
+view: pluginManager.getViewType('CircularView')!
+        .stateModel as CircularViewStateModel
 ```
 
 </details>
@@ -173,49 +175,25 @@ view: pluginManager.getViewType('CircularView').stateModel
 #### getter: version
 
 ```ts
-type version = any
-```
-
-#### getter: assemblies
-
-```ts
-type assemblies = any[]
+type version = string
 ```
 
 #### getter: assemblyNames
 
 ```ts
-type assemblyNames = any[]
-```
-
-#### getter: connections
-
-```ts
-type connections = any
+type assemblyNames = string[]
 ```
 
 #### getter: assemblyManager
 
 ```ts
-type assemblyManager = any
+type assemblyManager = ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotCust...
 ```
 
 #### getter: views
 
 ```ts
-type views = any[]
-```
-
-#### getter: themeOptions
-
-```ts
-type themeOptions = SerializableThemeArgs
-```
-
-#### getter: theme
-
-```ts
-type theme = Theme
+type views = (ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>> & ... 10 more ... & IStateTreeNode<...>)[]
 ```
 
 </details>
@@ -228,7 +206,7 @@ type theme = Theme
 replaces view in this case
 
 ```ts
-type addView = (typeName: string, initialState?: any) => any
+type addView = (typeName: string, initialState?: any) => ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<...>; }, { ...; }>> & ... 10 more ... & IStateTreeNode<...>
 ```
 
 #### action: removeView

@@ -44,6 +44,8 @@ Shared state model for LD displays
 | [recombination](#getter-recombination)                           | Getters    |                                                                                                                                                                                                                                                                                                              |
 | [dataLoaded](#getter-dataloaded)                                 | Getters    | Global-display data-loaded signal read by `GlobalDataDisplayMixin.svgReady`. The fetch commits `rpcData` even for an empty viewport, so this flips true once data has loaded. Without the override the mixin default (`false`) leaves `svgReady` unable to resolve on a successful load, hanging SVG export. |
 | [isPrecomputedLD](#getter-isprecomputedld)                       | Getters    |                                                                                                                                                                                                                                                                                                              |
+| [effectiveLdMetric](#getter-effectiveldmetric)                   | Getters    | Metric the loaded data actually represents. A pre-computed file with no D' column downgrades a 'dprime' request to 'r2', so the legend and the metric radios read this rather than the raw requested `ldMetric`.                                                                                             |
+| [dprimeAvailable](#getter-dprimeavailable)                       | Getters    | Whether the D' metric can be shown — false only for a pre-computed file lacking a DP column, which disables the D' option.                                                                                                                                                                                   |
 | [focalSnpIndex](#getter-focalsnpindex)                           | Getters    | Array index of the focal SNP in the current `snps`, or -1 if none is selected or the locus is no longer present after a re-fetch.                                                                                                                                                                            |
 | [effectiveLineZoneHeight](#getter-effectivelinezoneheight)       | Getters    | Pixel height of the SVG zone above the canvas (variant labels + lines, or recombination scale). The hit-test subtracts this from mouseY before reversing the render transform.                                                                                                                               |
 | [ldCanvasHeight](#getter-ldcanvasheight)                         | Getters    | Effective height for the LD canvas (total height minus the zone the recombination overlay / variant lines occupy above the matrix).                                                                                                                                                                          |
@@ -61,18 +63,15 @@ Shared state model for LD displays
 | [setFocalSnp](#action-setfocalsnp)                               | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setLineZoneHeight](#action-setlinezoneheight)                   | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setMafFilter](#action-setmaffilter)                             | Actions    |                                                                                                                                                                                                                                                                                                              |
-| [setLengthCutoffFilter](#action-setlengthcutofffilter)           | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setLDMetric](#action-setldmetric)                               | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setShowLegend](#action-setshowlegend)                           | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setShowLDTriangle](#action-setshowldtriangle)                   | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setShowRecombination](#action-setshowrecombination)             | Actions    |                                                                                                                                                                                                                                                                                                              |
-| [setRecombinationZoneHeight](#action-setrecombinationzoneheight) | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setFitToHeight](#action-setfittoheight)                         | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setHweFilter](#action-sethwefilter)                             | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setCallRateFilter](#action-setcallratefilter)                   | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setShowVerticalGuides](#action-setshowverticalguides)           | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setShowLabels](#action-setshowlabels)                           | Actions    |                                                                                                                                                                                                                                                                                                              |
-| [setTickHeight](#action-settickheight)                           | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setUseGenomicPositions](#action-setusegenomicpositions)         | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setSignedLD](#action-setsignedld)                               | Actions    |                                                                                                                                                                                                                                                                                                              |
 | [setJexlFilters](#action-setjexlfilters)                         | Actions    |                                                                                                                                                                                                                                                                                                              |
@@ -180,7 +179,8 @@ and docs.
 [statusMessage](../fetchmixin#volatile-statusmessage),
 [statusProgress](../fetchmixin#volatile-statusprogress),
 [fetchCanceled](../fetchmixin#volatile-fetchcanceled),
-[regionStatuses](../fetchmixin#volatile-regionstatuses)
+[regionStatuses](../fetchmixin#volatile-regionstatuses),
+[lastStatusMs](../fetchmixin#volatile-laststatusms)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
@@ -189,6 +189,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[throttleStatus](../fetchmixin#action-throttlestatus),
 [resetStatus](../fetchmixin#action-resetstatus),
 [stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
@@ -272,6 +273,25 @@ unable to resolve on a successful load, hanging SVG export.
 
 ```ts
 type dataLoaded = boolean
+```
+
+#### getter: effectiveLdMetric
+
+Metric the loaded data actually represents. A pre-computed file with no D'
+column downgrades a 'dprime' request to 'r2', so the legend and the metric
+radios read this rather than the raw requested `ldMetric`.
+
+```ts
+type effectiveLdMetric = LDMetric
+```
+
+#### getter: dprimeAvailable
+
+Whether the D' metric can be shown — false only for a pre-computed file lacking
+a DP column, which disables the D' option.
+
+```ts
+type dprimeAvailable = boolean
 ```
 
 #### getter: focalSnpIndex
@@ -598,12 +618,6 @@ type setLineZoneHeight = (n: number) => void
 type setMafFilter = (arg: number) => void
 ```
 
-#### action: setLengthCutoffFilter
-
-```ts
-type setLengthCutoffFilter = (arg: number) => void
-```
-
 #### action: setLDMetric
 
 ```ts
@@ -626,12 +640,6 @@ type setShowLDTriangle = (show: boolean) => void
 
 ```ts
 type setShowRecombination = (show: boolean) => void
-```
-
-#### action: setRecombinationZoneHeight
-
-```ts
-type setRecombinationZoneHeight = (n: number) => void
 ```
 
 #### action: setFitToHeight
@@ -662,12 +670,6 @@ type setShowVerticalGuides = (show: boolean) => void
 
 ```ts
 type setShowLabels = (show: boolean) => void
-```
-
-#### action: setTickHeight
-
-```ts
-type setTickHeight = (height: number) => void
 ```
 
 #### action: setUseGenomicPositions

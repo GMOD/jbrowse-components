@@ -70,3 +70,40 @@ So the two things my unit tests couldn't see — that the rendering actually rea
 Offer
 
 I didn't add a permanent browser test. The throwaway proved the point, but the same approach (drive heightMode/height, assert fitStage.level/fitScale/renderedShowLabels transitions — golden-image-free, so robust) would make a durable integration test that catches regressions the unit tests can't. Want me to add that as a committed suite?
+
+## force load button should not be 'color primary' and contained...
+
+## poor layout many variants long labels
+
+## gnomad ucsc
+
+_displayName
+chr7-108974600-C-T
+
+## no data in this region
+
+not sure we want this message
+
+## edit filters textbox should be variant outlined
+
+## render at least 1px by 1px wide things in multi-sample variants
+
+maybe 2px if still not visible
+
+## adjusting resolution not doing anything
+
+https://jbrowse.org/code/jb2/webgl-poc/?config=%2Fucsc%2Fhg38%2Fconfig.json&session=share-HoAz2ZdTzn&password=QfCrz
+
+## stop using the triangle glyp and convert to dot when zoomed out for insertion
+
+otherwise makes very hard to see blurb
+
+## slower shift scroll multisample variants
+
+## too wide insertion selector
+
+## selecting wrong entry crosshairs vs highlighted
+
+## reconsider shift scroll
+
+hard to vertically scroll...other parts of app have used shift+scroll for vertical

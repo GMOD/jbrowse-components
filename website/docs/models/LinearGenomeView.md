@@ -150,6 +150,7 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [HeaderComponent](#method-headercomponent)                               | Methods    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [trackHeight](#method-trackheight)                                       | Methods    | rendered height of a single track, collapsing to a fixed height when minimized. Shared by trackHeights and getTrackYOffset so the two can't disagree.                                                                                                                                                                                                                                                                                                   |
 | [getTrackYOffset](#method-gettrackyoffset)                               | Methods    | Y offset (in pixels, from the top of the view) where a track's rendering container starts. Walks tracks in DOM render order (pinned first, then unpinned), matching TrackContainer's layout and using the same constants it renders with. Returns `undefined` if the track is not present in the view.                                                                                                                                                  |
+| [trackSection](#method-tracksection)                                     | Methods    | the pinned or unpinned sibling list a track renders within; move up/down/top/bottom reorder inside this section rather than the full `tracks` array, since the two sections lay out independently                                                                                                                                                                                                                                                       |
 | [searchScope](#method-searchscope)                                       | Methods    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [getTrack](#method-gettrack)                                             | Methods    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [getActiveDisplayId](#method-getactivedisplayid)                         | Methods    | displayId of the active (shown) display for a track in this view, used by the config editor to expand the relevant display and collapse the track's other displays                                                                                                                                                                                                                                                                                      |
@@ -1142,6 +1143,16 @@ renders with. Returns `undefined` if the track is not present in the view.
 
 ```ts
 type getTrackYOffset = (trackId: string) => number | undefined
+```
+
+#### method: trackSection
+
+the pinned or unpinned sibling list a track renders within; move
+up/down/top/bottom reorder inside this section rather than the full `tracks`
+array, since the two sections lay out independently
+
+```ts
+type trackSection = (id: string) => any[]
 ```
 
 #### method: getActiveDisplayId

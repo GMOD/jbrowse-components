@@ -55,13 +55,13 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [volatileWidth](#volatile-volatilewidth)                                       | Volatiles  |                                                                                                                                                                                                                                                                     |
 | [volatileError](#volatile-volatileerror)                                       | Volatiles  |                                                                                                                                                                                                                                                                     |
 | [cursorMode](#volatile-cursormode)                                             | Volatiles  | these are 'personal preferences', stored in volatile and loaded/written to localStorage                                                                                                                                                                             |
-| [borderX](#volatile-borderx)                                                   | Volatiles  |                                                                                                                                                                                                                                                                     |
-| [borderY](#volatile-bordery)                                                   | Volatiles  |                                                                                                                                                                                                                                                                     |
 | [importFormSyntenyTrackSelections](#volatile-importformsyntenytrackselections) | Volatiles  |                                                                                                                                                                                                                                                                     |
 | [awaitingAutoDiagonalize](#volatile-awaitingautodiagonalize)                   | Volatiles  | True while the init autorun is waiting for the first dotplot RPC so it can run the DiagonalizeDotplot pass. Used to gate showLoading on so the user sees a spinner with "Reordering chromosomes…" instead of an undiagonalized plot that immediately re-paints.     |
 | [diagonalizeStatus](#volatile-diagonalizestatus)                               | Volatiles  | Live status from the auto-diagonalize RPC (download %, parse, algorithm phase) shown on the reordering spinner; undefined outside that wait.                                                                                                                        |
 | [diagonalizeStopToken](#volatile-diagonalizestoptoken)                         | Volatiles  | Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort it; undefined when none is running.                                                                                                                                                |
 | [width](#getter-width)                                                         | Getters    |                                                                                                                                                                                                                                                                     |
+| [borderX](#getter-borderx)                                                     | Getters    | Left margin: fits the vertical (vview) axis labels. Derived purely from that axis's regions + zoom — never from viewWidth — so it can't feed back through viewWidth = width - borderX into a render loop.                                                           |
+| [borderY](#getter-bordery)                                                     | Getters    | Bottom margin: fits the horizontal (hview) axis labels. See borderX.                                                                                                                                                                                                |
 | [assemblyErrors](#getter-assemblyerrors)                                       | Getters    |                                                                                                                                                                                                                                                                     |
 | [assembliesInitialized](#getter-assembliesinitialized)                         | Getters    |                                                                                                                                                                                                                                                                     |
 | [initialized](#getter-initialized)                                             | Getters    |                                                                                                                                                                                                                                                                     |
@@ -101,8 +101,6 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [setHighlightsVisible](#action-sethighlightsvisible)                           | Actions    |                                                                                                                                                                                                                                                                     |
 | [setShowColorLegend](#action-setshowcolorlegend)                               | Actions    |                                                                                                                                                                                                                                                                     |
 | [clearView](#action-clearview)                                                 | Actions    | returns to the import form                                                                                                                                                                                                                                          |
-| [setBorderX](#action-setborderx)                                               | Actions    |                                                                                                                                                                                                                                                                     |
-| [setBorderY](#action-setbordery)                                               | Actions    |                                                                                                                                                                                                                                                                     |
 | [setWidth](#action-setwidth)                                                   | Actions    |                                                                                                                                                                                                                                                                     |
 | [setHeight](#action-setheight)                                                 | Actions    |                                                                                                                                                                                                                                                                     |
 | [setError](#action-seterror)                                                   | Actions    |                                                                                                                                                                                                                                                                     |
@@ -120,7 +118,6 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [setAssemblyNames](#action-setassemblynames)                                   | Actions    |                                                                                                                                                                                                                                                                     |
 | [getCoords](#action-getcoords)                                                 | Actions    |                                                                                                                                                                                                                                                                     |
 | [zoomInToMouseCoords](#action-zoomintomousecoords)                             | Actions    | zooms into clicked and dragged region                                                                                                                                                                                                                               |
-| [calculateBorders](#action-calculateborders)                                   | Actions    | Calculate borders synchronously for a given zoom level                                                                                                                                                                                                              |
 | [showAllRegions](#action-showallregions)                                       | Actions    |                                                                                                                                                                                                                                                                     |
 | [initializeDisplayedRegions](#action-initializedisplayedregions)               | Actions    |                                                                                                                                                                                                                                                                     |
 | [onDotplotView](#action-ondotplotview)                                         | Actions    | creates a linear synteny view from the clicked and dragged region                                                                                                                                                                                                   |
@@ -276,7 +273,7 @@ the legend's close button; re-enable from the color-by (palette) menu.
 // type signature
 type showColorLegend = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showColorLegend: types.stripDefault(types.boolean, true)
+showColorLegend: types.stripDefault(types.boolean, false)
 ```
 
 </details>
@@ -448,24 +445,6 @@ type volatileError = unknown
 volatileError: undefined as unknown
 ```
 
-#### volatile: borderX
-
-```ts
-// type signature
-type borderX = number
-// code
-borderX: 100
-```
-
-#### volatile: borderY
-
-```ts
-// type signature
-type borderY = number
-// code
-borderY: 100
-```
-
 #### volatile: importFormSyntenyTrackSelections
 
 ```ts
@@ -479,6 +458,24 @@ importFormSyntenyTrackSelections: observable.array<ImportFormSyntenyTrack>()
 
 <details>
 <summary>DotplotView - Getters</summary>
+
+#### getter: borderX
+
+Left margin: fits the vertical (vview) axis labels. Derived purely from that
+axis's regions + zoom — never from viewWidth — so it can't feed back through
+viewWidth = width - borderX into a render loop.
+
+```ts
+type borderX = number
+```
+
+#### getter: borderY
+
+Bottom margin: fits the horizontal (hview) axis labels. See borderX.
+
+```ts
+type borderY = number
+```
 
 #### getter: showImportForm
 
@@ -742,14 +739,6 @@ zooms into clicked and dragged region
 type zoomInToMouseCoords = (mousedown: Coord, mouseup: Coord) => void
 ```
 
-#### action: calculateBorders
-
-Calculate borders synchronously for a given zoom level
-
-```ts
-type calculateBorders = () => { borderX: number; borderY: number }
-```
-
 #### action: onDotplotView
 
 creates a linear synteny view from the clicked and dragged region
@@ -844,18 +833,6 @@ type setHighlightsVisible = (arg: boolean) => void
 
 ```ts
 type setShowColorLegend = (arg: boolean) => void
-```
-
-#### action: setBorderX
-
-```ts
-type setBorderX = (n: number) => void
-```
-
-#### action: setBorderY
-
-```ts
-type setBorderY = (n: number) => void
 ```
 
 #### action: setWidth

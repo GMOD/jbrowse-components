@@ -17,13 +17,9 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 | [view](#property-view)                       | Properties |             |
 | [version](#getter-version)                   | Getters    |             |
 | [disableAddTracks](#getter-disableaddtracks) | Getters    |             |
-| [assemblies](#getter-assemblies)             | Getters    |             |
 | [assemblyNames](#getter-assemblynames)       | Getters    |             |
-| [connections](#getter-connections)           | Getters    |             |
 | [assemblyManager](#getter-assemblymanager)   | Getters    |             |
 | [views](#getter-views)                       | Getters    |             |
-| [themeOptions](#getter-themeoptions)         | Getters    |             |
-| [theme](#getter-theme)                       | Getters    |             |
 | [addView](#action-addview)                   | Actions    |             |
 | [removeView](#action-removeview)             | Actions    |             |
 
@@ -175,6 +171,11 @@ and docs.
 [getTrackListMenuItems](../trackmenusessionmixin#method-gettracklistmenuitems),
 [getTrackActionMenuItems](../trackmenusessionmixin#method-gettrackactionmenuitems)
 
+### Available via [EmbeddedSessionThemeMixin](../embeddedsessionthememixin)
+
+**Getters:** [themeOptions](../embeddedsessionthememixin#getter-themeoptions),
+[theme](../embeddedsessionthememixin#getter-theme)
+
 <details>
 <summary>JBrowseReactLinearGenomeViewSessionModel - Properties</summary>
 
@@ -196,55 +197,31 @@ view: pluginManager.getViewType('LinearGenomeView')!
 #### getter: version
 
 ```ts
-type version = any
+type version = string
 ```
 
 #### getter: disableAddTracks
 
 ```ts
-type disableAddTracks = any
-```
-
-#### getter: assemblies
-
-```ts
-type assemblies = any[]
+type disableAddTracks = boolean
 ```
 
 #### getter: assemblyNames
 
 ```ts
-type assemblyNames = any[]
-```
-
-#### getter: connections
-
-```ts
-type connections = any
+type assemblyNames = string[]
 ```
 
 #### getter: assemblyManager
 
 ```ts
-type assemblyManager = any
+type assemblyManager = ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotCust...
 ```
 
 #### getter: views
 
 ```ts
 type views = (ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>)[]
-```
-
-#### getter: themeOptions
-
-```ts
-type themeOptions = SerializableThemeArgs
-```
-
-#### getter: theme
-
-```ts
-type theme = Theme
 ```
 
 </details>

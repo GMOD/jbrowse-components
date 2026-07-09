@@ -28,75 +28,75 @@ Hand-authored under `defaultSession.views`. The `init` shorthand takes a single
 
 ## Members
 
-| Member                                                               | Kind       | Description                                                                                                                     |
-| -------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                               | Properties |                                                                                                                                 |
-| [offsetRadians](#property-offsetradians)                             | Properties | similar to offsetPx in linear genome view                                                                                       |
-| [bpPerPx](#property-bpperpx)                                         | Properties |                                                                                                                                 |
-| [tracks](#property-tracks)                                           | Properties |                                                                                                                                 |
-| [hideVerticalResizeHandle](#property-hideverticalresizehandle)       | Properties |                                                                                                                                 |
-| [hideTrackSelectorButton](#property-hidetrackselectorbutton)         | Properties |                                                                                                                                 |
-| [disableImportForm](#property-disableimportform)                     | Properties |                                                                                                                                 |
-| [height](#property-height)                                           | Properties |                                                                                                                                 |
-| [displayedRegions](#property-displayedregions)                       | Properties |                                                                                                                                 |
-| [minimumRadiusPx](#property-minimumradiuspx)                         | Properties |                                                                                                                                 |
-| [spacingPx](#property-spacingpx)                                     | Properties |                                                                                                                                 |
-| [paddingPx](#property-paddingpx)                                     | Properties |                                                                                                                                 |
-| [minVisibleWidth](#property-minvisiblewidth)                         | Properties |                                                                                                                                 |
-| [minimumBlockWidth](#property-minimumblockwidth)                     | Properties |                                                                                                                                 |
-| [trackSelectorType](#property-trackselectortype)                     | Properties |                                                                                                                                 |
-| [init](#property-init)                                               | Properties | used for initializing the view from a session snapshot                                                                          |
-| [volatileWidth](#volatile-volatilewidth)                             | Volatiles  |                                                                                                                                 |
-| [volatileError](#volatile-volatileerror)                             | Volatiles  |                                                                                                                                 |
-| [panX](#volatile-panx)                                               | Volatiles  |                                                                                                                                 |
-| [panY](#volatile-pany)                                               | Volatiles  |                                                                                                                                 |
-| [width](#getter-width)                                               | Getters    |                                                                                                                                 |
-| [visibleSection](#getter-visiblesection)                             | Getters    |                                                                                                                                 |
-| [circumferencePx](#getter-circumferencepx)                           | Getters    |                                                                                                                                 |
-| [radiusPx](#getter-radiuspx)                                         | Getters    |                                                                                                                                 |
-| [bpPerRadian](#getter-bpperradian)                                   | Getters    |                                                                                                                                 |
-| [centerXY](#getter-centerxy)                                         | Getters    |                                                                                                                                 |
-| [totalBp](#getter-totalbp)                                           | Getters    |                                                                                                                                 |
-| [maximumRadiusPx](#getter-maximumradiuspx)                           | Getters    |                                                                                                                                 |
-| [maxBpPerPx](#getter-maxbpperpx)                                     | Getters    |                                                                                                                                 |
-| [minBpPerPx](#getter-minbpperpx)                                     | Getters    |                                                                                                                                 |
-| [atMaxBpPerPx](#getter-atmaxbpperpx)                                 | Getters    |                                                                                                                                 |
-| [atMinBpPerPx](#getter-atminbpperpx)                                 | Getters    |                                                                                                                                 |
-| [figureSize](#getter-figuresize)                                     | Getters    | figure is always square, so width === height                                                                                    |
-| [elidedRegions](#getter-elidedregions)                               | Getters    | this is displayedRegions, post-processed to elide regions that are too small to see reasonably                                  |
-| [assemblyNames](#getter-assemblynames)                               | Getters    |                                                                                                                                 |
-| [initialized](#getter-initialized)                                   | Getters    |                                                                                                                                 |
-| [assemblyErrors](#getter-assemblyerrors)                             | Getters    |                                                                                                                                 |
-| [error](#getter-error)                                               | Getters    |                                                                                                                                 |
-| [hasSomethingToShow](#getter-hassomethingtoshow)                     | Getters    |                                                                                                                                 |
-| [showLoading](#getter-showloading)                                   | Getters    | Whether to show a loading indicator instead of the import form or view                                                          |
-| [showView](#getter-showview)                                         | Getters    | Whether the view is fully initialized and ready to display                                                                      |
-| [showImportForm](#getter-showimportform)                             | Getters    | Whether to show the import form (when not ready to display and import form is enabled, or when there's an error)                |
-| [staticSlices](#getter-staticslices)                                 | Getters    |                                                                                                                                 |
-| [menuItems](#method-menuitems)                                       | Methods    | return the view menu items                                                                                                      |
-| [fitToWindow](#action-fittowindow)                                   | Actions    |                                                                                                                                 |
-| [setWidth](#action-setwidth)                                         | Actions    |                                                                                                                                 |
-| [setHeight](#action-setheight)                                       | Actions    |                                                                                                                                 |
-| [rotateClockwiseButton](#action-rotateclockwisebutton)               | Actions    |                                                                                                                                 |
-| [rotateCounterClockwiseButton](#action-rotatecounterclockwisebutton) | Actions    |                                                                                                                                 |
-| [rotate](#action-rotate)                                             | Actions    |                                                                                                                                 |
-| [resetView](#action-resetview)                                       | Actions    | reset rotation, pan, and zoom back to the default fit-to-window view                                                            |
-| [zoomInButton](#action-zoominbutton)                                 | Actions    |                                                                                                                                 |
-| [zoomOutButton](#action-zoomoutbutton)                               | Actions    |                                                                                                                                 |
-| [setBpPerPx](#action-setbpperpx)                                     | Actions    |                                                                                                                                 |
-| [zoomToPoint](#action-zoomtopoint)                                   | Actions    | zoom toward/away from a specific angle on the circle, keeping the genome position at that angle visually fixed under the cursor |
-| [setDisplayedRegions](#action-setdisplayedregions)                   | Actions    |                                                                                                                                 |
-| [activateTrackSelector](#action-activatetrackselector)               | Actions    |                                                                                                                                 |
-| [toggleTrack](#action-toggletrack)                                   | Actions    |                                                                                                                                 |
-| [setError](#action-seterror)                                         | Actions    |                                                                                                                                 |
-| [setInit](#action-setinit)                                           | Actions    |                                                                                                                                 |
-| [showTrack](#action-showtrack)                                       | Actions    |                                                                                                                                 |
-| [addTrackConf](#action-addtrackconf)                                 | Actions    |                                                                                                                                 |
-| [hideTrack](#action-hidetrack)                                       | Actions    |                                                                                                                                 |
-| [openExportDialog](#action-openexportdialog)                         | Actions    |                                                                                                                                 |
-| [exportSvg](#action-exportsvg)                                       | Actions    | creates an svg export and save using FileSaver                                                                                  |
-| [resizeHeight](#action-resizeheight)                                 | Actions    |                                                                                                                                 |
-| [resizeWidth](#action-resizewidth)                                   | Actions    |                                                                                                                                 |
+| Member                                                               | Kind       | Description                                                                                                                                                                 |
+| -------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                               | Properties | this is a string instead of the const literal 'CircularView' to reduce some typescripting strictness, but you should pass the string 'CircularView' to the model explicitly |
+| [offsetRadians](#property-offsetradians)                             | Properties | similar to offsetPx in linear genome view                                                                                                                                   |
+| [bpPerPx](#property-bpperpx)                                         | Properties |                                                                                                                                                                             |
+| [tracks](#property-tracks)                                           | Properties |                                                                                                                                                                             |
+| [hideVerticalResizeHandle](#property-hideverticalresizehandle)       | Properties |                                                                                                                                                                             |
+| [hideTrackSelectorButton](#property-hidetrackselectorbutton)         | Properties |                                                                                                                                                                             |
+| [disableImportForm](#property-disableimportform)                     | Properties |                                                                                                                                                                             |
+| [height](#property-height)                                           | Properties |                                                                                                                                                                             |
+| [displayedRegions](#property-displayedregions)                       | Properties |                                                                                                                                                                             |
+| [minimumRadiusPx](#property-minimumradiuspx)                         | Properties |                                                                                                                                                                             |
+| [spacingPx](#property-spacingpx)                                     | Properties |                                                                                                                                                                             |
+| [paddingPx](#property-paddingpx)                                     | Properties |                                                                                                                                                                             |
+| [minVisibleWidth](#property-minvisiblewidth)                         | Properties |                                                                                                                                                                             |
+| [minimumBlockWidth](#property-minimumblockwidth)                     | Properties |                                                                                                                                                                             |
+| [trackSelectorType](#property-trackselectortype)                     | Properties |                                                                                                                                                                             |
+| [init](#property-init)                                               | Properties | used for initializing the view from a session snapshot                                                                                                                      |
+| [volatileWidth](#volatile-volatilewidth)                             | Volatiles  |                                                                                                                                                                             |
+| [volatileError](#volatile-volatileerror)                             | Volatiles  |                                                                                                                                                                             |
+| [panX](#volatile-panx)                                               | Volatiles  |                                                                                                                                                                             |
+| [panY](#volatile-pany)                                               | Volatiles  |                                                                                                                                                                             |
+| [width](#getter-width)                                               | Getters    |                                                                                                                                                                             |
+| [visibleSection](#getter-visiblesection)                             | Getters    |                                                                                                                                                                             |
+| [circumferencePx](#getter-circumferencepx)                           | Getters    |                                                                                                                                                                             |
+| [radiusPx](#getter-radiuspx)                                         | Getters    |                                                                                                                                                                             |
+| [bpPerRadian](#getter-bpperradian)                                   | Getters    |                                                                                                                                                                             |
+| [centerXY](#getter-centerxy)                                         | Getters    |                                                                                                                                                                             |
+| [totalBp](#getter-totalbp)                                           | Getters    |                                                                                                                                                                             |
+| [maximumRadiusPx](#getter-maximumradiuspx)                           | Getters    |                                                                                                                                                                             |
+| [maxBpPerPx](#getter-maxbpperpx)                                     | Getters    |                                                                                                                                                                             |
+| [minBpPerPx](#getter-minbpperpx)                                     | Getters    |                                                                                                                                                                             |
+| [atMaxBpPerPx](#getter-atmaxbpperpx)                                 | Getters    |                                                                                                                                                                             |
+| [atMinBpPerPx](#getter-atminbpperpx)                                 | Getters    |                                                                                                                                                                             |
+| [figureSize](#getter-figuresize)                                     | Getters    | figure is always square, so width === height                                                                                                                                |
+| [elidedRegions](#getter-elidedregions)                               | Getters    | this is displayedRegions, post-processed to elide regions that are too small to see reasonably                                                                              |
+| [assemblyNames](#getter-assemblynames)                               | Getters    |                                                                                                                                                                             |
+| [initialized](#getter-initialized)                                   | Getters    |                                                                                                                                                                             |
+| [assemblyErrors](#getter-assemblyerrors)                             | Getters    |                                                                                                                                                                             |
+| [error](#getter-error)                                               | Getters    |                                                                                                                                                                             |
+| [hasSomethingToShow](#getter-hassomethingtoshow)                     | Getters    |                                                                                                                                                                             |
+| [showLoading](#getter-showloading)                                   | Getters    | Whether to show a loading indicator instead of the import form or view                                                                                                      |
+| [showView](#getter-showview)                                         | Getters    | Whether the view is fully initialized and ready to display                                                                                                                  |
+| [showImportForm](#getter-showimportform)                             | Getters    | Whether to show the import form (when not ready to display and import form is enabled, or when there's an error)                                                            |
+| [staticSlices](#getter-staticslices)                                 | Getters    |                                                                                                                                                                             |
+| [menuItems](#method-menuitems)                                       | Methods    | return the view menu items                                                                                                                                                  |
+| [fitToWindow](#action-fittowindow)                                   | Actions    |                                                                                                                                                                             |
+| [setWidth](#action-setwidth)                                         | Actions    |                                                                                                                                                                             |
+| [setHeight](#action-setheight)                                       | Actions    |                                                                                                                                                                             |
+| [rotateClockwiseButton](#action-rotateclockwisebutton)               | Actions    |                                                                                                                                                                             |
+| [rotateCounterClockwiseButton](#action-rotatecounterclockwisebutton) | Actions    |                                                                                                                                                                             |
+| [rotate](#action-rotate)                                             | Actions    |                                                                                                                                                                             |
+| [resetView](#action-resetview)                                       | Actions    | reset rotation, pan, and zoom back to the default fit-to-window view                                                                                                        |
+| [zoomInButton](#action-zoominbutton)                                 | Actions    |                                                                                                                                                                             |
+| [zoomOutButton](#action-zoomoutbutton)                               | Actions    |                                                                                                                                                                             |
+| [setBpPerPx](#action-setbpperpx)                                     | Actions    |                                                                                                                                                                             |
+| [zoomToPoint](#action-zoomtopoint)                                   | Actions    | zoom toward/away from a specific angle on the circle, keeping the genome position at that angle visually fixed under the cursor                                             |
+| [setDisplayedRegions](#action-setdisplayedregions)                   | Actions    |                                                                                                                                                                             |
+| [activateTrackSelector](#action-activatetrackselector)               | Actions    |                                                                                                                                                                             |
+| [toggleTrack](#action-toggletrack)                                   | Actions    |                                                                                                                                                                             |
+| [setError](#action-seterror)                                         | Actions    |                                                                                                                                                                             |
+| [setInit](#action-setinit)                                           | Actions    |                                                                                                                                                                             |
+| [showTrack](#action-showtrack)                                       | Actions    |                                                                                                                                                                             |
+| [addTrackConf](#action-addtrackconf)                                 | Actions    |                                                                                                                                                                             |
+| [hideTrack](#action-hidetrack)                                       | Actions    |                                                                                                                                                                             |
+| [openExportDialog](#action-openexportdialog)                         | Actions    |                                                                                                                                                                             |
+| [exportSvg](#action-exportsvg)                                       | Actions    | creates an svg export and save using FileSaver                                                                                                                              |
+| [resizeHeight](#action-resizeheight)                                 | Actions    |                                                                                                                                                                             |
+| [resizeWidth](#action-resizewidth)                                   | Actions    |                                                                                                                                                                             |
 
 ## Inherited members
 
@@ -119,6 +119,19 @@ and docs.
 
 <details>
 <summary>CircularView - Properties</summary>
+
+#### property: type
+
+this is a string instead of the const literal 'CircularView' to reduce some
+typescripting strictness, but you should pass the string 'CircularView' to the
+model explicitly
+
+```ts
+// type signature
+type type = string
+// code
+type: types.literal('CircularView') as unknown as string
+```
 
 #### property: offsetRadians
 
@@ -150,15 +163,6 @@ init: types.frozen<CircularViewInit | undefined>()
 
 <details>
 <summary>CircularView - Properties (other undocumented members)</summary>
-
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'CircularView'>
-// code
-type: types.literal('CircularView')
-```
 
 #### property: bpPerPx
 

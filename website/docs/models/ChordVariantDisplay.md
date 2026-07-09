@@ -39,23 +39,24 @@ controls how far the chords bow toward the center:
 
 ## Members
 
-| Member                                           | Kind       | Description                          |
-| ------------------------------------------------ | ---------- | ------------------------------------ |
-| [type](#property-type)                           | Properties |                                      |
-| [bezierRadiusRatio](#property-bezierradiusratio) | Properties |                                      |
-| [configuration](#property-configuration)         | Properties |                                      |
-| [features](#volatile-features)                   | Volatiles  |                                      |
-| [refNameMap](#volatile-refnamemap)               | Volatiles  |                                      |
-| [ready](#getter-ready)                           | Getters    |                                      |
-| [radiusPx](#getter-radiuspx)                     | Getters    |                                      |
-| [bezierRadius](#getter-bezierradius)             | Getters    | how far chords bow toward the center |
-| [blocksForRefs](#getter-blocksforrefs)           | Getters    |                                      |
-| [selectedFeatureId](#getter-selectedfeatureid)   | Getters    |                                      |
-| [renderSvg](#method-rendersvg)                   | Methods    |                                      |
-| [onChordClick](#action-onchordclick)             | Actions    |                                      |
-| [openErrorDialog](#action-openerrordialog)       | Actions    |                                      |
-| [setFeatures](#action-setfeatures)               | Actions    |                                      |
-| [setRefNameMap](#action-setrefnamemap)           | Actions    |                                      |
+| Member                                           | Kind       | Description                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                           | Properties |                                                                                                                                                                                                                                                                                                                        |
+| [bezierRadiusRatio](#property-bezierradiusratio) | Properties |                                                                                                                                                                                                                                                                                                                        |
+| [configuration](#property-configuration)         | Properties |                                                                                                                                                                                                                                                                                                                        |
+| [features](#volatile-features)                   | Volatiles  |                                                                                                                                                                                                                                                                                                                        |
+| [refNameMap](#volatile-refnamemap)               | Volatiles  |                                                                                                                                                                                                                                                                                                                        |
+| [ready](#getter-ready)                           | Getters    |                                                                                                                                                                                                                                                                                                                        |
+| [svgReady](#getter-svgready)                     | Getters    | Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady"). Chord displays are non-rectangular (radial), so they keep a bespoke `<DisplayError>` error UI instead of `SvgChrome`, but still expose `svgReady` + await it via the shared `awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state. |
+| [radiusPx](#getter-radiuspx)                     | Getters    |                                                                                                                                                                                                                                                                                                                        |
+| [bezierRadius](#getter-bezierradius)             | Getters    | how far chords bow toward the center                                                                                                                                                                                                                                                                                   |
+| [blocksForRefs](#getter-blocksforrefs)           | Getters    |                                                                                                                                                                                                                                                                                                                        |
+| [selectedFeatureId](#getter-selectedfeatureid)   | Getters    |                                                                                                                                                                                                                                                                                                                        |
+| [renderSvg](#method-rendersvg)                   | Methods    |                                                                                                                                                                                                                                                                                                                        |
+| [onChordClick](#action-onchordclick)             | Actions    |                                                                                                                                                                                                                                                                                                                        |
+| [openErrorDialog](#action-openerrordialog)       | Actions    |                                                                                                                                                                                                                                                                                                                        |
+| [setFeatures](#action-setfeatures)               | Actions    |                                                                                                                                                                                                                                                                                                                        |
+| [setRefNameMap](#action-setrefnamemap)           | Actions    |                                                                                                                                                                                                                                                                                                                        |
 
 ### ChordVariantDisplay - Configuration
 
@@ -153,6 +154,17 @@ refNameMap: undefined as Record<string, string> | undefined
 
 <details>
 <summary>ChordVariantDisplay - Getters</summary>
+
+#### getter: svgReady
+
+Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady"). Chord
+displays are non-rectangular (radial), so they keep a bespoke `<DisplayError>`
+error UI instead of `SvgChrome`, but still expose `svgReady` + await it via the
+shared `awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state.
+
+```ts
+type svgReady = boolean
+```
 
 #### getter: bezierRadius
 

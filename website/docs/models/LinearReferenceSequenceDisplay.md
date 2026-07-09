@@ -194,7 +194,8 @@ and docs.
 [statusMessage](../fetchmixin#volatile-statusmessage),
 [statusProgress](../fetchmixin#volatile-statusprogress),
 [fetchCanceled](../fetchmixin#volatile-fetchcanceled),
-[regionStatuses](../fetchmixin#volatile-regionstatuses)
+[regionStatuses](../fetchmixin#volatile-regionstatuses),
+[lastStatusMs](../fetchmixin#volatile-laststatusms)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
@@ -203,6 +204,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[throttleStatus](../fetchmixin#action-throttlestatus),
 [resetStatus](../fetchmixin#action-resetstatus),
 [stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),

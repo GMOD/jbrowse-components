@@ -44,7 +44,8 @@ and docs.
 [configuration](../multisamplevariantbasemodel#property-configuration),
 [rowHeight](../multisamplevariantbasemodel#property-rowheight),
 [jexlFilters](../multisamplevariantbasemodel#property-jexlfilters),
-[lineZoneHeight](../multisamplevariantbasemodel#property-linezoneheight)
+[lineZoneHeight](../multisamplevariantbasemodel#property-linezoneheight),
+[runClustering](../multisamplevariantbasemodel#property-runclustering)
 
 **Volatiles:** [showLegend](../multisamplevariantbasemodel#volatile-showlegend),
 [dismissedLegendSections](../multisamplevariantbasemodel#volatile-dismissedlegendsections),
@@ -121,6 +122,7 @@ and docs.
 [setShowTree](../multisamplevariantbasemodel#action-setshowtree),
 [setShowBranchLength](../multisamplevariantbasemodel#action-setshowbranchlength),
 [setLayoutAndPendingClusterTree](../multisamplevariantbasemodel#action-setlayoutandpendingclustertree),
+[setRunClustering](../multisamplevariantbasemodel#action-setrunclustering),
 [setPhasedMode](../multisamplevariantbasemodel#action-setphasedmode),
 [setFitToHeight](../multisamplevariantbasemodel#action-setfittoheight),
 [resizeHeight](../multisamplevariantbasemodel#action-resizeheight),
@@ -243,7 +245,8 @@ and docs.
 [statusMessage](../fetchmixin#volatile-statusmessage),
 [statusProgress](../fetchmixin#volatile-statusprogress),
 [fetchCanceled](../fetchmixin#volatile-fetchcanceled),
-[regionStatuses](../fetchmixin#volatile-regionstatuses)
+[regionStatuses](../fetchmixin#volatile-regionstatuses),
+[lastStatusMs](../fetchmixin#volatile-laststatusms)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
@@ -252,6 +255,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[throttleStatus](../fetchmixin#action-throttlestatus),
 [resetStatus](../fetchmixin#action-resetstatus),
 [stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),

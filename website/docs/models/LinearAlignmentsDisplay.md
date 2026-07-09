@@ -135,6 +135,7 @@ State model factory for LinearAlignmentsDisplay
 | [isChainMode](#getter-ischainmode)                                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [showLinkedReadLines](#getter-showlinkedreadlines)                             | Getters    | Whether to draw the straight-line pass connecting normal read-pairs in pileup layout. Only meaningful when bezier connections are on AND we are in pileup mode — chain layout has its own connecting-line pass that already covers normal pairs.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | [fitHeightToDisplay](#getter-fitheighttodisplay)                               | Getters    | "Fit to display height" mode: reads pack to fill the display without scrolling. Derived from the promotable `heightMode` sentinel slot so it flows through the session-default cascade (track value, else session-wide default, else `fixed`) — same machinery as the numeric height slots. The `featureHeight`/`height` slots are never written, so they stay pure user intent.                                                                                                                                                                                                                                                                                                    |
+| [autoHeight](#getter-autoheight)                                               | Getters    | "Grow" mode: the track resizes to fit every read at the configured height (no scrolling), rather than scrolling (`fixed`) or shrinking reads to fit (`fit`). Derived from the same promotable `heightMode` sentinel slot. Shared vocabulary + getter name with the canvas display.                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [scaleType](#getter-scaletype)                                                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [autoscaleType](#getter-autoscaletype)                                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [minScore](#getter-minscore)                                                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -152,13 +153,13 @@ State model factory for LinearAlignmentsDisplay
 | [isFitting](#getter-isfitting)                                                 | Getters    | True when fit-to-display mode is on AND a pitch has been computed (`fittedHeightPx > 0`, i.e. there are rows and room to fit them). The single gate both size getters read, so it's obvious they either both split the fitted pitch or both fall back to config — never a mix.                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [featureHeight](#getter-featureheight)                                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [featureSpacing](#getter-featurespacing)                                       | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [isCompactnessDefault](#getter-iscompactnessdefault)                           | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [maxHeight](#getter-maxheight)                                                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [showSashimiLabels](#getter-showsashimilabels)                                 | Getters    | Whether to draw the supporting-read count on each sashimi arc. Resolved through the promotable-slot tiers (getConfResolved): a track configured `true` pins labels on; otherwise it follows the session-wide default, falling back to off.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [showSashimiLabelsSessionDefault](#getter-showsashimilabelssessiondefault)     | Getters    | "make this the default for all tracks" control (pin) for sashimi arc labels                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [chainIdMap](#getter-chainidmap)                                               | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [mismatchAlpha](#getter-mismatchalpha)                                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [showLowFreqMismatches](#getter-showlowfreqmismatches)                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [mismatchAlpha](#getter-mismatchalpha)                                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [mismatchAlphaSessionDefault](#getter-mismatchalphasessiondefault)             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [showLegend](#getter-showlegend)                                               | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [sortedBy](#getter-sortedby)                                                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [largeFeaturesFirst](#getter-largefeaturesfirst)                               | Getters    | Lay out the widest features in the lowest pileup rows (main-thread tier-2 relayout via laidOutPileupMap). LGVSyntenyDisplay defaults it on. Ignored while an explicit `sortedBy` position sort is active.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -197,6 +198,7 @@ State model factory for LinearAlignmentsDisplay
 | [scrollModel](#getter-scrollmodel)                                             | Getters    | The scroll-projection inputs (`sectionScreen.ts`) every overlay needs to map a content-space Y into screen space. Built once here so the label / resize-handle / coverage-axis overlays don't each re-assemble `{ isGrouped, scrollTop, canvasHeight }` inline.                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [pileupViewportHeight](#getter-pileupviewportheight)                           | Getters    | Height of the scrollable viewport. Ungrouped excludes the sticky coverage band; grouped scrolls the entire display.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [pileupContentHeight](#getter-pileupcontentheight)                             | Getters    | Total scrollable content height. Grouped is the full stacked-sections height; ungrouped is the pileup band alone (coverage is sticky), which is the stacked height minus that sticky coverage band. Both read the laid-out `sections` so the scroll extent tracks the geometry actually drawn — when `showPileup` is off or the group is collapsed the section reserves no pileup rows, so this collapses to 0 and no phantom scroll region opens up below the coverage band.                                                                                                                                                                                                       |
+| [grownHeight](#getter-grownheight)                                             | Getters    | Target track height for `grow` mode: the full laid-out content height (coverage + pileup + arcs), capped at `GROW_MAX_HEIGHT` so a deep pileup doesn't grow the track to thousands of px (a taller pileup fits to the cap and scrolls the remainder). Independent of `self.height` (in grow mode reads use the configured `featureHeight`, not the fitted pitch), so the grow autorun that writes it back can't feed back on itself. `setHeight` floors it to MIN_DISPLAY_HEIGHT.                                                                                                                                                                                                   |
 | [scalebarOverlapLeft](#getter-scalebaroverlapleft)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [showOutline](#getter-showoutline)                                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [visibleLabels](#getter-visiblelabels)                                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -235,11 +237,8 @@ State model factory for LinearAlignmentsDisplay
 | [setColorByDefault](#action-setcolorbydefault)                                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [updateColorTagMap](#action-updatecolortagmap)                                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setFilterBy](#action-setfilterby)                                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [setShowOutline](#action-setshowoutline)                                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [toggleSoftClipping](#action-togglesoftclipping)                               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [setCompactnessDefault](#action-setcompactnessdefault)                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [toggleMismatchAlpha](#action-togglemismatchalpha)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [toggleShowLowFreqMismatches](#action-toggleshowlowfreqmismatches)             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setMismatchAlpha](#action-setmismatchalpha)                                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setSortedBy](#action-setsortedby)                                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setSortedByAtPosition](#action-setsortedbyatposition)                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [clearSortedBy](#action-clearsortedby)                                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -257,6 +256,7 @@ State model factory for LinearAlignmentsDisplay
 | [setMaxHeight](#action-setmaxheight)                                           | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setCompactness](#action-setcompactness)                                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setFitHeightToDisplay](#action-setfitheighttodisplay)                         | Actions    | Enter/leave "fit to display height" mode. Entering resets the two bits of transient state that a uniform fit contradicts — per-group height overrides (a drag opts a group out of the fit budget) and the scroll offset (a fitted stack doesn't scroll). These clears are tied to the explicit user action on purpose: a track that inherits `fit` passively from a session-wide default keeps its overrides, so setting an unrelated default can't silently wipe a group the user dragged. The afterAttach autorun then keeps `featureHeight` sized to fit as the display/data change, regardless of how fit was entered.                                                          |
+| [setHeightMode](#action-setheightmode)                                         | Actions    | Set the track-height strategy by writing the unified `heightMode` slot; the modes are mutually exclusive by construction. Entering a non-`fixed` mode (fit or grow) resets the transient state a uniform fit/grow contradicts — per-group height overrides (a drag opts a group out) and the scroll offset (neither fit nor grow scrolls) — tied to the explicit user action so a track that merely inherits the mode from a session-wide default keeps its overrides. The driving autoruns then keep `featureHeight` (fit) or `height` (grow) sized as the display/data change.                                                                                                    |
 | [setFittedHeightPx](#action-setfittedheightpx)                                 | Actions    | Cache the fitted read height so the `featureHeight`/`featureSpacing` getters can resolve to it. Written only by the driving autorun.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [setShowSashimiArcs](#action-setshowsashimiarcs)                               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setReadConnections](#action-setreadconnections)                               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -288,18 +288,15 @@ State model factory for LinearAlignmentsDisplay
 | [setMouseoverExtraInformation](#action-setmouseoverextrainformation)           | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setHoverState](#action-sethoverstate)                                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setContextMenuFeature](#action-setcontextmenufeature)                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [setContextMenuCoord](#action-setcontextmenucoord)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [setContextMenuCigarHit](#action-setcontextmenucigarhit)                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [setContextMenuIndicatorHit](#action-setcontextmenuindicatorhit)               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [clearContextMenu](#action-clearcontextmenu)                                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [setContextMenuBlock](#action-setcontextmenublock)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [closeContextMenu](#action-closecontextmenu)                                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [selectFeature](#action-selectfeature)                                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [startRenderingBackend](#action-startrenderingbackend)                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [selectFeatureById](#action-selectfeaturebyid)                                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [setContextMenuFeatureById](#action-setcontextmenufeaturebyid)                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [openContextMenu](#action-opencontextmenu)                                     | Actions    | Open the right-click menu over a hit. Coord, block, and the two hit kinds always travel as a unit — set atomically so a consumer can never read a block without its hit (the split-state class of bug that silently no-op'd position sorts). The read feature is reset now and, when the hit carries one, populated by an async RPC fetch — so "open the menu for this hit and its read" stays a single call and a repositioned menu can't inherit the prior read's items.                                                                                                                                                                                                          |
 | [getByteEstimateConfig](#action-getbyteestimateconfig)                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [fetchNeeded](#action-fetchneeded)                                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [renderSvg](#action-rendersvg)                                                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [resizeHeight](#action-resizeheight)                                           | Actions    | A manual drag-resize means the user wants a fixed height; leave grow mode first, otherwise the grow autorun snaps the height back on the next relayout and the drag appears to do nothing (mirrors canvas).                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 ### LinearAlignmentsDisplay - Configuration
 
@@ -420,7 +417,8 @@ and docs.
 [statusMessage](../fetchmixin#volatile-statusmessage),
 [statusProgress](../fetchmixin#volatile-statusprogress),
 [fetchCanceled](../fetchmixin#volatile-fetchcanceled),
-[regionStatuses](../fetchmixin#volatile-regionstatuses)
+[regionStatuses](../fetchmixin#volatile-regionstatuses),
+[lastStatusMs](../fetchmixin#volatile-laststatusms)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
@@ -429,6 +427,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[throttleStatus](../fetchmixin#action-throttlestatus),
 [resetStatus](../fetchmixin#action-resetstatus),
 [stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
@@ -705,6 +704,17 @@ are never written, so they stay pure user intent.
 
 ```ts
 type fitHeightToDisplay = boolean
+```
+
+#### getter: autoHeight
+
+"Grow" mode: the track resizes to fit every read at the configured height (no
+scrolling), rather than scrolling (`fixed`) or shrinking reads to fit (`fit`).
+Derived from the same promotable `heightMode` sentinel slot. Shared vocabulary +
+getter name with the canvas display.
+
+```ts
+type autoHeight = boolean
 ```
 
 #### getter: isFitting
@@ -1039,6 +1049,20 @@ the group is collapsed the section reserves no pileup rows, so this collapses to
 type pileupContentHeight = number
 ```
 
+#### getter: grownHeight
+
+Target track height for `grow` mode: the full laid-out content height
+(coverage + pileup + arcs), capped at `GROW_MAX_HEIGHT` so a deep pileup doesn't
+grow the track to thousands of px (a taller pileup fits to the cap and scrolls
+the remainder). Independent of `self.height` (in grow mode reads use the
+configured `featureHeight`, not the fitted pitch), so the grow autorun that
+writes it back can't feed back on itself. `setHeight` floors it to
+MIN_DISPLAY_HEIGHT.
+
+```ts
+type grownHeight = number
+```
+
 #### getter: highlightBoxes
 
 Screen boxes for the hovered read / chain, painted by the `HighlightOverlay`
@@ -1363,12 +1387,6 @@ type featureHeight = number
 type featureSpacing = number
 ```
 
-#### getter: isCompactnessDefault
-
-```ts
-type isCompactnessDefault = boolean
-```
-
 #### getter: maxHeight
 
 ```ts
@@ -1381,16 +1399,22 @@ type maxHeight = any
 type chainIdMap = Map<string, string[]>
 ```
 
+#### getter: showLowFreqMismatches
+
+```ts
+type showLowFreqMismatches = boolean
+```
+
 #### getter: mismatchAlpha
 
 ```ts
 type mismatchAlpha = boolean
 ```
 
-#### getter: showLowFreqMismatches
+#### getter: mismatchAlphaSessionDefault
 
 ```ts
-type showLowFreqMismatches = boolean
+type mismatchAlphaSessionDefault = SessionDefaultControl
 ```
 
 #### getter: showLegend
@@ -1519,7 +1543,7 @@ type sortTag = string | undefined
 #### getter: renderState
 
 ```ts
-type renderState = { scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 25 more ...; arcsYDomainBp: number | undefined; } | undefined
+type renderState = { scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 26 more ...; arcsYDomainBp: number | undefined; }
 ```
 
 #### getter: arcsYDomainBp
@@ -1599,7 +1623,7 @@ type chainIdsForRead = (rpcData: PileupDataResult, index: number) => string[]
 Track menu items
 
 ```ts
-type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | ... 4 more ... | { ...; })[]
+type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 </details>
@@ -1739,6 +1763,21 @@ display/data change, regardless of how fit was entered.
 type setFitHeightToDisplay = (fit: boolean) => void
 ```
 
+#### action: setHeightMode
+
+Set the track-height strategy by writing the unified `heightMode` slot; the
+modes are mutually exclusive by construction. Entering a non-`fixed` mode (fit
+or grow) resets the transient state a uniform fit/grow contradicts — per-group
+height overrides (a drag opts a group out) and the scroll offset (neither fit
+nor grow scrolls) — tied to the explicit user action so a track that merely
+inherits the mode from a session-wide default keeps its overrides. The driving
+autoruns then keep `featureHeight` (fit) or `height` (grow) sized as the
+display/data change.
+
+```ts
+type setHeightMode = (mode: HeightMode) => void
+```
+
 #### action: setFittedHeightPx
 
 Cache the fitted read height so the `featureHeight`/`featureSpacing` getters can
@@ -1756,6 +1795,35 @@ refetches.
 
 ```ts
 type setShowBezierConnections = (flag: boolean) => void
+```
+
+#### action: openContextMenu
+
+Open the right-click menu over a hit. Coord, block, and the two hit kinds always
+travel as a unit — set atomically so a consumer can never read a block without
+its hit (the split-state class of bug that silently no-op'd position sorts). The
+read feature is reset now and, when the hit carries one, populated by an async
+RPC fetch — so "open the menu for this hit and its read" stays a single call and
+a repositioned menu can't inherit the prior read's items.
+
+```ts
+type openContextMenu = (args: {
+  coord: [number, number]
+  block?: ResolvedBlock | undefined
+  cigarHit?: CigarHitResult | undefined
+  indicatorHit?: IndicatorHitResult | undefined
+  featureId?: string | undefined
+}) => void
+```
+
+#### action: resizeHeight
+
+A manual drag-resize means the user wants a fixed height; leave grow mode first,
+otherwise the grow autorun snaps the height back on the next relayout and the
+drag appears to do nothing (mirrors canvas).
+
+```ts
+type resizeHeight = (distance: number) => number
 ```
 
 </details>
@@ -1856,34 +1924,16 @@ type updateColorTagMap = (uniqueTag: string[]) => void
 type setFilterBy = (filterBy: FilterBy) => void
 ```
 
-#### action: setShowOutline
-
-```ts
-type setShowOutline = (show: boolean | undefined) => void
-```
-
 #### action: toggleSoftClipping
 
 ```ts
 type toggleSoftClipping = () => void
 ```
 
-#### action: setCompactnessDefault
+#### action: setMismatchAlpha
 
 ```ts
-type setCompactnessDefault = (promote: boolean) => void
-```
-
-#### action: toggleMismatchAlpha
-
-```ts
-type toggleMismatchAlpha = () => void
-```
-
-#### action: toggleShowLowFreqMismatches
-
-```ts
-type toggleShowLowFreqMismatches = () => void
+type setMismatchAlpha = (value: boolean) => void
 ```
 
 #### action: setSortedBy
@@ -2141,34 +2191,10 @@ type setHoverState = (state: {
 type setContextMenuFeature = (feature?: Feature | undefined) => void
 ```
 
-#### action: setContextMenuCoord
+#### action: closeContextMenu
 
 ```ts
-type setContextMenuCoord = (coord?: [number, number] | undefined) => void
-```
-
-#### action: setContextMenuCigarHit
-
-```ts
-type setContextMenuCigarHit = (hit?: CigarHitResult | undefined) => void
-```
-
-#### action: setContextMenuIndicatorHit
-
-```ts
-type setContextMenuIndicatorHit = (hit?: IndicatorHitResult | undefined) => void
-```
-
-#### action: clearContextMenu
-
-```ts
-type clearContextMenu = () => void
-```
-
-#### action: setContextMenuBlock
-
-```ts
-type setContextMenuBlock = (block?: ResolvedBlock | undefined) => void
+type closeContextMenu = () => void
 ```
 
 #### action: selectFeature
@@ -2187,12 +2213,6 @@ type startRenderingBackend = (backend: AlignmentsRenderingBackend) => void
 
 ```ts
 type selectFeatureById = (featureId: string) => Promise<void>
-```
-
-#### action: setContextMenuFeatureById
-
-```ts
-type setContextMenuFeatureById = (featureId: string) => Promise<void>
 ```
 
 #### action: getByteEstimateConfig

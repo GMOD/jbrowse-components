@@ -22,9 +22,11 @@ Composes:
   fetchGeneration)
 
 Unlike MultiRegionDisplayMixin, this mixin owns no per-region state and installs
-no autoruns. Fetch triggering is left entirely to the display's own afterAttach
-autorun so each display can express its own trigger conditions (HiC: viewport
-change; LD: viewport + showLDTriangle + etc).
+no autoruns. Fetch triggering is left to the display's own afterAttach autorun
+so each display can express its own trigger conditions (HiC: viewport change;
+LD: viewport + showLDTriangle + etc). The shared skeleton of that autorun lives
+in `installGlobalFetchAutorun` (below) — a display supplies only its own
+`shouldFetch` gate + `fetch` action.
 
 ## Members
 
@@ -88,7 +90,8 @@ and docs.
 [statusMessage](../fetchmixin#volatile-statusmessage),
 [statusProgress](../fetchmixin#volatile-statusprogress),
 [fetchCanceled](../fetchmixin#volatile-fetchcanceled),
-[regionStatuses](../fetchmixin#volatile-regionstatuses)
+[regionStatuses](../fetchmixin#volatile-regionstatuses),
+[lastStatusMs](../fetchmixin#volatile-laststatusms)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
@@ -97,6 +100,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[throttleStatus](../fetchmixin#action-throttlestatus),
 [resetStatus](../fetchmixin#action-resetstatus),
 [stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),

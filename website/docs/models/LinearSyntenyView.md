@@ -204,7 +204,7 @@ menu.
 // type signature
 type showColorLegend = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showColorLegend: types.stripDefault(types.boolean, true)
+showColorLegend: types.stripDefault(types.boolean, false)
 ```
 
 #### property: opacityByIdentity
@@ -560,7 +560,7 @@ type setDrawCurves = (arg: boolean) => void
 #### action: setCigarMode
 
 ```ts
-type setCigarMode = (arg: 'off' | 'matches' | 'full') => void
+type setCigarMode = (arg: 'off' | 'full' | 'matches') => void
 ```
 
 #### action: setDrawLocationMarkers

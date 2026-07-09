@@ -68,11 +68,33 @@ Maximum height of the display in pixels
 
 **Type:** `number` · **Default:** `1200` · _advanced_
 
-#### slot: autoHeight
+#### slot: heightMode
 
-Automatically resize the track height to fit all features
+Track-height strategy (shared vocabulary with the alignments display). `inherit`
+(the default) follows the session-wide default for this display type, falling
+back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` resizes the
+track to fit all features, `fit` shrinks features to fill the current height.
+Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit)
+settings.
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** `stringEnum` · **Default:** `'inherit'` · _promotable_
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
+  description:
+    'Track-height strategy (shared vocabulary with the alignments display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` resizes the track to fit all features, `fit` shrinks features to fill the current height. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
+
+
+
+
+
+  defaultValue: 'inherit',
+  promotedBase: 'fixed',
+  promotable: true,
+}
+```
 
 #### slot: showLabels
 
@@ -178,8 +200,8 @@ height in pixels of the main body of each feature
 
 Feature height preset. `inherit` (the default) follows the session-wide default
 for this display type, falling back to `normal`;
-`normal`/`compact`/`superCompact` each pin an explicit height (including pinning
-`normal` over a compact session default)
+`normal`/`compact`/`superCompact` pin the track explicitly (including pinning
+`normal` back over a `compact` session default)
 
 **Type:** `stringEnum` (one of `inherit`, `normal`, `compact`, `superCompact`) ·
 **Default:** `'inherit'` · _promotable_
@@ -194,7 +216,10 @@ for this display type, falling back to `normal`;
     'superCompact',
   ]),
   description:
-    'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` each pin an explicit height (including pinning `normal` over a compact session default)',
+    'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` pin the track explicitly (including pinning `normal` back over a `compact` session default)',
+
+
+
 
 
 
@@ -223,16 +248,61 @@ transcripts, "longestCoding" shows only the longest coding transcript
 
 #### slot: subfeatureLabels
 
-subfeature label display mode
+subfeature label display mode. `inherit` (the default) follows the session-wide
+default for this display type, falling back to `none`; `none`/`below`/`overlay`
+pin the track explicitly
 
-**Type:** `stringEnum` (one of `none`, `below`, `overlay`) · **Default:**
-`'none'`
+**Type:** `stringEnum` (one of `inherit`, `none`, `below`, `overlay`) ·
+**Default:** `'inherit'` · _promotable_
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('subfeatureLabels', [
+    'inherit',
+    'none',
+    'below',
+    'overlay',
+  ]),
+  description:
+    'subfeature label display mode. `inherit` (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` pin the track explicitly',
+
+
+
+
+
+
+  defaultValue: 'inherit',
+  promotedBase: 'none',
+  promotable: true,
+}
+```
 
 #### slot: displayDirectionalChevrons
 
-Display directional chevrons on intron lines to indicate strand direction
+Display directional chevrons on intron lines to indicate strand direction. Unset
+(the default) follows the session-wide default for this display type, falling
+back to on; an explicit true/false pins the track (including pinning on over an
+off session default)
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** `maybeBoolean` · **Default:** `undefined` · _promotable_
+
+```js
+{
+  type: 'maybeBoolean',
+  description:
+    'Display directional chevrons on intron lines to indicate strand direction. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false pins the track (including pinning on over an off session default)',
+
+
+
+
+
+
+  defaultValue: undefined,
+  promotedBase: true,
+  promotable: true,
+}
+```
 
 #### slot: transcriptTypes
 

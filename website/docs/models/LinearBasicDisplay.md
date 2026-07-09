@@ -45,31 +45,23 @@ agent-docs/ARCHITECTURE.md "Display stacks".
 
 ## Members
 
-| Member                                                                     | Kind      | Description |
-| -------------------------------------------------------------------------- | --------- | ----------- |
-| [isoformCollapseNoticeDismissed](#volatile-isoformcollapsenoticedismissed) | Volatiles |             |
-| [subfeatureLabels](#getter-subfeaturelabels)                               | Getters   |             |
-| [geneGlyphMode](#getter-geneglyphmode)                                     | Getters   |             |
-| [displayDirectionalChevrons](#getter-displaydirectionalchevrons)           | Getters   |             |
-| [isDisplayModeDefault](#getter-isdisplaymodedefault)                       | Getters   |             |
-| [isDisplayModePinned](#getter-isdisplaymodepinned)                         | Getters   |             |
-| [inheritedDisplayMode](#getter-inheriteddisplaymode)                       | Getters   |             |
-| [effectiveGeneGlyphMode](#getter-effectivegeneglyphmode)                   | Getters   |             |
-| [showIsoformCollapseNotice](#getter-showisoformcollapsenotice)             | Getters   |             |
-| [isGeneLike](#getter-isgenelike)                                           | Getters   |             |
-| [rpcProps](#method-rpcprops)                                               | Methods   |             |
-| [showSubmenuMenuItems](#method-showsubmenumenuitems)                       | Methods   |             |
-| [trackMenuItems](#method-trackmenuitems)                                   | Methods   |             |
-| [contextMenuItems](#method-contextmenuitems)                               | Methods   |             |
-| [setSubfeatureLabels](#action-setsubfeaturelabels)                         | Actions   |             |
-| [setGeneGlyphMode](#action-setgeneglyphmode)                               | Actions   |             |
-| [setDisplayMode](#action-setdisplaymode)                                   | Actions   |             |
-| [resetDisplayMode](#action-resetdisplaymode)                               | Actions   |             |
-| [setCompactness](#action-setcompactness)                                   | Actions   |             |
-| [setDisplayModeDefault](#action-setdisplaymodedefault)                     | Actions   |             |
-| [setShowOnlyGenes](#action-setshowonlygenes)                               | Actions   |             |
-| [setDisplayDirectionalChevrons](#action-setdisplaydirectionalchevrons)     | Actions   |             |
-| [dismissIsoformCollapseNotice](#action-dismissisoformcollapsenotice)       | Actions   |             |
+| Member                                                                 | Kind    | Description |
+| ---------------------------------------------------------------------- | ------- | ----------- |
+| [subfeatureLabels](#getter-subfeaturelabels)                           | Getters |             |
+| [geneGlyphMode](#getter-geneglyphmode)                                 | Getters |             |
+| [displayDirectionalChevrons](#getter-displaydirectionalchevrons)       | Getters |             |
+| [effectiveGeneGlyphMode](#getter-effectivegeneglyphmode)               | Getters |             |
+| [showGeneGlyphControl](#getter-showgeneglyphcontrol)                   | Getters |             |
+| [isGeneLike](#getter-isgenelike)                                       | Getters |             |
+| [rpcProps](#method-rpcprops)                                           | Methods |             |
+| [showSubmenuMenuItems](#method-showsubmenumenuitems)                   | Methods |             |
+| [trackMenuItems](#method-trackmenuitems)                               | Methods |             |
+| [contextMenuItems](#method-contextmenuitems)                           | Methods |             |
+| [setSubfeatureLabels](#action-setsubfeaturelabels)                     | Actions |             |
+| [setGeneGlyphMode](#action-setgeneglyphmode)                           | Actions |             |
+| [setCompactness](#action-setcompactness)                               | Actions |             |
+| [setShowOnlyGenes](#action-setshowonlygenes)                           | Actions |             |
+| [setDisplayDirectionalChevrons](#action-setdisplaydirectionalchevrons) | Actions |             |
 
 ### LinearBasicDisplay - Configuration
 
@@ -104,9 +96,9 @@ and docs.
 [contextMenuInfo](../linearcanvasbasedisplay#volatile-contextmenuinfo),
 [userFeatureDensityLimit](../linearcanvasbasedisplay#volatile-userfeaturedensitylimit),
 [byteEstimateVisibleBp](../linearcanvasbasedisplay#volatile-byteestimatevisiblebp),
-[heightBeforeExpand](../linearcanvasbasedisplay#volatile-heightbeforeexpand),
-[squeezeToDisplayHeight](../linearcanvasbasedisplay#volatile-squeezetodisplayheight),
 [incrementalLayout](../linearcanvasbasedisplay#volatile-incrementallayout),
+[incrementalLayoutLabelsOnly](../linearcanvasbasedisplay#volatile-incrementallayoutlabelsonly),
+[incrementalLayoutBodiesOnly](../linearcanvasbasedisplay#volatile-incrementallayoutbodiesonly),
 [morphFromTops](../linearcanvasbasedisplay#volatile-morphfromtops),
 [morphProgress](../linearcanvasbasedisplay#volatile-morphprogress),
 [morphStartMs](../linearcanvasbasedisplay#volatile-morphstartms),
@@ -119,6 +111,8 @@ and docs.
 [maxHeight](../linearcanvasbasedisplay#getter-maxheight),
 [autoHeight](../linearcanvasbasedisplay#getter-autoheight),
 [displayMode](../linearcanvasbasedisplay#getter-displaymode),
+[heightMode](../linearcanvasbasedisplay#getter-heightmode),
+[fitHeightToDisplay](../linearcanvasbasedisplay#getter-fitheighttodisplay),
 [labelFontSize](../linearcanvasbasedisplay#getter-labelfontsize),
 [showLabelsMode](../linearcanvasbasedisplay#getter-showlabelsmode),
 [showLabels](../linearcanvasbasedisplay#getter-showlabels),
@@ -146,16 +140,23 @@ and docs.
 [tooLargeStatus](../linearcanvasbasedisplay#getter-toolargestatus),
 [regionTooLarge](../linearcanvasbasedisplay#getter-regiontoolarge),
 [regionTooLargeReason](../linearcanvasbasedisplay#getter-regiontoolargereason),
+[layoutInputs](../linearcanvasbasedisplay#getter-layoutinputs),
 [baseLaidOutDataMap](../linearcanvasbasedisplay#getter-baselaidoutdatamap),
-[squeezeScale](../linearcanvasbasedisplay#getter-squeezescale),
+[fitLabelsOnlyLayout](../linearcanvasbasedisplay#getter-fitlabelsonlylayout),
+[fitBodiesOnlyLayout](../linearcanvasbasedisplay#getter-fitbodiesonlylayout),
+[fitMinScale](../linearcanvasbasedisplay#getter-fitminscale),
+[fitStage](../linearcanvasbasedisplay#getter-fitstage),
+[fitScale](../linearcanvasbasedisplay#getter-fitscale),
 [laidOutDataMap](../linearcanvasbasedisplay#getter-laidoutdatamap),
+[renderedShowDescriptions](../linearcanvasbasedisplay#getter-renderedshowdescriptions),
+[renderedShowLabels](../linearcanvasbasedisplay#getter-renderedshowlabels),
 [renderDataMap](../linearcanvasbasedisplay#getter-renderdatamap),
 [maxY](../linearcanvasbasedisplay#getter-maxy),
 [hasOverflow](../linearcanvasbasedisplay#getter-hasoverflow),
 [contentHeight](../linearcanvasbasedisplay#getter-contentheight),
 [scrollableHeight](../linearcanvasbasedisplay#getter-scrollableheight),
 [fitHeight](../linearcanvasbasedisplay#getter-fitheight),
-[canExpand](../linearcanvasbasedisplay#getter-canexpand),
+[grownHeight](../linearcanvasbasedisplay#getter-grownheight),
 [featureIdIndex](../linearcanvasbasedisplay#getter-featureidindex),
 [subfeatureIdIndex](../linearcanvasbasedisplay#getter-subfeatureidindex),
 [hoveredFeature](../linearcanvasbasedisplay#getter-hoveredfeature),
@@ -168,6 +169,7 @@ and docs.
 [observedMaxDensity](../linearcanvasbasedisplay#method-observedmaxdensity),
 [activeFilters](../linearcanvasbasedisplay#method-activefilters),
 [rpcProps](../linearcanvasbasedisplay#method-rpcprops),
+[fitLayoutAt](../linearcanvasbasedisplay#method-fitlayoutat),
 [getFeatureById](../linearcanvasbasedisplay#method-getfeaturebyid),
 [searchFeatureByID](../linearcanvasbasedisplay#method-searchfeaturebyid),
 [renderSvg](../linearcanvasbasedisplay#method-rendersvg),
@@ -175,15 +177,12 @@ and docs.
 [contextMenuItems](../linearcanvasbasedisplay#method-contextmenuitems),
 [colorBySubMenuItems](../linearcanvasbasedisplay#method-colorbysubmenuitems),
 [colorMenuItems](../linearcanvasbasedisplay#method-colormenuitems),
+[featureHeightMenuItems](../linearcanvasbasedisplay#method-featureheightmenuitems),
 [trackMenuItems](../linearcanvasbasedisplay#method-trackmenuitems)
 
 **Actions:** [beginYMorph](../linearcanvasbasedisplay#action-beginymorph),
 [setMorphProgress](../linearcanvasbasedisplay#action-setmorphprogress),
 [endYMorph](../linearcanvasbasedisplay#action-endymorph),
-[expandToFit](../linearcanvasbasedisplay#action-expandtofit),
-[setSqueezeToDisplayHeight](../linearcanvasbasedisplay#action-setsqueezetodisplayheight),
-[collapseFromExpand](../linearcanvasbasedisplay#action-collapsefromexpand),
-[clearHeightBeforeExpand](../linearcanvasbasedisplay#action-clearheightbeforeexpand),
 [setRpcData](../linearcanvasbasedisplay#action-setrpcdata),
 [setDensityStats](../linearcanvasbasedisplay#action-setdensitystats),
 [clearDisplaySpecificData](../linearcanvasbasedisplay#action-cleardisplayspecificdata),
@@ -199,6 +198,8 @@ and docs.
 [hideFeature](../linearcanvasbasedisplay#action-hidefeature),
 [showAllHidden](../linearcanvasbasedisplay#action-showallhidden),
 [setFeatureHighlights](../linearcanvasbasedisplay#action-setfeaturehighlights),
+[addFeatureHighlightForItem](../linearcanvasbasedisplay#action-addfeaturehighlightforitem),
+[removeFeatureHighlightsForItem](../linearcanvasbasedisplay#action-removefeaturehighlightsforitem),
 [clearFeatureHighlights](../linearcanvasbasedisplay#action-clearfeaturehighlights),
 [applySolo](../linearcanvasbasedisplay#action-applysolo),
 [soloFeature](../linearcanvasbasedisplay#action-solofeature),
@@ -206,13 +207,14 @@ and docs.
 [selectFeature](../linearcanvasbasedisplay#action-selectfeature),
 [clearSelection](../linearcanvasbasedisplay#action-clearselection),
 [setShowLabels](../linearcanvasbasedisplay#action-setshowlabels),
-[setAutoHeight](../linearcanvasbasedisplay#action-setautoheight),
 [setShowDescriptions](../linearcanvasbasedisplay#action-setshowdescriptions),
 [setJexlFilters](../linearcanvasbasedisplay#action-setjexlfilters),
 [setShowOutline](../linearcanvasbasedisplay#action-setshowoutline),
 [setFeatureColor](../linearcanvasbasedisplay#action-setfeaturecolor),
 [setUtrColor](../linearcanvasbasedisplay#action-setutrcolor),
-[showContextMenuForFeature](../linearcanvasbasedisplay#action-showcontextmenuforfeature),
+[openContextMenu](../linearcanvasbasedisplay#action-opencontextmenu),
+[setDisplayMode](../linearcanvasbasedisplay#action-setdisplaymode),
+[setHeightMode](../linearcanvasbasedisplay#action-setheightmode),
 [openSetColorDialog](../linearcanvasbasedisplay#action-opensetcolordialog),
 [openColorByAttributeDialog](../linearcanvasbasedisplay#action-opencolorbyattributedialog),
 [openFilterDialog](../linearcanvasbasedisplay#action-openfilterdialog),
@@ -336,7 +338,8 @@ and docs.
 [statusMessage](../fetchmixin#volatile-statusmessage),
 [statusProgress](../fetchmixin#volatile-statusprogress),
 [fetchCanceled](../fetchmixin#volatile-fetchcanceled),
-[regionStatuses](../fetchmixin#volatile-regionstatuses)
+[regionStatuses](../fetchmixin#volatile-regionstatuses),
+[lastStatusMs](../fetchmixin#volatile-laststatusms)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
@@ -345,6 +348,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[throttleStatus](../fetchmixin#action-throttlestatus),
 [resetStatus](../fetchmixin#action-resetstatus),
 [stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
@@ -361,26 +365,12 @@ and docs.
 [clearSessionDefaults](../promotabledefaultsmixin#action-clearsessiondefaults)
 
 <details>
-<summary>LinearBasicDisplay - Volatiles</summary>
-
-#### volatile: isoformCollapseNoticeDismissed
-
-```ts
-// type signature
-type isoformCollapseNoticeDismissed = false
-// code
-isoformCollapseNoticeDismissed: false
-```
-
-</details>
-
-<details>
 <summary>LinearBasicDisplay - Getters</summary>
 
 #### getter: subfeatureLabels
 
 ```ts
-type subfeatureLabels = any
+type subfeatureLabels = 'none' | 'overlay' | 'below'
 ```
 
 #### getter: geneGlyphMode
@@ -392,25 +382,7 @@ type geneGlyphMode = any
 #### getter: displayDirectionalChevrons
 
 ```ts
-type displayDirectionalChevrons = any
-```
-
-#### getter: isDisplayModeDefault
-
-```ts
-type isDisplayModeDefault = boolean
-```
-
-#### getter: isDisplayModePinned
-
-```ts
-type isDisplayModePinned = boolean
-```
-
-#### getter: inheritedDisplayMode
-
-```ts
-type inheritedDisplayMode = DisplayMode
+type displayDirectionalChevrons = boolean
 ```
 
 #### getter: effectiveGeneGlyphMode
@@ -419,10 +391,10 @@ type inheritedDisplayMode = DisplayMode
 type effectiveGeneGlyphMode = 'auto' | 'all' | 'longestCoding'
 ```
 
-#### getter: showIsoformCollapseNotice
+#### getter: showGeneGlyphControl
 
 ```ts
-type showIsoformCollapseNotice = boolean
+type showGeneGlyphControl = boolean
 ```
 
 #### getter: isGeneLike
@@ -446,6 +418,7 @@ type rpcProps = () => { displayConfig: { geneGlyphMode: "auto" | "all" | "longes
 
 ```ts
 type showSubmenuMenuItems = () => (
+  | CheckboxMenuItem
   | {
       label: string
       subMenu: {
@@ -468,7 +441,7 @@ type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | Chec
 #### method: contextMenuItems
 
 ```ts
-type contextMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; })[]
+type contextMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; } | { ...; })[]
 ```
 
 </details>
@@ -488,28 +461,10 @@ type setSubfeatureLabels = (value: 'none' | 'overlay' | 'below') => void
 type setGeneGlyphMode = (value: 'auto' | 'all' | 'longestCoding') => void
 ```
 
-#### action: setDisplayMode
-
-```ts
-type setDisplayMode = (value: DisplayMode) => void
-```
-
-#### action: resetDisplayMode
-
-```ts
-type resetDisplayMode = () => void
-```
-
 #### action: setCompactness
 
 ```ts
 type setCompactness = (level: 'normal' | 'compact' | 'super-compact') => void
-```
-
-#### action: setDisplayModeDefault
-
-```ts
-type setDisplayModeDefault = (promote: boolean) => void
 ```
 
 #### action: setShowOnlyGenes
@@ -522,12 +477,6 @@ type setShowOnlyGenes = (value: boolean) => void
 
 ```ts
 type setDisplayDirectionalChevrons = (value: boolean) => void
-```
-
-#### action: dismissIsoformCollapseNotice
-
-```ts
-type dismissIsoformCollapseNotice = () => void
 ```
 
 </details>

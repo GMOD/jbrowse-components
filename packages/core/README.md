@@ -175,6 +175,49 @@ the default for all tracks" control whose meaning is "promote this on-value"
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+### makeCurrentValueSessionDefaultControl
+
+Promote-current control: "make this track's current resolved value(s) the
+session default". Use for a symmetric setting (a `maybeBoolean` toggle, or a
+multi-mode slot like displayMode) where the pin means "whatever I'm showing",
+not a fixed on-value. Groups multiple slots behind one control.
+
+```js
+// type signature
+(self: PromotableDisplay, slots: string[]) => SessionDefaultControl
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+### makeSessionDefaultControl
+
+Per-value control: "make `slot === onValue` the session default". The meaning is
+per-value ("make arcs the default"), independent of the track's current value —
+so an always-visible control never promotes a meaningless value, and two toggles
+sharing one slot (arcs vs read cloud) stay independent.
+
+```js
+// type signature
+(self: PromotableDisplay, slot: string, onValue: unknown) => SessionDefaultControl
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+### makeSlotsValueSessionDefaultControl
+
+Per-value control over a _group_ of slots: "make this exact combination of slot
+values the session default". Like `makeSessionDefaultControl` but for a
+multi-slot value (e.g. a feature-height preset = height + spacing + mode), so
+each row of a preset radio group gets its own independent pin whose `active`
+reflects that specific combination being the current default.
+
+```js
+// type signature
+(self: PromotableDisplay, entries: { slot: string; value: unknown; }[]) => SessionDefaultControl
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
 ### readConfObject
 
 Given a configuration model (an instance of a ConfigurationSchema), read the
@@ -187,6 +230,35 @@ model directly, e.g. an entry from `session.tracks`.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/util.ts)
+
+### resolvePromotableConfigSnapshot
+
+The display's full config snapshot (`getConfSnapshot`) with every `promotable`
+slot overwritten by its resolved value in place. For building a worker payload:
+a promotable slot serializes as its raw inherit sentinel — an `'inherit'` enum
+member, or the `undefined` of a `maybeBoolean`/`maybeNumber` — which the worker
+can't interpret. This hands it concrete values instead, with no per-slot
+bookkeeping, so adding a promotable worker-consumed slot needs no rpcProps
+change and can't silently ship a sentinel. Main-thread only (getConfResolved
+consults the session). Display-only promotable slots the worker never reads
+(e.g. displayMode) are still excluded by the caller — resolving them here is a
+harmless no-op since they're dropped anyway.
+
+```js
+// type signature
+(self: PromotableDisplay) => Record<string, unknown>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+### SessionDefaultControl
+
+The state + action for one "make this the default for all tracks of this type"
+menu control, bundled so a row consumes it as a single prop instead of a
+separate is-default getter and toggle action. `active` = the promotion is
+currently in effect; `toggle` promotes it, or clears it when already active.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
 ### setSlotsSessionDefault
 

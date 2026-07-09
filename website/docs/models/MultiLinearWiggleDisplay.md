@@ -9,6 +9,22 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `wiggle` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiLinearWiggleDisplay/model.ts).
 
+## Example usage
+
+`runClustering` is a transient declarative launch spec, the same idea as
+`LinearGenomeView`'s `init`: set it to run the real "Cluster columns" RPC once
+automatically (no dialog) as soon as subtrack data is available, and it clears
+itself afterwards so a saved session never re-triggers it.
+
+```js
+displays: [
+  {
+    type: 'MultiLinearWiggleDisplay',
+    runClustering: true,
+  },
+]
+```
+
 ## Overview
 
 Wiggle display overlaying/stacking multiple quantitative subtracks in one area,
@@ -20,6 +36,7 @@ with optional clustering and a tree sidebar.
 | -------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ |
 | [type](#property-type)                                               | Properties |                                                                                                                          |
 | [configuration](#property-configuration)                             | Properties |                                                                                                                          |
+| [runClustering](#property-runclustering)                             | Properties |                                                                                                                          |
 | [sourcesVolatile](#volatile-sourcesvolatile)                         | Volatiles  |                                                                                                                          |
 | [featureUnderMouse](#volatile-featureundermouse)                     | Volatiles  |                                                                                                                          |
 | [DisplayMessageComponent](#getter-displaymessagecomponent)           | Getters    |                                                                                                                          |
@@ -51,6 +68,7 @@ with optional clustering and a tree sidebar.
 | [setShowRowSeparators](#action-setshowrowseparators)                 | Actions    |                                                                                                                          |
 | [setFeatureUnderMouse](#action-setfeatureundermouse)                 | Actions    |                                                                                                                          |
 | [selectFeature](#action-selectfeature)                               | Actions    |                                                                                                                          |
+| [setRunClustering](#action-setrunclustering)                         | Actions    |                                                                                                                          |
 | [fetchNeeded](#action-fetchneeded)                                   | Actions    |                                                                                                                          |
 | [renderSvg](#action-rendersvg)                                       | Actions    |                                                                                                                          |
 
@@ -173,7 +191,8 @@ and docs.
 [statusMessage](../fetchmixin#volatile-statusmessage),
 [statusProgress](../fetchmixin#volatile-statusprogress),
 [fetchCanceled](../fetchmixin#volatile-fetchcanceled),
-[regionStatuses](../fetchmixin#volatile-regionstatuses)
+[regionStatuses](../fetchmixin#volatile-regionstatuses),
+[lastStatusMs](../fetchmixin#volatile-laststatusms)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
@@ -182,6 +201,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[throttleStatus](../fetchmixin#action-throttlestatus),
 [resetStatus](../fetchmixin#action-resetstatus),
 [stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
@@ -285,6 +305,15 @@ type: types.literal('MultiLinearWiggleDisplay')
 type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
+```
+
+#### property: runClustering
+
+```ts
+// type signature
+type runClustering = IMaybe<ISimpleType<boolean>>
+// code
+runClustering: types.maybe(types.boolean)
 ```
 
 </details>
@@ -400,7 +429,7 @@ type ticks = YScaleTicks | undefined
 #### getter: renderState
 
 ```ts
-type renderState = WiggleGPURenderState | undefined
+type renderState = WiggleGPURenderState
 ```
 
 #### getter: showTree
@@ -515,6 +544,12 @@ type setFeatureUnderMouse = (feat?: WiggleFeatureUnderMouse | undefined) => void
 
 ```ts
 type selectFeature = (feat: WiggleFeatureUnderMouse) => void
+```
+
+#### action: setRunClustering
+
+```ts
+type setRunClustering = (arg?: boolean | undefined) => void
 ```
 
 #### action: fetchNeeded

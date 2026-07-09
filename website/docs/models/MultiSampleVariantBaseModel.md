@@ -26,6 +26,20 @@ displays: [
 ]
 ```
 
+`runClustering` is a transient declarative launch spec, the same idea as
+`LinearGenomeView`'s `init`: set it to run the real "Cluster by genotype" RPC
+once automatically (no dialog) as soon as sources are available, and it clears
+itself afterwards so a saved session never re-triggers it.
+
+```js
+displays: [
+  {
+    type: 'LinearMultiSampleVariantDisplay',
+    runClustering: true,
+  },
+]
+```
+
 ## Overview
 
 ## Members
@@ -37,6 +51,7 @@ displays: [
 | [rowHeight](#property-rowheight)                                         | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [jexlFilters](#property-jexlfilters)                                     | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [lineZoneHeight](#property-linezoneheight)                               | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [runClustering](#property-runclustering)                                 | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [showLegend](#volatile-showlegend)                                       | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [dismissedLegendSections](#volatile-dismissedlegendsections)             | Volatiles  | Ids of legend sections the user has individually closed (e.g. 'genotypes' / 'group'); reset when the whole legend is re-shown.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [contextMenuFeature](#volatile-contextmenufeature)                       | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -108,6 +123,7 @@ displays: [
 | [setShowTree](#action-setshowtree)                                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [setShowBranchLength](#action-setshowbranchlength)                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [setLayoutAndPendingClusterTree](#action-setlayoutandpendingclustertree) | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setRunClustering](#action-setrunclustering)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [setPhasedMode](#action-setphasedmode)                                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [setFitToHeight](#action-setfittoheight)                                 | Actions    | Enable fit-to-display-height mode: `rowHeight = 0` makes `effectiveRowHeight` divide `availableHeight` across the rows.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [resizeHeight](#action-resizeheight)                                     | Actions    | Override resizeHeight to scale a pinned row height proportionally when the display is vertically resized. Rows live in `availableHeight` (`height - lineZoneHeight`), not the full height, so scale by the available-height ratio — otherwise the visible fraction of rows drifts on resize whenever `lineZoneHeight` is non-zero (the matrix display).                                                                                                                                                                                                                                                                                 |
@@ -235,7 +251,8 @@ and docs.
 [statusMessage](../fetchmixin#volatile-statusmessage),
 [statusProgress](../fetchmixin#volatile-statusprogress),
 [fetchCanceled](../fetchmixin#volatile-fetchcanceled),
-[regionStatuses](../fetchmixin#volatile-regionstatuses)
+[regionStatuses](../fetchmixin#volatile-regionstatuses),
+[lastStatusMs](../fetchmixin#volatile-laststatusms)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
@@ -244,6 +261,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[throttleStatus](../fetchmixin#action-throttlestatus),
 [resetStatus](../fetchmixin#action-resetstatus),
 [stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
@@ -330,6 +348,15 @@ jexlFilters: types.stripDefault(
 type lineZoneHeight = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 lineZoneHeight: types.stripDefault(types.number, 0)
+```
+
+#### property: runClustering
+
+```ts
+// type signature
+type runClustering = IMaybe<ISimpleType<boolean>>
+// code
+runClustering: types.maybe(types.boolean)
 ```
 
 </details>
@@ -988,6 +1015,12 @@ type setShowBranchLength = (arg: boolean) => void
 
 ```ts
 type setLayoutAndPendingClusterTree = (layout: Source[], tree: string) => void
+```
+
+#### action: setRunClustering
+
+```ts
+type setRunClustering = (arg?: boolean | undefined) => void
 ```
 
 #### action: setPhasedMode

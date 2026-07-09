@@ -98,20 +98,20 @@ Spacing between features in pixels
 
 #### slot: heightMode
 
-How read height is chosen. `inherit` (the default) follows the session-wide
-default for this display type, falling back to `fixed`; `fixed` uses
-`featureHeight`/`featureSpacing`; `fit` sizes reads so every uncollapsed group
-fills the display without scrolling
+Track-height strategy (shared vocabulary with the canvas feature display).
+`inherit` (the default) follows the session-wide default for this display type,
+falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing` and
+scrolls; `grow` resizes the track to fit every read at the configured height;
+`fit` sizes reads so every uncollapsed group fills the display without scrolling
 
-**Type:** `stringEnum` (one of `inherit`, `fit`, `fixed`) · **Default:**
-`'inherit'` · _promotable_
+**Type:** `stringEnum` · **Default:** `'inherit'` · _promotable_
 
 ```js
 {
   type: 'stringEnum',
-  model: types.enumeration('heightMode', ['inherit', 'fit', 'fixed']),
+  model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
   description:
-    'How read height is chosen. `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing`; `fit` sizes reads so every uncollapsed group fills the display without scrolling',
+    'Track-height strategy (shared vocabulary with the canvas feature display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing` and scrolls; `grow` resizes the track to fit every read at the configured height; `fit` sizes reads so every uncollapsed group fills the display without scrolling',
 
 
 
@@ -191,9 +191,28 @@ Number of standard deviations for localsd autoscale
 
 #### slot: mismatchAlpha
 
-Fade mismatches by base quality
+Fade mismatch bases by their per-base Phred quality. Unset (the default) follows
+the session-wide default for this display type, falling back to off; an explicit
+true/false pins the track (either direction, including pinning off over an on
+session default)
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** `maybeBoolean` · **Default:** `undefined` · _promotable_
+
+```js
+{
+  type: 'maybeBoolean',
+  description:
+    'Fade mismatch bases by their per-base Phred quality. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false pins the track (either direction, including pinning off over an on session default)',
+
+
+
+
+
+  defaultValue: undefined,
+  promotedBase: false,
+  promotable: true,
+}
+```
 
 #### slot: showLowFreqMismatches
 
@@ -407,9 +426,27 @@ Height of the read-connection band in pixels
 
 #### slot: showSoftClipping
 
-Draw soft-clipped read portions
+Draw soft-clipped read portions. Unset (the default) follows the session-wide
+default for this display type, falling back to off; an explicit true/false pins
+the track (either direction, including pinning off over an on session default)
 
-**Type:** `boolean` · **Default:** `false` · _promotable_
+**Type:** `maybeBoolean` · **Default:** `undefined` · _promotable_
+
+```js
+{
+  type: 'maybeBoolean',
+  description:
+    'Draw soft-clipped read portions. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false pins the track (either direction, including pinning off over an on session default)',
+
+
+
+
+
+  defaultValue: undefined,
+  promotedBase: false,
+  promotable: true,
+}
+```
 
 </details>
 
