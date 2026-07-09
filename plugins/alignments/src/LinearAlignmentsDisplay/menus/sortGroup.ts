@@ -9,7 +9,7 @@ import {
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
-import { checkboxItem } from './menuHelpers.ts'
+import { isInterbaseType } from '../../shared/types.ts'
 
 import type { SortedBy } from '../../shared/types.ts'
 import type { GroupByModel } from '../dialogs/GroupByDialog.tsx'
@@ -27,26 +27,41 @@ interface SortByModel {
   setLargeFeaturesFirst: (flag: boolean) => void
 }
 
-// Keys double as the membership set for the "Base pair" radio: a sort on any of
-// these (basePair set by clicking the radio, or insertion/softclip/hardclip set
-// by a context-menu "sort at position") keeps the radio checked and surfaces the
-// active type in its label so users see what's active and know how to clear it.
-const INTERBASE_SORT_LABEL: Record<string, string> = {
-  basePair: 'Base pair',
-  insertion: 'Insertion',
-  softclip: 'Soft clip',
-  hardclip: 'Hard clip',
+// The pileup has exactly one ordering at a time, so the sort menu is a single
+// radio group. Most modes map to a `sortedBy` type; "Longest reads first" is the
+// odd one out — it's a layout-order flag (`largeFeaturesFirst`), mutually
+// exclusive with a sort (a sort overrides it), so folding it in as a peer radio
+// keeps the group honest. Picking any mode clears whichever mechanism the other
+// modes use, so the two config slots never both hold state. "Start location" is
+// the default/unsorted order, so it doubles as the reset — no separate "Clear".
+//
+// A base-pair sort can also be set by a context-menu "sort at position" on a
+// specific base/indel/clip; those interbase types keep the "Base pair" radio
+// checked (that pileup is still ordered by what's under the center line).
+
+type SortMode = 'position' | 'strand' | 'basePair' | 'tag' | 'length'
+
+function getSortMode(model: SortByModel): SortMode {
+  const type = model.sortedBy?.type
+  if (type === undefined) {
+    return model.largeFeaturesFirst ? 'length' : 'position'
+  }
+  return type === 'strand' || type === 'tag'
+    ? type
+    : type === 'basePair' || isInterbaseType(type)
+      ? 'basePair'
+      : 'position'
 }
 
 export function getSortByMenuItem(
   model: SortByModel,
   opts?: { disabled?: boolean; disabledHelpText?: string },
 ) {
-  const sortType = model.sortedBy?.type
-  const activeLabel = sortType ? INTERBASE_SORT_LABEL[sortType] : undefined
-  const interbaseLabel = activeLabel
-    ? `${activeLabel} at position`
-    : 'Base pair'
+  const mode = getSortMode(model)
+  function setSort(type: string) {
+    model.setLargeFeaturesFirst(false)
+    model.setSortedBy(type)
+  }
   return {
     label: 'Sort by...',
     type: 'subMenu' as const,
@@ -57,34 +72,34 @@ export function getSortByMenuItem(
       {
         label: 'Start location',
         type: 'radio' as const,
-        checked: sortType === 'position',
+        checked: mode === 'position',
         onClick: () => {
-          model.setSortedBy('position')
+          model.setLargeFeaturesFirst(false)
+          model.clearSortedBy()
         },
       },
       {
         label: 'Read strand',
         type: 'radio' as const,
-        checked: sortType === 'strand',
+        checked: mode === 'strand',
         onClick: () => {
-          model.setSortedBy('strand')
+          setSort('strand')
         },
       },
       {
-        label: interbaseLabel,
+        label: 'Base under center line',
         type: 'radio' as const,
-        checked: !!activeLabel,
-        subLabel:
-          'tip: right-click a base / indel / clip to sort at that position',
+        checked: mode === 'basePair',
         onClick: () => {
-          model.setSortedBy('basePair')
+          setSort('basePair')
         },
       },
       {
-        label: 'Sort by tag...',
+        label: 'Tag...',
         type: 'radio' as const,
-        checked: sortType === 'tag',
+        checked: mode === 'tag',
         onClick: () => {
+          model.setLargeFeaturesFirst(false)
           getSession(model).queueDialog(handleClose => [
             SortByTagDialog,
             { model, handleClose },
@@ -92,25 +107,14 @@ export function getSortByMenuItem(
         },
       },
       {
-        label: 'Clear sort',
-        disabled: !model.sortedBy,
+        label: 'Longest reads first',
+        type: 'radio' as const,
+        checked: mode === 'length',
         onClick: () => {
           model.clearSortedBy()
+          model.setLargeFeaturesFirst(true)
         },
       },
-      checkboxItem(
-        'Lay out large features first',
-        model.largeFeaturesFirst,
-        () => {
-          model.setLargeFeaturesFirst(!model.largeFeaturesFirst)
-        },
-        {
-          helpText:
-            'Place the widest features in the lowest rows instead of by ' +
-            'genomic start (ignored while a position sort is active)',
-          disabled: !!model.sortedBy,
-        },
-      ),
     ],
   }
 }

@@ -2098,11 +2098,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          toggleSoftClipping() {
-            self.configuration.setSlot(
-              'showSoftClipping',
-              !self.showSoftClipping,
-            )
+          setShowSoftClipping(value: boolean) {
+            self.configuration.setSlot('showSoftClipping', value)
           },
 
           /**

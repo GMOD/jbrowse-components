@@ -206,7 +206,7 @@ describe('alignments showSoftClipping session default', () => {
     expect(display.showSoftClipping).toBe(true)
     // The capability the old plain-boolean slot lacked: an explicit off is a
     // real pin, not the un-set sentinel, so it wins over the on default.
-    display.toggleSoftClipping()
+    display.setShowSoftClipping(false)
     expect(display.showSoftClipping).toBe(false)
   })
 

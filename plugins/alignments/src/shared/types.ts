@@ -154,6 +154,14 @@ export function interbaseTypeName(code: number): InterbaseTypeName {
   return INTERBASE_TYPE_NAMES[code - 1] ?? 'insertion'
 }
 
+// insertion/softclip/hardclip are "interbase" (they sit between reference bases
+// rather than over one). Used by the sort and context menus to decide sort type
+// and keep the "Base pair" radio checked; narrows the arg on the true branch.
+export function isInterbaseType(type: string): type is InterbaseTypeName {
+  const names: readonly string[] = INTERBASE_TYPE_NAMES
+  return names.includes(type)
+}
+
 const typeLabels: Record<string, string> = {
   insertion: 'Insertion',
   softclip: 'Soft clip',

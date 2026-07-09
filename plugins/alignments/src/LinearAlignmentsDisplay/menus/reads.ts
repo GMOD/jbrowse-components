@@ -23,7 +23,7 @@ interface ReadsModel {
   showMismatches: boolean
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
-  toggleSoftClipping: () => void
+  setShowSoftClipping: (show: boolean) => void
   softClippingSessionDefault: SessionDefaultControl
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
@@ -65,17 +65,12 @@ export function getReadsMenuItem(model: ReadsModel) {
           model.setMismatchAlpha(!model.mismatchAlpha)
         },
         sessionDefault: model.mismatchAlphaSessionDefault,
-        helpText:
-          'Fades each mismatch base toward transparent by its per-base ' +
-          'Phred quality score (Phred 50+ stays fully opaque), so ' +
-          'low-confidence base calls stand out less. Bases with no ' +
-          'recorded quality stay opaque.',
       }),
       promotableToggleItem({
         label: 'Show soft clipping',
         checked: model.showSoftClipping,
         onToggle: () => {
-          model.toggleSoftClipping()
+          model.setShowSoftClipping(!model.showSoftClipping)
         },
         sessionDefault: model.softClippingSessionDefault,
       }),

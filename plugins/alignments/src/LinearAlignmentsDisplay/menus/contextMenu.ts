@@ -11,6 +11,7 @@ import {
   buildPairedEndMateFeature,
   getMateFields,
 } from '../../shared/mateFeature.ts'
+import { isInterbaseType } from '../../shared/types.ts'
 import { CIGAR_TYPE_LABELS } from '../components/alignmentComponentUtils.ts'
 import {
   openCigarWidget,
@@ -239,9 +240,7 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
 
   if (cigarHit) {
     const typeLabel = CIGAR_TYPE_LABELS[cigarHit.type] ?? cigarHit.type
-    const isInterbase = ['insertion', 'softclip', 'hardclip'].includes(
-      cigarHit.type,
-    )
+    const isInterbase = isInterbaseType(cigarHit.type)
     items.push(
       sortAndDetailsSubMenu({
         self,
