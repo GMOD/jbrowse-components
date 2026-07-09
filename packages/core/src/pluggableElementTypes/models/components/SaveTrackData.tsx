@@ -197,7 +197,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         >
           Download
         </Button>
-        <Button variant="contained" type="submit" onClick={handleClose}>
+        <Button type="submit" onClick={() => { handleClose() }}>
           Close
         </Button>
       </DialogActions>

@@ -92,7 +92,6 @@ const MCScanBlocksAddTrackComponent = observer(
             >
               <span>
                 <Button
-                  variant="contained"
                   size="small"
                   disabled={columns.length <= 2}
                   onClick={() => {

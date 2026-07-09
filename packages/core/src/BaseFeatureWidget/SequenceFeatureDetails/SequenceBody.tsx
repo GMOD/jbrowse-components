@@ -41,8 +41,6 @@ export default function SequenceBody({
         <>
           <Typography color="error">{sequence.error}</Typography>
           <Button
-            variant="contained"
-            color="inherit"
             onClick={() => {
               onForceLoad()
             }}

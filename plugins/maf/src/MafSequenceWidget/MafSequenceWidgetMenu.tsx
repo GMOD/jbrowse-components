@@ -139,7 +139,6 @@ const MafSequenceWidgetMenu = observer(function MafSequenceWidgetMenu({
       ButtonComponent={props => (
         <Button
           {...props}
-          variant="contained"
           size="small"
           endIcon={<KeyboardArrowDown />}
         >

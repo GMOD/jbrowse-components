@@ -48,7 +48,6 @@ const JobsSection = observer(function JobsSection({
         </Typography>
         {onClear && jobs.length ? (
           <Button
-            variant="contained"
             component="span"
             size="small"
             onClick={e => {

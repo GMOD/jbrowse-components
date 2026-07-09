@@ -252,7 +252,6 @@ const Schema = observer(function Schema({
           find them; otherwise they hide behind the toggle */}
       {advanced.length && !query ? (
         <Button
-          variant="contained"
           className={classes.advancedToggle}
           size="small"
           startIcon={showAdvanced ? <ExpandLessIcon /> : <ExpandMoreIcon />}

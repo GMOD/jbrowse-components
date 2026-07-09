@@ -40,8 +40,6 @@ export default function RowPalettizer<
           {fields.map(field => (
             <Button
               key={field}
-              variant="contained"
-              color="inherit"
               onClick={() => {
                 setCurrLayout(applyColorPalette(currLayout, field))
               }}
@@ -52,7 +50,6 @@ export default function RowPalettizer<
         </>
       ) : null}
       <Button
-        variant="contained"
         onClick={() => {
           setCurrLayout(currLayout.map(row => ({ ...row, color: undefined })))
         }}

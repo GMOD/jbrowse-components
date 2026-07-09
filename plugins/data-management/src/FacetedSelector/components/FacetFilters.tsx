@@ -14,7 +14,6 @@ const FacetFilters = observer(function FacetFilters({
   return (
     <div>
       <Button
-        variant="contained"
         size="small"
         disabled={!hasActiveFilters}
         onClick={() => {

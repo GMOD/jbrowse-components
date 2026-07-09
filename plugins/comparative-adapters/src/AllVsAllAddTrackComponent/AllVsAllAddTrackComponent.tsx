@@ -64,7 +64,6 @@ const AllVsAllAddTrackComponent = observer(function AllVsAllAddTrackComponent({
           >
             <span>
               <Button
-                variant="contained"
                 size="small"
                 disabled={assemblyNames.length <= 2}
                 onClick={() => {

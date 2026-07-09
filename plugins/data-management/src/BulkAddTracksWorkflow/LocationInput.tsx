@@ -38,7 +38,6 @@ const DropZone = observer(function DropZone({
       />
       {localLocations.length > 0 ? (
         <Button
-          variant="contained"
           size="small"
           onClick={() => {
             setLocalLocations([])
