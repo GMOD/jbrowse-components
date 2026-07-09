@@ -7,10 +7,7 @@ import { observer } from 'mobx-react'
 import TrackSettingsChangesDialog from '../dialogs/TrackSettingsChangesDialog.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type {
-  AbstractDisplayModel,
-  TrackConfigChange,
-} from '@jbrowse/core/util'
+import type { AbstractDisplayModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   editButton: {
@@ -51,18 +48,13 @@ const OverrideBadge = observer(function OverrideBadge({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const changes =
-    'getTrackConfigChanges' in session
-      ? (session.getTrackConfigChanges as (id: string) => TrackConfigChange[])(
-          trackId,
-        )
-      : []
-  const onReset =
-    'resetTrackConfiguration' in session
-      ? () => {
-          ;(session.resetTrackConfiguration as (id: string) => void)(trackId)
-        }
-      : undefined
+  const { getTrackConfigChanges, resetTrackConfiguration } = session
+  const changes = getTrackConfigChanges?.(trackId) ?? []
+  const onReset = resetTrackConfiguration
+    ? () => {
+        resetTrackConfiguration(trackId)
+      }
+    : undefined
 
   const displays = openDisplays(model, trackId)
   const sessionDefaults = displays.flatMap(d =>

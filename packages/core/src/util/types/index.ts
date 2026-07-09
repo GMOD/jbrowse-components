@@ -194,6 +194,10 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     string,
     { trackId: string; [key: string]: unknown }
   >
+  // effective per-track config edits vs the base, and the action that drops them
+  // (web session only; see SessionTracks / trackConfigDeltas)
+  getTrackConfigChanges?: (trackId: string) => TrackConfigChange[]
+  resetTrackConfiguration?: (trackId: string) => void
   connectionInstances?: ConnectionInstance[]
   connectionTrackConfigs?: Record<
     string,
