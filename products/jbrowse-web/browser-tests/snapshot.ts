@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
+import { recordCapture } from './crossBackendGate.ts'
 import { comparePngBuffers } from './pngDiff.ts'
 
 import type { Buffer } from 'node:buffer'
@@ -14,6 +15,11 @@ const baseSnapshotsDir = path.resolve(__dirname, '__snapshots__')
 export const snapshotConfig = {
   backend: '' as string,
   updateSnapshots: false,
+  // Capture + feed the cross-backend gate but skip the golden read/write and its
+  // pass/fail. Goldens are environment-specific (a real-GPU webgl golden won't
+  // match a swiftshader capture), so CI — which renders webgl under swiftshader —
+  // asserts only backend-vs-backend agreement, which is baseline-free.
+  gateOnly: false,
   get snapshotsDir() {
     return this.backend
       ? path.join(baseSnapshotsDir, this.backend)
@@ -40,7 +46,14 @@ function compareImages(
   actualBuffer: Buffer | Uint8Array,
   threshold = 0.1,
 ) {
-  const { snapshotsDir, updateSnapshots } = snapshotConfig
+  const { snapshotsDir, updateSnapshots, backend, gateOnly } = snapshotConfig
+  // Feed the in-memory cross-backend gate with this backend's capture (no-op
+  // unless a multi-backend run enabled collection). Independent of the golden
+  // read/write below, so the gate is unaffected by stale committed goldens.
+  recordCapture(name, backend, actualBuffer)
+  if (gateOnly) {
+    return { passed: true, message: 'gate-only (golden comparison skipped)' }
+  }
   if (!fs.existsSync(snapshotsDir)) {
     fs.mkdirSync(snapshotsDir, { recursive: true })
   }
@@ -128,12 +141,46 @@ export async function pageSnapshot(page: Page, name: string, threshold = 0.1) {
   // suffix on older names is dropped so callers don't have to be updated.
   const base = name.replace(/^fullpage_/, '').replace(/-fullpage$/, '')
   await waitForLoadingOverlayGone(page, 30000)
+  await waitForMorphIdle(page)
 
   const screenshot = await page.screenshot({ fullPage: true })
   const result = compareImages(`fullpage_${base}`, screenshot, threshold)
   if (!result.passed) {
     throw new Error(result.message)
   }
+}
+
+// Pileup rows morph-animate into place (morphProgress 0->1, easeInOutCubic; see
+// LinearBasicDisplay/baseModel.ts). The `*-done`/canvasDrawn testid fires per
+// paint, so a capture can land MID-morph with reads at intermediate Y — a frame
+// the deterministic layout never settles on. Two independent browser runs catch
+// different morph frames, producing a false cross-backend diff (the confirmed
+// cause of the pileup gate flakiness: read layout is deterministic run-to-run,
+// verified 30/30, but the animated frame is not). Wait until every display has
+// cleared `morphFromTops` (morph settled) before capturing. Best-effort: a view
+// or display type without the field reads as idle, and a timeout proceeds anyway
+// (the pixel comparison is still the real assertion).
+async function waitForMorphIdle(page: Page, timeout = 10000) {
+  await page
+    .waitForFunction(
+      () => {
+        const w = window as unknown as {
+          JBrowseSession?: {
+            views: { tracks?: { displays?: { morphFromTops?: unknown }[] }[] }[]
+          }
+        }
+        const session = w.JBrowseSession
+        return session
+          ? session.views.every(v =>
+              (v.tracks ?? []).every(t =>
+                (t.displays ?? []).every(d => d.morphFromTops == null),
+              ),
+            )
+          : true
+      },
+      { timeout, polling: 100 },
+    )
+    .catch(() => {})
 }
 
 // Extract a canvas element's pixel data as PNG and compare it.
@@ -157,6 +204,7 @@ export async function canvasSnapshot(
   if (!el) {
     throw new Error(`Canvas element not found: ${selector}`)
   }
+  await waitForMorphIdle(page)
 
   const screenshot = await el.screenshot({ type: 'png' })
   if (assertContent) {

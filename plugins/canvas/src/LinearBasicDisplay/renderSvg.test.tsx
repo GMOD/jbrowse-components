@@ -196,10 +196,12 @@ describe('renderSvg', () => {
       }),
     )
     const html = renderResult(result)
-    // highlight.main is #FFB11D; the box fill (0.12) and border (0.7) are the
-    // only rgba(255, 177, 29, ...) paints in the export
-    expect(html).toContain('fill="rgba(255, 177, 29, 0.12)"')
-    expect(html).toContain('stroke="rgba(255, 177, 29, 0.7)"')
+    // highlight.main is #FFB11D; SvgCanvas splits the spaced rgba into rgb() +
+    // *-opacity attrs (see paintAttr), so the box fill (0.12) and border (0.7)
+    // land as separate opacity attributes
+    expect(html).toContain('fill="rgb(255,177,29)" fill-opacity="0.12"')
+    expect(html).toContain('stroke="rgb(255,177,29)"')
+    expect(html).toContain('stroke-opacity="0.7"')
     // boxed around f1 (1400..1600 → 0.8px/bp → x 320..480), outset 2px: x=318
     expect(html).toContain('x="318"')
   })
@@ -210,7 +212,7 @@ describe('renderSvg', () => {
       makeModel({ laidOutDataMap: new Map([[0, data]]) }),
     )
     const html = renderResult(result)
-    expect(html).not.toContain('rgba(255, 177, 29')
+    expect(html).not.toContain('rgb(255,177,29)')
   })
 
   // Runs last: renderSvg emits clip <g>s whose ids come from a module-global

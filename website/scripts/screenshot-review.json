@@ -129,7 +129,7 @@
   "cnv": {
     "name": "cnv",
     "status": "bad",
-    "note": "the legend is behing the 'ellided blocks', please fix. it is unclear if it is truly fixed",
+    "note": "the legend is behind the 'elided blocks', please fix. it is unclear if it is truly fixed",
     "reviewedAt": "2026-07-09T02:03:29.017Z",
     "hash": "7332e62fabb3d6cdf97393d19bce973c049e886b"
   },

@@ -95,13 +95,17 @@ export class SvgCanvas {
 
   // Split rgba(r,g,b,a) into separate color + opacity SVG attributes for
   // compatibility with SVG 1.1 consumers like Inkscape that don't honor the
-  // alpha component of CSS3 rgba() fill/stroke values.
+  // alpha component of CSS3 rgba() fill/stroke values. Whitespace-tolerant so
+  // spaced forms (MUI alpha(), colord toRgbString → "rgba(255, 177, 29, 0.12)")
+  // are separated too, not just the compact "rgba(255,177,29,0.12)".
   private paintAttr(
     name: string,
     style: string | CanvasGradient | CanvasPattern,
   ) {
     const s = `${style}`
-    const m = /^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/.exec(s)
+    const m = /^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)$/.exec(
+      s,
+    )
     if (m) {
       const a = Number.parseFloat(m[4]!)
       const base = `${name}="rgb(${m[1]},${m[2]},${m[3]})"`

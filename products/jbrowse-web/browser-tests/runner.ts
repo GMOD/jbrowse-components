@@ -11,6 +11,10 @@ import {
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
+import {
+  enableCrossBackendCollection,
+  runCrossBackendGate,
+} from './crossBackendGate.ts'
 import { BASICAUTH_PORT, OAUTH_PORT, PORT } from './helpers.ts'
 import { buildPath, startServer } from './server.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
@@ -45,6 +49,12 @@ const { values } = parseArgs({
     'include-remote': { type: 'boolean', default: false },
     backend: { type: 'string' },
     'skip-webgpu': { type: 'boolean', default: false },
+    // Software-render the webgl backend (no GPU needed) — required in CI, whose
+    // runners have no GPU; locally, omit it to exercise the real GPU.
+    swiftshader: { type: 'boolean', default: false },
+    // Capture + run the cross-backend gate but skip the golden comparison. The
+    // CI-facing mode: goldens are environment-specific, the gate is not.
+    'gate-only': { type: 'boolean', default: false },
     quiet: { type: 'boolean', default: false },
     debug: { type: 'boolean', default: false },
     firefox: { type: 'string' },
@@ -74,6 +84,8 @@ const smoke = values.smoke
 const includeRemote = values['include-remote'] || smoke || filters.length > 0
 const backendValue = values.backend
 const skipWebGPU = values['skip-webgpu']
+const swiftshader = values.swiftshader
+const gateOnly = values['gate-only']
 const quiet = values.quiet
 const debug = values.debug
 // WebGPU always runs through Firefox Nightly; --firefox=<path> or
@@ -84,6 +96,7 @@ const firefoxPath =
   '/usr/bin/firefox-nightly'
 
 snapshotConfig.updateSnapshots = updateSnapshots
+snapshotConfig.gateOnly = gateOnly
 
 type RenderingBackend = 'webgl' | 'webgpu' | 'canvas2d'
 
@@ -93,9 +106,13 @@ function chromeArgsForRenderingBackend(backend?: RenderingBackend) {
   // per-context memory growth is why we moved off it (see
   // agent-docs/TEST_INFRASTRUCTURE.md). webgpu does not use Chrome at all
   // (it requires Firefox Nightly, see runWithRenderingBackend), so neither needs
-  // extra chrome flags.
+  // extra chrome flags. --swiftshader forces the webgl backend to software-render
+  // so it can run on a GPU-less CI runner; modern Chrome needs
+  // --enable-unsafe-swiftshader to allow a WebGL context on SwiftShader.
   if (backend === 'canvas2d') {
     chromeArgs.push('--disable-gpu')
+  } else if (swiftshader) {
+    chromeArgs.push('--use-gl=swiftshader', '--enable-unsafe-swiftshader')
   }
   return chromeArgs
 }
@@ -453,6 +470,13 @@ async function main() {
       backends = [(backendValue ?? 'canvas2d') as RenderingBackend]
     }
 
+    // A multi-backend run doubles as a differential-correctness check: collect
+    // each backend's captures in memory so they can be diffed against each other
+    // once all backends have rendered (see the gate after the loop).
+    if (backends.length > 1) {
+      enableCrossBackendCollection()
+    }
+
     let totalPassed = 0
     let totalFailed = 0
     const allFailures: {
@@ -495,7 +519,14 @@ async function main() {
       console.log(`  RenderingBackends tested: ${backends.join(', ')}`)
     }
     if (allFailures.length > 0) {
-      console.log(`\n  Failed tests:`)
+      // In gate-only mode the cross-backend gate is the pass/fail authority, so
+      // per-test failures (mostly UI-interaction timeouts, which produce no
+      // snapshot for the gate to compare) are surfaced for triage but don't fail
+      // the run — otherwise unrelated interaction brittleness would keep the CI
+      // gate permanently red.
+      console.log(
+        gateOnly ? `\n  Failed tests (informational):` : `\n  Failed tests:`,
+      )
       for (const f of allFailures) {
         const prefix = backends.length > 1 ? `[${f.backend}] ` : ''
         console.log(`    ✗ ${prefix}${f.suite} > ${f.test}`)
@@ -504,14 +535,45 @@ async function main() {
     }
     console.log(`${'─'.repeat(50)}\n`)
 
-    // Auto-run cross-backend comparison when multiple backends were tested
+    // Differential-correctness gate: diff the in-memory captures across backends
+    // and fail the run if any pair drifts past its threshold. Independent of the
+    // committed goldens, so it can't be fooled by stale per-backend dirs (the
+    // failure mode of the disk-based compare-backends.ts, still available via
+    // `pnpm test:browser:compare` for local visual review).
+    let crossBackendFailed = false
     if (backends.length > 1) {
-      console.log('Running cross-backend comparison...\n')
-      const { runComparison } = await import('./compare-backends.ts')
-      runComparison()
+      const { failures, drifts, compared, skipped, excluded, diffDir } =
+        runCrossBackendGate()
+      console.log(
+        `Cross-backend gate: ${compared} pair(s) compared, ${failures.length} over threshold${
+          skipped > 0 ? `, ${skipped} single-backend (uncompared)` : ''
+        }${excluded > 0 ? `, ${excluded} excluded (nondeterministic layout)` : ''}`,
+      )
+      // List every failure (over threshold or size-mismatch), then the worst few
+      // *passing* drifts so each run also shows how much headroom the noise floor
+      // has under the thresholds.
+      for (const f of failures) {
+        console.log(`    ✗ ${f.name} [${f.pair}]: ${f.detail}`)
+      }
+      const topPassing = drifts
+        .filter(d => d.pct <= d.threshold * 100)
+        .slice(0, 5)
+      for (const d of topPassing) {
+        console.log(
+          `    · ${d.name} [${d.pair}]: ${d.pct.toFixed(2)}% (threshold ${(d.threshold * 100).toFixed(0)}%)`,
+        )
+      }
+      if (failures.length > 0) {
+        crossBackendFailed = true
+        console.log(`\n  Backend diff images: ${diffDir}`)
+      }
+      console.log(`${'─'.repeat(50)}\n`)
     }
 
-    process.exit(totalFailed > 0 ? 1 : 0)
+    const failRun = gateOnly
+      ? crossBackendFailed
+      : totalFailed > 0 || crossBackendFailed
+    process.exit(failRun ? 1 : 0)
   } catch (e) {
     console.error('Fatal error:', e)
     process.exit(1)

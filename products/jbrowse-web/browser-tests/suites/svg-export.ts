@@ -71,15 +71,17 @@ async function exportSvgAndSave(page: Page, downloadDir: string, name: string) {
     throw new Error('Downloaded file is not valid SVG')
   }
   // Write into the active backend's subfolder (canvas2d/ webgl/ webgpu/), same
-  // as the PNG snapshots — not the bare __snapshots__ root.
-  const dir = snapshotConfig.snapshotsDir
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true })
+  // as the PNG snapshots — not the bare __snapshots__ root. Skipped in gate-only
+  // mode (CI) so the run leaves no golden churn; the caller's assertions use the
+  // returned SVG regardless.
+  if (!snapshotConfig.gateOnly) {
+    const dir = snapshotConfig.snapshotsDir
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
+    fs.writeFileSync(path.join(dir, `${name}.svg`), svg)
+    console.log(`    SVG saved: ${name}.svg (${(svg.length / 1024).toFixed(1)}KB)`)
   }
-  fs.writeFileSync(path.join(dir, `${name}.svg`), svg)
-  console.log(
-    `    SVG saved: ${name}.svg (${(svg.length / 1024).toFixed(1)}KB)`,
-  )
   return svg
 }
 
