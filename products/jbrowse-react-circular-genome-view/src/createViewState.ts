@@ -1,5 +1,4 @@
 import { onPatch } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
 
 import createModel from './createModel/index.ts'
 
@@ -51,25 +50,25 @@ export default function createViewState(opts: ViewStateOptions) {
     plugins ?? [],
     makeWorkerInstance,
   )
-  let { defaultSession } = opts
-  defaultSession ??= {
-    name: `New session ${new Date().toLocaleString()}`,
-    view: {
-      id: 'circularView',
-      type: 'CircularView',
+  const stateTree = model.create(
+    {
+      config: {
+        configuration,
+        assembly,
+        tracks,
+        internetAccounts,
+        aggregateTextSearchAdapters,
+      },
+      session: opts.defaultSession ?? {
+        name: `New session ${new Date().toLocaleString()}`,
+        view: {
+          id: 'circularView',
+          type: 'CircularView',
+        },
+      },
     },
-  }
-  const stateSnapshot = {
-    config: {
-      configuration,
-      assembly,
-      tracks,
-      internetAccounts,
-      aggregateTextSearchAdapters,
-    },
-    session: defaultSession,
-  }
-  const stateTree = model.create(stateSnapshot, { pluginManager })
+    { pluginManager },
+  )
   for (const account of stateTree.config.internetAccounts) {
     stateTree.addInternetAccount({
       type: account.type,
@@ -78,18 +77,16 @@ export default function createViewState(opts: ViewStateOptions) {
   }
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
-  autorun(reaction => {
-    const { session, assemblyManager } = stateTree
-    if (!session.view.initialized) {
-      return
-    }
-    const regions = assembly && assemblyManager.get(assembly.name)?.regions
-    if (!regions) {
-      return
-    }
-    session.view.setDisplayedRegions(regions)
-    reaction.dispose()
-  })
+  const { view } = stateTree.session
+  if (!view.displayedRegions.length && !view.init) {
+    // a session that specifies neither regions to draw nor an `init` blob
+    // (e.g. the default whole-genome case) auto-displays the configured
+    // assembly. route it through the view's own `init` field — the same path
+    // as URL/session-spec launches — instead of a bespoke autorun here. the
+    // view's init autorun sets displayedRegions once the assembly loads, then
+    // clears init. a session that already has displayedRegions is left as-is
+    view.setInit({ assembly: assembly.name })
+  }
   if (onChange) {
     onPatch(stateTree, onChange)
   }

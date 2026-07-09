@@ -20,9 +20,7 @@ import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
  */
 export default function createModel(
   runtimePlugins: PluginConstructor[],
-  makeWorkerInstance: () => Worker = () => {
-    throw new Error('no makeWorkerInstance supplied')
-  },
+  makeWorkerInstance?: () => Worker,
 ) {
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
@@ -73,6 +71,11 @@ export default function createModel(
        */
       rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
         makeWorkerInstance,
+        // when a worker factory is supplied, run RPC off the main thread by
+        // default; config `defaultDriver` still overrides this
+        defaultDriverName: makeWorkerInstance
+          ? 'WebWorkerRpcDriver'
+          : 'MainThreadRpcDriver',
       }),
 
       /**

@@ -43,7 +43,8 @@ const tracks = [
 export default function ShowTrack() {
   const [state] = useState(() => {
     const s = createViewState({ assembly, tracks })
-    // open a track imperatively instead of via defaultSession.view.init
+    // open a track imperatively instead of via the init prop
+    // showTrack API: https://jbrowse.org/jb2/docs/models/circularview/#action-showtrack
     s.session.view.showTrack('volvox_sv_test')
     return s
   })
