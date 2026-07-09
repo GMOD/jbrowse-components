@@ -96,9 +96,6 @@ export default function sharedModelFactory(
       setMafFilter(arg: number) {
         self.configuration.setSlot('minorAlleleFrequencyFilter', arg)
       },
-      setLengthCutoffFilter(arg: number) {
-        self.configuration.setSlot('lengthCutoffFilter', arg)
-      },
       setLDMetric(metric: LDMetric) {
         self.configuration.setSlot('ldMetric', metric)
       },
@@ -110,9 +107,6 @@ export default function sharedModelFactory(
       },
       setShowRecombination(show: boolean) {
         self.configuration.setSlot('showRecombination', show)
-      },
-      setRecombinationZoneHeight(n: number) {
-        self.configuration.setSlot('recombinationZoneHeight', Math.max(20, n))
       },
       setFitToHeight(value: boolean) {
         self.configuration.setSlot('fitToHeight', value)
@@ -128,9 +122,6 @@ export default function sharedModelFactory(
       },
       setShowLabels(show: boolean) {
         self.configuration.setSlot('showLabels', show)
-      },
-      setTickHeight(height: number) {
-        self.configuration.setSlot('tickHeight', Math.max(0, height))
       },
       setUseGenomicPositions(value: boolean) {
         self.configuration.setSlot('useGenomicPositions', value)

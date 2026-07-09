@@ -102,11 +102,18 @@ export async function executeRenderLDData({
   const uniformW = width / (n * Math.SQRT2)
   const numCells = (n * (n - 1)) / 2
 
+  // Genomic-positions mode maps each SNP onto a single continuous bp axis
+  // (offset from `region.start`), which is only meaningful for one contiguous
+  // region. With multiple regions (e.g. a split/multi-region view) SNPs from
+  // later regions would collapse onto the first region's coordinates, so fall
+  // back to uniform cells there.
+  const genomicMode = useGenomicPositions && regions.length === 1
+
   // Compute n+1 boundary positions.
   // For uniform mode: boundaries[k] = k * uniformW (trivially computed).
   // For genomic mode: midpoints between adjacent SNP positions (pre-rotation).
   const boundaries = new Float32Array(n + 1)
-  if (useGenomicPositions) {
+  if (genomicMode) {
     for (let i = 0; i < n; i++) {
       const snpPos = snps[i]!.start
       const prevPos = i > 0 ? snps[i - 1]!.start : region.start
@@ -127,7 +134,7 @@ export async function executeRenderLDData({
   // Uniform mode skips this O(N²) loop entirely.
   let positions: Float32Array | undefined
   let cellSizes: Float32Array | undefined
-  if (useGenomicPositions) {
+  if (genomicMode) {
     positions = new Float32Array(numCells * 2)
     cellSizes = new Float32Array(numCells * 2)
     let cellIdx = 0
