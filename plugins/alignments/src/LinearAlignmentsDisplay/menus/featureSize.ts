@@ -3,10 +3,10 @@ import { lazy } from 'react'
 import { makeSlotsValueSessionDefaultControl } from '@jbrowse/core/configuration'
 import { promotableRadioItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import HeightIcon from '@mui/icons-material/Height'
 
-import type { PromotableDisplay } from '@jbrowse/core/configuration'
-import type { HeightMode } from '@jbrowse/plugin-linear-genome-view'
+import type { HeightModeMenuModel } from '@jbrowse/plugin-linear-genome-view'
 
 const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),
@@ -32,19 +32,20 @@ export const COMPACTNESS_PRESETS = {
 
 export type CompactnessLevel = keyof typeof COMPACTNESS_PRESETS
 
-interface FeatureHeightModel {
+// Extends HeightModeMenuModel (heightMode + setHeightMode + PromotableDisplay),
+// so passing the model straight to the shared heightModeMenuItems builder
+// typechecks without re-listing those members.
+interface FeatureHeightModel extends HeightModeMenuModel {
   featureHeight: number
   featureSpacing: number
   fitHeightToDisplay: boolean
   autoHeight: boolean
   setFeatureHeight: (height?: number) => void
   setFeatureSpacing: (spacing?: number) => void
-  setFitHeightToDisplay: (fit: boolean) => void
-  setHeightMode: (mode: HeightMode) => void
 }
 
 export function getFeatureHeightMenuItem(
-  model: FeatureHeightModel & PromotableDisplay,
+  model: FeatureHeightModel,
   opts?: { disabled?: boolean; disabledHelpText?: string },
 ) {
   return {
@@ -78,29 +79,16 @@ export function getFeatureHeightMenuItem(
           ]),
         }),
       ),
-      // Grow / fit share the "Track height" notion with the canvas display: grow
-      // resizes the track to fit every read, fit shrinks reads to fill a fixed
-      // height. Each carries its own "make default" pin.
-      promotableRadioItem({
-        label: 'Auto height — grow to fit all reads',
-        checked: model.autoHeight,
-        onClick: () => {
-          model.setHeightMode('grow')
-        },
-        sessionDefault: makeSlotsValueSessionDefaultControl(model, [
-          { slot: 'heightMode', value: 'grow' },
-        ]),
-      }),
-      promotableRadioItem({
-        label: 'Fit to display height',
-        checked: model.fitHeightToDisplay,
-        onClick: () => {
-          model.setFitHeightToDisplay(true)
-        },
-        sessionDefault: makeSlotsValueSessionDefaultControl(model, [
-          { slot: 'heightMode', value: 'fit' },
-        ]),
-      }),
+      { type: 'divider' as const },
+      // The container-sizing strategy (fixed/grow/fit) lives under a nested
+      // "Track height" entry with effect-describing labels, mirroring the canvas
+      // display so the two present an identical menu. The shared
+      // heightModeMenuItems builder makes the radios identical by construction —
+      // same labels, checked/onClick wiring, and per-mode session-default pin.
+      {
+        label: 'Track height',
+        subMenu: heightModeMenuItems(model, 'reads'),
+      },
       {
         label: 'Custom',
         onClick: () => {

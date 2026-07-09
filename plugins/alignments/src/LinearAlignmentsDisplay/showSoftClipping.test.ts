@@ -141,6 +141,28 @@ function createDisplay(displayConfig: Record<string, unknown> = {}) {
   return { session, display: view.tracks[0]!.displays[0]! }
 }
 
+// The fixed/grow/fit radios live under the nested "Track height" entry
+// (mirroring the canvas display), so their pins are one level deeper than the
+// size-preset pins. Module-level so tests in every describe block can reach it.
+function heightModePinProps(
+  display: ReturnType<typeof createDisplay>['display'],
+  label: string,
+) {
+  const trackHeight = getFeatureHeightMenuItem(display).subMenu.find(
+    i => i.label === 'Track height',
+  )
+  const sub =
+    trackHeight && 'subMenu' in trackHeight ? (trackHeight.subMenu ?? []) : []
+  const row = sub.find(i => 'label' in i && i.label === label)
+  const adornment = row && 'endAdornment' in row ? row.endAdornment : undefined
+  return isValidElement(adornment)
+    ? (adornment.props as {
+        isDefault: boolean
+        onToggleDefault: () => void
+      })
+    : undefined
+}
+
 describe('alignments showSoftClipping session default', () => {
   it('is off by default with no config and no session default', () => {
     const { display } = createDisplay()
@@ -417,16 +439,21 @@ describe('feature-height menu per-preset pins', () => {
     ).toBe(false)
   })
 
-  it('gives every preset (plus grow and fit) its own pin', () => {
+  it('gives every size preset its own pin', () => {
+    const { display } = createDisplay()
+    for (const label of ['Normal', 'Compact', 'Super-compact']) {
+      expect(pinProps(display, label)).toBeDefined()
+    }
+  })
+
+  it('gives every track-height mode its own pin', () => {
     const { display } = createDisplay()
     for (const label of [
-      'Normal',
-      'Compact',
-      'Super-compact',
+      'Fixed height — scroll to see all reads',
       'Auto height — grow to fit all reads',
-      'Fit to display height',
+      'Compressed — squeeze all reads into view',
     ]) {
-      expect(pinProps(display, label)).toBeDefined()
+      expect(heightModePinProps(display, label)).toBeDefined()
     }
   })
 
@@ -436,9 +463,13 @@ describe('feature-height menu per-preset pins', () => {
     expect(pinProps(display, 'Compact')?.isDefault).toBe(true)
     expect(pinProps(display, 'Normal')?.isDefault).toBe(false)
     expect(pinProps(display, 'Super-compact')?.isDefault).toBe(false)
-    expect(pinProps(display, 'Fit to display height')?.isDefault).toBe(false)
     expect(
-      pinProps(display, 'Auto height — grow to fit all reads')?.isDefault,
+      heightModePinProps(display, 'Compressed — squeeze all reads into view')
+        ?.isDefault,
+    ).toBe(false)
+    expect(
+      heightModePinProps(display, 'Auto height — grow to fit all reads')
+        ?.isDefault,
     ).toBe(false)
   })
 
@@ -459,7 +490,10 @@ describe('feature-height menu per-preset pins', () => {
 
   it("the fit pin promotes heightMode='fit'", () => {
     const { session, display } = createDisplay()
-    pinProps(display, 'Fit to display height')?.onToggleDefault()
+    heightModePinProps(
+      display,
+      'Compressed — squeeze all reads into view',
+    )?.onToggleDefault()
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
     ).toBe('fit')
@@ -668,15 +702,10 @@ describe('alignments grow (auto-height) mode', () => {
 
   it("the grow pin promotes heightMode='grow'", () => {
     const { session, display } = createDisplay()
-    const row = getFeatureHeightMenuItem(display).subMenu.find(
-      i => i.label === 'Auto height — grow to fit all reads',
-    )
-    const adornment =
-      row && 'endAdornment' in row ? row.endAdornment : undefined
-    const props = isValidElement(adornment)
-      ? (adornment.props as { onToggleDefault: () => void })
-      : undefined
-    props?.onToggleDefault()
+    heightModePinProps(
+      display,
+      'Auto height — grow to fit all reads',
+    )?.onToggleDefault()
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
     ).toBe('grow')

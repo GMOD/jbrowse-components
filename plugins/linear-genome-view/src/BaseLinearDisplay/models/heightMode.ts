@@ -18,3 +18,19 @@ export type HeightMode = 'fixed' | 'grow' | 'fit'
 // as `fixed`. Distinct from the per-display `maxHeight` slot, which caps layout
 // stacking (how much content is laid out), not the on-screen track height.
 export const GROW_MAX_HEIGHT = 800
+
+// Single source for the "Track height" radio options and their effect-describing
+// labels, shared by every display that exposes the `heightMode` slot (canvas
+// feature display, alignments display) so a first-time user reads the effect
+// instead of parsing `fixed`/`grow`/`fit`, and the wording can't drift between
+// plugins. `noun` names what the track holds ('features', 'reads'); everything
+// else stays identical.
+export function getHeightModeOptions(
+  noun: string,
+): { value: HeightMode; label: string }[] {
+  return [
+    { value: 'fixed', label: `Fixed height — scroll to see all ${noun}` },
+    { value: 'grow', label: `Auto height — grow to fit all ${noun}` },
+    { value: 'fit', label: `Compressed — squeeze all ${noun} into view` },
+  ]
+}

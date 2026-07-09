@@ -30,6 +30,7 @@ import {
   autorunOnReadyView,
   evaluateRegionTooLarge,
   getHeightModeOptions,
+  heightModeMenuItems,
   onDisplayedRegionsChange,
   resolveByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -2700,25 +2701,13 @@ export default function baseStateModelFactory(
                 { type: 'divider' as const },
                 {
                   // Each track-height mode carries its own pin, like the density
-                  // presets above: the radio sets the mode for this track, the pin
-                  // promotes it as the session-wide default. heightMode is a
-                  // sentinel promotable slot, so every mode — `fixed` included —
-                  // is pinnable back over another session default.
+                  // Each track-height mode carries its own pin: the radio sets the
+                  // mode for this track, the pin promotes it as the session-wide
+                  // default. heightMode is a sentinel promotable slot, so every
+                  // mode — `fixed` included — is pinnable back over another
+                  // session default. Shared builder with the alignments menu.
                   label: 'Track height',
-                  subMenu: heightModeOptions.map(option =>
-                    promotableRadioItem({
-                      label: option.label,
-                      checked: self.heightMode === option.value,
-                      onClick: () => {
-                        self.setHeightMode(option.value)
-                      },
-                      sessionDefault: makeSessionDefaultControl(
-                        self,
-                        'heightMode',
-                        option.value,
-                      ),
-                    }),
-                  ),
+                  subMenu: heightModeMenuItems(self, 'features'),
                 },
               ],
             },
