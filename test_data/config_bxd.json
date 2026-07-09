@@ -55,19 +55,6 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
-        "columnNames": [
-          "chrom",
-          "chromStart",
-          "chromEnd",
-          "name",
-          "score",
-          "strand",
-          "thickStart",
-          "thickEnd",
-          "itemRgb",
-          "sample",
-          "genotype"
-        ],
         "bedGzLocation": {
           "uri": "https://jbrowse.org/demos/bxd/bxd_painting.bed.gz",
           "locationType": "UriLocation"
@@ -98,8 +85,6 @@
       "category": ["GeneNetwork / BXD"],
       "adapter": {
         "type": "GWASAdapter",
-        "scoreColumn": "neg_log_pvalue",
-        "scoreTransform": "none",
         "bedGzLocation": {
           "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_coatcolor.tsv.gz",
           "locationType": "UriLocation"
@@ -126,8 +111,6 @@
       "category": ["GeneNetwork / BXD"],
       "adapter": {
         "type": "GWASAdapter",
-        "scoreColumn": "neg_log_pvalue",
-        "scoreTransform": "none",
         "bedGzLocation": {
           "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_brainweight.tsv.gz",
           "locationType": "UriLocation"

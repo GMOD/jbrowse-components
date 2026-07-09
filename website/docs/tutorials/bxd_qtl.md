@@ -21,8 +21,8 @@ This tutorial builds two JBrowse tracks from the **same** BXD data, on mm10:
 - a **chromosome-painting** track (the
   [multi-row feature display](/docs/tutorials/chromhmm)) showing each strain's
   B/D mosaic, and
-- a **QTL Manhattan** track ([plugins/gwas](/docs/config_guides/tracks)) from a
-  single-marker scan of a real BXD phenotype.
+- a **QTL Manhattan** track ([plugins/gwas](/docs/config_guides/gwas_track))
+  from a single-marker scan of a real BXD phenotype.
 
 Stacked in one view they show the core systems-genetics move: a trait peak, and
 the recombination structure that produced it.
@@ -124,7 +124,12 @@ chr4    80750000  80750001  rs3708061   .     .      51.9
 ```
 
 A `GWASTrack` with a `GWASAdapter` reads that column and renders a Manhattan
-plot. Since the column is already `-log10(p)`, set `scoreTransform: "none"`:
+plot. `GWASAdapter` already defaults to a `neg_log_pvalue` column that it treats
+as pre-computed `-log10(p)`, so this file — whose column is named exactly that —
+needs no extra slots. For a file with a differently-named or raw-p-value column,
+set [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) and
+[`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform); see the
+[GWAS track guide](/docs/config_guides/gwas_track).
 
 ```json
 {
@@ -134,8 +139,6 @@ plot. Since the column is already `-log10(p)`, set `scoreTransform: "none"`:
   "assemblyNames": ["mm10"],
   "adapter": {
     "type": "GWASAdapter",
-    "scoreColumn": "neg_log_pvalue",
-    "scoreTransform": "none",
     "bedGzLocation": {
       "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_coatcolor.tsv.gz"
     },
