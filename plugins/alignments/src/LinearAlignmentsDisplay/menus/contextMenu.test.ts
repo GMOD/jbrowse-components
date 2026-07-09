@@ -62,8 +62,8 @@ function makeModel(
       filterCalls.push(filterBy)
       model.filterBy = filterBy
     },
-    setSortedByAtPosition(type: string, pos: number, refName: string) {
-      sortCalls.push([type, pos, refName])
+    setSortedByAtPosition(arg: { type: string; pos: number; refName: string }) {
+      sortCalls.push([arg.type, arg.pos, arg.refName])
     },
     selectFeature() {},
     ...over,
@@ -161,7 +161,11 @@ test('a read hit offers a "Sort by" submenu anchored at the clicked column', () 
     contextMenuGenomicPos: 150,
   })
   const sortBy = findSubMenu(run(model), 'Sort by')
-  expect(sortBy.map(i => i.label)).toEqual(['Read strand', 'Base pair'])
+  expect(sortBy.map(i => i.label)).toEqual([
+    'Read strand',
+    'Base pair',
+    'Tag...',
+  ])
 
   sortBy.find(i => i.label === 'Read strand')!.onClick()
   sortBy.find(i => i.label === 'Base pair')!.onClick()

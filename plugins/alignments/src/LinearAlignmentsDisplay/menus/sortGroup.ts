@@ -113,7 +113,12 @@ export function getSortByMenuItem(
           model.setLargeFeaturesFirst(false)
           getSession(model).queueDialog(handleClose => [
             SortByTagDialog,
-            { model, handleClose },
+            {
+              handleClose,
+              onSubmit: (tag: string) => {
+                model.setSortedBy('tag', tag)
+              },
+            },
           ])
         },
       },

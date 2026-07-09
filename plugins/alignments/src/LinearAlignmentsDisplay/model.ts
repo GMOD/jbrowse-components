@@ -2171,7 +2171,13 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setSortedByAtPosition(type: string, pos: number, refName: string) {
+          setSortedByAtPosition(arg: {
+            type: string
+            pos: number
+            refName: string
+            tag?: string
+          }) {
+            const { type, pos, refName, tag } = arg
             const view = getContainingView(self) as LGV
             const assemblyName = view.assemblyNames[0]
             if (assemblyName) {
@@ -2180,6 +2186,7 @@ export default function stateModelFactory(
                 pos,
                 refName,
                 assemblyName,
+                tag,
               })
             } else {
               getSession(self).notify(

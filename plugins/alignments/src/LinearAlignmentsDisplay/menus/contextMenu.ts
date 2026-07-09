@@ -1,3 +1,5 @@
+import { lazy } from 'react'
+
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { launchBreakpointSplitView } from '@jbrowse/sv-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
@@ -18,6 +20,8 @@ import {
   openIndicatorWidget,
 } from '../components/detailWidgets.ts'
 import { viewMateRegionInCurrentView } from '../viewMateRegion.ts'
+
+const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
 
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type {
@@ -47,7 +51,12 @@ interface ContextMenuModel extends IAnyStateTreeNode {
   contextMenuGenomicPos: number | undefined
   filterBy: FilterBy
   setFilterBy: (filterBy: FilterBy) => void
-  setSortedByAtPosition: (type: string, pos: number, refName: string) => void
+  setSortedByAtPosition: (arg: {
+    type: string
+    pos: number
+    refName: string
+    tag?: string
+  }) => void
   selectFeature: (feature: Feature) => void
 }
 
@@ -117,7 +126,11 @@ function sortAndDetailsSubMenu({
         icon: SwapVertIcon,
         onClick: () => {
           if (block) {
-            self.setSortedByAtPosition(sortType, position, block.refName)
+            self.setSortedByAtPosition({
+              type: sortType,
+              pos: position,
+              refName: block.refName,
+            })
           }
         },
       },
@@ -307,13 +320,32 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
           {
             label: 'Read strand',
             onClick: () => {
-              self.setSortedByAtPosition('strand', pos, refName)
+              self.setSortedByAtPosition({ type: 'strand', pos, refName })
             },
           },
           {
             label: 'Base pair',
             onClick: () => {
-              self.setSortedByAtPosition('basePair', pos, refName)
+              self.setSortedByAtPosition({ type: 'basePair', pos, refName })
+            },
+          },
+          {
+            label: 'Tag...',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SortByTagDialog,
+                {
+                  handleClose,
+                  onSubmit: (tag: string) => {
+                    self.setSortedByAtPosition({
+                      type: 'tag',
+                      pos,
+                      refName,
+                      tag,
+                    })
+                  },
+                },
+              ])
             },
           },
         ],
