@@ -1,11 +1,18 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
-  name: 'volvox',
+  name: 'hg38',
   sequence: {
     adapter: {
       type: 'TwoBitAdapter',
-      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+      uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit',
+      chromSizes: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes',
+    },
+  },
+  refNameAliases: {
+    adapter: {
+      type: 'RefNameAliasAdapter',
+      uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt',
     },
   },
 }
@@ -13,12 +20,13 @@ const assembly = {
 const tracks = [
   {
     type: 'FeatureTrack',
-    trackId: 'volvox_genes',
-    name: 'Volvox genes',
-    assemblyNames: ['volvox'],
+    trackId: 'hg38-ncbi-refseq-curated',
+    name: 'NCBI RefSeq Curated',
+    assemblyNames: ['hg38'],
     adapter: {
       type: 'Gff3TabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+      uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+      csi: true,
     },
   },
 ]
@@ -28,7 +36,10 @@ export default function WithInit() {
     <LinearGenomeView
       assembly={assembly}
       tracks={tracks}
-      init={{ loc: 'ctgA:1,000..20,000', tracks: ['volvox_genes'] }}
+      init={{
+        loc: 'chr7:155,799,529..155,812,871',
+        tracks: ['hg38-ncbi-refseq-curated'],
+      }}
     />
   )
 }
