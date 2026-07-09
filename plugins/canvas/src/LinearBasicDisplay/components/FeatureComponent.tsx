@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useId, useState } from 'react'
 
 import { Menu, VerticalScrollbar } from '@jbrowse/core/ui'
-import { getContainingView, useRenderTracker } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -176,7 +176,6 @@ const useStyles = makeStyles()({
 
 function OverlayLayer({ children }: { children: React.ReactNode }) {
   const { classes } = useStyles()
-  useRenderTracker('OverlayLayer')
   return children ? <div className={classes.overlay}>{children}</div> : null
 }
 
@@ -239,13 +238,6 @@ const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions
 
-  useRenderTracker('FloatingLabelsLayer', {
-    renderDataMap,
-    width,
-    bpPerPx,
-    visibleRegions,
-  })
-
   const floatingLabelElements = useFloatingLabels(
     renderDataMap,
     model.featureItemMap,
@@ -287,8 +279,6 @@ const HighlightLayer = observer(function HighlightLayer({
   const width = view.initialized ? view.trackWidthPx : undefined
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions
-
-  useRenderTracker('HighlightLayer')
 
   const highlightOverlays = useHighlightOverlays(
     model.featureItemMap,

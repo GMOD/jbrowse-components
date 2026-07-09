@@ -309,6 +309,59 @@ describe('FetchMixin: progress reporting', () => {
   })
 })
 
+describe('FetchMixin: status callback throttle', () => {
+  it('drops rapid callback updates within the 100ms window, applies the first', () => {
+    const m = makeModel()
+    const cb = m.makeStatusCallback()
+    const now = jest.spyOn(Date, 'now')
+
+    now.mockReturnValue(1000)
+    cb({ message: 'Downloading', current: 1, total: 100 })
+    expect(m.statusProgress).toBeCloseTo(0.01)
+
+    // +50ms: inside the window, dropped, value unchanged
+    now.mockReturnValue(1050)
+    cb({ message: 'Downloading', current: 50, total: 100 })
+    expect(m.statusProgress).toBeCloseTo(0.01)
+
+    // +200ms from the last applied: past the window, applied
+    now.mockReturnValue(1200)
+    cb({ message: 'Downloading', current: 80, total: 100 })
+    expect(m.statusProgress).toBeCloseTo(0.8)
+  })
+
+  it('passes updates spaced beyond the window through unthrottled', () => {
+    const m = makeModel()
+    const cb = m.makeStatusCallback()
+    const now = jest.spyOn(Date, 'now')
+
+    now.mockReturnValue(5000)
+    cb('one')
+    expect(m.statusMessage).toBe('one')
+
+    now.mockReturnValue(5150)
+    cb('two')
+    expect(m.statusMessage).toBe('two')
+  })
+
+  it('resetStatus reopens the window so the next fetch reports immediately', () => {
+    const m = makeModel()
+    const cb = m.makeStatusCallback()
+    const now = jest.spyOn(Date, 'now')
+
+    now.mockReturnValue(2000)
+    cb('first')
+    expect(m.statusMessage).toBe('first')
+
+    m.resetStatus()
+
+    // only +50ms since the last write, but the reset cleared the throttle clock
+    now.mockReturnValue(2050)
+    cb('after reset')
+    expect(m.statusMessage).toBe('after reset')
+  })
+})
+
 describe('FetchMixin: isStale contract for work callbacks', () => {
   it('isStale is false during a normal fetch', async () => {
     const m = makeModel()

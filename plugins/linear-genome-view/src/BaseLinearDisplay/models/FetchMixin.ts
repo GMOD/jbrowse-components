@@ -15,6 +15,14 @@ export interface FetchContext {
   isStale: () => boolean
 }
 
+// RPC statusCallback fires per progress event (often ~40/s), and each write to
+// the observable statusMessage/statusProgress re-renders the loading overlay
+// (and repositions its MUI Tooltip/Popper). A progress indicator gains nothing
+// from updating faster than this, so the two status callbacks throttle writes to
+// a leading edge — re-renders were measured outpacing the zoom animation's own
+// frame rate before this.
+const STATUS_THROTTLE_MS = 100
+
 // Cancel-safe fetch lifecycle for any display that loads data over RPC.
 //
 // The mixin owns the entire fetch state machine (stop-token rotation,
@@ -103,6 +111,13 @@ export default function FetchMixin() {
        * parallel region fetches aggregate into one bar instead of clobbering.
        */
       regionStatuses: new Map<number, RpcStatus>(),
+
+      /**
+       * #volatile
+       * Date.now() of the last applied status write; the status callbacks gate
+       * on it to throttle a high-frequency progress stream.
+       */
+      lastStatusMs: 0,
     }))
     .views(self => ({
       /**
@@ -129,10 +144,26 @@ export default function FetchMixin() {
       },
       /**
        * #action
+       * Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the
+       * last status write. A leading-edge throttle: sparse updates pass straight
+       * through, dense progress bursts are thinned so the loading overlay stops
+       * re-rendering faster than the view animates. The final status doesn't need
+       * a trailing flush — fetch completion clears it via `resetStatus`.
+       */
+      throttleStatus(apply: () => void) {
+        const now = Date.now()
+        if (now - self.lastStatusMs >= STATUS_THROTTLE_MS) {
+          self.lastStatusMs = now
+          apply()
+        }
+      },
+      /**
+       * #action
        * Drop the active stop token and clear all status bookkeeping. Shared by
        * both cancel paths and runFetch's cleanup.
        */
       resetStatus() {
+        self.lastStatusMs = 0
         self.activeStopToken = undefined
         self.statusMessage = undefined
         self.statusProgress = undefined
@@ -249,7 +280,9 @@ export default function FetchMixin() {
       makeStatusCallback() {
         return (status: RpcStatus) => {
           if (isAlive(self)) {
-            self.setStatusMessage(status)
+            self.throttleStatus(() => {
+              self.setStatusMessage(status)
+            })
           }
         }
       },
@@ -263,7 +296,9 @@ export default function FetchMixin() {
       makeRegionStatusCallback(key: number) {
         return (status: RpcStatus) => {
           if (isAlive(self)) {
-            self.setRegionStatus(key, status)
+            self.throttleStatus(() => {
+              self.setRegionStatus(key, status)
+            })
           }
         }
       },
