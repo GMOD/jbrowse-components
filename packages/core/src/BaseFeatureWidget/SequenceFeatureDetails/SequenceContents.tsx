@@ -18,7 +18,9 @@ import type {
 } from './model.ts'
 import type { TranslExcept } from '../../util/geneticCodes.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { Feat, SeqState } from '../util.tsx'
+import type { SeqState } from '../util.tsx'
+
+type SequenceData = NonNullable<ReturnType<typeof getSequenceData>>
 
 function findCdsSubfeature(feature: SimpleFeatureSerialized) {
   return feature.subfeatures?.find(f => f.type?.toLowerCase() === 'cds')
@@ -68,14 +70,7 @@ function RenderedSequenceComponent({
   feature: SimpleFeatureSerialized
   model: SequenceFeatureDetailsModel
   assemblyGeneticCodeId?: number
-  sequenceData: {
-    seq: string
-    upstream?: string
-    downstream?: string
-    cds: Feat[]
-    exons: Feat[]
-    utr: Feat[]
-  }
+  sequenceData: SequenceData
 }) {
   const { seq, upstream, downstream, cds, exons, utr } = sequenceData
   const withUpDown = modeHasUpDownstream(mode)

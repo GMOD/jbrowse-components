@@ -51,7 +51,7 @@ export function splitString({
 }
 
 /**
- * Computes strand multiplier and genomic coordinate start for a sequence
+ * Computes the coordinate multiplier and genomic coordinate start for a sequence
  * display. Both GenomicSequence and CDNASequence use this to initialize their
  * coordinate-tracking state.
  */
@@ -67,7 +67,7 @@ export function computeCoordProps(
       ? feature.start + 1 - (upstream?.length ?? 0)
       : feature.end + (upstream?.length ?? 0)
     : 0
-  return { strand, mult, coordStart }
+  return { mult, coordStart }
 }
 
 /**

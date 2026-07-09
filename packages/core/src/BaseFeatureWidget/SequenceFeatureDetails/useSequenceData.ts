@@ -96,23 +96,16 @@ export function getSequenceData({
   } else {
     const children = prepareSubfeatures(feature)
     const { cds, exons, utr } = processFeatureData(children, feature)
-    const {
-      sequence: adjustedSequence,
-      cds: adjustedCds,
-      exons: adjustedExons,
-      utr: adjustedUtr,
-    } = feature.strand === -1
-      ? handleReverseStrand(sequence, cds, exons, utr)
-      : { sequence, cds, exons, utr }
+    const adjusted =
+      feature.strand === -1
+        ? handleReverseStrand(sequence, cds, exons, utr)
+        : { sequence, cds, exons, utr }
 
-    const { seq, upstream, downstream } = adjustedSequence
     return {
-      seq,
-      upstream,
-      downstream,
-      cds: adjustedCds,
-      exons: adjustedExons,
-      utr: adjustedUtr,
+      ...adjusted.sequence,
+      cds: adjusted.cds,
+      exons: adjusted.exons,
+      utr: adjusted.utr,
     }
   }
 }
