@@ -15,6 +15,7 @@ import SegmentIcon from '@mui/icons-material/Segment'
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
 import { radioSubMenu } from './baseModelHelpers.ts'
+import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 
 const CollapseIntronsDialog = lazy(
   () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
@@ -66,12 +67,6 @@ export default function stateModelFactory(
       type: types.literal('LinearBasicDisplay'),
       showOnlyGenes: types.stripDefault(types.boolean, false),
     })
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      isoformCollapseNoticeDismissed: false,
-    }))
     .views(self => ({
       // Promotable sentinel enum (see baseConfigSchema.ts): getConfResolved walks
       // the cascade (pinned track value -> session default -> base 'none') and
@@ -101,15 +96,13 @@ export default function stateModelFactory(
         return this.geneGlyphMode
       },
 
-      get showIsoformCollapseNotice() {
-        // only surface the notice when the collapse was AUTOMATIC (auto mode
-        // crossing the zoom threshold) — when a session/user explicitly picks
-        // 'longestCoding' they already know isoforms are folded, so the notice
-        // is redundant clutter
-        return (
-          this.geneGlyphMode === 'auto' &&
-          !self.isoformCollapseNoticeDismissed &&
-          [...self.rpcDataMap.values()].some(data => data.isoformsCollapsed)
+      // Persistent gene-glyph control gate: shown whenever the loaded data has a
+      // gene with >1 isoform, so there's an actual auto/all/longestCoding choice
+      // to make. Independent of the current mode (unlike the old collapse-only
+      // notice) since the control stays available to switch back and forth.
+      get showGeneGlyphControl() {
+        return [...self.rpcDataMap.values()].some(
+          data => data.hasMultiIsoformGenes,
         )
       },
 
@@ -165,10 +158,6 @@ export default function stateModelFactory(
       setDisplayDirectionalChevrons(value: boolean) {
         self.configuration.setSlot('displayDirectionalChevrons', value)
       },
-
-      dismissIsoformCollapseNotice() {
-        self.isoformCollapseNoticeDismissed = true
-      },
     }))
     .views(self => {
       const superShowSubmenuMenuItems = self.showSubmenuMenuItems
@@ -222,14 +211,7 @@ export default function stateModelFactory(
               ...radioSubMenu(
                 'Gene glyph',
                 self.geneGlyphMode,
-                [
-                  { value: 'auto', label: 'Auto' },
-                  { value: 'all', label: 'All transcripts' },
-                  {
-                    value: 'longestCoding',
-                    label: 'Longest coding transcript',
-                  },
-                ],
+                GENE_GLYPH_MODE_OPTIONS,
                 value => {
                   self.setGeneGlyphMode(value)
                 },

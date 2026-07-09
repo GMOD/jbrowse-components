@@ -123,6 +123,14 @@ export const displayModeOptions: { value: DisplayMode; label: string }[] = [
   { value: 'superCompact', label: 'Super-compact' },
 ]
 
+// Single source for the "Track height" radio options, shared by the track menu
+// and the bottom-right track-height dropdown so the labels can't drift.
+export const heightModeOptions: { value: HeightMode; label: string }[] = [
+  { value: 'fixed', label: 'Fixed height — scroll to see all features' },
+  { value: 'grow', label: 'Auto height — grow to fit all features' },
+  { value: 'fit', label: 'Compressed — squeeze all features into view' },
+]
+
 // Persistent, declarative feature-highlight request (see featureHighlight.ts).
 // A plain span+name signature — never the adapter uniqueId — so it can be
 // authored in a session snapshot / URL and resolved once the region renders.
@@ -451,8 +459,8 @@ export default function baseStateModelFactory(
          * #getter
          */
         // Grow mode as a boolean, derived from the unified heightMode slot.
-        // Kept for the CanvasAutoHeight autorun and the OverflowIndicator /
-        // FeatureComponent consumers that read a plain flag.
+        // Kept for the CanvasAutoHeight autorun and other consumers that read a
+        // plain flag.
         get autoHeight() {
           return this.heightMode === 'grow'
         },
@@ -2629,44 +2637,20 @@ export default function baseStateModelFactory(
                   // sentinel promotable slot, so every mode — `fixed` included —
                   // is pinnable back over another session default.
                   label: 'Track height',
-                  subMenu: [
+                  subMenu: heightModeOptions.map(option =>
                     promotableRadioItem({
-                      label: 'Fixed height — scroll to see all features',
-                      checked: self.heightMode === 'fixed',
+                      label: option.label,
+                      checked: self.heightMode === option.value,
                       onClick: () => {
-                        self.setHeightMode('fixed')
+                        self.setHeightMode(option.value)
                       },
                       sessionDefault: makeSessionDefaultControl(
                         self,
                         'heightMode',
-                        'fixed',
+                        option.value,
                       ),
                     }),
-                    promotableRadioItem({
-                      label: 'Auto height — grow track to show all features',
-                      checked: self.heightMode === 'grow',
-                      onClick: () => {
-                        self.setHeightMode('grow')
-                      },
-                      sessionDefault: makeSessionDefaultControl(
-                        self,
-                        'heightMode',
-                        'grow',
-                      ),
-                    }),
-                    promotableRadioItem({
-                      label: 'Fixed height — compress features to fit',
-                      checked: self.heightMode === 'fit',
-                      onClick: () => {
-                        self.setHeightMode('fit')
-                      },
-                      sessionDefault: makeSessionDefaultControl(
-                        self,
-                        'heightMode',
-                        'fit',
-                      ),
-                    }),
-                  ],
+                  ),
                 },
               ],
             },

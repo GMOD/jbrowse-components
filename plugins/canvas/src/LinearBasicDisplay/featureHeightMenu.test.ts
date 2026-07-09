@@ -92,8 +92,8 @@ describe('Feature height submenu', () => {
     const labels = advanced.flatMap(i => ('label' in i ? [i.label] : []))
     expect(labels).toEqual([
       'Fixed height — scroll to see all features',
-      'Auto height — grow track to show all features',
-      'Fixed height — compress features to fit',
+      'Auto height — grow to fit all features',
+      'Compressed — squeeze all features into view',
     ])
     expect(advanced.some(i => i.type === 'checkbox')).toBe(false)
     expect(
@@ -104,17 +104,17 @@ describe('Feature height submenu', () => {
       radio(advanced, 'Fixed height — scroll to see all features').endAdornment,
     ).toBeDefined()
     expect(
-      radio(advanced, 'Auto height — grow track to show all features')
+      radio(advanced, 'Auto height — grow to fit all features')
         .endAdornment,
     ).toBeDefined()
     expect(
-      radio(advanced, 'Fixed height — compress features to fit').endAdornment,
+      radio(advanced, 'Compressed — squeeze all features into view').endAdornment,
     ).toBeDefined()
 
     display.setHeightMode('grow')
     const advanced2 = subMenuOf(featureHeightSubMenu(display), 'Track height')
     expect(
-      radio(advanced2, 'Auto height — grow track to show all features').checked,
+      radio(advanced2, 'Auto height — grow to fit all features').checked,
     ).toBe(true)
     expect(
       radio(advanced2, 'Fixed height — scroll to see all features').checked,

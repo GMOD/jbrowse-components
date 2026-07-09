@@ -13,10 +13,10 @@ import { observer } from 'mobx-react'
 import BottomRightIndicators from './BottomRightIndicators.tsx'
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
-import IsoformCollapseNotice from './IsoformCollapseNotice.tsx'
-import OverflowIndicator from './OverflowIndicator.tsx'
+import GeneGlyphControl from './GeneGlyphControl.tsx'
 import PeptideCanvas from './PeptideCanvas.tsx'
 import SoloSelectionChip from './SoloSelectionChip.tsx'
+import TrackHeightControl from './TrackHeightControl.tsx'
 import {
   hoverTooltip,
   isHitFeature,
@@ -29,6 +29,7 @@ import {
 import { MORPH_DURATION_MS } from '../yMorph.ts'
 
 import type { CanvasFeatureRenderingBackend } from './canvasFeatureRenderingBackendTypes.ts'
+import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 import type { FeatureItemEntry, FlatbushRegionIndexes } from './hitTesting.ts'
 import type {
   FeatureDataResult,
@@ -37,7 +38,10 @@ import type {
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  HeightMode,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 type LGV = LinearGenomeViewModel
@@ -63,8 +67,8 @@ export interface LinearBasicDisplayModel {
   hasOverflow: boolean
   contentHeight: number
   scrollableHeight: number
-  canExpand: boolean
-  autoHeight: boolean
+  heightMode: HeightMode
+  setHeightMode: (mode: HeightMode) => void
   showLabels: boolean
   selectedFeatureId: string | undefined
   highlightedFeatureIds: string[]
@@ -80,8 +84,9 @@ export interface LinearBasicDisplayModel {
   labelFontSize: number
   regionTooLarge: boolean
   regionTooLargeReason: string
-  showIsoformCollapseNotice: boolean
-  dismissIsoformCollapseNotice: () => void
+  showGeneGlyphControl: boolean
+  geneGlyphMode: GeneGlyphMode
+  setGeneGlyphMode: (value: GeneGlyphMode) => void
   featureDensityStats?: { bytes?: number }
   statusMessage: string | undefined
   setScrollTop: (n: number) => void
@@ -91,8 +96,6 @@ export interface LinearBasicDisplayModel {
   }) => void
   forceLoad: () => void
   reload: () => void
-  expandToFit: () => void
-  collapseFromExpand: () => void
   clearHover: () => void
   mouseoverExtraInformation: string | undefined
   setHover: (
@@ -565,22 +568,19 @@ const FeatureBody = observer(function FeatureBody({
             model.clearSolo()
           }}
         />
-        <IsoformCollapseNotice
-          visible={model.showIsoformCollapseNotice}
-          onDismiss={() => {
-            model.dismissIsoformCollapseNotice()
+        <GeneGlyphControl
+          visible={model.showGeneGlyphControl}
+          geneGlyphMode={model.geneGlyphMode}
+          onSetGeneGlyphMode={value => {
+            model.setGeneGlyphMode(value)
           }}
         />
-        <OverflowIndicator
-          autoHeight={model.autoHeight}
-          canExpand={model.canExpand}
+        <TrackHeightControl
+          heightMode={model.heightMode}
           hasOverflow={model.hasOverflow}
           scrollZoom={view.scrollZoom}
-          onExpand={() => {
-            model.expandToFit()
-          }}
-          onRestore={() => {
-            model.collapseFromExpand()
+          onSetHeightMode={mode => {
+            model.setHeightMode(mode)
           }}
         />
       </BottomRightIndicators>

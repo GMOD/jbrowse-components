@@ -139,6 +139,11 @@ export interface FeatureDataResult {
   // that predate this field; treat the same as false.
   isoformsCollapsed?: boolean
 
+  // True when at least one gene in this region has >1 isoform, independent of
+  // the current geneGlyphMode — drives the always-visible gene-glyph control.
+  // Undefined in fixtures that predate this field; treat the same as false.
+  hasMultiIsoformGenes?: boolean
+
   // Index-estimated compressed bytes for this region (when the adapter offers a
   // cheap estimate), so the display's byte gate reflects what was actually
   // fetched. Undefined for adapters with no index estimate.

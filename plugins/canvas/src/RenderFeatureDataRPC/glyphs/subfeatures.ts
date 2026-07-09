@@ -44,6 +44,19 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const heightPx = config.featureHeight
 
   let subfeatures = [...getSubfeatures(feature)]
+
+  // Mode-independent: does this gene actually have multiple isoforms to choose
+  // among? Mirrors longestCodingTranscript's isoform definition (real
+  // transcript children when present, else raw subfeatures) so the gene-glyph
+  // control appears exactly when switching modes would change anything.
+  const transcriptChildren = subfeatures.filter(sub =>
+    transcriptTypes.includes(featureType(sub)),
+  )
+  const hasMultipleIsoforms =
+    (transcriptChildren.length > 0
+      ? transcriptChildren.length
+      : subfeatures.length) > 1
+
   let isoformsCollapsed = false
   if (geneGlyphMode === 'longestCoding') {
     const collapsed = longestCodingTranscript(subfeatures, transcriptTypes)
@@ -110,5 +123,6 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     totalLayoutHeight: totalHeightPx,
     children,
     isoformsCollapsed,
+    hasMultipleIsoforms,
   }
 }

@@ -185,6 +185,30 @@ describe('layoutSubfeatures layout', () => {
     })
   })
 
+  describe('hasMultipleIsoforms flag (drives the gene-glyph control)', () => {
+    it('is true for a multi-isoform gene even when nothing is collapsed', () => {
+      // 'all' mode renders every isoform, so isoformsCollapsed is false, but the
+      // gene-glyph control must still appear since a choice among isoforms exists
+      const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2'])
+      const layout = layoutSubfeatures({
+        feature: gene,
+        config: mockDisplayConfig({ geneGlyphMode: 'all' }),
+      })
+      expect(layout.hasMultipleIsoforms).toBe(true)
+      expect(layout.isoformsCollapsed).toBe(false)
+    })
+
+    it('is false for a single-isoform gene', () => {
+      const gene = makeGeneWithTranscripts(['mRNA-1'])
+      expect(
+        layoutSubfeatures({
+          feature: gene,
+          config: mockDisplayConfig({ geneGlyphMode: 'all' }),
+        }).hasMultipleIsoforms,
+      ).toBe(false)
+    })
+  })
+
   describe('"below" vs "none" height comparison', () => {
     it('below mode produces taller gene glyph than none mode', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2', 'mRNA-3'])

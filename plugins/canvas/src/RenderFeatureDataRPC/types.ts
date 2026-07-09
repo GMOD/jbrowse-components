@@ -23,6 +23,10 @@ export interface FeatureLayout {
   // set when geneGlyphMode === 'longestCoding' collapsed a multi-isoform gene
   // down to its single longest coding transcript (layoutSubfeatures)
   isoformsCollapsed?: boolean
+  // set when this gene has >1 isoform, independent of the current glyph mode —
+  // drives the always-visible gene-glyph control (which only makes sense when
+  // there's actually a choice among isoforms to make)
+  hasMultipleIsoforms?: boolean
 }
 
 // `bpPerPx` is intentionally NOT part of LayoutArgs — feature widths and

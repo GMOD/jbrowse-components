@@ -218,6 +218,7 @@ export async function executeRenderFeatureData({
     ...packed,
     featureCount: features.size,
     isoformsCollapsed: layouts.some(layout => layout.isoformsCollapsed),
+    hasMultiIsoformGenes: layouts.some(layout => layout.hasMultipleIsoforms),
     bytes,
   }
 
