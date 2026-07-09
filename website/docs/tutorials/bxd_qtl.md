@@ -27,7 +27,7 @@ This tutorial builds two JBrowse tracks from the **same** BXD data, on mm10:
 Stacked in one view they show the core systems-genetics move: a trait peak, and
 the recombination structure that produced it.
 
-<Figure src="/img/qtl/bxd_overview.png" caption="Whole-chromosome-4 view. Top: a QTL scan of BXD coat color, peaking near 80 Mb. Bottom: the BXD chromosome painting — one row per strain, blue = C57BL/6J (B), red = DBA/2J (D), grey = heterozygous/unknown. The peak sits over the region where B/D ancestry best predicts the trait."/>
+<Figure src="/img/qtl/bxd_overview.png" caption="Whole-chromosome-4 view. Top: a QTL scan of BXD coat color, peaking near 80 Mb. Bottom: the BXD chromosome painting — one row per strain, blue = C57BL/6J (B), red = DBA/2J (D), grey = heterozygous, blank = unknown. The peak sits over the region where B/D ancestry best predicts the trait."/>
 
 ## The data: one genotype file
 
@@ -185,7 +185,7 @@ or click **Open this view in JBrowse** under either figure above.
 - [GWAS / Manhattan track](/docs/user_guides/gwas_track) — the same
   `LinearManhattanDisplay` driven by human GWAS summary statistics, with
   LocusZoom-style LD coloring
-- [GWAS track configuration](/docs/config_guides/gwas_track) — preparing GWAS and
-  LD files, `scoreColumn`/`scoreTransform`, and significance thresholds
+- [GWAS track configuration](/docs/config_guides/gwas_track) — preparing GWAS
+  and LD files, `scoreColumn`/`scoreTransform`, and significance thresholds
 - [jexl](/docs/config_guides/jexl) — the color-callback syntax used for the
   painting

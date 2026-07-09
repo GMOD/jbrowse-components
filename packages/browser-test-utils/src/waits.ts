@@ -109,10 +109,15 @@ export async function waitForDisplaysDone(page: Page, timeoutMs: number) {
   await page
     .waitForFunction(
       () => {
-        const all = document.querySelectorAll('[data-testid^="display-"]')
+        // Display wrappers use `<name>-display`, flipping in place to
+        // `<name>-display-done` when canvasDrawn fires, so the full set is
+        // both states and "done" is the `-done` subset.
+        const all = document.querySelectorAll(
+          '[data-testid$="-display"],[data-testid$="-display-done"]',
+        )
         if (all.length > 0) {
           const done = document.querySelectorAll(
-            '[data-testid^="display-"][data-testid$="-done"]',
+            '[data-testid$="-display-done"]',
           )
           return done.length === all.length
         }
