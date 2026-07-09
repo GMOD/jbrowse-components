@@ -3,6 +3,8 @@ import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { parsePlinkLDLine, resolvePlinkLDHeader } from '@jbrowse/ld-core'
 
+import { filterRecordsInRegion } from './filterRecordsInRegion.ts'
+
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import type { PlinkLDHeader, PlinkLDRecord } from '@jbrowse/ld-core'
@@ -93,10 +95,6 @@ export default class PlinkLDAdapter extends BaseAdapter {
     query: NoAssemblyRegion,
     opts: BaseOptions = {},
   ): Promise<PlinkLDRecord[]> {
-    const { refName, start, end } = query
-    const records = await this.getLDRecords(query, opts)
-    return records.filter(
-      r => r.chrB === refName && r.bpB >= start && r.bpB <= end,
-    )
+    return filterRecordsInRegion(await this.getLDRecords(query, opts), query)
   }
 }
