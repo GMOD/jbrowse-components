@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useId, useState } from 'react'
 
 import { Menu, VerticalScrollbar } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, useRenderTracker } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -176,6 +176,7 @@ const useStyles = makeStyles()({
 
 function OverlayLayer({ children }: { children: React.ReactNode }) {
   const { classes } = useStyles()
+  useRenderTracker('OverlayLayer')
   return children ? <div className={classes.overlay}>{children}</div> : null
 }
 
@@ -206,11 +207,14 @@ const ContextMenu = observer(function ContextMenu({
   ) : null
 })
 
-// Labels, highlights, and the peptide canvas derive purely from model/view
-// observables — never from the cursor position. Isolating them in this memoized
-// observer keeps FeatureBody's per-mousemove clientXY state (which only feeds
-// the tooltip) from rebuilding every label and overlay div on each mouse move.
-const Overlays = observer(function Overlays({
+// Floating labels + the peptide canvas derive purely from the laid-out rows and
+// view geometry — never from the cursor or hover state. Its own observer so a
+// mouse move (which only mutates the hover/selection observables read by
+// HighlightLayer) never re-runs the per-feature label build. Labels follow the
+// animated rows (renderDataMap) so they move with the glyphs during a layout
+// transition; FeatureBody's hit-testing reads the destination layout
+// (laidOutDataMap) so hover targets the final positions.
+const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   model,
   view,
   openContextMenu,
@@ -230,13 +234,17 @@ const Overlays = observer(function Overlays({
     e: React.MouseEvent,
   ) => void
 }) {
-  // Overlays follow the animated rows (renderDataMap) so they move with the
-  // glyphs during a layout transition; FeatureBody's hit-testing reads the
-  // destination layout (laidOutDataMap) so hover targets the final positions.
   const renderDataMap = model.renderDataMap
   const width = view.initialized ? view.trackWidthPx : undefined
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions
+
+  useRenderTracker('FloatingLabelsLayer', {
+    renderDataMap,
+    width,
+    bpPerPx,
+    visibleRegions,
+  })
 
   const floatingLabelElements = useFloatingLabels(
     renderDataMap,
@@ -250,18 +258,8 @@ const Overlays = observer(function Overlays({
     onLabelMouseOver,
   )
 
-  const highlightOverlays = useHighlightOverlays(
-    model.featureItemMap,
-    visibleRegions,
-    view.initialized,
-    width,
-    bpPerPx,
-    model,
-  )
-
   return (
     <>
-      <OverlayLayer>{highlightOverlays}</OverlayLayer>
       <OverlayLayer>{floatingLabelElements}</OverlayLayer>
       <PeptideCanvas
         renderDataMap={renderDataMap}
@@ -275,11 +273,40 @@ const Overlays = observer(function Overlays({
   )
 })
 
+// Hover / selection / solo / search highlight boxes. Split out from the labels
+// because useHighlightOverlays reads hoveredFeature/hoveredSubfeature, which
+// change on every mouse move — keeping it in its own observer means a hover tick
+// re-renders just these few boxes, not the whole floating-label build.
+const HighlightLayer = observer(function HighlightLayer({
+  model,
+  view,
+}: {
+  model: LinearBasicDisplayModel
+  view: LGV
+}) {
+  const width = view.initialized ? view.trackWidthPx : undefined
+  const bpPerPx = view.bpPerPx
+  const visibleRegions = view.visibleRegions
+
+  useRenderTracker('HighlightLayer')
+
+  const highlightOverlays = useHighlightOverlays(
+    model.featureItemMap,
+    visibleRegions,
+    view.initialized,
+    width,
+    bpPerPx,
+    model,
+  )
+
+  return <OverlayLayer>{highlightOverlays}</OverlayLayer>
+})
+
 // Wraps the overlays in the shared ScrollLockedOverlay so labels/highlights
 // track the GPU canvas's model.scrollTop rather than the native compositor
 // scroll (see ScrollLockedOverlay for why). Its own observer so only this thin
-// wrapper re-renders per scroll frame, not the whole FeatureBody tree (Overlays
-// is passed as stable children and doesn't re-run).
+// wrapper re-renders per scroll frame; the layer children are passed as stable
+// elements and don't re-run.
 const OverlayScrollLayer = observer(function OverlayScrollLayer({
   model,
   children,
@@ -299,8 +326,8 @@ const OverlayScrollLayer = observer(function OverlayScrollLayer({
 })
 
 // Thin outer owns the DisplayChrome; FeatureBody owns the scroll container,
-// hit-testing, and the canvas itself; Overlays (memoized) owns the label /
-// highlight / peptide layers.
+// hit-testing, and the canvas itself; FloatingLabelsLayer and HighlightLayer
+// (separate observers) own the label / peptide and hover / selection layers.
 const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const { classes } = useStyles()
   return (
@@ -518,7 +545,8 @@ const FeatureBody = observer(function FeatureBody({
       />
 
       <OverlayScrollLayer model={model}>
-        <Overlays
+        <HighlightLayer model={model} view={view} />
+        <FloatingLabelsLayer
           model={model}
           view={view}
           openContextMenu={model.openContextMenu}
