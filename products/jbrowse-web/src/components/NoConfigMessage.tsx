@@ -8,18 +8,13 @@ import {
 } from './NoConfigMessageSampleData.ts'
 
 export default function NoConfigMessage() {
-  const { href, search } = window.location
-  const { config: _config, ...rest } = Object.fromEntries(
-    new URLSearchParams(search),
-  )
+  const url = new URL(window.location.href)
+  url.searchParams.delete('config')
+  const rest = Object.fromEntries(url.searchParams)
+  const root = url.origin + url.pathname
 
-  const root = href.split('?', 1)[0]
-
-  const buildConfigUrl = (config: string, params?: Record<string, string>) => {
-    return `${root}?${new URLSearchParams(
-      Object.entries({ ...rest, ...params, config }),
-    )}`
-  }
+  const buildConfigUrl = (config: string, params?: Record<string, string>) =>
+    `${root}?${new URLSearchParams({ ...rest, ...params, config })}`
 
   return (
     <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>

@@ -1,5 +1,7 @@
 import { encodeSessionParam } from '@jbrowse/core/util'
 
+import { readAllQueryParams } from '../useQueryParam.ts'
+
 import type { SessionShareMode } from '@jbrowse/core/util'
 
 export const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
@@ -34,11 +36,7 @@ export async function buildShareUrl(
   )
   // carry over the page's existing params (e.g. config) from wherever they live
   // so none are lost when session is relocated, then write them all to one place
-  const params = new URLSearchParams(
-    locationUrl.hash.includes('=')
-      ? locationUrl.hash.slice(1)
-      : locationUrl.search,
-  )
+  const params = readAllQueryParams()
   params.set('session', sessionParam)
   if (password) {
     params.set('password', password)

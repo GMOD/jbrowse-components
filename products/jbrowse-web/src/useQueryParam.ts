@@ -50,6 +50,13 @@ export function readQueryParams<T extends string>(keys: T[]) {
   return result
 }
 
+// Reads the full current param set from wherever this URL keeps them (hash XOR
+// search). Producers that need every param at once (buildShareUrl) share this
+// so the hash/search decision stays in this one module.
+export function readAllQueryParams() {
+  return readParams(paramLocation())
+}
+
 export function deleteQueryParams(keys: readonly string[]) {
   const loc = paramLocation()
   const params = readParams(loc)

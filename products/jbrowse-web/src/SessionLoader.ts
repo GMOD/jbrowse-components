@@ -614,10 +614,15 @@ const SessionLoader = types
     async initialize() {
       try {
         await this.loadConfig()
-        // A pending (config) triage defers session loading until the user
-        // accepts via applyTriagedConfig, which resolves the session against
-        // the committed config.
-        if (!self.sessionTriaged) {
+        // Skip session loading when the config didn't fully resolve:
+        // - a pending (config) triage defers it until the user accepts via
+        //   applyTriagedConfig, which resolves the session against the
+        //   committed config
+        // - a config/plugin error (swallowed into configError by
+        //   loadConfigAndPlugins, so it never reaches the catch below) makes
+        //   session loading pointless — `ready` gates on !configError, so the
+        //   error banner shows and no plugin manager is built regardless
+        if (!self.sessionTriaged && !self.configError) {
           await this.loadSessionByType()
         }
       } catch (e) {
