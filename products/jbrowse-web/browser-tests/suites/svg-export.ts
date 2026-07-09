@@ -80,7 +80,9 @@ async function exportSvgAndSave(page: Page, downloadDir: string, name: string) {
       fs.mkdirSync(dir, { recursive: true })
     }
     fs.writeFileSync(path.join(dir, `${name}.svg`), svg)
-    console.log(`    SVG saved: ${name}.svg (${(svg.length / 1024).toFixed(1)}KB)`)
+    console.log(
+      `    SVG saved: ${name}.svg (${(svg.length / 1024).toFixed(1)}KB)`,
+    )
   }
   return svg
 }

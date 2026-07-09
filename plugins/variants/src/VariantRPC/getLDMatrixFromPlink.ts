@@ -34,7 +34,7 @@ function finiteOrZero(v: number | undefined) {
 }
 
 // The value painted into a cell for the chosen metric. D' can be absent in the
-// file (falls back to r²) or unparseable (finiteOrZero keeps the matrix finite
+// file (falls back to r²) or unparsable (finiteOrZero keeps the matrix finite
 // so rendering never branches on NaN).
 function metricValue(record: PlinkLDRecord, ldMetric: LDMetric) {
   return finiteOrZero(

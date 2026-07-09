@@ -480,7 +480,9 @@ export default function stateModelFactory(
         // control (pin): symmetric, so it promotes whichever value the track
         // currently shows.
         get softClippingSessionDefault() {
-          return makeCurrentValueSessionDefaultControl(self, ['showSoftClipping'])
+          return makeCurrentValueSessionDefaultControl(self, [
+            'showSoftClipping',
+          ])
         },
       }))
       .volatile(() => {

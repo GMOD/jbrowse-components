@@ -84,8 +84,7 @@ test('un-swaps bin1/bin2 when hic-straw transposed the query (idx1 > idx2)', asy
     getMetaData: () => Promise.resolve(metadata),
     getNormalizationOptions: () => Promise.resolve(['NONE']),
     getChromosomeIndex: chrIndex,
-    getContactRecords: () =>
-      Promise.resolve([{ bin1: 7, bin2: 3, counts: 9 }]),
+    getContactRecords: () => Promise.resolve([{ bin1: 7, bin2: 3, counts: 9 }]),
   })
   const regions: Region[] = [
     { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },

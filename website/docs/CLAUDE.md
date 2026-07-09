@@ -78,8 +78,8 @@ point at them, not re-copy their contents (which silently goes stale).
   writing "(default 0.3)" in prose, which drifts the moment the schema changes.
 - **Don't hand-list a docs directory's pages.** Drop a `<!-- doclist:<dir> -->`
   marker (see `remark-doc-list.ts`) and it expands at build time to a
-  `[title](url) — description` bullet per page under that dir, from frontmatter —
-  the same source the sidebar and landing pages use. `introduction.md` uses
+  `[title](url) — description` bullet per page under that dir, from frontmatter
+  — the same source the sidebar and landing pages use. `introduction.md` uses
   `<!-- doclist:tutorials -->`. A typo'd dir fails the build.
 - **Cross-page anchor links:** write `/docs/page#anchor` (no slash before `#`);
   `rehypeTrailingSlash` adds the trailing slash to the path. CI validates

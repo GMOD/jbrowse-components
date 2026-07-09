@@ -11,7 +11,7 @@ import configSchema from './configSchema.ts'
 // Write an inline PAF to a temp file and return a LocalPathLocation for it.
 const writePaf = (rows: string[]) => {
   const path = join(mkdtempSync(join(tmpdir(), 'ava-paf-')), 'in.paf')
-  writeFileSync(path, `${rows.join('\n')  }\n`)
+  writeFileSync(path, `${rows.join('\n')}\n`)
   return { localPath: path, locationType: 'LocalPathLocation' as const }
 }
 

@@ -1052,7 +1052,11 @@ export default function baseStateModelFactory(
          * labels hidden — the `bodies` stage's stack.
          */
         get fitBodiesOnlyLayout(): Map<number, FeatureDataResult> {
-          return self.fitLayoutAt(self.incrementalLayoutBodiesOnly, false, false)
+          return self.fitLayoutAt(
+            self.incrementalLayoutBodiesOnly,
+            false,
+            false,
+          )
         },
         /**
          * #getter
@@ -1064,7 +1068,8 @@ export default function baseStateModelFactory(
          */
         get fitMinScale() {
           const boxPx =
-            getConf(self, 'featureHeight') * HEIGHT_MULTIPLIERS[self.displayMode]
+            getConf(self, 'featureHeight') *
+            HEIGHT_MULTIPLIERS[self.displayMode]
           return boxPx > 0 ? Math.min(1, MIN_FIT_BOX_PX / boxPx) : 1
         },
       }))
@@ -1132,7 +1137,9 @@ export default function baseStateModelFactory(
          * description it won't draw.
          */
         get renderedShowDescriptions() {
-          return self.effectiveShowDescriptions && self.fitStage.level === 'full'
+          return (
+            self.effectiveShowDescriptions && self.fitStage.level === 'full'
+          )
         },
         /**
          * #getter

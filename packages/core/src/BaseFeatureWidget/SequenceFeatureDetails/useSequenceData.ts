@@ -98,10 +98,9 @@ export function getSequenceData({
     cds: adjustedCds,
     exons: adjustedExons,
     utr: adjustedUtr,
-  } =
-    feature.strand === -1
-      ? handleReverseStrand(sequence, cds, exons, utr)
-      : { sequence, cds, exons, utr }
+  } = feature.strand === -1
+    ? handleReverseStrand(sequence, cds, exons, utr)
+    : { sequence, cds, exons, utr }
 
   return {
     ...adjusted,

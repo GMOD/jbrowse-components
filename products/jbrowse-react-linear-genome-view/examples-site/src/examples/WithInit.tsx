@@ -6,7 +6,8 @@ const assembly = {
     adapter: {
       type: 'TwoBitAdapter',
       uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit',
-      chromSizes: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes',
+      chromSizes:
+        'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes',
     },
   },
   refNameAliases: {

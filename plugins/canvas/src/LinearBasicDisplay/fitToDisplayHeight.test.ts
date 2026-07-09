@@ -50,7 +50,12 @@ function labeledStackedRegionData(rows: number, heightPx: number) {
       maxX: 500,
       topY: 0,
       featureHeight: heightPx,
-      nameLabel: { text: `name${i}`, relativeY: 0, color: '#000', textWidth: 40 },
+      nameLabel: {
+        text: `name${i}`,
+        relativeY: 0,
+        color: '#000',
+        textWidth: 40,
+      },
       descriptionLabel: {
         text: `description ${i}`,
         relativeY: 0,
@@ -281,7 +286,12 @@ describe('canvas display fit escalation ladder', () => {
     for (const rows of [1, 2, 5, 15, 40]) {
       const { createDisplay } = createTestEnvironment()
       const { display, view } = createDisplay()
-      display.setRpcData(0, labeledStackedRegionData(rows, 10), view.bpPerPx, ctgA)
+      display.setRpcData(
+        0,
+        labeledStackedRegionData(rows, 10),
+        view.bpPerPx,
+        ctgA,
+      )
       const fullH = maxBottom(display.baseLaidOutDataMap)
       const labelsH = maxBottom(display.fitLabelsOnlyLayout)
       const bodiesH = maxBottom(display.fitBodiesOnlyLayout)

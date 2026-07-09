@@ -48,9 +48,8 @@ sliding-window settings:
   smooth the signal and suppress local noise; smaller windows resolve finer
   structure.
 - **Window delta** — the step between successive windows. Making the delta
-  smaller than the window size produces _overlapping_ windows,
-  which gives a smoother, more finely-sampled curve (at the cost of more points
-  to compute).
+  smaller than the window size produces _overlapping_ windows, which gives a
+  smoother, more finely-sampled curve (at the cost of more points to compute).
 
 ## Display options
 

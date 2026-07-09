@@ -104,11 +104,11 @@ describe('Feature height submenu', () => {
       radio(advanced, 'Fixed height — scroll to see all features').endAdornment,
     ).toBeDefined()
     expect(
-      radio(advanced, 'Auto height — grow to fit all features')
-        .endAdornment,
+      radio(advanced, 'Auto height — grow to fit all features').endAdornment,
     ).toBeDefined()
     expect(
-      radio(advanced, 'Compressed — squeeze all features into view').endAdornment,
+      radio(advanced, 'Compressed — squeeze all features into view')
+        .endAdornment,
     ).toBeDefined()
 
     display.setHeightMode('grow')

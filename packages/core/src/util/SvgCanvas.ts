@@ -103,9 +103,8 @@ export class SvgCanvas {
     style: string | CanvasGradient | CanvasPattern,
   ) {
     const s = `${style}`
-    const m = /^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)$/.exec(
-      s,
-    )
+    const m =
+      /^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)$/.exec(s)
     if (m) {
       const a = Number.parseFloat(m[4]!)
       const base = `${name}="rgb(${m[1]},${m[2]},${m[3]})"`

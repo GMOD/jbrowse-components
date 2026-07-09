@@ -3,7 +3,6 @@ import type { ComponentType } from 'react'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { Box, Tooltip, Typography } from '@mui/material'
 
-
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Colord } from '@jbrowse/core/util/colord'
 import type { SvgIconProps } from '@mui/material'

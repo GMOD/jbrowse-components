@@ -73,7 +73,6 @@ Use "jbrowse <command> --help" for more information about a command.
 
 ```
 
-
 ## jbrowse create
 
 ```
@@ -117,7 +116,6 @@ $ jbrowse create /path/to/new/installation --tag v1.0.0
 # List available versions
 $ jbrowse create --listVersions
 ```
-
 
 ## jbrowse add-assembly
 
@@ -223,7 +221,6 @@ $ jbrowse add-assembly https://example.com/data/sample.2bit
 $ jbrowse add-assembly myfile.fa.gz --load copy
 ```
 
-
 ## jbrowse add-track
 
 ```
@@ -315,7 +312,6 @@ $ jbrowse add-track https://mywebsite.com/my.bam
 $ jbrowse add-track /url/relative/path.bam --load inPlace
 ```
 
-
 ## jbrowse text-index
 
 ```
@@ -406,7 +402,6 @@ $ jbrowse text-index -a hg19 --force
 $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
 
-
 ## jbrowse admin-server
 
 ```
@@ -445,7 +440,6 @@ $ jbrowse admin-server --root /path/to/jb2/
 # raise the body size limit for very large config updates
 $ jbrowse admin-server --bodySizeLimit 100mb
 ```
-
 
 ## jbrowse upgrade
 
@@ -493,7 +487,6 @@ $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 # Get nightly release from main branch
 $ jbrowse upgrade --nightly
 ```
-
 
 ## jbrowse make-pif
 
@@ -546,7 +539,6 @@ $ jbrowse make-pif input.paf --coarse 0
 $ jbrowse make-pif input.paf --no-coarse
 ```
 
-
 ## jbrowse sort-gff
 
 ```
@@ -573,7 +565,6 @@ $ jbrowse sort-gff input.gtf | bgzip > sorted.gtf.gz
 $ tabix -p gff sorted.gtf.gz
 ```
 
-
 ## jbrowse sort-bed
 
 ```
@@ -594,7 +585,6 @@ $ tabix sorted.bed.gz
 
 # OR pipe data via stdin: cat file.bed | jbrowse sort-bed | bgzip > sorted.bed.gz
 ```
-
 
 ## jbrowse add-connection
 
@@ -651,7 +641,6 @@ $ jbrowse add-connection https://mysite.com/path/to/custom --type custom --confi
 $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json
 ```
 
-
 ## jbrowse add-track-json
 
 ```
@@ -686,7 +675,6 @@ $ jbrowse add-track-json '{"type":"FeatureTrack","trackId":"genes","assemblyName
 $ jbrowse add-track-json track.json --out /path/to/jb2/
 ```
 
-
 ## jbrowse remove-track
 
 ```
@@ -714,7 +702,6 @@ $ jbrowse remove-track my_track_id --out /path/to/jb2/
 # remove a track from a specific config file
 $ jbrowse remove-track my_track_id --target /path/to/jb2/config.json
 ```
-
 
 ## jbrowse set-default-session
 
@@ -760,5 +747,3 @@ $ jbrowse set-default-session --currentSession
 # remove the existing default session
 $ jbrowse set-default-session --delete
 ```
-
-

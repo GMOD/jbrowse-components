@@ -141,8 +141,7 @@ bedGraphToBigWig pi_all.bedgraph dm6.chrom.sizes pi_all.bw
 Because this VCF holds only variant sites, `--window-pi` sums diversity over the
 genotyped SNPs and omits invariant positions, so the absolute values are not
 calibrated; they are still directly comparable **across windows of the same
-VCF**. For calibrated absolute π and dxy you need an allSites VCF — see
-[unbiased π and dxy with pixy](#unbiased-pi-and-dxy-with-pixy) below.
+VCF**. For calibrated absolute π and dxy you need an allSites VCF below.
 
 ## Full pipeline
 

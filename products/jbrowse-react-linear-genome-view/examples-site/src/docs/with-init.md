@@ -7,7 +7,10 @@ needed.
 <LinearGenomeView
   assembly={assembly}
   tracks={tracks}
-  init={{ loc: 'chr7:155,799,529..155,812,871', tracks: ['hg38-ncbi-refseq-curated'] }}
+  init={{
+    loc: 'chr7:155,799,529..155,812,871',
+    tracks: ['hg38-ncbi-refseq-curated'],
+  }}
 />
 ```
 

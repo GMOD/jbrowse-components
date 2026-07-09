@@ -126,8 +126,12 @@ export function useFloatingLabels(
   ) => void,
 ) {
   const { classes, cx } = useStyles()
-  const { renderedShowLabels, renderedShowDescriptions, labelFontSize, selectFeatureById } =
-    model
+  const {
+    renderedShowLabels,
+    renderedShowDescriptions,
+    labelFontSize,
+    selectFeatureById,
+  } = model
 
   if (!overlaysReady(viewInitialized, width, bpPerPx, visibleRegions)) {
     return null
