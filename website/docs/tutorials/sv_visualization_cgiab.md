@@ -222,9 +222,9 @@ jbrowse add-track HG008_log2ratio.bw --out $OUT --category "CNV" --load move
 Plot the log2 ratio from the track menu with a symmetric **min/max score** of
 about `-2`/`2` and the **scatter** rendering, in a single color (gains and
 losses already read off their position above or below the 0 line). Note the 0
-line is the sample's genome-wide median, **not** absolute diploid: in a tumor
-where much of the genome is deleted, copy-neutral regions sit above 0 — the
-benchmark CNV BED track gives the absolute copy-number reference alongside it.
+line is the sample's genome-wide median, not absolute diploid: in a tumor where
+much of the genome is deleted, copy-neutral regions sit above 0 — the benchmark
+CNV BED track gives the absolute copy-number reference alongside it.
 
 <Figure caption="The log2(tumor/normal) coverage ratio across all chromosomes, drawn as a single-color scatter capped to a symmetric ±2 domain, above a folded B-allele-frequency track (built later in this walkthrough — 0=balanced, 0.5=full LOH) and the benchmark somatic CNV calls. The BAF panel tracks the same copy-number structure visible in the log2 ratio: LOH blocks read high, balanced blocks read low." src="/img/sv_cgiab/cnv_log2ratio_genome.png" />
 
@@ -238,8 +238,8 @@ benchmark CNV BED track gives the absolute copy-number reference alongside it.
 
 At germline-heterozygous SNP sites, plot the tumor's fraction of reads
 supporting the alt allele. Take the het sites from a germline small-variant VCF
-for the **normal** sample (the C-GIAB PacBio germline workflow publishes one),
-then read tumor allele depths with `bcftools mpileup`:
+for the normal sample (the C-GIAB PacBio germline workflow publishes one), then
+read tumor allele depths with `bcftools mpileup`:
 
 ```bash
 # germline small-variant calls for the normal sample
@@ -296,8 +296,8 @@ points keep the 0/1 split visible, whereas a line or the default whisker summary
 averages it back to a solid 0.5 band. Pairing the log2 ratio (copy number) with
 BAF (allelic state) is the conventional two-panel somatic-CNV view.
 
-Restricting to germline-**heterozygous** sites is deliberate: at a homozygous
-site the alt fraction is ~0 or ~1 regardless of copy number, so it carries no
+Restricting to germline-heterozygous sites is deliberate: at a homozygous site
+the alt fraction is ~0 or ~1 regardless of copy number, so it carries no
 allelic-imbalance signal and would only drown out the LOH split this track
 exists to show. Balanced regions then sit at a single 0.5 band that splits
 toward 0 and 1 under LOH — which is why somatic CNV callers all work from
@@ -323,9 +323,9 @@ per-site BAF built above with one `awk` pass, but
 long-read CNV caller mentioned below) does the equivalent job more robustly: it
 phases the normal's germline heterozygous SNPs, uses that phasing to assign each
 SNP's tumor read support to a haplotype, corrects phase-switch errors with
-coverage evidence, and emits **one already-folded value per phase block** —
-clean by construction from haplotype assignment, not a per-site average smoothed
-after the fact.
+coverage evidence, and emits one already-folded value per phase block — clean by
+construction from haplotype assignment, not a per-site average smoothed after
+the fact.
 
 ```bash
 # 1. phase the normal's germline hets against its own long reads
@@ -416,7 +416,7 @@ jbrowse add-track HG008T.hap2.paf -a HG008T.hap2,GRCh38_GIABv3 --out $OUT --load
 The `-c` flag asks minimap2 to emit base-level CIGAR strings, which encode the
 position of insertions and deletions in the alignment. The `-x asm5` preset sets
 parameters for same-species assembly-to-assembly alignment. Note that
-`add-track -a` takes the assemblies as `query,target` — the **reverse** of the
+`add-track -a` takes the assemblies as `query,target` — the reverse of the
 `minimap2` argument order (`minimap2 target query`). Above, minimap2 is given
 `GRCh38_GIABv3.fa HG008T.hap1.fa` (target then query), so the track is loaded
 with `-a HG008T.hap1,GRCh38_GIABv3` (query then target). See the
@@ -494,15 +494,15 @@ coverage changes line up with the called intervals.
 
 Raw coverage is only a sanity check on existing calls. For a normalized signal
 that reads directly as copy number, use the log2 ratio and BAF tracks built
-above. Four loci in HG008-T each carry a **different** copy-number state, so
+above. Four loci in HG008-T each carry a different copy-number state, so
 together they make a compact tour of how the log2 ratio, BAF, and benchmark CNV
 tracks read against one another:
 
 | Locus  | State in HG008-T                 | Signature on the tracks                  |
 | ------ | -------------------------------- | ---------------------------------------- |
 | CDKN2A | Focal homozygous deletion (CN 0) | log2 drops to the floor; depth ratio → 0 |
-| TP53   | 17p loss + LOH (CN 1, 1+0)       | negative log2 **and** a BAF split        |
-| SMAD4  | 18q loss + LOH (CN 1, 0+1)       | negative log2 **and** a BAF split        |
+| TP53   | 17p loss + LOH (CN 1, 1+0)       | negative log2 and a BAF split            |
+| SMAD4  | 18q loss + LOH (CN 1, 0+1)       | negative log2 and a BAF split            |
 | KRAS   | Allelic gain (CN 3, 2+1)         | positive log2, imbalanced BAF            |
 
 #### CDKN2A: a homozygous deletion vs a single-copy loss
@@ -510,16 +510,16 @@ tracks read against one another:
 Navigate to `CDKN2A` on chr9. The benchmark calls a focal ~20 kb homozygous
 deletion (`SV_75`, total copy number 0) right over the gene, and it reads very
 differently from the heterozygous deletions elsewhere in the genome: the
-log2(tumor/normal) ratio drops all the way to the **floor**, because a
-homozygous deletion removes **both** parental copies and the tumor/normal depth
-ratio goes to ~0 (log2 → −∞, here clipped at the −2 axis limit). A single-copy
-(heterozygous) loss only halves depth, landing near −1. The deletion sits inside
-a larger single-copy-loss arm, so it appears as a deeper focal notch punched
-into an already-reduced baseline.
+log2(tumor/normal) ratio drops all the way to the floor, because a homozygous
+deletion removes both parental copies and the tumor/normal depth ratio goes to
+~0 (log2 → −∞, here clipped at the −2 axis limit). A single-copy (heterozygous)
+loss only halves depth, landing near −1. The deletion sits inside a larger
+single-copy-loss arm, so it appears as a deeper focal notch punched into an
+already-reduced baseline.
 
 The whole-genome log2 ratio above is built from 500 bp bins, but even that is
 coarse next to a ~20 kb event's exact edges — it shows the drop but not the
-precise breakpoints. For that, drop down to **true per-base coverage** over just
+precise breakpoints. For that, drop down to true per-base coverage over just
 this locus: slice the tumor BAM to the region of interest
 (`samtools view -b $TUMOR chr9:21,800,000-22,200,000`), index the slice, and run
 plain `mosdepth` on it with no `-b`/`-n` flags (that's the per-base mode — cheap
@@ -547,11 +547,11 @@ boundaries almost exactly: depth drops from ~65x to precisely 0 right at
 Chromosome 17 by itself teaches why you build a BAF track alongside the depth
 ratio. Open the whole chromosome with the log2 ratio above the BAF:
 
-- the **p-arm** (covering `TP53`) is a single-copy loss with LOH (CN 1, 1+0) —
-  the log2 ratio is negative **and** the BAF splits away from 0.5;
-- the **q-arm** is **copy-neutral LOH** (CN 2, 2+0): one parental haplotype was
-  lost and the other duplicated, so the total copy number is still 2 and the
-  log2 ratio stays **flat at 0** — but the BAF still splits hard away from 0.5.
+- the p-arm (covering `TP53`) is a single-copy loss with LOH (CN 1, 1+0) — the
+  log2 ratio is negative and the BAF splits away from 0.5;
+- the q-arm is copy-neutral LOH (CN 2, 2+0): one parental haplotype was lost and
+  the other duplicated, so the total copy number is still 2 and the log2 ratio
+  stays flat at 0 — but the BAF still splits hard away from 0.5.
 
 The q-arm event is invisible to depth alone; only the BAF reveals it. That is
 the entire argument for pairing the two signals.
