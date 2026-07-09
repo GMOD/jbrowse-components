@@ -7,7 +7,6 @@ import {
 import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { rectifyStats } from '@jbrowse/core/util/stats'
 
 import type { BigWigAdapterConfig } from './configSchema.ts'
 import type { RawFeatureArrays } from '../util.ts'
@@ -92,11 +91,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     header: Awaited<ReturnType<BigWig['getHeader']>>
   }>
 
-  public static capabilities = [
-    'hasResolution',
-    'hasLocalStats',
-    'hasGlobalStats',
-  ]
+  public static capabilities = ['hasResolution', 'hasLocalStats']
 
   private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts ?? {}
@@ -130,11 +125,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
   public async refIdToName(refId: number) {
     const { header } = await this.setup()
     return header.refsByNumber[refId]?.name
-  }
-
-  public async getGlobalStats(opts?: BaseOptions) {
-    const { header } = await this.setup(opts)
-    return rectifyStats(header.totalSummary)
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {

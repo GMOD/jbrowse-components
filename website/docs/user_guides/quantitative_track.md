@@ -30,10 +30,6 @@ The **Autoscale type** option controls the Y-axis range:
 
 - **Local** (default) — rescales to the current view (useful when navigating to
   regions with very different signal levels)
-- **Global** — scales to the full range of values in the file (good for
-  consistent comparison across sessions)
-- **Global ± 3σ** — scales to three standard deviations around the file-wide
-  mean
 - **Local ± 3σ** — scales to three standard deviations of the local signal,
   clipping outlier spikes; recommended for coverage tracks that have a few
   anomalously high positions

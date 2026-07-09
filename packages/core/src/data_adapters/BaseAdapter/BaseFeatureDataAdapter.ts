@@ -8,7 +8,6 @@ import { blankStats, scoresToStats } from '../../util/stats.ts'
 import type { BaseOptions, FeatureDensityStats } from './types.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
-import type { RectifiedQuantitativeStats } from '../../util/stats.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
 
 /**
@@ -121,16 +120,6 @@ export abstract class BaseFeatureDataAdapter<
   public async hasDataForRefName(refName: string, opts: BaseOptions = {}) {
     const refNames = await this.getRefNames(opts)
     return refNames.includes(refName)
-  }
-
-  /**
-   * Calculates global statistics across the entire dataset.
-   * Adapters with precomputed global stats (e.g. BigWig) should override this.
-   */
-  public async getGlobalStats(
-    _opts?: BaseOptions,
-  ): Promise<Partial<RectifiedQuantitativeStats> | undefined> {
-    return undefined
   }
 
   /**

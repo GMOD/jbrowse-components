@@ -3,7 +3,7 @@ import {
   aggregateQuantitativeStats,
   blankStats,
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
-import { SimpleFeature, max, min } from '@jbrowse/core/util'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { firstValueFrom, merge } from 'rxjs'
 import { map, toArray } from 'rxjs/operators'
@@ -72,11 +72,7 @@ function hasFeatureArrays(
 }
 
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
-  public static capabilities = [
-    'hasResolution',
-    'hasLocalStats',
-    'hasGlobalStats',
-  ]
+  public static capabilities = ['hasResolution', 'hasLocalStats']
 
   private adaptersP?: Promise<AdapterEntry[]>
 
@@ -127,21 +123,6 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
       adapters.map(a => a.dataAdapter.getRefNames(opts)),
     )
     return [...new Set(allNames.flat())]
-  }
-
-  public async getGlobalStats(opts?: BaseOptions) {
-    const adapters = await this.getAdapters()
-    const results = await Promise.all(
-      adapters.map(adp => adp.dataAdapter.getGlobalStats(opts)),
-    )
-    const stats = results.filter(s => s !== undefined)
-    if (!stats.length) {
-      return undefined
-    }
-    return {
-      scoreMin: min(stats.map(s => s.scoreMin ?? 0)),
-      scoreMax: max(stats.map(s => s.scoreMax ?? 0)),
-    }
   }
 
   private async getFilteredAdapters(sources?: { name: string }[]) {

@@ -172,8 +172,8 @@ custom behaviors to a web-worker or server side process.
 
 The wiggle plugin, for example, registers custom RPC method types including:
 
-- `WiggleGetMultiRegionQuantitativeStats`
-- `WiggleGetGlobalQuantitativeStats`
+- `MultiWiggleGetScoreMatrix`
+- `MultiWiggleClusterScoreMatrix`
 
 These methods can run in the web worker when available.
 

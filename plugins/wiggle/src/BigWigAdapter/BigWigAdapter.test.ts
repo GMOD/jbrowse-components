@@ -32,9 +32,6 @@ describe('adapter can fetch features from volvox.bw', () => {
     const featuresJsonArray = featuresArray.map(f => f.toJSON())
     expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
   })
-  it('adapter can fetch stats from volvox.bw', async () => {
-    expect(await adapter.getGlobalStats()).toMatchSnapshot()
-  })
   it('get region stats', async () => {
     expect(
       await adapter.getRegionQuantitativeStats({
