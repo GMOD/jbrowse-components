@@ -151,7 +151,8 @@
     "./util/useEventCallback": "./src/util/useEventCallback.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./util/useRenderingBackend": "./src/util/useRenderingBackend.ts",
-    "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts"
+    "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts",
+    "./util/wheelZoom": "./src/util/wheelZoom.ts"
   },
   "files": [
     "esm"
@@ -730,6 +731,10 @@
       "./util/useVirtualScrollWheel": {
         "types": "./esm/util/useVirtualScrollWheel.d.ts",
         "import": "./esm/util/useVirtualScrollWheel.js"
+      },
+      "./util/wheelZoom": {
+        "types": "./esm/util/wheelZoom.d.ts",
+        "import": "./esm/util/wheelZoom.js"
       }
     },
     "typesVersions": {
@@ -1129,6 +1134,9 @@
         ],
         "util/useVirtualScrollWheel": [
           "esm/util/useVirtualScrollWheel.d.ts"
+        ],
+        "util/wheelZoom": [
+          "esm/util/wheelZoom.d.ts"
         ]
       }
     }

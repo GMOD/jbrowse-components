@@ -4,7 +4,15 @@
 // variant displays so the gesture stays identical. setScrollTop clamps to the
 // new scrollableHeight, so the raw target is passed through unclamped.
 
+import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
+
 const MAX_ROW_HEIGHT = 20
+
+// px of row-height change per pixel of normalized wheel scroll. A mouse notch
+// (~100px) nudges the height ~0.4px; a trackpad's small continuous deltas
+// accumulate smoothly instead of the old sign-based ±1-per-event, which flew
+// through the whole range on a trackpad's event flood.
+const RESIZE_PX_PER_WHEEL_PX = 1 / 240
 
 interface RowResizeTarget {
   rowHeight: number
@@ -23,7 +31,10 @@ export function applyRowResizeWheel(
   model: RowResizeTarget,
 ) {
   e.preventDefault()
-  const delta = e.deltaY > 0 ? -1 : 1
+  // scroll up (deltaY < 0) grows rows; proportional to the normalized delta so
+  // the speed is consistent across mice/trackpads and finer than ±1/event.
+  const delta =
+    -normalizeWheelDelta(e.deltaY, e.deltaMode) * RESIZE_PX_PER_WHEEL_PX
   // guard nrow=0 (no samples) so the auto-fit floor stays finite
   const minRowHeight = model.viewportHeight / Math.max(1, model.nrow)
   // With few samples the auto-fit floor can exceed MAX_ROW_HEIGHT; the floor
