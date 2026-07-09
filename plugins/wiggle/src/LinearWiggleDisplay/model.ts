@@ -32,8 +32,9 @@ import {
 import {
   makePointSizeMenuItems,
   makeRenderingTypeSubMenu,
-  makeResolutionAndSummarySubMenus,
+  makeResolutionSubMenu,
   makeShowSubMenu,
+  makeSummaryScoreModeSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import {
   SINGLE_WIGGLE_SOURCE_NAME,
@@ -307,10 +308,12 @@ export default function stateModelFactory(
           makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
           ...makePointSizeMenuItems(self),
           // scaleType: true keeps the scale-type submenu (manhattan, linear-only,
-          // drops it); resolution/summary lead the submenu, matching multi-wiggle.
+          // drops it); summary score mode leads the Score submenu, matching
+          // multi-wiggle.
+          ...makeResolutionSubMenu(self),
           makeScoreSubMenu(self, {
             scaleType: true,
-            leadingItems: makeResolutionAndSummarySubMenus(self),
+            leadingItems: makeSummaryScoreModeSubMenu(self),
           }),
           // cross hatches are meaningless in density mode (score maps to color,
           // not height)

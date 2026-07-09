@@ -152,7 +152,9 @@ export function WiggleScoreConfigMixin() {
        * #action
        */
       setResolution(res: number) {
-        self.resolution = res
+        // clamp so repeated finer/coarser stepping can't drive unbounded RPC
+        // fetches (finer) or degenerate binning (coarser)
+        self.resolution = Math.min(16, Math.max(1 / 16, res))
       },
       /**
        * #action

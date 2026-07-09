@@ -59,8 +59,10 @@ export function makePointSizeMenuItems(self: {
 }
 
 // Resolution is a multiplier on the number of bins fetched (higher = finer),
-// stepped multiplicatively by 5 with a default of 1. Rendered inline so the
+// stepped multiplicatively by 2 with a default of 1. Rendered inline so the
 // user can step finer/coarser repeatedly without reopening the menu each click.
+const RESOLUTION_STEP = 2
+
 function formatResolution(n: number) {
   return n >= 1 ? `${n}×` : `1/${Math.round(1 / n)}×`
 }
@@ -132,9 +134,9 @@ interface WithResolution {
   setSummaryScoreMode: (v: string) => void
 }
 
-export function makeResolutionAndSummarySubMenus(
-  self: WithResolution,
-): MenuItem[] {
+// Resolution lives at the top level of the track menu (not nested under Score)
+// for discoverability.
+export function makeResolutionSubMenu(self: WithResolution): MenuItem[] {
   if (!self.hasResolution) {
     return []
   }
@@ -149,10 +151,10 @@ export function makeResolutionAndSummarySubMenus(
             <ResolutionStepper
               getValue={() => self.resolution}
               onFiner={() => {
-                self.setResolution(self.resolution * 5)
+                self.setResolution(self.resolution * RESOLUTION_STEP)
               }}
               onCoarser={() => {
-                self.setResolution(self.resolution / 5)
+                self.setResolution(self.resolution / RESOLUTION_STEP)
               }}
               onReset={() => {
                 self.setResolution(1)
@@ -162,6 +164,14 @@ export function makeResolutionAndSummarySubMenus(
         },
       ],
     },
+  ]
+}
+
+export function makeSummaryScoreModeSubMenu(self: WithResolution): MenuItem[] {
+  if (!self.hasResolution) {
+    return []
+  }
+  return [
     {
       label: 'Summary score mode',
       subMenu: (

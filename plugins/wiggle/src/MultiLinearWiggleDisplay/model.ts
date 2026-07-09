@@ -46,8 +46,9 @@ import {
 import {
   makePointSizeMenuItems,
   makeRenderingTypeSubMenu,
-  makeResolutionAndSummarySubMenus,
+  makeResolutionSubMenu,
   makeShowSubMenu,
+  makeSummaryScoreModeSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERINGS } from '../util.ts'
 
@@ -482,9 +483,10 @@ export default function stateModelFactory(
                 : []),
             ],
           },
+          ...makeResolutionSubMenu(self),
           makeScoreSubMenu(self, {
             scaleType: true,
-            leadingItems: makeResolutionAndSummarySubMenus(self),
+            leadingItems: makeSummaryScoreModeSubMenu(self),
           }),
           ...makeShowSubMenu(showItems),
           {
