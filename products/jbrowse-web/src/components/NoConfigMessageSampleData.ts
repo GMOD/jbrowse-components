@@ -245,10 +245,6 @@ export const demoSessions: readonly SampleLink[] = [
     label: 'Grape vs Peach dotplot',
   },
   {
-    href: '?config=test_data/yeast_synteny/config.json',
-    label: 'Yeast dotplot',
-  },
-  {
     href: '?config=https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json&session=share-SUK-mntGyB&password=eQF0F',
     label: '1000 genomes trio',
   },
@@ -325,10 +321,6 @@ export const galleryDemos: readonly SampleLink[] = [
     label: 'Synteny grape vs peach',
   },
   {
-    href: '?config=test_data%2Fhs1_vs_mm39%2Fconfig.json',
-    label: 'Hs1 vs mm39 synteny',
-  },
-  {
     href: '?config=test_data%2Fconfig_demo.json&session=share-xS8Eg67AFS&password=jPzH5',
     label: 'Hi-C contact matrix',
   },
@@ -351,10 +343,6 @@ export const galleryDemos: readonly SampleLink[] = [
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-psOr2x2efp&password=bErZE',
     label: 'GIAB - Heterozygous small deletion',
-  },
-  {
-    href: '?config=test_data%2Fconfig_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
-    label: 'GIAB - ~1.5kb insertion',
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-rzJ27iixQH&password=rSgZe',
