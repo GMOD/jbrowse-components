@@ -1,3 +1,4 @@
+import type { AssertExtends } from '../assertExtends.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 
 /**
@@ -10,4 +11,7 @@ import type { AbstractSessionModel } from '@jbrowse/core/util/types'
  * type _Check = AssertSessionModel<Instance<WebSessionModelType>>
  * ```
  */
-export type AssertSessionModel<T extends AbstractSessionModel> = T
+export type AssertSessionModel<T extends AbstractSessionModel> = AssertExtends<
+  T,
+  AbstractSessionModel
+>

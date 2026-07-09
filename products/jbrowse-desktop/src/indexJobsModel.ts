@@ -13,13 +13,39 @@ import {
 } from '@jbrowse/text-indexing'
 import { autorun, observable, toJS } from 'mobx'
 
+import type { DesktopRootModel } from './rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { AssertExtends } from '@jbrowse/product-core'
 
 const { ipcRenderer } = window.require('electron')
+
+// The jobs manager lives at rootModel.jobsManager, so its MST parent is the root
+// model; this is the slice it reaches for. One typed contract in place of the
+// per-getter getParent<{...}> shapes, mirroring the react session models'
+// SessionModelParent.
+interface JobsManagerParent {
+  jbrowse: {
+    rpcManager: RpcManager
+    tracks: Track[]
+    aggregateTextSearchAdapters: { textSearchAdapterId: string }[]
+  }
+  session: SessionWithDrawerWidgets
+  textSearchManager: { clearCache: () => void }
+}
+
+// Compile-time guard: the real root model must actually provide everything
+// JobsManagerParent claims. getParent<JobsManagerParent> is an unchecked
+// assertion, so without this the shadow could silently drift from the root
+// (e.g. a renamed rpcManager) and only surface at runtime. If this errors, the
+// shadow above claims something rootModel no longer provides.
+export type _JobsManagerParentCheck = AssertExtends<
+  DesktopRootModel,
+  JobsManagerParent
+>
 
 interface TrackTextIndexing {
   attributes: string[]
@@ -92,32 +118,26 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #getter
        */
       get rpcManager() {
-        return getParent<{ jbrowse: { rpcManager: RpcManager } }>(self).jbrowse
-          .rpcManager
+        return getParent<JobsManagerParent>(self).jbrowse.rpcManager
       },
       /**
        * #getter
        */
       get tracks() {
-        return getParent<{
-          jbrowse: { tracks: Track[] }
-        }>(self).jbrowse.tracks
+        return getParent<JobsManagerParent>(self).jbrowse.tracks
       },
       /**
        * #getter
        */
       get session() {
-        return getParent<{ session: SessionWithDrawerWidgets }>(self).session
+        return getParent<JobsManagerParent>(self).session
       },
       /**
        * #getter
        */
       get aggregateTextSearchAdapters() {
-        return getParent<{
-          jbrowse: {
-            aggregateTextSearchAdapters: { textSearchAdapterId: string }[]
-          }
-        }>(self).jbrowse.aggregateTextSearchAdapters
+        return getParent<JobsManagerParent>(self).jbrowse
+          .aggregateTextSearchAdapters
       },
     }))
     .actions(self => ({
@@ -311,9 +331,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
 
           // clear the text search adapter cache so stale adapters pointing
           // at old index files are discarded
-          const rootModel = getParent<{
-            textSearchManager: { clearCache: () => void }
-          }>(self)
+          const rootModel = getParent<JobsManagerParent>(self)
           rootModel.textSearchManager.clearCache()
           // remove from the queue and add to finished/completed jobs
           const current = this.dequeueJob()

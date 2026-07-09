@@ -10,12 +10,13 @@ import {
   TracksManagerSessionMixin,
 } from '@jbrowse/product-core'
 
+import type { ViewModel } from './createModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SerializableThemeArgs } from '@jbrowse/core/ui'
 import type { AssemblyManager } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
-import type { AssertSessionModel } from '@jbrowse/product-core'
+import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
 
 // This session lives at rootModel.session, so its MST parent is the root model;
 // this is the slice it reaches for. A typed contract in place of getParent<any>,
@@ -27,6 +28,14 @@ interface SessionModelParent {
     assemblyName: string
   }
 }
+
+// Compile-time guard binding this shadow to the real root. getParent<T> is an
+// unchecked assertion, so this catches SessionModelParent drifting from the
+// root model (e.g. a renamed/removed prop) at build time, not runtime.
+export type _SessionModelParentCheck = AssertExtends<
+  ViewModel,
+  SessionModelParent
+>
 
 /**
  * #stateModel JBrowseReactCircularGenomeViewSessionModel

@@ -8,6 +8,7 @@ import type {
   createSessionModel,
 } from './createModel/index.ts'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { ParsedLocString } from '@jbrowse/core/util'
 import type { IJsonPatch, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
 
@@ -17,13 +18,6 @@ type Assembly = ConfigSnapshot['assembly']
 type Tracks = ConfigSnapshot['tracks']
 type InternetAccounts = ConfigSnapshot['internetAccounts']
 type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
-
-interface Location {
-  refName: string
-  start?: number
-  end?: number
-  assemblyName?: string
-}
 
 // engine-construction inputs shared by the imperative createViewState and the
 // declarative <LinearGenomeView> component
@@ -43,7 +37,7 @@ export interface CreateViewStateBaseOptions {
 // the imperative API adds three ways to express initial state; the managed
 // <LinearGenomeView> component expresses the same through a single `init` blob
 export interface ViewStateOptions extends CreateViewStateBaseOptions {
-  location?: string | Location
+  location?: string | ParsedLocString
   highlight?: (string | HighlightType)[]
   defaultSession?: SessionSnapshot
 }

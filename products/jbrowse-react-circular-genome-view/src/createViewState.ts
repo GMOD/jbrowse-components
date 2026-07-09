@@ -42,14 +42,11 @@ export default function createViewState(opts: ViewStateOptions) {
     internetAccounts,
     configuration,
     aggregateTextSearchAdapters,
-    plugins,
+    plugins = [],
     makeWorkerInstance,
     onChange,
   } = opts
-  const { model, pluginManager } = createModel(
-    plugins ?? [],
-    makeWorkerInstance,
-  )
+  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   const stateTree = model.create(
     {
       config: {
