@@ -7,8 +7,12 @@ import {
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
+import { alpha, useTheme } from '@mui/material'
 
-import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
+import {
+  drawFeatureBlocks,
+  drawHighlightBoxes,
+} from './components/Canvas2DFeatureRenderer.ts'
 import { forEachDisplayLabel } from './components/labelPositioning.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './components/sharedRendererConstants.ts'
@@ -31,6 +35,7 @@ export interface RenderSvgModel extends SvgExportable {
   scrollTop: number
   regionTooLarge: boolean
   laidOutDataMap: Map<number, FeatureDataResult>
+  highlightedFeatureIdSet: ReadonlySet<string>
   showLabels: boolean
   effectiveShowDescriptions: boolean
   labelFontSize: number
@@ -88,6 +93,7 @@ function CanvasFeaturesSvgBody({
   height: number
   opts: ExportSvgDisplayOptions | undefined
 }) {
+  const theme = useTheme()
   const visibleRegions = view.visibleRegions
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
   // canvas spans the viewport (visibleRegions coords are viewport-relative and
@@ -107,6 +113,23 @@ function CanvasFeaturesSvgBody({
       canvasWidth,
       canvasHeight: height,
     })
+  })
+  // Highlight boxes are on-screen DOM overlays the app canvas never paints, so
+  // bake them in here (same highlight.main border/tint as searchHighlightBox).
+  // Drawn over the features but under labels, matching the on-screen layering.
+  const highlightColor = theme.palette.highlight.main
+  const highlightNode = paintLayer(canvasWidth, height, undefined, ctx => {
+    drawHighlightBoxes(
+      ctx,
+      model.laidOutDataMap,
+      renderBlocks,
+      model.highlightedFeatureIdSet,
+      { scrollY, canvasWidth, canvasHeight: height },
+      {
+        border: alpha(highlightColor, 0.7),
+        fill: alpha(highlightColor, 0.12),
+      },
+    )
   })
   const fontSize = model.labelFontSize
   const context = {
@@ -147,6 +170,7 @@ function CanvasFeaturesSvgBody({
       height={height}
     >
       {featuresNode}
+      {highlightNode}
       {textNode}
     </SvgClipRect>
   )

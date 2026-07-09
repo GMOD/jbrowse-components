@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
+import { computeOverlayRect } from './highlightUtils.ts'
 import {
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
@@ -29,11 +30,16 @@ import {
   canvasEdgeFlags,
 } from './sharedRendererConstants.ts'
 
+
 import type {
   FeatureRenderBlock,
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
-import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type {
+  FeatureDataResult,
+  HitItemBase,
+  RegionRenderData,
+} from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
@@ -337,6 +343,79 @@ export function drawFeatureBlocks(
     )
 
     ctx.restore()
+  }
+}
+
+function drawHighlightBox(
+  ctx: Ctx2D,
+  item: HitItemBase,
+  toX: BpToScreen,
+  scrollY: number,
+  colors: { border: string; fill: string },
+) {
+  const x1 = toX(item.startBp)
+  const x2 = toX(item.endBp)
+  // Mirror the on-screen overlay box (useOverlayElements/computeOverlayRect):
+  // 2px outset, top clamped into the content edge; then apply the scroll offset
+  // the on-screen ScrollLockedOverlay applies via its -scrollTop transform.
+  const box = computeOverlayRect(
+    {
+      leftPx: Math.min(x1, x2),
+      topPx: item.topPx,
+      width: Math.abs(x2 - x1),
+      heightPx: item.bottomPx - item.topPx,
+    },
+    0,
+    2,
+    2,
+  )
+  const top = box.top - scrollY
+  ctx.fillStyle = colors.fill
+  ctx.fillRect(box.left, top, box.width, box.height)
+  ctx.strokeStyle = colors.border
+  ctx.lineWidth = 1
+  ctx.strokeRect(box.left, top, box.width, box.height)
+}
+
+// Vector post-pass for SVG export: box the resolved highlighted features the way
+// the on-screen DOM overlay does (the app canvas doesn't paint these). The
+// resolved id set already picks a top-level feature OR its subfeature, so
+// scanning both arrays and filtering by membership can't double-box.
+export function drawHighlightBoxes(
+  ctx: Ctx2D,
+  regions: ReadonlyMap<number, FeatureDataResult>,
+  blocks: FeatureRenderBlock[],
+  highlightedIds: ReadonlySet<string>,
+  state: RenderState,
+  colors: { border: string; fill: string },
+) {
+  const { canvasWidth, canvasHeight, scrollY } = state
+  if (highlightedIds.size === 0 || regions.size === 0) {
+    return
+  }
+  for (const block of blocks) {
+    const region = regions.get(block.displayedRegionIndex)
+    if (region) {
+      const clip = clipBlockForCanvas(block, canvasWidth)
+      if (clip) {
+        ctx.save()
+        ctx.beginPath()
+        ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
+        ctx.clip()
+        const toX = makeBpMapper(block)
+        for (const item of region.flatbushItems) {
+          if (highlightedIds.has(item.featureId)) {
+            drawHighlightBox(ctx, item, toX, scrollY, colors)
+          }
+        }
+        for (const item of region.subfeatureInfos) {
+          if (highlightedIds.has(item.featureId)) {
+            drawHighlightBox(ctx, item, toX, scrollY, colors)
+          }
+        }
+        ctx.restore()
+      }
+    }
   }
 }
 

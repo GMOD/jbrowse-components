@@ -193,7 +193,7 @@ export interface AminoAcidOverlayItem {
   flatbushIdx: number
 }
 
-interface HitItemBase {
+export interface HitItemBase {
   featureId: string
   type: string | undefined
   startBp: number

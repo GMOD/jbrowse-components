@@ -3,6 +3,8 @@ import React from 'react'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
@@ -83,11 +85,24 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     regionTooLarge: false,
     svgReady: true,
     laidOutDataMap: new Map([[0, makeData([{ startBp: 1100, endBp: 1200 }])]]),
+    highlightedFeatureIdSet: new Set<string>(),
     showLabels: true,
     effectiveShowDescriptions: true,
     labelFontSize: 12,
     ...overrides,
   }
+}
+
+// renderSvg's body uses useTheme() for the highlight color, so render under the
+// jbrowse theme the export runs in (a bare MUI theme lacks palette.highlight).
+function renderResult(result: React.ReactNode) {
+  return renderToString(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <svg width={800} height={100} viewBox="0 0 800 100">
+        {result as React.ReactElement}
+      </svg>
+    </ThemeProvider>,
+  )
 }
 
 describe('renderSvg', () => {
@@ -96,11 +111,7 @@ describe('renderSvg', () => {
   it('returns the chrome wrapper with no features when laidOutDataMap is empty', async () => {
     const result = await renderSvg(makeModel({ laidOutDataMap: new Map() }))
     expect(result).not.toBeNull()
-    const html = renderToString(
-      <svg width={800} height={100} viewBox="0 0 800 100">
-        {result as React.ReactElement}
-      </svg>,
-    )
+    const html = renderResult(result)
     extractAndWriteSvg(html, 'empty-map.svg')
     expect(html).toMatchSnapshot()
   })
@@ -113,11 +124,7 @@ describe('renderSvg', () => {
       }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(
-      <svg width={800} height={100} viewBox="0 0 800 100">
-        {result as React.ReactElement}
-      </svg>,
-    )
+    const html = renderResult(result)
     extractAndWriteSvg(html, 'error.svg')
     expect(html).toMatchSnapshot()
   })
@@ -131,11 +138,7 @@ describe('renderSvg', () => {
       makeModel({ laidOutDataMap: new Map([[0, data]]) }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(
-      <svg width={800} height={100} viewBox="0 0 800 100">
-        {result as React.ReactElement}
-      </svg>,
-    )
+    const html = renderResult(result)
     extractAndWriteSvg(html, 'with-features.svg')
     expect(html).toMatchSnapshot()
   })
@@ -145,11 +148,7 @@ describe('renderSvg', () => {
       makeModel({ laidOutDataMap: new Map([[99, makeData()]]) }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(
-      <svg width={800} height={100} viewBox="0 0 800 100">
-        {result as React.ReactElement}
-      </svg>,
-    )
+    const html = renderResult(result)
     extractAndWriteSvg(html, 'empty.svg')
     expect(html).toMatchSnapshot()
   })
@@ -180,13 +179,38 @@ describe('renderSvg', () => {
       makeModel({ laidOutDataMap: new Map([[0, data]]) }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(
-      <svg width={800} height={100} viewBox="0 0 800 100">
-        {result as React.ReactElement}
-      </svg>,
-    )
+    const html = renderResult(result)
     extractAndWriteSvg(html, 'reversed.svg')
     expect(html).toMatchSnapshot()
+  })
+
+  it('bakes a highlight box (highlight.main tint + border) around a highlighted feature', async () => {
+    const data = makeData([
+      { startBp: 1100, endBp: 1200 },
+      { startBp: 1400, endBp: 1600 },
+    ])
+    const result = await renderSvg(
+      makeModel({
+        laidOutDataMap: new Map([[0, data]]),
+        highlightedFeatureIdSet: new Set(['f1']),
+      }),
+    )
+    const html = renderResult(result)
+    // highlight.main is #FFB11D; the box fill (0.12) and border (0.7) are the
+    // only rgba(255, 177, 29, ...) paints in the export
+    expect(html).toContain('fill="rgba(255, 177, 29, 0.12)"')
+    expect(html).toContain('stroke="rgba(255, 177, 29, 0.7)"')
+    // boxed around f1 (1400..1600 → 0.8px/bp → x 320..480), outset 2px: x=318
+    expect(html).toContain('x="318"')
+  })
+
+  it('emits no highlight box when the highlight set is empty', async () => {
+    const data = makeData([{ startBp: 1100, endBp: 1200 }])
+    const result = await renderSvg(
+      makeModel({ laidOutDataMap: new Map([[0, data]]) }),
+    )
+    const html = renderResult(result)
+    expect(html).not.toContain('rgba(255, 177, 29')
   })
 
   // Runs last: renderSvg emits clip <g>s whose ids come from a module-global
@@ -194,12 +218,7 @@ describe('renderSvg', () => {
   // tests' clip ids above.
   it('offsets features and text by scrollTop so a scrolled track exports its viewport', async () => {
     const data = makeData([{ startBp: 1100, endBp: 1200 }])
-    const render = (node: React.ReactNode) =>
-      renderToString(
-        <svg width={800} height={100} viewBox="0 0 800 100">
-          {node as React.ReactElement}
-        </svg>,
-      )
+    const render = renderResult
     const top = render(
       await renderSvg(
         makeModel({ laidOutDataMap: new Map([[0, data]]), scrollTop: 0 }),
