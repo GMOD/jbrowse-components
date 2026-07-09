@@ -1604,6 +1604,17 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Chain member ids to highlight, empty unless in `normal` linked-read
+         * mode. Single source for the "is this a chain highlight" decision that
+         * both `highlightBoxes` (which ids to box) and `HighlightOverlay` (how
+         * strongly to shade them) read, so the two can't drift.
+         */
+        get highlightChainIds() {
+          return self.linkedReads === 'normal' ? self.highlightedChainIds : []
+        },
+
+        /**
+         * #getter
          * Screen boxes for the hovered read / chain, painted by the
          * `HighlightOverlay` div. Deliberately NOT part of `renderState`: the
          * hovered id changes on nearly every mousemove, and routing it through
@@ -1611,8 +1622,7 @@ export default function stateModelFactory(
          */
         get highlightBoxes() {
           const view = getContainingView(self) as LGV
-          const chainIds =
-            self.linkedReads === 'normal' ? self.highlightedChainIds : []
+          const chainIds = this.highlightChainIds
           const ids =
             chainIds.length > 0
               ? chainIds

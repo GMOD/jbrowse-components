@@ -46,6 +46,7 @@ interface JBrowseStringColors {
   gridlineMinor: string
   gridlineMajor: string
   featureHover: string
+  featureHoverStrong: string
   featureSelected: string
   featureDescription: string
 }
@@ -179,6 +180,12 @@ const gridlineMajorDark = 'rgba(255,255,255,0.15)'
 const featureHover = 'rgba(0,0,0,0.15)'
 const featureHoverDark = 'rgba(255,255,255,0.25)'
 
+// Stronger hover shade for a group of features (e.g. a hovered linked-read
+// chain), so the whole group reads more prominently than a single-feature
+// hover. Same light/dark asymmetry as featureHover.
+const featureHoverStrong = 'rgba(0,0,0,0.4)'
+const featureHoverStrongDark = 'rgba(255,255,255,0.4)'
+
 // Border accent around the click-selected feature. The saturated blue reads on
 // a light track; on a dark track it's lightened to keep the outline distinct.
 const featureSelected = 'rgba(0,100,255,0.8)'
@@ -292,6 +299,7 @@ const stringColorDefaults = {
   gridlineMinor,
   gridlineMajor,
   featureHover,
+  featureHoverStrong,
   featureSelected,
   featureDescription,
 }
@@ -318,6 +326,7 @@ const darkStringColorDefaults = {
   gridlineMinor: gridlineMinorDark,
   gridlineMajor: gridlineMajorDark,
   featureHover: featureHoverDark,
+  featureHoverStrong: featureHoverStrongDark,
   featureSelected: featureSelectedDark,
   featureDescription: featureDescriptionDark,
   // the deletion rect replaces the read on the dark track background, where the
