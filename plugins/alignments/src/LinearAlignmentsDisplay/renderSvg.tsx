@@ -18,6 +18,7 @@ import TlenAxisLabel from './components/TlenAxisLabel.tsx'
 import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
+import { sectionKey } from './components/sectionScreen.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import { buildSectionRenders } from './sectionLayout.ts'
 import GroupLabelBox from './svgcomponents/GroupLabelBox.tsx'
@@ -182,7 +183,7 @@ function CoverageScaleBars({
     <>
       {sections.map(section => (
         <g
-          key={section.groupKey || 'ungrouped'}
+          key={sectionKey(section.groupKey)}
           transform={`translate(${left}, ${section.coverageTop})`}
         >
           <YScaleBar ticks={ticks} orientation="left" />
@@ -231,7 +232,7 @@ function GroupLabelBoxes({
     <>
       {sections.map(section => (
         <GroupLabelBox
-          key={section.groupKey || 'ungrouped'}
+          key={sectionKey(section.groupKey)}
           x={left + 4}
           y={section.coverageTop + 1}
           text={section.label || 'ungrouped'}

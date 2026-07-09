@@ -16,7 +16,12 @@ import PileupBezierOverlay from './PileupBezierOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import TlenAxisLabel from './TlenAxisLabel.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import { bandOnScreen, bandScreenTop, contentScreenY } from './sectionScreen.ts'
+import {
+  bandOnScreen,
+  bandScreenTop,
+  contentScreenY,
+  sectionKey,
+} from './sectionScreen.ts'
 import { formatChainTooltip, formatFeatureTooltip } from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
@@ -249,7 +254,7 @@ const CoverageResizeHandle = observer(function CoverageResizeHandle({
         )
         return (
           <PileupResizeHandle
-            key={section.groupKey || 'ungrouped'}
+            key={sectionKey(section.groupKey)}
             top={bottom - YSCALEBAR_LABEL_OFFSET}
             canvasHeight={height}
             onDrag={dy => {
@@ -278,9 +283,8 @@ const ConnectionBandResizeHandles = observer(
     return (
       <>
         {model.renderSections.map(section => {
-          const key = section.groupKey || 'ungrouped'
           return (
-            <Fragment key={key}>
+            <Fragment key={sectionKey(section.groupKey)}>
               {bands.hasArcsBand ? (
                 <PileupResizeHandle
                   top={bandScreenTop(
@@ -346,7 +350,7 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
         )
         return (
           <PileupResizeHandle
-            key={section.groupKey || 'ungrouped'}
+            key={sectionKey(section.groupKey)}
             top={bottom - YSCALEBAR_LABEL_OFFSET}
             canvasHeight={height}
             onDrag={dy => {
@@ -490,7 +494,7 @@ const GroupedCoverageAxis = observer(function GroupedCoverageAxis({
         const top = bandScreenTop(section.coverageTop, scroll)
         return bandOnScreen(top, section.coverageHeight, scroll) ? (
           <GroupCoverageAxisBar
-            key={section.groupKey || 'ungrouped'}
+            key={sectionKey(section.groupKey)}
             top={top}
             coverageHeight={section.coverageHeight}
             ticks={coverageTicks}

@@ -1,6 +1,10 @@
 import { observer } from 'mobx-react'
 
-import { computePileupBezierArcsFromModel } from './pileupBezierArcs.ts'
+import {
+  BEZIER_ARC_STROKE_OPACITY,
+  BEZIER_ARC_STROKE_WIDTH,
+  computePileupBezierArcsFromModel,
+} from './pileupBezierArcs.ts'
 import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -23,8 +27,8 @@ const PileupBezierArcsSvg = observer(function PileupBezierArcsSvg({
           key={bezierArcKey(arc)}
           d={arc.d}
           stroke={arc.stroke}
-          strokeWidth={1.5}
-          strokeOpacity={0.8}
+          strokeWidth={BEZIER_ARC_STROKE_WIDTH}
+          strokeOpacity={BEZIER_ARC_STROKE_OPACITY}
           fill="none"
         />
       ))}

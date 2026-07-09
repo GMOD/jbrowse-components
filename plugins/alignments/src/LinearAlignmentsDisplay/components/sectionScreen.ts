@@ -49,6 +49,13 @@ export function makeBpToPx(region: BpScreenRegion, bpPerPx: number) {
     (reversed ? bpEdge - bp : bp - bpEdge) / bpPerPx + region.screenStartPx
 }
 
+// React-list key for a section. The ungrouped section's `groupKey` is '', so
+// spell its stable sentinel here once — the label / axis / resize-handle lists
+// that map over sections can't then disagree on what ungrouped's key is.
+export function sectionKey(groupKey: string) {
+  return groupKey === '' ? 'ungrouped' : groupKey
+}
+
 // Screen Y of a sticky-capable band top (coverage / arcs / sashimi), or of a
 // section's pileup-clip ceiling. Sticky (unscrolled) when ungrouped; scrolls
 // with its section when grouped.

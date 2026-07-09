@@ -3,7 +3,11 @@ import { useState } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { computePileupBezierArcsFromModel } from './pileupBezierArcs.ts'
+import {
+  BEZIER_ARC_STROKE_OPACITY,
+  BEZIER_ARC_STROKE_WIDTH,
+  computePileupBezierArcsFromModel,
+} from './pileupBezierArcs.ts'
 import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -70,8 +74,8 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
             data-testid="pileup-bezier-arc"
             d={arc.d}
             stroke={arc.stroke}
-            strokeWidth={isSelected ? 5 : 1}
-            strokeOpacity={0.8}
+            strokeWidth={isSelected ? 5 : BEZIER_ARC_STROKE_WIDTH}
+            strokeOpacity={BEZIER_ARC_STROKE_OPACITY}
             fill="none"
             style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
             onMouseEnter={() => {

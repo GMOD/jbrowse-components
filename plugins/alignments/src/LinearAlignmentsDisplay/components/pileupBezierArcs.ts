@@ -6,6 +6,13 @@ import type { PileupArc } from '../../features/linkedReads/computeOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+// Stroke style shared by the on-screen overlay (PileupBezierOverlay) and the SVG
+// export (PileupBezierArcsSvg) so the two paths can't drift, per the invariant
+// in this dir's CLAUDE.md. Selection thickens the on-screen stroke only (not
+// exported), so that width lives at the overlay call site.
+export const BEZIER_ARC_STROKE_WIDTH = 1
+export const BEZIER_ARC_STROKE_OPACITY = 0.8
+
 // Single source of truth mapping model + view state to bezier-arc geometry, so
 // the on-screen overlay (PileupBezierOverlay) and the SVG export (renderSvg)
 // cannot drift in which fields feed the curves. Only `scrollTop` legitimately

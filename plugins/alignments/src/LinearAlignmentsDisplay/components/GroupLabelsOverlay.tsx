@@ -5,7 +5,7 @@ import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import { observer } from 'mobx-react'
 
-import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
+import { bandOnScreen, bandScreenTop, sectionKey } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 
@@ -87,7 +87,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         const hasOverride = model.hasGroupHeightOverride(section.groupKey)
         const truncated = model.isGroupTruncated(section.groupKey)
         return (
-          <div key={section.groupKey === '' ? 'ungrouped' : section.groupKey}>
+          <div key={sectionKey(section.groupKey)}>
             {i > 0 ? <div className={classes.divider} style={{ top }} /> : null}
             <div
               className={classes.controls}
