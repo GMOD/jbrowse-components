@@ -1276,7 +1276,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       toggleTrackSelector() {
         const { session, selector } = openTrackSelectorWidget(self)
-        if (session.activeWidgets.has(selector.id) && !session.minimized) {
+        const isVisible =
+          session.visibleWidget?.id === selector.id && !session.minimized
+        if (isVisible) {
           session.hideWidget(selector)
         } else {
           session.showWidget(selector)
@@ -1546,7 +1548,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const session = getSession(self)
         return (
           isSessionModelWithWidgets(session) &&
-          session.activeWidgets.has('hierarchicalTrackSelector') &&
+          session.visibleWidget?.id === 'hierarchicalTrackSelector' &&
           !session.minimized
         )
       },
