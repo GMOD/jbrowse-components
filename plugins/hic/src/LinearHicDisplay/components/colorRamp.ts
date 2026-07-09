@@ -1,9 +1,4 @@
-import {
-  lookupColorRamp,
-  makeRampFillStyleLut,
-} from '@jbrowse/render-core/canvas2dUtils'
-
-export { lookupColorRamp }
+import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
 
 export type RGBA = readonly [number, number, number, number]
 
@@ -160,8 +155,13 @@ export function getLegendSvgStops(colorScheme: HicColorScheme | undefined) {
 // the cross-plugin primitive.
 export function makeHicFillStyleLut(ramp: Uint8Array) {
   const fill = makeRampFillStyleLut(ramp)
-  return (t: number) =>
-    lookupColorRamp(ramp, t).a < 0.01 ? undefined : fill(t)
+  // Read the alpha byte directly rather than via lookupColorRamp, which
+  // allocates an {r,g,b,a} object on every call — this LUT runs once per
+  // contact per frame on the Canvas2D/SVG path.
+  return (t: number) => {
+    const idx = Math.max(0, Math.min(255, Math.round(t * 255)))
+    return ramp[idx * 4 + 3]! / 255 < 0.01 ? undefined : fill(t)
+  }
 }
 
 // Map a contact count into [0, 1] for color-ramp sampling. Mirrors the logic
