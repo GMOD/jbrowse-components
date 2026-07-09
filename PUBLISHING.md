@@ -7,9 +7,9 @@
    - Triggers CI to publish to npm.
    - Creates a draft GitHub release with desktop binaries.
 2. **Notes**: Run `pnpm releasenotes` to generate notes via gh CLI.
-3. **Finish**: Review and publish the GitHub release draft.
-4. **Announce**: Once the release is published (and the website is deployed),
-   post to social media and the email newsletter — see below.
+3. **Finish**: Review and publish the GitHub release draft. Publishing the
+   release automatically fires the announcements (see below) — that click _is_
+   the go/no-go gate.
 
 ## Announcing releases
 
@@ -19,7 +19,11 @@ The release blog post is also syndicated as an RSS feed at
 Announcements to Bluesky, Mastodon (`@usejbrowse@genomic.social`), and the email
 newsletter are sent by the **Announce release** GitHub Actions workflow, which
 runs on a GitHub runner using the repo secrets — so no local credentials are
-needed. Run it manually _after_ the GitHub release is published:
+needed. It fires **automatically** when a GitHub release is published (skipping
+prereleases), so the normal flow needs no manual step.
+
+To preview or re-send by hand, run it manually — the manual path defaults to a
+dry run:
 
 - Actions → **Announce release** → **Run workflow**, or from the CLI:
 

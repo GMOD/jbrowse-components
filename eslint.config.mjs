@@ -36,6 +36,8 @@ export default defineConfig(
       '**/umd_plugin.js',
 
       'scripts/announce.mjs',
+      'scripts/releaseBlog.mjs',
+      'scripts/releasenotes.mjs',
       'products/jbrowse-desktop/test/**',
       'plugins/blat/esbuild.mjs',
 

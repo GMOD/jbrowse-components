@@ -1,8 +1,11 @@
 name: Announce release
-# Manually triggered AFTER a release is published and verified. Fans out to
-# Bluesky, Mastodon, and the email newsletter in one shot. Defaults to a dry
-# run — flip `dry_run` to false to actually send.
+# Fans out to Bluesky, Mastodon, and the email newsletter in one shot. Fires
+# automatically when a GitHub release is published (the human gate is clicking
+# "publish" on the draft release), and can also be run manually — the manual
+# path defaults to a dry run so it's safe for previewing.
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       tag:
@@ -21,6 +24,10 @@ permissions:
 jobs:
   announce:
     name: Post to Bluesky, Mastodon, and newsletter
+    # Skip prereleases on the automatic path; a manual dispatch always runs.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.release.prerelease == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -46,9 +53,13 @@ jobs:
           MASTODON_INSTANCE: https://genomic.social
           NEWSLETTER_LAMBDA: jbrowse-newsletter-send
           # Pass inputs via env, not ${{ }} interpolation, so a tag value
-          # cannot inject shell commands into the run script.
-          INPUT_TAG: ${{ inputs.tag }}
-          DRY_RUN: ${{ inputs.dry_run }}
+          # cannot inject shell commands into the run script. On the automatic
+          # release path there's no dispatch input, so use the release tag and
+          # send for real; a manual dispatch honors its own dry_run toggle.
+          INPUT_TAG: ${{ inputs.tag || github.event.release.tag_name }}
+          DRY_RUN:
+            ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run ||
+            'false' }}
         run: |
           args=()
           [ -n "$INPUT_TAG" ] && args+=(--tag "$INPUT_TAG")
