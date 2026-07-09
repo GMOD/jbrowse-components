@@ -95,7 +95,7 @@ import type {
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
 import type { FeatureHighlight } from './featureHighlight.ts'
 import type { FitStage } from './fitLadder.ts'
-import type { IncrementalLayout } from './layout.ts'
+import type { IncrementalLayout, LabelDecimation } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 // rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
 // from it is enough to make rpcManager.call() resolve to the typed args.
@@ -213,6 +213,13 @@ const MIN_FIT_HEIGHT = 50
 // pack tighter than this the squeeze stops and the surplus scrolls, rather than
 // shrinking boxes to invisibility. See `fitMinScale`.
 const MIN_FIT_BOX_PX = 2
+
+// Largest feature-body height (px) the fit grow may reach. A sparse stack that
+// fits with room to spare is scaled up so its bodies fill the track instead of
+// leaving whitespace, but only until a body hits this height — past that the
+// surplus stays whitespace rather than ballooning a lone feature to fill a tall
+// track. See `fitMaxScale`.
+const MAX_FIT_BOX_PX = 30
 
 /**
  * #stateModel LinearCanvasBaseDisplay
@@ -388,6 +395,13 @@ export default function baseStateModelFactory(
          * #volatile
          */
         incrementalLayoutBodiesOnly: createIncrementalLayout(),
+        /**
+         * #volatile
+         */
+        // Fit-mode `decimated` rung memo: names reserved only for wide/pinned
+        // features (labelDecimation 'fitWidth'), descriptions dropped. Own memo
+        // instance so it keeps stable per-group references like the others.
+        incrementalLayoutDecimated: createIncrementalLayout(),
         /**
          * #volatile
          */
@@ -1013,6 +1027,7 @@ export default function baseStateModelFactory(
           memo: IncrementalLayout,
           showLabels: boolean,
           showDescriptions: boolean,
+          labelDecimation: LabelDecimation = 'all',
         ): Map<number, FeatureDataResult> {
           const view = getView(self)
           return self.regionTooLarge ||
@@ -1023,6 +1038,7 @@ export default function baseStateModelFactory(
                 ...self.layoutInputs,
                 showLabels,
                 showDescriptions,
+                labelDecimation,
               })
         },
       }))
@@ -1052,6 +1068,20 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
+         * Names kept only on wide/pinned features, descriptions dropped — the
+         * `decimated` stage's stack. Shorter than `labels` (fewer name rows) but
+         * still informative, the intermediate between "every name" and "no name".
+         */
+        get fitDecimatedLayout(): Map<number, FeatureDataResult> {
+          return self.fitLayoutAt(
+            self.incrementalLayoutDecimated,
+            self.showLabels,
+            false,
+            'fitWidth',
+          )
+        },
+        /**
+         * #getter
          * Nothing reserved: bodies packed edge-to-edge (the tightest stack),
          * labels hidden — the `bodies` stage's stack.
          */
@@ -1064,17 +1094,35 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
+         * The unscaled feature-body height (px): configured `featureHeight` times
+         * the display-mode multiplier (what the layout already applied). Basis for
+         * the fit squeeze/grow scale floors.
+         */
+        get fitBodyPx() {
+          return getConf(self, 'featureHeight') * HEIGHT_MULTIPLIERS[self.displayMode]
+        },
+        /**
+         * #getter
          * Floor on the fit squeeze: the smallest vertical scale that still leaves a
-         * feature body at least `MIN_FIT_BOX_PX` tall. The unscaled body height is
-         * the configured `featureHeight` times the display-mode multiplier (what
-         * the layout already applied). When bodies would pack tighter than this the
-         * squeeze stops here and the surplus scrolls instead of vanishing.
+         * feature body at least `MIN_FIT_BOX_PX` tall. When bodies would pack
+         * tighter than this the squeeze stops here and the surplus scrolls instead
+         * of vanishing.
          */
         get fitMinScale() {
-          const boxPx =
-            getConf(self, 'featureHeight') *
-            HEIGHT_MULTIPLIERS[self.displayMode]
-          return boxPx > 0 ? Math.min(1, MIN_FIT_BOX_PX / boxPx) : 1
+          return this.fitBodyPx > 0
+            ? Math.min(1, MIN_FIT_BOX_PX / this.fitBodyPx)
+            : 1
+        },
+        /**
+         * #getter
+         * Ceiling on the fit grow: the largest vertical scale before a feature body
+         * exceeds `MAX_FIT_BOX_PX`. A sparse stack grows to fill the track only up
+         * to here; past it the surplus stays whitespace (see resolveFitLadder).
+         */
+        get fitMaxScale() {
+          return this.fitBodyPx > 0
+            ? Math.max(1, MAX_FIT_BOX_PX / this.fitBodyPx)
+            : 1
         },
       }))
       .views(self => ({
@@ -1084,13 +1132,15 @@ export default function baseStateModelFactory(
          * unscaled `layout`, and the vertical `scale` to fill the track — bundled
          * so the three can never disagree. The ladder keeps the least reduction
          * whose *unscaled* stack fits the track height: `full` (names +
-         * descriptions), else `labels` (drop descriptions), else `bodies` (drop
-         * names too, pack tight). Only `bodies` can still overflow, and only it
-         * scales; `full`/`labels` fit by construction. Non-fit modes stay at
-         * `full`, scale 1. Read off the unscaled candidate heights so it can't feed
-         * back on its own `scale`. The bodies squeeze is floored at `fitMinScale`
-         * (keeping boxes visible); a stack too dense to fit even there overflows
-         * and scrolls. The ladder walk + squeeze math live in `resolveFitLadder`.
+         * descriptions), else `labels` (drop descriptions), else `decimated` (keep
+         * names only on wide/pinned features), else `bodies` (drop names too, pack
+         * tight). The kept rung is then scaled to fill the track: grown up to
+         * `fitMaxScale` when it fits with room to spare (so sparse bodies get
+         * taller instead of leaving whitespace), or — only at the last `bodies`
+         * rung — squeezed down to `fitMinScale` and scrolled if even that
+         * overflows. Non-fit modes stay at `full`, scale 1. Read off the unscaled
+         * candidate heights so it can't feed back on its own `scale`. The ladder
+         * walk + scale math live in `resolveFitLadder`.
          */
         get fitStage(): FitStage {
           const base = self.baseLaidOutDataMap
@@ -1099,10 +1149,15 @@ export default function baseStateModelFactory(
                 [
                   { level: 'full', layout: () => base },
                   { level: 'labels', layout: () => self.fitLabelsOnlyLayout },
+                  {
+                    level: 'decimated',
+                    layout: () => self.fitDecimatedLayout,
+                  },
                   { level: 'bodies', layout: () => self.fitBodiesOnlyLayout },
                 ],
                 self.height,
                 self.fitMinScale,
+                self.fitMaxScale,
               )
             : { level: 'full', layout: base, scale: 1 }
         },
@@ -1110,8 +1165,8 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Uniform vertical shrink for fit mode; 1 unless the bodies stack is being
-         * squeezed to fill the track.
+         * Uniform vertical scale for fit mode; 1 unless the resolved stack is being
+         * grown to fill the track (> 1) or the bodies stack squeezed to fit (< 1).
          */
         get fitScale() {
           return self.fitStage.scale
@@ -1119,8 +1174,8 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * What every consumer (hit test, GPU upload, React render) reads: the
-         * resolved fit layout, cloned and scaled only while squeezing bodies.
-         * Returned by reference off the un-squeezed path so the incremental-layout
+         * resolved fit layout, cloned and scaled only when grown or squeezed.
+         * Returned by reference off the unscaled path so the incremental-layout
          * upload diff and Y-morph idle check stay intact.
          */
         get laidOutDataMap(): Map<number, FeatureDataResult> {
@@ -1141,11 +1196,14 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * Names are painted at the `full`/`labels` stages (and whenever fit is
-         * off), where the packer reserved their row height and overhang so they
-         * never overlap. At the `bodies` stage nothing is reserved, so names are
-         * hidden rather than drawn on top of the boxes. Every render-time consumer
-         * reads this so hidden names reserve nothing.
+         * Names are painted at every stage short of `bodies` (and whenever fit is
+         * off), where the packer reserved row height + overhang for the names it
+         * kept so they never overlap — including the `decimated` stage, whose
+         * per-feature pruning happens inside the layout (dropped names are removed
+         * from floatingLabelsData), not via this flag. At the `bodies` stage
+         * nothing is reserved, so all names are hidden rather than drawn on top of
+         * the boxes. Every render-time consumer reads this so hidden names reserve
+         * nothing.
          */
         get renderedShowLabels() {
           return self.showLabels && self.fitStage.level !== 'bodies'
@@ -1211,10 +1269,14 @@ export default function baseStateModelFactory(
          */
         get maxY() {
           const raw = maxBottom(self.laidOutDataMap)
-          // Snap away a sub-pixel float-epsilon overflow while the fit squeeze is
-          // active, so a fitted track doesn't spuriously scroll (see
+          // Snap away a sub-pixel float-epsilon overflow while a fit scale (grow or
+          // squeeze) is active, so a fitted track doesn't spuriously scroll (see
           // snapFittedContentHeight).
-          const max = snapFittedContentHeight(raw, self.height, self.fitScale < 1)
+          const max = snapFittedContentHeight(
+            raw,
+            self.height,
+            self.fitScale !== 1,
+          )
           // During a Y morph hold the height at the taller of the old/new
           // layout so features animating up from a deeper row aren't clipped at
           // the bottom; it settles to the destination height when the morph

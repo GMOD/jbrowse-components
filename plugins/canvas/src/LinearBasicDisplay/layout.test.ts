@@ -69,6 +69,102 @@ function layout(
   })
 }
 
+// Same as makeFeatureData but attaches a name label of the given text width to
+// every feature, so the layout reserves a name line + overhang (and the fitWidth
+// decimation has something to keep or drop).
+function labeledFeatureData(
+  features: {
+    featureId: string
+    startBp: number
+    endBp: number
+    height: number
+  }[],
+  nameWidthPx = 40,
+): FeatureDataResult {
+  const base = makeFeatureData({ features })
+  const floatingLabelsData: FeatureDataResult['floatingLabelsData'] = {}
+  for (const f of features) {
+    floatingLabelsData[f.featureId] = {
+      featureId: f.featureId,
+      minX: f.startBp,
+      maxX: f.endBp,
+      topY: 0,
+      featureHeight: f.height,
+      nameLabel: {
+        text: f.featureId,
+        relativeY: 0,
+        color: '#000',
+        textWidth: nameWidthPx,
+      },
+    }
+  }
+  return { ...base, floatingLabelsData }
+}
+
+// The reserved label width is textWidth + LABEL_PADDING_PX (6); at bpPerPx 1 a
+// box is (endBp - startBp) px wide. So a 200px-wide box hosts a 40px name (kept),
+// a 10px-wide box does not (decimated).
+describe('fitWidth label decimation', () => {
+  const keys = new Map([[0, 'volvox:ctgA']])
+  function decimate(
+    data: FeatureDataResult,
+    pinnedFeatureIds = new Set<string>(),
+  ) {
+    return computeLaidOutData(new Map([[0, data]]), {
+      bpPerPx: 1,
+      regionKeys: keys,
+      showLabels: true,
+      showDescriptions: false,
+      reversedRegions: new Set<number>(),
+      displayMode: 'normal',
+      pinnedFeatureIds,
+      labelDecimation: 'fitWidth',
+    }).get(0)!
+  }
+
+  const mixed = () =>
+    labeledFeatureData([
+      { featureId: 'wide', startBp: 100, endBp: 300, height: 20 }, // 200px box
+      { featureId: 'narrow', startBp: 1000, endBp: 1010, height: 20 }, // 10px box
+    ])
+
+  it('keeps a name that fits its box, drops one that does not', () => {
+    const labels = decimate(mixed()).floatingLabelsData
+    expect(labels.wide).toBeDefined()
+    expect(labels.narrow).toBeUndefined()
+  })
+
+  it('keeps a pinned name even when its box is too narrow', () => {
+    const labels = decimate(mixed(), new Set(['narrow'])).floatingLabelsData
+    expect(labels.narrow).toBeDefined()
+  })
+
+  it('keeps every name under the default `all` policy', () => {
+    const out = layout(new Map([[0, mixed()]]), keys, 1, true, false).get(0)!
+    expect(out.floatingLabelsData.wide).toBeDefined()
+    expect(out.floatingLabelsData.narrow).toBeDefined()
+  })
+
+  it('packs a shorter stack than `all` by dropping decimated name rows', () => {
+    // Five overlapping narrow features: `all` reserves a name line on every row,
+    // `fitWidth` reserves none (all boxes are narrower than their names).
+    const narrowStack = () =>
+      labeledFeatureData(
+        Array.from({ length: 5 }, (_, i) => ({
+          featureId: `n${i}`,
+          startBp: 100,
+          endBp: 110,
+          height: 20,
+        })),
+      )
+    const allH = maxBottom(
+      new Map([[0, layout(new Map([[0, narrowStack()]]), keys, 1, true, false).get(0)!]]),
+    )
+    const decimatedH = maxBottom(new Map([[0, decimate(narrowStack())]]))
+    expect(decimatedH).toBeLessThan(allH)
+  })
+})
+
 test('layout is pure: raw data is not mutated', () => {
   const data = makeFeatureData({
     features: [

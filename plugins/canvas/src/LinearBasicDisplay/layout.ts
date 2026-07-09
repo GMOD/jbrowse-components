@@ -22,6 +22,13 @@ import type {
 // instead of stacking them at y=0. Float32 handles this magnitude losslessly.
 const OFFSCREEN_Y = -1e6
 
+// How names are chosen when `showLabels` is on. `all` reserves + renders every
+// feature's name (the default, used at the `full`/`labels` fit rungs and in all
+// non-fit modes); `fitWidth` keeps a name only where the feature's box is wide
+// enough to host it (plus pinned/highlighted features), dropping the rest — the
+// `decimated` fit rung's genuine intermediate between "every name" and "no name".
+export type LabelDecimation = 'all' | 'fitWidth'
+
 export interface LayoutInputs {
   bpPerPx: number
   regionKeys: Map<number, string>
@@ -30,8 +37,26 @@ export interface LayoutInputs {
   reversedRegions: ReadonlySet<number>
   displayMode: DisplayMode
   // Feature ids the user pinned to the top: inserted first into the greedy
-  // packer so they claim the lowest rows in their bp range (see packRef).
+  // packer so they claim the lowest rows in their bp range (see packRef). Also
+  // the always-keep set for `fitWidth` label decimation (never hide a name the
+  // user pinned or searched for).
   pinnedFeatureIds: ReadonlySet<string>
+  // Name-decimation policy (default `all`). See LabelDecimation.
+  labelDecimation?: LabelDecimation
+}
+
+// Whether a feature keeps its name under the active decimation policy. `all`
+// keeps every name; `fitWidth` keeps pinned/highlighted names always, plus any
+// name that fits within its own feature box (box px >= reserved label px) — so
+// narrow features at dense zoom shed their names (and the row height that
+// reserved them) while wide/important ones stay labeled.
+function keepFeatureLabel(
+  labelDecimation: LabelDecimation,
+  boxWidthPx: number,
+  labelWidthPx: number,
+  pinned: boolean,
+) {
+  return labelDecimation === 'all' || pinned || boxWidthPx >= labelWidthPx
 }
 
 // Reserve strand-arrow space only on the side the arrow actually points,
@@ -140,6 +165,7 @@ export function computeLaidOutData(
     reversedRegions,
     displayMode,
     pinnedFeatureIds,
+    labelDecimation = 'all',
   } = inputs
   const heightMultiplier = HEIGHT_MULTIPLIERS[displayMode]
   const labelFontPx = labelFontSize(displayMode)
@@ -168,20 +194,21 @@ export function computeLaidOutData(
   }
 
   for (const [, regions] of refGroups) {
-    const { layoutMap, layoutHeights } = packRef(
+    const { layoutMap, layoutHeights, droppedLabelIds } = packRef(
       regions,
       bpPerPx,
       showLabels,
       showDescriptions,
       reversedRegions,
       pinnedFeatureIds,
+      labelDecimation,
       heightMultiplier,
       labelFontPx,
       rowPadding,
       prevYByFeatureId,
     )
     for (const [, data] of regions) {
-      applyLayoutToRegion(data, layoutMap, layoutHeights)
+      applyLayoutToRegion(data, layoutMap, layoutHeights, droppedLabelIds)
     }
   }
 
@@ -192,6 +219,7 @@ interface GroupCache {
   bpPerPx: number
   showLabels: boolean
   showDescriptions: boolean
+  labelDecimation: LabelDecimation
   displayMode: DisplayMode
   // The MobX-computed pinned set; a stable reference until pins change, so a
   // reference compare in groupUnchanged detects a pin toggle.
@@ -216,11 +244,13 @@ function groupUnchanged(
     reversedRegions,
     displayMode,
     pinnedFeatureIds,
+    labelDecimation = 'all',
   } = inputs
   const paramsSame =
     prev.bpPerPx === bpPerPx &&
     prev.showLabels === showLabels &&
     prev.showDescriptions === showDescriptions &&
+    prev.labelDecimation === labelDecimation &&
     prev.displayMode === displayMode &&
     prev.pinnedFeatureIds === pinnedFeatureIds &&
     prev.members.size === members.size
@@ -302,6 +332,7 @@ export function createIncrementalLayout() {
           bpPerPx: inputs.bpPerPx,
           showLabels: inputs.showLabels,
           showDescriptions: inputs.showDescriptions,
+          labelDecimation: inputs.labelDecimation ?? 'all',
           displayMode: inputs.displayMode,
           pinnedFeatureIds: inputs.pinnedFeatureIds,
           members: new Map(members),
@@ -430,8 +461,12 @@ function packRef(
   showDescriptions: boolean,
   reversedRegions: ReadonlySet<number>,
   // Feature ids pinned to the top: sorted ahead of everything so they win the
-  // lowest rows in their bp range.
+  // lowest rows in their bp range. Also the always-keep set for `fitWidth` name
+  // decimation.
   pinnedFeatureIds: ReadonlySet<string>,
+  // Name-decimation policy (see keepFeatureLabel). `all` at every rung except the
+  // `decimated` fit rung, which passes `fitWidth`.
+  labelDecimation: LabelDecimation,
   // compact/superCompact scale factor (1 in normal mode), used to shrink the
   // row-quantization grid (pitchY) with the feature body.
   heightMultiplier: number,
@@ -510,7 +545,16 @@ function packRef(
     hasReversed: boolean
     hasNonReversed: boolean
     densityFade: boolean
+    // Whether this feature reserves any label line (name kept and/or description
+    // shown). Gates the horizontal label-overhang reservation below so a
+    // decimated (name-dropped) feature reserves no overhang.
+    reservesLabel: boolean
   }
+  // Features whose name was decimated away (`fitWidth`): their reserved row
+  // height and overhang are skipped here, and their floatingLabelsData entry is
+  // deleted in applyLayoutToRegion so no renderer/hit-test draws the dropped
+  // name. Empty under the default `all` policy.
+  const droppedLabelIds = new Set<string>()
   const allFeatures = new Map<string, FeatureExtent>()
   for (const [displayedRegionIndex, data] of regions) {
     const reversed = reversedRegions.has(displayedRegionIndex)
@@ -524,16 +568,34 @@ function packRef(
         }
         continue
       }
-      // featureHeightPx is already compact-scaled (see applyHeightScale); add
-      // the mode's inter-row gap (rowPadding) so rows pack tightly. Label lines
-      // reserve the mode's resolved font size (labelFontPx) so compact rows
-      // shrink with the smaller text the renderers draw.
-      let height = item.featureHeightPx + rowPadding
       const labelInfo = labelInfoByFeatureId.get(item.featureId)
-      if (showLabels && labelInfo?.hasName) {
+      // Keep this feature's name unless decimation drops it (too narrow to host
+      // it, and not pinned/highlighted). A dropped name is recorded so its label
+      // entry is deleted after layout.
+      const keepName =
+        showLabels &&
+        !!labelInfo?.hasName &&
+        keepFeatureLabel(
+          labelDecimation,
+          (item.endBp - item.startBp) / bpPerPx,
+          labelInfo.maxLabelWidthPx,
+          pinnedFeatureIds.has(item.featureId),
+        )
+      if (!keepName && showLabels && labelInfo?.hasName) {
+        droppedLabelIds.add(item.featureId)
+      }
+      const keepDescription =
+        showDescriptions && !!labelInfo?.hasDescription
+
+      // featureHeightPx is already compact-scaled (see applyHeightScale); add
+      // the mode's inter-row gap (rowPadding) so rows pack tightly. Each kept
+      // label line reserves the mode's resolved font size (labelFontPx) so
+      // compact rows shrink with the smaller text the renderers draw.
+      let height = item.featureHeightPx + rowPadding
+      if (keepName) {
         height += labelFontPx
       }
-      if (showDescriptions && labelInfo?.hasDescription) {
+      if (keepDescription) {
         height += labelFontPx
       }
 
@@ -547,13 +609,14 @@ function packRef(
         hasReversed: reversed,
         hasNonReversed: !reversed,
         densityFade: item.densityFade,
+        reservesLabel: keepName || keepDescription,
       })
     }
   }
 
   for (const [id, ext] of allFeatures) {
     const labelInfo = labelInfoByFeatureId.get(id)
-    if (!labelInfo) {
+    if (!labelInfo || !ext.reservesLabel) {
       continue
     }
     const labelBp = labelInfo.maxLabelWidthPx * bpPerPx
@@ -668,7 +731,7 @@ function packRef(
     )
   }
 
-  return { layoutMap, layoutHeights }
+  return { layoutMap, layoutHeights, droppedLabelIds }
 }
 
 // Mutates the cloned region in place. Raw data has topPx=0 everywhere, so we
@@ -678,6 +741,9 @@ function applyLayoutToRegion(
   data: FeatureDataResult,
   layoutMap: Map<string, number>,
   layoutHeights: Map<string, number>,
+  // Feature ids whose name was decimated away: their floatingLabelsData entry is
+  // deleted below so no renderer/hit-test draws a name the packer didn't reserve.
+  droppedLabelIds: ReadonlySet<string>,
 ) {
   const featureOffsets = new Float32Array(data.flatbushItems.length)
   for (let i = 0; i < data.flatbushItems.length; i++) {
@@ -711,13 +777,19 @@ function applyLayoutToRegion(
     info.bottomPx += offset
   }
 
-  // Drop labels whose feature overflowed maxHeight: the feature itself doesn't
-  // render and we don't want to pay the React reconciliation cost of emitting
-  // thousands of off-screen <div> labels in useFloatingLabels.
+  // Drop labels whose feature overflowed maxHeight (the feature itself doesn't
+  // render, and we don't want to pay the React reconciliation cost of emitting
+  // thousands of off-screen <div> labels in useFloatingLabels) or whose name was
+  // decimated away (no row height was reserved for it, so drawing it would
+  // overlap the boxes).
   for (const [key, labelData] of Object.entries(data.floatingLabelsData)) {
     const layoutKey = labelData.parentFeatureId ?? labelData.featureId
     const offset = layoutMap.get(layoutKey)
-    if (offset === undefined || offset === OFFSCREEN_Y) {
+    if (
+      offset === undefined ||
+      offset === OFFSCREEN_Y ||
+      droppedLabelIds.has(layoutKey)
+    ) {
       delete data.floatingLabelsData[key]
       continue
     }
