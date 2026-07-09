@@ -78,8 +78,11 @@ function stateModelFactory(pluginManager: PluginManager) {
       types.model({
         /**
          * #property
+         * this is a string instead of the const literal 'CircularView' to
+         * reduce some typescripting strictness, but you should pass the string
+         * 'CircularView' to the model explicitly
          */
-        type: types.literal('CircularView'),
+        type: types.literal('CircularView') as unknown as string,
         /**
          * #property
          * similar to offsetPx in linear genome view

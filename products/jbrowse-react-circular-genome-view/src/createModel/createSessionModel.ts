@@ -15,6 +15,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SerializableThemeArgs } from '@jbrowse/core/ui'
 import type { AssemblyManager } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 import type { AssertSessionModel } from '@jbrowse/product-core'
 
 // This session lives at rootModel.session, so its MST parent is the root model;
@@ -48,7 +49,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      view: pluginManager.getViewType('CircularView').stateModel,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      view: pluginManager.getViewType('CircularView')!
+        .stateModel as CircularViewStateModel,
     })
     .views(self => ({
       /**
