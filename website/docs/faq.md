@@ -431,8 +431,9 @@ JBrowse uses "stats estimation" rules to decide when to show this message:
 To customize this for a specific track, set these config variables on the
 `displays` section:
 
-- `maxFeatureScreenDensity` - the maximum number of features per pixel allowed
-  before the "zoom in to see features" message is shown (default 0.3)
+- [`maxFeatureScreenDensity`](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity) -
+  the maximum number of features per pixel allowed before the "zoom in to see
+  features" message is shown
 - `fetchSizeLimit` - this config variable exists on the adapters (can increase
   size limit)
 

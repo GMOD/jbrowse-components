@@ -44,11 +44,11 @@ The track menu's **GC skew** checkbox toggles between the two calculations:
 **Change GC parameters** in the track menu opens a dialog for the two
 sliding-window settings:
 
-- **Window size** (default 100 bp) — how many bases each point averages over.
-  Larger windows smooth the signal and suppress local noise; smaller windows
-  resolve finer structure.
-- **Window delta** (default 100 bp) — the step between successive windows.
-  Making the delta smaller than the window size produces _overlapping_ windows,
+- **Window size** — how many bases each point averages over. Larger windows
+  smooth the signal and suppress local noise; smaller windows resolve finer
+  structure.
+- **Window delta** — the step between successive windows. Making the delta
+  smaller than the window size produces _overlapping_ windows,
   which gives a smoother, more finely-sampled curve (at the cost of more points
   to compute).
 
