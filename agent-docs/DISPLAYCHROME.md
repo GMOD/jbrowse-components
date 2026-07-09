@@ -64,12 +64,23 @@ readiness flag (`svgReady`, not `canvasDrawn`) are arc-local. See
 `reload()` clears `error` to re-fire it — without that override the shared error
 bar's retry would be dead.
 
-**Not on DisplayChrome, by design (view-level GPU):** `dotplot-view`,
-`linear-comparative-view` (synteny), `circular-view` (ChordVariant) drop to the
-`useRenderingBackend` primitive directly. They are non-LGV view types with no
-`ChromeModel` contract (`displayPhase` / `regionTooLarge` / `height`), so the
-chrome doesn't fit. This is the sanctioned drop-to-primitive path, not partial
-adoption — don't force them onto DisplayChrome.
+**Not on DisplayChrome, by design (non-LGV views).** Two distinct reasons — don't
+conflate them:
+
+- **GPU, drop to the `useRenderingBackend` primitive directly:** `dotplot-view`
+  and `linear-comparative-view` (synteny). Non-LGV view types with no
+  `ChromeModel` contract (`displayPhase` / `regionTooLarge` / `height`), so the
+  chrome doesn't fit. This is the sanctioned drop-to-primitive path, not partial
+  adoption — don't force them onto DisplayChrome.
+- **Main-thread SVG, own radial banners:** `circular-view` (ChordVariant) is not
+  a GPU display at all — it has no `useRenderingBackend` / `RenderLifecycleMixin`
+  / `canvasDrawn`. It renders SVG chords (`SVChordsReactComponent`), gating on
+  `display.features` / `display.error` with a plain ternary, and keeps its own
+  `Loading` (radial spinner) / `DisplayError` (chord-circle text) components
+  because the rectangular LGV banners (`BlockMsg`, "Force load", "Zoom in to see
+  features") don't fit a radial view. This is the key contrast with arc: arc is
+  an *LGV* SVG display so it reuses the LGV banners (see the SVG exception above);
+  circular's different visual medium is why it legitimately doesn't.
 
 ## First-paint `-done` testid
 
