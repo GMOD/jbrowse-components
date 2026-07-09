@@ -101,6 +101,21 @@ describe('synteny coordinate → pixel offset (region index)', () => {
     expect(v.px('chr1', 2500, 1)).toBe(1500)
   })
 
+  it('dispersed duplication: distinct records at disjoint copies land in their own region', () => {
+    // The same contig shown at two disjoint loci — a duplicated gene's two
+    // copies. A real duplication aligns as two SEPARATE records (one per copy),
+    // so first-match projection already lands each in the region that contains
+    // it; no same-record-in-two-regions machinery is needed for the biology.
+    // (Displaying the IDENTICAL locus twice would need that machinery, but that
+    // is a display artifact, not a duplication.)
+    const v = makeView([
+      { refName: 'chr1', start: 1000, end: 2000 },
+      { refName: 'chr1', start: 50000, end: 51000 },
+    ])
+    expect(v.px('chr1', 1500)).toBe(500) // copy 1 → first region
+    expect(v.px('chr1', 50500)).toBe(1500) // copy 2 → second region
+  })
+
   it('handles non-unit bpPerPx', () => {
     const v = makeView(
       [
