@@ -40,7 +40,7 @@ export const tags = {
   E2: 'The 2nd most likely base calls',
   FI: 'The index of segment in the template',
   FS: 'Segment suffix',
-  FZ: 'Flow stopToken intensities',
+  FZ: 'Flow signal intensities',
   GC: 'Reserved for backwards compatibility reasons',
   GQ: 'Reserved for backwards compatibility reasons',
   GS: 'Reserved for backwards compatibility reasons',

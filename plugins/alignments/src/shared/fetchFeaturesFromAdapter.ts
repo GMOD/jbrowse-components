@@ -14,9 +14,9 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 /**
  * Resolve the data adapter, attach the sequence adapter (if any), fetch all
- * features for the region, and return the canonical regionStart/stopTokenCheck.
- * Both pileup and chain executors begin with this exact sequence; centralising
- * it prevents drift in the adapter wiring contract.
+ * features for the region, and return them alongside the adapter and the
+ * stop-token checker. Both pileup and chain executors begin with this exact
+ * sequence; centralising it prevents drift in the adapter wiring contract.
  */
 export async function fetchFeaturesFromAdapter({
   pluginManager,
