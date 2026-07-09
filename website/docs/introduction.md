@@ -24,6 +24,8 @@ Not ready to install anything? Browse [live demos](/demos/), the
 ## Using JBrowse
 
 - [User guide](/docs/user_guide) — track types, views, and common UI workflows
+- [SV visualization](/docs/user_guides/sv_visualization) — interpreting SV
+  signals across display types
 - [Config guide](/docs/config_guide) — detailed configuration settings
 - [Supported file types](/docs/config_guides/file_types) — every format JBrowse
   reads and the adapter it maps to
@@ -58,8 +60,6 @@ Not ready to install anything? Browse [live demos](/demos/), the
   segmentations in one multi-row feature track
 - [Applying display settings](/docs/tutorials/display_settings) — set track
   display settings via config.json, URL, or embedded session
-- [SV visualization](/docs/user_guides/sv_visualization) — interpreting SV
-  signals across display types
 - [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) — stacking closely
   related strains from a single all-vs-all PAF
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) — N-way

@@ -169,11 +169,14 @@ export type SearchCategory = 'user' | 'config' | 'developer' | 'autogen' | 'othe
 
 const TOP_LEVEL_CATEGORY_BUCKETS: Record<string, SearchCategory> = {
   'User guide': 'user',
-  'User tutorials': 'user',
+  Tutorials: 'user',
   Configuration: 'config',
   Development: 'developer',
-  'API reference (auto-generated)': 'autogen',
+  'API reference': 'autogen',
 }
+// "Embedding & scripting" and the loose cli/faq links are intentionally
+// unmapped: they fall through to the always-shown 'other' bucket so no search
+// filter can hide them.
 
 // Pages whose search-filter bucket is deliberately not their sidebar category
 // (e.g. admin-server setup reads as an ops/developer topic even though it's
