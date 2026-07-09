@@ -74,65 +74,45 @@ export function getReadsMenuItem(model: ReadsModel) {
         },
         sessionDefault: model.softClippingSessionDefault,
       }),
+      checkboxItem(
+        'Show interbase indicators',
+        model.showInterbaseIndicators,
+        () => {
+          model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
+        },
+      ),
+      { type: 'divider' as const },
+      // Which reads populate the pileup. These change what's fetched (they also
+      // thin the coverage histogram), but they read as visibility toggles, so
+      // they live in "Show..." rather than a filter submenu.
+      checkboxItem('Show proper pairs', model.drawProperPairs, () => {
+        model.setDrawProperPairs(!model.drawProperPairs)
+      }, {
+        helpText:
+          'Uncheck to hide concordant pairs — those the aligner flagged ' +
+          'properly paired (SAM flag 0x2) AND in normal forward/reverse ' +
+          '(FR) orientation. Discordant pairs (RR/LL/RL orientation, ' +
+          'e.g. inversions or duplications) stay visible even if flagged ' +
+          'proper, so structural-variant signal is not lost.',
+      }),
+      checkboxItem('Show reads without a mate', model.drawSingletons, () => {
+        model.setDrawSingletons(!model.drawSingletons)
+      }, {
+        helpText:
+          'Uncheck to hide reads whose mate or split/supplementary ' +
+          'segment is not present in the view, so the read stands alone ' +
+          '(samtools calls these "singletons"). Grouped by read name, so ' +
+          'it applies to a plain pileup too.',
+      }),
+      { type: 'divider' as const },
       {
-        label: 'Advanced',
-        type: 'subMenu' as const,
-        // less-common toggles, kept out of the top-level Show list so it
-        // doesn't grow unwieldy
-        subMenu: [
-          // Which reads populate the pileup. These change what's fetched (they
-          // also thin the coverage histogram), but they read as visibility
-          // toggles, so they live in "Show..." rather than a filter submenu.
-          checkboxItem(
-            'Show proper pairs',
-            model.drawProperPairs,
-            () => {
-              model.setDrawProperPairs(!model.drawProperPairs)
-            },
-            {
-              helpText:
-                'Uncheck to hide concordant pairs — those the aligner flagged ' +
-                'properly paired (SAM flag 0x2) AND in normal forward/reverse ' +
-                '(FR) orientation. Discordant pairs (RR/LL/RL orientation, ' +
-                'e.g. inversions or duplications) stay visible even if flagged ' +
-                'proper, so structural-variant signal is not lost.',
-            },
-          ),
-          checkboxItem(
-            'Show reads without a mate',
-            model.drawSingletons,
-            () => {
-              model.setDrawSingletons(!model.drawSingletons)
-            },
-            {
-              helpText:
-                'Uncheck to hide reads whose mate or split/supplementary ' +
-                'segment is not present in the view, so the read stands alone ' +
-                '(samtools calls these "singletons"). Grouped by read name, so ' +
-                'it applies to a plain pileup too.',
-            },
-          ),
-          { type: 'divider' as const },
-          checkboxItem(
-            'Show interbase indicators',
-            model.showInterbaseIndicators,
-            () => {
-              model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
-            },
-          ),
-          {
-            label: 'Set max layout height...',
-            onClick: () => {
-              getSession(model).queueDialog(handleClose => [
-                SetMaxHeightDialog,
-                {
-                  model,
-                  handleClose,
-                },
-              ])
-            },
-          },
-        ],
+        label: 'Set max layout height...',
+        onClick: () => {
+          getSession(model).queueDialog(handleClose => [
+            SetMaxHeightDialog,
+            { model, handleClose },
+          ])
+        },
       },
     ] satisfies MenuItem[],
   }
