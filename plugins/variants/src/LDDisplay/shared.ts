@@ -9,14 +9,14 @@ import {
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  AUTO_FORCE_LOAD_BP,
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
-  bytesTooLargeReason,
   computeRenderTransform,
   computeTriangleYScalar,
+  evaluateRegionTooLarge,
   resolveByteLimit,
+  viewportMatchesLastDrawn,
 } from '@jbrowse/plugin-linear-genome-view'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -211,13 +211,27 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * Global-display data-loaded signal read by `GlobalDataDisplayMixin.svgReady`.
-       * The fetch commits `rpcData` even for an empty viewport, so this flips true
-       * once data has loaded. Without the override the mixin default (`false`)
-       * leaves `svgReady` unable to resolve on a successful load, hanging SVG export.
+       * Global-display data-loaded signal read by `GlobalDataDisplayMixin.svgReady`
+       * (analog of `viewportWithinLoadedData`). The fetch commits `rpcData` even
+       * for an empty viewport, so this flips true once data has loaded AND that
+       * data was fetched for the current viewport. Gating on freshness — not
+       * merely `rpcData !== null` — keeps off-screen `svgReady` from resolving on
+       * data left over from the pre-pan/zoom viewport during the debounced-refetch
+       * window (`setLastDrawnViewport` runs right after `setRpcData`). Without the
+       * override the mixin default (`false`) leaves `svgReady` unable to resolve
+       * on a successful load, hanging SVG export.
        */
       get dataLoaded(): boolean {
-        return self.rpcData !== null
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return (
+          self.rpcData !== null &&
+          viewportMatchesLastDrawn({
+            lastDrawnOffsetPx: self.lastDrawnOffsetPx,
+            lastDrawnBpPerPx: self.lastDrawnBpPerPx,
+            viewOffsetPx: view.offsetPx,
+            viewBpPerPx: view.bpPerPx,
+          })
+        )
       },
       get isPrecomputedLD() {
         return (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(
@@ -693,18 +707,24 @@ export default function sharedModelFactory(
             return
           }
           self.setFeatureDensityStats(stats)
-          if (visibleBp >= AUTO_FORCE_LOAD_BP) {
-            const limit = resolveByteLimit({
+          // Compose the shared verdict/threshold/reason (AUTO_FORCE_LOAD_BP
+          // floor + bytes>limit precedence) rather than re-implementing it, so a
+          // future change to that precedence reaches LD too. LD is byte-only
+          // (no density axis), so it passes the resolved byteLimit and omits
+          // densityTooLarge — same "compose the pieces" shape as canvas.
+          const status = evaluateRegionTooLarge({
+            visibleBp,
+            bytes: stats.bytes,
+            byteLimit: resolveByteLimit({
               userByteSizeLimit: self.userByteSizeLimit,
               adapterFetchSizeLimit: stats.fetchSizeLimit,
               configFetchSizeLimit: getConf(self, 'fetchSizeLimit'),
-            })
-            if (stats.bytes && stats.bytes > limit) {
-              self.setRegionTooLarge(true, bytesTooLargeReason(stats.bytes))
-              return
-            }
+            }),
+          })
+          self.setRegionTooLarge(status.tooLarge, status.reason)
+          if (status.tooLarge) {
+            return
           }
-          self.setRegionTooLarge(false)
 
           const result = await rpcManager.call(
             sessionId,

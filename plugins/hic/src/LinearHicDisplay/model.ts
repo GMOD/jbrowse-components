@@ -15,6 +15,7 @@ import {
   computeRenderTransform,
   computeTriangleYScalar,
   installGlobalFetchAutorun,
+  viewportMatchesLastDrawn,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { generateColorRamp } from './components/colorRamp.ts'
@@ -170,13 +171,25 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * GlobalDataDisplayMixin hook: the contact matrix has been fetched once
-       * `rpcData` is set (the fetch commits it even for an empty viewport), so
-       * `svgReady` waits for the debounced `afterAttach` fetch instead of
-       * exporting an empty matrix.
+       * GlobalDataDisplayMixin hook (global-display analog of
+       * `viewportWithinLoadedData`): the contact matrix is loaded once
+       * `rpcData` is set (the fetch commits it even for an empty viewport) AND
+       * that data was fetched for the current viewport. Gating on freshness —
+       * not merely `rpcData !== null` — keeps off-screen `svgReady` from
+       * resolving on a matrix left over from the pre-pan/zoom viewport during
+       * the debounced-refetch window (`setLastDrawnViewport` runs right after
+       * `setRpcData`, so the two move together).
        */
       get dataLoaded(): boolean {
-        return self.rpcData !== null
+        return (
+          self.rpcData !== null &&
+          viewportMatchesLastDrawn({
+            lastDrawnOffsetPx: self.lastDrawnOffsetPx,
+            lastDrawnBpPerPx: self.lastDrawnBpPerPx,
+            viewOffsetPx: self.view.offsetPx,
+            viewBpPerPx: self.view.bpPerPx,
+          })
+        )
       },
       get colorScheme(): HicColorScheme {
         return getConf(self, 'colorScheme')

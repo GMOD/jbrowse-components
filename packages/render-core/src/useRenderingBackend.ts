@@ -61,7 +61,10 @@ export interface RenderLifecycleModel<RenderingBackendType> {
  *      mount reinitializes.
  *
  * Page navigation fires `pagehide` on every mounted component, disposing its
- * backend; React unmount disposes via the effect cleanup. No global tracking.
+ * backend AND clearing `model.currentRenderingBackend` (so the render/upload
+ * autoruns no-op); React unmount disposes via the effect cleanup. A bfcache
+ * restore fires `pageshow` with `persisted`, which rebuilds the backend for the
+ * still-mounted canvas. No global tracking.
  *
  * The model argument is duck-typed to the slot mixin's contract — the listed
  * actions/fields are all the hook touches.
@@ -169,12 +172,33 @@ export function useRenderingBackend<
   useEffect(() => {
     const handleGlobalPageHide = () => {
       rendererRef.current?.dispose()
+      rendererRef.current = null
+      // Also clear the model's backend reference — not just dispose the GPU
+      // object. On a bfcache navigate-away the component is frozen, not
+      // unmounted, so the effect cleanup never runs; leaving
+      // currentRenderingBackend pointing at the disposed backend would let the
+      // upload/render autoruns fire against dead GPU state on restore. With it
+      // cleared, those autoruns no-op (they guard `backend === undefined`) until
+      // pageshow rebuilds a fresh one.
+      if (nodeAlive(model)) {
+        model.stopRenderingBackend()
+      }
+    }
+    const handleGlobalPageShow = (e: PageTransitionEvent) => {
+      // Restored from bfcache (persisted): the canvas DOM node survived but its
+      // backend was disposed on pagehide. Bump contextVersion so the init effect
+      // re-runs and builds a fresh backend for the same canvas.
+      if (e.persisted) {
+        setContextVersion(v => v + 1)
+      }
     }
     window.addEventListener('pagehide', handleGlobalPageHide, true)
+    window.addEventListener('pageshow', handleGlobalPageShow, true)
     return () => {
       window.removeEventListener('pagehide', handleGlobalPageHide, true)
+      window.removeEventListener('pageshow', handleGlobalPageShow, true)
     }
-  }, [])
+  }, [model])
 
   useEffect(() => {
     if (canvas) {

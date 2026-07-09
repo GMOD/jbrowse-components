@@ -19,13 +19,15 @@ audit** of the chrome stack so the rejected refactors aren't re-litigated.
 The GPU-display chrome stack has four layers (originally five, before the
 hook merge below):
 
-- `useRenderingBackend` (`packages/core/src/util/useRenderingBackend.ts`) — the
-  React/DOM canvas lifecycle (runs the factory after mount, owns the canvas
-  ref, `retry()` remount, dispose-on-unmount, context-/device-loss recovery)
+- `useRenderingBackend` (`packages/render-core/src/useRenderingBackend.ts`; the
+  old `packages/core/src/util/useRenderingBackend.ts` is now a re-export shim) —
+  the React/DOM canvas lifecycle (runs the factory after mount, owns the canvas
+  ref, `retry()` remount, dispose-on-unmount, context-/device-loss +
+  bfcache-restore recovery)
   wired directly to `model.startRenderingBackend` / `stopRenderingBackend` /
   `setRenderError`, plus `useTabVisibilityRerender → renderNow`. Originally two
   layers (`useRenderer` + an MST adapter); merged in 2026-06.
-- `RenderLifecycleMixin` (`packages/core/src/gpu/RenderLifecycleMixin.ts`) — the
+- `RenderLifecycleMixin` (`packages/render-core/src/RenderLifecycleMixin.ts`) — the
   *observable* draw-loop state (`canvasDrawn`, `renderError`,
   `currentRenderingBackend`, `renderTick`) and the upload/render autorun pair.
 - per-display `startRenderingBackend(backend)` — injects that display's

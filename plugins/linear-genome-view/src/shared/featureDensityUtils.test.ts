@@ -10,7 +10,9 @@ import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 
 describe('raiseLimitPast', () => {
   it('raises the limit past the estimate by the shared headroom, rounded up', () => {
-    expect(raiseLimitPast(1_000_000)).toBe(Math.ceil(1_000_000 * FORCE_LOAD_HEADROOM))
+    expect(raiseLimitPast(1_000_000)).toBe(
+      Math.ceil(1_000_000 * FORCE_LOAD_HEADROOM),
+    )
     expect(raiseLimitPast(3)).toBe(Math.ceil(3 * FORCE_LOAD_HEADROOM))
   })
 
@@ -52,6 +54,18 @@ describe('resolveByteLimit', () => {
     expect(
       resolveByteLimit({
         adapterFetchSizeLimit: 0,
+        configFetchSizeLimit: 30,
+      }),
+    ).toBe(30)
+  })
+
+  // Regression: a negative adapter sentinel (-1) is truthy, so `|| undefined`
+  // let it survive and gate every request as too-large. Only a positive adapter
+  // limit is an opinion.
+  it('treats a negative adapter limit as absent, not a negative budget', () => {
+    expect(
+      resolveByteLimit({
+        adapterFetchSizeLimit: -1,
         configFetchSizeLimit: 30,
       }),
     ).toBe(30)

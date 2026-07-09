@@ -48,6 +48,7 @@ export {
   type RenderTransformInputs,
   computeRenderTransform,
   computeTriangleYScalar,
+  viewportMatchesLastDrawn,
 } from './models/renderTransform.ts'
 export { drawCanvasImageData } from './util.ts'
 export {

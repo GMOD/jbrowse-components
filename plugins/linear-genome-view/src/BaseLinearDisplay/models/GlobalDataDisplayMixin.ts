@@ -155,6 +155,17 @@ interface GlobalFetchAutorunHost extends IAnyStateTreeNode {
  * Runs through `autorunOnReadyView`, so the body never reads a throwing view
  * getter (`dynamicBlocks`, `width`) before the view is initialized, and
  * re-runs automatically once it is.
+ *
+ * `rpcProps()` loop hazard: unlike MultiRegion's `SettingsInvalidate` (which
+ * clears data in a *separate, undelayed* autorun and so loops synchronously if
+ * `rpcProps()` reads fetch-derived state — caught by `makeSettingsLoopGuard`),
+ * this autorun reads `rpcProps()` and triggers `fetch()` in the *same* debounced
+ * body. A fetch-derived value in `rpcProps()` here loops on the async-fetch
+ * cadence (refetch → commit → `rpcProps()` changes → reschedule after `delay` →
+ * refetch), a slow network thrash rather than a synchronous freeze, so a
+ * within-tick counter cannot distinguish it from legitimate rapid interaction.
+ * The invariant is the same: `rpcProps()` must read only user-controlled
+ * settings, never fetched data (see ARCHITECTURE.md "rpcProps() loop trap").
  */
 export function installGlobalFetchAutorun(
   self: GlobalFetchAutorunHost,

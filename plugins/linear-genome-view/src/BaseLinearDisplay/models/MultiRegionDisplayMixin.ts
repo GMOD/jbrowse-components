@@ -397,10 +397,12 @@ export default function MultiRegionDisplayMixin() {
         // return types unwidened by a base default).
         const rpcProps = (self as { rpcProps?: () => unknown }).rpcProps
         if (rpcProps) {
+          const loopGuard = makeSettingsLoopGuard('SettingsInvalidate')
           autorunOnReadyView(
             self,
             () => {
               void rpcProps.call(self)
+              loopGuard()
               self.clearAllRpcData()
             },
             { name: 'SettingsInvalidate' },
@@ -455,6 +457,49 @@ export function autorunOnReadyView(
       }
     }, opts),
   )
+}
+
+/**
+ * Dev-only feedback-loop guard for the (undelayed) `SettingsInvalidate` autorun.
+ * The classic `rpcProps()` trap (ARCHITECTURE.md "rpcProps() loop trap") puts a
+ * fetch-derived value in `rpcProps()`, so the autorun that reads it and clears
+ * fetched data re-invalidates itself — MobX runs it until its 100-iteration
+ * convergence guard throws a cryptic "Reaction doesn't converge". Call this at
+ * the top of the body's mutating section: it throws a message naming the actual
+ * cause the first time the body re-fires far more times in one synchronous tick
+ * than any real settings change could, and — because it throws *before* the
+ * `clearAllRpcData()` that perpetuates the cycle — that iteration's invalidating
+ * mutation never runs, breaking the loop. No-op in production. (The debounced
+ * `installGlobalFetchAutorun` variant loops on the async-fetch cadence, not
+ * synchronously, so this within-tick counter does not catch it — that hazard is
+ * documented at the call site instead.)
+ */
+export function makeSettingsLoopGuard(name: string): () => void {
+  if (process.env.NODE_ENV === 'production') {
+    return () => {}
+  }
+  let firesThisTick = 0
+  let resetScheduled = false
+  return () => {
+    firesThisTick += 1
+    if (!resetScheduled) {
+      resetScheduled = true
+      // Runs once the synchronous tick unwinds; a runaway loop never yields to
+      // it, so the counter keeps climbing until the throw below.
+      queueMicrotask(() => {
+        firesThisTick = 0
+        resetScheduled = false
+      })
+    }
+    if (firesThisTick > 50) {
+      throw new Error(
+        `${name} re-fired >50× in one synchronous tick — a fetch-derived value ` +
+          `is almost certainly in rpcProps(), so invalidating the fetch changes ` +
+          `rpcProps() and re-invalidates it. See ARCHITECTURE.md "rpcProps() ` +
+          `loop trap": rpcProps() must read only user-controlled settings.`,
+      )
+    }
+  }
 }
 
 interface FetchEachRegionModel {

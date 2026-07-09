@@ -127,6 +127,11 @@ export function RenderLifecycleMixin() {
        * retry.
        */
       setRenderError(error: unknown) {
+        // Reference-identity guard, not value-equality: the render catch passes
+        // a fresh Error object per throw, so a repeatedly-failing render still
+        // reassigns each time (cosmetic MST churn). Harmless — nothing reads
+        // renderError inside a hot autorun — but the guard does dedupe the
+        // common set-then-clear-with-same-value (undefined) transitions.
         if (self.renderError !== error) {
           self.renderError = error
         }

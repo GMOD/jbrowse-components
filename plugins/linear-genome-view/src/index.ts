@@ -111,6 +111,7 @@ export {
   installGlobalFetchAutorun,
   onDisplayedRegionsChange,
   resolveByteLimit,
+  viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
 export type {
   ByteEstimateConfig,

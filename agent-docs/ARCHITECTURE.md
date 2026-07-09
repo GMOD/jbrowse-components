@@ -91,8 +91,11 @@ short-circuits an over-budget region *before* `getFeaturesArray`, returning
 gate (which already short-circuits in-RPC, returning `{ regionTooLarge,
 featureCount }`), so a whole-genome fan-out costs one cheap index read per
 chromosome instead of downloading every chromosome's features.
-`applyFetchResults` sums the per-region `bytes` into `featureDensityStats`,
-feeding the same derived `bytesEstimateTooLarge` the pre-flight used to. The
+`applyFetchResults` records the per-region `bytes` **max** (not the sum) into
+`featureDensityStats`, feeding the same derived `bytesEstimateTooLarge` the
+pre-flight used to — the worker gates each region against the same per-region
+budget, so a multi-region view where every region individually fits must not be
+blanked because the cross-region total exceeds one region's budget. The
 budget itself comes from the display's `byteSizeLimit()`
 (`userByteSizeLimit ?? fetchSizeLimit`, only in the force-load zone).
 
@@ -111,10 +114,12 @@ expressed through the `regionTooLarge` getter so consumers
   stats × current `bpPerPx` + visible regions, mirroring `RegionTooLargeMixin`'s
   feature-density stats.
   - `bytesEstimateTooLarge` tests `estimatedVisibleBytes` against
-    `resolveByteLimit()` (user override → adapter limit → config; an adapter
-    limit of `0` means "no opinion" and is skipped, not a zero budget).
+    `resolveByteLimit()` (user override → adapter limit → config; a
+    non-positive adapter limit means "no opinion" and is skipped, not a zero or
+    negative budget).
     `applyFetchResults` sets
-    `featureDensityStats.bytes` (summed from the per-region fetch results) for
+    `featureDensityStats.bytes` (the per-region **max** from the fetch results,
+    matching the density gate) for
     the span visible *at fetch time*, recorded
     as `byteEstimateVisibleBp`; `estimatedVisibleBytes` rescales it to the
     current span (`bytes × view.visibleBp / byteEstimateVisibleBp`). The
@@ -163,16 +168,18 @@ the verdict, threshold, and banner text are unified in
 `shared/featureDensityUtils.ts` so they can't drift:
 
 - `resolveByteLimit({ userByteSizeLimit, adapterFetchSizeLimit, configFetchSizeLimit })`
-  — the one byte-budget resolution (with the `0 = no opinion` guard).
+  — the one byte-budget resolution (a non-positive adapter limit = "no opinion",
+  skipped; guards both `0` and a negative sentinel).
 - `bytesTooLargeReason(bytes)` / `TOO_MANY_FEATURES_REASON` — the one source
   for the two banner strings.
 - `evaluateRegionTooLarge({ visibleBp, bytes, byteLimit, densityTooLarge })` —
   the canonical verdict+reason: below `AUTO_FORCE_LOAD_BP` nothing gates, else
   bytes-over-limit takes precedence over density. `densityTooLarge` is
-  **opt-in**, so byte-only displays (alignments) pass only bytes and never gate
-  on density. Used by the arc path (`RegionTooLargeMixin` via `fetchArcFeatures`);
-  the derived canvas path composes the same pieces around its scaled
-  `estimatedVisibleBytes`.
+  **opt-in**, so byte-only displays (alignments, LD) pass only bytes and never
+  gate on density. Called directly by the arc path (`RegionTooLargeMixin` via
+  `fetchArcFeatures`) and by the LD display (which passes the resolved
+  `byteLimit` + `stats.bytes`, no density axis); the derived canvas path
+  composes the same pieces around its scaled `estimatedVisibleBytes`.
 
 Variants are monolithic: `MultiSampleVariantGetCellData` returns one batched
 payload covering all visible regions, so variants' `fetchNeeded` expands
@@ -236,11 +243,17 @@ was wrong: the failure is React reconciliation, not the fetch machinery. (The
 described in the table above, are real and correct — they just don't loop during
 a steady too-large state.)
 
-**2. Clean GPU dispose/re-init (ADR-025).** Early-returning unmounts the body,
-firing `canvasRef(null)` → effect cleanup → `backend.dispose()` +
-`stopRenderingBackend()`; force-load remounts and re-inits via the callback ref.
-The detached-context bug only occurs when the canvas is unmounted **without**
-disposing — which the early-return never does.
+**2. Clean GPU dispose/re-init (ADR-025, as superseded by ADR-026).** ADR-025's
+*headline* ("GPU canvas stays mounted across error/retry") reads as the opposite
+of the current behavior, but its own "Update" section supersedes that: unmounting
+the canvas is safe **so long as the transition runs a full
+`stopRenderingBackend` → `startRenderingBackend` dispose/re-init cycle**, which is
+exactly what the terminal-state early-`return` does — firing `canvasRef(null)` →
+effect cleanup → `backend.dispose()` + `stopRenderingBackend()`; force-load
+remounts and re-inits via the callback ref. The detached-context bug ADR-025
+warns of only occurs when the canvas is unmounted **without** disposing — which
+the early-return never does. (Current invariant: mount-lifetime is *not* required;
+clean dispose-on-unmount is.)
 
 The `DisplayChrome.tsx` comment block restates the rule so a future pass doesn't
 "fix" the apparent leak. The **derived** canvas `regionTooLarge` (above) is a
@@ -935,7 +948,8 @@ divergence; both are the one narrow above.
 - **Single nullable fetch object** — HiC / LD (`if (!rpcData)`), multi-variant /
   multi-variant-matrix (`if (!cellData)`). The monolithic-blob fetch stores
   `null` until the dataset lands, and the body destructures fields off it.
-  `svgReady`'s `dataLoaded` (`= rpcData !== null`) / spatial-coverage disjunct is
+  `svgReady`'s `dataLoaded` (`rpcData !== null` **and** the fetch's viewport
+  matches the current one) / spatial-coverage disjunct is
   exactly what makes the `SvgChrome` pass (`!error && !regionTooLarge`) imply the
   object is set. Drop any `&& numContacts === 0` size clause — the narrow alone is
   enough, and even it never fires.
@@ -1001,9 +1015,18 @@ mixin:
   `afterAttach` autorun, so at export time `isLoading` can be false with no data
   yet and a `displayPhase !== 'loading'` test would capture an empty render. Never
   gates on `canvasDrawn`. `dataLoaded` is an overridable getter (default `false`)
-  each display must implement — both HiC and LD return `rpcData !== null`. A
-  display that forgets to override it leaves `svgReady` unable to resolve on a
-  successful load, hanging SVG export.
+  each display must implement — the global-display analog of
+  `viewportWithinLoadedData`, so it carries a **freshness** axis as well as
+  presence: both HiC and LD return `rpcData !== null && viewportMatchesLastDrawn(…)`
+  (comparing the `setLastDrawnViewport` snapshot committed alongside `setRpcData`
+  to the live `offsetPx`/`bpPerPx`). Presence alone (`rpcData !== null`) would
+  leave the in-place-refetch gap the per-region spatial check and the arc/synteny
+  freshness signatures all close — a pan/zoom export resolving on the pre-pan
+  matrix during the debounce+RPC window, since neither fetch clears `rpcData` at
+  refetch start (the live canvas repositions that stale blob via
+  `renderTransform`, so it must stay). A display that forgets to override
+  `dataLoaded` leaves `svgReady` unable to resolve on a successful load, hanging
+  SVG export.
 
 The sequence display layers one extra disjunct (`svgReady || zoomedOut`) because
 zoomed past its base-render threshold it shows a static "zoom in" message and
@@ -1111,6 +1134,15 @@ document — synteny rows, breakpoint-split panels. `exportAndVerifySvg` in
 regression guard; prefer `SvgClipRect` (zero-offset rects) over hand-rolled
 `<defs><clipPath>` for new clip ids.
 
+The one sanctioned exception is `SvgCanvas.clip()`
+(`packages/core/src/util/SvgCanvas.ts`), which mints ids from a **module-level
+counter** (`svgcanvas-clip-${clipIdCounter++}`) rather than a model `.id`. It's
+safe — a process-global monotonic counter is unique across every canvas and
+export in the document, so it can't collide — and it has no model to scope to
+(it's the Canvas2D-shim path, driven by imperative `ctx.clip()` calls with no
+MST node in scope). Don't "fix" it to use `.id`; do keep new *component*-level
+clip ids on `.id`.
+
 ---
 
 ### `rpcProps()` / `gpuProps()` pattern
@@ -1168,8 +1200,13 @@ fields capture `super` and spread:
 `MultiRegionDisplayMixin` does **not** provide a base default — declaring one
 would widen the typed return through MST's `.views()` chain and force consumers
 to re-spread named fields. The mixin's `SettingsInvalidate` autorun looks up
-`rpcProps` dynamically (`(self as { rpcProps?: () => unknown }).rpcProps`) so
-displays without settings-driven refetch (HiC, LD) can simply not define it.
+`rpcProps` dynamically (`(self as { rpcProps?: () => unknown }).rpcProps`) and is
+installed only when the method exists, so a per-region display with no
+settings-driven refetch (e.g. `LinearReferenceSequenceDisplay`) can simply not
+define it. (HiC/LD are **not** examples here — they compose
+`GlobalDataDisplayMixin`, not MultiRegion, and both *do* define `rpcProps()`;
+`installGlobalFetchAutorun` reads it directly rather than through a
+`SettingsInvalidate` autorun. See the global-fetch section.)
 
 `gpuProps()` exists wherever the main thread encodes the GPU buffer (wiggle,
 multi-wiggle, multi-LGV synteny). Canvas's worker pre-builds the buffer, so

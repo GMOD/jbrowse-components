@@ -1,3 +1,4 @@
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { observer } from 'mobx-react'
 
 import ColorLegend from './MultiSampleVariantColorLegend.tsx'
@@ -16,7 +17,6 @@ const MultiSampleVariantRowColors = observer(
       sources,
     } = model
     const svgFontSize = Math.min(rowHeight, 12)
-    const clipid = `row-colors-${typeof jest === 'undefined' ? id : 'test'}`
 
     const labelWidth = getMaxLabelWidth({
       sources,
@@ -32,24 +32,21 @@ const MultiSampleVariantRowColors = observer(
         ? Math.min(nrow, Math.ceil((scrollTop + height) / rowHeight))
         : 0
 
+    // Clip id scoped by model.id so two overlays in one exported document don't
+    // collide (a duplicate clipPath id makes the second render unclipped). Uses
+    // the same real id in tests as in production — the export duplicate-id guard
+    // runs under jest, so a hardcoded test literal would defeat itself.
     return sources ? (
-      <>
-        <defs>
-          <clipPath id={clipid}>
-            <rect x={0} y={0} width={1000} height={height} />
-          </clipPath>
-        </defs>
-        <g clipPath={`url(#${clipid})`}>
-          <g transform={`translate(0,${-scrollTop})`}>
-            <ColorLegend
-              model={model}
-              labelWidth={labelWidth}
-              startIdx={startIdx}
-              endIdx={endIdx}
-            />
-          </g>
+      <SvgClipRect id={`row-colors-${id}`} width={1000} height={height}>
+        <g transform={`translate(0,${-scrollTop})`}>
+          <ColorLegend
+            model={model}
+            labelWidth={labelWidth}
+            startIdx={startIdx}
+            endIdx={endIdx}
+          />
         </g>
-      </>
+      </SvgClipRect>
     ) : null
   },
 )

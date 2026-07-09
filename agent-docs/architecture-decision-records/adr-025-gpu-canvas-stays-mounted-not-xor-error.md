@@ -6,7 +6,8 @@ Superseded by the DisplayChrome unification (see "Update" below).
 
 ## Context
 
-`useRenderingBackend` (`packages/core/src/util/useRenderingBackend.ts`) is the
+`useRenderingBackend` (`packages/render-core/src/useRenderingBackend.ts`; the old
+`packages/core/src/util/useRenderingBackend.ts` is now a re-export shim) is the
 shared hook every GPU display component uses. It returns a plain tuple
 `{ canvas, canvasRef, error, retry }` and wires the canvas element into the
 display model's `RenderLifecycleMixin` (`startRenderingBackend` /

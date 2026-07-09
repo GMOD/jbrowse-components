@@ -22,9 +22,11 @@ export function bytesTooLargeReason(bytes: number) {
 /**
  * Resolve the effective byte budget from the layered sources, newest-wins: a
  * user force-load override, then the adapter's self-reported limit, then the
- * display's configured default. An adapter limit of 0 means "no opinion" (e.g.
- * htsget/no-index adapters) and is skipped — without this guard a 0 would gate
- * every request as too-large. Single source of truth for all three paths.
+ * display's configured default. A non-positive adapter limit means "no opinion"
+ * (e.g. htsget/no-index adapters report 0) and is skipped — without this guard a
+ * 0 would gate every request as too-large, and a negative sentinel (-1) would
+ * survive `|| undefined` (truthy) and do the same. Single source of truth for
+ * all three paths.
  */
 export function resolveByteLimit({
   userByteSizeLimit,
@@ -35,11 +37,11 @@ export function resolveByteLimit({
   adapterFetchSizeLimit?: number
   configFetchSizeLimit: number
 }) {
-  return (
-    userByteSizeLimit ??
-    (adapterFetchSizeLimit || undefined) ??
-    configFetchSizeLimit
-  )
+  const adapterLimit =
+    adapterFetchSizeLimit !== undefined && adapterFetchSizeLimit > 0
+      ? adapterFetchSizeLimit
+      : undefined
+  return userByteSizeLimit ?? adapterLimit ?? configFetchSizeLimit
 }
 
 /**

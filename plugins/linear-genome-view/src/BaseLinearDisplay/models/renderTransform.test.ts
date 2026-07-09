@@ -1,6 +1,7 @@
 import {
   computeRenderTransform,
   computeTriangleYScalar,
+  viewportMatchesLastDrawn,
 } from './renderTransform.ts'
 
 describe('computeRenderTransform', () => {
@@ -77,6 +78,52 @@ describe('computeRenderTransform', () => {
       viewBpPerPx: 100,
     })
     expect(r.viewOffsetX).toBe(50)
+  })
+})
+
+describe('viewportMatchesLastDrawn', () => {
+  test('fresh: last-drawn viewport equals current → true', () => {
+    expect(
+      viewportMatchesLastDrawn({
+        lastDrawnOffsetPx: 500,
+        lastDrawnBpPerPx: 100,
+        viewOffsetPx: 500,
+        viewBpPerPx: 100,
+      }),
+    ).toBe(true)
+  })
+
+  test('stale pan: offsetPx differs (the export-during-refetch gap) → false', () => {
+    expect(
+      viewportMatchesLastDrawn({
+        lastDrawnOffsetPx: 500,
+        lastDrawnBpPerPx: 100,
+        viewOffsetPx: 450,
+        viewBpPerPx: 100,
+      }),
+    ).toBe(false)
+  })
+
+  test('stale zoom: bpPerPx differs → false', () => {
+    expect(
+      viewportMatchesLastDrawn({
+        lastDrawnOffsetPx: 500,
+        lastDrawnBpPerPx: 100,
+        viewOffsetPx: 500,
+        viewBpPerPx: 50,
+      }),
+    ).toBe(false)
+  })
+
+  test('never drawn: undefined last-drawn → false (not fresh)', () => {
+    expect(
+      viewportMatchesLastDrawn({
+        lastDrawnOffsetPx: undefined,
+        lastDrawnBpPerPx: undefined,
+        viewOffsetPx: 500,
+        viewBpPerPx: 100,
+      }),
+    ).toBe(false)
   })
 })
 

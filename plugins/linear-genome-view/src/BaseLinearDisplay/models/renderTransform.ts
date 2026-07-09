@@ -45,6 +45,26 @@ export function computeRenderTransform({
 }
 
 /**
+ * Freshness test for the single-global-RPC-result displays: true only when the
+ * committed data was drawn at exactly the current viewport (same `offsetPx` +
+ * `bpPerPx`). The fetch autorun refetches on any pan/zoom and records the
+ * viewport via `setLastDrawnViewport` *after* committing, so throughout the
+ * debounce+RPC window that follows a viewport change these disagree. `renderTransform`
+ * exploits that gap to reposition stale pixels for the *live* canvas; off-screen
+ * SVG export must not — it gates `dataLoaded`/`svgReady` on this so it never
+ * captures a matrix fetched for the pre-pan viewport. `undefined` lastDrawn
+ * means nothing has been drawn yet, so it is not fresh.
+ */
+export function viewportMatchesLastDrawn({
+  lastDrawnOffsetPx,
+  lastDrawnBpPerPx,
+  viewOffsetPx,
+  viewBpPerPx,
+}: RenderTransformInputs): boolean {
+  return lastDrawnOffsetPx === viewOffsetPx && lastDrawnBpPerPx === viewBpPerPx
+}
+
+/**
  * Vertical squash factor for the fit-to-height triangle displays (HiC, LD).
  * A rotated contact matrix has a natural apex height of `triangleWidth / 2`;
  * when `fitToHeight` is on this stretches (or squashes) that apex into
