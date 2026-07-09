@@ -69,8 +69,8 @@ describe('OverrideBadge session-default awareness', () => {
     const { session, model } = openTrackSelector()
     session.setDisplayTypeDefault(
       'LinearBasicDisplay',
-      'displayMode',
-      'compact',
+      'subfeatureLabels',
+      'below',
     )
 
     const { findByTestId } = render(
