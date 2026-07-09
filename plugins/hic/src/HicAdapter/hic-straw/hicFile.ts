@@ -89,7 +89,7 @@ export default class HicFile {
   private normVectorIndexPosition = -1
   private normVectorIndexSize = -1
 
-  private initialized = false
+  private initPromise: Promise<void> | undefined
   private version = 0
   private genomeId = ''
   private footerPosition = 0
@@ -109,10 +109,15 @@ export default class HicFile {
   }
 
   async init() {
-    if (!this.initialized) {
-      await this.readHeaderAndFooter()
-      this.initialized = true
-    }
+    // Memoize the promise, not a boolean flag: two concurrent callers must
+    // share one header parse rather than both racing readHeaderAndFooter. Clear
+    // it on failure (like BamAdapter's setupOnce) so a later call retries
+    // instead of caching a rejected promise forever.
+    this.initPromise ??= this.readHeaderAndFooter().catch((e: unknown) => {
+      this.initPromise = undefined
+      throw e
+    })
+    return this.initPromise
   }
 
   async getMetaData() {
@@ -684,6 +689,15 @@ export default class HicFile {
 
   getFileChrName(chrAlias: string) {
     return this.chrAliasTable[chrAlias] ?? chrAlias
+  }
+
+  // File chromosome index for a refName, resolved through the same alias table
+  // getContactRecords uses to decide its transpose. Exposed so callers can
+  // reproduce that transpose exactly instead of re-deriving it with a divergent
+  // alias scheme.
+  async getChromosomeIndex(chrAlias: string) {
+    await this.init()
+    return this.chromosomeIndexMap[this.getFileChrName(chrAlias)]
   }
 }
 

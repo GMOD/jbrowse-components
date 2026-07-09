@@ -58,6 +58,7 @@ interface HicParser {
   ) => Promise<ContactRecord[]>
   getMetaData: () => Promise<HicMetadata>
   getNormalizationOptions: () => Promise<string[]>
+  getChromosomeIndex: (chrAlias: string) => Promise<number | undefined>
 }
 
 export default class HicAdapter extends BaseFeatureDataAdapter {
@@ -120,25 +121,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       )
     }
 
-    // hic-straw transposes queries when idx(chr1) > idx(chr2), returning
-    // bin1/bin2 in the swapped order. We mirror that logic so bin1 always
-    // maps back to region[i] coordinates.
-    const chrIndexMap = new Map(
-      metadata.chromosomes.map(c => [c.name, c.index]),
-    )
-    const getChrIndex = (refName: string) => {
-      const direct = chrIndexMap.get(refName)
-      if (direct !== undefined) {
-        return direct
-      }
-      const alt = refName.startsWith('chr') ? refName.slice(3) : `chr${refName}`
-      const altIdx = chrIndexMap.get(alt)
-      if (altIdx === undefined) {
-        throw new Error(`refName ${refName} not found in .hic file`)
-      }
-      return altIdx
-    }
-
     const allRecords: MultiRegionContactRecord[] = []
 
     await updateStatus('Downloading .hic data', statusCallback, async () => {
@@ -151,7 +133,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
             region2Idx: j,
             normalization,
             resolution: res,
-            getChrIndex,
           })
           // Push element-wise (not `push(...spread)`) so a large pair can't
           // overflow the call-stack argument limit.
@@ -183,7 +164,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     region2Idx,
     normalization,
     resolution,
-    getChrIndex,
   }: {
     region1: Region
     region2: Region
@@ -191,7 +171,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     region2Idx: number
     normalization: string
     resolution: number
-    getChrIndex: (refName: string) => number
   }): Promise<MultiRegionContactRecord[]> {
     try {
       const records = await this.hic.getContactRecords(
@@ -203,11 +182,15 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       )
       // hic-straw transposes the query when idx1 > idx2 (or same chr, region1
       // starts after region2), swapping bin1/bin2 relative to our (i, j)
-      // order — un-swap before storing.
-      const idx1 = getChrIndex(region1.refName)
-      const idx2 = getChrIndex(region2.refName)
+      // order — un-swap before storing. Resolve the indices through hic-straw's
+      // own alias table so this condition matches its transpose exactly (a
+      // divergent chr-name scheme could throw on a region it would have served).
+      const idx1 = await this.hic.getChromosomeIndex(region1.refName)
+      const idx2 = await this.hic.getChromosomeIndex(region2.refName)
       const transposed =
-        idx1 > idx2 || (idx1 === idx2 && region1.start >= region2.end)
+        idx1 !== undefined &&
+        idx2 !== undefined &&
+        (idx1 > idx2 || (idx1 === idx2 && region1.start >= region2.end))
       return records.map(({ bin1, bin2, counts }) => ({
         bin1: transposed ? bin2 : bin1,
         bin2: transposed ? bin1 : bin2,

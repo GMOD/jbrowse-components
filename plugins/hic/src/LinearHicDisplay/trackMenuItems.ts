@@ -7,9 +7,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 interface HicMenuSelf {
   useLogScale: boolean
   useColorPercentile: boolean
-  showLegend: boolean | undefined
+  showLegend: boolean
   fitToHeight: boolean
-  colorScheme: HicColorScheme | undefined
+  colorScheme: HicColorScheme
   showResolutionControls: boolean
   availableNormalizations: string[] | undefined
   activeNormalization: string
@@ -32,7 +32,7 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
         {
           label: 'Show legend',
           type: 'checkbox',
-          checked: !!self.showLegend,
+          checked: self.showLegend,
           onClick: () => {
             self.setShowLegend(!self.showLegend)
           },
@@ -79,10 +79,7 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
         {
           label: 'Juicebox (default)',
           type: 'radio',
-          // undefined resolves to the juicebox default in generateColorRamp, so
-          // treat both as "Juicebox" rather than offering a redundant 'Default'
-          checked:
-            self.colorScheme === undefined || self.colorScheme === 'juicebox',
+          checked: self.colorScheme === 'juicebox',
           onClick: () => {
             self.setColorScheme(undefined)
           },

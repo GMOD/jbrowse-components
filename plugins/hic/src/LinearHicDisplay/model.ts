@@ -99,6 +99,14 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the containing LGV, typed once here so downstream getters don't repeat
+       * the `getContainingView` cast
+       */
+      get view(): LinearGenomeViewModel {
+        return getContainingView(self) as LinearGenomeViewModel
+      },
+      /**
+       * #getter
        */
       get resolutionBias(): number {
         return getConf(self, 'resolutionBias')
@@ -201,8 +209,7 @@ export default function stateModelFactory(
         if (!avail?.length) {
           return -1
         }
-        const view = getContainingView(self) as LinearGenomeViewModel
-        const bpPerPx = Math.max(1, view.bpPerPx)
+        const bpPerPx = Math.max(1, self.view.bpPerPx)
         let idx = -1
         for (let i = 0; i < avail.length; i++) {
           if (avail[i]! <= 2 * bpPerPx) {
@@ -215,11 +222,10 @@ export default function stateModelFactory(
         // Bidirectional fill like the LD display: dragging taller than the
         // natural triangle height stretches to fill rather than leaving a
         // blank band below.
-        const view = getContainingView(self) as LinearGenomeViewModel
         return computeTriangleYScalar({
           fitToHeight: self.fitToHeight,
           displayHeight: self.height,
-          triangleWidth: view.totalWidthPx,
+          triangleWidth: self.view.totalWidthPx,
         })
       },
     }))
@@ -289,12 +295,11 @@ export default function stateModelFactory(
        * the math.
        */
       get renderTransform() {
-        const view = getContainingView(self) as LinearGenomeViewModel
         return computeRenderTransform({
           lastDrawnOffsetPx: self.lastDrawnOffsetPx,
           lastDrawnBpPerPx: self.lastDrawnBpPerPx,
-          viewOffsetPx: view.offsetPx,
-          viewBpPerPx: view.bpPerPx,
+          viewOffsetPx: self.view.offsetPx,
+          viewBpPerPx: self.view.bpPerPx,
         })
       },
     }))
@@ -328,7 +333,6 @@ export default function stateModelFactory(
        * autorun lifecycle on every change to any tracked observable.
        */
       get renderState() {
-        const view = getContainingView(self) as LinearGenomeViewModel
         const data = self.rpcData
         if (!data) {
           return undefined
@@ -337,7 +341,7 @@ export default function stateModelFactory(
         return {
           binWidth: data.binWidth,
           yScalar: self.yScalar,
-          canvasWidth: view.totalWidthPx,
+          canvasWidth: self.view.totalWidthPx,
           canvasHeight: self.height,
           colorMaxScore: self.colorMaxScore,
           useLogScale: self.useLogScale,
@@ -508,7 +512,7 @@ export default function stateModelFactory(
         if (self.isMinimized) {
           return
         }
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.view
         if (!view.initialized) {
           return
         }

@@ -14,10 +14,17 @@ const metadata = {
 // Mock parser whose inter-chromosomal query throws (mirrors hic-straw throwing
 // when a chr-pair matrix lacks the requested resolution), while intra-chrom
 // queries succeed.
+// Resolve a refName to the file chromosome index the way hic-straw does, so the
+// adapter's transpose detection matches its query transpose.
+function chrIndex(chr: string) {
+  return Promise.resolve(metadata.chromosomes.find(c => c.name === chr)?.index)
+}
+
 function makeMockParser() {
   return {
     getMetaData: () => Promise.resolve(metadata),
     getNormalizationOptions: () => Promise.resolve(['NONE']),
+    getChromosomeIndex: chrIndex,
     getContactRecords: (
       _norm: string,
       ref: { chr: string },
@@ -33,19 +40,23 @@ function makeMockParser() {
   }
 }
 
-function makeAdapter() {
+function makeAdapter(hic: {
+  getMetaData: () => Promise<typeof metadata>
+  getNormalizationOptions: () => Promise<string[]>
+  getChromosomeIndex: (chr: string) => Promise<number | undefined>
+  getContactRecords: (...args: never[]) => Promise<unknown>
+}) {
   const adapter = new HicAdapter(
     configSchema.create({
       hicLocation: { uri: 'test.hic', locationType: 'UriLocation' },
     }),
   )
-  ;(adapter as unknown as { hic: ReturnType<typeof makeMockParser> }).hic =
-    makeMockParser()
+  ;(adapter as unknown as { hic: typeof hic }).hic = hic
   return adapter
 }
 
 test('a missing inter-chromosomal pair does not fail the whole multi-region fetch', async () => {
-  const adapter = makeAdapter()
+  const adapter = makeAdapter(makeMockParser())
   const regions: Region[] = [
     { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
     { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
@@ -63,4 +74,35 @@ test('a missing inter-chromosomal pair does not fail the whole multi-region fetc
     [0, 0],
     [1, 1],
   ])
+})
+
+test('un-swaps bin1/bin2 when hic-straw transposed the query (idx1 > idx2)', async () => {
+  // region1 is the higher-index chromosome, so hic-straw transposes and returns
+  // bins along the swapped axis; the adapter must un-swap using the index it
+  // resolves through getChromosomeIndex so bin1 maps back to region1.
+  const adapter = makeAdapter({
+    getMetaData: () => Promise.resolve(metadata),
+    getNormalizationOptions: () => Promise.resolve(['NONE']),
+    getChromosomeIndex: chrIndex,
+    getContactRecords: () =>
+      Promise.resolve([{ bin1: 7, bin2: 3, counts: 9 }]),
+  })
+  const regions: Region[] = [
+    { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
+    { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
+  ]
+
+  const { records } = await adapter.getMultiRegionContactRecords(regions, {
+    resolution: 100000,
+    normalization: 'NONE',
+  })
+
+  const interPair = records.find(r => r.region1Idx === 0 && r.region2Idx === 1)
+  expect(interPair).toEqual({
+    bin1: 3,
+    bin2: 7,
+    counts: 9,
+    region1Idx: 0,
+    region2Idx: 1,
+  })
 })
