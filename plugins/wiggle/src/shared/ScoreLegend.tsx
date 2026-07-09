@@ -12,7 +12,10 @@ export default function ScoreLegend({
   canvasWidth: number
 }) {
   const legend = `[${formatScore(domain[0])}, ${formatScore(domain[1])}]${scaleType === 'log' ? ' (log)' : ''}`
-  const len = measureText(legend, 12)
+  // measureText uses a Helvetica width table, but this text has no font-family
+  // and renders in the wider app font (Roboto), so scale the estimate up before
+  // sizing the paper or it clips the label.
+  const len = measureText(legend, 12) * 1.1
   const xpos = Math.max(0, canvasWidth - len - 10)
   return (
     <g>

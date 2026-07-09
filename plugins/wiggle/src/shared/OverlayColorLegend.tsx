@@ -82,15 +82,18 @@ export default function OverlayColorLegend({
   canvasWidth: number
 }) {
   const entries = buildLegendEntries(sources)
-  let labelWidth = 0
+  let maxLabelWidth = 0
   for (const e of entries) {
-    const w = measureText(e.label, 10)
-    if (w > labelWidth) {
-      labelWidth = w
+    // measureText uses a Helvetica width table, but the SVG <text> below has no
+    // font-family and renders in the wider app font (Roboto), so scale the
+    // estimate up before sizing the paper or it clips the label.
+    const w = measureText(e.label, 10) * 1.1
+    if (w > maxLabelWidth) {
+      maxLabelWidth = w
     }
   }
-  labelWidth += 10
-  const totalWidth = labelWidth + 14
+  const textLeft = 16
+  const totalWidth = textLeft + maxLabelWidth + 6
   const x = Math.max(0, canvasWidth - totalWidth - 4)
   return (
     <g transform={`translate(${x} 0)`}>
@@ -113,7 +116,7 @@ export default function OverlayColorLegend({
               fill={entry.color ?? fallbackColor}
             />
             <text
-              x={16}
+              x={textLeft}
               y={y + 11}
               fontSize={10}
               fill={entry.labelColor ?? 'black'}
