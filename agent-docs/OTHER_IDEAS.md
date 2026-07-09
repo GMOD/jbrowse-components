@@ -464,7 +464,10 @@ Whole-genome synteny between species with an ancestral WGD / paleopolyploidy (gr
 paleohexaploidy is the resident demo — `grape_peach_synteny`) is intrinsically 1:many: each
 peach region maps to ~3 grape blocks, so ribbons cross no matter how you reorder, and
 single-axis `diagonalizeRegions` cannot flatten it. Reviewers repeatedly read the crossings
-as a diagonalization *failure*; they're real biology. Idea: detect the fan (a query region
+as a diagonalization *failure*; they're real biology. A concrete demo now exists — the
+`grape_triplication` dotplot (in the `multiway_synteny` tutorial) isolates peach Pp01 →
+grape chr5/chr1/chr18 (the three gamma-triplication paralogs) so the 1:3 fan reads cleanly.
+Idea (still open): detect the fan (a query region
 with M target hits above a length/identity floor) and make the multi-mapping read as signal,
 not noise — e.g. a shared hue per source-block family, an explicit "paralog fan" affordance,
 or a summary "×3" annotation on the region. Complements the barycenter/layer-sweep note above

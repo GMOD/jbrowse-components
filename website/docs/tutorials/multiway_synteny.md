@@ -191,6 +191,12 @@ cacao joined through their shared grape ortholog, not directly aligned). When no
 genome dominates the ploidy like this, prefer the reference in the **middle** —
 peach – grape – cacao — so _every_ band is a direct comparison.
 
+That triplication is easiest to see one chromosome at a time. Restrict a
+peach-vs-grape dotplot to a single peach chromosome and it resolves into three
+diagonal blocks — the three grape paralogs of that region:
+
+<Figure caption="Peach chromosome Pp01 (x-axis) against the whole grape genome (y-axis), MCScan anchor blocks. Pp01 aligns as three diagonal segments onto grape chr5, chr1, and chr18 — the three paralogous copies grape retains from the ancestral eudicot gamma triplication, where peach kept a single copy. This 1:3 mapping, repeated for every peach chromosome, is why a whole-genome grape/peach synteny looks like crossing ribbons everywhere: the crossings are the polyploidy, not a bad diagonalization." src="/img/grape_triplication.png" />
+
 ## See also
 
 - [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) — the whole-genome,

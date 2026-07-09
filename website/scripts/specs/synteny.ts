@@ -74,7 +74,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   {
     mode: 'url',
-    name: 'gallery/grape_triplication',
+    name: 'grape_triplication',
     // The ancestral eudicot gamma triplication, made visible in one dotplot. The
     // x-axis is a single peach chromosome (Pp01); the y-axis is the whole grape
     // genome. Pp01 aligns as three diagonal segments landing on THREE grape
