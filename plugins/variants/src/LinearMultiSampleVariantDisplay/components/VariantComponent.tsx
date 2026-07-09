@@ -1,6 +1,5 @@
 import { useId, useState } from 'react'
 
-import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
@@ -10,6 +9,7 @@ import {
   buildVariantHit,
   variantTooltipKey,
 } from '../../shared/buildVariantHit.ts'
+import VariantScrollbar from '../../shared/components/VariantScrollbar.tsx'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
@@ -203,17 +203,7 @@ const VariantBody = observer(function VariantBody({
   const width = view.trackWidthPx
   const canvasId = useId()
 
-  useVariantVirtualScroll({
-    canvas,
-    scrollTop: model.scrollTop,
-    setScrollTop: model.setScrollTop,
-    totalHeight: model.totalHeight,
-    viewportHeight: model.availableHeight,
-    scrollZoom: view.scrollZoom,
-    rowHeight: model.effectiveRowHeight,
-    nrow: model.nrow,
-    setRowHeight: model.setRowHeight,
-  })
+  useVariantVirtualScroll(canvas, model)
 
   const { canvasHandlers, contextMenuNode } =
     useVariantCanvasInteraction<VariantHit>({
@@ -256,15 +246,7 @@ const VariantBody = observer(function VariantBody({
       {hoveredCell ? (
         <HoveredCellHighlight cell={hoveredCell} model={model} />
       ) : null}
-      <VerticalScrollbar
-        scrollTop={model.scrollTop}
-        setScrollTop={n => {
-          model.setScrollTop(n)
-        }}
-        viewportHeight={model.availableHeight}
-        contentHeight={model.totalHeight}
-        controlsId={canvasId}
-      />
+      <VariantScrollbar model={model} controlsId={canvasId} />
       {contextMenuNode}
     </>
   )

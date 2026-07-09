@@ -71,6 +71,18 @@ test('deltaY<0 grows rows, deltaY>0 shrinks, clamped to [viewport/nrow, 20]', ()
   expect(atMin.state.rowHeight).toBe(10)
 })
 
+test('few samples: auto-fit floor above MAX_ROW_HEIGHT is not collapsed to the cap', () => {
+  // viewport 100, 3 samples -> auto-fit height 33.3, above the 20px cap. A grow
+  // gesture must not snap rows down to 20 (the pre-fix bug); the fit floor wins.
+  const grow = harness({ rowHeight: 100 / 3, scrollTop: 0, nrow: 3 })
+  applyRowResizeWheel(wheel(-1, 0).event, el(0), grow.target)
+  expect(grow.state.rowHeight).toBeCloseTo(100 / 3)
+
+  const shrink = harness({ rowHeight: 100 / 3, scrollTop: 0, nrow: 3 })
+  applyRowResizeWheel(wheel(1, 0).event, el(0), shrink.target)
+  expect(shrink.state.rowHeight).toBeCloseTo(100 / 3)
+})
+
 test('keeps the row under the cursor pinned in place as the height changes', () => {
   // cursor 50px below the element top, scrolled 100px, rows 10px tall -> the
   // row under the cursor is (50+100)/10 = row 15. After growing to 11px that

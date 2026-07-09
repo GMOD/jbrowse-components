@@ -1,6 +1,5 @@
 import { useId } from 'react'
 
-import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
@@ -9,6 +8,7 @@ import {
   buildVariantHit,
   variantTooltipKey,
 } from '../../shared/buildVariantHit.ts'
+import VariantScrollbar from '../../shared/components/VariantScrollbar.tsx'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
@@ -44,17 +44,7 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
   const height = model.availableHeight
   const canvasId = useId()
 
-  useVariantVirtualScroll({
-    canvas,
-    scrollTop: model.scrollTop,
-    setScrollTop: model.setScrollTop,
-    totalHeight: model.totalHeight,
-    viewportHeight: model.availableHeight,
-    scrollZoom: view.scrollZoom,
-    rowHeight: model.effectiveRowHeight,
-    nrow: model.nrow,
-    setRowHeight: model.setRowHeight,
-  })
+  useVariantVirtualScroll(canvas, model)
 
   const getHit = (
     rect: DOMRect,
@@ -143,15 +133,7 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
         }}
         {...canvasHandlers}
       />
-      <VerticalScrollbar
-        scrollTop={model.scrollTop}
-        setScrollTop={n => {
-          model.setScrollTop(n)
-        }}
-        viewportHeight={model.availableHeight}
-        contentHeight={model.totalHeight}
-        controlsId={canvasId}
-      />
+      <VariantScrollbar model={model} controlsId={canvasId} />
       {contextMenuNode}
     </>
   )
