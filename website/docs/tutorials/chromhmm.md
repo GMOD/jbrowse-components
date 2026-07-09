@@ -31,7 +31,7 @@ that carries an extra `cellType` column, then let the **multi-row feature
 display** split that one track back into a labeled sub-row per cell type. All
 rows share one config, one adapter, and one fetch.
 
-## 1. Combine the per-cell-type BEDs
+## Combine the per-cell-type BEDs
 
 Start from the UCSC ENCODE Broad HMM 15-state model (hg19) across 9 cell types.
 The per-cell-type files live under the
@@ -54,7 +54,7 @@ done | sort -k1,1 -k2,2n > wgEncodeBroadHmm.multirow.bed
 Each line is now standard BED9 plus one trailing string field — the cell-type
 label that becomes a row. Those labels are what `rowOrder` references below.
 
-## 2. Convert to a bigBed with the extra field
+## Convert to a bigBed with the extra field
 
 bigBed needs an [autoSql](https://genome.ucsc.edu/goldenPath/help/bigBed.html)
 schema to describe columns beyond the standard BED. Declare BED9 plus the one
@@ -87,7 +87,7 @@ bedToBigBed -type=bed9+1 -as=chromhmm.as \
 The `itemRgb`/`reserved` column and the `cellType` column are what the display
 config reads below.
 
-## 3. Configure the multi-row feature display
+## Configure the multi-row feature display
 
 Add a `FeatureTrack` with a `BigBedAdapter`, and give it a
 `LinearMultiRowFeatureDisplay` that partitions on the `cellType` field:
@@ -129,7 +129,7 @@ Add a `FeatureTrack` with a `BigBedAdapter`, and give it a
 }
 ```
 
-The three fields that make this work:
+The fields that drive the display:
 
 - **`partitionField`** — the feature attribute to split rows by. Every distinct
   `cellType` value becomes its own labeled sub-row, so a 9-cell-type file draws

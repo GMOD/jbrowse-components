@@ -107,66 +107,18 @@ them into clean inheritance blocks.
 We want **one row per parental haplotype** — father copy 1, father copy 2,
 mother copy 1, mother copy 2 — and we want the child's inherited chromosome
 tiled across each parent's pair of rows, so that a crossover shows up as the
-painted block stepping from one row to its partner. The script below does three
-things per child haplotype: merges adjacent segments of the same parental copy
-into runs, drops short interior runs (the switch-error specks), and snaps each
-remaining crossover to the midpoint of the gap between runs so the blocks abut
-(leaving genuine large gaps, like the centromere, blank).
+painted block stepping from one row to its partner. A short post-processing step
+turns those raw segments into clean painted blocks. Per child haplotype it
+merges adjacent segments of the same parental copy into runs, drops short
+interior runs (the switch-error specks), and snaps each remaining crossover to
+the midpoint of the gap between runs so the blocks abut (leaving genuine large
+gaps, like the centromere, blank). It emits one BED9 line per block plus a
+trailing `parenthap` label, coloring the father's two copies in blues and the
+mother's in reds via `itemRgb`.
 
-```python
-import gzip
-
-CHILD, FATHER, MOTHER = 'HG02024', 'HG02026', 'HG02025'
-MAX_GAP, MIN_RUN_CM = 6_000_000, 2.5  # tiling cap; min interior-run length
-STYLE = {  # parental copy -> (row label, itemRgb): father blues, mother reds
-    (FATHER, 1): ('Father hap1', '31,120,180'),
-    (FATHER, 2): ('Father hap2', '166,206,227'),
-    (MOTHER, 1): ('Mother hap1', '227,26,28'),
-    (MOTHER, 2): ('Mother hap2', '251,154,153'),
-}
-
-segs = {1: [], 2: []}  # child haplotype 1 = paternal, 2 = maternal
-for line in gzip.open('trio.ibd.gz', 'rt'):
-    s1, h1, s2, h2, chrom, start, end, cm = line.split('\t')
-    child, chap, par, phap = (s1, int(h1), s2, int(h2)) if s1 == CHILD else (s2, int(h2), s1, int(h1))
-    segs[chap].append((int(start), int(end), par, phap, float(cm)))
-
-def runs(seglist):
-    seglist.sort()
-    out = []
-    for start, end, par, phap, cm in seglist:
-        if out and out[-1][2:4] == [par, phap]:
-            out[-1][1] = max(out[-1][1], end); out[-1][4] += cm
-        else:
-            out.append([start, end, par, phap, cm])
-    changed = True
-    while changed:  # drop short interior runs flanked by the same opposite copy
-        changed = False
-        for i in range(1, len(out) - 1):
-            if out[i][4] < MIN_RUN_CM and out[i - 1][2:4] == out[i + 1][2:4]:
-                out[i - 1][1] = max(out[i - 1][1], out[i + 1][1]); out[i - 1][4] += out[i + 1][4]
-                del out[i:i + 2]; changed = True; break
-    return out
-
-rows = []
-for chap in (1, 2):
-    paint = [[r[0], r[1], r[2], r[3]] for r in runs(segs[chap])]
-    for a, b in zip(paint, paint[1:]):
-        if b[0] - a[1] <= MAX_GAP:
-            a[1] = b[0] = (a[1] + b[0]) // 2  # snap crossover to the gap midpoint
-    rows += paint
-
-with open('trio.hapibd.bed', 'w') as fh:
-    fh.write('#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tparenthap\n')
-    for start, end, par, phap in sorted(rows):
-        label, rgb = STYLE[(par, phap)]
-        fh.write(f'1\t{start}\t{end}\t{label}\t0\t.\t{start}\t{end}\t{rgb}\t{label}\n')
-```
-
-```bash
-bgzip trio.hapibd.bed
-tabix -p bed trio.hapibd.bed.gz
-```
+`bgzip` and `tabix -p bed` the resulting BED so the `BedTabixAdapter` below can
+read it. The finished track for this dataset is already loaded in the
+[live demo](#live-demo) at the end of this page.
 
 Load the result as a `FeatureTrack` whose display is a
 `LinearMultiRowFeatureDisplay`: partition rows by the `parenthap` column, order
@@ -269,125 +221,6 @@ but it was built for distant relatives in large cohorts, not trios, so treat the
 block boundaries as approximate. For an exact map, re-phase the trio with a
 pedigree-aware or read-backed phaser (SHAPEIT with the pedigree, WhatsHap on
 long reads) before painting.
-
-## A direct alternative: read crossovers from the genotypes
-
-If you want to skip hap-ibd, the direct method is short enough to keep as a
-small command-line script. It produces the same painted BED (so it drops
-straight into the track config above), and the `--min-sites` smoothing parameter
-exposes the switch-error tradeoff directly: lower values track the noisy raw
-phasing, higher values collapse toward the few real crossovers.
-
-```python title="trio_crossovers.py"
-#!/usr/bin/env python3
-"""Call crossover blocks directly from a phased trio VCF (no hap-ibd).
-
-At a site where a parent is heterozygous, the child's transmitted allele names
-which of that parent's two haplotypes was passed on; a crossover is where that
-choice flips. Emits a BED painted for LinearMultiRowFeatureDisplay (one row per
-parental haplotype). It reads the phasing as-is, so it inherits the VCF's switch
-errors -- raise --min-sites to smooth them.
-"""
-import argparse
-import gzip
-
-STYLE = {
-    ('father', 1): ('Father hap1', '31,120,180'),
-    ('father', 2): ('Father hap2', '166,206,227'),
-    ('mother', 1): ('Mother hap1', '227,26,28'),
-    ('mother', 2): ('Mother hap2', '251,154,153'),
-}
-
-ap = argparse.ArgumentParser(description=__doc__)
-ap.add_argument('--vcf', required=True)
-ap.add_argument('--child', required=True)
-ap.add_argument('--father', required=True)
-ap.add_argument('--mother', required=True)
-ap.add_argument('--out', required=True)
-ap.add_argument('--min-sites', type=int, default=200,
-                help='merge runs shorter than this many informative sites')
-ap.add_argument('--max-gap', type=int, default=6_000_000)
-args = ap.parse_args()
-op = gzip.open if args.vcf.endswith('.gz') else open
-
-col, chrom, raw, votes = {}, '?', [], [0, 0]
-with op(args.vcf, 'rt') as fh:
-    for line in fh:
-        if line.startswith('##'):
-            continue
-        f = line.rstrip('\n').split('\t')
-        if line.startswith('#CHROM'):
-            col = {name: i for i, name in enumerate(f)}
-            continue
-        chrom = f[0]
-        c, fa, mo = (f[col[s]].split(':')[0].split('|')
-                     for s in (args.child, args.father, args.mother))
-        if not (len(c) == len(fa) == len(mo) == 2):
-            continue
-        raw.append((int(f[1]), c, fa, mo))
-        if fa[0] != fa[1]:  # vote: which child allele matches the father
-            votes[0 if c[0] in fa and c[1] not in fa else 1] += 1
-pat = 0 if votes[0] >= votes[1] else 1
-
-informative = {'father': [], 'mother': []}
-for pos, c, fa, mo in raw:
-    if fa[0] != fa[1] and c[pat] in fa:
-        informative['father'].append((pos, 1 if c[pat] == fa[0] else 2))
-    if mo[0] != mo[1] and c[1 - pat] in mo:
-        informative['mother'].append((pos, 1 if c[1 - pat] == mo[0] else 2))
-
-rows = []
-for role in ('father', 'mother'):
-    runs = []  # [start, end, copy, nsites]
-    for pos, copy in sorted(informative[role]):
-        if runs and runs[-1][2] == copy:
-            runs[-1][1], runs[-1][3] = pos, runs[-1][3] + 1
-        else:
-            runs.append([pos, pos, copy, 1])
-    changed = True
-    while changed:  # absorb short runs flanked by the same opposite copy
-        changed = False
-        for i in range(1, len(runs) - 1):
-            if runs[i][3] < args.min_sites and runs[i - 1][2] == runs[i + 1][2]:
-                runs[i - 1][1] = runs[i + 1][1]
-                runs[i - 1][3] += runs[i + 1][3]
-                del runs[i:i + 2]
-                changed = True
-                break
-    runs = [r for r in runs if r[3] >= args.min_sites]
-    merged = []
-    for r in runs:
-        if merged and merged[-1][2] == r[2]:
-            merged[-1][1] = r[1]
-        else:
-            merged.append(r[:])
-    paint = [[r[0], r[1], role, r[2]] for r in merged]
-    for a, b in zip(paint, paint[1:]):
-        if b[0] - a[1] <= args.max_gap:
-            a[1] = b[0] = (a[1] + b[0]) // 2
-    rows += paint
-    print(f'{role}: {len(merged)} blocks -> {max(len(merged) - 1, 0)} crossovers')
-
-with open(args.out, 'w') as fh:
-    fh.write('#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\t'
-             'thickStart\tthickEnd\titemRgb\tparenthap\n')
-    for start, end, role, copy in sorted(rows):
-        label, rgb = STYLE[(role, copy)]
-        fh.write(f'{chrom}\t{start}\t{end}\t{label}\t0\t.\t{start}\t{end}\t{rgb}\t{label}\n')
-```
-
-```bash
-python trio_crossovers.py --vcf HG02024_VN049_KHVTrio.chr1.vcf.gz \
-  --child HG02024 --father HG02026 --mother HG02025 \
-  --out trio.direct.bed --min-sites 200
-bgzip trio.direct.bed && tabix -p bed trio.direct.bed.gz
-```
-
-On this VCF that reports 6 paternal and 8 maternal crossovers — still a few more
-than biology, because no amount of post-hoc smoothing fully undoes statistical
-phasing switch errors. That is the honest bottom line: this belongs in a
-command-line preprocessing step, not inside JBrowse, and the cleanest input is a
-well-phased trio VCF.
 
 ## See also
 

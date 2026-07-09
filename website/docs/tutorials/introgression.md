@@ -16,7 +16,7 @@ segments the caller produced.
 
 <Figure src="/img/introgression.png" caption="hmmix archaic-segment calls as a multi-row feature track: one row per haplotype, features colored by inferred source — Neanderthal (red), Denisovan (blue), both (purple). Whole chr1 arm, five individuals × two haplotypes; the four Oceanian rows (bottom) carry the blue Denisovan segments."/>
 
-## 1. Get the segment calls
+## Get the segment calls
 
 Use the published hmmix callset for the
 [HGDP](https://www.internationalgenome.org/data-portal/data-collection/hgdp) and
@@ -40,7 +40,7 @@ To generate calls yourself, hmmix's
 (`create_outgroup → mutation_rate → create_ingroup → train → decode -admixpop`)
 produces the same columns.
 
-## 2. Reshape into one multi-row file
+## Reshape into one multi-row file
 
 Keep the classified archaic segments for a few individuals, label each row
 `<pop> <hap>`, and carry `source` through for coloring. One `awk`:
@@ -64,7 +64,7 @@ Americas (Karitiana), and Oceania (Bougainville, PapuanHighlands). Each output
 line is BED6 plus three trailing fields — `sample` (the `<pop> <hap>` row
 label), `source`, and `meanprob` — which drive the rows and colors.
 
-## 3. Configure the multi-row feature display
+## Configure the multi-row feature display
 
 Add a `FeatureTrack` with a `BedTabixAdapter` whose `columnNames` name the extra
 fields, and a `LinearMultiRowFeatureDisplay` that partitions on `sample`:

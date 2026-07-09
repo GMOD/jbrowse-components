@@ -1,5 +1,5 @@
 ---
-title: RNA-seq analysis
+title: RNA-seq visualization
 description:
   Understand what RNA-seq looks like in the genome browser, from spliced reads
   to splice arcs
