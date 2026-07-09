@@ -15,17 +15,20 @@ const GenomicSequence = observer(function GenomicSequence({
   upstream,
   feature,
   downstream,
+  onHoverBase,
   model,
 }: {
   sequence: string
   feature: SimpleFeatureSerialized
   upstream?: string
   downstream?: string
+  onHoverBase?: (base0: number) => void
   model: SequenceFeatureDetailsModel
 }) {
+  const useGenomicCoords = model.showCoordinatesSetting === 'genomic'
   const { mult, coordStart } = computeCoordProps(
     feature,
-    model.showCoordinatesSetting === 'genomic',
+    useGenomicCoords,
     upstream,
   )
   return (
@@ -34,6 +37,7 @@ const GenomicSequence = observer(function GenomicSequence({
         model,
         mult,
         coordStart,
+        onHoverBase: useGenomicCoords ? onHoverBase : undefined,
         segments: [
           ...flankSegment('upstream', upstream, updownstreamColor),
           { key: 'genome', str: sequence, color: genomeColor },

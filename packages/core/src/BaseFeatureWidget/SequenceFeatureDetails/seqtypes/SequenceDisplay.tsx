@@ -24,6 +24,7 @@ const SequenceDisplay = observer(function SequenceDisplay({
   strand = 1,
   coordStart = start,
   highlight,
+  onHoverBase,
   model,
 }: {
   chunks: string[]
@@ -35,10 +36,16 @@ const SequenceDisplay = observer(function SequenceDisplay({
   // background color, or undefined to use the base `color`. When provided, each
   // character is rendered in its own span so it can be highlighted individually.
   highlight?: (index: number) => string | undefined
+  // Reports the 0-based genomic base under the cursor as it moves over a chunk,
+  // resolved from `coordStart`/`strand` (only wired for contiguous genomic
+  // modes, where those are true genomic coordinates). Chunk-level, so span count
+  // stays one-per-row regardless of sequence length.
+  onHoverBase?: (base0: number) => void
   model: SequenceFeatureDetailsModel
 }) {
   const { charactersPerRow, showCoordinates } = model
-  const sequenceOffsets = highlight ? chunkSequenceOffsets(chunks) : undefined
+  const sequenceOffsets =
+    highlight || onHoverBase ? chunkSequenceOffsets(chunks) : undefined
 
   return chunks.map((chunk, idx) => {
     const f = coordStart - (start % charactersPerRow)
@@ -71,13 +78,50 @@ const SequenceDisplay = observer(function SequenceDisplay({
             highlight={highlight}
           />
         ) : (
-          <span style={{ background: color }}>{chunk}</span>
+          <span
+            style={{ background: color }}
+            onMouseMove={
+              onHoverBase && sequenceOffsets
+                ? event => {
+                    const k =
+                      sequenceOffsets[idx]! +
+                      nonSpaceCharsBeforeCursor(event, chunk)
+                    onHoverBase(coordStart + strand * k - 1)
+                  }
+                : undefined
+            }
+          >
+            {chunk}
+          </span>
         )}
         {postfix}
       </Fragment>
     )
   })
 })
+
+// Non-space characters before the cursor within a monospace chunk span, i.e.
+// the sequence index (within the chunk) of the base under the cursor. Uses the
+// span's measured width since every glyph is equal-width; coordinate-spacing
+// spaces are skipped so the index lines up with the underlying sequence.
+function nonSpaceCharsBeforeCursor(
+  event: React.MouseEvent<HTMLSpanElement>,
+  chunk: string,
+) {
+  const rect = event.currentTarget.getBoundingClientRect()
+  const frac = (event.clientX - rect.left) / rect.width
+  const col = Math.min(
+    chunk.length - 1,
+    Math.max(0, Math.floor(frac * chunk.length)),
+  )
+  let count = 0
+  for (let i = 0; i < col; i++) {
+    if (chunk[i] !== ' ') {
+      count++
+    }
+  }
+  return count
+}
 
 // Renders a chunk one character per span, applying `highlight` to each
 // non-space character. Spaces keep the base `color` so the row background stays

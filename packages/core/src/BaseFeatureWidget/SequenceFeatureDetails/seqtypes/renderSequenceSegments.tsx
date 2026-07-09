@@ -31,11 +31,15 @@ export function renderSequenceSegments({
   model,
   mult,
   coordStart,
+  onHoverBase,
 }: {
   segments: SeqSegment[]
   model: SequenceFeatureDetailsModel
   mult: number
   coordStart: number
+  // forwarded to each row so hovering reports a genomic base; only supplied by
+  // callers whose coordStart/mult are genomic (contiguous genome-based modes)
+  onHoverBase?: (base0: number) => void
 }) {
   const { charactersPerRow, showCoordinates } = model
   let currStart = 0
@@ -58,6 +62,7 @@ export function renderSequenceSegments({
           start={currStart}
           coordStart={coordStart + currStart}
           chunks={chunks}
+          onHoverBase={onHoverBase}
         />,
       )
       currRemainder = remainder

@@ -11,6 +11,7 @@ import {
 import FeatureTrackF from './FeatureTrack/index.ts'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView/index.ts'
 import ZoomControls from './LinearGenomeView/components/HeaderZoomControls.tsx'
+import SequenceFeatureHoverHighlightExtensionF from './LinearGenomeView/components/SequenceFeatureHoverHighlightExtension.tsx'
 import LinearGenomeViewF, {
   LinearGenomeView,
   SearchBox,
@@ -53,6 +54,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
     FeatureTrackF(pluginManager)
     LinearGenomeViewF(pluginManager)
     LaunchLinearGenomeViewF(pluginManager)
+    SequenceFeatureHoverHighlightExtensionF(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {

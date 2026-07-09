@@ -22,6 +22,7 @@ const CDNASequence = observer(function CDNASequence({
   feature,
   includeIntrons,
   collapseIntron,
+  onHoverBase,
   model,
 }: {
   utr: Feat[]
@@ -33,6 +34,7 @@ const CDNASequence = observer(function CDNASequence({
   feature: SimpleFeatureSerialized
   includeIntrons?: boolean
   collapseIntron?: boolean
+  onHoverBase?: (base0: number) => void
   model: SequenceFeatureDetailsModel
 }) {
   const { upperCaseCDS, intronBp, showCoordinatesSetting } = model
@@ -43,9 +45,13 @@ const CDNASequence = observer(function CDNASequence({
   const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
   const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
 
+  // hover-to-position maps display index to genome linearly, which only holds
+  // when the view is contiguous genomic: introns shown, not collapsed
+  const useGenomicCoords =
+    showCoordinatesSetting === 'genomic' && !!includeIntrons && !collapseIntron
   const { mult, coordStart } = computeCoordProps(
     feature,
-    showCoordinatesSetting === 'genomic' && !!includeIntrons && !collapseIntron,
+    useGenomicCoords,
     upstream,
   )
 
@@ -78,6 +84,7 @@ const CDNASequence = observer(function CDNASequence({
         model,
         mult,
         coordStart,
+        onHoverBase: useGenomicCoords ? onHoverBase : undefined,
         segments: [
           ...flankSegment('upstream', upstream, updownstreamColor, toLower),
           ...middle,

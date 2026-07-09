@@ -6,7 +6,7 @@ import {
 } from '../util.tsx'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { ErrorState, Feat, SeqState } from '../util.tsx'
+import type { Feat, SeqState } from '../util.tsx'
 
 interface FeatureData {
   sequence: SeqState
@@ -89,23 +89,24 @@ export function getSequenceData({
   sequence,
 }: {
   feature: SimpleFeatureSerialized
-  sequence?: SeqState | ErrorState
+  sequence: SeqState
 }) {
-  if (!sequence || 'error' in sequence) {
-    return undefined
-  } else {
-    const children = prepareSubfeatures(feature)
-    const { cds, exons, utr } = processFeatureData(children, feature)
-    const adjusted =
-      feature.strand === -1
-        ? handleReverseStrand(sequence, cds, exons, utr)
-        : { sequence, cds, exons, utr }
+  const children = prepareSubfeatures(feature)
+  const { cds, exons, utr } = processFeatureData(children, feature)
+  const {
+    sequence: adjusted,
+    cds: adjustedCds,
+    exons: adjustedExons,
+    utr: adjustedUtr,
+  } =
+    feature.strand === -1
+      ? handleReverseStrand(sequence, cds, exons, utr)
+      : { sequence, cds, exons, utr }
 
-    return {
-      ...adjusted.sequence,
-      cds: adjusted.cds,
-      exons: adjusted.exons,
-      utr: adjusted.utr,
-    }
+  return {
+    ...adjusted,
+    cds: adjustedCds,
+    exons: adjustedExons,
+    utr: adjustedUtr,
   }
 }

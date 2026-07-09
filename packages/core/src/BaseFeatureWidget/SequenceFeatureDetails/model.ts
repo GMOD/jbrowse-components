@@ -20,6 +20,16 @@ function parseShowCoordinatesMode(
   return val === 'relative' || val === 'genomic' ? val : 'none'
 }
 
+// a single genomic base the user is hovering in the sequence panel, published
+// so a connected LinearGenomeView can draw a crosshair at that position (see
+// the LGV SequenceFeatureHoverHighlight overlay). start/end are 0-based/BED.
+export interface SequenceHoverPosition {
+  refName: string
+  start: number
+  end: number
+  assemblyName?: string
+}
+
 export type SequenceDisplayMode =
   | 'gene'
   | 'gene_collapsed_intron'
@@ -59,6 +69,11 @@ export function SequenceFeatureDetailsF() {
        * #volatile
        */
       charactersPerRow: 100,
+      /**
+       * #volatile
+       * genomic base currently hovered in the sequence panel, or undefined
+       */
+      hoverPosition: undefined as SequenceHoverPosition | undefined,
     }))
     .actions(self => ({
       /**
@@ -84,6 +99,23 @@ export function SequenceFeatureDetailsF() {
        */
       setShowCoordinates(f: ShowCoordinatesMode) {
         self.showCoordinatesSetting = f
+      },
+      /**
+       * #action
+       */
+      setHoverPosition(pos: SequenceHoverPosition | undefined) {
+        // skip no-op updates: mousemove fires per pixel but the base under the
+        // cursor changes far less often, and each change re-renders the LGV
+        // crosshair overlay
+        const prev = self.hoverPosition
+        const same =
+          prev === pos ||
+          (prev?.refName === pos?.refName &&
+            prev?.start === pos?.start &&
+            prev?.end === pos?.end)
+        if (!same) {
+          self.hoverPosition = pos
+        }
       },
     }))
     .views(self => ({

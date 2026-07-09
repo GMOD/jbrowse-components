@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 import SequencePanel from './SequencePanel.tsx'
 import { SequenceFeatureDetailsF } from './model.ts'
@@ -269,6 +269,127 @@ test('genomic coords thread continuously across the upstream flank boundary', ()
 
   // feature starts at 1200 (1-based 1201); 100bp upstream => first label 1101
   expect(rowStarts).toEqual([1101, 1201, 1301, 1401])
+})
+
+// a 100bp single row rendered with genomic coordinate spacing is 109 chars
+// wide (9 spaces, before each multiple of 10); mocking the span at 1090px makes
+// each visible column 10px, and columns 0-9 carry no spacing space so
+// clientX/10 maps straight to the sequence index there
+function mockRowRect(span: Element) {
+  return jest.spyOn(span, 'getBoundingClientRect').mockReturnValue({
+    left: 0,
+    width: 1090,
+    right: 1090,
+    top: 0,
+    bottom: 0,
+    height: 0,
+    x: 0,
+    y: 0,
+    toJSON: () => ({}),
+  })
+}
+
+test('hovering the genomic sequence reports the genomic base under the cursor', () => {
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const feature = {
+    start: 1200,
+    end: 1300,
+    refName: 'chr1',
+    strand: 1,
+    type: 'region',
+    uniqueId: 'fwd',
+    name: 'fwd',
+  }
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      sequence={{ seq: 'A'.repeat(100) }}
+      feature={feature}
+    />,
+  )
+  const span = getByTestId('sequence_panel').querySelector('span')!
+  const rectSpy = mockRowRect(span)
+
+  // cursor at the row start => first feature base (0-based 1200)
+  fireEvent.mouseMove(span, { clientX: 0 })
+  expect(model.hoverPosition).toEqual({
+    refName: 'chr1',
+    start: 1200,
+    end: 1201,
+  })
+
+  // 5.5 columns in => 6th base (0-based 1205)
+  fireEvent.mouseMove(span, { clientX: 55 })
+  expect(model.hoverPosition).toEqual({
+    refName: 'chr1',
+    start: 1205,
+    end: 1206,
+  })
+
+  fireEvent.mouseLeave(getByTestId('sequence_panel'))
+  expect(model.hoverPosition).toBeUndefined()
+  rectSpy.mockRestore()
+})
+
+test('hovering a reverse-strand genomic sequence counts positions down', () => {
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const feature = {
+    start: 0,
+    end: 100,
+    refName: 'chr1',
+    strand: -1,
+    type: 'region',
+    uniqueId: 'rev',
+    name: 'rev',
+  }
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      sequence={{ seq: 'A'.repeat(100) }}
+      feature={feature}
+    />,
+  )
+  const span = getByTestId('sequence_panel').querySelector('span')!
+  const rectSpy = mockRowRect(span)
+
+  // display char 0 is the last genomic base (0-based 99)
+  fireEvent.mouseMove(span, { clientX: 0 })
+  expect(model.hoverPosition).toEqual({ refName: 'chr1', start: 99, end: 100 })
+
+  // 5 columns in counts down to base 94
+  fireEvent.mouseMove(span, { clientX: 55 })
+  expect(model.hoverPosition).toEqual({ refName: 'chr1', start: 94, end: 95 })
+  rectSpy.mockRestore()
+})
+
+test('hovering does not report positions when coordinates are not genomic', () => {
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('relative')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      sequence={{ seq: 'A'.repeat(100) }}
+      feature={{
+        start: 1200,
+        end: 1300,
+        refName: 'chr1',
+        strand: 1,
+        type: 'region',
+        uniqueId: 'rel',
+        name: 'rel',
+      }}
+    />,
+  )
+  const span = getByTestId('sequence_panel').querySelector('span')!
+  const rectSpy = mockRowRect(span)
+  fireEvent.mouseMove(span, { clientX: 55 })
+  expect(model.hoverPosition).toBeUndefined()
+  rectSpy.mockRestore()
 })
 
 test('single exon cDNA display relative coords', () => {

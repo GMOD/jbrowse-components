@@ -65,12 +65,14 @@ function RenderedSequenceComponent({
   model,
   assemblyGeneticCodeId,
   sequenceData,
+  onHoverBase,
 }: {
   mode: SequenceDisplayMode
   feature: SimpleFeatureSerialized
   model: SequenceFeatureDetailsModel
   assemblyGeneticCodeId?: number
   sequenceData: SequenceData
+  onHoverBase?: (base0: number) => void
 }) {
   const { seq, upstream, downstream, cds, exons, utr } = sequenceData
   const withUpDown = modeHasUpDownstream(mode)
@@ -85,6 +87,7 @@ function RenderedSequenceComponent({
           sequence={seq}
           upstream={withUpDown ? upstream : undefined}
           downstream={withUpDown ? downstream : undefined}
+          onHoverBase={onHoverBase}
         />
       )
 
@@ -125,6 +128,7 @@ function RenderedSequenceComponent({
           downstream={withUpDown ? downstream : undefined}
           includeIntrons={mode.startsWith('gene')}
           collapseIntron={mode.includes('collapsed_intron')}
+          onHoverBase={onHoverBase}
         />
       )
 
@@ -139,26 +143,29 @@ const SequenceContents = observer(function SequenceContents({
   sequence,
   model,
   assemblyGeneticCodeId,
+  onHoverBase,
 }: {
   mode: SequenceDisplayMode
   feature: SimpleFeatureSerialized
   sequence: SeqState
   model: SequenceFeatureDetailsModel
   assemblyGeneticCodeId?: number
+  onHoverBase?: (base0: number) => void
 }) {
   const sequenceData = getSequenceData({
     feature,
     sequence,
   })
-  return sequenceData ? (
+  return (
     <RenderedSequenceComponent
       mode={mode}
       feature={feature}
       model={model}
       assemblyGeneticCodeId={assemblyGeneticCodeId}
       sequenceData={sequenceData}
+      onHoverBase={onHoverBase}
     />
-  ) : null
+  )
 })
 
 export default SequenceContents

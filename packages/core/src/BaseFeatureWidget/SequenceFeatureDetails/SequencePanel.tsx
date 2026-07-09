@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import { observer } from 'mobx-react'
 
 import SequenceContents from './SequenceContents.tsx'
@@ -44,11 +46,22 @@ const SequencePanel = observer(function SequencePanel({
 }: SequencePanelProps) {
   const { showCoordinates } = model
   const Container = showCoordinates ? WordWrap : NoWordWrap
+  // clear the LGV crosshair if the panel unmounts mid-hover (e.g. the sequence
+  // is hidden) so it doesn't linger
+  useEffect(
+    () => () => {
+      model.setHoverPosition(undefined)
+    },
+    [model],
+  )
   return (
     <div
       data-testid="sequence_panel"
       ref={ref}
       style={{ maxHeight: 300, overflow: 'auto' }}
+      onMouseLeave={() => {
+        model.setHoverPosition(undefined)
+      }}
     >
       <Container>
         <SequenceName model={model} mode={mode} feature={feature} />
@@ -58,6 +71,13 @@ const SequencePanel = observer(function SequencePanel({
           feature={feature}
           sequence={sequence}
           assemblyGeneticCodeId={assemblyGeneticCodeId}
+          onHoverBase={base0 => {
+            model.setHoverPosition({
+              refName: feature.refName,
+              start: base0,
+              end: base0 + 1,
+            })
+          }}
         />
       </Container>
     </div>
