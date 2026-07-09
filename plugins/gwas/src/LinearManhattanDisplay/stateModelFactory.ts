@@ -34,6 +34,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun, observable } from 'mobx'
 
 import TooltipComponent from './components/TooltipComponent.tsx'
+import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 
 import type { ManhattanHit } from './findManhattanHit.ts'
@@ -293,6 +294,18 @@ export function stateModelFactory(
           self.rpcDataMap.size > 0 &&
           !Array.from(self.rpcDataMap.values()).some(d => d.indexFound)
         )
+      },
+      /**
+       * #getter
+       * When the index SNP is a `chr:bp` locus, whether it lies outside every
+       * visible region — the benign, pannable cause of `indexSnpMissing`
+       * (PLINK `--ld-window` files carry no records once you pan away from the
+       * index), as opposed to reference-name aliasing or the SNP being absent
+       * from the file. A bare rsID index returns false since its position isn't
+       * known here.
+       */
+      get indexSnpOffscreen(): boolean {
+        return isIndexSnpOffscreen(self.indexSnp, self.view.visibleRegions)
       },
     }))
     .actions(self => ({

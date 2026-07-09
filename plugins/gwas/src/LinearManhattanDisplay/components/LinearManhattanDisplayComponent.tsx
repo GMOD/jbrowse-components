@@ -166,7 +166,10 @@ const ManhattanBody = observer(function ManhattanBody({
         />
       ) : null}
       {model.indexSnpMissing ? (
-        <LdIndexWarning offsetTop={YSCALEBAR_LABEL_OFFSET} />
+        <LdIndexWarning
+          offsetTop={YSCALEBAR_LABEL_OFFSET}
+          offscreen={model.indexSnpOffscreen}
+        />
       ) : null}
       <TooltipComponent model={model} clientMouseCoord={clientMouseCoord} />
       {contextMenu ? (
