@@ -69,7 +69,6 @@ export interface LinearBasicDisplayModel {
   scrollableHeight: number
   heightMode: HeightMode
   setHeightMode: (mode: HeightMode) => void
-  showLabels: boolean
   selectedFeatureId: string | undefined
   highlightedFeatureIds: string[]
   featureIdUnderMouse: string | null
@@ -80,6 +79,8 @@ export interface LinearBasicDisplayModel {
   flatbushIndexes: ReadonlyMap<number, FlatbushRegionIndexes>
   scrollTop: number
   effectiveShowDescriptions: boolean
+  renderedShowDescriptions: boolean
+  renderedShowLabels: boolean
   displayMode: string
   labelFontSize: number
   regionTooLarge: boolean

@@ -36,8 +36,8 @@ export interface RenderSvgModel extends SvgExportable {
   regionTooLarge: boolean
   laidOutDataMap: Map<number, FeatureDataResult>
   highlightedFeatureIdSet: ReadonlySet<string>
-  showLabels: boolean
-  effectiveShowDescriptions: boolean
+  renderedShowLabels: boolean
+  renderedShowDescriptions: boolean
   labelFontSize: number
 }
 
@@ -130,15 +130,15 @@ function CanvasFeaturesSvgBody({
         fill: alpha(highlightColor, 0.12),
       },
       {
-        showLabels: model.showLabels,
-        showDescriptions: model.effectiveShowDescriptions,
+        showLabels: model.renderedShowLabels,
+        showDescriptions: model.renderedShowDescriptions,
       },
     )
   })
   const fontSize = model.labelFontSize
   const context = {
-    showLabels: model.showLabels,
-    showDescriptions: model.effectiveShowDescriptions,
+    showLabels: model.renderedShowLabels,
+    showDescriptions: model.renderedShowDescriptions,
     fontSize,
   }
   // Labels + peptides always vector — text should remain crisp even when

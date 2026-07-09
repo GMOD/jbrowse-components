@@ -70,7 +70,10 @@ import {
   interpolateYData,
   maxBottom,
 } from './yMorph.ts'
-import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+import {
+  HEIGHT_MULTIPLIERS,
+  labelFontSize,
+} from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -87,6 +90,7 @@ import type {
 } from './components/hitTesting.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
 import type { FeatureHighlight } from './featureHighlight.ts'
+import type { IncrementalLayout } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 // rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
 // from it is enough to make rpcManager.call() resolve to the typed args.
@@ -201,6 +205,11 @@ const FEATURE_COLOR_DEFAULT = 'goldenrod'
 // Floor for the auto-fit height so a sparse/empty track doesn't collapse to a
 // sliver. Capped by the maxHeight config in fitHeight.
 const MIN_FIT_HEIGHT = 50
+
+// Smallest feature-body height (px) the fit squeeze may leave. Once bodies would
+// pack tighter than this the squeeze stops and the surplus scrolls, rather than
+// shrinking boxes to invisibility. See `fitMinScale`.
+const MIN_FIT_BOX_PX = 2
 
 /**
  * #stateModel LinearCanvasBaseDisplay
@@ -368,6 +377,18 @@ export default function baseStateModelFactory(
         // O(N). The volatile holds a stable reference; mutating its internal
         // cache is invisible to MobX, so reading it in the computed is safe.
         incrementalLayout: createIncrementalLayout(),
+        /**
+         * #volatile
+         */
+        // Fit-mode escalation layouts (see `fitStage`). One memo instance per
+        // reservation config, so each keeps its own stable per-group references
+        // and prior-row ordering exactly like `incrementalLayout` — a single
+        // shared instance can only cache one config at a time.
+        incrementalLayoutLabelsOnly: createIncrementalLayout(),
+        /**
+         * #volatile
+         */
+        incrementalLayoutBodiesOnly: createIncrementalLayout(),
         /**
          * #volatile
          */
@@ -965,58 +986,169 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Layout at the current display mode, before any fit-to-height fit.
-         * The reference for both `fitScale` (which reads its height) and the
-         * final `laidOutDataMap`; kept separate so the fit scale derives from the
-         * unscaled content height and can't feed back on itself.
+         * Layout inputs shared by the base layout and every fit-escalation
+         * layout, minus the per-config label/description reservation flags. One
+         * source so the candidate layouts can't drift on bpPerPx / region keys /
+         * display mode / pins.
          */
-        get baseLaidOutDataMap(): Map<number, FeatureDataResult> {
-          if (self.regionTooLarge) {
-            return new Map()
-          }
+        get layoutInputs() {
           const view = getView(self)
-          if (!view.initialized || self.rpcDataMap.size === 0) {
-            return new Map()
-          }
-          return self.incrementalLayout(self.rpcDataMap, {
+          return {
             bpPerPx: view.coarseBpPerPx,
             regionKeys: self.regionKeys,
-            showLabels: self.showLabels,
-            showDescriptions: self.effectiveShowDescriptions,
             reversedRegions: self.reversedRegions,
             displayMode: self.displayMode,
             pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
-          })
+          }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         * One fit-escalation candidate: the stack packed with the given
+         * label/description reservation, via that config's own memo instance so
+         * each keeps stable references across renders. Empty until
+         * initialized/in-bounds, so the GPU upload autorun has nothing to push.
+         */
+        fitLayoutAt(
+          memo: IncrementalLayout,
+          showLabels: boolean,
+          showDescriptions: boolean,
+        ): Map<number, FeatureDataResult> {
+          const view = getView(self)
+          return self.regionTooLarge ||
+            !view.initialized ||
+            self.rpcDataMap.size === 0
+            ? new Map<number, FeatureDataResult>()
+            : memo(self.rpcDataMap, {
+                ...self.layoutInputs,
+                showLabels,
+                showDescriptions,
+              })
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * Uniform vertical shrink factor for fit-to-height mode: makes the whole
-         * stack fit the track height without scrolling. Shrink-only (<= 1); 1
-         * whenever fit is off, content already fits, or there's nothing to lay
-         * out. Measured off the un-fitted base layout so it can't feed back on
-         * itself.
+         * Full reservation (names + descriptions): rendered at fit stage `full`
+         * and in non-fit modes, and the first stack `fitStage` probes.
          */
-        get fitScale() {
-          const base = maxBottom(self.baseLaidOutDataMap)
-          return self.fitHeightToDisplay && base > self.height
-            ? self.height / base
-            : 1
+        get baseLaidOutDataMap(): Map<number, FeatureDataResult> {
+          return self.fitLayoutAt(
+            self.incrementalLayout,
+            self.showLabels,
+            self.effectiveShowDescriptions,
+          )
         },
         /**
          * #getter
-         * What every consumer (hit test, GPU upload, React render) reads. The
-         * `baseLaidOutDataMap` by reference unless fit mode is shrinking the
-         * stack, in which case each region is cloned and scaled to exactly fill
-         * the track height. Returning the base map by reference off the un-fitted
-         * path keeps the incremental-layout upload diff and Y-morph idle check
-         * intact.
+         * Names reserved, descriptions dropped — the `labels` stage's stack.
+         */
+        get fitLabelsOnlyLayout(): Map<number, FeatureDataResult> {
+          return self.fitLayoutAt(
+            self.incrementalLayoutLabelsOnly,
+            self.showLabels,
+            false,
+          )
+        },
+        /**
+         * #getter
+         * Nothing reserved: bodies packed edge-to-edge (the tightest stack),
+         * labels hidden — the `bodies` stage's stack.
+         */
+        get fitBodiesOnlyLayout(): Map<number, FeatureDataResult> {
+          return self.fitLayoutAt(self.incrementalLayoutBodiesOnly, false, false)
+        },
+        /**
+         * #getter
+         * Floor on the fit squeeze: the smallest vertical scale that still leaves a
+         * feature body at least `MIN_FIT_BOX_PX` tall. The unscaled body height is
+         * the configured `featureHeight` times the display-mode multiplier (what
+         * the layout already applied). When bodies would pack tighter than this the
+         * squeeze stops here and the surplus scrolls instead of vanishing.
+         */
+        get fitMinScale() {
+          const boxPx =
+            getConf(self, 'featureHeight') * HEIGHT_MULTIPLIERS[self.displayMode]
+          return boxPx > 0 ? Math.min(1, MIN_FIT_BOX_PX / boxPx) : 1
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The resolved fit outcome — which reservation `level` survived, its
+         * unscaled `layout`, and the vertical `scale` to fill the track — bundled
+         * so the three can never disagree. The ladder keeps the least reduction
+         * whose *unscaled* stack fits the track height: `full` (names +
+         * descriptions), else `labels` (drop descriptions), else `bodies` (drop
+         * names too, pack tight). Only `bodies` can still overflow, and only it
+         * scales; `full`/`labels` fit by construction. Non-fit modes stay at
+         * `full`, scale 1. Read off the unscaled candidate heights so it can't feed
+         * back on its own `scale`. The bodies squeeze is floored at `fitMinScale`
+         * (keeping boxes visible); a stack too dense to fit even there overflows
+         * and scrolls.
+         */
+        get fitStage(): {
+          level: 'full' | 'labels' | 'bodies'
+          layout: Map<number, FeatureDataResult>
+          scale: number
+        } {
+          const h = self.height
+          const base = self.baseLaidOutDataMap
+          return !self.fitHeightToDisplay || maxBottom(base) <= h
+            ? { level: 'full', layout: base, scale: 1 }
+            : maxBottom(self.fitLabelsOnlyLayout) <= h
+              ? { level: 'labels', layout: self.fitLabelsOnlyLayout, scale: 1 }
+              : {
+                  level: 'bodies',
+                  layout: self.fitBodiesOnlyLayout,
+                  scale: Math.max(
+                    self.fitMinScale,
+                    Math.min(1, h / maxBottom(self.fitBodiesOnlyLayout)),
+                  ),
+                }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Uniform vertical shrink for fit mode; 1 unless the bodies stack is being
+         * squeezed to fill the track.
+         */
+        get fitScale() {
+          return self.fitStage.scale
+        },
+        /**
+         * #getter
+         * What every consumer (hit test, GPU upload, React render) reads: the
+         * resolved fit layout, cloned and scaled only while squeezing bodies.
+         * Returned by reference off the un-squeezed path so the incremental-layout
+         * upload diff and Y-morph idle check stay intact.
          */
         get laidOutDataMap(): Map<number, FeatureDataResult> {
-          return this.fitScale === 1
-            ? self.baseLaidOutDataMap
-            : scaleLaidOutData(self.baseLaidOutDataMap, this.fitScale)
+          const { layout, scale } = self.fitStage
+          return scale === 1 ? layout : scaleLaidOutData(layout, scale)
+        },
+        /**
+         * #getter
+         * Descriptions are painted only at the `full` stage (and whenever fit is
+         * off). Every render-time consumer — label draw and the highlight/hit/SVG
+         * label-width reservation — reads this so a box never reserves width for a
+         * description it won't draw.
+         */
+        get renderedShowDescriptions() {
+          return self.effectiveShowDescriptions && self.fitStage.level === 'full'
+        },
+        /**
+         * #getter
+         * Names are painted at the `full`/`labels` stages (and whenever fit is
+         * off), where the packer reserved their row height and overhang so they
+         * never overlap. At the `bodies` stage nothing is reserved, so names are
+         * hidden rather than drawn on top of the boxes. Every render-time consumer
+         * reads this so hidden names reserve nothing.
+         */
+        get renderedShowLabels() {
+          return self.showLabels && self.fitStage.level !== 'bodies'
         },
       }))
       .views(self => ({
@@ -1082,9 +1214,14 @@ export default function baseStateModelFactory(
           // Fit mode scales content to exactly fill the track, but the
           // base*scale round-trip rounds a hair above `height` in ~5% of float
           // cases — which would spuriously arm the expand button, mark the track
-          // as overflowing, and open a sub-pixel scrollbar. The content occupies
-          // `height` by construction, so clamp to it while squeezing.
-          const max = self.fitScale === 1 ? raw : Math.min(raw, self.height)
+          // as overflowing, and open a sub-pixel scrollbar. Snap that away while
+          // squeezing. A larger overflow means the min-box floor (fitMinScale)
+          // stopped the squeeze short of fitting, so it's real and must scroll —
+          // keep it.
+          const max =
+            self.fitScale < 1 && raw - self.height < 1
+              ? Math.min(raw, self.height)
+              : raw
           // During a Y morph hold the height at the taller of the old/new
           // layout so features animating up from a deeper row aren't clipped at
           // the bottom; it settles to the destination height when the morph
@@ -1264,8 +1401,8 @@ export default function baseStateModelFactory(
         get flatbushIndexes() {
           const view = getView(self)
           const labels = {
-            showLabels: self.showLabels,
-            showDescriptions: self.effectiveShowDescriptions,
+            showLabels: self.renderedShowLabels,
+            showDescriptions: self.renderedShowDescriptions,
           }
           const reversedRegions = self.reversedRegions
           const bpPerPx = view.bpPerPx
@@ -1785,9 +1922,10 @@ export default function baseStateModelFactory(
           // Entering a non-fixed mode (grow/fit) resets transient state a
           // reconfigured height contradicts: a pending manual expand/restore
           // marker is stale, and a leftover scrollTop can strand the sticky GPU
-          // canvas at an out-of-range offset (fit has no scroll extent; grow can
-          // remove overflow, leaving the old offset painting clipped/blank until
-          // a DOM scroll event syncs it). Mirrors the alignments setHeightMode.
+          // canvas at an out-of-range offset (fit usually has no scroll extent —
+          // except an extreme stack floored at fitMinScale; grow can remove
+          // overflow, leaving the old offset painting clipped/blank until a DOM
+          // scroll event syncs it). Mirrors the alignments setHeightMode.
           if (mode !== 'fixed') {
             self.clearHeightBeforeExpand()
             self.setScrollTop(0)

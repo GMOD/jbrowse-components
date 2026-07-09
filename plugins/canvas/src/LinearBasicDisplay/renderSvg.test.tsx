@@ -86,8 +86,8 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     svgReady: true,
     laidOutDataMap: new Map([[0, makeData([{ startBp: 1100, endBp: 1200 }])]]),
     highlightedFeatureIdSet: new Set<string>(),
-    showLabels: true,
-    effectiveShowDescriptions: true,
+    renderedShowLabels: true,
+    renderedShowDescriptions: true,
     labelFontSize: 12,
     ...overrides,
   }

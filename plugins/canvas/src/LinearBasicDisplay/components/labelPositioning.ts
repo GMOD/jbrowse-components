@@ -157,6 +157,12 @@ export type RegionWithData = BpRegionBounds & { displayedRegionIndex: number }
 // here (rather than in each caller) keeps the DOM overlay (useFloatingLabels)
 // and the SVG export (renderSvg) from drifting — the divergence that let the
 // export double-paint a spanning feature's label.
+//
+// Whether a label shows at all is decided upstream by the caller's fit-aware
+// visibility (model.renderedShowLabels / renderedShowDescriptions): the packer
+// reserved row height and label-width overhang for exactly the labels these flags
+// leave on, so emitted labels never overlap a feature or each other. At the fit
+// `bodies` level both flags are off, so nothing is emitted.
 export function forEachDisplayLabel(
   regions: RegionWithData[],
   dataMap: Map<number, FeatureDataResult>,
@@ -170,18 +176,17 @@ export function forEachDisplayLabel(
   const rendered = new Set<string>()
   for (const region of regions) {
     const data = dataMap.get(region.displayedRegionIndex)
-    if (!data?.floatingLabelsData) {
-      continue
+    if (data?.floatingLabelsData) {
+      forEachRenderedLabel(
+        data,
+        region,
+        context,
+        (featureId, labels) => {
+          rendered.add(featureId)
+          emit(featureId, labels, region)
+        },
+        rendered,
+      )
     }
-    forEachRenderedLabel(
-      data,
-      region,
-      context,
-      (featureId, labels) => {
-        rendered.add(featureId)
-        emit(featureId, labels, region)
-      },
-      rendered,
-    )
   }
 }

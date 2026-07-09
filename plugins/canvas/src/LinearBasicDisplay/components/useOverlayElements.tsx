@@ -15,8 +15,8 @@ import type {
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
 interface OverlayModel {
-  showLabels: boolean
-  effectiveShowDescriptions: boolean
+  renderedShowLabels: boolean
+  renderedShowDescriptions: boolean
   labelFontSize: number
   selectedFeatureId: string | undefined
   selectFeatureById: (
@@ -27,8 +27,8 @@ interface OverlayModel {
 }
 
 interface HighlightModel {
-  showLabels: boolean
-  effectiveShowDescriptions: boolean
+  renderedShowLabels: boolean
+  renderedShowDescriptions: boolean
   selectedFeatureId: string | undefined
   hoveredFeature: FlatbushItem | null
   hoveredSubfeature: SubfeatureInfo | null
@@ -126,12 +126,8 @@ export function useFloatingLabels(
   ) => void,
 ) {
   const { classes, cx } = useStyles()
-  const {
-    showLabels,
-    effectiveShowDescriptions,
-    labelFontSize,
-    selectFeatureById,
-  } = model
+  const { renderedShowLabels, renderedShowDescriptions, labelFontSize, selectFeatureById } =
+    model
 
   if (!overlaysReady(viewInitialized, width, bpPerPx, visibleRegions)) {
     return null
@@ -139,8 +135,8 @@ export function useFloatingLabels(
 
   const elements: React.ReactElement[] = []
   const context = {
-    showLabels,
-    showDescriptions: effectiveShowDescriptions,
+    showLabels: renderedShowLabels,
+    showDescriptions: renderedShowDescriptions,
     fontSize: labelFontSize,
   }
 
@@ -227,8 +223,8 @@ export function useHighlightOverlays(
     highlightedFeatureIds,
     soloFeatureIdSet,
     soloApplied,
-    showLabels,
-    effectiveShowDescriptions,
+    renderedShowLabels,
+    renderedShowDescriptions,
   } = model
   const { classes, cx } = useStyles()
 
@@ -308,8 +304,8 @@ export function useHighlightOverlays(
     return computeLabelExtraWidth(
       labelData,
       featureWidthPx,
-      showLabels,
-      effectiveShowDescriptions,
+      renderedShowLabels,
+      renderedShowDescriptions,
     )
   }
 

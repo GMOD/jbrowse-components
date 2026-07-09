@@ -222,4 +222,25 @@ describe('forEachDisplayLabel', () => {
     )
     expect(emitted.sort()).toEqual(['f1', 'f2'])
   })
+
+  // Fit's `bodies` level hides labels upstream (model.renderedShowLabels /
+  // renderedShowDescriptions both false), so the walker simply emits nothing.
+  test('emits nothing when the caller has hidden every label kind', () => {
+    const data = makeData({
+      f1: makeLabelData('f1', {
+        nameLabel: makeLabel(),
+        descriptionLabel: makeLabel({ text: 'desc' }),
+      }),
+    })
+    const emitted: string[] = []
+    forEachDisplayLabel(
+      [regionWithData(0)],
+      new Map([[0, data]]),
+      { showLabels: false, showDescriptions: false, fontSize: LABEL_FONT },
+      featureId => {
+        emitted.push(featureId)
+      },
+    )
+    expect(emitted).toEqual([])
+  })
 })

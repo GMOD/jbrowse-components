@@ -241,6 +241,10 @@ function groupUnchanged(
 // any change, so N chromosomes arriving sequentially cost O(N²) GPU uploads;
 // per-group reuse makes it O(N). Hold one instance per display (the cache is
 // stateful) and call it from the `laidOutDataMap` getter.
+// The memoizing layout function `createIncrementalLayout` returns. Named so the
+// display can pass one around (it holds three — one per fit reservation config).
+export type IncrementalLayout = ReturnType<typeof createIncrementalLayout>
+
 export function createIncrementalLayout() {
   let cache = new Map<string, GroupCache>()
 
