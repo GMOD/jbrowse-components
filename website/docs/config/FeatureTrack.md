@@ -64,8 +64,6 @@ identifies it (not one of the config slots below).
   ([state model](../../models/lineararcdisplay))
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
   ([state model](../../models/linearbasicdisplay))
-- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-  ([state model](../../models/linearbasicdisplay))
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
   ([state model](../../models/linearmultirowfeaturedisplay))
 - **Adapter:** [BedAdapter](../bedadapter)
