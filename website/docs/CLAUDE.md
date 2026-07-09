@@ -15,6 +15,7 @@ the source instead.
 | color swatch tables between `<!-- COLOR_TABLE … -->`     | `pnpm autogen` (repo root)   | `#color`-tagged color constants in `packages/core/src/ui/theme.ts` (`docs/generateColorDocs.ts`) |
 | `user_guide.md`, `config_guide.md`, `developer_guide.md` | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                              |
 | `jbrowse-img.md` (@jbrowse/img static-export tool)       | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)                         |
+| `cli.md` (@jbrowse/cli command reference)                | `pnpm autogen` (repo root)   | `products/jbrowse-cli/README.md` (`website/scripts/generate-cli-doc.ts`)                         |
 
 - `config/`, `models/`, and `api/` are all wiped and rebuilt by a single
   `pnpm autogen` (= `pnpm gendocs` + prettier). Run `autogen`, not `gendocs`
@@ -38,10 +39,16 @@ the source instead.
   automatically. To change the surrounding prose/headings, edit the generator.
   `pnpm lint-docs-check` runs in CI (`push.yml`) and fails if these three files
   are out of date — so always regenerate, never hand-edit them.
-- **`cli.md`**: the `## jbrowse <command>` usage blocks mirror the
-  `@jbrowse/cli --help` output. Change flags/descriptions at the CLI source
-  (`products/jbrowse-cli/src/commands/`), not here. Only the hand-written intro
-  prose at the top is editable in place.
+- **`cli.md`**: fully generated from `products/jbrowse-cli/README.md` by
+  `website/scripts/generate-cli-doc.ts` (runs in `pnpm autogen`). That README is
+  itself generated from the CLI (`products/jbrowse-cli/generate_readme.sh` =
+  `preamble.md` + live `jbrowse <command> --help`, run on the package's
+  prepack), so the whole page — intro prose included — traces back to the CLI.
+  The generator strips the README's frontmatter, adds the website frontmatter,
+  rewrites the npm `@jbrowse/img` link to the local `/docs/jbrowse-img` page,
+  and runs prettier. Change command flags/descriptions at the CLI source
+  (`products/jbrowse-cli/src/commands/`) and the intro at `preamble.md`, then
+  regenerate the README — never edit `cli.md`.
 - **`jbrowse-img.md`**: fully generated from `products/jbrowse-img/README.md` by
   `website/scripts/generate-img-doc.ts` (runs in `pnpm autogen`). It drops the
   README's H1, adds frontmatter, rewrites repo-relative links to GitHub URLs,
@@ -50,9 +57,11 @@ the source instead.
   repoints the `raw.githubusercontent` URLs at those local copies, so the page
   renders without a GitHub-raw dependency (e.g. offline/staging builds), and
   converts the markdown images to `<Figure>` components (the alt text becomes
-  the caption). Edit the README, not `jbrowse-img.md`. `pnpm lint-docs-check`
-  (CI) runs `gen-img-doc --check` and fails on drift in either the doc or the
-  copied images.
+  the caption). Edit the README, not `jbrowse-img.md`.
+- Both README-derived docs are guarded in CI by the "Check README-derived docs
+  are up to date" step in `push.yml` (`gen-img-doc --check` +
+  `gen-cli-doc --check`), which fails on any drift between a README and its
+  generated doc.
 
 Everything else under `docs/` (the quickstarts, `user_guides/*`,
 `config_guides/*`, `developer_guides/*`, `tutorials/*`, `faq.md`,
