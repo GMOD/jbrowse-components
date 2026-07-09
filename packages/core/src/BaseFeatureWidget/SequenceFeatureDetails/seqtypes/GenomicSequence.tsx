@@ -2,7 +2,10 @@ import { observer } from 'mobx-react'
 
 import { genomeColor, updownstreamColor } from '../consts.ts'
 import { computeCoordProps } from '../util.ts'
-import { renderSequenceSegments } from './renderSequenceSegments.tsx'
+import {
+  flankSegment,
+  renderSequenceSegments,
+} from './renderSequenceSegments.tsx'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 import type { SequenceFeatureDetailsModel } from '../model.ts'
@@ -32,13 +35,9 @@ const GenomicSequence = observer(function GenomicSequence({
         mult,
         coordStart,
         segments: [
-          ...(upstream
-            ? [{ key: 'upstream', str: upstream, color: updownstreamColor }]
-            : []),
+          ...flankSegment('upstream', upstream, updownstreamColor),
           { key: 'genome', str: sequence, color: genomeColor },
-          ...(downstream
-            ? [{ key: 'downstream', str: downstream, color: updownstreamColor }]
-            : []),
+          ...flankSegment('downstream', downstream, updownstreamColor),
         ],
       })}
     </>

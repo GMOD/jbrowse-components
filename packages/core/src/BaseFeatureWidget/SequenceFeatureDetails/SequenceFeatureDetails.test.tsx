@@ -243,6 +243,34 @@ test('reverse strand genomic coords count down across rows', () => {
   expect(rowStarts).toEqual([300, 200, 100])
 })
 
+test('genomic coords thread continuously across the upstream flank boundary', () => {
+  // 100bp upstream flank fills row 0, then the 300bp feature fills rows 1-3.
+  // Row labels must count from the flank start (feature.start+1 - flankLen) and
+  // stay continuous across the flank->feature segment boundary.
+  const seq = 'A'.repeat(300)
+  const upstream = 'C'.repeat(100)
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="gene_updownstream"
+      sequence={{ seq, upstream }}
+      feature={f}
+    />,
+  )
+
+  const rowStarts = getByTestId('sequence_panel')
+    .textContent.split('\n')
+    .slice(1)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(s => +s.split(/\s+/, 1)[0]!)
+
+  // feature starts at 1200 (1-based 1201); 100bp upstream => first label 1101
+  expect(rowStarts).toEqual([1101, 1201, 1301, 1401])
+})
+
 test('single exon cDNA display relative coords', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()

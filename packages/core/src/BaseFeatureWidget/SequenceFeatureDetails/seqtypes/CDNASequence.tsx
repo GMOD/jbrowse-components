@@ -2,7 +2,10 @@ import { observer } from 'mobx-react'
 
 import { cdsColor, updownstreamColor, utrColor } from '../consts.ts'
 import { computeCoordProps, getIntronDisplayStr } from '../util.ts'
-import { renderSequenceSegments } from './renderSequenceSegments.tsx'
+import {
+  flankSegment,
+  renderSequenceSegments,
+} from './renderSequenceSegments.tsx'
 
 import type { SeqSegment } from './renderSequenceSegments.tsx'
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
@@ -76,25 +79,9 @@ const CDNASequence = observer(function CDNASequence({
         mult,
         coordStart,
         segments: [
-          ...(upstream
-            ? [
-                {
-                  key: 'upstream',
-                  str: toLower(upstream),
-                  color: updownstreamColor,
-                },
-              ]
-            : []),
+          ...flankSegment('upstream', upstream, updownstreamColor, toLower),
           ...middle,
-          ...(downstream
-            ? [
-                {
-                  key: 'downstream',
-                  str: toLower(downstream),
-                  color: updownstreamColor,
-                },
-              ]
-            : []),
+          ...flankSegment('downstream', downstream, updownstreamColor, toLower),
         ],
       })}
     </>

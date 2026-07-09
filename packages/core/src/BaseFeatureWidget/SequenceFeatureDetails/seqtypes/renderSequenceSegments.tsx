@@ -9,6 +9,18 @@ export interface SeqSegment {
   color?: string
 }
 
+// An up/downstream flank contributes a segment only when its sequence was
+// fetched; `transform` applies e.g. the cDNA lower-casing. Returns 0 or 1
+// segments so it can be spread into a segment list.
+export function flankSegment(
+  key: string,
+  str: string | undefined,
+  color: string,
+  transform: (s: string) => string = s => s,
+): SeqSegment[] {
+  return str ? [{ key, str: transform(str), color }] : []
+}
+
 // Lays a list of colored segments (upstream, exons/UTRs/introns, downstream)
 // into <SequenceDisplay> rows, threading the running row-fill remainder and
 // genomic coordinate across segments so rows and coordinate labels stay
