@@ -86,6 +86,7 @@ test('clips passthrough features (no aggregate field) to the query region', () =
     feats,
     aggregateField: 'gene_name',
     refName: 'ctgA',
+    idPrefix: 'test',
     regionStart: 0,
     regionEnd: 300,
   })

@@ -60,3 +60,29 @@ test('can instantiate new GtfAdapter and check for demo data', async () => {
   expect(featuresArray.length).toEqual(1)
   expect(featuresJsonArray).toMatchSnapshot()
 })
+
+test('returns a complete gene even when only one distant transcript is in view', async () => {
+  // GENE1 has t1 (100-200) and t2 (100000-100100). Querying a window that
+  // contains only t1 (fully inside, so it never extends past the window) must
+  // still return the gene with both transcripts: the whole file is resident and
+  // aggregated at load, so the gene is never truncated to the in-view transcript
+  const adapter = new GtfAdapter(
+    configSchema.create({
+      gtfLocation: {
+        localPath: require.resolve('../test_data/spread_transcripts.gtf'),
+      },
+    }),
+  )
+  const features = adapter.getFeatures({
+    refName: 'chr1',
+    start: 50,
+    end: 300,
+    assemblyName: 'test',
+  })
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
+  expect(featuresArray).toHaveLength(1)
+  const gene = featuresArray[0]!.toJSON()
+  expect(gene.type).toBe('gene')
+  expect(gene.name).toBe('GENE1')
+  expect(gene.subfeatures!.map(t => t.type)).toEqual(['transcript', 'transcript'])
+})

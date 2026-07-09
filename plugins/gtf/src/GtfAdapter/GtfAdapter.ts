@@ -14,31 +14,14 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-function getRedispatchBounds(
-  feats: SimpleFeatureSerialized[],
-  aggregateField: string,
-) {
-  let minStart = Number.POSITIVE_INFINITY
-  let maxEnd = Number.NEGATIVE_INFINITY
-  let hasAnyAggregateField = false
-  for (const feat of feats) {
-    if (feat.start < minStart) {
-      minStart = feat.start
-    }
-    if (feat.end > maxEnd) {
-      maxEnd = feat.end
-    }
-    if (feat[aggregateField]) {
-      hasAnyAggregateField = true
-    }
-  }
-  return { minStart, maxEnd, hasAnyAggregateField }
-}
-
 export default class GtfAdapter extends BaseFeatureDataAdapter<GtfAdapterConfig> {
   private gtfFeatures?: ReturnType<GtfAdapter['loadDataP']>
 
   private async loadDataP(opts?: BaseOptions) {
+    // the whole file is resident, so genes are aggregated once here and stored
+    // in the interval tree already spanning all their transcripts; getFeatures
+    // is then a plain tree search with no per-query aggregation or redispatch
+    const aggregateField = this.getConf('aggregateField')
     const buffer = await fetchAndMaybeUnzip(
       openLocation(this.getConf('gtfLocation'), this.pluginManager),
       opts,
@@ -51,10 +34,19 @@ export default class GtfAdapter extends BaseFeatureDataAdapter<GtfAdapterConfig>
     const intervalTreeMap = makeFeatureIntervalTreeMap<SimpleFeatureSerialized>(
       linesByRef,
       (lines, refName) =>
-        parseGtfToFeatures(
-          lines.map(line => ({ line })),
-          (_record, i) => `${this.id}-${refName}-${i}`,
-        ),
+        aggregateGtfFeatures({
+          feats: parseGtfToFeatures(
+            lines.map(line => ({ line })),
+            (_record, i) => `${this.id}-${refName}-${i}`,
+          ),
+          aggregateField,
+          refName,
+          idPrefix: this.id,
+          // whole-ref bounds so nothing is clipped at load; the tree search in
+          // getFeatures does the per-query clipping instead
+          regionStart: 0,
+          regionEnd: Number.MAX_SAFE_INTEGER,
+        }),
       'Parsing GTF data',
     )
 
@@ -82,33 +74,13 @@ export default class GtfAdapter extends BaseFeatureDataAdapter<GtfAdapterConfig>
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
-        const aggregateField = this.getConf('aggregateField')
         const { intervalTreeMap } = await this.loadData(opts)
         const tree = intervalTreeMap[query.refName]
         if (tree) {
-          const search = tree(opts.statusCallback)
-          let feats = search.search([query.start, query.end])
-
-          // the interval tree already holds fully-built features, so redispatch
-          // only to pull in sibling transcripts of an aggregated gene that fall
-          // outside the view; widen by 500kb to catch distant ones
-          const { minStart, maxEnd, hasAnyAggregateField } =
-            getRedispatchBounds(feats, aggregateField)
-          if (
-            hasAnyAggregateField &&
-            (maxEnd > query.end || minStart < query.start)
-          ) {
-            feats = search.search([minStart - 500_000, maxEnd + 500_000])
-          }
-
-          const aggregated = aggregateGtfFeatures({
-            feats,
-            aggregateField,
-            refName: query.refName,
-            regionStart: query.start,
-            regionEnd: query.end,
-          })
-          for (const feat of aggregated) {
+          for (const feat of tree(opts.statusCallback).search([
+            query.start,
+            query.end,
+          ])) {
             observer.next(new SimpleFeature({ id: feat.uniqueId, data: feat }))
           }
         }

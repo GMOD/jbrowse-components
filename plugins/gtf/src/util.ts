@@ -262,12 +262,14 @@ export function aggregateGtfFeatures({
   refName,
   regionStart,
   regionEnd,
+  idPrefix,
 }: {
   feats: SimpleFeatureSerialized[]
   aggregateField: string
   refName: string
   regionStart: number
   regionEnd: number
+  idPrefix: string
 }): SimpleFeatureSerialized[] {
   const out: SimpleFeatureSerialized[] = []
   const parentAggregation: Record<string, SimpleFeatureSerialized[]> = {}
@@ -291,16 +293,19 @@ export function aggregateGtfFeatures({
     const start = min(subfeatures.map(f => f.start))
     const end = max(subfeatures.map(f => f.end))
     if (doesIntersect2(start, end, regionStart, regionEnd)) {
-      const { uniqueId, strand } = subfeatures[0]!
       out.push({
         type: 'gene',
         subfeatures,
-        strand,
+        strand: subfeatures[0]!.strand,
         name,
         start,
         end,
         refName,
-        uniqueId: `${uniqueId}-parent`,
+        // stable across fetch windows: the same gene keeps one id while panning,
+        // unlike a subfeature-derived id where the "first" transcript (and thus
+        // the id) shifts with whatever the current window happened to pull in.
+        // aggregation groups by name within a ref, so refName+name is unique
+        uniqueId: `${idPrefix}-${refName}-gene-${name}`,
       })
     }
   }

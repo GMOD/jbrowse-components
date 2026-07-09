@@ -16,7 +16,7 @@ exports[`GtfAdapter on a GENCODE excerpt aggregates a gene from its transcript a
         "gene_type": "protein_coding",
         "level": "2",
         "name": "ENST00000269305.4",
-        "parentId": "test-chr17-1-parent",
+        "parentId": "test-chr17-gene-TP53",
         "phase": undefined,
         "refName": "chr17",
         "score": undefined,
@@ -301,7 +301,7 @@ exports[`GtfAdapter on a GENCODE excerpt aggregates a gene from its transcript a
       },
     ],
     "type": "gene",
-    "uniqueId": "test-chr17-1-parent",
+    "uniqueId": "test-chr17-gene-TP53",
   },
 ]
 `;

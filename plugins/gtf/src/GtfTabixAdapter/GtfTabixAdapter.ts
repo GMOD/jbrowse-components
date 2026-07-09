@@ -122,6 +122,7 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
           feats,
           aggregateField: this.getConf('aggregateField'),
           refName: query.refName,
+          idPrefix: this.id,
           regionStart: query.start,
           regionEnd: query.end,
         })
