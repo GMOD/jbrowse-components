@@ -182,5 +182,10 @@ or click **Open this view in JBrowse** under either figure above.
   inheritance blocks in a human trio
 - [Population genomics](/docs/tutorials/population_genomics) — more variant- and
   cohort-scale visualizations
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track) — the same
+  `LinearManhattanDisplay` driven by human GWAS summary statistics, with
+  LocusZoom-style LD coloring
+- [GWAS track configuration](/docs/config_guides/gwas_track) — preparing GWAS and
+  LD files, `scoreColumn`/`scoreTransform`, and significance thresholds
 - [jexl](/docs/config_guides/jexl) — the color-callback syntax used for the
   painting
