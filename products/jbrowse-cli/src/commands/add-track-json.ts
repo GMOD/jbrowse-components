@@ -5,6 +5,7 @@ import {
   printHelp,
   readInlineOrFileJson,
   readJsonFile,
+  requirePositional,
   resolveConfigPath,
 } from '../utils.ts'
 import {
@@ -45,27 +46,34 @@ export async function run(args?: string[]) {
   const description =
     'Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration'
 
+  const usage = 'jbrowse add-track-json <track> [options]'
+
   const examples = [
+    '# add a track from a JSON file',
     '$ jbrowse add-track-json track.json',
+    '',
+    '# update an existing track (matched by trackId) with new JSON contents',
     '$ jbrowse add-track-json track.json --update',
+    '',
+    '# pass the track config inline instead of via a file',
+    `$ jbrowse add-track-json '{"type":"FeatureTrack","trackId":"genes","assemblyNames":["hg38"],"adapter":{"type":"Gff3TabixAdapter","gffGzLocation":{"uri":"genes.gff.gz"}}}'`,
+    '',
+    '# write to a config.json in a specific installation directory',
+    '$ jbrowse add-track-json track.json --out /path/to/jb2/',
   ]
 
   if (flags.help) {
     printHelp({
       description,
       examples,
-      usage: 'jbrowse add-track-json <track> [options]',
+      usage,
       options,
     })
     return
   }
 
   const track = positionals[0]
-  if (!track) {
-    throw new Error(
-      'Missing required argument: track\nUsage: jbrowse add-track-json <track> [options]',
-    )
-  }
+  requirePositional(track, 'track', usage)
 
   const target = await resolveConfigPath(flags.target, flags.out)
 

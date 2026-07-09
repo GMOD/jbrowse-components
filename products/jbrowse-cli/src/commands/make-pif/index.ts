@@ -48,9 +48,20 @@ export async function run(args?: string[]) {
   const description = 'creates pairwise indexed PAF (PIF), with bgzip and tabix'
 
   const examples = [
-    '$ jbrowse make-pif input.paf # creates input.pif.gz in same directory',
+    '# creates input.pif.gz and input.pif.gz.tbi in the same directory',
+    '$ jbrowse make-pif input.paf',
     '',
-    '$ jbrowse make-pif input.paf --out output.pif.gz # specify output file, creates output.pif.gz.tbi also',
+    '# specify the output file, also creates output.pif.gz.tbi',
+    '$ jbrowse make-pif input.paf --out output.pif.gz',
+    '',
+    '# use a CSI index for assemblies with chromosomes longer than ~512 Mb',
+    '$ jbrowse make-pif input.paf --csi',
+    '',
+    '# strip CIGAR and emit only the coarse whole-genome tier',
+    '$ jbrowse make-pif input.paf --coarse 0',
+    '',
+    '# emit only the per-row CIGAR fine tier, skipping the coarse tier',
+    '$ jbrowse make-pif input.paf --no-coarse',
   ]
 
   const notes =

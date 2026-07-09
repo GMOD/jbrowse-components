@@ -22,6 +22,19 @@ export function parseCommaSeparatedString(value?: string): string[] {
   )
 }
 
+// throws a uniform "missing argument" error (with the same usage string passed
+// to printHelp) when a required positional is absent, and narrows the value to
+// string for the caller
+export function requirePositional(
+  value: string | undefined,
+  name: string,
+  usage: string,
+): asserts value is string {
+  if (!value) {
+    throw new Error(`Missing required argument: ${name}\nUsage: ${usage}`)
+  }
+}
+
 export function ignoreNotFound<T>(promise: Promise<T>) {
   return promise.catch((err: unknown) => {
     if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
@@ -333,7 +346,7 @@ export function printHelp({
   usage?: string
 }) {
   const termWidth = process.stdout.columns || 80
-  console.log(description)
+  console.log(wrapText(description, termWidth, ''))
   console.log(`\nUsage: ${usage || 'jbrowse <command> [options]'}`)
   console.log('\nOptions:')
   for (const [name, opt] of Object.entries(options)) {
@@ -342,7 +355,9 @@ export function printHelp({
     const indent = ' '.repeat(prefix.length + namePadded.length + 1)
     const descWidth = termWidth - indent.length
 
-    let desc = opt.description ?? ''
+    // every command declares a bare help flag; give it uniform wording so the
+    // rendered `-h, --help` line is never blank
+    let desc = opt.description ?? (name === 'help' ? 'Show help' : '')
     if (opt.choices) {
       desc += ` [choices: ${opt.choices.join(', ')}]`
     }
@@ -356,5 +371,8 @@ export function printHelp({
   if (notes) {
     console.log(`Notes:\n\n${wrapText(notes, termWidth, '')}\n`)
   }
-  console.log(examples.join('\n'))
+  if (examples.length) {
+    console.log('Examples:\n')
+    console.log(examples.join('\n'))
+  }
 }

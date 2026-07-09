@@ -9,7 +9,7 @@ import {
   loadOrCreateConfig,
   resolveTargetPath,
 } from './utils.ts'
-import { debug, printHelp } from '../../utils.ts'
+import { debug, printHelp, requirePositional } from '../../utils.ts'
 import { loadFiles } from '../add-track-utils/file-operations.ts'
 import { validateLoadOption } from '../add-track-utils/validators.ts'
 import { saveConfigAndReport } from '../shared/config-operations.ts'
@@ -101,6 +101,8 @@ export async function run(args?: string[]) {
 
   const description = 'Add an assembly to a JBrowse 2 configuration'
 
+  const usage = 'jbrowse add-assembly <sequence> [options]'
+
   const examples = [
     '# add assembly to installation in current directory. assumes .fai file also exists, and copies GRCh38.fa and GRCh38.fa.fai to current directory',
     '$ jbrowse add-assembly GRCh38.fa --load copy',
@@ -131,7 +133,7 @@ export async function run(args?: string[]) {
     printHelp({
       description,
       examples,
-      usage: 'jbrowse add-assembly <sequence> [options]',
+      usage,
       options,
     })
     return
@@ -140,11 +142,7 @@ export async function run(args?: string[]) {
   validateLoadOption(runFlags.load)
 
   const argsSequence = positionals[0]
-  if (!argsSequence) {
-    throw new Error(
-      'Missing required argument: sequence\nUsage: jbrowse add-assembly <sequence> [options]',
-    )
-  }
+  requirePositional(argsSequence, 'sequence', usage)
   const output = runFlags.target || runFlags.out || '.'
   const flags = {
     ...runFlags,

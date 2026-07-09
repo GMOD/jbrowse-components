@@ -3,6 +3,7 @@ import { parseArgs } from 'node:util'
 import {
   printHelp,
   readJsonFile,
+  requirePositional,
   resolveConfigPath,
   writeJsonFile,
 } from '../utils.ts'
@@ -34,24 +35,31 @@ export async function run(args?: string[]) {
   const description =
     'Remove a track configuration from a JBrowse 2 configuration. Be aware that this can cause crashes in saved sessions that refer to this track!'
 
-  const examples = ['$ jbrowse remove-track trackId']
+  const usage = 'jbrowse remove-track <trackId> [options]'
+
+  const examples = [
+    '# remove a track from the config.json in the current directory',
+    '$ jbrowse remove-track my_track_id',
+    '',
+    '# remove a track from a config.json in a specific installation directory',
+    '$ jbrowse remove-track my_track_id --out /path/to/jb2/',
+    '',
+    '# remove a track from a specific config file',
+    '$ jbrowse remove-track my_track_id --target /path/to/jb2/config.json',
+  ]
 
   if (flags.help) {
     printHelp({
       description,
       examples,
-      usage: 'jbrowse remove-track <trackId> [options]',
+      usage,
       options,
     })
     return
   }
 
   const trackId = positionals[0]
-  if (!trackId) {
-    throw new Error(
-      'Missing required argument: trackId\nUsage: jbrowse remove-track <trackId> [options]',
-    )
-  }
+  requirePositional(trackId, 'trackId', usage)
 
   const target = await resolveConfigPath(flags.target, flags.out)
 

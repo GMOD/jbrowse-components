@@ -46,7 +46,19 @@ export async function run(args?: string[]) {
 
   const description = 'Start up a small admin server for JBrowse configuration'
 
-  const examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
+  const examples = [
+    '# start the admin server for the JBrowse install in the current directory',
+    '$ jbrowse admin-server',
+    '',
+    '# start on a specific port',
+    '$ jbrowse admin-server -p 8888',
+    '',
+    '# point at a specific JBrowse installation directory',
+    '$ jbrowse admin-server --root /path/to/jb2/',
+    '',
+    '# raise the body size limit for very large config updates',
+    '$ jbrowse admin-server --bodySizeLimit 100mb',
+  ]
 
   const notes =
     'The admin-server lets a browser session write changes back to ' +

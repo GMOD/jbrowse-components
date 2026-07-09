@@ -18,8 +18,14 @@ const examples = [
   '# make session.json the defaultSession on the specified target config.json file',
   '$ jbrowse set-default-session --target /path/to/jb2/installation/config.json --session session.json',
   '',
-  '# print current default session',
-  '$ jbrowse set-default-session --currentSession # Prints out current default session',
+  '# override the name stored in the session file',
+  '$ jbrowse set-default-session --session session.json --name "My default view"',
+  '',
+  '# print the current default session',
+  '$ jbrowse set-default-session --currentSession',
+  '',
+  '# remove the existing default session',
+  '$ jbrowse set-default-session --delete',
 ]
 const options = {
   session: {

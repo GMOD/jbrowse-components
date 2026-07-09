@@ -6,6 +6,7 @@ import {
   parseCommaSeparatedString,
   printHelp,
   readJsonFile,
+  requirePositional,
   resolveConfigPath,
 } from '../utils.ts'
 import { parseConfigFlag } from './add-track-utils/validators.ts'
@@ -94,12 +95,25 @@ export async function run(args?: string[]) {
 
   const description = 'Add a connection to a JBrowse 2 configuration'
 
+  const usage = 'jbrowse add-connection <connectionUrlOrPath> [options]'
+
   const examples = [
+    '# add a JBrowse 1 data directory connection (type inferred from the jbrowse/data path)',
     '$ jbrowse add-connection https://mysite.com/jbrowse/data/ -a hg19',
+    '',
+    '# force the JBrowse1Connection type for a non-standard data folder path',
     '$ jbrowse add-connection https://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection -a hg38',
+    '',
+    '# add a UCSC track hub (type inferred from the hub.txt filename)',
     '$ jbrowse add-connection https://mysite.com/path/to/hub.txt',
+    '',
+    '# force the UCSCTrackHubConnection type for a hub file not named hub.txt',
     '$ jbrowse add-connection https://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection',
+    '',
+    '# add a custom connection type with extra config',
     `$ jbrowse add-connection https://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' -a hg19`,
+    '',
+    '# set an explicit id/name and write to a specific config file',
     '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
   ]
 
@@ -107,18 +121,14 @@ export async function run(args?: string[]) {
     printHelp({
       description,
       examples,
-      usage: 'jbrowse add-connection <connectionUrlOrPath> [options]',
+      usage,
       options,
     })
     return
   }
 
   const connectionUrlOrPath = positionals[0]
-  if (!connectionUrlOrPath) {
-    throw new Error(
-      'Missing required argument: connectionUrlOrPath\nUsage: jbrowse add-connection <connectionUrlOrPath> [options]',
-    )
-  }
+  requirePositional(connectionUrlOrPath, 'connectionUrlOrPath', usage)
 
   const { assemblyNames, type, name, config, connectionId, force } = flags
   const configObj = config ? parseConfigFlag(config) : undefined

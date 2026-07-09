@@ -93,7 +93,9 @@ export async function run(args?: string[]) {
     load: {
       type: 'string',
       short: 'l',
-      description: 'How to manage the track (copy, symlink, move, inPlace)',
+      description:
+        'How to manage the track file relative to config.json. Required for local files, omit for URLs',
+      choices: ['copy', 'symlink', 'move', 'inPlace'],
     },
     force: {
       type: 'boolean',
