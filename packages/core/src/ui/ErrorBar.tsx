@@ -8,6 +8,10 @@ const useStyles = makeStyles()({
   content: {
     wordBreak: 'break-word',
     textAlign: 'center',
+    // displays wrap their canvas in user-select:none (e.g. the canvas
+    // FeatureComponent root, inherited by DisplayChrome's error bar); re-enable
+    // selection so the error text can be copied
+    userSelect: 'text',
   },
 })
 
