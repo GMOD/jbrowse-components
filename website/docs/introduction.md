@@ -42,34 +42,10 @@ Not ready to install anything? Browse [live demos](/demos/), the
 
 ## Tutorials
 
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) — end-to-end
-  walkthrough with real cancer sequencing data
-- [Synteny visualization](/docs/tutorials/synteny_visualization) — comparing
-  genome assemblies with dotplot and linear synteny views
-- [Phased trio analysis](/docs/tutorials/analyze_trio) — inheritance patterns
-  and variant phasing in a trio dataset
-- [DNA methylation](/docs/tutorials/methylation) — per-read and aggregate
-  methylation display
-- [RNA-seq analysis](/docs/tutorials/rnaseq) — understanding spliced reads and
-  splice arcs
-- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) —
-  population-level SVs, trio inspection, and chromosomal inversions
-- [Protein structures and MSAs](/docs/tutorials/protein_structure) — 3D
-  structures and multiple sequence alignments linked to genomic variants
-- [ChromHMM chromatin states](/docs/tutorials/chromhmm) — many-cell-type
-  segmentations in one multi-row feature track
-- [Applying display settings](/docs/tutorials/display_settings) — set track
-  display settings via config.json, URL, or embedded session
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) — stacking closely
-  related strains from a single all-vs-all PAF
-- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) — N-way
-  synteny from a gene-level .blocks workflow
-- [Introgression tracts](/docs/tutorials/introgression) — painting per-haplotype
-  ancestry segments across a population
-- [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk) —
-  aggregating single-cell signal into per-group wiggle tracks
-- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) — embed the
-  linear genome view component in a custom web page
+Hands-on walkthroughs of common workflows, each built around a real dataset —
+see the [full tutorials list](/docs/tutorials) for all of them.
+
+<!-- doclist:tutorials -->
 
 ## Developers
 
