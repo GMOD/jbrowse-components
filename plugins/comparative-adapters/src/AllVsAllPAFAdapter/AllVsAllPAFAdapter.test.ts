@@ -1,8 +1,19 @@
+import { mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import Adapter from './AllVsAllPAFAdapter.ts'
 import configSchema from './configSchema.ts'
+
+// Write an inline PAF to a temp file and return a LocalPathLocation for it.
+const writePaf = (rows: string[]) => {
+  const path = join(mkdtempSync(join(tmpdir(), 'ava-paf-')), 'in.paf')
+  writeFileSync(path, `${rows.join('\n')  }\n`)
+  return { localPath: path, locationType: 'LocalPathLocation' as const }
+}
 
 const paf = () => ({
   localPath: require.resolve('./test_data/all_vs_all.paf'),
@@ -50,6 +61,29 @@ const byMateRef = (fa: Awaited<ReturnType<typeof feats>>) =>
       f.get('mate') as { refName: string; assemblyName: string },
     ]),
   )
+
+test('cross-sample block sharing a contig name + coords is not dropped as a self-diagonal', async () => {
+  // col = qname qlen qstart qend strand tname tlen tstart tend nmatch blocklen mapq
+  const loc = writePaf([
+    // grape vs peach, both `chr1`, IDENTICAL coords: a real cross-sample block
+    // (conserved region) that must draw — not a self-diagonal
+    'grape#1#chr1\t1000\t100\t200\t+\tpeach#1#chr1\t1000\t100\t200\t95\t100\t60',
+    // grape vs ITSELF, same contig + identical coords: a true self-diagonal, dropped
+    'grape#1#chr1\t1000\t300\t400\t+\tgrape#1#chr1\t1000\t300\t400\t100\t100\t60',
+  ])
+  const fa = await feats(makeAdapter(['grape', 'peach'], {}, loc), {
+    refName: 'chr1',
+    start: 0,
+    end: 2000,
+    assemblyName: 'grape',
+  })
+  // only the cross-sample block survives; the same-sample self-diagonal is gone
+  expect(fa.length).toBe(1)
+  expect(fa[0]!.get('mate')).toMatchObject({
+    refName: 'chr1',
+    assemblyName: 'peach',
+  })
+})
 
 test('one-vs-all: grape draws against peach, cacao, and its own paralog', async () => {
   const fa = await feats(makeAdapter(['grape', 'peach']), {

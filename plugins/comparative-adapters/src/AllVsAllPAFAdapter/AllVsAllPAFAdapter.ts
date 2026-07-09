@@ -121,9 +121,18 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
           const drawsHere =
             sidePrefix === anchorPrefix &&
             (targetPrefix === undefined || matePrefix === targetPrefix) &&
-            // skip a degenerate self-diagonal (identical locus on both sides);
-            // real paralogy has distinct coords/contig
-            !(mateRefName === refName && mateStart === start && mateEnd === end)
+            // skip a degenerate self-diagonal: the SAME sample's locus aligned
+            // to itself (same sample, contig AND coords). The sample check
+            // matters — two different samples that share a contig name (both
+            // `chr1`) can align at identical coords in a conserved region, and
+            // that is a real cross-sample block, not a self-diagonal. Real
+            // paralogy also has distinct coords/contig.
+            !(
+              matePrefix === sidePrefix &&
+              mateRefName === refName &&
+              mateStart === start &&
+              mateEnd === end
+            )
 
           if (
             drawsHere &&

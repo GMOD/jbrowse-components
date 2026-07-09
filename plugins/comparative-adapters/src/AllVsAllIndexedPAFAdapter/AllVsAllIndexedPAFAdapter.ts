@@ -161,11 +161,16 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
                   // viewing chr2 the chr2-anchored row (distinct fileOffsets =
                   // distinct ids). A synteny band narrows to its pair via
                   // targetAssemblyName, which also drops paralogy. A degenerate
-                  // self-diagonal (identical locus on both sides) is skipped.
+                  // self-diagonal (the SAME sample's locus aligned to itself) is
+                  // skipped — the sample check matters: two different samples
+                  // sharing a contig name (both `chr1`) can align at identical
+                  // coords in a conserved region, which is a real cross-sample
+                  // block, not a self-diagonal. Mirrors AllVsAllPAFAdapter.
                   const drawsHere =
                     (targetPrefix === undefined ||
                       matePrefix === targetPrefix) &&
                     !(
+                      matePrefix === anchorPrefix &&
                       mateRefName === qref &&
                       r.tstart === r.qstart &&
                       r.tend === r.qend
