@@ -23,23 +23,20 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load plain-text bedGraph signal files. Loads the whole file into memory,
 so prefer the BedGraphTabixAdapter for large files.
 
-### BedGraphAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
 
-```json
-{
-  "type": "BedGraphAdapter",
-  "uri": "yourfile.bed"
-}
-```
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                       | Type           | Description          |
 | ------------------------------------------ | -------------- | -------------------- |
@@ -51,8 +48,8 @@ preprocessor to allow minimal config:
 
 #### slot: bedGraphLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }`
 
 #### slot: columnNames
 
@@ -61,8 +58,3 @@ List of column names
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **Track:** [QuantitativeTrack](../quantitativetrack)
-- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)

@@ -26,17 +26,20 @@ plugin.
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 supplies features inline in the config instead of reading a file, useful for
 small feature sets added via a URL or session spec
 
-| Slot                         | Type     | Description                                                                                                                            |
-| ---------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| [adapterId](#slot-adapterid) | `string` | stable identifier used as the adapter cache key; avoids hashing the (potentially large) features array. optional — falls back to hash. |
-| [features](#slot-features)   | `frozen` |                                                                                                                                        |
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                         | Type     | Description                                                                                             |
+| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| [adapterId](#slot-adapterid) | `string` | stable identifier used as the adapter cache key; avoids hashing the (potentially large) features array. |
+| [features](#slot-features)   | `frozen` |                                                                                                         |
 
 <details>
 <summary>FromConfigAdapter - Slots</summary>
@@ -46,10 +49,10 @@ small feature sets added via a URL or session spec
 stable identifier used as the adapter cache key; avoids hashing the (potentially
 large) features array. optional — falls back to hash.
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: features
 
-**Type:** `frozen` · **Default:** `[]`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
 
 </details>

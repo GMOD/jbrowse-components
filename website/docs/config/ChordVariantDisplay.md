@@ -35,9 +35,21 @@ controls how far the chords bow toward the center:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
-## Overview
+## Related links
+
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
+- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
+- **Adapter:** [VcfAdapter](../vcfadapter)
+- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **State model:** [runtime API](../../models/chordvariantdisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                             | Type      | Description                                                        |
 | ------------------------------------------------ | --------- | ------------------------------------------------------------------ |
@@ -53,7 +65,8 @@ _See the **Slots** section below for all available configuration fields._
 
 callback that should be run when a chord in the track is clicked
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 ```js
 {
@@ -69,7 +82,8 @@ callback that should be run when a chord in the track is clicked
 
 the line color of each arc
 
-**Type:** `color` · **Default:** `'rgba(255,133,0,0.32)'`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'rgba(255,133,0,0.32)'`
 
 ```js
 {
@@ -84,7 +98,8 @@ the line color of each arc
 
 the line color of an arc that has been selected
 
-**Type:** `color` · **Default:** `'black'`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'black'`
 
 ```js
 {
@@ -99,7 +114,8 @@ the line color of an arc that has been selected
 
 the line color of an arc that is being hovered over with the mouse
 
-**Type:** `color` · **Default:** `'#555'`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'#555'`
 
 ```js
 {
@@ -112,12 +128,3 @@ the line color of an arc that is being hovered over with the mouse
 ```
 
 </details>
-
-## Related links
-
-- **Adapter:** [BedpeAdapter](../bedpeadapter)
-- **Adapter:** [StarFusionAdapter](../starfusionadapter)
-- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
-- **Adapter:** [VcfAdapter](../vcfadapter)
-- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
-- **State model:** [runtime API](../../models/chordvariantdisplay)

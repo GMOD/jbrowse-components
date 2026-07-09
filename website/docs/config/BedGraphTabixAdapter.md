@@ -25,22 +25,19 @@ The `uri` shorthand auto-resolves the `.tbi` index:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed bedGraph signal files
 
-### BedGraphTabixAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
+- **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
 
-```json
-{
-  "type": "BedGraphTabixAdapter",
-  "uri": "yourfile.bg.gz"
-}
-```
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                           | Type                    | Description          |
 | ---------------------------------------------- | ----------------------- | -------------------- |
@@ -54,16 +51,18 @@ preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
 
 #### slot: bedGraphGzLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: index.location
 
-**Type:** `fileLocation` · **Default:**
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:**
 `{ uri: '/path/to/my.bedgraph.gz.tbi', locationType: 'UriLocation' }`
 
 #### slot: columnNames
@@ -73,8 +72,3 @@ List of column names
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **Track:** [QuantitativeTrack](../quantitativetrack)
-- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)

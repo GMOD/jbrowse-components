@@ -24,20 +24,19 @@ The `uri` shorthand auto-resolves the `.fai` index:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
-## Overview
+## Related links
 
-### IndexedFastaAdapter - Pre-processor / simplified config
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 
-preprocessor to allow minimal config, assumes yourfile.fa.fai:
+## Config slots
 
-```json
-{
-  "type": "IndexedFastaAdapter",
-  "uri": "yourfile.fa"
-}
-```
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                       | Type           | Description            |
 | ------------------------------------------ | -------------- | ---------------------- |
@@ -50,26 +49,19 @@ preprocessor to allow minimal config, assumes yourfile.fa.fai:
 
 #### slot: fastaLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/seq.fa', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/seq.fa', locationType: 'UriLocation' }`
 
 #### slot: faiLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' }`
 
 #### slot: metadataLocation
 
 Optional metadata file
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
-- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
-- **Display:**
-  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)

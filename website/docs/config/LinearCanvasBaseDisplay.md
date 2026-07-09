@@ -9,31 +9,47 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts).
 
-## Overview
-
 base config for canvas-based linear feature displays (pileup-style glyphs)
 
-| Slot                                                           | Type                                                  | Description                                                                                                                                                                                                                                                                                                                                                                                                 |
-| -------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [maxHeight](#slot-maxheight)                                   | `number`                                              | Maximum height of the display in pixels                                                                                                                                                                                                                                                                                                                                                                     |
-| [heightMode](#slot-heightmode)                                 | `stringEnum`                                          | Track-height strategy (shared vocabulary with the alignments display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` resizes the track to fit all features, `fit` shrinks features to fill the current height. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings. |
-| [showLabels](#slot-showlabels)                                 | `stringEnum`                                          | Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides                                                                                                                                                                                                                                                                                                     |
-| [maxLabelFeatureDensity](#slot-maxlabelfeaturedensity)         | `number`                                              | In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value                                                                                                                                                                                                                                                                                                     |
-| [showDescriptions](#slot-showdescriptions)                     | `boolean`                                             | Show feature descriptions                                                                                                                                                                                                                                                                                                                                                                                   |
-| [color](#slot-color)                                           | `color`                                               | the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring)                                                                                                                                                                                                                                                                                                            |
-| [connectorColor](#slot-connectorcolor)                         | `color`                                               | color of the connecting/intron lines between feature segments (defaults to the theme text color)                                                                                                                                                                                                                                                                                                            |
-| [utrColor](#slot-utrcolor)                                     | `color`                                               | fill color for UTRs on gene/transcript glyphs                                                                                                                                                                                                                                                                                                                                                               |
-| [outlineColor](#slot-outlinecolor)                             | `color`                                               | outline color for features (empty string = no outline)                                                                                                                                                                                                                                                                                                                                                      |
-| [featureHeight](#slot-featureheight)                           | `number`                                              | height in pixels of the main body of each feature                                                                                                                                                                                                                                                                                                                                                           |
-| [displayMode](#slot-displaymode)                               | `stringEnum` (inherit, normal, compact, superCompact) | Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` pin the track explicitly (including pinning `normal` back over a `compact` session default)                                                                                                                                              |
-| [geneGlyphMode](#slot-geneglyphmode)                           | `stringEnum`                                          | Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longestCoding" shows only the longest coding transcript                                                                                                                                                                                                                                                         |
-| [subfeatureLabels](#slot-subfeaturelabels)                     | `stringEnum` (inherit, none, below, overlay)          | subfeature label display mode. `inherit` (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` pin the track explicitly                                                                                                                                                                                                                    |
-| [displayDirectionalChevrons](#slot-displaydirectionalchevrons) | `maybeBoolean`                                        | Display directional chevrons on intron lines to indicate strand direction. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false pins the track (including pinning on over an off session default)                                                                                                                                         |
-| [transcriptTypes](#slot-transcripttypes)                       | `stringArray`                                         |                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [containerTypes](#slot-containertypes)                         | `stringArray`                                         |                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [subParts](#slot-subparts)                                     | `string`                                              | subparts for a glyph                                                                                                                                                                                                                                                                                                                                                                                        |
-| [impliedUTRs](#slot-impliedutrs)                               | `boolean`                                             | imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures                                                                                                                                                                                                                                                                                                            |
-| [labels](#slot-labels)                                         |                                                       |                                                                                                                                                                                                                                                                                                                                                                                                             |
+## Related links
+
+- **State model:** [runtime API](../../models/linearcanvasbasedisplay)
+- **Base config:** [BaseLinearDisplay](../baselineardisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                                           | Type                                                  | Description                                                                                                                                         |
+| -------------------------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [heightMode](#slot-heightmode)                                 | `stringEnum`                                          | Track-height strategy (shared vocabulary with the alignments display).                                                                              |
+| [showLabels](#slot-showlabels)                                 | `stringEnum`                                          | Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides                                             |
+| [showDescriptions](#slot-showdescriptions)                     | `boolean`                                             | Show feature descriptions                                                                                                                           |
+| [color](#slot-color)                                           | `color`                                               | the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring)                                                    |
+| [connectorColor](#slot-connectorcolor)                         | `color`                                               | color of the connecting/intron lines between feature segments (defaults to the theme text color)                                                    |
+| [utrColor](#slot-utrcolor)                                     | `color`                                               | fill color for UTRs on gene/transcript glyphs                                                                                                       |
+| [outlineColor](#slot-outlinecolor)                             | `color`                                               | outline color for features (empty string = no outline)                                                                                              |
+| [featureHeight](#slot-featureheight)                           | `number`                                              | height in pixels of the main body of each feature                                                                                                   |
+| [displayMode](#slot-displaymode)                               | `stringEnum` (inherit, normal, compact, superCompact) | Feature height preset.                                                                                                                              |
+| [geneGlyphMode](#slot-geneglyphmode)                           | `stringEnum`                                          | Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longestCoding" shows only the longest coding transcript |
+| [subfeatureLabels](#slot-subfeaturelabels)                     | `stringEnum` (inherit, none, below, overlay)          | subfeature label display mode.                                                                                                                      |
+| [displayDirectionalChevrons](#slot-displaydirectionalchevrons) | `maybeBoolean`                                        | Display directional chevrons on intron lines to indicate strand direction.                                                                          |
+| [transcriptTypes](#slot-transcripttypes)                       | `stringArray`                                         |                                                                                                                                                     |
+| [containerTypes](#slot-containertypes)                         | `stringArray`                                         |                                                                                                                                                     |
+| [subParts](#slot-subparts)                                     | `string`                                              | subparts for a glyph                                                                                                                                |
+| [impliedUTRs](#slot-impliedutrs)                               | `boolean`                                             | imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures                                                    |
+| [labels](#slot-labels)                                         |                                                       |                                                                                                                                                     |
+
+<details>
+<summary>Advanced slots (2)</summary>
+
+| Slot                                                   | Type     | Description                                                                                             |
+| ------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------- |
+| [maxHeight](#slot-maxheight)                           | `number` | Maximum height of the display in pixels                                                                 |
+| [maxLabelFeatureDensity](#slot-maxlabelfeaturedensity) | `number` | In "auto" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value |
+
+</details>
 
 <details>
 <summary>LinearCanvasBaseDisplay - Slots</summary>
@@ -42,7 +58,8 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 Maximum height of the display in pixels
 
-**Type:** `number` · **Default:** `1200` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`1200` · _advanced_
 
 #### slot: heightMode
 
@@ -53,7 +70,8 @@ track to fit all features, `fit` shrinks features to fill the current height.
 Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit)
 settings.
 
-**Type:** `stringEnum` · **Default:** `'inherit'` · _promotable_
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
+**Default:** `'inherit'` · _promotable_
 
 ```js
 {
@@ -77,7 +95,8 @@ settings.
 Show feature labels: "auto" hides labels at high feature density, "on" always
 shows, "off" always hides
 
-**Type:** `stringEnum` · **Default:** `'auto'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
+**Default:** `'auto'`
 
 ```js
 {
@@ -94,20 +113,23 @@ shows, "off" always hides
 In "auto" showLabels mode, hide labels when visible feature density
 (features/pixel) exceeds this value
 
-**Type:** `number` · **Default:** `MAX_LABEL_FEATURE_DENSITY` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`MAX_LABEL_FEATURE_DENSITY` · _advanced_
 
 #### slot: showDescriptions
 
 Show feature descriptions
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: color
 
 the main fill color of each feature (a CSS color, or a jexl expression for
 per-feature coloring)
 
-**Type:** `color` · **Default:** `'goldenrod'`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'goldenrod'`
 
 ```js
 {
@@ -124,7 +146,8 @@ per-feature coloring)
 color of the connecting/intron lines between feature segments (defaults to the
 theme text color)
 
-**Type:** `color` · **Default:** `THEME_DERIVED_COLOR`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`THEME_DERIVED_COLOR`
 
 ```js
 {
@@ -140,7 +163,8 @@ theme text color)
 
 fill color for UTRs on gene/transcript glyphs
 
-**Type:** `color` · **Default:** `'#357089'`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'#357089'`
 
 ```js
 {
@@ -155,13 +179,13 @@ fill color for UTRs on gene/transcript glyphs
 
 outline color for features (empty string = no outline)
 
-**Type:** `color` · **Default:** `''`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:** `''`
 
 #### slot: featureHeight
 
 height in pixels of the main body of each feature
 
-**Type:** `number` · **Default:** `10`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `10`
 
 ```js
 {
@@ -179,8 +203,9 @@ for this display type, falling back to `normal`;
 `normal`/`compact`/`superCompact` pin the track explicitly (including pinning
 `normal` back over a `compact` session default)
 
-**Type:** `stringEnum` (one of `inherit`, `normal`, `compact`, `superCompact`) ·
-**Default:** `'inherit'` · _promotable_
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`inherit`, `normal`, `compact`, `superCompact`) · **Default:** `'inherit'` ·
+_promotable_
 
 ```js
 {
@@ -210,7 +235,8 @@ for this display type, falling back to `normal`;
 Gene glyph display mode: "auto" switches based on zoom level, "all" shows all
 transcripts, "longestCoding" shows only the longest coding transcript
 
-**Type:** `stringEnum` · **Default:** `'auto'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
+**Default:** `'auto'`
 
 ```js
 {
@@ -228,8 +254,8 @@ subfeature label display mode. `inherit` (the default) follows the session-wide
 default for this display type, falling back to `none`; `none`/`below`/`overlay`
 pin the track explicitly
 
-**Type:** `stringEnum` (one of `inherit`, `none`, `below`, `overlay`) ·
-**Default:** `'inherit'` · _promotable_
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`inherit`, `none`, `below`, `overlay`) · **Default:** `'inherit'` · _promotable_
 
 ```js
 {
@@ -261,7 +287,8 @@ Display directional chevrons on intron lines to indicate strand direction. Unset
 back to on; an explicit true/false pins the track (including pinning on over an
 off session default)
 
-**Type:** `maybeBoolean` · **Default:** `undefined` · _promotable_
+**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
+**Default:** `undefined` · _promotable_
 
 ```js
 {
@@ -314,14 +341,16 @@ off session default)
 
 subparts for a glyph
 
-**Type:** `string` · **Default:** `'CDS,UTR,five_prime_UTR,three_prime_UTR'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'CDS,UTR,five_prime_UTR,three_prime_UTR'`
 
 #### slot: impliedUTRs
 
 imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit
 UTR subfeatures
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: labels
 
@@ -360,26 +389,28 @@ shown once, at its most specific definition.
 maximum features per pixel before showing a "too many features" message, used if
 byte size estimates are not available
 
-**Type:** `number` · **Default:** `1` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
 
 #### slot: fetchSizeLimit
 
 maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
-**Type:** `number` · **Default:** `1_000_000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`1_000_000` · _advanced_
 
 #### slot: height
 
 default height for the track
 
-**Type:** `number` · **Default:** `100`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
 
 #### slot: mouseover
 
 text to display when the cursor hovers over a feature
 
-**Type:** `string` · **Default:**
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
@@ -399,8 +430,3 @@ runtime rather than being stored with jexl in the config
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **State model:** [runtime API](../../models/linearcanvasbasedisplay)
-- **Base config:** [BaseLinearDisplay](../baselineardisplay)

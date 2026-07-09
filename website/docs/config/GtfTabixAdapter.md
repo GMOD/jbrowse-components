@@ -25,47 +25,48 @@ The `uri` shorthand auto-resolves the `.tbi` index:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed GTF files
 
-### GtfTabixAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config, assumes tbi index at yourfile.gtf.gz.tbi:
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 
-```json
-{
-  "type": "GtfTabixAdapter",
-  "uri": "yourfile.gtf.gz"
-}
-```
+## Config slots
 
-| Slot                                    | Type                    | Description                                                                                                                                                                                                                                 |
-| --------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [gtfGzLocation](#slot-gtfgzlocation)    | `fileLocation`          |                                                                                                                                                                                                                                             |
-| [index.indexType](#slot-indexindextype) | `stringEnum` (TBI, CSI) |                                                                                                                                                                                                                                             |
-| [index.location](#slot-indexlocation)   | `fileLocation`          |                                                                                                                                                                                                                                             |
-| [dontRedispatch](#slot-dontredispatch)  | `stringArray`           | the GtfTabixAdapter has to "redispatch" if it fetches a region and features it finds inside that region extend outside the region we requested. you can disable this for certain feature types to avoid fetching e.g. the entire chromosome |
-| [aggregateField](#slot-aggregatefield)  | `string`                | field used to aggregate multiple transcripts into a single parent gene feature                                                                                                                                                              |
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                    | Type                    | Description                                                                                                                                     |
+| --------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| [gtfGzLocation](#slot-gtfgzlocation)    | `fileLocation`          |                                                                                                                                                 |
+| [index.indexType](#slot-indexindextype) | `stringEnum` (TBI, CSI) |                                                                                                                                                 |
+| [index.location](#slot-indexlocation)   | `fileLocation`          |                                                                                                                                                 |
+| [dontRedispatch](#slot-dontredispatch)  | `stringArray`           | the GtfTabixAdapter has to "redispatch" if it fetches a region and features it finds inside that region extend outside the region we requested. |
+| [aggregateField](#slot-aggregatefield)  | `string`                | field used to aggregate multiple transcripts into a single parent gene feature                                                                  |
 
 <details>
 <summary>GtfTabixAdapter - Slots</summary>
 
 #### slot: gtfGzLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.gtf.gz', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.gtf.gz', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: index.location
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.gtf.gz.tbi', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.gtf.gz.tbi', locationType: 'UriLocation' }`
 
 #### slot: dontRedispatch
 
@@ -79,14 +80,7 @@ this for certain feature types to avoid fetching e.g. the entire chromosome
 
 field used to aggregate multiple transcripts into a single parent gene feature
 
-**Type:** `string` · **Default:** `'gene_name'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'gene_name'`
 
 </details>
-
-## Related links
-
-- **Track:** [FeatureTrack](../featuretrack)
-- **Display:** [LinearArcDisplay](../lineararcdisplay)
-- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)

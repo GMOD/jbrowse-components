@@ -26,31 +26,28 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load UCSC chain alignment files (query and target assembly required)
 
-### ChainAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
-```json
-{
-  "type": "ChainAdapter",
-  "uri": "yourfile.chain.gz",
-  "queryAssembly": "hg19",
-  "targetAssembly": "hg38"
-}
-```
+## Config slots
 
-| Slot                                   | Type           | Description                                                                                                                               |
-| -------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
-| [targetAssembly](#slot-targetassembly) | `string`       | can be specified as alternative to assemblyNames                                                                                          |
-| [queryAssembly](#slot-queryassembly)   | `string`       | can be specified as alternative to assemblyNames                                                                                          |
-| [chainLocation](#slot-chainlocation)   | `fileLocation` |                                                                                                                                           |
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                   | Type           | Description                                      |
+| -------------------------------------- | -------------- | ------------------------------------------------ |
+| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file.    |
+| [targetAssembly](#slot-targetassembly) | `string`       | can be specified as alternative to assemblyNames |
+| [queryAssembly](#slot-queryassembly)   | `string`       | can be specified as alternative to assemblyNames |
+| [chainLocation](#slot-chainlocation)   | `fileLocation` |                                                  |
 
 <details>
 <summary>ChainAdapter - Slots</summary>
@@ -66,24 +63,17 @@ first value in the array, target assembly name is the second
 
 can be specified as alternative to assemblyNames
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: queryAssembly
 
 can be specified as alternative to assemblyNames
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: chainLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/file.chain', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/file.chain', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
-- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

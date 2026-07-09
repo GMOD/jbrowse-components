@@ -22,6 +22,16 @@ preprocessor to allow minimal config, where `uri` points at the hub.txt:
 }
 ```
 
+## Related links
+
+- **State model:** [runtime API](../../models/ucsctrackhubconnection)
+- **Base config:** [BaseConnection](../baseconnection)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                                   | Type           | Description                                                                                   |
 | -------------------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
 | [hubTxtLocation](#slot-hubtxtlocation) | `fileLocation` | location of the hub file (usually called hub.txt)                                             |
@@ -34,7 +44,7 @@ preprocessor to allow minimal config, where `uri` points at the hub.txt:
 
 location of the hub file (usually called hub.txt)
 
-**Type:** `fileLocation`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
 
 ```js
 {
@@ -71,11 +81,7 @@ shown once, at its most specific definition.
 
 a unique name for this connection
 
-**Type:** `string` · **Default:** `'nameOfConnection'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'nameOfConnection'`
 
 </details>
-
-## Related links
-
-- **State model:** [runtime API](../../models/ucsctrackhubconnection)
-- **Base config:** [BaseConnection](../baseconnection)

@@ -8,8 +8,6 @@ Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Built into JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseConfig/index.ts).
 
-## Overview
-
 this is a config model representing a config.json (for jbrowse-web) or
 somefile.jbrowse (for jbrowse-desktop, where configs have the .jbrowse
 extension)
@@ -17,11 +15,16 @@ extension)
 also includes any pluginManager.pluginConfigurationSchemas(), so plugins that
 have a configurationSchema field on their class are mixed into this object
 
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                                                             | Type | Description                                                                                                                                                                                                                                      |
 | ---------------------------------------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [plugins](#slot-plugins)                                         |      | defines plugins of the format `typescript type PluginDefinition= { umdUrl: string, name:string } \| { url: string, name: string } \| { esmUrl: string } \| { cjsUrl: string } \| { umdLoc: { uri: string } } \| { esmLoc: { uri: string } } \| ` |
 | [assemblies](#slot-assemblies)                                   |      | configuration of the assemblies in the instance, see BaseAssembly                                                                                                                                                                                |
-| [tracks](#slot-tracks)                                           |      | track configuration is an array of track config schemas. multiple instances of a track can exist that use the same configuration. Always uses frozen for performance - editing creates temporary MST models.                                     |
+| [tracks](#slot-tracks)                                           |      | track configuration is an array of track config schemas.                                                                                                                                                                                         |
 | [internetAccounts](#slot-internetaccounts)                       |      | configuration for internet accounts, see InternetAccounts                                                                                                                                                                                        |
 | [aggregateTextSearchAdapters](#slot-aggregatetextsearchadapters) |      | configuration for aggregate text search adapters (created by e.g. jbrowse text-index, but can be a pluggable TextSearchAdapter type)                                                                                                             |
 | [connections](#slot-connections)                                 |      | configuration for connections                                                                                                                                                                                                                    |

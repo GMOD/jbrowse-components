@@ -55,11 +55,14 @@ them — equivalent to a full `displays: [{ type, displayId, ... }]` array. See
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used specifically for GCContentTrack
+
+## Related links
+
+- **State model:** [runtime API](../../models/lineargccontenttrackdisplay)
+- **Base config:** [LinearWiggleDisplay](../linearwiggledisplay)
 
 ## Inherited config slots
 
@@ -76,7 +79,8 @@ shown once, at its most specific definition.
 
 Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
 
-**Type:** `stringEnum` · **Default:** `'xyplot'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
+**Default:** `'xyplot'`
 
 ```js
 {
@@ -100,39 +104,37 @@ Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
 
 Default height of the track
 
-**Type:** `number` · **Default:** `100`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
 
 #### slot: useBicolor
 
 When true (the default), positive scores use posColor and negative scores use
 negColor. When false, all bars use the single color slot.
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: color
 
 Single fill color for the wiggle bars. Only used when useBicolor is false
 (useBicolor defaults to true, in which case posColor/negColor are used instead).
 
-**Type:** `color` · **Default:** `WIGGLE_POS_COLOR_DEFAULT`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`WIGGLE_POS_COLOR_DEFAULT`
 
 #### slot: minimalTicks
 
 Draw only the min/max Y-axis ticks
 
-**Type:** `boolean` · **Default:** `false` · _advanced_
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false` · _advanced_
 
 #### slot: summaryScoreMode
 
 choose whether to use max/min/average or whiskers which combines all three into
 the same rendering
 
-**Type:** `stringEnum` (one of `max`, `min`, `avg`, `whiskers`) · **Default:**
-`'whiskers'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`max`, `min`, `avg`, `whiskers`) · **Default:** `'whiskers'`
 
 </details>
-
-## Related links
-
-- **State model:** [runtime API](../../models/lineargccontenttrackdisplay)
-- **Base config:** [LinearWiggleDisplay](../linearwiggledisplay)

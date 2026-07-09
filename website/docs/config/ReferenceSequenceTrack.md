@@ -25,7 +25,7 @@ sequence: {
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
 ## Overview
 
@@ -35,6 +35,24 @@ used to display base level DNA sequence tracks
 
 Every ReferenceSequenceTrack has a unique `trackId`, a required top-level field
 that identifies it (not one of the config slots below).
+
+## Related links
+
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+  ([state model](../../models/lineargccontentdisplay))
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
+  ([state model](../../models/linearreferencesequencedisplay))
+- **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
+- **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
+- **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
+- **Adapter:** [TwoBitAdapter](../twobitadapter)
+- **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                              | Type      | Description                                                                 |
 | ------------------------------------------------- | --------- | --------------------------------------------------------------------------- |
@@ -70,31 +88,32 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 optional track name, otherwise uses the "Reference sequence (assemblyName)"
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: sequenceType
 
 either dna or pep
 
-**Type:** `string` · **Default:** `'dna'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'dna'`
 
 #### slot: description
 
 a description of the track
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: metadata
 
 anything to add about this track
 
-**Type:** `frozen` · **Default:** `{}`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 #### slot: formatAbout.config
 
 formats configuration in about dialog
 
-**Type:** `frozen` · **Default:** `{}`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 ```js
 {
@@ -107,19 +126,7 @@ formats configuration in about dialog
 
 #### slot: formatAbout.hideUris
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 </details>
-
-## Related links
-
-- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
-  ([state model](../../models/lineargccontentdisplay))
-- **Display:**
-  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
-  ([state model](../../models/linearreferencesequencedisplay))
-- **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
-- **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
-- **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
-- **Adapter:** [TwoBitAdapter](../twobitadapter)
-- **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)

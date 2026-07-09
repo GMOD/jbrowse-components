@@ -23,19 +23,25 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
 
-### StarFusionAdapter - Pre-processor / simplified config
+## Related links
 
-Allows minimal config:
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
-```json
-{ "type": "StarFusionAdapter", "uri": "star-fusion.tsv" }
-```
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                           | Type           | Description                                         |
 | ---------------------------------------------- | -------------- | --------------------------------------------------- |
@@ -48,7 +54,7 @@ Allows minimal config:
 
 STAR-Fusion TSV output file (plain text or gzipped)
 
-**Type:** `fileLocation`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
 
 ```js
 {
@@ -62,14 +68,3 @@ STAR-Fusion TSV output file (plain text or gzipped)
 ```
 
 </details>
-
-## Related links
-
-- **Track:** [VariantTrack](../varianttrack)
-- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-- **Display:** [LinearVariantDisplay](../linearvariantdisplay)

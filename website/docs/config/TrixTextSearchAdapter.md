@@ -28,6 +28,11 @@ preprocessor to allow minimal config, assumes file.ixx also exists:
 Every TrixTextSearchAdapter has a unique `textSearchAdapterId`, a required
 top-level field that identifies it (not one of the config slots below).
 
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                                 | Type           | Description                                       |
 | ------------------------------------ | -------------- | ------------------------------------------------- |
 | [ixFilePath](#slot-ixfilepath)       | `fileLocation` |                                                   |
@@ -41,18 +46,18 @@ top-level field that identifies it (not one of the config slots below).
 
 #### slot: ixFilePath
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: 'out.ix', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: 'out.ix', locationType: 'UriLocation' }`
 
 #### slot: ixxFilePath
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: 'out.ixx', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: 'out.ixx', locationType: 'UriLocation' }`
 
 #### slot: metaFilePath
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: 'meta.json', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: 'meta.json', locationType: 'UriLocation' }`
 
 #### slot: tracks
 

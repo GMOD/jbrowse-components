@@ -39,9 +39,24 @@ jexl-evaluated per feature:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
-## Overview
+## Related links
+
+- **Adapter:** [BedAdapter](../bedadapter)
+- **Adapter:** [BedTabixAdapter](../bedtabixadapter)
+- **Adapter:** [BigBedAdapter](../bigbedadapter)
+- **Adapter:** [Gff3Adapter](../gff3adapter)
+- **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
+- **Adapter:** [GtfAdapter](../gtfadapter)
+- **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **State model:** [runtime API](../../models/lineararcdisplay)
+- **Base config:** [BaseLinearDisplay](../baselineardisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                             | Type                       | Description                                                    |
 | -------------------------------- | -------------------------- | -------------------------------------------------------------- |
@@ -59,7 +74,8 @@ _See the **Slots** section below for all available configuration fields._
 
 the color of the arcs
 
-**Type:** `color` · **Default:** `'darkblue'`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'darkblue'`
 
 ```js
 {
@@ -74,7 +90,8 @@ the color of the arcs
 
 the thickness of the arcs
 
-**Type:** `number` · **Default:** `'jexl:logThickness(feature,'score')'`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`'jexl:logThickness(feature,'score')'`
 
 ```js
 {
@@ -89,7 +106,8 @@ the thickness of the arcs
 
 the label to appear at the apex of the arcs
 
-**Type:** `string` · **Default:** `'jexl:get(feature,'score')'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'jexl:get(feature,'score')'`
 
 ```js
 {
@@ -104,7 +122,7 @@ the label to appear at the apex of the arcs
 
 the height of the arcs
 
-**Type:** `number` · **Default:**
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
 `'jexl:log10(get(feature,'end')-get(feature,'start'))*50'`
 
 ```js
@@ -120,7 +138,8 @@ the height of the arcs
 
 the caption to appear when hovering over any point on the arcs
 
-**Type:** `string` · **Default:** `'jexl:get(feature,'name')'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'jexl:get(feature,'name')'`
 
 ```js
 {
@@ -156,26 +175,28 @@ shown once, at its most specific definition.
 maximum features per pixel before showing a "too many features" message, used if
 byte size estimates are not available
 
-**Type:** `number` · **Default:** `1` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
 
 #### slot: fetchSizeLimit
 
 maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
-**Type:** `number` · **Default:** `1_000_000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`1_000_000` · _advanced_
 
 #### slot: height
 
 default height for the track
 
-**Type:** `number` · **Default:** `100`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
 
 #### slot: mouseover
 
 text to display when the cursor hovers over a feature
 
-**Type:** `string` · **Default:**
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
@@ -195,15 +216,3 @@ runtime rather than being stored with jexl in the config
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **Adapter:** [BedAdapter](../bedadapter)
-- **Adapter:** [BedTabixAdapter](../bedtabixadapter)
-- **Adapter:** [BigBedAdapter](../bigbedadapter)
-- **Adapter:** [Gff3Adapter](../gff3adapter)
-- **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
-- **Adapter:** [GtfAdapter](../gtfadapter)
-- **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
-- **State model:** [runtime API](../../models/lineararcdisplay)
-- **Base config:** [BaseLinearDisplay](../baselineardisplay)

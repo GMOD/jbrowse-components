@@ -22,23 +22,22 @@ plugin.
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 loads a plain (non-bgzipped) FASTA without a separate index. Reads the whole
 sequence into memory, so prefer the IndexedFastaAdapter for large genomes.
 
-### UnindexedFastaAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 
-```json
-{
-  "type": "UnindexedFastaAdapter",
-  "uri": "yourfile.fa"
-}
-```
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                       | Type           | Description            |
 | ------------------------------------------ | -------------- | ---------------------- |
@@ -51,7 +50,7 @@ preprocessor to allow minimal config:
 
 #### slot: rewriteRefNames
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 ```js
 {
@@ -63,21 +62,14 @@ preprocessor to allow minimal config:
 
 #### slot: fastaLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/seq.fa', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/seq.fa', locationType: 'UriLocation' }`
 
 #### slot: metadataLocation
 
 Optional metadata file
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
-- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
-- **Display:**
-  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)

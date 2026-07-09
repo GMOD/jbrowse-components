@@ -8,9 +8,12 @@ Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Built into JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/FormatAbout.ts).
 
-## Overview
-
 generally exists on the config.json or root config as configuration.formatAbout
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                                                         | Type      | Description                                  |
 | ---------------------------------------------------------------------------- | --------- | -------------------------------------------- |
@@ -24,7 +27,7 @@ generally exists on the config.json or root config as configuration.formatAbout
 
 formats configuration object in about dialog
 
-**Type:** `frozen` · **Default:** `{}`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 ```js
 {
@@ -37,6 +40,7 @@ formats configuration object in about dialog
 
 #### slot: configuration.formatAbout.hideUris
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 </details>

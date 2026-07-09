@@ -50,9 +50,7 @@ color. For per-feature (not per-row) colors, set the `color` slot instead:
 `color: "jexl:get(feature,'itemRgb')"` for a standard BED12, or read a custom
 color column.
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 Paints interval features as colored blocks on stacked rows ("chromosome /
 ancestry painting"). Rows are partitioned by a feature attribute
@@ -67,16 +65,40 @@ so configure it with an explicit `displays` entry (rather than the
 `displayDefaults` shorthand, whose `color` would also reach the default
 `LinearBasicDisplay`).
 
-| Slot                                       | Type          | Description                                                                                                                                                                                                                        |
-| ------------------------------------------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [partitionField](#slot-partitionfield)     | `string`      | Feature attribute whose value assigns each feature to a row (e.g. a BED column name). Features sharing a value stack into the same row.                                                                                            |
-| [color](#slot-color)                       | `color`       | Per-block fill (a CSS color, or a `jexl:` expression for per-feature coloring, e.g. `jexl:get(feature,'itemRgb')`). Left at its default, each row instead gets a distinct color from a categorical palette.                        |
-| [sampleColorMap](#slot-samplecolormap)     | `frozen`      | Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`. When a feature's partition value has an entry here it overrides the `color` slot, so whole rows can be colored without a per-feature color column. |
-| [rowOrder](#slot-roworder)                 | `stringArray` | Optional explicit row order. Rows listed here come first in this order; any remaining partition values are appended in sorted order. Empty = fully auto (sorted).                                                                  |
-| [rowHeight](#slot-rowheight)               | `number`      | Fixed height in pixels of each row. `0` (the default) auto-fits: all rows stretch to fill the display height, so adding rows shrinks them instead of growing the track — a dense, fully-visible painting.                          |
-| [rowProportion](#slot-rowproportion)       | `number`      | Fraction of the row height each block fills (1 = full, leaving no gap between rows).                                                                                                                                               |
-| [showTree](#slot-showtree)                 | `boolean`     | show the cluster tree sidebar                                                                                                                                                                                                      |
-| [showBranchLength](#slot-showbranchlength) | `boolean`     | Position tree nodes by cluster merge height (dendrogram) vs. evenly by topology (cladogram).                                                                                                                                       |
+## Related links
+
+- **Adapter:** [BedAdapter](../bedadapter)
+- **Adapter:** [BedTabixAdapter](../bedtabixadapter)
+- **Adapter:** [BigBedAdapter](../bigbedadapter)
+- **Adapter:** [Gff3Adapter](../gff3adapter)
+- **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
+- **Adapter:** [GtfAdapter](../gtfadapter)
+- **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **State model:** [runtime API](../../models/linearmultirowfeaturedisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                       | Type          | Description                                                                                                         |
+| ------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------- |
+| [partitionField](#slot-partitionfield)     | `string`      | Feature attribute whose value assigns each feature to a row (e.g. a BED column name).                               |
+| [color](#slot-color)                       | `color`       | Per-block fill (a CSS color, or a `jexl:` expression for per-feature coloring, e.g. `jexl:get(feature,'itemRgb')`). |
+| [sampleColorMap](#slot-samplecolormap)     | `frozen`      | Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`.                                     |
+| [rowOrder](#slot-roworder)                 | `stringArray` | Optional explicit row order.                                                                                        |
+| [rowHeight](#slot-rowheight)               | `number`      | Fixed height in pixels of each row.                                                                                 |
+| [showTree](#slot-showtree)                 | `boolean`     | show the cluster tree sidebar                                                                                       |
+| [showBranchLength](#slot-showbranchlength) | `boolean`     | Position tree nodes by cluster merge height (dendrogram) vs.                                                        |
+
+<details>
+<summary>Advanced slots (1)</summary>
+
+| Slot                                 | Type     | Description                                                                          |
+| ------------------------------------ | -------- | ------------------------------------------------------------------------------------ |
+| [rowProportion](#slot-rowproportion) | `number` | Fraction of the row height each block fills (1 = full, leaving no gap between rows). |
+
+</details>
 
 <details>
 <summary>LinearMultiRowFeatureDisplay - Slots</summary>
@@ -86,7 +108,8 @@ so configure it with an explicit `displays` entry (rather than the
 Feature attribute whose value assigns each feature to a row (e.g. a BED column
 name). Features sharing a value stack into the same row.
 
-**Type:** `string` · **Default:** `'name'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'name'`
 
 #### slot: color
 
@@ -94,7 +117,8 @@ Per-block fill (a CSS color, or a `jexl:` expression for per-feature coloring,
 e.g. `jexl:get(feature,'itemRgb')`). Left at its default, each row instead gets
 a distinct color from a categorical palette.
 
-**Type:** `color` · **Default:** `MULTIROW_DEFAULT_COLOR`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`MULTIROW_DEFAULT_COLOR`
 
 ```js
 {
@@ -112,7 +136,7 @@ Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`.
 When a feature's partition value has an entry here it overrides the `color`
 slot, so whole rows can be colored without a per-feature color column.
 
-**Type:** `frozen` · **Default:** `{}`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 #### slot: rowOrder
 
@@ -128,37 +152,29 @@ Fixed height in pixels of each row. `0` (the default) auto-fits: all rows
 stretch to fill the display height, so adding rows shrinks them instead of
 growing the track — a dense, fully-visible painting.
 
-**Type:** `number` · **Default:** `0`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0`
 
 #### slot: rowProportion
 
 Fraction of the row height each block fills (1 = full, leaving no gap between
 rows).
 
-**Type:** `number` · **Default:** `0.9` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0.9`
+· _advanced_
 
 #### slot: showTree
 
 show the cluster tree sidebar
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: showBranchLength
 
 Position tree nodes by cluster merge height (dendrogram) vs. evenly by topology
 (cladogram).
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 </details>
-
-## Related links
-
-- **Adapter:** [BedAdapter](../bedadapter)
-- **Adapter:** [BedTabixAdapter](../bedtabixadapter)
-- **Adapter:** [BigBedAdapter](../bigbedadapter)
-- **Adapter:** [Gff3Adapter](../gff3adapter)
-- **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
-- **Adapter:** [GtfAdapter](../gtfadapter)
-- **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
-- **State model:** [runtime API](../../models/linearmultirowfeaturedisplay)

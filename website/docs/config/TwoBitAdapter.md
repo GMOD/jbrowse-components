@@ -25,24 +25,19 @@ scan on genomes with many contigs:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
-## Overview
+## Related links
 
-### TwoBitAdapter - Pre-processor / simplified config
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 
-preprocessor to allow minimal config (note that adding chromSizes improves
-speed, otherwise has to read a lot of the twobit file to calculate chromosome
-names and sizes):
+## Config slots
 
-```json
-{
-  "type": "TwoBitAdapter",
-  "uri": "yourfile.2bit"
-  "chromSizes":"yourfile.chrom.sizes"
-}
-
-```
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                           | Type           | Description                                                                                                  |
 | ---------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -54,22 +49,16 @@ names and sizes):
 
 #### slot: twoBitLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.2bit', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.2bit', locationType: 'UriLocation' }`
 
 #### slot: chromSizesLocation
 
 An optional chrom.sizes file can be supplied to speed up loading since parsing
 the twobit file can take time
 
-**Type:** `fileLocation` · **Default:**
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:**
 `{ uri: '/path/to/default.chrom.sizes', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
-- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
-- **Display:**
-  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)

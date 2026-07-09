@@ -9,15 +9,18 @@ Auto-generated config schema for the current JBrowse release — see the
 `comparative-adapters` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/BlastTabularAdapter/configSchema.ts).
 
-## Overview
+## Config slots
 
-| Slot                                           | Type           | Description                                                                                                                                                                                                 |
-| ---------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [assemblyNames](#slot-assemblynames)           | `stringArray`  | Query assembly is the first value in the array, target assembly is the second                                                                                                                               |
-| [targetAssembly](#slot-targetassembly)         | `string`       | Alternative to assemblyNames array: the target assembly                                                                                                                                                     |
-| [queryAssembly](#slot-queryassembly)           | `string`       | Alternative to assemblyNames array: the query assembly                                                                                                                                                      |
-| [blastTableLocation](#slot-blasttablelocation) | `fileLocation` |                                                                                                                                                                                                             |
-| [columns](#slot-columns)                       | `string`       | Optional space-separated column name list. If custom columns were used in outfmt, enter them here exactly as specified in the command. At least qseqid, sseqid, qstart, qend, sstart, and send are required |
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                           | Type           | Description                                                                   |
+| ---------------------------------------------- | -------------- | ----------------------------------------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)           | `stringArray`  | Query assembly is the first value in the array, target assembly is the second |
+| [targetAssembly](#slot-targetassembly)         | `string`       | Alternative to assemblyNames array: the target assembly                       |
+| [queryAssembly](#slot-queryassembly)           | `string`       | Alternative to assemblyNames array: the query assembly                        |
+| [blastTableLocation](#slot-blasttablelocation) | `fileLocation` |                                                                               |
+| [columns](#slot-columns)                       | `string`       | Optional space-separated column name list.                                    |
 
 <details>
 <summary>BlastTabularAdapter - Slots</summary>
@@ -32,18 +35,18 @@ Query assembly is the first value in the array, target assembly is the second
 
 Alternative to assemblyNames array: the target assembly
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: queryAssembly
 
 Alternative to assemblyNames array: the query assembly
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: blastTableLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/blastTable.tsv', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/blastTable.tsv', locationType: 'UriLocation' }`
 
 #### slot: columns
 
@@ -51,7 +54,7 @@ Optional space-separated column name list. If custom columns were used in
 outfmt, enter them here exactly as specified in the command. At least qseqid,
 sseqid, qstart, qend, sstart, and send are required
 
-**Type:** `string` · **Default:**
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore'`
 
 </details>

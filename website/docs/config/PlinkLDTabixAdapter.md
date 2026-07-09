@@ -30,6 +30,11 @@ Preprocessor to allow minimal config:
 }
 ```
 
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                                    | Type                    | Description                                     |
 | --------------------------------------- | ----------------------- | ----------------------------------------------- |
 | [ldLocation](#slot-ldlocation)          | `fileLocation`          | Location of the bgzipped PLINK LD file (.ld.gz) |
@@ -43,16 +48,17 @@ Preprocessor to allow minimal config:
 
 Location of the bgzipped PLINK LD file (.ld.gz)
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/plink.ld.gz', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/plink.ld.gz', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: index.location
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/plink.ld.gz.tbi', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/plink.ld.gz.tbi', locationType: 'UriLocation' }`
 
 </details>

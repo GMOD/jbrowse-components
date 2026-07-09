@@ -35,16 +35,28 @@ A complete `ReferenceSequenceTrack` config to paste into `tracks` (an assembly's
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
-## Overview
+## Related links
 
-| Slot                                     | Type          | Description                                                                                                                                 |
-| ---------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| [height](#slot-height)                   | `maybeNumber` | explicit display height (e.g. from a drag-resize); unset means auto-fit to the zoom-aware computed height. See the model's `height` getter. |
-| [showForward](#slot-showforward)         | `boolean`     | show the forward-strand sequence row                                                                                                        |
-| [showReverse](#slot-showreverse)         | `boolean`     | show the reverse-complement sequence row (DNA only)                                                                                         |
-| [showTranslation](#slot-showtranslation) | `boolean`     | show the translation frame rows (DNA only)                                                                                                  |
+- **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
+- **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
+- **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
+- **Adapter:** [TwoBitAdapter](../twobitadapter)
+- **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)
+- **State model:** [runtime API](../../models/linearreferencesequencedisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                     | Type          | Description                                                                                                |
+| ---------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------- |
+| [height](#slot-height)                   | `maybeNumber` | explicit display height (e.g. from a drag-resize); unset means auto-fit to the zoom-aware computed height. |
+| [showForward](#slot-showforward)         | `boolean`     | show the forward-strand sequence row                                                                       |
+| [showReverse](#slot-showreverse)         | `boolean`     | show the reverse-complement sequence row (DNA only)                                                        |
+| [showTranslation](#slot-showtranslation) | `boolean`     | show the translation frame rows (DNA only)                                                                 |
 
 <details>
 <summary>LinearReferenceSequenceDisplay - Slots</summary>
@@ -60,27 +72,21 @@ zoom-aware computed height. See the model's `height` getter.
 
 show the forward-strand sequence row
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: showReverse
 
 show the reverse-complement sequence row (DNA only)
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: showTranslation
 
 show the translation frame rows (DNA only)
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 </details>
-
-## Related links
-
-- **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
-- **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
-- **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
-- **Adapter:** [TwoBitAdapter](../twobitadapter)
-- **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)
-- **State model:** [runtime API](../../models/linearreferencesequencedisplay)

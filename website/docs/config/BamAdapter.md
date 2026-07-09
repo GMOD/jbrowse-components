@@ -27,60 +27,62 @@ differently-named index, set `index` explicitly with the full slot form:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to configure BAM adapter
 
 Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
 automatically supplies it from the enclosing assembly's sequence track.
 
-### BamAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config, assumes yourfile.bam.bai:
+- **Track:** [AlignmentsTrack](../alignmentstrack)
+- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 
-```json
-{
-  "type": "BamAdapter",
-  "uri": "yourfile.bam"
-}
-```
+## Config slots
 
-| Slot                                    | Type                    | Description                                                                                           |
-| --------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
-| [bamLocation](#slot-bamlocation)        | `fileLocation`          |                                                                                                       |
-| [index.indexType](#slot-indexindextype) | `stringEnum` (BAI, CSI) |                                                                                                       |
-| [index.location](#slot-indexlocation)   | `fileLocation`          |                                                                                                       |
-| [fetchSizeLimit](#slot-fetchsizelimit)  | `number`                | size to fetch in bytes over which to display a warning to the user that too much data will be fetched |
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                    | Type                    | Description |
+| --------------------------------------- | ----------------------- | ----------- |
+| [bamLocation](#slot-bamlocation)        | `fileLocation`          |             |
+| [index.indexType](#slot-indexindextype) | `stringEnum` (BAI, CSI) |             |
+| [index.location](#slot-indexlocation)   | `fileLocation`          |             |
+
+<details>
+<summary>Advanced slots (1)</summary>
+
+| Slot                                   | Type     | Description                                                                                           |
+| -------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| [fetchSizeLimit](#slot-fetchsizelimit) | `number` | size to fetch in bytes over which to display a warning to the user that too much data will be fetched |
+
+</details>
 
 <details>
 <summary>BamAdapter - Slots</summary>
 
 #### slot: bamLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.bam', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bam', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` (one of `BAI`, `CSI`) · **Default:** `'BAI'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`BAI`, `CSI`) · **Default:** `'BAI'`
 
 #### slot: index.location
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.bam.bai', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bam.bai', locationType: 'UriLocation' }`
 
 #### slot: fetchSizeLimit
 
 size to fetch in bytes over which to display a warning to the user that too much
 data will be fetched
 
-**Type:** `number` · **Default:** `5_000_000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`5_000_000` · _advanced_
 
 </details>
-
-## Related links
-
-- **Track:** [AlignmentsTrack](../alignmentstrack)
-- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)

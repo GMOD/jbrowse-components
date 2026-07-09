@@ -47,7 +47,7 @@ gives per-feature coloring:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
 ## Overview
 
@@ -57,6 +57,25 @@ used for basic gene and feature tracks, generally used with LinearBasicDisplay
 
 Every FeatureTrack has a unique `trackId`, a required top-level field that
 identifies it (not one of the config slots below).
+
+## Related links
+
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+  ([state model](../../models/lineararcdisplay))
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+  ([state model](../../models/linearbasicdisplay))
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+  ([state model](../../models/linearbasicdisplay))
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+  ([state model](../../models/linearmultirowfeaturedisplay))
+- **Adapter:** [BedAdapter](../bedadapter)
+- **Adapter:** [BedTabixAdapter](../bedtabixadapter)
+- **Adapter:** [BigBedAdapter](../bigbedadapter)
+- **Adapter:** [Gff3Adapter](../gff3adapter)
+- **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
+- **Adapter:** [GtfAdapter](../gtfadapter)
+- **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **Base config:** [BaseTrack](../basetrack)
 
 ## Inherited config slots
 
@@ -73,7 +92,7 @@ shown once, at its most specific definition.
 
 descriptive name of the track, falls back to the trackId when unset
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: assemblyNames
 
@@ -85,7 +104,7 @@ name of the assembly (or assemblies) track belongs to
 
 a description of the track
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: category
 
@@ -97,14 +116,15 @@ the category and sub-categories of a track
 
 anything to add about this track
 
-**Type:** `frozen` · **Default:** `{}`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 #### slot: rpcDriverName
 
 RPC driver to use for this track. Leave empty to use the display-level or global
 default.
 
-**Type:** `string` · **Default:** `''` · _advanced_
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
+· _advanced_
 
 #### slot: adapter
 
@@ -152,7 +172,7 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 adds extra fields to the feature details
 
-**Type:** `frozen` · **Default:** `{}`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 ```js
 {
@@ -167,7 +187,7 @@ adds extra fields to the feature details
 
 adds extra fields to the subfeatures of a feature
 
-**Type:** `frozen` · **Default:** `{}`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 ```js
 {
@@ -183,19 +203,20 @@ adds extra fields to the subfeatures of a feature
 depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g.
 you may not want to format the exon/cds subfeatures, so limited to 2
 
-**Type:** `number` · **Default:** `2`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `2`
 
 #### slot: formatDetails.maxDepth
 
 Maximum depth to render subfeatures
 
-**Type:** `number` · **Default:** `99999`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`99999`
 
 #### slot: formatAbout.config
 
 formats configuration object in about dialog
 
-**Type:** `frozen` · **Default:** `{}`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 ```js
 {
@@ -208,25 +229,7 @@ formats configuration object in about dialog
 
 #### slot: formatAbout.hideUris
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 </details>
-
-## Related links
-
-- **Display:** [LinearArcDisplay](../lineararcdisplay)
-  ([state model](../../models/lineararcdisplay))
-- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-  ([state model](../../models/linearbasicdisplay))
-- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-  ([state model](../../models/linearbasicdisplay))
-- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
-  ([state model](../../models/linearmultirowfeaturedisplay))
-- **Adapter:** [BedAdapter](../bedadapter)
-- **Adapter:** [BedTabixAdapter](../bedtabixadapter)
-- **Adapter:** [BigBedAdapter](../bigbedadapter)
-- **Adapter:** [Gff3Adapter](../gff3adapter)
-- **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
-- **Adapter:** [GtfAdapter](../gtfadapter)
-- **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
-- **Base config:** [BaseTrack](../basetrack)

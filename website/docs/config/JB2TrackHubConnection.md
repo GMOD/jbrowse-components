@@ -22,6 +22,16 @@ preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
 }
 ```
 
+## Related links
+
+- **State model:** [runtime API](../../models/jb2trackhubconnection)
+- **Base config:** [BaseConnection](../baseconnection)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                                           | Type           | Description                                                                                     |
 | ---------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------- |
 | [configJsonLocation](#slot-configjsonlocation) | `fileLocation` | location of the jb2 config file (usually called config.json)                                    |
@@ -34,7 +44,7 @@ preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
 
 location of the jb2 config file (usually called config.json)
 
-**Type:** `fileLocation`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
 
 ```js
 {
@@ -72,11 +82,7 @@ shown once, at its most specific definition.
 
 a unique name for this connection
 
-**Type:** `string` · **Default:** `'nameOfConnection'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'nameOfConnection'`
 
 </details>
-
-## Related links
-
-- **State model:** [runtime API](../../models/jb2trackhubconnection)
-- **Base config:** [BaseConnection](../baseconnection)

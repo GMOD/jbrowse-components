@@ -90,9 +90,23 @@ inline instead of from a `samplesTsvLocation`:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
-## Overview
+## Related links
+
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
+- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
+- **Adapter:** [VcfAdapter](../vcfadapter)
+- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **State model:**
+  [runtime API](../../models/linearmultisamplevariantmatrixdisplay)
+- **Base config:** [SharedVariantDisplay](../sharedvariantdisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                   | Type     | Description |
 | ---------------------- | -------- | ----------- |
@@ -103,7 +117,7 @@ _See the **Slots** section below for all available configuration fields._
 
 #### slot: height
 
-**Type:** `number` · **Default:** `250`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `250`
 
 </details>
 
@@ -125,33 +139,37 @@ filled solid grey and only ALT alleles are painted on top (makes overlapping
 variants easier to see); when true, reference alleles are drawn normally. Seeds
 referenceDrawingMode the first time a config is loaded.
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: showSidebarLabels
 
 Show the per-sample row labels in the sidebar
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: showTree
 
 Show the sample clustering tree in the sidebar
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: showBranchLength
 
 Draw the clustering tree with branch lengths
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: renderingMode
 
 'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws
 one row per haplotype
 
-**Type:** `stringEnum` (one of `alleleCount`, `phased`) · **Default:**
-`'alleleCount'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`alleleCount`, `phased`) · **Default:** `'alleleCount'`
 
 #### slot: featureColor
 
@@ -163,20 +181,22 @@ dosage / phasing). The "Color cells by" menu offers presets like consequence
 impact (`jexl:impactColor(feature)`), but any feature jexl works, same as the
 standard `color` slot.
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: minorAlleleFrequencyFilter
 
 Hide variants whose minor allele frequency is below this threshold
 
-**Type:** `number` · **Default:** `0` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0` ·
+_advanced_
 
 #### slot: maxMissingnessFilter
 
 Hide variants whose fraction of no-call (missing) genotypes is above this
 threshold; 1 keeps every variant
 
-**Type:** `number` · **Default:** `1` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
 
 #### slot: colorBy
 
@@ -184,7 +204,7 @@ Name of a sample-metadata attribute (a column in the adapter's
 samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means
 no grouping
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: referenceDrawingMode
 
@@ -194,7 +214,8 @@ derivation at read time — preProcessSnapshot below seeds this from
 showReferenceAlleles once, the first time a config lacking it is hydrated, so
 from then on this slot alone is the single source of truth.
 
-**Type:** `stringEnum` (one of `draw`, `skip`) · **Default:** `'skip'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`draw`, `skip`) · **Default:** `'skip'`
 
 </details>
 
@@ -208,20 +229,22 @@ from then on this slot alone is the single source of truth.
 maximum features per pixel before showing a "too many features" message, used if
 byte size estimates are not available
 
-**Type:** `number` · **Default:** `1` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
 
 #### slot: fetchSizeLimit
 
 maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
-**Type:** `number` · **Default:** `1_000_000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`1_000_000` · _advanced_
 
 #### slot: mouseover
 
 text to display when the cursor hovers over a feature
 
-**Type:** `string` · **Default:**
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
@@ -241,14 +264,3 @@ runtime rather than being stored with jexl in the config
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **Adapter:** [BedpeAdapter](../bedpeadapter)
-- **Adapter:** [StarFusionAdapter](../starfusionadapter)
-- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
-- **Adapter:** [VcfAdapter](../vcfadapter)
-- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
-- **State model:**
-  [runtime API](../../models/linearmultisamplevariantmatrixdisplay)
-- **Base config:** [SharedVariantDisplay](../sharedvariantdisplay)

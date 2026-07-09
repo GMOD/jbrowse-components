@@ -9,7 +9,15 @@ Auto-generated config schema for the current JBrowse release — see the
 `legacy-jbrowse` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts).
 
-## Overview
+## Related links
+
+- **State model:** [runtime API](../../models/jbrowse1connection)
+- **Base config:** [BaseConnection](../baseconnection)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                     | Type           | Description                                                                                         |
 | ---------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------- |
@@ -24,7 +32,8 @@ Auto-generated config schema for the current JBrowse release — see the
 the location of the JBrowse 1 data directory, often something like
 https://mysite.com/jbrowse/data/
 
-**Type:** `fileLocation` · **Default:**
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:**
 `{ uri: 'https://mysite.com/jbrowse/data/', locationType: 'UriLocation' }`
 
 #### slot: assemblyNames
@@ -50,11 +59,7 @@ shown once, at its most specific definition.
 
 a unique name for this connection
 
-**Type:** `string` · **Default:** `'nameOfConnection'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'nameOfConnection'`
 
 </details>
-
-## Related links
-
-- **State model:** [runtime API](../../models/jbrowse1connection)
-- **Base config:** [BaseConnection](../baseconnection)

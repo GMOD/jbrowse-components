@@ -43,9 +43,7 @@ Taller track, log scale, custom color:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 configuration for the wiggle (quantitative/numeric) display showing XY plot,
 density, line, or scatter renderings
@@ -57,14 +55,34 @@ shorthand `displayDefaults: { key: value }` is equivalent to the full
 array form — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays).
 
-| Slot                                       | Type                                   | Description                                                                                                                                                |
-| ------------------------------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [defaultRendering](#slot-defaultrendering) | `stringEnum`                           | Default rendering type: `xyplot`, `density`, `line`, or `scatter`.                                                                                         |
-| [height](#slot-height)                     | `number`                               | Default height of the track                                                                                                                                |
-| [useBicolor](#slot-usebicolor)             | `boolean`                              | When true (the default), positive scores use posColor and negative scores use negColor. When false, all bars use the single color slot.                    |
-| [color](#slot-color)                       | `color`                                | Single fill color for the wiggle bars. Only used when useBicolor is false (useBicolor defaults to true, in which case posColor/negColor are used instead). |
-| [minimalTicks](#slot-minimalticks)         | `boolean`                              | Draw only the min/max Y-axis ticks                                                                                                                         |
-| [summaryScoreMode](#slot-summaryscoremode) | `stringEnum` (max, min, avg, whiskers) | choose whether to use max/min/average or whiskers which combines all three into the same rendering                                                         |
+## Related links
+
+- **Adapter:** [BedGraphAdapter](../bedgraphadapter)
+- **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)
+- **Adapter:** [BigWigAdapter](../bigwigadapter)
+- **State model:** [runtime API](../../models/linearwiggledisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                       | Type                                   | Description                                                                                        |
+| ------------------------------------------ | -------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| [defaultRendering](#slot-defaultrendering) | `stringEnum`                           | Default rendering type: `xyplot`, `density`, `line`, or `scatter`.                                 |
+| [height](#slot-height)                     | `number`                               | Default height of the track                                                                        |
+| [useBicolor](#slot-usebicolor)             | `boolean`                              | When true (the default), positive scores use posColor and negative scores use negColor.            |
+| [color](#slot-color)                       | `color`                                | Single fill color for the wiggle bars.                                                             |
+| [summaryScoreMode](#slot-summaryscoremode) | `stringEnum` (max, min, avg, whiskers) | choose whether to use max/min/average or whiskers which combines all three into the same rendering |
+
+<details>
+<summary>Advanced slots (1)</summary>
+
+| Slot                               | Type      | Description                        |
+| ---------------------------------- | --------- | ---------------------------------- |
+| [minimalTicks](#slot-minimalticks) | `boolean` | Draw only the min/max Y-axis ticks |
+
+</details>
 
 <details>
 <summary>LinearWiggleDisplay - Slots</summary>
@@ -73,7 +91,8 @@ array form — see
 
 Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
 
-**Type:** `stringEnum` · **Default:** `'xyplot'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
+**Default:** `'xyplot'`
 
 ```js
 {
@@ -97,41 +116,37 @@ Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
 
 Default height of the track
 
-**Type:** `number` · **Default:** `100`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
 
 #### slot: useBicolor
 
 When true (the default), positive scores use posColor and negative scores use
 negColor. When false, all bars use the single color slot.
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: color
 
 Single fill color for the wiggle bars. Only used when useBicolor is false
 (useBicolor defaults to true, in which case posColor/negColor are used instead).
 
-**Type:** `color` · **Default:** `WIGGLE_POS_COLOR_DEFAULT`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`WIGGLE_POS_COLOR_DEFAULT`
 
 #### slot: minimalTicks
 
 Draw only the min/max Y-axis ticks
 
-**Type:** `boolean` · **Default:** `false` · _advanced_
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false` · _advanced_
 
 #### slot: summaryScoreMode
 
 choose whether to use max/min/average or whiskers which combines all three into
 the same rendering
 
-**Type:** `stringEnum` (one of `max`, `min`, `avg`, `whiskers`) · **Default:**
-`'whiskers'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`max`, `min`, `avg`, `whiskers`) · **Default:** `'whiskers'`
 
 </details>
-
-## Related links
-
-- **Adapter:** [BedGraphAdapter](../bedgraphadapter)
-- **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)
-- **Adapter:** [BigWigAdapter](../bigwigadapter)
-- **State model:** [runtime API](../../models/linearwiggledisplay)

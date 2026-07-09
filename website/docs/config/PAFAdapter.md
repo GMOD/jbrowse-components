@@ -29,29 +29,26 @@ first):
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
-## Overview
+## Related links
 
-### PAFAdapter - Pre-processor / simplified config
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
-preprocessor to allow minimal config:
+## Config slots
 
-```json
-{
-  "type": "PAFAdapter",
-  "uri": "file.paf.gz",
-  "queryAssembly": "hg19",
-  "targetAssembly": "hg38"
-}
-```
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                   | Type           | Description                                                                                                                               |
-| -------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
-| [targetAssembly](#slot-targetassembly) | `string`       | Alternative to assemblyNames: the target assembly name                                                                                    |
-| [queryAssembly](#slot-queryassembly)   | `string`       | Alternative to assemblyNames: the query assembly name                                                                                     |
-| [pafLocation](#slot-paflocation)       | `fileLocation` |                                                                                                                                           |
+| Slot                                   | Type           | Description                                            |
+| -------------------------------------- | -------------- | ------------------------------------------------------ |
+| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file.          |
+| [targetAssembly](#slot-targetassembly) | `string`       | Alternative to assemblyNames: the target assembly name |
+| [queryAssembly](#slot-queryassembly)   | `string`       | Alternative to assemblyNames: the query assembly name  |
+| [pafLocation](#slot-paflocation)       | `fileLocation` |                                                        |
 
 <details>
 <summary>PAFAdapter - Slots</summary>
@@ -67,24 +64,17 @@ first value in the array, target assembly name is the second
 
 Alternative to assemblyNames: the target assembly name
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: queryAssembly
 
 Alternative to assemblyNames: the query assembly name
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: pafLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/file.paf', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/file.paf', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
-- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

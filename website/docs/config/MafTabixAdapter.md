@@ -22,6 +22,11 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 }
 ```
 
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                                         | Type                    | Description                                                                                                                                                                                 |
 | -------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [samples](#slot-samples)                     | `frozen`                | string[] or {id:string,label:string,color?:string}[]                                                                                                                                        |
@@ -39,31 +44,33 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 
 string[] or {id:string,label:string,color?:string}[]
 
-**Type:** `frozen` · **Default:** `[]`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
 
 #### slot: bedGzLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }`
 
 #### slot: refAssemblyName
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: index.location
 
-**Type:** `fileLocation` · **Default:** `{ uri: '/path/to/my.bed.gz.tbi' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bed.gz.tbi' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: nhLocation
 
 newick tree
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.nh', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.nh', locationType: 'UriLocation' }`
 
 #### slot: annotationAdapter
 
@@ -71,6 +78,7 @@ optional sub-adapter (typically a BigBedAdapter over a UCSC
 multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the
 gene-structure overlay and codon view; null disables it
 
-**Type:** `frozen` · **Default:** `null`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`null`
 
 </details>

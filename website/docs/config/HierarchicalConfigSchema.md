@@ -8,9 +8,12 @@ Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Built into JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/HierarchicalConfig.ts).
 
-## Overview
-
 generally exists on the config.json or root config as configuration.hierarchical
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                                                                                                                | Type          | Description                                             |
 | ----------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------- |
@@ -26,11 +29,13 @@ generally exists on the config.json or root config as configuration.hierarchical
 
 #### slot: configuration.hierarchical.sort.trackNames
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: configuration.hierarchical.sort.categories
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: configuration.hierarchical.defaultFolderCategories
 
@@ -44,10 +49,12 @@ list of category names to display as folders by default
 
 #### slot: configuration.hierarchical.defaultCollapsed.topLevelCategories
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: configuration.hierarchical.defaultCollapsed.subCategories
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 </details>

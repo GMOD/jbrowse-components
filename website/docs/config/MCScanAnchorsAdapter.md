@@ -27,25 +27,21 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load MCScan (jcvi) `.anchors` files with their two BED files
 
-### MCScanAnchorsAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
-```json
-{
-  "type": "MCScanAnchorsAdapter",
-  "uri": "file.anchors",
-  "bed1": "bed1.bed",
-  "bed2": "bed2.bed",
-  "assemblyNames": ["hg19", "hg38"]
-}
-```
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                                 | Type           | Description |
 | ---------------------------------------------------- | -------------- | ----------- |
@@ -59,28 +55,21 @@ preprocessor to allow minimal config:
 
 #### slot: mcscanAnchorsLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/mcscan.anchors', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/mcscan.anchors', locationType: 'UriLocation' }`
 
 #### slot: bed1Location
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/file.bed', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/file.bed', locationType: 'UriLocation' }`
 
 #### slot: bed2Location
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/file.bed', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/file.bed', locationType: 'UriLocation' }`
 
 #### slot: assemblyNames
 
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
-- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

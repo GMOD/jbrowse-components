@@ -9,7 +9,10 @@ Auto-generated config schema for the current JBrowse release — see the
 `legacy-jbrowse` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/NCListAdapter/configSchema.ts).
 
-## Overview
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                     | Type           | Description                                           |
 | ---------------------------------------- | -------------- | ----------------------------------------------------- |
@@ -21,7 +24,7 @@ Auto-generated config schema for the current JBrowse release — see the
 
 #### slot: rootUrlTemplate
 
-**Type:** `fileLocation`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
 
 ```js
 {

@@ -24,53 +24,54 @@ plugin.
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load BigWig quantitative signal files
 
-### BigWigAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
 
-```json
-{
-  "type": "BigWigAdapter",
-  "uri": "yourfile.bw"
-}
-```
+## Config slots
 
-| Slot                                               | Type           | Description                                                                                                                               |
-| -------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [bigWigLocation](#slot-bigwiglocation)             | `fileLocation` |                                                                                                                                           |
-| [source](#slot-source)                             | `string`       | added as feature.get('source') on all features                                                                                            |
-| [resolutionMultiplier](#slot-resolutionmultiplier) | `number`       | Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points) |
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                   | Type           | Description                                    |
+| -------------------------------------- | -------------- | ---------------------------------------------- |
+| [bigWigLocation](#slot-bigwiglocation) | `fileLocation` |                                                |
+| [source](#slot-source)                 | `string`       | added as feature.get('source') on all features |
+
+<details>
+<summary>Advanced slots (1)</summary>
+
+| Slot                                               | Type     | Description                                                                                                                               |
+| -------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [resolutionMultiplier](#slot-resolutionmultiplier) | `number` | Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points) |
+
+</details>
 
 <details>
 <summary>BigWigAdapter - Slots</summary>
 
 #### slot: bigWigLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.bw', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bw', locationType: 'UriLocation' }`
 
 #### slot: source
 
 added as feature.get('source') on all features
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: resolutionMultiplier
 
 Resolution multiplier applied to every fetch: <1 fetches more points (higher
 resolution), >1 fetches fewer (e.g. 2 = half as many points)
 
-**Type:** `number` · **Default:** `1` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
 
 </details>
-
-## Related links
-
-- **Track:** [QuantitativeTrack](../quantitativetrack)
-- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)

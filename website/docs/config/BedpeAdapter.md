@@ -23,22 +23,25 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 intended for SVs in a single assembly
 
-### BedpeAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
-```json
-{
-  "type": "BedpeAdapter",
-  "uri": "yourfile.bedpe.gz"
-}
-```
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                 | Type           | Description                                                               |
 | ------------------------------------ | -------------- | ------------------------------------------------------------------------- |
@@ -52,8 +55,8 @@ preprocessor to allow minimal config:
 
 can be plaintext or gzipped, not indexed so loaded into memory on startup
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.bedpe.gz', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bedpe.gz', locationType: 'UriLocation' }`
 
 #### slot: columnNames
 
@@ -62,14 +65,3 @@ List of column names
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **Track:** [VariantTrack](../varianttrack)
-- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-- **Display:** [LinearVariantDisplay](../linearvariantdisplay)

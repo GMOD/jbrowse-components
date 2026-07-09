@@ -25,12 +25,20 @@ plugin.
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam
 library
+
+## Related links
+
+- **Track:** [AlignmentsTrack](../alignmentstrack)
+- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                 | Type     | Description                                    |
 | ------------------------------------ | -------- | ---------------------------------------------- |
@@ -44,17 +52,12 @@ library
 
 the base URL to fetch from
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: htsgetTrackId
 
 the trackId, which is appended to the base URL
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 </details>
-
-## Related links
-
-- **Track:** [AlignmentsTrack](../alignmentstrack)
-- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)

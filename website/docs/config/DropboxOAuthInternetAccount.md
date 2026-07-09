@@ -9,7 +9,15 @@ Auto-generated config schema for the current JBrowse release — see the
 `authentication` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/configSchema.ts).
 
-## Overview
+## Related links
+
+- **State model:** [runtime API](../../models/dropboxoauthinternetaccount)
+- **Base config:** [OAuthInternetAccount](../oauthinternetaccount)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                 | Type          | Description                                                    |
 | ------------------------------------ | ------------- | -------------------------------------------------------------- |
@@ -25,19 +33,22 @@ Auto-generated config schema for the current JBrowse release — see the
 
 the authorization code endpoint of the internet account
 
-**Type:** `string` · **Default:** `'https://www.dropbox.com/oauth2/authorize'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'https://www.dropbox.com/oauth2/authorize'`
 
 #### slot: tokenEndpoint
 
 the token endpoint of the internet account
 
-**Type:** `string` · **Default:** `'https://api.dropbox.com/oauth2/token'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'https://api.dropbox.com/oauth2/token'`
 
 #### slot: needsPKCE
 
 boolean to indicate if the endpoint needs a PKCE code
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: domains
 
@@ -79,31 +90,33 @@ shown once, at its most specific definition.
 
 a custom name for a token to include in the header
 
-**Type:** `string` · **Default:** `'Bearer'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'Bearer'`
 
 #### slot: clientId
 
 id for the OAuth application
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: scopes
 
 optional scopes for the authorization call
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: state
 
 optional state for the authorization call
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: responseType
 
 the type of response from the authorization endpoint. can be 'token' or 'code'
 
-**Type:** `string` · **Default:** `'code'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'code'`
 
 </details>
 
@@ -116,23 +129,19 @@ the type of response from the authorization endpoint. can be 'token' or 'code'
 
 descriptive name of the internet account
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: description
 
 a description of the internet account
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: authHeader
 
 request header for credentials
 
-**Type:** `string` · **Default:** `'Authorization'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'Authorization'`
 
 </details>
-
-## Related links
-
-- **State model:** [runtime API](../../models/dropboxoauthinternetaccount)
-- **Base config:** [OAuthInternetAccount](../oauthinternetaccount)

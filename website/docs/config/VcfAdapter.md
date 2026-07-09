@@ -24,23 +24,26 @@ plugin.
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load plain-text (non-bgzipped) VCF files. Loads the whole file into
 memory, so prefer the VcfTabixAdapter for large files.
 
-### VcfAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
-```json
-{
-  "type": "VcfAdapter",
-  "uri": "yourfile.vcf"
-}
-```
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                           | Type           | Description |
 | ---------------------------------------------- | -------------- | ----------- |
@@ -52,12 +55,12 @@ preprocessor to allow minimal config:
 
 #### slot: vcfLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.vcf', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.vcf', locationType: 'UriLocation' }`
 
 #### slot: samplesTsvLocation
 
-**Type:** `fileLocation`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
 
 ```js
 {
@@ -72,14 +75,3 @@ preprocessor to allow minimal config:
 ```
 
 </details>
-
-## Related links
-
-- **Track:** [VariantTrack](../varianttrack)
-- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-- **Display:** [LinearVariantDisplay](../linearvariantdisplay)

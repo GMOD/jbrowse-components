@@ -23,22 +23,19 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load Hi-C contact matrix data from a `.hic` file
 
-### HicAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [HicTrack](../hictrack)
+- **Display:** [LinearHicDisplay](../linearhicdisplay)
 
-```json
-{
-  "type": "HicAdapter",
-  "uri": "file.hic"
-}
-```
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                             | Type           | Description |
 | -------------------------------- | -------------- | ----------- |
@@ -49,12 +46,7 @@ preprocessor to allow minimal config:
 
 #### slot: hicLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.hic', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.hic', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [HicTrack](../hictrack)
-- **Display:** [LinearHicDisplay](../linearhicdisplay)

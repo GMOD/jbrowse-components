@@ -26,31 +26,36 @@ The `uri` shorthand auto-resolves the `.crai` index:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to configure CRAM adapter
 
 Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
 automatically supplies it from the enclosing assembly's sequence track.
 
-### CramAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config, assumes yourfile.cram.crai:
+- **Track:** [AlignmentsTrack](../alignmentstrack)
+- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 
-```json
-{
-  "type": "CramAdapter",
-  "uri": "yourfile.cram"
-}
-```
+## Config slots
 
-| Slot                                   | Type           | Description                                                                                  |
-| -------------------------------------- | -------------- | -------------------------------------------------------------------------------------------- |
-| [fetchSizeLimit](#slot-fetchsizelimit) | `number`       | size in bytes over which to display a warning to the user that too much data will be fetched |
-| [cramLocation](#slot-cramlocation)     | `fileLocation` |                                                                                              |
-| [craiLocation](#slot-crailocation)     | `fileLocation` |                                                                                              |
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                               | Type           | Description |
+| ---------------------------------- | -------------- | ----------- |
+| [cramLocation](#slot-cramlocation) | `fileLocation` |             |
+| [craiLocation](#slot-crailocation) | `fileLocation` |             |
+
+<details>
+<summary>Advanced slots (1)</summary>
+
+| Slot                                   | Type     | Description                                                                                  |
+| -------------------------------------- | -------- | -------------------------------------------------------------------------------------------- |
+| [fetchSizeLimit](#slot-fetchsizelimit) | `number` | size in bytes over which to display a warning to the user that too much data will be fetched |
+
+</details>
 
 <details>
 <summary>CramAdapter - Slots</summary>
@@ -60,21 +65,17 @@ preprocessor to allow minimal config, assumes yourfile.cram.crai:
 size in bytes over which to display a warning to the user that too much data
 will be fetched
 
-**Type:** `number` · **Default:** `3_000_000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`3_000_000` · _advanced_
 
 #### slot: cramLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.cram', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.cram', locationType: 'UriLocation' }`
 
 #### slot: craiLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.cram.crai', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.cram.crai', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [AlignmentsTrack](../alignmentstrack)
-- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)

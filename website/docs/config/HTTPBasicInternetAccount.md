@@ -9,7 +9,15 @@ Auto-generated config schema for the current JBrowse release — see the
 `authentication` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/configSchema.ts).
 
-## Overview
+## Related links
+
+- **State model:** [runtime API](../../models/httpbasicinternetaccount)
+- **Base config:** [BaseInternetAccount](../baseinternetaccount)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                       | Type      | Description                                            |
 | ------------------------------------------ | --------- | ------------------------------------------------------ |
@@ -23,13 +31,15 @@ Auto-generated config schema for the current JBrowse release — see the
 
 a custom name for a token to include in the header
 
-**Type:** `string` · **Default:** `'Basic'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'Basic'`
 
 #### slot: validateWithHEAD
 
 validate the token with a HEAD request before using it
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 </details>
 
@@ -48,19 +58,20 @@ shown once, at its most specific definition.
 
 descriptive name of the internet account
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: description
 
 a description of the internet account
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: authHeader
 
 request header for credentials
 
-**Type:** `string` · **Default:** `'Authorization'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'Authorization'`
 
 #### slot: domains
 
@@ -69,8 +80,3 @@ array of valid domains the url can contain to use this account
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **State model:** [runtime API](../../models/httpbasicinternetaccount)
-- **Base config:** [BaseInternetAccount](../baseinternetaccount)

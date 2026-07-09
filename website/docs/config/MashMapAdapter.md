@@ -26,31 +26,28 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load MashMap `.out` alignment files (query and target assembly required)
 
-### MashMapAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
-```json
-{
-  "type": "MashMapAdapter",
-  "uri": "file.out",
-  "queryAssembly": "hg19",
-  "targetAssembly": "hg38"
-}
-```
+## Config slots
 
-| Slot                                   | Type           | Description                                                                                                                               |
-| -------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
-| [targetAssembly](#slot-targetassembly) | `string`       | Alternative to assemblyNames array: the target assembly                                                                                   |
-| [queryAssembly](#slot-queryassembly)   | `string`       | Alternative to assemblyNames array: the query assembly                                                                                    |
-| [outLocation](#slot-outlocation)       | `fileLocation` |                                                                                                                                           |
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                   | Type           | Description                                             |
+| -------------------------------------- | -------------- | ------------------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file.           |
+| [targetAssembly](#slot-targetassembly) | `string`       | Alternative to assemblyNames array: the target assembly |
+| [queryAssembly](#slot-queryassembly)   | `string`       | Alternative to assemblyNames array: the query assembly  |
+| [outLocation](#slot-outlocation)       | `fileLocation` |                                                         |
 
 <details>
 <summary>MashMapAdapter - Slots</summary>
@@ -66,24 +63,17 @@ first value in the array, target assembly name is the second
 
 Alternative to assemblyNames array: the target assembly
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: queryAssembly
 
 Alternative to assemblyNames array: the query assembly
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: outLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/mashmap.out', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/mashmap.out', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
-- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

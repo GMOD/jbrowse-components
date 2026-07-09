@@ -26,36 +26,41 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 a tabix-indexed PAF (PIF) for large synteny datasets. The `uri` shorthand
 auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
 
-### PairwiseIndexedPAFAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config, assumes file.pif.gz.tbi:
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
-```json
-{
-  "type": "PairwiseIndexedPAFAdapter",
-  "uri": "file.pif.gz",
-  "queryAssembly": "hg19",
-  "targetAssembly": "hg38"
-}
-```
+## Config slots
 
-| Slot                                                   | Type                    | Description                                                                                                                                                                                                                                            |
-| ------------------------------------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [assemblyNames](#slot-assemblynames)                   | `stringArray`           | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second                                                                                                              |
-| [targetAssembly](#slot-targetassembly)                 | `string`                | Alternative to assemblyNames: the target assembly name                                                                                                                                                                                                 |
-| [queryAssembly](#slot-queryassembly)                   | `string`                | Alternative to assemblyNames: the query assembly name                                                                                                                                                                                                  |
-| [pifGzLocation](#slot-pifgzlocation)                   | `fileLocation`          | location of pairwise tabix indexed PAF (pif)                                                                                                                                                                                                           |
-| [coarseBpPerPxThreshold](#slot-coarsebpperpxthreshold) | `number`                | bpPerPx threshold at which the reader switches from the per-row CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier (uppercase T/Q prefix), when make-pif was run with --coarse. No coarse tier present in the file = always uses fine tier. |
-| [index](#slot-index)                                   |                         |                                                                                                                                                                                                                                                        |
-| [index.indexType](#slot-indexindextype)                | `stringEnum` (TBI, CSI) |                                                                                                                                                                                                                                                        |
-| [index.location](#slot-indexlocation)                  | `fileLocation`          |                                                                                                                                                                                                                                                        |
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                    | Type                    | Description                                            |
+| --------------------------------------- | ----------------------- | ------------------------------------------------------ |
+| [assemblyNames](#slot-assemblynames)    | `stringArray`           | Array of assembly names to use for this file.          |
+| [targetAssembly](#slot-targetassembly)  | `string`                | Alternative to assemblyNames: the target assembly name |
+| [queryAssembly](#slot-queryassembly)    | `string`                | Alternative to assemblyNames: the query assembly name  |
+| [pifGzLocation](#slot-pifgzlocation)    | `fileLocation`          | location of pairwise tabix indexed PAF (pif)           |
+| [index](#slot-index)                    |                         |                                                        |
+| [index.indexType](#slot-indexindextype) | `stringEnum` (TBI, CSI) |                                                        |
+| [index.location](#slot-indexlocation)   | `fileLocation`          |                                                        |
+
+<details>
+<summary>Advanced slots (1)</summary>
+
+| Slot                                                   | Type     | Description                                                                                                                                                                                |
+| ------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [coarseBpPerPxThreshold](#slot-coarsebpperpxthreshold) | `number` | bpPerPx threshold at which the reader switches from the per-row CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier (uppercase T/Q prefix), when make-pif was run with --coarse. |
+
+</details>
 
 <details>
 <summary>PairwiseIndexedPAFAdapter - Slots</summary>
@@ -71,20 +76,20 @@ first value in the array, target assembly name is the second
 
 Alternative to assemblyNames: the target assembly name
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: queryAssembly
 
 Alternative to assemblyNames: the query assembly name
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: pifGzLocation
 
 location of pairwise tabix indexed PAF (pif)
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/data/file.pif.gz', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/data/file.pif.gz', locationType: 'UriLocation' }`
 
 #### slot: coarseBpPerPxThreshold
 
@@ -93,7 +98,8 @@ bpPerPx threshold at which the reader switches from the per-row CIGAR tier
 make-pif was run with --coarse. No coarse tier present in the file = always uses
 fine tier.
 
-**Type:** `number` · **Default:** `10000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`10000` · _advanced_
 
 #### slot: index
 
@@ -117,18 +123,12 @@ ConfigurationSchema('TabixIndex', {
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: index.location
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.paf.gz.tbi', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.paf.gz.tbi', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
-- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

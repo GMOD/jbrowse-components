@@ -63,11 +63,19 @@ along as source metadata — `group` drives the sidebar clustering tree and
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 combines multiple BigWig files into a single multi-row quantitative track
+
+## Related links
+
+- **Track:** [MultiQuantitativeTrack](../multiquantitativetrack)
+- **Display:** [MultiLinearWiggleDisplay](../multilinearwiggledisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                             | Type     | Description                                                     |
 | -------------------------------- | -------- | --------------------------------------------------------------- |
@@ -81,17 +89,12 @@ combines multiple BigWig files into a single multi-row quantitative track
 
 array of subadapter JSON objects
 
-**Type:** `frozen` · **Default:** `[]`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
 
 #### slot: bigWigs
 
 array of BigWig URLs/paths, alternative to the subadapters slot
 
-**Type:** `frozen` · **Default:** `[]`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **Track:** [MultiQuantitativeTrack](../multiquantitativetrack)
-- **Display:** [MultiLinearWiggleDisplay](../multilinearwiggledisplay)

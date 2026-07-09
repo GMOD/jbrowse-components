@@ -31,9 +31,7 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 Loads a multi-genome MCScan (jcvi) `.blocks` file: a reference-anchored,
 tab-delimited table where column 0 is a reference gene and each further column
@@ -47,20 +45,32 @@ from the two matching columns. When neither column is the reference the link is
 transitive (both orthologous to the same reference gene) rather than a direct
 alignment. Listing just two assemblies pins the track to that pair.
 
-| Slot                                               | Type           | Description                                                                                                                                                                                                                                  |
-| -------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [mcscanBlocksLocation](#slot-mcscanblockslocation) | `fileLocation` |                                                                                                                                                                                                                                              |
-| [blockAssemblies](#slot-blockassemblies)           | `stringArray`  | one assembly name per column of the blocks file, in column order (column 0 is the reference)                                                                                                                                                 |
-| [bedLocations](#slot-bedlocations)                 | `frozen`       | one BED fileLocation per column of the blocks file, parallel to blockAssemblies, resolving that column's gene ids to coordinates                                                                                                             |
-| [assemblyNames](#slot-assemblynames)               | `stringArray`  | the assemblies this track can render; list all of blockAssemblies to let one track back every band of a multi-way view (the view picks each band's pair), or just two to pin it to a single pair. Every entry must appear in blockAssemblies |
+## Related links
+
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                               | Type           | Description                                                                                                                                                                                       |
+| -------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [mcscanBlocksLocation](#slot-mcscanblockslocation) | `fileLocation` |                                                                                                                                                                                                   |
+| [blockAssemblies](#slot-blockassemblies)           | `stringArray`  | one assembly name per column of the blocks file, in column order (column 0 is the reference)                                                                                                      |
+| [bedLocations](#slot-bedlocations)                 | `frozen`       | one BED fileLocation per column of the blocks file, parallel to blockAssemblies, resolving that column's gene ids to coordinates                                                                  |
+| [assemblyNames](#slot-assemblynames)               | `stringArray`  | the assemblies this track can render; list all of blockAssemblies to let one track back every band of a multi-way view (the view picks each band's pair), or just two to pin it to a single pair. |
 
 <details>
 <summary>MCScanBlocksAdapter - Slots</summary>
 
 #### slot: mcscanBlocksLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/mcscan.blocks', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/mcscan.blocks', locationType: 'UriLocation' }`
 
 #### slot: blockAssemblies
 
@@ -74,7 +84,7 @@ the reference)
 one BED fileLocation per column of the blocks file, parallel to blockAssemblies,
 resolving that column's gene ids to coordinates
 
-**Type:** `frozen` · **Default:** `[]`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
 
 #### slot: assemblyNames
 
@@ -85,10 +95,3 @@ just two to pin it to a single pair. Every entry must appear in blockAssemblies
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
-- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

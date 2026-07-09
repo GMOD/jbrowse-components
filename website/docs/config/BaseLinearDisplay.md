@@ -21,13 +21,26 @@ it, and third-party plugins extend it too.
 Every BaseLinearDisplay has a unique `displayId`, a required top-level field
 that identifies it (not one of the config slots below).
 
-| Slot                                                     | Type          | Description                                                                                                                           |
-| -------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| [maxFeatureScreenDensity](#slot-maxfeaturescreendensity) | `number`      | maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available                |
-| [fetchSizeLimit](#slot-fetchsizelimit)                   | `number`      | maximum data to attempt to download for a given track, used if adapter doesn't specify one                                            |
-| [height](#slot-height)                                   | `number`      | default height for the track                                                                                                          |
-| [mouseover](#slot-mouseover)                             | `string`      | text to display when the cursor hovers over a feature                                                                                 |
-| [jexlFilters](#slot-jexlfilters)                         | `stringArray` | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config |
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                             | Type          | Description                                                                                                                           |
+| -------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [height](#slot-height)           | `number`      | default height for the track                                                                                                          |
+| [mouseover](#slot-mouseover)     | `string`      | text to display when the cursor hovers over a feature                                                                                 |
+| [jexlFilters](#slot-jexlfilters) | `stringArray` | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config |
+
+<details>
+<summary>Advanced slots (2)</summary>
+
+| Slot                                                     | Type     | Description                                                                                                            |
+| -------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [maxFeatureScreenDensity](#slot-maxfeaturescreendensity) | `number` | maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available |
+| [fetchSizeLimit](#slot-fetchsizelimit)                   | `number` | maximum data to attempt to download for a given track, used if adapter doesn't specify one                             |
+
+</details>
 
 <details>
 <summary>BaseLinearDisplay - Slots</summary>
@@ -37,26 +50,28 @@ that identifies it (not one of the config slots below).
 maximum features per pixel before showing a "too many features" message, used if
 byte size estimates are not available
 
-**Type:** `number` · **Default:** `1` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
 
 #### slot: fetchSizeLimit
 
 maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
-**Type:** `number` · **Default:** `1_000_000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`1_000_000` · _advanced_
 
 #### slot: height
 
 default height for the track
 
-**Type:** `number` · **Default:** `100`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
 
 #### slot: mouseover
 
 text to display when the cursor hovers over a feature
 
-**Type:** `string` · **Default:**
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js

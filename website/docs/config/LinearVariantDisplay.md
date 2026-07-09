@@ -45,11 +45,19 @@ Taller track. The `displayDefaults` object shorthand is equivalent to
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
+
+## Related links
+
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
+- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
+- **Adapter:** [VcfAdapter](../vcfadapter)
+- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **State model:** [runtime API](../../models/linearvariantdisplay)
+- **Base config:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 
 ## Inherited config slots
 
@@ -66,7 +74,8 @@ shown once, at its most specific definition.
 
 Maximum height of the display in pixels
 
-**Type:** `number` · **Default:** `1200` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`1200` · _advanced_
 
 #### slot: heightMode
 
@@ -77,7 +86,8 @@ track to fit all features, `fit` shrinks features to fill the current height.
 Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit)
 settings.
 
-**Type:** `stringEnum` · **Default:** `'inherit'` · _promotable_
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
+**Default:** `'inherit'` · _promotable_
 
 ```js
 {
@@ -101,7 +111,8 @@ settings.
 Show feature labels: "auto" hides labels at high feature density, "on" always
 shows, "off" always hides
 
-**Type:** `stringEnum` · **Default:** `'auto'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
+**Default:** `'auto'`
 
 ```js
 {
@@ -118,20 +129,23 @@ shows, "off" always hides
 In "auto" showLabels mode, hide labels when visible feature density
 (features/pixel) exceeds this value
 
-**Type:** `number` · **Default:** `MAX_LABEL_FEATURE_DENSITY` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`MAX_LABEL_FEATURE_DENSITY` · _advanced_
 
 #### slot: showDescriptions
 
 Show feature descriptions
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: color
 
 the main fill color of each feature (a CSS color, or a jexl expression for
 per-feature coloring)
 
-**Type:** `color` · **Default:** `'goldenrod'`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'goldenrod'`
 
 ```js
 {
@@ -148,7 +162,8 @@ per-feature coloring)
 color of the connecting/intron lines between feature segments (defaults to the
 theme text color)
 
-**Type:** `color` · **Default:** `THEME_DERIVED_COLOR`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`THEME_DERIVED_COLOR`
 
 ```js
 {
@@ -164,7 +179,8 @@ theme text color)
 
 fill color for UTRs on gene/transcript glyphs
 
-**Type:** `color` · **Default:** `'#357089'`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'#357089'`
 
 ```js
 {
@@ -179,13 +195,13 @@ fill color for UTRs on gene/transcript glyphs
 
 outline color for features (empty string = no outline)
 
-**Type:** `color` · **Default:** `''`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:** `''`
 
 #### slot: featureHeight
 
 height in pixels of the main body of each feature
 
-**Type:** `number` · **Default:** `10`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `10`
 
 ```js
 {
@@ -203,8 +219,9 @@ for this display type, falling back to `normal`;
 `normal`/`compact`/`superCompact` pin the track explicitly (including pinning
 `normal` back over a `compact` session default)
 
-**Type:** `stringEnum` (one of `inherit`, `normal`, `compact`, `superCompact`) ·
-**Default:** `'inherit'` · _promotable_
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`inherit`, `normal`, `compact`, `superCompact`) · **Default:** `'inherit'` ·
+_promotable_
 
 ```js
 {
@@ -234,7 +251,8 @@ for this display type, falling back to `normal`;
 Gene glyph display mode: "auto" switches based on zoom level, "all" shows all
 transcripts, "longestCoding" shows only the longest coding transcript
 
-**Type:** `stringEnum` · **Default:** `'auto'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
+**Default:** `'auto'`
 
 ```js
 {
@@ -252,8 +270,8 @@ subfeature label display mode. `inherit` (the default) follows the session-wide
 default for this display type, falling back to `none`; `none`/`below`/`overlay`
 pin the track explicitly
 
-**Type:** `stringEnum` (one of `inherit`, `none`, `below`, `overlay`) ·
-**Default:** `'inherit'` · _promotable_
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`inherit`, `none`, `below`, `overlay`) · **Default:** `'inherit'` · _promotable_
 
 ```js
 {
@@ -285,7 +303,8 @@ Display directional chevrons on intron lines to indicate strand direction. Unset
 back to on; an explicit true/false pins the track (including pinning on over an
 off session default)
 
-**Type:** `maybeBoolean` · **Default:** `undefined` · _promotable_
+**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
+**Default:** `undefined` · _promotable_
 
 ```js
 {
@@ -338,14 +357,16 @@ off session default)
 
 subparts for a glyph
 
-**Type:** `string` · **Default:** `'CDS,UTR,five_prime_UTR,three_prime_UTR'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'CDS,UTR,five_prime_UTR,three_prime_UTR'`
 
 #### slot: impliedUTRs
 
 imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit
 UTR subfeatures
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: labels
 
@@ -378,26 +399,28 @@ ConfigurationSchema('CanvasFeatureLabels', {
 maximum features per pixel before showing a "too many features" message, used if
 byte size estimates are not available
 
-**Type:** `number` · **Default:** `1` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
 
 #### slot: fetchSizeLimit
 
 maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
-**Type:** `number` · **Default:** `1_000_000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`1_000_000` · _advanced_
 
 #### slot: height
 
 default height for the track
 
-**Type:** `number` · **Default:** `100`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
 
 #### slot: mouseover
 
 text to display when the cursor hovers over a feature
 
-**Type:** `string` · **Default:**
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
@@ -417,13 +440,3 @@ runtime rather than being stored with jexl in the config
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **Adapter:** [BedpeAdapter](../bedpeadapter)
-- **Adapter:** [StarFusionAdapter](../starfusionadapter)
-- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
-- **Adapter:** [VcfAdapter](../vcfadapter)
-- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
-- **State model:** [runtime API](../../models/linearvariantdisplay)
-- **Base config:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)

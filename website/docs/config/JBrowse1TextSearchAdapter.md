@@ -18,6 +18,11 @@ note: metadata about tracks and assemblies covered by text search adapter
 Every JBrowse1TextSearchAdapter has a unique `textSearchAdapterId`, a required
 top-level field that identifies it (not one of the config slots below).
 
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                                           | Type           | Description                                             |
 | ---------------------------------------------- | -------------- | ------------------------------------------------------- |
 | [namesIndexLocation](#slot-namesindexlocation) | `fileLocation` | the location of the JBrowse1 names index data directory |
@@ -31,8 +36,8 @@ top-level field that identifies it (not one of the config slots below).
 
 the location of the JBrowse1 names index data directory
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/volvox/names', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/volvox/names', locationType: 'UriLocation' }`
 
 #### slot: tracks
 

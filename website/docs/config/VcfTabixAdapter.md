@@ -27,51 +27,63 @@ The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed VCF files
 
-### VcfTabixAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
-```json
-{
-  "type": "VcfTabixAdapter",
-  "uri": "yourfile.vcf.gz"
-}
-```
+## Config slots
 
-| Slot                                           | Type                    | Description                                                                                  |
-| ---------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------- |
-| [vcfGzLocation](#slot-vcfgzlocation)           | `fileLocation`          |                                                                                              |
-| [index.indexType](#slot-indexindextype)        | `stringEnum` (TBI, CSI) |                                                                                              |
-| [index.location](#slot-indexlocation)          | `fileLocation`          |                                                                                              |
-| [samplesTsvLocation](#slot-samplestsvlocation) | `fileLocation`          |                                                                                              |
-| [fetchSizeLimit](#slot-fetchsizelimit)         | `number`                | size in bytes over which to display a warning to the user that too much data will be fetched |
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                           | Type                    | Description |
+| ---------------------------------------------- | ----------------------- | ----------- |
+| [vcfGzLocation](#slot-vcfgzlocation)           | `fileLocation`          |             |
+| [index.indexType](#slot-indexindextype)        | `stringEnum` (TBI, CSI) |             |
+| [index.location](#slot-indexlocation)          | `fileLocation`          |             |
+| [samplesTsvLocation](#slot-samplestsvlocation) | `fileLocation`          |             |
+
+<details>
+<summary>Advanced slots (1)</summary>
+
+| Slot                                   | Type     | Description                                                                                  |
+| -------------------------------------- | -------- | -------------------------------------------------------------------------------------------- |
+| [fetchSizeLimit](#slot-fetchsizelimit) | `number` | size in bytes over which to display a warning to the user that too much data will be fetched |
+
+</details>
 
 <details>
 <summary>VcfTabixAdapter - Slots</summary>
 
 #### slot: vcfGzLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.vcf.gz', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.vcf.gz', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: index.location
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.vcf.gz.tbi', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.vcf.gz.tbi', locationType: 'UriLocation' }`
 
 #### slot: samplesTsvLocation
 
-**Type:** `fileLocation`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
 
 ```js
 {
@@ -90,17 +102,7 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
 size in bytes over which to display a warning to the user that too much data
 will be fetched
 
-**Type:** `number` · **Default:** `1_000_000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`1_000_000` · _advanced_
 
 </details>
-
-## Related links
-
-- **Track:** [VariantTrack](../varianttrack)
-- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-- **Display:** [LinearVariantDisplay](../linearvariantdisplay)

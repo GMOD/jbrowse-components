@@ -28,11 +28,14 @@ Supplies refNames+sizes with no sequence, as the adapter of an assembly's
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used for specifying refNames+sizes of an assembly
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                         | Type     | Description |
 | ---------------------------- | -------- | ----------- |
@@ -44,10 +47,10 @@ used for specifying refNames+sizes of an assembly
 
 #### slot: adapterId
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: features
 
-**Type:** `frozen` · **Default:** `[]`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
 
 </details>

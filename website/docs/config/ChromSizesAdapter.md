@@ -22,24 +22,23 @@ plugin.
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 loads only chromosome names and lengths from a UCSC-style `.chrom.sizes` file
 (tab-separated `name<TAB>length`), with no actual sequence. Useful for karyotype
 or whole-genome/synteny views where the base-level sequence isn't needed.
 
-### ChromSizesAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 
-```json
-{
-  "type": "ChromSizesAdapter",
-  "uri": "yourfile.chrom.sizes"
-}
-```
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                           | Type           | Description |
 | ---------------------------------------------- | -------------- | ----------- |
@@ -50,14 +49,8 @@ preprocessor to allow minimal config:
 
 #### slot: chromSizesLocation
 
-**Type:** `fileLocation` · **Default:**
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:**
 `{ uri: '/path/to/species.chrom.sizes', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
-- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
-- **Display:**
-  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)

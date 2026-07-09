@@ -36,15 +36,41 @@ display type:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
-## Overview
+## Related links
+
+- **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
+- **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
+- **Adapter:** [ChainAdapter](../chainadapter)
+- **Adapter:** [DeltaAdapter](../deltaadapter)
+- **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
+- **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
+- **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- **Adapter:** [MashMapAdapter](../mashmapadapter)
+- **Adapter:** [PAFAdapter](../pafadapter)
+- **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
+- **State model:** [runtime API](../../models/lgvsyntenydisplay)
+- **Base config:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                           | Type      | Description                                                                                                                                                                                                 |
 | ---------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [colorBy](#slot-colorby)                       | `frozen`  | Synteny reads are strand-colored by default (vs the base alignments display's `normal`); overrides the inherited `colorBy` slot's default.                                                                  |
 | [showCoverage](#slot-showcoverage)             | `boolean` | Synteny reads hide the coverage histogram by default; overrides the inherited base alignments display's `showCoverage` default of `true`.                                                                   |
 | [largeFeaturesFirst](#slot-largefeaturesfirst) | `boolean` | Synteny lays large alignments out first so big syntenic blocks cluster at the top instead of interleaving with small ones; overrides the base alignments display's `largeFeaturesFirst` default of `false`. |
+
+<details>
+<summary>Advanced slots (1)</summary>
+
+| Slot                     | Type     | Description                                                                                                                                |
+| ------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| [colorBy](#slot-colorby) | `frozen` | Synteny reads are strand-colored by default (vs the base alignments display's `normal`); overrides the inherited `colorBy` slot's default. |
+
+</details>
 
 <details>
 <summary>LGVSyntenyDisplay - Slots</summary>
@@ -54,14 +80,16 @@ _See the **Slots** section below for all available configuration fields._
 Synteny reads are strand-colored by default (vs the base alignments display's
 `normal`); overrides the inherited `colorBy` slot's default.
 
-**Type:** `frozen` · **Default:** `{ type: 'strand' }` · _advanced_
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`{ type: 'strand' }` · _advanced_
 
 #### slot: showCoverage
 
 Synteny reads hide the coverage histogram by default; overrides the inherited
 base alignments display's `showCoverage` default of `true`.
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: largeFeaturesFirst
 
@@ -69,7 +97,8 @@ Synteny lays large alignments out first so big syntenic blocks cluster at the
 top instead of interleaving with small ones; overrides the base alignments
 display's `largeFeaturesFirst` default of `false`.
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 </details>
 
@@ -88,13 +117,15 @@ shown once, at its most specific definition.
 
 Height of each feature (read) in pixels
 
-**Type:** `number` · **Default:** `7` · _promotable_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `7` ·
+_promotable_
 
 #### slot: featureSpacing
 
 Spacing between features in pixels
 
-**Type:** `number` · **Default:** `1` · _promotable_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_promotable_
 
 #### slot: heightMode
 
@@ -104,7 +135,8 @@ falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing` and
 scrolls; `grow` resizes the track to fit every read at the configured height;
 `fit` sizes reads so every uncollapsed group fills the display without scrolling
 
-**Type:** `stringEnum` · **Default:** `'inherit'` · _promotable_
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
+**Default:** `'inherit'` · _promotable_
 
 ```js
 {
@@ -126,68 +158,77 @@ scrolls; `grow` resizes the track to fit every read at the configured height;
 
 Line width for read-connection arcs/lines in pixels
 
-**Type:** `number` · **Default:** `1`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1`
 
 #### slot: showSashimiLabels
 
 Draw the supporting-read count on each sashimi arc
 
-**Type:** `boolean` · **Default:** `false` · _promotable_
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false` · _promotable_
 
 #### slot: maxHeight
 
 Maximum pixel height of the pileup layout; reads beyond this are not stacked
 (coverage still reflects true depth)
 
-**Type:** `number` · **Default:** `6000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`6000` · _advanced_
 
 #### slot: height
 
-**Type:** `number` · **Default:** `250`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `250`
 
 #### slot: filterBy
 
 default filter flags is exclude 1540 read unmapped (0x4) read fails
 platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)
 
-**Type:** `frozen` · **Default:** `defaultFilterFlags` · _advanced_
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`defaultFilterFlags` · _advanced_
 
 #### slot: groupBy
 
 In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by
 strand (null = ungrouped)
 
-**Type:** `frozen` · **Default:** `null` · _advanced_
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`null` · _advanced_
 
 #### slot: autoscale
 
 Coverage autoscale type
 
-**Type:** `stringEnum` (one of `local`, `localsd`) · **Default:** `'local'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`local`, `localsd`) · **Default:** `'local'`
 
 #### slot: minScore
 
 Minimum coverage depth bound
 
-**Type:** `number` · **Default:** `Number.MIN_VALUE` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`Number.MIN_VALUE` · _advanced_
 
 #### slot: maxScore
 
 Maximum coverage depth bound
 
-**Type:** `number` · **Default:** `Number.MAX_VALUE` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`Number.MAX_VALUE` · _advanced_
 
 #### slot: scaleType
 
 Coverage scale type (linear or log)
 
-**Type:** `stringEnum` (one of `linear`, `log`) · **Default:** `'linear'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`linear`, `log`) · **Default:** `'linear'`
 
 #### slot: numStdDev
 
 Number of standard deviations for localsd autoscale
 
-**Type:** `number` · **Default:** `3` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `3` ·
+_advanced_
 
 #### slot: mismatchAlpha
 
@@ -196,7 +237,8 @@ the session-wide default for this display type, falling back to off; an explicit
 true/false pins the track (either direction, including pinning off over an on
 session default)
 
-**Type:** `maybeBoolean` · **Default:** `undefined` · _promotable_
+**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
+**Default:** `undefined` · _promotable_
 
 ```js
 {
@@ -219,34 +261,38 @@ session default)
 Show low-frequency mismatches (below the SNP-calling threshold) in the coverage
 track
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: showLegend
 
 Show the color-scheme legend overlay
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: sortedBy
 
 Sort reads at a genomic position, e.g. by base, strand, or a tag (null =
 unsorted)
 
-**Type:** `frozen` · **Default:** `null` · _advanced_
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`null` · _advanced_
 
 #### slot: showOutline
 
 null = auto: outline is drawn only in chain/linked-read modes. Set true/false to
 force it on or off regardless of mode.
 
-**Type:** `frozen` · **Default:** `null` · _advanced_
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`null` · _advanced_
 
 #### slot: linkedReads
 
 Linked-read (barcode-chain) layout mode
 
-**Type:** `stringEnum` (one of `inherit`, `off`, `normal`) · **Default:**
-`'inherit'` · _promotable_
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`inherit`, `off`, `normal`) · **Default:** `'inherit'` · _promotable_
 
 ```js
 {
@@ -272,81 +318,92 @@ Linked-read (barcode-chain) layout mode
 
 Draw paired-read connection curves over the pileup
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: showPileup
 
 Draw the stacked-read pileup band
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: coverageHeight
 
 Height of the coverage band in pixels
 
-**Type:** `number` · **Default:** `45`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `45`
 
 #### slot: showMismatches
 
 Draw per-base mismatches on reads
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: showInterbaseIndicators
 
 Draw interbase insertion/deletion indicators
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: drawSingletons
 
 Draw reads whose mate is unmapped
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: drawProperPairs
 
 Draw properly-paired reads
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: flipStrandLongReadChains
 
 Flip strand coloring for reverse long-read chains
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: colorSupplementaryChains
 
 Paint paired supplementary chains a flat supplementary color
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: drawInter
 
 Draw inter-chromosomal read-connection arcs
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: drawLongRange
 
 Draw long-range read-connection arcs
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: arcColorByType
 
 How to color read-connection arcs
 
-**Type:** `stringEnum` (one of `insertSizeAndOrientation`, `insertSize`,
-`orientation`) · **Default:** `'insertSizeAndOrientation'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`insertSizeAndOrientation`, `insertSize`, `orientation`) · **Default:**
+`'insertSizeAndOrientation'`
 
 #### slot: readConnections
 
 Read-connection rendering mode (mate pairs + split reads)
 
-**Type:** `stringEnum` (one of `inherit`, `off`, `arc`, `samplot`) ·
-**Default:** `'inherit'` · _promotable_
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`inherit`, `off`, `arc`, `samplot`) · **Default:** `'inherit'` · _promotable_
 
 ```js
 {
@@ -372,20 +429,22 @@ Read-connection rendering mode (mate pairs + split reads)
 
 Draw read connections below the coverage band
 
-**Type:** `boolean` · **Default:** `false` · _promotable_
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false` · _promotable_
 
 #### slot: showSashimiArcs
 
 Draw sashimi (splice-junction) arcs
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: sashimiArcsMode
 
 Sashimi junction-arc placement
 
-**Type:** `stringEnum` (one of `inherit`, `up`, `down`, `auto`) · **Default:**
-`'inherit'` · _promotable_
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`inherit`, `up`, `down`, `auto`) · **Default:** `'inherit'` · _promotable_
 
 ```js
 {
@@ -410,19 +469,19 @@ Sashimi junction-arc placement
 
 Hide sashimi arcs with fewer than this many supporting reads
 
-**Type:** `number` · **Default:** `0`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0`
 
 #### slot: sashimiArcsHeight
 
 Height of the sashimi-arc band in pixels
 
-**Type:** `number` · **Default:** `40`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `40`
 
 #### slot: readConnectionsHeight
 
 Height of the read-connection band in pixels
 
-**Type:** `number` · **Default:** `40`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `40`
 
 #### slot: showSoftClipping
 
@@ -430,7 +489,8 @@ Draw soft-clipped read portions. Unset (the default) follows the session-wide
 default for this display type, falling back to off; an explicit true/false pins
 the track (either direction, including pinning off over an on session default)
 
-**Type:** `maybeBoolean` · **Default:** `undefined` · _promotable_
+**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
+**Default:** `undefined` · _promotable_
 
 ```js
 {
@@ -460,20 +520,22 @@ the track (either direction, including pinning off over an on session default)
 maximum features per pixel before showing a "too many features" message, used if
 byte size estimates are not available
 
-**Type:** `number` · **Default:** `1` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
 
 #### slot: fetchSizeLimit
 
 maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
-**Type:** `number` · **Default:** `1_000_000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`1_000_000` · _advanced_
 
 #### slot: mouseover
 
 text to display when the cursor hovers over a feature
 
-**Type:** `string` · **Default:**
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
@@ -493,18 +555,3 @@ runtime rather than being stored with jexl in the config
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
-- **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
-- **Adapter:** [ChainAdapter](../chainadapter)
-- **Adapter:** [DeltaAdapter](../deltaadapter)
-- **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
-- **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
-- **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
-- **Adapter:** [MashMapAdapter](../mashmapadapter)
-- **Adapter:** [PAFAdapter](../pafadapter)
-- **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
-- **State model:** [runtime API](../../models/lgvsyntenydisplay)
-- **Base config:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)

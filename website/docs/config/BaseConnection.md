@@ -15,6 +15,11 @@ Auto-generated config schema for the current JBrowse release — see the
 Every BaseConnection has a unique `connectionId`, a required top-level field
 that identifies it (not one of the config slots below).
 
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                                 | Type          | Description                                             |
 | ------------------------------------ | ------------- | ------------------------------------------------------- |
 | [name](#slot-name)                   | `string`      | a unique name for this connection                       |
@@ -27,7 +32,8 @@ that identifies it (not one of the config slots below).
 
 a unique name for this connection
 
-**Type:** `string` · **Default:** `'nameOfConnection'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'nameOfConnection'`
 
 #### slot: assemblyNames
 

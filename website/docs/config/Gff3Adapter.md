@@ -23,23 +23,23 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load plain-text GFF3 files. Loads the whole file into memory, so prefer
 the Gff3TabixAdapter for large files.
 
-### Gff3Adapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 
-```json
-{
-  "type": "Gff3Adapter",
-  "uri": "yourfile.gff3"
-}
-```
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                             | Type           | Description |
 | -------------------------------- | -------------- | ----------- |
@@ -50,15 +50,7 @@ preprocessor to allow minimal config:
 
 #### slot: gffLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.gff', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.gff', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [FeatureTrack](../featuretrack)
-- **Display:** [LinearArcDisplay](../lineararcdisplay)
-- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)

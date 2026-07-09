@@ -17,6 +17,11 @@ the "base" internet account type
 Every BaseInternetAccount has a unique `internetAccountId`, a required top-level
 field that identifies it (not one of the config slots below).
 
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                             | Type          | Description                                                    |
 | -------------------------------- | ------------- | -------------------------------------------------------------- |
 | [name](#slot-name)               | `string`      | descriptive name of the internet account                       |
@@ -32,25 +37,26 @@ field that identifies it (not one of the config slots below).
 
 descriptive name of the internet account
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: description
 
 a description of the internet account
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: authHeader
 
 request header for credentials
 
-**Type:** `string` · **Default:** `'Authorization'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'Authorization'`
 
 #### slot: tokenType
 
 a custom name for a token to include in the header
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: domains
 

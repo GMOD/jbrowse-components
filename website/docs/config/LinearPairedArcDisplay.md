@@ -35,9 +35,22 @@ variant details. `color` is jexl-evaluated per `(feature, alt)`:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
-## Overview
+## Related links
+
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
+- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
+- **Adapter:** [VcfAdapter](../vcfadapter)
+- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **State model:** [runtime API](../../models/linearpairedarcdisplay)
+- **Base config:** [BaseLinearDisplay](../baselineardisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                 | Type    | Description           |
 | -------------------- | ------- | --------------------- |
@@ -50,7 +63,8 @@ _See the **Slots** section below for all available configuration fields._
 
 the color of the arcs
 
-**Type:** `color` · **Default:** `'jexl:defaultPairedArcColor(feature,alt)'`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'jexl:defaultPairedArcColor(feature,alt)'`
 
 ```js
 {
@@ -79,26 +93,28 @@ shown once, at its most specific definition.
 maximum features per pixel before showing a "too many features" message, used if
 byte size estimates are not available
 
-**Type:** `number` · **Default:** `1` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
 
 #### slot: fetchSizeLimit
 
 maximum data to attempt to download for a given track, used if adapter doesn't
 specify one
 
-**Type:** `number` · **Default:** `1_000_000` · _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`1_000_000` · _advanced_
 
 #### slot: height
 
 default height for the track
 
-**Type:** `number` · **Default:** `100`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
 
 #### slot: mouseover
 
 text to display when the cursor hovers over a feature
 
-**Type:** `string` · **Default:**
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
 `'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
@@ -118,13 +134,3 @@ runtime rather than being stored with jexl in the config
 **Type:** `stringArray` · **Default:** `[]`
 
 </details>
-
-## Related links
-
-- **Adapter:** [BedpeAdapter](../bedpeadapter)
-- **Adapter:** [StarFusionAdapter](../starfusionadapter)
-- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
-- **Adapter:** [VcfAdapter](../vcfadapter)
-- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
-- **State model:** [runtime API](../../models/linearpairedarcdisplay)
-- **Base config:** [BaseLinearDisplay](../baselineardisplay)

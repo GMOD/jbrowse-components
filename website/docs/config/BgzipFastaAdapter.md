@@ -24,21 +24,19 @@ The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
+_See the **Config slots** section below for all available configuration fields._
 
-## Overview
+## Related links
 
-### BgzipFastaAdapter - Pre-processor / simplified config
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 
-preprocessor to allow minimal config, assumes yourfile.fa.fai and
-yourfile.fa.gzi:
+## Config slots
 
-```json
-{
-  "type": "BgzipFastaAdapter",
-  "uri": "yourfile.fa"
-}
-```
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                       | Type           | Description            |
 | ------------------------------------------ | -------------- | ---------------------- |
@@ -52,31 +50,24 @@ yourfile.fa.gzi:
 
 #### slot: fastaLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' }`
 
 #### slot: faiLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/seq.fa.gz.fai', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/seq.fa.gz.fai', locationType: 'UriLocation' }`
 
 #### slot: metadataLocation
 
 Optional metadata file
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }`
 
 #### slot: gziLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/seq.fa.gz.gzi', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/seq.fa.gz.gzi', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
-- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
-- **Display:**
-  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)

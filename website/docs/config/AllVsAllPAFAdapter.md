@@ -25,9 +25,7 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 Loads a single "all-vs-all" PAF (e.g. `minimap2 all.fa all.fa`, or the PGGB
 mapping step) where every sequence name is PanSN-prefixed with its assembly
@@ -42,23 +40,23 @@ are labelled by their PanSN prefix). `assemblyNames` therefore only needs to
 list the assemblies you actually load into JBrowse and want the track to appear
 on.
 
-### AllVsAllPAFAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
-```json
-{
-  "type": "AllVsAllPAFAdapter",
-  "uri": "file.paf.gz",
-  "assemblyNames": ["grape", "peach"]
-}
-```
+## Config slots
 
-| Slot                                             | Type           | Description                                                                                                                                                                                                                                                                                                                                                            |
-| ------------------------------------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [assemblyNames](#slot-assemblynames)             | `stringArray`  | The assemblies this track appears on and can back synteny bands for — list the assemblies you load into JBrowse. Each entry must resolve to a PanSN sample prefix present in the file. In a plain LGV the track still draws its assembly against every other sample in the file, so mates need not be listed here (unlisted mates are labelled by their PanSN prefix). |
-| [pafLocation](#slot-paflocation)                 | `fileLocation` | can be optionally gzipped                                                                                                                                                                                                                                                                                                                                              |
-| [assemblyNameToPanSN](#slot-assemblynametopansn) | `frozen`       | Maps a JBrowse assembly name to its PanSN sample prefix in the PAF, for when they differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need `{ grape: 'Vitis_vinifera' }`). Defaults to identity: the assembly name is assumed to be the PanSN sample name.                                                                                           |
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                             | Type           | Description                                                                                                                                                                                  |
+| ------------------------------------------------ | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)             | `stringArray`  | The assemblies this track appears on and can back synteny bands for — list the assemblies you load into JBrowse.                                                                             |
+| [pafLocation](#slot-paflocation)                 | `fileLocation` | can be optionally gzipped                                                                                                                                                                    |
+| [assemblyNameToPanSN](#slot-assemblynametopansn) | `frozen`       | Maps a JBrowse assembly name to its PanSN sample prefix in the PAF, for when they differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need `{ grape: 'Vitis_vinifera' }`). |
 
 <details>
 <summary>AllVsAllPAFAdapter - Slots</summary>
@@ -77,8 +75,8 @@ against every other sample in the file, so mates need not be listed here
 
 can be optionally gzipped
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/file.paf', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/file.paf', locationType: 'UriLocation' }`
 
 #### slot: assemblyNameToPanSN
 
@@ -87,13 +85,6 @@ they differ (e.g. assembly `grape` stored as `Vitis_vinifera#1#chr1` would need
 `{ grape: 'Vitis_vinifera' }`). Defaults to identity: the assembly name is
 assumed to be the PanSN sample name.
 
-**Type:** `frozen` · **Default:** `{}`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 </details>
-
-## Related links
-
-- **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
-- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

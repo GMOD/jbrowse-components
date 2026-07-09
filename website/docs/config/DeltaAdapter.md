@@ -26,32 +26,29 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load MUMmer `.delta` alignment files (query and target assembly
 required)
 
-### DeltaAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [DotplotDisplay](../dotplotdisplay)
+- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
+- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
 
-```json
-{
-  "type": "DeltaAdapter",
-  "uri": "yourfile.delta.gz",
-  "queryAssembly": "hg19",
-  "targetAssembly": "hg38"
-}
-```
+## Config slots
 
-| Slot                                   | Type           | Description                                                                                                                               |
-| -------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second |
-| [targetAssembly](#slot-targetassembly) | `string`       | alternative to assembly names                                                                                                             |
-| [queryAssembly](#slot-queryassembly)   | `string`       | alternative to assembly names                                                                                                             |
-| [deltaLocation](#slot-deltalocation)   | `fileLocation` |                                                                                                                                           |
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                   | Type           | Description                                   |
+| -------------------------------------- | -------------- | --------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)   | `stringArray`  | Array of assembly names to use for this file. |
+| [targetAssembly](#slot-targetassembly) | `string`       | alternative to assembly names                 |
+| [queryAssembly](#slot-queryassembly)   | `string`       | alternative to assembly names                 |
+| [deltaLocation](#slot-deltalocation)   | `fileLocation` |                                               |
 
 <details>
 <summary>DeltaAdapter - Slots</summary>
@@ -67,24 +64,17 @@ first value in the array, target assembly name is the second
 
 alternative to assembly names
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: queryAssembly
 
 alternative to assembly names
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: deltaLocation
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/file.delta', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/file.delta', locationType: 'UriLocation' }`
 
 </details>
-
-## Related links
-
-- **Track:** [SyntenyTrack](../syntenytrack)
-- **Display:** [DotplotDisplay](../dotplotdisplay)
-- **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
-- **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

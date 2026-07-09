@@ -21,6 +21,11 @@ preprocessor to allow minimal config:
 }
 ```
 
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                                       | Type           | Description |
 | ------------------------------------------ | -------------- | ----------- |
 | [cytobandLocation](#slot-cytobandlocation) | `fileLocation` |             |
@@ -30,6 +35,7 @@ preprocessor to allow minimal config:
 
 #### slot: cytobandLocation
 
-**Type:** `fileLocation` · **Default:** `{ uri: '/path/to/cytoband.txt.gz' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/cytoband.txt.gz' }`
 
 </details>

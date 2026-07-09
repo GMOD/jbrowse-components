@@ -9,7 +9,10 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/SequenceSearchAdapter/configSchema.ts).
 
-## Overview
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                     | Type      | Description                          |
 | ---------------------------------------- | --------- | ------------------------------------ |
@@ -26,22 +29,26 @@ plugin.
 
 Search string or regex to search for
 
-**Type:** `string` · **Default:** `''`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: sequenceAdapter
 
-**Type:** `frozen` · **Default:** `null`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`null`
 
 #### slot: searchForward
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: searchReverse
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: caseInsensitive
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 </details>

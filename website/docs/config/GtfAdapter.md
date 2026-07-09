@@ -25,23 +25,23 @@ The `uri` shorthand works for plain or gzipped GTF:
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 used to load plain-text GTF files (optionally gzipped). Loads the whole file
 into memory, so prefer the GtfTabixAdapter for large files.
 
-### GtfAdapter - Pre-processor / simplified config
+## Related links
 
-preprocessor to allow minimal config:
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 
-```json
-{
-  "type": "GtfAdapter",
-  "uri": "yourfile.gtf"
-}
-```
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                   | Type           | Description                                                                    |
 | -------------------------------------- | -------------- | ------------------------------------------------------------------------------ |
@@ -55,21 +55,14 @@ preprocessor to allow minimal config:
 
 path to gtf file, also allows for gzipped gtf
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/my.gtf', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.gtf', locationType: 'UriLocation' }`
 
 #### slot: aggregateField
 
 field used to aggregate multiple transcripts into a single parent gene feature
 
-**Type:** `string` · **Default:** `'gene_name'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'gene_name'`
 
 </details>
-
-## Related links
-
-- **Track:** [FeatureTrack](../featuretrack)
-- **Display:** [LinearArcDisplay](../lineararcdisplay)
-- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)

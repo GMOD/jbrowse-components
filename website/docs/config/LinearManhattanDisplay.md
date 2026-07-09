@@ -55,18 +55,26 @@ shorthand is equivalent to
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 configuration for the Manhattan plot display used by GWAS tracks
 
-| Slot                                       | Type                      | Description                                                                                                                                 |
-| ------------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| [color](#slot-color)                       | `color`                   | CSS color or jexl callback for Manhattan points                                                                                             |
-| [colorBy](#slot-colorby)                   | `stringEnum` (normal, ld) | LocusZoom-style coloring. 'normal' uses `color`; 'ld' colors each point by its r² to the index SNP, read from `ldAdapter`.                  |
-| [scatterPointSize](#slot-scatterpointsize) | `number`                  | Manhattan point diameter in px (adjustable from the track menu). Larger default than wiggle's since Manhattan points are the primary glyph. |
-| [ldAdapter](#slot-ldadapter)               | `frozen`                  | PLINK .ld adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying pairwise r² used when colorBy is 'ld'.                                   |
+## Related links
+
+- **State model:** [runtime API](../../models/linearmanhattandisplay)
+- **Base config:** [LinearWiggleDisplay](../linearwiggledisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                       | Type                      | Description                                                                                               |
+| ------------------------------------------ | ------------------------- | --------------------------------------------------------------------------------------------------------- |
+| [color](#slot-color)                       | `color`                   | CSS color or jexl callback for Manhattan points                                                           |
+| [colorBy](#slot-colorby)                   | `stringEnum` (normal, ld) | LocusZoom-style coloring.                                                                                 |
+| [scatterPointSize](#slot-scatterpointsize) | `number`                  | Manhattan point diameter in px (adjustable from the track menu).                                          |
+| [ldAdapter](#slot-ldadapter)               | `frozen`                  | PLINK .ld adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying pairwise r² used when colorBy is 'ld'. |
 
 <details>
 <summary>LinearManhattanDisplay - Slots</summary>
@@ -75,28 +83,31 @@ configuration for the Manhattan plot display used by GWAS tracks
 
 CSS color or jexl callback for Manhattan points
 
-**Type:** `color` · **Default:** `'#0068d1'`
+**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
+`'#0068d1'`
 
 #### slot: colorBy
 
 LocusZoom-style coloring. 'normal' uses `color`; 'ld' colors each point by its
 r² to the index SNP, read from `ldAdapter`.
 
-**Type:** `stringEnum` (one of `normal`, `ld`) · **Default:** `'normal'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`normal`, `ld`) · **Default:** `'normal'`
 
 #### slot: scatterPointSize
 
 Manhattan point diameter in px (adjustable from the track menu). Larger default
 than wiggle's since Manhattan points are the primary glyph.
 
-**Type:** `number` · **Default:** `4`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `4`
 
 #### slot: ldAdapter
 
 PLINK .ld adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying pairwise r²
 used when colorBy is 'ld'.
 
-**Type:** `frozen` · **Default:** `null`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`null`
 
 </details>
 
@@ -115,7 +126,8 @@ shown once, at its most specific definition.
 
 Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
 
-**Type:** `stringEnum` · **Default:** `'xyplot'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
+**Default:** `'xyplot'`
 
 ```js
 {
@@ -139,32 +151,29 @@ Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
 
 Default height of the track
 
-**Type:** `number` · **Default:** `100`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
 
 #### slot: useBicolor
 
 When true (the default), positive scores use posColor and negative scores use
 negColor. When false, all bars use the single color slot.
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: minimalTicks
 
 Draw only the min/max Y-axis ticks
 
-**Type:** `boolean` · **Default:** `false` · _advanced_
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false` · _advanced_
 
 #### slot: summaryScoreMode
 
 choose whether to use max/min/average or whiskers which combines all three into
 the same rendering
 
-**Type:** `stringEnum` (one of `max`, `min`, `avg`, `whiskers`) · **Default:**
-`'whiskers'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`max`, `min`, `avg`, `whiskers`) · **Default:** `'whiskers'`
 
 </details>
-
-## Related links
-
-- **State model:** [runtime API](../../models/linearmanhattandisplay)
-- **Base config:** [LinearWiggleDisplay](../linearwiggledisplay)

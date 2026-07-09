@@ -9,7 +9,10 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/CrisprGuideAdapter/configSchema.ts).
 
-## Overview
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                     | Type                          | Description                                                                                          |
 | ---------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -26,39 +29,44 @@ plugin.
 
 #### slot: sequenceAdapter
 
-**Type:** `frozen` · **Default:** `null`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`null`
 
 #### slot: pam
 
 PAM motif in IUPAC codes, e.g. NGG for SpCas9, TTTV for Cas12a
 
-**Type:** `string` · **Default:** `'NGG'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'NGG'`
 
 #### slot: guideLength
 
 protospacer length in bp
 
-**Type:** `number` · **Default:** `20`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `20`
 
 #### slot: pamLocation
 
 whether the PAM is 3' (Cas9) or 5' (Cas12a) of the protospacer
 
-**Type:** `stringEnum` (one of `3prime`, `5prime`) · **Default:** `'3prime'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`3prime`, `5prime`) · **Default:** `'3prime'`
 
 #### slot: cutOffset
 
 distance in bp from the PAM-proximal end of the protospacer to the predicted cut
 site (3 for SpCas9)
 
-**Type:** `number` · **Default:** `3`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `3`
 
 #### slot: searchForward
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: searchReverse
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 </details>

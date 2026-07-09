@@ -31,12 +31,26 @@ plugin.
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
-## Overview
+_See the **Config slots** section below for all available configuration fields._
 
 reads a set of per-chromosome VCF files, keyed by refName, instead of a single
 combined VCF (useful for large call sets split by chromosome)
+
+## Related links
+
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
 | Slot                                           | Type                    | Description                               |
 | ---------------------------------------------- | ----------------------- | ----------------------------------------- |
@@ -52,21 +66,22 @@ combined VCF (useful for large call sets split by chromosome)
 
 object like `{chr1:{uri:'url to file'}}`
 
-**Type:** `frozen` · **Default:** `{}`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 #### slot: indexLocationMap
 
 object like `{chr1:{uri:'url to index'}}`
 
-**Type:** `frozen` · **Default:** `{}`
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 #### slot: indexType
 
-**Type:** `stringEnum` (one of `TBI`, `CSI`) · **Default:** `'TBI'`
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: samplesTsvLocation
 
-**Type:** `fileLocation`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
 
 ```js
 {
@@ -81,14 +96,3 @@ object like `{chr1:{uri:'url to index'}}`
 ```
 
 </details>
-
-## Related links
-
-- **Track:** [VariantTrack](../varianttrack)
-- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
-- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-- **Display:** [LinearVariantDisplay](../linearvariantdisplay)

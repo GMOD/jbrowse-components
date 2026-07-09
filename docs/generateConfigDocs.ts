@@ -352,6 +352,20 @@ function stateModelLine(name: string, id: string, links: DisplayLinkContext) {
     : ''
 }
 
+// Drop a leading paragraph that only restates the config's own name
+// ("configuration schema for the LinearAlignmentsDisplay") — pure noise above the
+// real overview. Anchored on the exact name, so it can never eat an authored
+// description that happens to start similarly (e.g. "used to load bgzip-
+// compressed, tabix-indexed VCF files" survives — it names no config).
+function stripNameTautology(docs: string, name: string) {
+  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const re = new RegExp(
+    `^\\s*(?:configuration(?: schema)? (?:for|of)(?: the)? ${esc}|${esc} configuration(?: schema)?)\\.?[^\\S\\n]*(?:\\n|$)`,
+    'i',
+  )
+  return docs.replace(re, '').trim()
+}
+
 function renderConfig(
   {
     header,
@@ -365,8 +379,12 @@ function renderConfig(
   links: DisplayLinkContext,
 ): string {
   const directBase = bases[0]
-  const sections = section(
+  // Overview holds only conceptual prose. The pre-processor's simplified-config
+  // snippet duplicates a hand-authored #example (same minimal `{ type, uri }`
+  // shape), so it renders only as a fallback when no #example exists.
+  const overviewParts = section(
     preProcess &&
+      !header.examples.length &&
       section(
         `### ${header.name} - Pre-processor / simplified config`,
         preProcess.docs,
@@ -377,14 +395,32 @@ function renderConfig(
         `Every ${header.name} has a unique \`${identifierField(identifier)}\`, a required top-level field that identifies it (not one of the config slots below).`,
         identifier.docs,
       ),
-    slots.length && slotsTable(slots),
-    slots.length &&
-      collapsibleClosed(
-        `${header.name} - Slots`,
-        ...slots.map(s => slotBlock(s)),
-      ),
-    inheritedSlotsSection(slots, bases),
   )
+
+  // Slots are the primary configuration surface, so they get their own H2 —
+  // visible in the page's table of contents (which indexes only h2/h3) — instead
+  // of being buried under Overview. The scan table lists the common slots; the
+  // `_advanced_` ones (rarely touched — maxHeight, fetchSizeLimit, ...) fold into
+  // a collapsed table so a 45-row display page doesn't lead with them. The
+  // collapsed block below holds the full per-slot detail every row links into.
+  const advancedSlots = slots.filter(s => slotMetaFor(s).meta.advanced)
+  const commonSlots = slots.filter(s => !slotMetaFor(s).meta.advanced)
+  const slotsSection = slots.length
+    ? section(
+        '## Config slots',
+        `Slot types (\`fileLocation\`, \`frozen\`, ...) are explained in the [config slot types reference](${SLOT_TYPES_GUIDE}).`,
+        commonSlots.length && slotsTable(commonSlots),
+        advancedSlots.length &&
+          collapsibleClosed(
+            `Advanced slots (${advancedSlots.length})`,
+            slotsTable(advancedSlots),
+          ),
+        collapsibleClosed(
+          `${header.name} - Slots`,
+          ...slots.map(s => slotBlock(s)),
+        ),
+      )
+    : ''
 
   // Every cross-reference to another documented page (adapter/track/display/
   // state-model/base-config links) is gathered here as one flat bullet list,
@@ -414,7 +450,7 @@ function renderConfig(
 
   const hasSlots = slots.length > 0 || bases.some(b => b.slots.length > 0)
   const slotsNote = hasSlots
-    ? 'See the **Slots** section below for all available configuration fields.'
+    ? 'See the **Config slots** section below for all available configuration fields.'
     : ''
   const category = configCategory(header.name, header.category)
   // On adapter pages, show the full track config a user pastes, not just the
@@ -427,18 +463,30 @@ function renderConfig(
         }))
       : header.examples
   const exSection = exampleSection(examples, '## Example usage', slotsNote)
-  const docsSection = overviewSection(header.docs, sections)
+  const docsSection = overviewSection(
+    stripNameTautology(header.docs, header.name),
+    overviewParts,
+  )
   const relatedSection = relatedLines.length
     ? section('## Related links', relatedLines.join('\n'))
     : ''
 
+  // Lead with the pasteable example and a short overview, then point the reader
+  // at where this config connects (Related links) before the slot reference —
+  // navigation before the long tail of fields, not buried beneath it.
   return docPage({
     id: header.id,
     title: header.name,
     sidebarLabel: `${category} -> ${header.name}`,
     notes: `Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts.`,
     sourcePath: filename,
-    body: section(exSection, docsSection, relatedSection),
+    body: section(
+      exSection,
+      docsSection,
+      relatedSection,
+      slotsSection,
+      inheritedSlotsSection(slots, bases),
+    ),
   })
 }
 
@@ -569,6 +617,29 @@ function renderInlineDefault(node: ts.Expression): string | undefined {
   return undefined
 }
 
+// Slot-type names (`fileLocation`, `frozen`, ...) are opaque jargon on their
+// own, so link each documented one to its explanation in the slot-types guide.
+// Only types with a matching `### <type>` heading there are linked — CI checks
+// these anchors resolve — anything else renders as plain code.
+const SLOT_TYPES_GUIDE = '/docs/config_guides/slot_types'
+const DOCUMENTED_SLOT_TYPES = new Set([
+  'string',
+  'number',
+  'integer',
+  'boolean',
+  'maybeBoolean',
+  'fileLocation',
+  'stringEnum',
+  'color',
+  'frozen',
+  'text',
+])
+function typeLink(type: string) {
+  return DOCUMENTED_SLOT_TYPES.has(type)
+    ? `[\`${type}\`](${SLOT_TYPES_GUIDE}#${type.toLowerCase()})`
+    : `\`${type}\``
+}
+
 function slotMetaLine(meta: SlotMeta): string {
   const enums = meta.enumValues
     ? ` (one of ${meta.enumValues.map(v => `\`${v}\``).join(', ')})`
@@ -577,7 +648,7 @@ function slotMetaLine(meta: SlotMeta): string {
     .filter(Boolean)
     .join(', ')
   return [
-    meta.type && `**Type:** \`${meta.type}\`${enums}`,
+    meta.type && `**Type:** ${typeLink(meta.type)}${enums}`,
     meta.defaultValue !== undefined && `**Default:** \`${meta.defaultValue}\``,
     flags && `_${flags}_`,
   ]
@@ -611,13 +682,24 @@ function slotAnchor(name: string) {
   return `slot-${name.toLowerCase().replace(/\./g, '')}`
 }
 
+// The slots table is for scanning, so its Description cell is kept to the first
+// sentence — the full multi-sentence text (e.g. heightMode's paragraph) lives in
+// the slot block each row links into, and a wall of prose in a table cell forces
+// horizontal scroll and defeats the scan. `e.g.`/`i.e.` are not sentence ends.
+function firstSentence(text: string) {
+  const trimmed = text.trim()
+  const match = /^.*?[.!?](?<!\b[ei]\.[a-z]\.)(?=\s|$)/s.exec(trimmed)
+  return match ? match[0] : trimmed
+}
+
 // One row of the slots table: name (linked to its full entry below), type,
 // and a one-line description.
 function slotRow(item: Item) {
   const { meta } = slotMetaFor(item)
   const enums = meta.enumValues ? ` (${meta.enumValues.join(', ')})` : ''
   const type = meta.type ? `\`${meta.type}\`${enums}` : ''
-  return `| [${item.name}](#${slotAnchor(item.name)}) | ${tableCell(type)} | ${tableCell(item.docs || meta.description)} |`
+  const desc = item.docs || meta.description
+  return `| [${item.name}](#${slotAnchor(item.name)}) | ${tableCell(type)} | ${tableCell(desc && firstSentence(desc))} |`
 }
 
 // A real table of this config's own slots — name, type, and description at a
@@ -666,6 +748,23 @@ function warnAdaptersMissingTrackType(configs: ConfigWithHeader[]) {
   }
 }
 
+// A slot with neither a JSDoc comment nor an in-object `description` renders a
+// blank Description cell — a name and a type with no explanation. Warn with the
+// full `Config.slot` list so the gaps are an actionable to-do, mirroring the
+// #example coverage warning.
+function warnSlotsMissingDescription(configs: ConfigWithHeader[]) {
+  const missing = configs.flatMap(c =>
+    c.slots
+      .filter(s => !(s.docs || slotMetaFor(s).meta.description))
+      .map(s => `${c.header.name}.${s.name}`),
+  )
+  if (missing.length) {
+    console.warn(
+      `${missing.length} config slots have no description: ${missing.join(', ')}`,
+    )
+  }
+}
+
 // Group every documented adapter by the track type it declares via #trackType,
 // so a track/display page can list the adapters that supply it.
 function adaptersByTrackType(configs: ConfigWithHeader[]) {
@@ -700,6 +799,7 @@ export async function writeConfigDocs(
   }
   warnUnresolvedBases(withHeader, index)
   warnAdaptersMissingTrackType(withHeader)
+  warnSlotsMissingDescription(withHeader)
   for (const cfg of withHeader) {
     await writeFormatted(
       `${dir}/${cfg.header.name}.md`,

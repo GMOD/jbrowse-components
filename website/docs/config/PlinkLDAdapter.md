@@ -30,6 +30,11 @@ Preprocessor to allow minimal config:
 }
 ```
 
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                           | Type           | Description                                   |
 | ------------------------------ | -------------- | --------------------------------------------- |
 | [ldLocation](#slot-ldlocation) | `fileLocation` | Location of the PLINK LD file (.ld or .ld.gz) |
@@ -41,7 +46,7 @@ Preprocessor to allow minimal config:
 
 Location of the PLINK LD file (.ld or .ld.gz)
 
-**Type:** `fileLocation` · **Default:**
-`{ uri: '/path/to/plink.ld', locationType: 'UriLocation' }`
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/plink.ld', locationType: 'UriLocation' }`
 
 </details>

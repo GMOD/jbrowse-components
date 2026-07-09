@@ -24,6 +24,11 @@ preprocessor to allow minimal config:
 }
 ```
 
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
 | Slot                                     | Type           | Description                                                           |
 | ---------------------------------------- | -------------- | --------------------------------------------------------------------- |
 | [location](#slot-location)               | `fileLocation` |                                                                       |
@@ -34,13 +39,15 @@ preprocessor to allow minimal config:
 
 #### slot: location
 
-**Type:** `fileLocation` · **Default:**
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:**
 `{ uri: '/path/to/my/sequence_report.tsv', locationType: 'UriLocation' }`
 
 #### slot: useNameOverride
 
 forces usage of the UCSC names over the NCBI style names from a FASTA
 
-**Type:** `boolean` · **Default:** `true`
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 </details>
