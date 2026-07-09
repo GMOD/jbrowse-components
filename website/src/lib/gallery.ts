@@ -88,6 +88,12 @@ export const gallerySections: readonly GallerySection[] = [
           'Grape vs peach genome alignment as a dotplot, from a minimap2 PAF.',
       },
       {
+        label: 'Whole-genome triplication (peach Pp01 vs grape)',
+        spec: 'gallery/grape_triplication',
+        description:
+          'One peach chromosome (Pp01, x-axis) aligns as three diagonal blocks onto three grape chromosomes (chr5, chr1, chr18) — the three paralogous copies grape retains from the ancestral eudicot gamma triplication. Why whole-genome grape/peach synteny looks like crossing ribbons: the crossings are the polyploidy.',
+      },
+      {
         label: 'Linear synteny (grape vs peach)',
         spec: 'linear_synteny_gallery',
         description:
