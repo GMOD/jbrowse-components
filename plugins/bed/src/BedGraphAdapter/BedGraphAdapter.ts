@@ -4,7 +4,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 
 import { intervalTreeFeatures } from '../adapterUtil.ts'
 import { makeBedGraphFeature } from '../bedGraphUtil.ts'
-import { bucketBedLines, parseNamesFromHeader } from '../util.ts'
+import { bucketBedLines, resolveColumnNames } from '../util.ts'
 
 import type { BedGraphAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -22,12 +22,10 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter<BedGraphAdap
   > = {}
 
   async getNames() {
-    const columnNames: string[] = this.getConf('columnNames')
-    if (columnNames.length) {
-      return columnNames
-    }
-    const { header } = await this.loadData()
-    return parseNamesFromHeader(header)
+    return resolveColumnNames(
+      this.getConf('columnNames'),
+      async () => (await this.loadData()).header,
+    )
   }
   private async loadFeatureIntervalTreeHelper(refName: string) {
     const { features } = await this.loadData()

@@ -8,7 +8,12 @@ import {
 import { openLocation } from '@jbrowse/core/util/io'
 
 import { intervalTreeFeatures } from '../adapterUtil.ts'
-import { bucketBedLines, featureData, resolveColumnNames } from '../util.ts'
+import {
+  bedFeatureLocus,
+  bucketBedLines,
+  featureData,
+  resolveColumnNames,
+} from '../util.ts'
 
 import type { BedAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -83,14 +88,11 @@ export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig>
     const intervalTree = new IntervalTree<Feature>()
 
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]!
-      const splitLine = line.split('\t')
+      const splitLine = lines[i]!.split('\t')
       const feat = new SimpleFeature(
         featureData({
           splitLine,
-          refName: splitLine[colRef]!,
-          start: +splitLine[colStart]!,
-          end: +splitLine[colEnd]! + (colStart === colEnd ? 1 : 0),
+          ...bedFeatureLocus({ splitLine, colRef, colStart, colEnd }),
           scoreColumn,
           parser,
           uniqueId: `${this.id}-${refName}-${i}`,

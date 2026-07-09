@@ -157,6 +157,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
 
     await updateStatus('Processing features', statusCallback, async () => {
       const parentAggregation: Record<string, FeatureData[]> = {}
+      const singletons: FeatureData[] = []
       let minAggStart = Infinity
       let maxAggEnd = -Infinity
 
@@ -188,26 +189,14 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
             maxAggEnd = f.end
           }
         } else {
-          if (
-            doesIntersect2(
-              f.start,
-              f.end,
-              originalQuery.start,
-              originalQuery.end,
-            )
-          ) {
-            observer.next(
-              new SimpleFeature({
-                id: `${this.id}-${feat.uniqueId}`,
-                data: f,
-              }),
-            )
-          }
+          singletons.push(f)
         }
       }
 
       if (allowRedispatch && maxAggEnd > -Infinity) {
         if (maxAggEnd > query.end || minAggStart < query.start) {
+          // redispatch re-fetches a superset region, so emitting singletons
+          // here too would double-emit them; defer emission to the recursion
           await this.getFeaturesHelper({
             query: {
               ...query,
@@ -222,6 +211,19 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
             originalQuery: query,
           })
           return
+        }
+      }
+
+      for (const f of singletons) {
+        if (
+          doesIntersect2(f.start, f.end, originalQuery.start, originalQuery.end)
+        ) {
+          observer.next(
+            new SimpleFeature({
+              id: `${this.id}-${f.uniqueId}`,
+              data: f,
+            }),
+          )
         }
       }
 

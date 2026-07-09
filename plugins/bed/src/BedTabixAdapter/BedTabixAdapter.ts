@@ -16,7 +16,7 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { featureData, parseNamesFromHeader } from '../util.ts'
+import { bedFeatureLocus, featureData, parseNamesFromHeader } from '../util.ts'
 
 import type { BedTabixAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -155,17 +155,18 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
           lineCallback: (line, fileOffset) => {
             checkStopToken2(stopTokenCheck)
             const splitLine = line.split('\t')
-            const start = +splitLine[colStart]! - (oneBased ? 1 : 0)
-            const end = hasEndColumn
-              ? +splitLine[colEnd]! + (colStart === colEnd && !oneBased ? 1 : 0)
-              : start + 1
             observer.next(
               new SimpleFeature(
                 featureData({
                   splitLine,
-                  refName: splitLine[colRef]!,
-                  start,
-                  end,
+                  ...bedFeatureLocus({
+                    splitLine,
+                    colRef,
+                    colStart,
+                    colEnd,
+                    oneBased,
+                    hasEndColumn,
+                  }),
                   scoreColumn,
                   parser: this.parser,
                   uniqueId: `${this.id}-${fileOffset}`,

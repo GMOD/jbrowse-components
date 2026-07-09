@@ -170,6 +170,36 @@ export async function resolveColumnNames(
   return parseNamesFromHeader(await getHeader())
 }
 
+// Decode a BED line's locus (0-based half-open) from its column layout, so the
+// off-by-one rules live in one place instead of being re-derived at each call
+// site. `oneBased` shifts a 1-based-closed start back a base. `hasEndColumn`
+// false (tabix `-b` with no `-e`, e.g. point/GWAS data) means width-1 features.
+// A start/end column collision in a 0-based file is also a point feature (+1).
+export function bedFeatureLocus({
+  splitLine,
+  colRef,
+  colStart,
+  colEnd,
+  oneBased = false,
+  hasEndColumn = true,
+}: {
+  splitLine: string[]
+  colRef: number
+  colStart: number
+  colEnd: number
+  oneBased?: boolean
+  hasEndColumn?: boolean
+}) {
+  const start = +splitLine[colStart]! - (oneBased ? 1 : 0)
+  return {
+    refName: splitLine[colRef]!,
+    start,
+    end: hasEndColumn
+      ? +splitLine[colEnd]! + (colStart === colEnd && !oneBased ? 1 : 0)
+      : start + 1,
+  }
+}
+
 export function parseStrand(strand: string | number | undefined): number {
   if (strand === '-' || strand === -1) {
     return -1

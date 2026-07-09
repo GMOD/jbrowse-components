@@ -3,6 +3,7 @@ import BED from '@gmod/bed'
 import { isBedMethylFeature } from './generateBedMethylFeature.ts'
 import {
   arrayify,
+  bedFeatureLocus,
   bucketBedLines,
   featureData,
   parseNamesFromHeader,
@@ -296,6 +297,46 @@ describe('arrayify', () => {
 
   it('parses a list without a trailing comma', () => {
     expect(arrayify('0,400,800')).toEqual([0, 400, 800])
+  })
+})
+
+describe('bedFeatureLocus', () => {
+  const splitLine = ['chr1', '1000', '2000', 'name']
+
+  it('reads plain 0-based half-open columns', () => {
+    expect(
+      bedFeatureLocus({ splitLine, colRef: 0, colStart: 1, colEnd: 2 }),
+    ).toEqual({ refName: 'chr1', start: 1000, end: 2000 })
+  })
+
+  it('shifts start back a base for 1-based-closed coordinates', () => {
+    expect(
+      bedFeatureLocus({
+        splitLine,
+        colRef: 0,
+        colStart: 1,
+        colEnd: 2,
+        oneBased: true,
+      }),
+    ).toEqual({ refName: 'chr1', start: 999, end: 2000 })
+  })
+
+  it('emits a width-1 feature when there is no end column', () => {
+    expect(
+      bedFeatureLocus({
+        splitLine,
+        colRef: 0,
+        colStart: 1,
+        colEnd: 1,
+        hasEndColumn: false,
+      }),
+    ).toEqual({ refName: 'chr1', start: 1000, end: 1001 })
+  })
+
+  it('widens a 0-based point feature (start col === end col) to width 1', () => {
+    expect(
+      bedFeatureLocus({ splitLine, colRef: 0, colStart: 1, colEnd: 1 }),
+    ).toEqual({ refName: 'chr1', start: 1000, end: 1001 })
   })
 })
 
