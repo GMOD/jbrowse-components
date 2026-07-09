@@ -158,7 +158,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
         <MultiWiggleSvgScales
           model={model}
           canvasWidth={legendWidth}
-          scalebarLeft={scalebarLeft || 50}
+          scalebarLeft={Math.max(scalebarLeft, 50)}
           labelOffset={labelOffset}
         />
 

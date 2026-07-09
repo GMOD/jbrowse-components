@@ -110,12 +110,13 @@ export async function executeRenderMultiWiggleData({
     adapterConfig,
   })
 
+  const isMulti = isMultiSource(dataAdapter)
   const perSource = await updateStatus(
     'Loading wiggle data',
     statusCallback,
     () => {
       const opts = { bpPerPx, resolution, sources: sourcesArg, stopToken }
-      return isMultiSource(dataAdapter)
+      return isMulti
         ? dataAdapter.getMultiSourceFeatureArrays(region, opts)
         : getFallbackSourceArrays(dataAdapter, region, opts)
     },
@@ -123,12 +124,15 @@ export async function executeRenderMultiWiggleData({
   checkStopToken2(stopTokenCheck)
 
   const rawBySource = new Map(perSource.map(p => [p.source, p.raw]))
-  const sourcesList: SourceInfo[] = sourcesArg?.length
+  // Prefer the caller-provided source list (the normal display path). Without
+  // one, a multi-source adapter's getSources is cheap and carries per-source
+  // metadata (color/group/label), but a plain fallback adapter's getSources
+  // would re-scan every feature — so derive those names from perSource, which
+  // was already computed above.
+  const orderedSources: SourceInfo[] = sourcesArg?.length
     ? sourcesArg
-    : await dataAdapter.getSources([region])
-  const orderedSources: SourceInfo[] =
-    sourcesList.length > 0
-      ? sourcesList
+    : isMulti
+      ? await dataAdapter.getSources([region])
       : perSource.map(({ source }) => ({ name: source }))
 
   const result: WiggleDataResult = {
