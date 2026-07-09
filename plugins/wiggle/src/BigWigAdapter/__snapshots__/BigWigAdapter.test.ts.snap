@@ -26,7 +26,7 @@ exports[`adapter can fetch features from volvox.bw get region stats 1`] = `
   "scoreMeanMax": 34.79999923706055,
   "scoreMeanMin": 6.425000190734863,
   "scoreMin": 5,
-  "scoreStdDev": 4.08777711091585,
+  "scoreStdDev": 4.087777110915843,
   "scoreSum": 14495.299990653992,
   "scoreSumSquares": 292327.74217388127,
 }

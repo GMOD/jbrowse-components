@@ -7,6 +7,7 @@ import {
 import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { calcStdFromSums } from '@jbrowse/core/util/stats'
 
 import type { BigWigAdapterConfig } from './configSchema.ts'
 import type { RawFeatureArrays } from '../util.ts'
@@ -66,8 +67,15 @@ function computeStatsFromView(
   }
 
   const scoreMean = scoreSum / featureCount
-  const scoreStdDev = Math.sqrt(
-    scoreSumSquares / featureCount - scoreMean * scoreMean,
+  // calcStdFromSums guards variance<0 (floating-point rounding can push it
+  // slightly negative when every score in the window is equal — a flat region —
+  // which a bare Math.sqrt would turn into NaN). population=true keeps the
+  // divide-by-n behavior this used to compute inline.
+  const scoreStdDev = calcStdFromSums(
+    scoreSum,
+    scoreSumSquares,
+    featureCount,
+    true,
   )
 
   return {
