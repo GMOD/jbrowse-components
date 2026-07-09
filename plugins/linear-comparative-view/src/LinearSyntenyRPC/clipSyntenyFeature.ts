@@ -43,11 +43,14 @@ export interface ClippedSyntenyFeature {
 // block to just its visible slice (accurate coords + a short CIGAR) restores it.
 //
 // Walk direction MUST match buildSyntenyGeometry, which walks the query (v1)
-// axis forward for BOTH strands (its rev1 is always +1 — k1 is always the low
-// query coord) and flips only the target (v2) axis. So the query walk here is
-// always start->end; only the target counts down for a - strand block, entering
-// at mateEnd. Within a match op the target maps to the query as
-// target(q) = bp2 + (q - bp1) * revTarget, using the op's walk-entry positions.
+// axis forward in GENOMIC order for BOTH strands and flips only the target (v2)
+// axis. So the query walk here is always start->end; only the target counts
+// down for a - strand block, entering at mateEnd. Within a match op the target
+// maps to the query as target(q) = bp2 + (q - bp1) * revTarget, using the op's
+// walk-entry positions. (buildSyntenyGeometry re-derives its rev1 from the cumBp
+// order of the endpoints, so a reversed display region walks the same file-order
+// CIGAR the other way in cumBp space — still forward in genomic query bp, so
+// this reassembly stays valid.)
 //
 // Walking the query backward for - strand (as an earlier version did) mirrors
 // every indel's query position within the window: the trimmed CIGAR is
@@ -56,7 +59,6 @@ export interface ClippedSyntenyFeature {
 export function clipSyntenyFeature(
   cigar: Uint32Array,
   start: number,
-  end: number,
   mateStart: number,
   mateEnd: number,
   strand: number,
@@ -133,10 +135,14 @@ export function clipSyntenyFeature(
   }
 }
 
-// Worker glue over clipSyntenyFeature: gate on size + a single non-reversed v1
-// region, convert the visible cumBp window to that region's local bp, parse the
-// CIGAR and clip. Returns undefined (leave the block untouched) unless it is a
-// CIGAR block more than `spanRatio`x the window on a clippable region.
+// Worker glue over clipSyntenyFeature: gate on size + resolve the v1 region the
+// visible window is over, convert the window to that region's local bp, parse
+// the CIGAR and clip. Returns undefined (leave the block untouched) unless it is
+// a CIGAR block more than `spanRatio`x the window on a clippable region. The clip
+// itself is region-orientation-agnostic (it walks genomic query bp forward), and
+// buildSyntenyGeometry re-derives its rev1 from the cumBp order of the clipped
+// endpoints — so a reversed v1 region only changes the cumBp->local-bp window
+// mapping below, not the clip or the downstream projection.
 export function clipLargeBlockToWindow({
   v1Index,
   refName,
@@ -167,9 +173,29 @@ export function clipLargeBlockToWindow({
   if (!cigar || end - start <= spanRatio * windowSpan) {
     return undefined
   }
-  const entry = v1Index.entries.get(refName)
-  const r0 = entry?.length === 1 ? entry[0] : undefined
-  if (!r0 || r0.region.reversed) {
+  // Re-anchor to the region this refName's visible window falls in. A refName
+  // can be displayed at several loci at once — e.g. a dispersed gene duplication
+  // shows the same contig in multiple regions — so pick the region whose cumBp
+  // span overlaps the window most (for the common single-region case, just that
+  // region; no overlap = the block is off-screen, leave it untouched). Assumes
+  // the same-refName regions are genomically DISJOINT (which the duplication
+  // case is): the downstream projection resolves the clipped coords with
+  // bpToCumBp, which picks the first region CONTAINING them — the same region we
+  // clipped to only when the genomic ranges don't overlap. Overlapping copies of
+  // one locus would need a region index threaded through the projection.
+  const entries = v1Index.entries.get(refName) ?? []
+  let r0: (typeof entries)[number] | undefined
+  let bestOverlap = 0
+  for (const e of entries) {
+    const regLo = e.bpBefore
+    const regHi = e.bpBefore + (e.region.end - e.region.start)
+    const overlap = Math.min(winCumHi, regHi) - Math.max(winCumLo, regLo)
+    if (overlap > bestOverlap) {
+      bestOverlap = overlap
+      r0 = e
+    }
+  }
+  if (!r0) {
     return undefined
   }
   // Snap the window to integer bp (widen outward). winCumLo/Hi are
@@ -182,12 +208,21 @@ export function clipLargeBlockToWindow({
   // misaligned vs the exact-bp LGVSyntenyDisplay. Flooring/ceiling keeps the
   // clipped block on the alignment's integer grid; the <1bp widening is well
   // inside the pan buffer.
-  const winStart = Math.floor(winCumLo - r0.bpBefore + r0.region.start)
-  const winEnd = Math.ceil(winCumHi - r0.bpBefore + r0.region.start)
+  //
+  // Invert bpToCumBp for this region's orientation. Forward: local =
+  // cumBp - bpBefore + start (monotonic up). Reversed: local =
+  // end - (cumBp - bpBefore) (monotonic down), so the low/high cumBp bounds map
+  // to the high/low local bp — winStart takes winCumHi and winEnd winCumLo.
+  const { region, bpBefore } = r0
+  const winStart = region.reversed
+    ? Math.floor(region.end - (winCumHi - bpBefore))
+    : Math.floor(winCumLo - bpBefore + region.start)
+  const winEnd = region.reversed
+    ? Math.ceil(region.end - (winCumLo - bpBefore))
+    : Math.ceil(winCumHi - bpBefore + region.start)
   return clipSyntenyFeature(
     parseCigar2Typed(cigar),
     start,
-    end,
     mateStart,
     mateEnd,
     strand,

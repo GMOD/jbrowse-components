@@ -1,6 +1,12 @@
 import { CIGAR_D, CIGAR_I, CIGAR_M } from '@jbrowse/cigar-utils'
+import { buildBpRegionIndex } from '@jbrowse/synteny-core'
 
-import { clipSyntenyFeature } from './clipSyntenyFeature.ts'
+import {
+  clipLargeBlockToWindow,
+  clipSyntenyFeature,
+} from './clipSyntenyFeature.ts'
+
+import type { Region } from '@jbrowse/core/util'
 
 const pack = (len: number, op: number) => (len << 4) | op
 const cig = (...ops: [number, number][]) =>
@@ -13,7 +19,6 @@ test('+ strand: trims flanking match ops and re-anchors mate coords', () => {
   const c = clipSyntenyFeature(
     cig([100, CIGAR_M], [50, CIGAR_D], [150, CIGAR_M]),
     0, // start
-    300, // end
     0, // mateStart
     250, // mateEnd
     1, // strand
@@ -42,7 +47,6 @@ test('- strand: keeps the indel at its true query position, target counts down',
   const c = clipSyntenyFeature(
     cig([100, CIGAR_M], [50, CIGAR_D], [150, CIGAR_M]),
     0,
-    300,
     0,
     250,
     -1,
@@ -64,7 +68,6 @@ test('I op (target-consuming) inside the window is kept whole', () => {
   const c = clipSyntenyFeature(
     cig([100, CIGAR_M], [40, CIGAR_I], [100, CIGAR_M]),
     0,
-    200,
     0,
     240,
     1,
@@ -82,6 +85,97 @@ test('I op (target-consuming) inside the window is kept whole', () => {
 
 test('block entirely outside the window returns undefined', () => {
   expect(
-    clipSyntenyFeature(cig([100, CIGAR_M]), 0, 100, 0, 100, 1, 500, 600),
+    clipSyntenyFeature(cig([100, CIGAR_M]), 0, 0, 100, 1, 500, 600),
   ).toBeUndefined()
+})
+
+// clipLargeBlockToWindow maps the pixel-derived cumBp window back to the v1
+// region's local bp before clipping. In a reversed display region bpToCumBp runs
+// backward (cumBp = end - coord within the region), so the window mapping must
+// mirror — an earlier version bailed out on reversed regions entirely, dropping
+// the whole (huge) block off-screen at high zoom.
+describe('clipLargeBlockToWindow window mapping', () => {
+  const v1 = (...regions: Omit<Region, 'assemblyName'>[]) =>
+    buildBpRegionIndex({
+      bpPerPx: 1,
+      minimumBlockWidth: 0,
+      displayedRegions: regions.map(r => ({ assemblyName: 'q', ...r })),
+    })
+
+  // A 300 kb block (M300000) far larger than a ~100 bp visible window: the clip
+  // re-anchors it to the window. Forward and reversed regions covering the same
+  // genomic locus must trim to the same genomic query slice.
+  const bigBlock = {
+    start: 0,
+    end: 300000,
+    mateStart: 0,
+    mateEnd: 300000,
+    strand: 1,
+    cigar: `300000M`,
+    windowSpan: 100,
+    spanRatio: 4,
+  }
+
+  test('forward region maps the low cumBp bound to the low local bp', () => {
+    // cumBp window [1000,1100] on a region starting at genomic 0 -> local
+    // [1000,1100].
+    const c = clipLargeBlockToWindow({
+      ...bigBlock,
+      v1Index: v1({ refName: 'chr1', start: 0, end: 300000 }),
+      refName: 'chr1',
+      winCumLo: 1000,
+      winCumHi: 1100,
+    })
+    expect(c?.start).toBe(1000)
+    expect(c?.end).toBe(1100)
+  })
+
+  test('reversed region mirrors the window onto the local bp', () => {
+    // Same cumBp window [1000,1100], but a reversed region [0,300000]: cumBp c
+    // maps to local end-c, so the low cumBp (1000) is the HIGH local bp
+    // (300000-1000=299000) and vice versa -> local [298900,299000].
+    const c = clipLargeBlockToWindow({
+      ...bigBlock,
+      v1Index: v1({ refName: 'chr1', start: 0, end: 300000, reversed: true }),
+      refName: 'chr1',
+      winCumLo: 1000,
+      winCumHi: 1100,
+    })
+    expect(c?.start).toBe(298900)
+    expect(c?.end).toBe(299000)
+  })
+
+  // Dispersed gene duplication: the same contig shown at two disjoint loci. The
+  // block projects into whichever region the viewport is over — here the second
+  // (chr1:200000-201000, cumBp [1000,2000]). The window must re-anchor against
+  // THAT region, not the first (which an earlier length===1 gate skipped).
+  test('picks the disjoint region the window overlaps', () => {
+    const c = clipLargeBlockToWindow({
+      ...bigBlock,
+      v1Index: v1(
+        { refName: 'chr1', start: 0, end: 1000 },
+        { refName: 'chr1', start: 200000, end: 201000 },
+      ),
+      refName: 'chr1',
+      // cumBp [1400,1500] sits in the second region -> local
+      // [1400-1000+200000, 1500-1000+200000] = [200400,200500].
+      winCumLo: 1400,
+      winCumHi: 1500,
+    })
+    expect(c?.start).toBe(200400)
+    expect(c?.end).toBe(200500)
+  })
+
+  // A window over none of the refName's regions (both off-screen) leaves the
+  // block untouched rather than clipping to an off-screen slice.
+  test('returns undefined when the window overlaps no region', () => {
+    const c = clipLargeBlockToWindow({
+      ...bigBlock,
+      v1Index: v1({ refName: 'chr1', start: 0, end: 1000 }),
+      refName: 'chr1',
+      winCumLo: 50000,
+      winCumHi: 51000,
+    })
+    expect(c).toBeUndefined()
+  })
 })
