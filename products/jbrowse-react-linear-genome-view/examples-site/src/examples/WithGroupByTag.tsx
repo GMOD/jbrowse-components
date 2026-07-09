@@ -5,7 +5,7 @@ const assembly = {
   sequence: {
     adapter: {
       type: 'TwoBitAdapter',
-      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
     },
   },
 }
@@ -18,14 +18,7 @@ const tracks = [
     assemblyNames: ['volvox'],
     adapter: {
       type: 'BamAdapter',
-      bamLocation: {
-        uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam',
-      },
-      index: {
-        location: {
-          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam.bai',
-        },
-      },
+      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam',
     },
   },
 ]

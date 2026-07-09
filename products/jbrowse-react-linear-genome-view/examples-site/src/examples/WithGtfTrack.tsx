@@ -5,7 +5,7 @@ const assembly = {
   sequence: {
     adapter: {
       type: 'TwoBitAdapter',
-      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
     },
   },
 }

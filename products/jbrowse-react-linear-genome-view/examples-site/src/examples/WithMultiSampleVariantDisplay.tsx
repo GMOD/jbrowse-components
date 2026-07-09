@@ -5,7 +5,7 @@ const assembly = {
   sequence: {
     adapter: {
       type: 'TwoBitAdapter',
-      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
     },
   },
 }
@@ -21,14 +21,7 @@ const tracks = [
     assemblyNames: ['volvox'],
     adapter: {
       type: 'VcfTabixAdapter',
-      vcfGzLocation: {
-        uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.vcf.gz',
-      },
-      index: {
-        location: {
-          uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.vcf.gz.tbi',
-        },
-      },
+      uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.vcf.gz',
       samplesTsvLocation: {
         uri: 'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.sv.samples.tsv',
       },

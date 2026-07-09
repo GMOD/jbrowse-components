@@ -72,11 +72,9 @@ const NCBI_REFSEQ_TRACK = {
   assemblyNames: ['hg19'],
   adapter: {
     type: 'Gff3TabixAdapter',
-    gffGzLocation: { uri: 'https://jbrowse.org/ucsc/hg19/ncbiRefSeq.gff.gz' },
-    index: {
-      indexType: 'CSI',
-      location: { uri: 'https://jbrowse.org/ucsc/hg19/ncbiRefSeq.gff.gz.csi' },
-    },
+    // `csi: true` makes the `uri` shorthand resolve a `.csi` index
+    uri: 'https://jbrowse.org/ucsc/hg19/ncbiRefSeq.gff.gz',
+    csi: true,
   },
   displays: [
     {

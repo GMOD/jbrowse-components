@@ -5,7 +5,7 @@ const assembly = {
   sequence: {
     adapter: {
       type: 'TwoBitAdapter',
-      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
     },
   },
 }
@@ -18,9 +18,7 @@ const tracks = [
     assemblyNames: ['volvox'],
     adapter: {
       type: 'BigWigAdapter',
-      bigWigLocation: {
-        uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
-      },
+      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
     },
     // the `displayDefaults` shorthand routes these settings to the track's
     // LinearWiggleDisplay — pick the renderer, pin the score axis, set colors

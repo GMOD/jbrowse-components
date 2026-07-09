@@ -10,7 +10,7 @@ const assembly = {
   sequence: {
     adapter: {
       type: 'TwoBitAdapter',
-      twoBitLocation: { uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
     },
   },
 }
@@ -27,14 +27,7 @@ export default function App() {
           name: 'GFF3Tabix genes',
           adapter: {
             type: 'Gff3TabixAdapter',
-            gffGzLocation: {
-              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-            },
-            index: {
-              location: {
-                uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz.tbi',
-              },
-            },
+            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
           },
           textSearching: {
             textSearchAdapter: {

@@ -11,10 +11,26 @@ import {
 } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SerializableThemeArgs } from '@jbrowse/core/ui'
+import type { AssemblyManager } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import type { AssertSessionModel } from '@jbrowse/product-core'
+
+// This session lives at rootModel.session, so its MST parent is the root model;
+// this is the slice it reaches for. A typed contract in place of getParent<any>,
+// mirroring product-core's ConfigModelParent and web-core's AbstractWebRootModel.
+interface SessionModelParent {
+  version: string
+  disableAddTracks: boolean
+  assemblyManager: AssemblyManager
+  config: {
+    assembly: AnyConfigurationModel
+    assemblyName: string
+    connections: AnyConfigurationModel[]
+  }
+}
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewSessionModel
@@ -44,37 +60,37 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get version() {
-        return getParent<any>(self).version
+        return getParent<SessionModelParent>(self).version
       },
       /**
        * #getter
        */
       get disableAddTracks() {
-        return getParent<any>(self).disableAddTracks
+        return getParent<SessionModelParent>(self).disableAddTracks
       },
       /**
        * #getter
        */
       get assemblies() {
-        return [getParent<any>(self).config.assembly]
+        return [getParent<SessionModelParent>(self).config.assembly]
       },
       /**
        * #getter
        */
       get assemblyNames() {
-        return [getParent<any>(self).config.assemblyName]
+        return [getParent<SessionModelParent>(self).config.assemblyName]
       },
       /**
        * #getter
        */
       get connections() {
-        return getParent<any>(self).config.connections
+        return getParent<SessionModelParent>(self).config.connections
       },
       /**
        * #getter
        */
       get assemblyManager() {
-        return getParent<any>(self).assemblyManager
+        return getParent<SessionModelParent>(self).assemblyManager
       },
       /**
        * #getter
