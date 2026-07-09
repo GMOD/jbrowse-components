@@ -2,10 +2,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { alpha } from '@mui/material'
 
-import {
-  computeLabelExtraWidth,
-  computeOverlayRect,
-} from './highlightUtils.ts'
+import { computeLabelExtraWidth, computeOverlayRect } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
 import { forEachDisplayLabel } from './labelPositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'

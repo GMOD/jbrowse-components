@@ -11,7 +11,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
-import { computeOverlayRect } from './highlightUtils.ts'
+import { computeLabelExtraWidth, computeOverlayRect } from './highlightUtils.ts'
 import {
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
@@ -30,13 +30,13 @@ import {
   canvasEdgeFlags,
 } from './sharedRendererConstants.ts'
 
-
 import type {
   FeatureRenderBlock,
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
 import type {
   FeatureDataResult,
+  FeatureLabelData,
   HitItemBase,
   RegionRenderData,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
@@ -346,15 +346,36 @@ export function drawFeatureBlocks(
   }
 }
 
+interface HighlightLabelContext {
+  showLabels: boolean
+  showDescriptions: boolean
+}
+
 function drawHighlightBox(
   ctx: Ctx2D,
   item: HitItemBase,
   toX: BpToScreen,
   scrollY: number,
   colors: { border: string; fill: string },
+  labelData: FeatureLabelData | undefined,
+  labelContext: HighlightLabelContext,
 ) {
   const x1 = toX(item.startBp)
   const x2 = toX(item.endBp)
+  const featureWidthPx = Math.abs(x2 - x1)
+  // Reserve the floating-label width for a top-level feature so the box wraps
+  // the glyph AND its label, exactly as the on-screen searchHighlightBox does
+  // (useOverlayElements addFeatureBox/computeExtraWidth). Subfeatures pass no
+  // labelData and get 0, mirroring on-screen where kind !== 'feature' reserves
+  // nothing.
+  const extraWidth = labelData
+    ? computeLabelExtraWidth(
+        labelData,
+        featureWidthPx,
+        labelContext.showLabels,
+        labelContext.showDescriptions,
+      )
+    : 0
   // Mirror the on-screen overlay box (useOverlayElements/computeOverlayRect):
   // 2px outset, top clamped into the content edge; then apply the scroll offset
   // the on-screen ScrollLockedOverlay applies via its -scrollTop transform.
@@ -362,10 +383,10 @@ function drawHighlightBox(
     {
       leftPx: Math.min(x1, x2),
       topPx: item.topPx,
-      width: Math.abs(x2 - x1),
+      width: featureWidthPx,
       heightPx: item.bottomPx - item.topPx,
     },
-    0,
+    extraWidth,
     2,
     2,
   )
@@ -388,6 +409,7 @@ export function drawHighlightBoxes(
   highlightedIds: ReadonlySet<string>,
   state: RenderState,
   colors: { border: string; fill: string },
+  labelContext: HighlightLabelContext,
 ) {
   const { canvasWidth, canvasHeight, scrollY } = state
   if (highlightedIds.size === 0 || regions.size === 0) {
@@ -405,12 +427,28 @@ export function drawHighlightBoxes(
         const toX = makeBpMapper(block)
         for (const item of region.flatbushItems) {
           if (highlightedIds.has(item.featureId)) {
-            drawHighlightBox(ctx, item, toX, scrollY, colors)
+            drawHighlightBox(
+              ctx,
+              item,
+              toX,
+              scrollY,
+              colors,
+              region.floatingLabelsData[item.featureId],
+              labelContext,
+            )
           }
         }
         for (const item of region.subfeatureInfos) {
           if (highlightedIds.has(item.featureId)) {
-            drawHighlightBox(ctx, item, toX, scrollY, colors)
+            drawHighlightBox(
+              ctx,
+              item,
+              toX,
+              scrollY,
+              colors,
+              undefined,
+              labelContext,
+            )
           }
         }
         ctx.restore()

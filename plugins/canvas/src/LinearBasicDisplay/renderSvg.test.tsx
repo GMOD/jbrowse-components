@@ -206,6 +206,45 @@ describe('renderSvg', () => {
     expect(html).toContain('x="318"')
   })
 
+  it('reserves the floating-label width so the highlight box wraps the label like on-screen', async () => {
+    // f0 spans 1400..1600 → x 320..480 (160px wide) at this fixture's 0.8px/bp,
+    // but its name label measures 500px wide. The on-screen searchHighlightBox
+    // reserves the label width; the export must match, so the box extends past
+    // the glyph to cover the label: width = 160 (glyph) + 340 (label overflow) +
+    // 4 (2px outset each side) = 504, left = 320 - 2 = 318.
+    const data = makeFeatureData({
+      ...packFixtureRects([{ startBp: 1400, endBp: 1600 }]),
+      flatbushItems: [
+        makeFlatbushItem({ featureId: 'f0', startBp: 1400, endBp: 1600 }),
+      ],
+      floatingLabelsData: {
+        f0: {
+          featureId: 'f0',
+          minX: 400,
+          maxX: 600,
+          topY: 0,
+          featureHeight: 10,
+          nameLabel: {
+            text: 'a-very-long-gene-name',
+            relativeY: 0,
+            color: '#000',
+            textWidth: 500,
+          },
+        },
+      },
+      featureCount: 1,
+    })
+    const result = await renderSvg(
+      makeModel({
+        laidOutDataMap: new Map([[0, data]]),
+        highlightedFeatureIdSet: new Set(['f0']),
+      }),
+    )
+    const html = renderResult(result)
+    expect(html).toContain('x="318"')
+    expect(html).toContain('width="504"')
+  })
+
   it('emits no highlight box when the highlight set is empty', async () => {
     const data = makeData([{ startBp: 1100, endBp: 1200 }])
     const result = await renderSvg(

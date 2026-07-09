@@ -129,6 +129,10 @@ function CanvasFeaturesSvgBody({
         border: alpha(highlightColor, 0.7),
         fill: alpha(highlightColor, 0.12),
       },
+      {
+        showLabels: model.showLabels,
+        showDescriptions: model.effectiveShowDescriptions,
+      },
     )
   })
   const fontSize = model.labelFontSize
