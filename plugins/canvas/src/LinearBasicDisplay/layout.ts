@@ -308,13 +308,13 @@ export function createIncrementalLayout() {
   }
 }
 
-// Squeeze-to-display-height: uniformly scale an already-laid-out region so the
+// Fit-to-display-height: uniformly scale an already-laid-out region so the
 // whole stack fits the track height without scrolling. Unlike applyHeightScale
 // (a pre-pack body shrink that feeds the packer), this runs AFTER packing on the
 // offset geometry, so it also scales the packed `topPx`/`bottomPx` and the
 // row-offset Ys — every Y and height by the same factor, so content height ×
 // scale lands exactly on the track height. Row assignment is untouched (it's
-// fixed by X-overlap), so it's a pure vertical squeeze.
+// fixed by X-overlap), so it's a pure vertical shrink.
 export function scaleLaidOutData(
   map: ReadonlyMap<number, FeatureDataResult>,
   scale: number,

@@ -469,16 +469,16 @@ Available `color:type` values:
 
 **Feature tracks (GFF3/BED/BigBed)**
 
-| Modifier                 | Example                  | Description                                                                                                    |
-| ------------------------ | ------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `featureHeight:preset`   | `featureHeight:compact`  | Display mode (`normal`, `compact`, `super-compact`)                                                            |
-| `fitToDisplayHeight[:N]` | `fitToDisplayHeight:200` | Shrink glyphs uniformly so every row fits the track height (no scrolling); a number sets that track height too |
+| Modifier                            | Example                 | Description                                                                                                                                                                                                       |
+| ----------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `featureHeight:preset`              | `featureHeight:compact` | Display mode (`normal`, `compact`, `super-compact`)                                                                                                                                                               |
+| `heightMode:<fixed\|grow\|fit>[:N]` | `heightMode:fit:200`    | Track-height strategy: `fixed` scrolls to see all features, `grow` resizes the track to fit every feature, `fit` shrinks glyphs so every row fits without scrolling; an optional number sets the track height too |
 
 **BigWig tracks**
 
 | Modifier                 | Example                | Description                                               |
 | ------------------------ | ---------------------- | --------------------------------------------------------- |
-| `autoscale:mode`         | `autoscale:localsd`    | Autoscale mode (`local`, `global`, `localsd`)             |
+| `autoscale:mode`         | `autoscale:localsd`    | Autoscale mode (`local`, `localsd`)                       |
 | `minmax:min:max`         | `minmax:0:100`         | Manual score range                                        |
 | `scaletype:type`         | `scaletype:log`        | Scale type (`linear` or `log`)                            |
 | `fill:true\|false`       | `fill:false`           | Fill under curve                                          |

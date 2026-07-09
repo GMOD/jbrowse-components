@@ -117,8 +117,6 @@ interface SlotResolution {
   pinned: boolean
   /** the raw session-wide promoted default, if any */
   promoted: unknown
-  /** what an un-pinned track resolves to: promoted default if usable, else base */
-  inherited: unknown
   /** the final cascaded value (never a slot's inherit sentinel) */
   value: unknown
 }
@@ -139,7 +137,7 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
   const pinned = !deepEqual(own, def.defaultValue) && isUsableValue(def, own)
   const inherited = isUsableValue(def, promoted) ? promoted : base
   const value = pinned ? own : inherited
-  return { base, pinned, promoted, inherited, value }
+  return { base, pinned, promoted, value }
 }
 
 /**
@@ -149,20 +147,6 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
  */
 export function isSlotPinned(self: PromotableDisplay, slot: string): boolean {
   return resolveSlot(self, slot).pinned
-}
-
-/**
- * #api core/configuration
- * The value an un-pinned track resolves to for this slot — the session-wide
- * promoted default when usable, else the base — regardless of whether this track
- * currently pins its own value. Lets a track menu label its "follow default"
- * choice with the mode it would fall back to (e.g. `Default (Compact)`).
- */
-export function getSlotInheritedValue<T = unknown>(
-  self: PromotableDisplay,
-  slot: string,
-): T {
-  return resolveSlot(self, slot).inherited as T
 }
 
 /**

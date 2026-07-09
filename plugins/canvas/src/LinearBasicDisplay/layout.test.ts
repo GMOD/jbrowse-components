@@ -938,7 +938,7 @@ test('compact mode scales aminoAcidOverlay height alongside its top', () => {
   expect(aa.topPx).toBeCloseTo(3)
 })
 
-test('scaleLaidOutData squeezes every Y and height by the fit factor', () => {
+test('scaleLaidOutData scales every Y and height by the fit factor', () => {
   const data = makeFeatureData({
     features: [
       { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },

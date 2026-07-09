@@ -6,6 +6,7 @@ import { getSession } from '@jbrowse/core/util'
 import HeightIcon from '@mui/icons-material/Height'
 
 import type { PromotableDisplay } from '@jbrowse/core/configuration'
+import type { HeightMode } from '@jbrowse/plugin-linear-genome-view'
 
 const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),
@@ -35,9 +36,11 @@ interface FeatureHeightModel {
   featureHeight: number
   featureSpacing: number
   fitHeightToDisplay: boolean
+  autoHeight: boolean
   setFeatureHeight: (height?: number) => void
   setFeatureSpacing: (spacing?: number) => void
   setFitHeightToDisplay: (fit: boolean) => void
+  setHeightMode: (mode: HeightMode) => void
 }
 
 export function getFeatureHeightMenuItem(
@@ -61,6 +64,7 @@ export function getFeatureHeightMenuItem(
           label: preset.label,
           checked:
             !model.fitHeightToDisplay &&
+            !model.autoHeight &&
             model.featureHeight === preset.featureHeight &&
             model.featureSpacing === preset.featureSpacing,
           onClick: () => {
@@ -74,6 +78,19 @@ export function getFeatureHeightMenuItem(
           ]),
         }),
       ),
+      // Grow / fit share the "Track height" notion with the canvas display: grow
+      // resizes the track to fit every read, fit shrinks reads to fill a fixed
+      // height. Each carries its own "make default" pin.
+      promotableRadioItem({
+        label: 'Auto height — grow to fit all reads',
+        checked: model.autoHeight,
+        onClick: () => {
+          model.setHeightMode('grow')
+        },
+        sessionDefault: makeSlotsValueSessionDefaultControl(model, [
+          { slot: 'heightMode', value: 'grow' },
+        ]),
+      }),
       promotableRadioItem({
         label: 'Fit to display height',
         checked: model.fitHeightToDisplay,

@@ -1,6 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+import {
+  HEIGHT_MODE_VALUES,
+  baseLinearDisplayConfigSchema,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
@@ -33,11 +36,19 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      autoHeight: {
-        type: 'boolean',
-        defaultValue: false,
+      heightMode: {
+        type: 'stringEnum',
+        model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
         description:
-          'Automatically resize the track height to fit all features',
+          'Track-height strategy (shared vocabulary with the alignments display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` resizes the track to fit all features, `fit` shrinks features to fill the current height. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
+        // Sentinel promotable slot (see promotableDefaults.ts / displayMode):
+        // `inherit` is the un-pinned state, `promotedBase` ('fixed') is what it
+        // resolves to when nothing is promoted — so every real mode, `fixed`
+        // included, is pinnable back over a session default. Read through the
+        // resolved `heightMode` getter (getConfResolved), never raw.
+        defaultValue: 'inherit',
+        promotedBase: 'fixed',
+        promotable: true,
       },
       /**
        * #slot

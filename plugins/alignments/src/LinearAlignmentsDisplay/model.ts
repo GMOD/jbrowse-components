@@ -27,6 +27,11 @@ import {
 } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  type ExportSvgDisplayOptions,
+  type FetchContext,
+  GROW_MAX_HEIGHT,
+  type HeightMode,
+  type LinearGenomeViewModel,
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
   TrackHeightMixin,
@@ -120,11 +125,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  FetchContext,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -640,6 +640,17 @@ export default function stateModelFactory(
          */
         get fitHeightToDisplay(): boolean {
           return getConfResolved(self, 'heightMode') === 'fit'
+        },
+
+        /**
+         * #getter
+         * "Grow" mode: the track resizes to fit every read at the configured
+         * height (no scrolling), rather than scrolling (`fixed`) or shrinking
+         * reads to fit (`fit`). Derived from the same promotable `heightMode`
+         * sentinel slot. Shared vocabulary + getter name with the canvas display.
+         */
+        get autoHeight(): boolean {
+          return getConfResolved(self, 'heightMode') === 'grow'
         },
       }))
       // Canonical ScoreScaleModel shape (shared with wiggle/manhattan) so the
@@ -1500,6 +1511,20 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Target track height for `grow` mode: the full laid-out content height
+         * (coverage + pileup + arcs), capped at `GROW_MAX_HEIGHT` so a deep
+         * pileup doesn't grow the track to thousands of px (a taller pileup fits
+         * to the cap and scrolls the remainder). Independent of `self.height` (in
+         * grow mode reads use the configured `featureHeight`, not the fitted
+         * pitch), so the grow autorun that writes it back can't feed back on
+         * itself. `setHeight` floors it to MIN_DISPLAY_HEIGHT.
+         */
+        get grownHeight() {
+          return Math.min(this.sections.contentHeight, GROW_MAX_HEIGHT)
+        },
+
+        /**
+         * #getter
          */
         get scalebarOverlapLeft() {
           const view = getContainingView(self) as {
@@ -2259,8 +2284,24 @@ export default function stateModelFactory(
            * display/data change, regardless of how fit was entered.
            */
           setFitHeightToDisplay(fit: boolean) {
-            self.configuration.setSlot('heightMode', fit ? 'fit' : 'fixed')
-            if (fit) {
+            this.setHeightMode(fit ? 'fit' : 'fixed')
+          },
+
+          /**
+           * #action
+           * Set the track-height strategy by writing the unified `heightMode`
+           * slot; the modes are mutually exclusive by construction. Entering a
+           * non-`fixed` mode (fit or grow) resets the transient state a uniform
+           * fit/grow contradicts — per-group height overrides (a drag opts a
+           * group out) and the scroll offset (neither fit nor grow scrolls) —
+           * tied to the explicit user action so a track that merely inherits the
+           * mode from a session-wide default keeps its overrides. The driving
+           * autoruns then keep `featureHeight` (fit) or `height` (grow) sized as
+           * the display/data change.
+           */
+          setHeightMode(mode: HeightMode) {
+            self.configuration.setSlot('heightMode', mode)
+            if (mode !== 'fixed') {
               self.groupMaxHeightOverrides.clear()
               self.scrollTop = 0
             }
@@ -2813,6 +2854,19 @@ export default function stateModelFactory(
               }
             }),
           )
+          // Grow mode: resize the track to fit all reads (at the configured
+          // height, capped at GROW_MAX_HEIGHT). `grownHeight` reads the laid-out
+          // content height, which in grow mode is independent of `self.height`,
+          // so writing it back can't loop. Mirrors the canvas CanvasAutoHeight
+          // autorun.
+          addDisposer(
+            self,
+            autorun(() => {
+              if (self.autoHeight) {
+                self.setHeight(self.grownHeight)
+              }
+            }),
+          )
           // Keep scrollTop inside the content by construction. Any geometry
           // change — band resize, group collapse/expand/drag, show/hide
           // coverage or pileup, read-connection mode, fit — can shrink
@@ -2829,6 +2883,23 @@ export default function stateModelFactory(
           )
         },
       }))
+      .actions(self => {
+        const superResizeHeight = self.resizeHeight
+        return {
+          /**
+           * #action
+           * A manual drag-resize means the user wants a fixed height; leave grow
+           * mode first, otherwise the grow autorun snaps the height back on the
+           * next relayout and the drag appears to do nothing (mirrors canvas).
+           */
+          resizeHeight(distance: number) {
+            if (self.autoHeight) {
+              self.setHeightMode('fixed')
+            }
+            return superResizeHeight(distance)
+          },
+        }
+      })
   )
 }
 

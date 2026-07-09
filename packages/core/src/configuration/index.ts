@@ -27,7 +27,6 @@ export {
   clearDisplaySessionDefaults,
   displaySessionDefaultChanges,
   getConfResolved,
-  getSlotInheritedValue,
   isSlotPinned,
   isSlotValueSessionDefault,
   makeCurrentValueSessionDefaultControl,

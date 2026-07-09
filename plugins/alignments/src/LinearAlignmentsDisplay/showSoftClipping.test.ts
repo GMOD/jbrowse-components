@@ -400,12 +400,13 @@ describe('feature-height menu per-preset pins', () => {
     ).toBe(false)
   })
 
-  it('gives every preset (and fit) its own pin', () => {
+  it('gives every preset (plus grow and fit) its own pin', () => {
     const { display } = createDisplay()
     for (const label of [
       'Normal',
       'Compact',
       'Super-compact',
+      'Auto height — grow to fit all reads',
       'Fit to display height',
     ]) {
       expect(pinProps(display, label)).toBeDefined()
@@ -419,6 +420,9 @@ describe('feature-height menu per-preset pins', () => {
     expect(pinProps(display, 'Normal')?.isDefault).toBe(false)
     expect(pinProps(display, 'Super-compact')?.isDefault).toBe(false)
     expect(pinProps(display, 'Fit to display height')?.isDefault).toBe(false)
+    expect(
+      pinProps(display, 'Auto height — grow to fit all reads')?.isDefault,
+    ).toBe(false)
   })
 
   it("clicking a preset's pin promotes that exact preset", () => {
@@ -502,6 +506,84 @@ describe('alignments fit-to-display-height session default', () => {
       'wobble',
     )
     expect(display.fitHeightToDisplay).toBe(false)
+  })
+})
+
+// `grow` is the third value of the shared `heightMode` vocabulary (with the
+// canvas display): the track resizes to fit all reads rather than scrolling
+// (fixed) or shrinking reads (fit). autoHeight/fitHeightToDisplay are mutually
+// exclusive views of the one slot.
+describe('alignments grow (auto-height) mode', () => {
+  it('is off by default and mutually exclusive with fit', () => {
+    const { display } = createDisplay()
+    expect(display.autoHeight).toBe(false)
+
+    display.setHeightMode('grow')
+    expect(display.autoHeight).toBe(true)
+    expect(display.fitHeightToDisplay).toBe(false)
+
+    display.setHeightMode('fit')
+    expect(display.autoHeight).toBe(false)
+    expect(display.fitHeightToDisplay).toBe(true)
+
+    display.setHeightMode('fixed')
+    expect(display.autoHeight).toBe(false)
+    expect(display.fitHeightToDisplay).toBe(false)
+  })
+
+  it('follows a session-wide grow default when the track is not pinned', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'heightMode',
+      'grow',
+    )
+    expect(display.autoHeight).toBe(true)
+  })
+
+  it('caps the grown height at GROW_MAX_HEIGHT (800)', () => {
+    const { display } = createDisplay()
+    display.setHeightMode('grow')
+    // no fetched reads -> content is just the coverage band, well under the cap
+    expect(display.grownHeight).toBeLessThanOrEqual(800)
+  })
+
+  it('a manual drag-resize exits grow mode', () => {
+    const { display } = createDisplay()
+    display.setHeightMode('grow')
+    expect(display.autoHeight).toBe(true)
+
+    display.resizeHeight(50)
+    expect(display.autoHeight).toBe(false)
+  })
+
+  it('picking a preset pins fixed and escapes even a promoted grow default', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'heightMode',
+      'grow',
+    )
+    expect(display.autoHeight).toBe(true)
+
+    display.setCompactness('compact')
+    expect(display.autoHeight).toBe(false)
+    expect(display.featureHeight).toBe(3)
+  })
+
+  it("the grow pin promotes heightMode='grow'", () => {
+    const { session, display } = createDisplay()
+    const row = getFeatureHeightMenuItem(display).subMenu.find(
+      i => i.label === 'Auto height — grow to fit all reads',
+    )
+    const adornment = row && 'endAdornment' in row ? row.endAdornment : undefined
+    const props = isValidElement(adornment)
+      ? (adornment.props as { onToggleDefault: () => void })
+      : undefined
+    props?.onToggleDefault()
+    expect(
+      session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
+    ).toBe('grow')
   })
 })
 

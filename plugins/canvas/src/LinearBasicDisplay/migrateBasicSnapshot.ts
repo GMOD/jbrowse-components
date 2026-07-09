@@ -69,5 +69,15 @@ export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
   if (result.displayMode !== undefined) {
     result.displayMode = normalizeDisplayMode(result.displayMode)
   }
+  // The former `autoHeight` boolean slot became the `grow` value of the unified
+  // `heightMode` slot; map a legacy true onto it (unless already set) and drop
+  // the retired key. (Legacy squeeze was a display-node prop, not a config slot,
+  // so it doesn't pass through here.)
+  if (result.autoHeight !== undefined) {
+    if (result.autoHeight && result.heightMode === undefined) {
+      result.heightMode = 'grow'
+    }
+    delete result.autoHeight
+  }
   return result
 }

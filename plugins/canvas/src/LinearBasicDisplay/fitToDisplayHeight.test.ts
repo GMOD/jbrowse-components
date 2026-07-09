@@ -5,7 +5,7 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 
 // Overlapping features so the packer stacks them into rows taller than the
-// track height, giving the squeeze something to shrink.
+// track height, giving the fit something to shrink.
 function stackedRegionData(rows: number, heightPx: number) {
   const features = Array.from({ length: rows }, (_, i) => ({
     featureId: `f${i}`,
@@ -34,21 +34,21 @@ function stackedRegionData(rows: number, heightPx: number) {
   })
 }
 
-// State-machine coverage for squeeze-to-display-height mode (the "Squeeze
-// content to fit" track-height radio). The squeeze arithmetic itself is covered
+// State-machine coverage for fit-to-display-height mode (the "compress features
+// to fit" track-height radio). The fit arithmetic itself is covered
 // by scaleLaidOutData in layout.test.ts; here we only drive the mode flag,
 // scroll reset, the density-is-orthogonal invariant, and the mutually-exclusive
 // track-height radio (heightMode/setHeightMode). With no feature data maxY is 0,
-// so squeezeScale stays 1 (a no-op) throughout.
-describe('canvas display squeeze-to-display-height', () => {
-  it('squeezeScale is 1 and squeeze is off by default', () => {
+// so fitScale stays 1 (a no-op) throughout.
+describe('canvas display fit-to-display-height', () => {
+  it('fitScale is 1 and fit is off by default', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    expect(display.squeezeToDisplayHeight).toBe(false)
-    expect(display.squeezeScale).toBe(1)
+    expect(display.fitHeightToDisplay).toBe(false)
+    expect(display.fitScale).toBe(1)
   })
 
-  it('entering squeeze mode resets scroll; leaving it re-enables scrolling', () => {
+  it('entering fit mode resets scroll; leaving it re-enables scrolling', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
     // Overflow content so there is a real scroll range (scrollTop is clamped to
@@ -65,32 +65,32 @@ describe('canvas display squeeze-to-display-height', () => {
     display.setScrollTop(120)
     expect(display.scrollTop).toBe(120)
 
-    // Entering squeeze fits the content to the track, so the scroll resets.
-    display.setSqueezeToDisplayHeight(true)
-    expect(display.squeezeToDisplayHeight).toBe(true)
+    // Entering fit fits the content to the track, so the scroll resets.
+    display.setHeightMode('fit')
+    expect(display.fitHeightToDisplay).toBe(true)
     expect(display.scrollTop).toBe(0)
 
-    // Leaving squeeze restores the overflow and a fresh scroll is honored — the
+    // Leaving fit restores the overflow and a fresh scroll is honored — the
     // exit doesn't lock scrolling at the top.
-    display.setSqueezeToDisplayHeight(false)
-    expect(display.squeezeToDisplayHeight).toBe(false)
+    display.setHeightMode('fixed')
+    expect(display.fitHeightToDisplay).toBe(false)
     display.setScrollTop(120)
     expect(display.scrollTop).toBe(120)
   })
 
-  // Feature size (density) is orthogonal to the track-height strategy: squeeze
+  // Feature size (density) is orthogonal to the track-height strategy: fit
   // scales whatever size the density preset produces, so changing density must
-  // leave squeeze active (the two live in separate radio groups now).
-  it('changing feature-size density leaves squeeze mode active', () => {
+  // leave fit active (the two live in separate radio groups now).
+  it('changing feature-size density leaves fit mode active', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setSqueezeToDisplayHeight(true)
+    display.setHeightMode('fit')
     display.setDisplayMode('compact')
-    expect(display.squeezeToDisplayHeight).toBe(true)
+    expect(display.fitHeightToDisplay).toBe(true)
     display.setCompactness('super-compact')
-    expect(display.squeezeToDisplayHeight).toBe(true)
+    expect(display.fitHeightToDisplay).toBe(true)
     display.setDisplayMode('normal')
-    expect(display.squeezeToDisplayHeight).toBe(true)
+    expect(display.fitHeightToDisplay).toBe(true)
   })
 
   it('heightMode reflects the active track-height strategy', () => {
@@ -100,35 +100,35 @@ describe('canvas display squeeze-to-display-height', () => {
     display.setHeightMode('grow')
     expect(display.heightMode).toBe('grow')
     expect(display.autoHeight).toBe(true)
-    display.setHeightMode('squeeze')
-    expect(display.heightMode).toBe('squeeze')
-    expect(display.squeezeToDisplayHeight).toBe(true)
-    expect(display.autoHeight).toBe(false) // grow and squeeze are exclusive
+    display.setHeightMode('fit')
+    expect(display.heightMode).toBe('fit')
+    expect(display.fitHeightToDisplay).toBe(true)
+    expect(display.autoHeight).toBe(false) // grow and fit are exclusive
     display.setHeightMode('fixed')
     expect(display.heightMode).toBe('fixed')
     expect(display.autoHeight).toBe(false)
-    expect(display.squeezeToDisplayHeight).toBe(false)
+    expect(display.fitHeightToDisplay).toBe(false)
   })
 
-  it('entering squeeze mode turns off auto-fit height (opposite intents)', () => {
+  it('entering fit mode turns off auto-fit height (opposite intents)', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setAutoHeight(true)
-    display.setSqueezeToDisplayHeight(true)
-    expect(display.squeezeToDisplayHeight).toBe(true)
+    display.setHeightMode('grow')
+    display.setHeightMode('fit')
+    expect(display.fitHeightToDisplay).toBe(true)
     expect(display.autoHeight).toBe(false)
   })
 
-  it('enabling auto-fit height exits squeeze mode', () => {
+  it('enabling auto-fit height exits fit mode', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setSqueezeToDisplayHeight(true)
-    display.setAutoHeight(true)
+    display.setHeightMode('fit')
+    display.setHeightMode('grow')
     expect(display.autoHeight).toBe(true)
-    expect(display.squeezeToDisplayHeight).toBe(false)
+    expect(display.fitHeightToDisplay).toBe(false)
   })
 
-  it('squeezed content fits the track exactly (no float-epsilon overflow)', () => {
+  it('fitted content fits the track exactly (no float-epsilon overflow)', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
     display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, {
@@ -143,27 +143,27 @@ describe('canvas display squeeze-to-display-height', () => {
     // the base layout overflows.
     display.setHeight(97)
     expect(display.baseLaidOutDataMap.size).toBeGreaterThan(0)
-    expect(display.squeezeScale).toBe(1)
+    expect(display.fitScale).toBe(1)
     expect(display.hasOverflow).toBe(true)
 
-    display.setSqueezeToDisplayHeight(true)
-    // Squeeze scales content to fit; maxY must land exactly on height, so the
+    display.setHeightMode('fit')
+    // Fit scales content to fit; maxY must land exactly on height, so the
     // expand button, overflow flag, and scrollbar all stay off.
-    expect(display.squeezeScale).toBeLessThan(1)
+    expect(display.fitScale).toBeLessThan(1)
     expect(display.maxY).toBe(display.height)
     expect(display.hasOverflow).toBe(false)
     expect(display.scrollableHeight).toBe(0)
     expect(display.canExpand).toBe(false)
   })
 
-  it('entering squeeze mode clears a stale expand/restore marker', () => {
+  it('entering fit mode clears a stale expand/restore marker', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setHeight(30)
     display.expandToFit()
     expect(display.heightBeforeExpand).toBe(30)
 
-    display.setSqueezeToDisplayHeight(true)
+    display.setHeightMode('fit')
     expect(display.heightBeforeExpand).toBeUndefined()
   })
 })

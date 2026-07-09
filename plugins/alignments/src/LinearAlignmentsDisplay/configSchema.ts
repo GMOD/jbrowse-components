@@ -1,6 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+import {
+  HEIGHT_MODE_VALUES,
+  baseLinearDisplayConfigSchema,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import { isRegisteredColorScheme } from '../shared/colorSchemes.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
@@ -90,13 +93,13 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       heightMode: {
         type: 'stringEnum',
-        model: types.enumeration('heightMode', ['inherit', 'fit', 'fixed']),
+        model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
         description:
-          'How read height is chosen. `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing`; `fit` sizes reads so every uncollapsed group fills the display without scrolling',
+          'Track-height strategy (shared vocabulary with the canvas feature display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing` and scrolls; `grow` resizes the track to fit every read at the configured height; `fit` sizes reads so every uncollapsed group fills the display without scrolling',
         // `inherit` is the CSS-style sentinel default (the un-pinned state);
         // `promotedBase` ('fixed') is what it resolves to when nothing is
         // promoted. Being a sentinel lets a track pin `fixed` back over a
-        // session-wide `fit` default. See promotableDefaults.ts.
+        // session-wide `fit`/`grow` default. See promotableDefaults.ts.
         defaultValue: 'inherit',
         promotedBase: 'fixed',
         promotable: true,

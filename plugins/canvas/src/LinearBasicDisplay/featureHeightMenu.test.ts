@@ -88,7 +88,7 @@ describe('Feature height submenu', () => {
     display.setDisplayMode('compact')
     const advanced = subMenuOf(featureHeightSubMenu(display), 'Track height')
 
-    // exactly the three track-height modes, no default-promotion controls
+    // exactly the three track-height modes, each a radio carrying its own pin
     const labels = advanced.flatMap(i => ('label' in i ? [i.label] : []))
     expect(labels).toEqual([
       'Fixed height — scroll to see all features',
@@ -99,6 +99,17 @@ describe('Feature height submenu', () => {
     expect(
       radio(advanced, 'Fixed height — scroll to see all features').checked,
     ).toBe(true)
+    // each mode carries a "make default" pin, like the size presets
+    expect(
+      radio(advanced, 'Fixed height — scroll to see all features').endAdornment,
+    ).toBeDefined()
+    expect(
+      radio(advanced, 'Auto height — grow track to show all features')
+        .endAdornment,
+    ).toBeDefined()
+    expect(
+      radio(advanced, 'Fixed height — compress features to fit').endAdornment,
+    ).toBeDefined()
 
     display.setHeightMode('grow')
     const advanced2 = subMenuOf(featureHeightSubMenu(display), 'Track height')

@@ -104,34 +104,46 @@ describe('feature modifiers', () => {
     expect(snap.showSashimiArcs).toBeUndefined()
   })
 
-  test('fitToDisplayHeight sets the squeezeToDisplayHeight snapshot value', () => {
+  test('heightMode sets each track-height strategy', () => {
     expect(
-      buildDisplaySnapshot('feature', ['fitToDisplayHeight']).snap
-        .squeezeToDisplayHeight,
-    ).toBe(true)
+      buildDisplaySnapshot('feature', ['heightMode:fit']).snap.heightMode,
+    ).toBe('fit')
     expect(
-      buildDisplaySnapshot('feature', ['fitToDisplayHeight:true']).snap
-        .squeezeToDisplayHeight,
-    ).toBe(true)
+      buildDisplaySnapshot('feature', ['heightMode:grow']).snap.heightMode,
+    ).toBe('grow')
     expect(
-      buildDisplaySnapshot('feature', ['fitToDisplayHeight:false']).snap
-        .squeezeToDisplayHeight,
-    ).toBe(false)
+      buildDisplaySnapshot('feature', ['heightMode:fixed']).snap.heightMode,
+    ).toBe('fixed')
+    expect(buildDisplaySnapshot('feature', []).snap.heightMode).toBeUndefined()
+  })
+
+  test('heightMode:mode:N sets both the strategy and the track height', () => {
+    const { snap } = buildDisplaySnapshot('feature', ['heightMode:fit:200'])
+    expect(snap.height).toBe(200)
+    expect(snap.heightMode).toBe('fit')
+  })
+
+  test('an unknown heightMode is ignored', () => {
     expect(
-      buildDisplaySnapshot('feature', []).snap.squeezeToDisplayHeight,
+      buildDisplaySnapshot('feature', ['heightMode:bogus']).snap.heightMode,
     ).toBeUndefined()
   })
 
-  test('fitToDisplayHeight:N sets both the track height and the squeeze', () => {
-    const { snap } = buildDisplaySnapshot('feature', ['fitToDisplayHeight:200'])
-    expect(snap.height).toBe(200)
-    expect(snap.squeezeToDisplayHeight).toBe(true)
+  test('alignments heightMode shares the full fixed/grow/fit vocabulary', () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['heightMode:fit']).snap.heightMode,
+    ).toBe('fit')
+    expect(
+      buildDisplaySnapshot('alignments', ['heightMode:grow']).snap.heightMode,
+    ).toBe('grow')
+    expect(
+      buildDisplaySnapshot('alignments', ['heightMode:fixed']).snap.heightMode,
+    ).toBe('fixed')
   })
 
-  test('fitToDisplayHeight is ignored on a non-feature track', () => {
+  test('heightMode is ignored on a display type without the notion', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['fitToDisplayHeight']).snap
-        .squeezeToDisplayHeight,
+      buildDisplaySnapshot('wiggle', ['heightMode:fixed']).snap.heightMode,
     ).toBeUndefined()
   })
 })

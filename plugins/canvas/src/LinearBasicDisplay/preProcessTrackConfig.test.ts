@@ -11,6 +11,8 @@ interface DisplaySnapshot {
   connectorColor?: string
   utrColor?: string
   outlineColor?: string
+  autoHeight?: boolean
+  heightMode?: string
   renderer?: Record<string, unknown>
 }
 interface TrackConfigSnapshot {
@@ -88,6 +90,26 @@ test('renames legacy color1/color2/color3/outline config slots', () => {
     utrColor: 'lightblue',
     outlineColor: 'black',
   })
+})
+
+// The former `autoHeight: true` boolean slot is folded into the unified
+// `heightMode` slot as its `grow` value, and the retired key is dropped.
+test('migrates legacy autoHeight:true to heightMode grow', () => {
+  const out = evaluate({
+    type: 'FeatureTrack',
+    displays: [{ type: 'LinearBasicDisplay', autoHeight: true }],
+  })
+  expect(out.displays![0]!.heightMode).toBe('grow')
+  expect(out.displays![0]!.autoHeight).toBeUndefined()
+})
+
+test('drops a legacy autoHeight:false without setting heightMode', () => {
+  const out = evaluate({
+    type: 'FeatureTrack',
+    displays: [{ type: 'LinearBasicDisplay', autoHeight: false }],
+  })
+  expect(out.displays![0]!.heightMode).toBeUndefined()
+  expect(out.displays![0]!.autoHeight).toBeUndefined()
 })
 
 // Pre-GPU-rewrite configs nested style slots under a `renderer` sub-config that

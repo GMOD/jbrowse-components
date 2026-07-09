@@ -22,6 +22,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
+  GROW_MAX_HEIGHT,
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
   TrackHeightMixin,
@@ -102,15 +103,16 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
+  HeightMode,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-// The three mutually-exclusive track-height strategies, derived from the
-// `autoHeight` (grow) and `squeezeToDisplayHeight` (squeeze) primitives so the
-// "Track height" radio group can present one exclusive choice.
-export type HeightMode = 'fixed' | 'grow' | 'squeeze'
+// HeightMode (fixed/grow/fit) is the shared track-height vocabulary — see
+// @jbrowse/plugin-linear-genome-view's heightMode module. Derived here from the
+// `autoHeight`/`fitHeightToDisplay` booleans so the "Track height" radio group
+// presents one exclusive choice.
 
 // Single source for the "Feature height" radio options and their labels, so a
 // fourth mode can't drift between the menu and the label lookup.
@@ -285,21 +287,6 @@ export default function baseStateModelFactory(
             types.array(FeatureHighlightModel),
             [],
           ),
-          /**
-           * #property
-           * Squeeze-to-display-height mode (the "Squeeze content to fit"
-           * track-height radio): laid-out glyphs are uniformly shrunk so every
-           * row fits the track height without scrolling. A persistent snapshot
-           * value so it can be opened declaratively (a session/spec — or
-           * jbrowse-img's `fitToDisplayHeight` modifier — seeds it in the display
-           * snapshot). Orthogonal to the feature-size preset, which it scales;
-           * mutually exclusive only with auto-fit (the other track-height mode).
-           * The `height` config slot is never written, so it stays pure user
-           * intent. Only ever shrinks (scale <= 1); a track that already fits is
-           * left untouched. stripDefault so a display not squeezing omits it from
-           * its snapshot.
-           */
-          squeezeToDisplayHeight: types.stripDefault(types.boolean, false),
         }),
       )
       .volatile(() => ({
@@ -462,8 +449,11 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // Grow mode as a boolean, derived from the unified heightMode slot.
+        // Kept for the CanvasAutoHeight autorun and the OverflowIndicator /
+        // FeatureComponent consumers that read a plain flag.
         get autoHeight() {
-          return getConf(self, 'autoHeight')
+          return this.heightMode === 'grow'
         },
 
         /**
@@ -480,14 +470,23 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // The active track-height strategy, one exclusive value derived from the
-        // two underlying primitives (which the setters keep mutually exclusive).
+        // The active track-height strategy. Promotable sentinel enum (see
+        // baseConfigSchema.ts): getConfResolved walks the pinned-track ->
+        // session-default -> `fixed` cascade and always returns a concrete mode,
+        // never the `inherit` sentinel. The single source of truth that
+        // autoHeight/fitHeightToDisplay derive from.
         get heightMode(): HeightMode {
-          return self.squeezeToDisplayHeight
-            ? 'squeeze'
-            : this.autoHeight
-              ? 'grow'
-              : 'fixed'
+          return getConfResolved(self, 'heightMode')
+        },
+
+        /**
+         * #getter
+         */
+        // Fit-to-height mode as a boolean, derived from the unified heightMode
+        // slot. Named to match the alignments display's getter. Read by fitScale
+        // / canExpand.
+        get fitHeightToDisplay() {
+          return this.heightMode === 'fit'
         },
 
         /**
@@ -574,10 +573,11 @@ export default function baseStateModelFactory(
         // getConf) — same jexl-without-a-feature hazard as featureColor.
         get colorByMode(): 'strand' | 'attribute' | 'solid' {
           const raw = self.conf.color
-          if (raw === STRAND_COLOR_JEXL) {
-            return 'strand'
-          }
-          return isJexl(raw) ? 'attribute' : 'solid'
+          return raw === STRAND_COLOR_JEXL
+            ? 'strand'
+            : isJexl(raw)
+              ? 'attribute'
+              : 'solid'
         },
 
         /**
@@ -825,15 +825,17 @@ export default function baseStateModelFactory(
           // resolvePromotableConfigSnapshot hands the worker concrete values for
           // every promotable slot (chevrons, subfeatureLabels, ...) instead of
           // their raw inherit sentinels — so a new promotable worker-slot needs
-          // no rpcProps change here. The three excluded slots are display-only
-          // (never sent to the worker): showLabels/showDescriptions gate label
-          // visibility on the main thread, and displayMode drives compact/
+          // no rpcProps change here. The excluded slots are display-only (never
+          // sent to the worker): showLabels/showDescriptions gate label
+          // visibility on the main thread, displayMode drives compact/
           // superCompact height scaling + collapse-mode label decimation there,
-          // so excluding them keeps toggling those off the RPC cache key.
+          // and heightMode is a pure main-thread track-height/layout strategy, so
+          // excluding them keeps toggling those off the RPC cache key.
           const {
             showLabels: _l,
             showDescriptions: _d,
             displayMode: _dm,
+            heightMode: _hm,
             ...rest
           } = resolvePromotableConfigSnapshot(self)
           return {
@@ -954,8 +956,8 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Layout at the current display mode, before any fit-to-height squeeze.
-         * The reference for both `squeezeScale` (which reads its height) and the
+         * Layout at the current display mode, before any fit-to-height fit.
+         * The reference for both `fitScale` (which reads its height) and the
          * final `laidOutDataMap`; kept separate so the fit scale derives from the
          * unscaled content height and can't feed back on itself.
          */
@@ -981,31 +983,31 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Uniform vertical squeeze factor for squeeze-to-display-height mode:
-         * makes the whole stack fit the track height without scrolling.
-         * Shrink-only (<= 1); 1 whenever the squeeze is off, content already
-         * fits, or there's nothing to lay out. Measured off the unsqueezed base
-         * layout so it can't feed back on itself.
+         * Uniform vertical shrink factor for fit-to-height mode: makes the whole
+         * stack fit the track height without scrolling. Shrink-only (<= 1); 1
+         * whenever fit is off, content already fits, or there's nothing to lay
+         * out. Measured off the un-fitted base layout so it can't feed back on
+         * itself.
          */
-        get squeezeScale() {
+        get fitScale() {
           const base = maxBottom(self.baseLaidOutDataMap)
-          return self.squeezeToDisplayHeight && base > self.height
+          return self.fitHeightToDisplay && base > self.height
             ? self.height / base
             : 1
         },
         /**
          * #getter
          * What every consumer (hit test, GPU upload, React render) reads. The
-         * `baseLaidOutDataMap` by reference unless the squeeze is shrinking the
+         * `baseLaidOutDataMap` by reference unless fit mode is shrinking the
          * stack, in which case each region is cloned and scaled to exactly fill
-         * the track height. Returning the base map by reference off the squeeze
+         * the track height. Returning the base map by reference off the un-fitted
          * path keeps the incremental-layout upload diff and Y-morph idle check
          * intact.
          */
         get laidOutDataMap(): Map<number, FeatureDataResult> {
-          return this.squeezeScale === 1
+          return this.fitScale === 1
             ? self.baseLaidOutDataMap
-            : scaleLaidOutData(self.baseLaidOutDataMap, this.squeezeScale)
+            : scaleLaidOutData(self.baseLaidOutDataMap, this.fitScale)
         },
       }))
       .views(self => ({
@@ -1068,12 +1070,12 @@ export default function baseStateModelFactory(
          */
         get maxY() {
           const raw = maxBottom(self.laidOutDataMap)
-          // Squeeze mode scales content to exactly fill the track, but the
+          // Fit mode scales content to exactly fill the track, but the
           // base*scale round-trip rounds a hair above `height` in ~5% of float
           // cases — which would spuriously arm the expand button, mark the track
           // as overflowing, and open a sub-pixel scrollbar. The content occupies
           // `height` by construction, so clamp to it while squeezing.
-          const max = self.squeezeScale === 1 ? raw : Math.min(raw, self.height)
+          const max = self.fitScale === 1 ? raw : Math.min(raw, self.height)
           // During a Y morph hold the height at the taller of the old/new
           // layout so features animating up from a deeper row aren't clipped at
           // the bottom; it settles to the destination height when the morph
@@ -1114,10 +1116,22 @@ export default function baseStateModelFactory(
          */
         // Height that fits the laid-out content: the content height (maxY)
         // clamped to MIN_FIT_HEIGHT (so a sparse track doesn't collapse) and the
-        // maxHeight cap. Single source for both the autoHeight autorun and the
-        // manual expand-to-fit button.
+        // maxHeight cap. Backs the manual expand-to-fit button; the persistent
+        // grow mode reads `grownHeight` (a tighter cap).
         get fitHeight() {
           return Math.min(Math.max(this.maxY, MIN_FIT_HEIGHT), self.maxHeight)
+        },
+
+        /**
+         * #getter
+         */
+        // Target track height for the persistent `grow` mode: `fitHeight` capped
+        // at GROW_MAX_HEIGHT so a dense track doesn't grow to thousands of px
+        // (content past the cap scrolls). Shared cap + `grownHeight` getter name
+        // with the alignments display. A one-shot expand-to-fit still uses the
+        // looser `fitHeight` (an explicit "show it all now" beats the cap).
+        get grownHeight() {
+          return Math.min(this.fitHeight, GROW_MAX_HEIGHT)
         },
 
         /**
@@ -1127,12 +1141,12 @@ export default function baseStateModelFactory(
         // isn't enough: when the display is already at/above the maxHeight cap
         // (e.g. dragged taller than maxHeight while content still overflows),
         // fitHeight <= height and "expanding" would *shrink* it. Gate the expand
-        // affordance on this so the button only ever offers a real grow. Squeeze
+        // affordance on this so the button only ever offers a real grow. Fit
         // mode fits content to the current height by design, so never offer
         // expand there (fitHeight still floors at MIN_FIT_HEIGHT, which would
         // otherwise leak the button for a sub-50px track).
         get canExpand() {
-          return !self.squeezeToDisplayHeight && this.fitHeight > self.height
+          return !self.fitHeightToDisplay && this.fitHeight > self.height
         },
 
         /**
@@ -1282,31 +1296,6 @@ export default function baseStateModelFactory(
           // features clipped, blank below) until a DOM scroll event happens to
           // sync it back.
           self.setScrollTop(0)
-        },
-
-        /**
-         * #action
-         * Enter/leave squeeze-to-display-height mode. Entering scrolls to the top
-         * (a squeezed stack has no scroll, so a stale scrollTop would leave the
-         * GPU canvas painted at an invalid offset). The `laidOutDataMap` getter
-         * does the actual squeeze reactively.
-         */
-        setSqueezeToDisplayHeight(squeeze: boolean) {
-          self.squeezeToDisplayHeight = squeeze
-          if (squeeze) {
-            // Auto-fit grows the height to the content, which keeps base ===
-            // height and makes the squeeze a no-op; the two are the mutually
-            // exclusive track-height modes, so entering squeeze turns auto-fit
-            // off (setAutoHeight does the mirror). setAutoHeight is defined in a
-            // later actions block, so clear the slot directly.
-            self.configuration.setSlot('autoHeight', false)
-            // A pending expand/restore marker ("Restore previous height") is
-            // stale once squeeze drives the fit — same reasoning setAutoHeight
-            // clears it — so drop it too (setAutoHeight routes through
-            // clearHeightBeforeExpand; the field is set directly here).
-            self.heightBeforeExpand = undefined
-            self.setScrollTop(0)
-          }
         },
 
         /**
@@ -1674,23 +1663,6 @@ export default function baseStateModelFactory(
           /**
            * #action
            */
-          setAutoHeight(value: boolean) {
-            self.configuration.setSlot('autoHeight', value)
-            if (value) {
-              // Auto-fit (grow height to content) is the opposite of fit-to-height
-              // (squeeze content into a fixed height); leave fit mode so they
-              // can't both claim to be active.
-              self.squeezeToDisplayHeight = false
-              // The manual expand/restore state is meaningless once auto-fit
-              // drives the height; drop it so a later disable doesn't surface a
-              // stale "restore previous height".
-              self.clearHeightBeforeExpand()
-            }
-          },
-
-          /**
-           * #action
-           */
           setShowDescriptions(value: boolean) {
             self.configuration.setSlot('showDescriptions', value)
           },
@@ -1767,7 +1739,7 @@ export default function baseStateModelFactory(
          * #action
          */
         // Set the feature-size (density) preset. Orthogonal to the track-height
-        // strategy — squeeze/grow scale or accommodate whatever size this sets —
+        // strategy — fit/grow scale or accommodate whatever size this sets —
         // so it deliberately leaves heightMode untouched.
         setDisplayMode(value: DisplayMode) {
           self.configuration.setSlot('displayMode', value)
@@ -1776,17 +1748,19 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        // Set the track-height strategy as one exclusive choice, delegating to
-        // the two primitives (each already clears the other) so "fixed" is the
-        // only state that needs both cleared explicitly.
+        // Set the track-height strategy by writing the unified `heightMode` slot;
+        // mutual exclusion is inherent to the single enum. grow/fit both
+        // drive the height, so a pending manual expand/restore marker is stale;
+        // fit additionally has no scroll extent, so a stale scrollTop would
+        // leave the GPU canvas painted at an invalid offset. The `laidOutDataMap`
+        // getter does the actual fit reactively.
         setHeightMode(mode: HeightMode) {
-          if (mode === 'grow') {
-            self.setAutoHeight(true)
-          } else if (mode === 'squeeze') {
-            self.setSqueezeToDisplayHeight(true)
-          } else {
-            self.setAutoHeight(false)
-            self.setSqueezeToDisplayHeight(false)
+          self.configuration.setSlot('heightMode', mode)
+          if (mode !== 'fixed') {
+            self.clearHeightBeforeExpand()
+          }
+          if (mode === 'fit') {
+            self.setScrollTop(0)
           }
         },
 
@@ -2076,16 +2050,16 @@ export default function baseStateModelFactory(
         return {
           /**
            * #action
-           * A manual drag-resize means the user wants a fixed height; turn off
-           * auto-fit first, otherwise the CanvasAutoHeight autorun snaps the
-           * height back on the next layout change and the drag appears to do
-           * nothing. Also drop any expand-to-fit marker — once the user sets a
-           * height by hand, restoring to the pre-expand height is stale (same
-           * reasoning as setAutoHeight).
+           * A manual drag-resize means the user wants a fixed height; leave grow
+           * mode first, otherwise the CanvasAutoHeight autorun snaps the height
+           * back on the next layout change and the drag appears to do nothing.
+           * Also drop any expand-to-fit marker — once the user sets a height by
+           * hand, restoring to the pre-expand height is stale (same reasoning
+           * setHeightMode uses when entering grow/fit).
            */
           resizeHeight(distance: number) {
-            if (self.autoHeight) {
-              self.setAutoHeight(false)
+            if (self.heightMode === 'grow') {
+              self.setHeightMode('fixed')
             }
             self.clearHeightBeforeExpand()
             return superResizeHeight(distance)
@@ -2101,16 +2075,17 @@ export default function baseStateModelFactory(
           afterAttach() {
             superAfterAttach()
 
-            // Auto-height: snap height to fit the laid-out content. maxY
-            // derives from laidOutDataMap, which derives from raw fetch data +
-            // coarseBpPerPx (debounced 500ms) + label visibility — so zoom
-            // and label toggles both flow through here without extra plumbing.
+            // Auto-height (grow): snap height to fit the laid-out content,
+            // capped at GROW_MAX_HEIGHT via grownHeight. maxY derives from
+            // laidOutDataMap, which derives from raw fetch data + coarseBpPerPx
+            // (debounced 500ms) + label visibility — so zoom and label toggles
+            // both flow through here without extra plumbing.
             addDisposer(
               self,
               autorun(
                 () => {
                   if (self.autoHeight) {
-                    self.setHeight(self.fitHeight)
+                    self.setHeight(self.grownHeight)
                   }
                 },
                 { name: 'CanvasAutoHeight' },
@@ -2199,7 +2174,7 @@ export default function baseStateModelFactory(
             let prevMode: string | undefined
             let prevShowLabels: boolean | undefined
             let prevShowDescriptions: boolean | undefined
-            let prevSqueezeScale: number | undefined
+            let prevFitScale: number | undefined
             // autorunOnReadyView gates on view.initialized — laidOutDataMap is
             // empty until then, and showLabels/effectiveShowDescriptions read
             // view.width (which throws pre-measure), so the body must not run
@@ -2213,21 +2188,21 @@ export default function baseStateModelFactory(
                 const mode = self.displayMode
                 const showLabels = self.showLabels
                 const showDescriptions = self.effectiveShowDescriptions
-                // A squeeze-to-height rescale (e.g. a drag-resize) is a uniform
-                // squeeze, not a row re-pack, so treat it like a mode change:
+                // A fit-to-height rescale (e.g. a drag-resize) is a uniform
+                // fit, not a row re-pack, so treat it like a mode change:
                 // snap rather than morph, else every resize frame animates.
-                const squeezeScale = self.squeezeScale
+                const fitScale = self.fitScale
                 const scaleUnchanged =
                   mode === prevMode &&
                   showLabels === prevShowLabels &&
                   showDescriptions === prevShowDescriptions &&
-                  squeezeScale === prevSqueezeScale
+                  fitScale === prevFitScale
                 const from = prevLayout
                 prevLayout = current
                 prevMode = mode
                 prevShowLabels = showLabels
                 prevShowDescriptions = showDescriptions
-                prevSqueezeScale = squeezeScale
+                prevFitScale = fitScale
                 // Not a real layout-to-layout transition (first data, an
                 // empty map on nav) — nothing to morph or snap.
                 if (
@@ -2551,7 +2526,7 @@ export default function baseStateModelFactory(
          * size presets (the one thing ~everyone wants). The less-obvious
          * container-sizing strategy lives under a "Track height" nested entry
          * with effect-describing labels, so a first-time user never has to parse
-         * "grow/squeeze/fit". Shared by every canvas display (genes, variants).
+         * "fixed/grow/fit". Shared by every canvas display (genes, variants).
          */
         featureHeightMenuItems() {
           return [
@@ -2580,32 +2555,49 @@ export default function baseStateModelFactory(
                 ),
                 { type: 'divider' as const },
                 {
+                  // Each track-height mode carries its own pin, like the density
+                  // presets above: the radio sets the mode for this track, the pin
+                  // promotes it as the session-wide default. heightMode is a
+                  // sentinel promotable slot, so every mode — `fixed` included —
+                  // is pinnable back over another session default.
                   label: 'Track height',
                   subMenu: [
-                    {
+                    promotableRadioItem({
                       label: 'Fixed height — scroll to see all features',
-                      type: 'radio' as const,
                       checked: self.heightMode === 'fixed',
                       onClick: () => {
                         self.setHeightMode('fixed')
                       },
-                    },
-                    {
+                      sessionDefault: makeSessionDefaultControl(
+                        self,
+                        'heightMode',
+                        'fixed',
+                      ),
+                    }),
+                    promotableRadioItem({
                       label: 'Auto height — grow track to show all features',
-                      type: 'radio' as const,
                       checked: self.heightMode === 'grow',
                       onClick: () => {
                         self.setHeightMode('grow')
                       },
-                    },
-                    {
+                      sessionDefault: makeSessionDefaultControl(
+                        self,
+                        'heightMode',
+                        'grow',
+                      ),
+                    }),
+                    promotableRadioItem({
                       label: 'Fixed height — compress features to fit',
-                      type: 'radio' as const,
-                      checked: self.heightMode === 'squeeze',
+                      checked: self.heightMode === 'fit',
                       onClick: () => {
-                        self.setHeightMode('squeeze')
+                        self.setHeightMode('fit')
                       },
-                    },
+                      sessionDefault: makeSessionDefaultControl(
+                        self,
+                        'heightMode',
+                        'fit',
+                      ),
+                    }),
                   ],
                 },
               ],

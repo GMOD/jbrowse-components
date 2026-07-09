@@ -171,13 +171,13 @@ describe('canvas display expand-to-fit', () => {
     display.expandToFit()
     expect(display.heightBeforeExpand).toBe(30)
 
-    display.setAutoHeight(true)
+    display.setHeightMode('grow')
     expect(display.heightBeforeExpand).toBeUndefined()
   })
 
   it('a manual drag-resize turns auto-fit off', () => {
     const display = createDisplay()
-    display.setAutoHeight(true)
+    display.setHeightMode('grow')
     expect(display.autoHeight).toBe(true)
 
     display.resizeHeight(50)

@@ -148,20 +148,6 @@ node has no session ancestor.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
-### getSlotInheritedValue
-
-The value an un-pinned track resolves to for this slot — the session-wide
-promoted default when usable, else the base — regardless of whether this track
-currently pins its own value. Lets a track menu label its "follow default"
-choice with the mode it would fall back to (e.g. `Default (Compact)`).
-
-```js
-// type signature
-<T = unknown>(self: PromotableDisplay, slot: string) => T
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
 ### isSlotPinned
 
 Whether this track pins the slot (holds a non-default value) rather than

@@ -134,6 +134,12 @@ const ALIGNMENTS_COMPACTNESS = {
   'super-compact': { featureHeight: 1, featureSpacing: 0 },
 }
 
+// The `heightMode` config-slot values the canvas feature + alignments displays
+// share: `fixed` (scroll), `grow` (resize the track to fit all), `fit` (shrink
+// content to fill the height). Other display types have no heightMode notion.
+const HEIGHT_MODES = ['fixed', 'grow', 'fit'] as const
+const HEIGHT_MODE_CATEGORIES = new Set<Category>(['feature', 'alignments'])
+
 // Settings initialized via the display snapshot passed to `view.showTrack`.
 // Keys that are config slots (`height`, `color`, `sortedBy`, …) are routed by
 // `showTrackGeneric` onto the display's config; any remaining plain MST props
@@ -146,9 +152,10 @@ interface DisplaySnapshot {
   colorBy?: { type: string; tag?: string }
   featureHeight?: number
   featureSpacing?: number
-  // feature (canvas)
+  // feature (canvas) + alignments — shared fixed/grow/fit vocabulary, gated per
+  // display type by HEIGHT_MODES
   displayMode?: 'normal' | 'compact' | 'superCompact'
-  squeezeToDisplayHeight?: boolean
+  heightMode?: 'fixed' | 'grow' | 'fit'
   // alignments
   groupBy?: { type: string; tag?: string }
   sortedBy?: {
@@ -385,19 +392,24 @@ function applyModifier(
       }
       break
     }
-    case 'fitToDisplayHeight': {
-      // "Fit to display height" — the feature display uniformly shrinks glyphs
-      // so every row fits the track height. A numeric value
-      // (`fitToDisplayHeight:200`) sets that track height and turns the squeeze
-      // on in one modifier; a bare flag (or `:true`/`:false`) toggles the
-      // squeeze against whatever `height:` was given.
-      if (category === 'feature') {
-        const n = Number(val1)
-        if (val1 && Number.isFinite(n)) {
-          snap.height = n
-          snap.squeezeToDisplayHeight = true
+    case 'heightMode': {
+      // Track-height strategy, mirroring the `heightMode` config slot. `fixed`
+      // scrolls to see all, `grow` resizes the track to fit everything, `fit`
+      // shrinks content to fill the current height. Valid values are gated per
+      // display type (HEIGHT_MODES). An optional numeric second arg sets the
+      // fixed track height in the same modifier, e.g. `heightMode:fit:200`.
+      if (HEIGHT_MODE_CATEGORIES.has(category)) {
+        const mode = HEIGHT_MODES.find(m => m === val1)
+        if (mode) {
+          snap.heightMode = mode
+          const n = Number(val2)
+          if (val2 && Number.isFinite(n)) {
+            snap.height = n
+          }
         } else {
-          snap.squeezeToDisplayHeight = booleanize(val1 || 'true')
+          console.warn(
+            `Warning: unknown heightMode "${val1}" for a ${category} track`,
+          )
         }
       }
       break
