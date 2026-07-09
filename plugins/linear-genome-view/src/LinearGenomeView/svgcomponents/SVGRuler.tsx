@@ -184,7 +184,7 @@ export default function SVGRuler({
             key={key}
             block={block}
             viewOffsetPx={viewOffsetPx}
-            height={100}
+            height={rulerHeight}
             idPrefix={`clip-${model.id}`}
           >
             <Ruler

@@ -52,6 +52,15 @@ export default function SVGView({
   return (
     <>
       <g transform={`translate(${trackLabelOffset})`}>
+        {/*
+          This group's origin (y=0) is the top of the ruler. The assembly label
+          uses the default alphabetic baseline (glyphs ascend above y=0) so it
+          floats into the fontSize-tall band that the caller reserves *above*
+          this group — synteny/breakpoint each offset the whole view by
+          +fontSize for exactly this. Don't switch to dominantBaseline="hanging"
+          without also reworking those callers' offsets, or the label collides
+          with the ruler.
+        */}
         <text
           x={0}
           fontSize={fontSize}

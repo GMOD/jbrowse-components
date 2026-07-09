@@ -45,7 +45,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   })
   const offset = tracksTop
   const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
-  const height = tracksHeight + offset + 100
+  const height = tracksHeight + offset + exportMargin
 
   const legendWidth = max(
     visibleTracks.map(track => track.displays[0]!.svgLegendWidth?.() ?? 0),

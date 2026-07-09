@@ -35,7 +35,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     totalHeight(v.tracks, textHeight, trackLabels),
   )
   const heights = tracksHeights.map(h => h + offset)
-  const totalHeightSvg = sum(heights) + 100
+  const totalHeightSvg = sum(heights) + exportMargin
   const displayResults = await Promise.all(
     views.map(
       async view =>
