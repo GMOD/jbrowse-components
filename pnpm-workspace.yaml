@@ -27,3 +27,4 @@ minimumReleaseAgeExclude:
   - 'eslint-plugin-unicorn'
   - 'typescript'
   - '@typescript/*'
+  - 'jest-fetch-mock'
