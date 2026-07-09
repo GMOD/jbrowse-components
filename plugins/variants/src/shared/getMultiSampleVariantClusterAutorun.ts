@@ -1,23 +1,16 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import { isAbortException } from '@jbrowse/core/util/aborting'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { setupRunClusteringAutorun } from '@jbrowse/tree-sidebar'
 
 import { runGenotypeClustering } from './runGenotypeClustering.ts'
 
 import type { ReducedModel } from './components/MultiSampleVariantClusterDialog/types.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// Declarative counterpart to the "Cluster by genotype" -> "Run clustering"
-// dialog, following the same transient-launch-spec pattern as
-// LinearGenomeView's `init`: a session/config sets `runClustering: true` on
-// the display, the real clustering RPC runs once automatically, and the flag
-// is cleared afterwards (setRunClustering(undefined)) so a saved session never
-// re-triggers it.
+// The multi-sample-variant "Cluster by genotype" flavor of the shared
+// declarative-clustering autorun: fires once on `runClustering: true` and runs
+// the real genotype-matrix RPC over the current view regions.
 export function getMultiSampleVariantClusterAutorun(
   self: IAnyStateTreeNode &
     ReducedModel & {
@@ -26,45 +19,17 @@ export function getMultiSampleVariantClusterAutorun(
       setStatusMessage: (status?: RpcStatus) => void
     },
 ) {
-  // Plain closure flag (not observable) guards re-entrant runs while the RPC
-  // is in flight, the same trick setupInitAutorun uses for `init`.
-  let applying = false
-  addDisposer(
-    self,
-    autorun(
-      async () => {
-        const { runClustering, sourcesVolatile } = self
-        if (!runClustering || applying || !sourcesVolatile) {
-          return
-        }
-        const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view.initialized) {
-          return
-        }
-        applying = true
-        const stopToken = createStopToken()
-        try {
-          await runGenotypeClustering({
-            model: self,
-            rpcManager: getSession(self).rpcManager,
-            sessionId: getRpcSessionId(self),
-            regions: view.dynamicBlocks.contentBlocks,
-            stopToken,
-            statusCallback: self.setStatusMessage,
-          })
-        } catch (e) {
-          if (!isAbortException(e) && isAlive(self)) {
-            console.error(e)
-          }
-        } finally {
-          stopStopToken(stopToken)
-          if (isAlive(self)) {
-            self.setRunClustering(undefined)
-          }
-          applying = false
-        }
-      },
-      { delay: 500, name: 'AutoRunMultiSampleVariantClustering' },
-    ),
-  )
+  setupRunClusteringAutorun(self, {
+    name: 'AutoRunMultiSampleVariantClustering',
+    ready: () => !!self.sourcesVolatile,
+    run: (view, stopToken) =>
+      runGenotypeClustering({
+        model: self,
+        rpcManager: getSession(self).rpcManager,
+        sessionId: getRpcSessionId(self),
+        regions: view.dynamicBlocks.contentBlocks,
+        stopToken,
+        statusCallback: self.setStatusMessage,
+      }),
+  })
 }

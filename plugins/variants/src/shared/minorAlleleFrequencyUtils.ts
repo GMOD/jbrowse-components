@@ -14,13 +14,20 @@ export function calculateMinorAlleleFrequency(
   let secondMax = 0
   let total = 0
   for (const key in alleleCounts) {
-    const count = alleleCounts[key]!
-    total += count
-    if (count > firstMax) {
-      secondMax = firstMax
-      firstMax = count
-    } else if (count > secondMax) {
-      secondMax = count
+    // No-call '.' is not an allele: it must be excluded from both the
+    // minor-allele candidacy and the denominator, or on sites where no-calls
+    // outnumber the true minor allele the returned frequency is actually the
+    // missingness fraction. No-call fraction is measured separately by
+    // calculateMissingnessFrequency / the missingness filter.
+    if (key !== '.') {
+      const count = alleleCounts[key]!
+      total += count
+      if (count > firstMax) {
+        secondMax = firstMax
+        firstMax = count
+      } else if (count > secondMax) {
+        secondMax = count
+      }
     }
   }
   return secondMax / (total || 1)

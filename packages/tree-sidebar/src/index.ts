@@ -6,6 +6,7 @@ export { treeSidebarRightEdge } from './treeSidebarGeometry.ts'
 export { SvgRowLabels } from './SvgRowLabels.tsx'
 export { SvgTreePath } from './SvgTreePath.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
+export { setupRunClusteringAutorun } from './runClusteringAutorun.ts'
 export {
   applySubtreeFilter,
   buildClusteredLayout,

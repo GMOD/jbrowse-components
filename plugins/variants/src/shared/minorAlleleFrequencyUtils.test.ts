@@ -147,12 +147,21 @@ describe('calculateMinorAlleleFrequency', () => {
     expect(maf).toBeCloseTo(5 / 18)
   })
 
-  it('handles missing alleles correctly', () => {
-    // Missing alleles (.) should be counted but typically aren't the minor allele
+  it('excludes no-call alleles from the denominator', () => {
+    // No-call (.) is not an allele: MAF is over called alleles only.
     const alleleCounts = { '0': 6, '1': 2, '.': 2 }
     const maf = calculateMinorAlleleFrequency(alleleCounts)
-    // Total = 10, firstMax = 6, secondMax = 2, MAF = 2/10 = 0.2
-    expect(maf).toBe(0.2)
+    // Called total = 8, firstMax = 6, secondMax = 2, MAF = 2/8 = 0.25
+    expect(maf).toBe(0.25)
+  })
+
+  it('does not report missingness as the minor allele frequency', () => {
+    // No-calls (30) outnumber the true minor allele (1 -> 20). If '.' were
+    // treated as an allele, secondMax would be the no-calls (0.30). It must be
+    // the real minor allele over called alleles: 20 / (50 + 20) = 0.2857.
+    const alleleCounts = { '0': 50, '1': 20, '.': 30 }
+    const maf = calculateMinorAlleleFrequency(alleleCounts)
+    expect(maf).toBeCloseTo(20 / 70)
   })
 
   it('returns 0 for empty allele counts', () => {
