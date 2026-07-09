@@ -461,6 +461,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
+      '@jbrowse/mobx-state-tree':
+        specifier: ^5.12.0
+        version: 5.12.0(mobx@6.16.1)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
