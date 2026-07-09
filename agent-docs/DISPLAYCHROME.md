@@ -88,12 +88,47 @@ The readiness gate is `canvasDrawn` (GPU) / `svgReady` (arc), expressed once.
 DisplayChrome takes a `testid` **base** and appends `-done` on `canvasDrawn`, so
 consumers never hand-write the ternary. Two other emitters coexist **by design**
 (ADR-026 "distinct roles, not drift"): the generic `display-${id}-done` from the
-`BaseLinearDisplay.tsx` wrapper (Pattern-A displays: canvas-basic, LinearVariant),
-and the standalone `synteny_canvas_done` / `dotplot_webgl_canvas_done` on the
-non-LGV views. Displays that pixel-match the canvas give the inner `<canvas>` a
-**static** selector (`hic_canvas`, `ld_canvas`, `variant_canvas`,
-`variant_matrix_canvas`) as a query target — tests wait on `${base}-done`, then
-read the static selector.
+`BaseLinearDisplay.tsx` wrapper, and the standalone `synteny_canvas_done` /
+`dotplot_webgl_canvas_done` on the non-LGV views. Displays that pixel-match the
+canvas give the inner `<canvas>` a **static** selector (`hic_canvas`, `ld_canvas`,
+`variant_canvas`, `variant_matrix_canvas`) as a query target — tests wait on
+`${base}-done`, then read the static selector.
+
+### Three testid shapes coexist — and why they aren't unified
+
+The `display-${id}` base is passed to DisplayChrome by maf and alignments
+directly; every other display uses a static `<type>-display` base. Additionally,
+five displays (canvas-basic, LinearVariant, wiggle, manhattan, multi-wiggle) set
+`ReactComponent: BaseLinearDisplayComponent` — the legacy `BaseLinearDisplay.tsx`
+wrapper — so they render **inside** a second `position:relative` container that
+emits `display-${id}-done` on its own. canvas-basic/LinearVariant pass **no**
+`testid` to their inner DisplayChrome (single `-done`, from the wrapper);
+wiggle/manhattan/multi-wiggle pass a static base too, so they emit **both**
+`display-${id}-done` (wrapper) and `<type>-display-done` (chrome). LinearVariant
+also relies on the wrapper's container to position its `FloatingLegend` child,
+and it reuses canvas's `FeatureComponent` as its `DisplayMessageComponent`.
+
+This is genuine redundancy (a nested container that duplicates DisplayChrome's
+own `position:relative` + `-done`), but it is **deliberately not collapsed** — the
+`-done` selectors are a load-bearing contract across four test systems, only one
+of which (jest/jsdom) runs outside CI:
+
+- puppeteer browser-tests wait `[data-testid^="display-${trackId}"]`
+  (`browser-tests/helpers.ts`), `[data-testid^="display-"]`
+  (`redraw`/`demo-inventory`/`main-thread-rpc`) — these hard-require the generic
+  `display-${id}` prefix for feature/canvas tracks,
+- cypress (`component_tests/lgv-vite`) and website screenshot specs
+  (`readySelector: '[data-testid="…-display-done"]'`) pin the static bases.
+
+So removing the wrapper (making DisplayChrome the sole emitter) means changing
+which element carries `display-${id}-done`, unverifiable without a full
+build + GPU + headless-Chrome run. Any unification pass must land on a branch
+where the browser-test + website-spec + cypress suites are green — not blind.
+Sequenced plan when that's available: (a) make DisplayChrome emit the generic
+`display-${id}-done` for every display; (b) migrate the static-base tests to it
+or keep both during a deprecation window; (c) drop `BaseLinearDisplay.tsx` from
+the GPU path, moving LinearVariant's `FloatingLegend` into its own DisplayChrome
+child. Until then, treat the redundancy as frozen.
 
 ## Load-bearing gotchas
 
