@@ -515,26 +515,59 @@ describe('alignments fit-to-display-height session default', () => {
   })
 })
 
-// mismatchAlpha fades mismatch bases by their per-base Phred quality. It rides
-// the config-slot round-trip and reaches the renderers via renderState (tier-4
-// rerender), so toggling it must flip both the getter and the render state.
+// mismatchAlpha fades mismatch bases by their per-base Phred quality. It is a
+// promotable `maybeBoolean` slot: resolved through getConfResolved (track pin →
+// session default → off), reaches the renderers via renderState (tier-4
+// rerender), and its "make default" pin is symmetric (unlike showSoftClipping,
+// an explicit off can be pinned over an on session default).
 describe('alignments mismatchAlpha (fade by base quality)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
     expect(display.mismatchAlpha).toBe(false)
   })
 
-  it('toggleMismatchAlpha flips the config slot', () => {
+  it('setMismatchAlpha pins the config slot on and off', () => {
     const { display } = createDisplay()
-    display.toggleMismatchAlpha()
+    display.setMismatchAlpha(true)
     expect(display.mismatchAlpha).toBe(true)
-    display.toggleMismatchAlpha()
+    display.setMismatchAlpha(false)
     expect(display.mismatchAlpha).toBe(false)
   })
 
   it('follows a config default', () => {
     const { display } = createDisplay({ mismatchAlpha: true })
     expect(display.mismatchAlpha).toBe(true)
+  })
+
+  it('follows a session-wide default when the track is unpinned', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'mismatchAlpha',
+      true,
+    )
+    expect(display.mismatchAlpha).toBe(true)
+  })
+
+  it('a track can pin off over an on session default (symmetric maybeBoolean)', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'mismatchAlpha',
+      true,
+    )
+    expect(display.mismatchAlpha).toBe(true)
+    display.setMismatchAlpha(false)
+    expect(display.mismatchAlpha).toBe(false)
+  })
+
+  it('the pin promotes the current value as the session default', () => {
+    const { session, display } = createDisplay()
+    display.setMismatchAlpha(true)
+    display.mismatchAlphaSessionDefault.toggle()
+    expect(
+      session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'mismatchAlpha'),
+    ).toBe(true)
   })
 
   it('the Show menu exposes the fade-by-quality toggle', () => {

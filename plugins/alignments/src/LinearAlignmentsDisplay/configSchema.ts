@@ -234,9 +234,17 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       mismatchAlpha: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Fade mismatches by base quality',
+        type: 'maybeBoolean',
+        description:
+          'Fade mismatch bases by their per-base Phred quality. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false pins the track (either direction, including pinning off over an on session default)',
+        // Promotable via the `maybeBoolean` sentinel: `undefined` (unset) is the
+        // inherit state, `promotedBase` (false) is what it resolves to when
+        // nothing is promoted. A legacy stored boolean is already a valid pinned
+        // value, so no snapshot migration is needed. Read through the resolved
+        // `mismatchAlpha` getter (getConfResolved), never raw.
+        defaultValue: undefined,
+        promotedBase: false,
+        promotable: true,
       },
       /**
        * #slot

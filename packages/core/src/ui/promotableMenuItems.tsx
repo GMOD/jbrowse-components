@@ -9,17 +9,20 @@ import type { SessionDefaultControl } from '../configuration/promotableDefaults.
 // display type. The pin is always shown so the capability is discoverable.
 export function promotableToggleItem({
   label,
+  helpText,
   checked,
   onToggle,
   sessionDefault,
 }: {
   label: string
+  helpText?: string
   checked: boolean
   onToggle: () => void
   sessionDefault: SessionDefaultControl
 }): CheckboxMenuItem {
   return {
     label,
+    helpText,
     type: 'checkbox',
     checked,
     onClick: () => {

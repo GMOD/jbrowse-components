@@ -11,6 +11,7 @@ import {
   areSlotsAtSessionDefault,
   getConf,
   getConfResolved,
+  makeCurrentValueSessionDefaultControl,
   makeSessionDefaultControl,
   setSlotsSessionDefault,
 } from '@jbrowse/core/configuration'
@@ -850,8 +851,23 @@ export default function stateModelFactory(
         /**
          * #getter
          */
+        // Resolved through the promotable-slot tiers (getConfResolved): an
+        // explicit track value pins the fade on or off; otherwise it follows the
+        // session-wide default, falling back to off. A `maybeBoolean` slot, so
+        // (unlike showSoftClipping) a session default of "on" can be pinned back
+        // off on a single track.
         get mismatchAlpha(): boolean {
-          return !!getConf(self, 'mismatchAlpha')
+          return getConfResolved(self, 'mismatchAlpha')
+        },
+
+        /**
+         * #getter
+         */
+        // "make the current fade-by-quality state the default for all tracks"
+        // control (pin): symmetric, so it promotes whichever value the track
+        // currently shows.
+        get mismatchAlphaSessionDefault() {
+          return makeCurrentValueSessionDefaultControl(self, ['mismatchAlpha'])
         },
 
         /**
@@ -2076,11 +2092,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          toggleMismatchAlpha() {
-            self.configuration.setSlot(
-              'mismatchAlpha',
-              !getConf(self, 'mismatchAlpha'),
-            )
+          setMismatchAlpha(value: boolean) {
+            self.configuration.setSlot('mismatchAlpha', value)
           },
 
           /**
