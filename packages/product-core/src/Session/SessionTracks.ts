@@ -105,7 +105,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
        * Map — not observable, not persisted — mirroring the pluginManager
        * hydration cache: it holds the live MST config node a shown track's
        * in-place quick-edits mutate, so the shared frozen base is never touched.
-       * See agent-docs/ADR-032 and CONFIG_WORKING_COPY_PLAN.md.
+       * See agent-docs/ADR-032.
        *
        * Not evicted: it's a pure memoization cache, bounded by the count of
        * distinct tracks shown this session (each entry a lazily-hydrated config
