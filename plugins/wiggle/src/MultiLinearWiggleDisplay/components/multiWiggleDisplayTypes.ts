@@ -12,7 +12,6 @@ export interface MultiWiggleDisplayModel
   sources: { name: string; color?: string; labelColor?: string }[]
   domain: [number, number] | undefined
   scaleType: string
-  hasNoData: boolean
   isOverlay: boolean
   numSources: number
   rowHeight: number

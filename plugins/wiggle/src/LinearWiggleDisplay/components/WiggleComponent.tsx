@@ -9,7 +9,6 @@ import {
 } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import NoDataMessage from '../../shared/NoDataMessage.tsx'
 import ScoreLegend from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
@@ -138,7 +137,6 @@ const WiggleBody = observer(function WiggleBody({
       {model.displayCrossHatches && model.ticks ? (
         <CrossHatches ticks={model.ticks} width={width} height={height} />
       ) : null}
-      {model.hasNoData ? <NoDataMessage width={width} height={height} /> : null}
       <WiggleTooltip
         model={model}
         clientMouseCoord={clientMouseCoord}

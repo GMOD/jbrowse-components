@@ -6,7 +6,6 @@ export interface WiggleDisplayModel
   extends WiggleGpuDisplayModel, WiggleGpuProps {
   domain: [number, number] | undefined
   scaleType: string
-  hasNoData: boolean
   featureUnderMouse?: WiggleFeatureUnderMouse
   setFeatureUnderMouse: (feat?: WiggleFeatureUnderMouse) => void
   selectFeature: (feat: WiggleFeatureUnderMouse) => void

@@ -199,8 +199,8 @@ export default function stateModelFactory(
         const height = self.height
         // Always defined: until autoscale resolves a domain, resolveRenderState
         // returns a [0,1] stub so an uncovered region still renders (clears the
-        // canvas, flips canvasDrawn, resolves the overlay to the NoDataMessage
-        // instead of spinning forever). "Still loading" is expressed separately
+        // canvas, flips canvasDrawn, instead of spinning forever). "Still
+        // loading" is expressed separately
         // by the render callback's `rpcDataMap.size === 0` first-paint gate.
         return resolveRenderState(self.domain, domain =>
           makeRenderState(

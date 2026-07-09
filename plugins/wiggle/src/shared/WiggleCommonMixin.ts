@@ -76,23 +76,6 @@ export function WiggleCommonMixin() {
     .views(self => ({
       /**
        * #getter
-       * True once a fetch has completed (loadedBpPerPx set) but every loaded
-       * region came back with zero features — lets the display show a "no data"
-       * message instead of an ambiguous flat baseline at score 0.
-       */
-      get hasNoData() {
-        return (
-          self.loadedBpPerPx !== undefined &&
-          self.rpcDataMap.size > 0 &&
-          ![...self.rpcDataMap.values()].some(data =>
-            data.sources.some(source => source.numFeatures > 0),
-          )
-        )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        */
       get domain() {
         const range = self.visibleScoreRange
