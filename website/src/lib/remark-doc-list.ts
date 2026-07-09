@@ -31,11 +31,18 @@ const remarkDocList: Plugin<[], Root> = () => tree => {
   tree.children.forEach((node, i) => {
     const match = node.type === 'html' ? markerRe.exec(node.value.trim()) : null
     if (match) {
+      const entries = docsInDir(match[1]!)
+      // A marker resolving to nothing is a typo'd dir (e.g. `doclist:tutorial`),
+      // not a real empty directory — fail the build rather than silently
+      // rendering an empty list.
+      if (entries.length === 0) {
+        throw new Error(`<!-- doclist:${match[1]} --> matched no docs`)
+      }
       const list: List = {
         type: 'list',
         ordered: false,
         spread: false,
-        children: docsInDir(match[1]!).map(listItem),
+        children: entries.map(listItem),
       }
       tree.children[i] = list
     }
