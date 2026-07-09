@@ -1099,7 +1099,10 @@ export default function baseStateModelFactory(
          * the fit squeeze/grow scale floors.
          */
         get fitBodyPx() {
-          return getConf(self, 'featureHeight') * HEIGHT_MULTIPLIERS[self.displayMode]
+          return (
+            getConf(self, 'featureHeight') *
+            HEIGHT_MULTIPLIERS[self.displayMode]
+          )
         },
         /**
          * #getter

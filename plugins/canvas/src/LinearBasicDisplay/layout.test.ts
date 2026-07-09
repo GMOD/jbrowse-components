@@ -158,7 +158,12 @@ describe('fitWidth label decimation', () => {
         })),
       )
     const allH = maxBottom(
-      new Map([[0, layout(new Map([[0, narrowStack()]]), keys, 1, true, false).get(0)!]]),
+      new Map([
+        [
+          0,
+          layout(new Map([[0, narrowStack()]]), keys, 1, true, false).get(0)!,
+        ],
+      ]),
     )
     const decimatedH = maxBottom(new Map([[0, decimate(narrowStack())]]))
     expect(decimatedH).toBeLessThan(allH)

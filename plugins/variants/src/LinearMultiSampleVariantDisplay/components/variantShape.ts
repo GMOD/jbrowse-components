@@ -65,8 +65,7 @@ interface InsertionGlyph {
 export function insertionGlyph(spanPx: number): InsertionGlyph {
   const triBlend = smoothstep(INS_DOT_SPAN_PX, INS_TRI_SPAN_PX, spanPx)
   const cappedSpan = Math.min(spanPx, INS_TRI_SPAN_PX)
-  const widenToSpan =
-    Math.max(cappedSpan, INS_DOT_SIZE_PX) - INS_DOT_SIZE_PX
+  const widenToSpan = Math.max(cappedSpan, INS_DOT_SIZE_PX) - INS_DOT_SIZE_PX
   const topWidthPx = INS_DOT_SIZE_PX + widenToSpan * triBlend
   const bottomWidthPx = topWidthPx * (1 - triBlend)
   return { triBlend, topWidthPx, bottomWidthPx }

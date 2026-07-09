@@ -127,7 +127,9 @@ const AlignmentsDisplayComponent = observer(
                 hasOverflow={model.scrollableHeight > 0}
                 scrollZoom={view.scrollZoom}
                 noun="reads"
-                onSetHeightMode={mode => { model.setHeightMode(mode) }}
+                onSetHeightMode={mode => {
+                  model.setHeightMode(mode)
+                }}
               />
             </div>
             <Suspense fallback={null}>

@@ -28,10 +28,31 @@ export interface ModificationColorBy {
   // type. Stored as the hidden set (not the shown set) so types newly
   // discovered in the data default to visible.
   hiddenModifications?: string[]
+  // explicit allow-list of modification type codes to show. When non-empty it
+  // wins over hiddenModifications: ONLY these types render, so a "6mA only"
+  // view (shownModifications: ['a']) stays 6mA-only even if the basecaller also
+  // emits 5mC/5hmC on the same reads. Absent/empty falls back to the
+  // hiddenModifications default (show every detected type).
+  shownModifications?: string[]
   threshold?: number
   // cytosine context for the methylation view; absent means CpG. CHG/CHH support
   // plant methylation. Only consumed in methylation mode (getMethBins).
   cytosineContext?: CytosineContext
+}
+
+// Single source for "is this modification type visible?" given a colorBy.
+// shownModifications (allow-list) wins when present and non-empty; otherwise
+// hiddenModifications (deny-list) is subtracted from the all-visible default.
+// Shared by the worker extract filter, the legend, and the color-by menu so the
+// three can't drift.
+export function isModificationTypeVisible(
+  modifications: ModificationColorBy | undefined,
+  type: string,
+) {
+  const shown = modifications?.shownModifications
+  return shown?.length
+    ? shown.includes(type)
+    : !(modifications?.hiddenModifications ?? []).includes(type)
 }
 
 // Shader color-scheme dispatch paths — the distinct branches read.slang

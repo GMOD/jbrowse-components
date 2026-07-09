@@ -149,6 +149,25 @@ describe('getReadDisplayLegendItems', () => {
     ).toEqual(['a'])
   })
 
+  test('shownModifications allow-list keeps only the listed swatch', () => {
+    const mods = new Map([
+      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
+      ['h', { color: 'blue', type: 'h', base: 'C', strand: '+' }],
+      ['a', { color: 'purple', type: 'a', base: 'A', strand: '+' }],
+    ])
+    expect(
+      getReadDisplayLegendItems(
+        {
+          type: 'modifications',
+          modifications: { shownModifications: ['a'] },
+        },
+        new Set(),
+        makeTestPalette(),
+        mods,
+      ).map(i => i.label),
+    ).toEqual(['a'])
+  })
+
   test('swatch colors come from the live palette when provided', () => {
     const palette = makeTestPalette({
       colorFwdStrand: [0, 0, 1],

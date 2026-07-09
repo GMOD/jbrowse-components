@@ -84,5 +84,8 @@ test('returns a complete gene even when only one distant transcript is in view',
   const gene = featuresArray[0]!.toJSON()
   expect(gene.type).toBe('gene')
   expect(gene.name).toBe('GENE1')
-  expect(gene.subfeatures!.map(t => t.type)).toEqual(['transcript', 'transcript'])
+  expect(gene.subfeatures!.map(t => t.type)).toEqual([
+    'transcript',
+    'transcript',
+  ])
 })

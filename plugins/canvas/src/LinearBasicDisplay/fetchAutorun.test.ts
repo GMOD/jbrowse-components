@@ -506,8 +506,18 @@ describe('byte estimate pre-check', () => {
     const { display, view } = env.createDisplay()
     view.setDisplayedRegions([
       { assemblyName: 'volvox', start: 0, end: 1_500_000, refName: 'ctgA' },
-      { assemblyName: 'volvox', start: 1_500_000, end: 3_000_000, refName: 'ctgA' },
-      { assemblyName: 'volvox', start: 3_000_000, end: 4_500_000, refName: 'ctgA' },
+      {
+        assemblyName: 'volvox',
+        start: 1_500_000,
+        end: 3_000_000,
+        refName: 'ctgA',
+      },
+      {
+        assemblyName: 'volvox',
+        start: 3_000_000,
+        end: 4_500_000,
+        refName: 'ctgA',
+      },
     ])
     // Show all three regions at once
     view.showAllRegions()

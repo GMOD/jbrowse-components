@@ -584,8 +584,7 @@ function packRef(
       if (!keepName && showLabels && labelInfo?.hasName) {
         droppedLabelIds.add(item.featureId)
       }
-      const keepDescription =
-        showDescriptions && !!labelInfo?.hasDescription
+      const keepDescription = showDescriptions && !!labelInfo?.hasDescription
 
       // featureHeightPx is already compact-scaled (see applyHeightScale); add
       // the mode's inter-row gap (rowPadding) so rows pack tightly. Each kept

@@ -544,7 +544,7 @@ export default function stateModelFactory(
        */
       async renderSvg(opts: ExportSvgDisplayOptions): Promise<React.ReactNode> {
         const { renderSvg } = await import('./renderSvg.tsx')
-        return renderSvg(self as LinearMultiRowFeatureDisplayModel, opts)
+        return renderSvg(self, opts)
       },
     }))
     .actions(self => {

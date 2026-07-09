@@ -127,13 +127,10 @@ function setByType(
     type: 'modifications',
     modifications: {
       ...(twoColor ? { twoColor: true } : {}),
-      ...(onlyKey
-        ? {
-            hiddenModifications: model.visibleModificationTypes.filter(
-              k => k !== onlyKey,
-            ),
-          }
-        : {}),
+      // isolating one type writes an allow-list (shownModifications), not a
+      // deny-list of every other type — so "only 6mA" stays 6mA-only even if a
+      // new modification type is later detected in the reads.
+      ...(onlyKey ? { shownModifications: [onlyKey] } : {}),
       ...modificationThresholdField(model.modificationThreshold),
     },
   })
@@ -194,12 +191,18 @@ function buildByTypeItem(model: ModificationsModel): MenuItem {
   const { visibleModificationTypes: types, modificationThreshold } = model
   const mods = model.colorBy.modifications
   const hidden = mods?.hiddenModifications ?? []
+  const shown = mods?.shownModifications
   const activeTwoColor = !!mods?.twoColor
   const isModType = model.colorBy.type === 'modifications'
   const modName = (k: string) => modificationData[k]?.name ?? k
-  // exactly one type shown (rest hidden), vs all shown (nothing relevant hidden)
-  const onlyKey = (k: string) => types.every(t => t === k || hidden.includes(t))
-  const allVisible = !hidden.some(k => types.includes(k))
+  // exactly one type shown, vs all shown. The allow-list (shownModifications)
+  // wins when present; legacy sessions with a deny-list (hiddenModifications)
+  // still resolve correctly.
+  const onlyKey = (k: string) =>
+    shown?.length
+      ? shown.length === 1 && shown[0] === k
+      : types.every(t => t === k || hidden.includes(t))
+  const allVisible = !shown?.length && !hidden.some(k => types.includes(k))
   // multiple types → per-type radios (filter in one click); single type → the
   // all/only distinction is meaningless, so just one radio per mode.
   const multiType = types.length > 1

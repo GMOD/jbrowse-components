@@ -74,6 +74,28 @@ describe('extractModifications', () => {
     expect([...detected].sort()).toEqual(['a', 'm'])
   })
 
+  test('shownModifications allow-list renders only the listed type but still detects all', () => {
+    const { out, detected } = run({
+      type: 'modifications',
+      modifications: { threshold: 10, shownModifications: ['a'] },
+    })
+    expect(out.map(m => m.modType)).toEqual(['a'])
+    // detection is unaffected — the menu still offers every detected type
+    expect([...detected].sort()).toEqual(['a', 'm'])
+  })
+
+  test('shownModifications wins over hiddenModifications when both are set', () => {
+    const { out } = run({
+      type: 'modifications',
+      modifications: {
+        threshold: 10,
+        shownModifications: ['a'],
+        hiddenModifications: ['a'],
+      },
+    })
+    expect(out.map(m => m.modType)).toEqual(['a'])
+  })
+
   test('seenModTypes collects strand/type pairs for global simplex resolution', () => {
     // The read carries C+m and A+a, both on '+' with no '-' partner, so both
     // resolve to simplex once detectSimplexModifications runs over the pairs.

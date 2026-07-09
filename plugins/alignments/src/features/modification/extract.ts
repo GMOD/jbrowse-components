@@ -22,6 +22,7 @@ import {
 } from '@jbrowse/modifications-utils'
 
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
+import { isModificationTypeVisible } from '../../shared/types.ts'
 import { getColorForModification, getTagAlt } from '../../util.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
@@ -95,13 +96,12 @@ export function extractModifications(
     fstrand,
   )
   const modThreshold = (colorBy?.modifications?.threshold ?? 10) / 100
-  const hidden = colorBy?.modifications?.hiddenModifications ?? []
   const twoColor = colorBy?.modifications?.twoColor ?? false
   mods.forEach(({ prob, type, base }, refPos) => {
     // detectedModifications must list every type seen so the menu can offer all
     // of them — isolation filters what is *rendered*, not what is detected.
     detectedModifications.add(type)
-    const typeVisible = !hidden.includes(type)
+    const typeVisible = isModificationTypeVisible(colorBy?.modifications, type)
     if (colorBy?.type === 'modifications' && typeVisible) {
       const modRgb = cssColorToRgb(getColorForModification(type))
       // twoColor renders every call, painting low-confidence ones blue; the

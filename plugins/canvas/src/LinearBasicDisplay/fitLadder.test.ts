@@ -123,7 +123,9 @@ describe('resolveFitLadder', () => {
   })
 
   it('caps the grow at maxScale (surplus stays whitespace)', () => {
-    const rungs: FitRung[] = [{ level: 'full', layout: () => layoutOfHeight(10) }]
+    const rungs: FitRung[] = [
+      { level: 'full', layout: () => layoutOfHeight(10) },
+    ]
     const stage = resolveFitLadder(rungs, 100, 0.2, 3)
     expect(stage.level).toBe('full')
     expect(stage.scale).toBe(3)

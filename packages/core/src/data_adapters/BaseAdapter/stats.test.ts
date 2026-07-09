@@ -11,12 +11,21 @@ import type { AugmentedRegion as Region } from '../../util/types/index.ts'
 function makeGetFeatures(refEnd: number, spacingBp: number) {
   const all = Array.from({ length: Math.ceil(refEnd / spacingBp) }, (_, i) => {
     const start = i * spacingBp
-    return new SimpleFeature({ uniqueId: `f${i}`, refName: 'chr1', start, end: start + 1 })
+    return new SimpleFeature({
+      uniqueId: `f${i}`,
+      refName: 'chr1',
+      start,
+      end: start + 1,
+    })
   })
   const queries: { start: number; end: number }[] = []
   const getFeatures = (region: Region) => {
     queries.push({ start: region.start, end: region.end })
-    return from(all.filter(f => f.get('start') >= region.start && f.get('start') < region.end))
+    return from(
+      all.filter(
+        f => f.get('start') >= region.start && f.get('start') < region.end,
+      ),
+    )
   }
   return { getFeatures, queries }
 }

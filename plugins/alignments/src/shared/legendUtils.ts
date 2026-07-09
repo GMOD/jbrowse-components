@@ -1,4 +1,5 @@
 import { isModificationScheme } from './colorSchemes.ts'
+import { isModificationTypeVisible } from './types.ts'
 import {
   categorySwatchColor,
   rgb255,
@@ -118,10 +119,9 @@ export function getReadDisplayLegendItems(
     }))
   }
   if (colorType && isModificationScheme(colorType) && visibleModifications) {
-    const hidden = colorBy.modifications?.hiddenModifications
     const items: LegendItem[] = []
     for (const [type, mod] of visibleModifications.entries()) {
-      if (!hidden?.includes(type)) {
+      if (isModificationTypeVisible(colorBy.modifications, type)) {
         items.push({ color: mod.color, label: type })
       }
     }

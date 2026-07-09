@@ -80,7 +80,9 @@ export async function calculateFeatureDensityStats(
       console.warn(
         `[calculateFeatureDensityStats] gave up sampling density after ${(
           performance.now() - t0
-        ).toFixed(0)}ms without reaching ${DENSITY_SAMPLE_MIN_FEATURES} features`,
+        ).toFixed(
+          0,
+        )}ms without reaching ${DENSITY_SAMPLE_MIN_FEATURES} features`,
       )
       return { featureDensity: Number.POSITIVE_INFINITY }
     }

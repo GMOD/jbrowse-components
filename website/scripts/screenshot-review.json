@@ -103,9 +103,9 @@
   "sv_synteny/linear_synteny_genes": {
     "name": "sv_synteny/linear_synteny_genes",
     "status": "good",
-    "note": "FIXED: showColorLegend now defaults to false app-wide (LinearSyntenyView + DotplotView model.ts) instead of a per-spec override — removes the floating Default match/insertion/deletion legend box.",
-    "reviewedAt": "2026-07-08T01:21:33.038Z",
-    "hash": "630c7b4bacc31323ee88df7b0812068b688bd0bc"
+    "note": "",
+    "reviewedAt": "2026-07-09T22:44:25.197Z",
+    "hash": "41add59e0363dd26d4e0add7e3d86363c8674291"
   },
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
@@ -130,8 +130,8 @@
     "name": "cnv",
     "status": "bad",
     "note": "the legend is behind the 'elided blocks', please fix. it is unclear if it is truly fixed",
-    "reviewedAt": "2026-07-09T02:03:29.017Z",
-    "hash": "7332e62fabb3d6cdf97393d19bce973c049e886b"
+    "reviewedAt": "2026-07-09T22:38:12.720Z",
+    "hash": "2631cdd59b193e89d6de92b67faaf8f53ac9d1a0"
   },
   "smalldel": {
     "name": "smalldel",
@@ -149,8 +149,8 @@
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T01:04:58.896Z",
-    "hash": "9f741805d751ac89a3303d053281353d750303cf"
+    "reviewedAt": "2026-07-09T22:42:06.712Z",
+    "hash": "5d11ffc4ec65b465feb59cdc45abc1e826015d98"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -255,8 +255,8 @@
     "name": "alignments_sort_by_base",
     "status": "good",
     "note": "the 'context menu' covers ",
-    "reviewedAt": "2026-07-08T15:24:06.857Z",
-    "hash": "fe77bb6811102670e21d27ee809721741eaef15c"
+    "reviewedAt": "2026-07-09T22:33:20.097Z",
+    "hash": "f89d48232ff220be15638fba5d2ede43e1f0422a"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -359,10 +359,10 @@
   },
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T14:27:13.314Z",
-    "hash": "c5feb4376c5d20ba8bca914c2b53c3fefcbdebd7"
+    "status": "bad",
+    "note": "dont need to show the launch view submenu",
+    "reviewedAt": "2026-07-09T22:42:04.662Z",
+    "hash": "4f5d416afbf10617235acfc34d0cb1d95466accb"
   },
   "methylation/arabidopsis_bisulfite_chh": {
     "name": "methylation/arabidopsis_bisulfite_chh",
@@ -407,8 +407,8 @@
     "name": "alignments/compact",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T21:13:42.704Z",
-    "hash": "7b08634e5637053a76640e1441404344bcceb972"
+    "reviewedAt": "2026-07-09T22:38:04.971Z",
+    "hash": "93c238c3686f39f60247639b09cfbf4d18b3b691"
   },
   "bookmark_widget_edit_colors": {
     "name": "bookmark_widget_edit_colors",
@@ -495,8 +495,8 @@
     "name": "read_vs_ref_insertion",
     "status": "good",
     "note": "Added drawCurves via the synteny views \"View options\" -> \"Show...\" -> \"Show curved lines\". Checked for a larger insertion at this locus (samtools CIGAR scan of the region) -- 634bp is already effectively the largest consistently-supported one (up to 636bp on other reads, within noise), so kept the same read.",
-    "reviewedAt": "2026-07-08T02:55:28.416Z",
-    "hash": "c8c406bcb40c2c7ca32209c8ae31c8421528eb67"
+    "reviewedAt": "2026-07-09T22:44:01.360Z",
+    "hash": "c540dd655d8c7bcfda9afd94a19fc2ff114c4a5b"
   },
   "recent_tracks": {
     "name": "recent_tracks",
@@ -892,17 +892,17 @@
   },
   "trio-crossover-paternal": {
     "name": "trio-crossover-paternal",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T04:57:02.672Z",
-    "hash": "8382535dd9b45fd4920822f83a5c5cb8a3c0329d"
+    "status": "bad",
+    "note": "there are weird dots in the middle of the rows. this is undesirable.  might have been due to a new feature about insertions maybe but we dont want this, it should just transform the insertions to a barcode line like any other snp",
+    "reviewedAt": "2026-07-09T22:45:21.844Z",
+    "hash": "0e93b11b51b1421d25a1d1a4c63a4b3df6eb4293"
   },
   "trio-crossover-maternal": {
     "name": "trio-crossover-maternal",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-07T04:57:00.487Z",
-    "hash": "f29cb54f4b40074977d683885c0f5d5017fedeb4"
+    "status": "bad",
+    "note": "there are weird dots in the middle of the rows. this is undesirable.  might have been due to a new feature about insertions maybe but we dont want this, it should just transform the insertions to a barcode line like any other snp",
+    "reviewedAt": "2026-07-09T22:45:25.084Z",
+    "hash": "4721793b5fd8b7f1a8126bf184b7a1f64bf273a4"
   },
   "maf_track": {
     "name": "maf_track",
@@ -965,24 +965,24 @@
   },
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
-    "status": "good",
+    "status": "bad",
     "note": "consider adding showOnlyGenes to ncbi gene track",
-    "reviewedAt": "2026-07-08T20:20:00.750Z",
-    "hash": "ae9ac8045bd7c5f55e52e92b40096668bdbeb917"
+    "reviewedAt": "2026-07-09T22:39:36.986Z",
+    "hash": "17c75f268c0b7977c7b97af3366621f67e5ecc4e"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
     "status": "good",
     "note": "DONE: per-group HP:1 / HP:2 labels are shown on the left of each grouped subtrack in the current build; note was stale.",
-    "reviewedAt": "2026-07-09T00:08:15.181Z",
-    "hash": "89ce0b6e286dcaca2c31deea3faaadc7348c5d3e"
+    "reviewedAt": "2026-07-09T22:39:40.023Z",
+    "hash": "8b763e1f700611c4b16dbe5162d221f6e886ba4a"
   },
   "jbrowse-img/dark_theme": {
     "name": "jbrowse-img/dark_theme",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T20:54:56.734Z",
-    "hash": "14a6e02c887f3178294a7503a3f98a6fcd89aa89"
+    "reviewedAt": "2026-07-09T22:40:52.110Z",
+    "hash": "4e4e713f0d770bc9c61ac733150bcc68c5a63e82"
   },
   "jbrowse-img/hg38_hs1_mm39_synteny": {
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
@@ -994,9 +994,9 @@
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
     "status": "good",
-    "note": "DONE: moved onto the chr20:18.50-18.51Mb CpG islands (the same region the modifications2/gallery methylation figures use) and added the UCSC CpG-island BED track on top (--bedgz cpgIslandExt.bed.gz). The two islands (CpG:23, CpG:61) are annotated and the COLO829 methylation reads show the methylated (red) flanks vs unmethylated (blue) island cores against the boundaries. README command updated to match.",
-    "reviewedAt": "2026-07-08T20:42:56.693Z",
-    "hash": "942fe3b7df0094487015585bdc900a9fce4d1725"
+    "note": "",
+    "reviewedAt": "2026-07-09T22:41:39.913Z",
+    "hash": "e7aa95dc36c80c8ac2ecd9150a0fd6ab9f30f693"
   },
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
@@ -1014,10 +1014,10 @@
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T20:54:56.734Z",
-    "hash": "97d2871b3b6eb018eb1fa2a41c8267e285da0ad8"
+    "status": "bad",
+    "note": "not enough of gene track visible. also not showing the six-frame translation.",
+    "reviewedAt": "2026-07-09T22:41:14.801Z",
+    "hash": "3601b23ace868fe90fe150ac8f1b9496349b3910"
   },
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
@@ -1027,10 +1027,10 @@
   },
   "jbrowse-img/alignments_readgroup": {
     "name": "jbrowse-img/alignments_readgroup",
-    "status": "good",
-    "note": "this is not plotting ",
-    "reviewedAt": "2026-07-08T20:20:09.231Z",
-    "hash": "aea78bf7cfa1811f007553893ae0f64903d4b0f8"
+    "status": "bad",
+    "note": "this is not plotting  hg008-t data its volvox, cross check caption",
+    "reviewedAt": "2026-07-09T22:40:04.706Z",
+    "hash": "01aaf3fa46d4539d29623200db06b02d6876f72c"
   },
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
@@ -1062,15 +1062,15 @@
     "name": "jbrowse-img/variants",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T20:43:41.283Z",
-    "hash": "06f37bcd9690b3821f818660cf5a748831b7226e"
+    "reviewedAt": "2026-07-09T22:41:52.354Z",
+    "hash": "149b0cc8356e24e226e2def1e291dd6551c0d162"
   },
   "jbrowse-img/skbr3_cov": {
     "name": "jbrowse-img/skbr3_cov",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T20:43:48.727Z",
-    "hash": "72401d16ab440ed837b19fed71b8bf3455b0d225"
+    "reviewedAt": "2026-07-09T22:41:48.266Z",
+    "hash": "9d3a4a6304240ae14a36ef0ee9c9310c2176a325"
   },
   "protein/connected": {
     "name": "protein/connected",
@@ -1096,9 +1096,9 @@
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
     "status": "good",
-    "note": "FIXED: swapped volvox->real 1000G phase3 matrix over HBB (+gene track). SSR \"empty matrix\" bug DISPROVEN; PNG now matches README.",
-    "reviewedAt": "2026-07-08T23:35:18.206Z",
-    "hash": "98a6d3bde7362b472fb2f2126807f2c978b0a736"
+    "note": "",
+    "reviewedAt": "2026-07-09T22:41:48.157Z",
+    "hash": "1b6bd5fe26279dd0f6ad3fe13d4f8b8b460d2e52"
   },
   "chromhmm": {
     "name": "chromhmm",
@@ -1109,17 +1109,17 @@
   },
   "jbrowse-img/alignments_snpcov": {
     "name": "jbrowse-img/alignments_snpcov",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T20:54:56.734Z",
-    "hash": "501311f9051e8fcd0d728fa4cd77d6fa3eec7646"
+    "status": "bad",
+    "note": "this exome data isnt very interesting, look for something more interesting. if we want an advanced demo we can use a collapse introns example. not sure if jbrowse-img can express this",
+    "reviewedAt": "2026-07-09T22:40:34.156Z",
+    "hash": "590dbf4ab3713ab67df5948dff8284c632e41bc3"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
     "status": "good",
-    "note": "DONE: gene track (NCBI RefSeq) already renders on top of the Hi-C heatmap in the current build; note was stale.",
-    "reviewedAt": "2026-07-08T20:11:09.195Z",
-    "hash": "1e5c0857ca4b55ec55816693f06db81429a327cd"
+    "note": "",
+    "reviewedAt": "2026-07-09T22:41:34.985Z",
+    "hash": "aa2b7363a262140418736913c6363dce06ae05d5"
   },
   "maf_470way": {
     "name": "maf_470way",
@@ -1153,8 +1153,8 @@
     "name": "sv_cgiab/cnv_log2ratio_genome",
     "status": "bad",
     "note": "the multiwiggle depth should ideally be raw depths not indexcov. can use aws cli to 'aws s3 ls' in cgiab demos folder if it helps. we can also consider using a production grade cnv detector like cnvpytor or an R tool or something to get the best signal to plot. we may not want to do that now because we cant access our labserver to run analysis. we may want to make this screenshot wider. the baf values are also probably confusing for anyone without proper background, and the 'whiskers' are confusing too. also we are not plotting folded b-allele frequency anymore",
-    "reviewedAt": "2026-07-08T00:55:29.276Z",
-    "hash": "dd8cd99c72cea070e59453d3d0df80251e7737cc"
+    "reviewedAt": "2026-07-09T22:44:08.617Z",
+    "hash": "673255398b4aef705c4802fea41992993bc4e4b7"
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
@@ -1187,16 +1187,16 @@
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
     "status": "good",
-    "note": "FIXED: viewportHeight 780->880 so the CN-labeled CNV calls track has clearance below it instead of being cropped at the frame edge.",
-    "reviewedAt": "2026-07-08T01:38:03.653Z",
-    "hash": "23826a9210d143c49d735e0f535baba0b69e2f67"
+    "note": "",
+    "reviewedAt": "2026-07-09T22:44:21.186Z",
+    "hash": "87afb38524cb02c42a23a6469c96cfa5a301a980"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T20:13:08.310Z",
-    "hash": "7f799149abb0882548e8976392fa321b361a7fed"
+    "reviewedAt": "2026-07-09T22:45:25.148Z",
+    "hash": "d2dd6b8b37ebec7c3a4f7eb9f075bd0e85f26ea2"
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
@@ -1229,9 +1229,9 @@
   "feature_height_default_pin": {
     "name": "feature_height_default_pin",
     "status": "bad",
-    "note": "we should use the pin icon instead of this notion of a separate menu item",
-    "reviewedAt": "2026-07-09T00:09:00.971Z",
-    "hash": "de1e5c6cb85b634101045a08c8bfe4c013703247"
+    "note": "this caught loading states in screenshot",
+    "reviewedAt": "2026-07-09T22:38:54.041Z",
+    "hash": "9c33c85bcce7d886c3f09adb290744f726bc356e"
   },
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
@@ -1263,10 +1263,10 @@
   },
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
-    "status": "good",
-    "note": "Taller crop (viewportHeight 640) so the FTO gene track below the Manhattan plot is fully visible; the LD-colored GWAS peak sits over the FTO gene.",
-    "reviewedAt": "2026-07-08T19:30:00.000Z",
-    "hash": "275686c987d1417af4a58f1fe74561477a0f4bcb"
+    "status": "bad",
+    "note": "if it is interesting can add gene description for fto",
+    "reviewedAt": "2026-07-09T22:39:15.789Z",
+    "hash": "7762e0f47e6ea3a869567d97ac753dede286aef9"
   },
   "gallery/hg002_dipcall": {
     "name": "gallery/hg002_dipcall",
@@ -1368,10 +1368,10 @@
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
-    "status": "good",
-    "note": "FIXED: widened VAPB_SVA_LOCUS ~1.7x for more flanking context; same featureHeight 10->18 fix via the shared hg38ChimpSynteny() genes() helper.",
-    "reviewedAt": "2026-07-08T01:36:42.666Z",
-    "hash": "9d50d8cb84797afc4b8d6ddcc645a51316136525"
+    "status": "bad",
+    "note": "zoom out a bit more",
+    "reviewedAt": "2026-07-09T22:44:32.695Z",
+    "hash": "28440d85779c8b43375da1086044083266d8a8ec"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
@@ -1379,5 +1379,47 @@
     "note": "FIXED: widened PICALM_ALU_LOCUS ~1.7x; dropped the superCompact geneDisplayMode override (no longer needed/used) in favor of featureHeight 10->18 on the shared genes() helper — same root cause as the other two hg38ChimpSynteny figures.",
     "reviewedAt": "2026-07-08T01:36:42.666Z",
     "hash": "810a04907f1b33a9409fb8903100e584b3c740e6"
+  },
+  "cookbook_color_by_strand": {
+    "name": "cookbook_color_by_strand",
+    "status": "good",
+    "note": "please use hg38 with ncbi gff",
+    "reviewedAt": "2026-07-09T22:38:36.035Z",
+    "hash": "e67c8d3afeb9ac9d117536a84a9f8c011da89b3d"
+  },
+  "grape_triplication": {
+    "name": "grape_triplication",
+    "status": "bad",
+    "note": "this is a bad screenshot doesnt show anything good, probably delete",
+    "reviewedAt": "2026-07-09T22:39:32.657Z",
+    "hash": "8ab9c72e68e8b286c73881f2ed5dc489972cd596"
+  },
+  "popgen/fst_in2lt_2L": {
+    "name": "popgen/fst_in2lt_2L",
+    "status": "bad",
+    "note": "add bed file showing the inversion if it helps",
+    "reviewedAt": "2026-07-09T22:42:56.397Z",
+    "hash": "1818cfabe58253baf22924f03118f3cd35945d6b"
+  },
+  "popgen/pi_cyp6g1": {
+    "name": "popgen/pi_cyp6g1",
+    "status": "bad",
+    "note": "if possible zoom out a bit more, show how dramatic of a valley this is. add other interesting tracks that help orthogonally verify this. ",
+    "reviewedAt": "2026-07-09T22:43:23.940Z",
+    "hash": "48b072f3d78e02cd6f05856fc55e3fa1d61b7e16"
+  },
+  "qtl/bxd_overview": {
+    "name": "qtl/bxd_overview",
+    "status": "bad",
+    "note": "if possible cluster or order the samples in the multi-row diagram",
+    "reviewedAt": "2026-07-09T22:43:44.287Z",
+    "hash": "6a8c666ef4fe13e3642da8d4e7308d5f2e2b5964"
+  },
+  "qtl/bxd_tyrp1_locus": {
+    "name": "qtl/bxd_tyrp1_locus",
+    "status": "bad",
+    "note": "if possible cluster or order the samples in the multi-row diagram. the qtl is quite sparse also, might zoom out a bit more",
+    "reviewedAt": "2026-07-09T22:43:58.063Z",
+    "hash": "61032cd33175acb79218e710f74a54aec5a7818f"
   }
 }
