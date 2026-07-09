@@ -66,19 +66,22 @@ function MultiWiggleSvgBody({
   // No data-size gate: renderState is always defined (a [0,1] stub until
   // autoscale resolves), so an empty region paints an empty plot; the per-source
   // scales draw only where a real domain exists (MultiWiggleSvgScales).
+  // Wiggle can't use the shared SvgTreeSidebar: its row labels live in
+  // MultiWiggleSvgScales (shared with the on-screen path, alongside the scalebars
+  // and overlay color legend). So keep the split, but derive the label offset and
+  // the tree from one `treeShowing` so a blank gutter can't appear.
   const { hierarchy, showTree, treeAreaWidth } = model
-  const labelOffset = showTree && hierarchy ? treeAreaWidth : 0
+  const treeShowing = showTree && !!hierarchy
   const scalesEl = (
     <MultiWiggleSvgScales
       model={model}
       canvasWidth={view.width}
       scalebarLeft={scalebarLeft}
-      labelOffset={labelOffset}
+      labelOffset={treeShowing ? treeAreaWidth : 0}
     />
   )
 
-  const treeEl =
-    showTree && hierarchy ? <SvgTreePath hierarchy={hierarchy} /> : null
+  const treeEl = treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null
 
   const props = model.gpuProps()
   // canvas spans the viewport (visibleRegions coords are viewport-relative and

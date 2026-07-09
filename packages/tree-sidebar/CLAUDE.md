@@ -17,7 +17,9 @@ to clear the dendrogram, so rendering labels without also rendering
 bug that hit `LinearMultiRowFeatureDisplay`). `SvgTreeSidebar` owns the single
 `showTree && hierarchy` gate that drives both the label offset and whether the
 tree draws, so they can't disagree. Adopted by
-`LinearMultiRowFeatureDisplay/renderSvg` and variants' `SvgVariantOverlay`;
-`LinearMafDisplay/renderSvg` and `MultiLinearWiggleDisplay` still hand-roll the
-pair (split across files / mixed with a color legend) and should migrate when
-touched.
+`LinearMultiRowFeatureDisplay/renderSvg`, variants' `SvgVariantOverlay`, and
+`LinearMafDisplay/renderSvg`. `MultiLinearWiggleDisplay` is the one exception:
+its row labels live in `MultiWiggleSvgScales` (shared with the on-screen path,
+alongside the scalebars + overlay color legend), so it can't wrap both in
+`SvgTreeSidebar` — it keeps the split but derives the label offset and the tree
+from a single `treeShowing` local for the same guarantee.

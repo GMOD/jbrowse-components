@@ -11,7 +11,7 @@ import {
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
+import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import {
@@ -108,8 +108,6 @@ function MafSvgBody({
     activeRowRendering,
     rowProportion,
   } = model
-  const treeShowing = showTree && !!hierarchy
-  const labelOffset = treeShowing ? treeAreaWidth : 0
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   // SVG export builds its palette from the user-selected export theme, not
   // the live on-screen palette, so light/dark export choices stay consistent.
@@ -193,14 +191,14 @@ function MafSvgBody({
           drawMafCodons(ctx, model.visibleCodons, getCodonColors(theme))
           drawInversions(ctx, model.visibleInversions, colorLongreadInv)
         })}
-        {treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null}
-        {sources?.length ? (
-          <SvgRowLabels
-            sources={sources}
-            rowHeight={effectiveRowHeight}
-            labelOffset={labelOffset}
-          />
-        ) : null}
+        <SvgTreeSidebar
+          showTree={showTree}
+          hierarchy={hierarchy}
+          sources={sources ?? []}
+          rowHeight={effectiveRowHeight}
+          treeAreaWidth={treeAreaWidth}
+          showLabels={!!sources?.length}
+        />
       </g>
       {showCoverage && coverageTicks ? (
         <LeftAxis y={0} ticks={coverageTicks} />
