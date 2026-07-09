@@ -247,11 +247,16 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        * chrome's loading-overlay visibility derives from this overridden getter.
        */
       get displayPhase(): DisplayPhase {
+        // fetchCanceled keeps the overlay up (with its retry affordance) after
+        // a mid-load cancel, matching MultiRegionDisplayMixin; scoped inside the
+        // zoom gate so a zoomed-out state (nothing fetched) still falls through.
         return computeDisplayPhase(
           self,
           () =>
             !self.zoomedOut &&
-            (!self.isReady || !self.viewportWithinLoadedData),
+            (!self.isReady ||
+              !self.viewportWithinLoadedData ||
+              self.fetchCanceled),
         )
       },
     }))
