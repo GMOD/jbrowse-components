@@ -28,9 +28,10 @@ export function drawVariantBlocks(
   state: VariantRenderState,
 ) {
   const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
-  // 1px-min row height (sub-pixel rows draw 1px tall). Mirrors
-  // max(u.rowHeight, 1.0) in shaders/variant.slang + VariantComponent.tsx.
-  const drawnRowHeight = Math.max(rowHeight, 1)
+  // 2px-min row height so a lone cell in a sparse matrix stays visible (matches
+  // the 2px min width). Mirrors max(u.rowHeight, 2.0) in shaders/variant.slang +
+  // variantHitTest.ts.
+  const drawnRowHeight = Math.max(rowHeight, 2)
 
   for (const block of blocks) {
     const region = regions.get(block.displayedRegionIndex)

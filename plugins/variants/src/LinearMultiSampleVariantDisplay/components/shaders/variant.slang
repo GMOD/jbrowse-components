@@ -9,14 +9,14 @@ import colorPack;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
-// Insertion glyph triangle↔line fade. These MIRROR `insertionGlyph` in
+// Insertion glyph triangle↔dot fade. These MIRROR `insertionGlyph` in
 // ../variantShape.ts (the canonical definition) — edit both together. span ≤
-// INS_LINE_SPAN_PX px collapses to a line; ≥ INS_TRI_SPAN_PX px is a full
-// triangle whose base width caps at INS_TRI_SPAN_PX; INS_LINE_WIDTH_PX is the
-// collapsed line thickness / min width.
-static const float INS_LINE_SPAN_PX = 2.0;
+// INS_DOT_SPAN_PX px collapses to a small square dot; ≥ INS_TRI_SPAN_PX px is a
+// full triangle whose base width caps at INS_TRI_SPAN_PX; INS_DOT_SIZE_PX is the
+// collapsed dot side length / min width.
+static const float INS_DOT_SPAN_PX = 2.0;
 static const float INS_TRI_SPAN_PX = 10.0;
-static const float INS_LINE_WIDTH_PX = 2.0;
+static const float INS_DOT_SIZE_PX = 6.0;
 
 struct CellInstance {
   uint2 startEnd  : ATTR0;
@@ -70,12 +70,13 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float cx2 = max(floor(hiClip / pxSize + 0.5) * pxSize, cx1 + 2.0 * pxSize);
 
   // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
-  // during resize); max(...,1) is the minimum quad height to avoid GPU-culled
-  // zero-height geometry while preserving draw order for variant priority.
-  // 1px-min mirrored in Canvas2DVariantRenderer.ts (draw) +
-  // VariantComponent.tsx (hit-test) — keep in sync.
+  // during resize); max(...,2) is the minimum quad height so a lone cell in a
+  // sparse matrix stays visible (matches the 2px min width) rather than fading
+  // to a sub-pixel sliver, while preserving draw order for variant priority.
+  // 2px-min mirrored in Canvas2DVariantRenderer.ts (draw) +
+  // variantHitTest.ts (hit-test) — keep in sync.
   float yTop = float(inst.rowIndex) * u.rowHeight - u.scrollTop;
-  float yBot = yTop + max(u.rowHeight, 1.0);
+  float yBot = yTop + max(u.rowHeight, 2.0);
   float pxToClipY = 2.0 / u.canvasHeight;
   float cyTop = 1.0 - yTop * pxToClipY;
   float cyBot = 1.0 - yBot * pxToClipY;
@@ -83,18 +84,19 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
   float lx = q.x, ly = q.y;
 
-  // Insertion glyph (shapeType 3): morph a down-triangle into a thin vertical
-  // line as its alt-allele span narrows on screen. Mirrors insertionGlyph() in
-  // ../variantShape.ts — the quad here carries the morphed top width; the
-  // fragment shader blends the triangle/box SDFs by triBlend.
+  // Insertion glyph (shapeType 3): morph a down-triangle into a small centered
+  // dot as its alt-allele span narrows on screen. Mirrors insertionGlyph() in
+  // ../variantShape.ts — the quad here carries the morphed top width (wide
+  // enough for the dot when collapsed); the fragment shader blends the
+  // triangle/circle SDFs by triBlend.
   float xLeft = cx1;
   float xRight = cx2;
   float triBlend = 1.0;
   if (inst.shapeType == 3u) {
     float spanPx = (hiClip - loClip) * u.canvasWidth * 0.5;
-    triBlend = smoothstep(INS_LINE_SPAN_PX, INS_TRI_SPAN_PX, spanPx);
+    triBlend = smoothstep(INS_DOT_SPAN_PX, INS_TRI_SPAN_PX, spanPx);
     float cappedSpan = min(spanPx, INS_TRI_SPAN_PX);
-    float topWidthPx = lerp(INS_LINE_WIDTH_PX, max(cappedSpan, INS_LINE_WIDTH_PX), triBlend);
+    float topWidthPx = lerp(INS_DOT_SIZE_PX, max(cappedSpan, INS_DOT_SIZE_PX), triBlend);
     float halfClip = topWidthPx / u.canvasWidth;
     float center = (cx1 + cx2) * 0.5;
     xLeft = center - halfClip;
@@ -102,7 +104,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   }
 
   float wPx = (xRight - xLeft) * u.canvasWidth * 0.5;
-  float hPx = max(u.rowHeight, 1.0);
+  float hPx = max(u.rowHeight, 2.0);
 
   VsOut o;
   o.position = float4(lerp(xLeft, xRight, lx), lerp(cyBot, cyTop, ly), 0.0, 1.0);
@@ -144,17 +146,17 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     } else if (fragIn.shapeType == 2u) {
       d = triSdfRight(float2(w - fragIn.localPx.x, fragIn.localPx.y), w, h, fragIn.hypRight);
     } else {
-      // Insertion: blend the down-triangle SDF toward a full box SDF (the
-      // collapsed line) as triBlend → 0. Matches the trapezoid drawn by
+      // Insertion: blend the down-triangle SDF toward a small centered-square
+      // (dot) SDF as triBlend → 0. Matches the triangle/square drawn by
       // insertionGlyph() on the Canvas2D/SVG path.
       float dTri = triSdfDown(fragIn.localPx, w, h, fragIn.hypDown);
-      float dBox = min(min(fragIn.localPx.x, w - fragIn.localPx.x),
-                       min(fragIn.localPx.y, h - fragIn.localPx.y));
-      d = lerp(dBox, dTri, fragIn.triBlend);
+      float2 dq = abs(fragIn.localPx - float2(w * 0.5, h * 0.5));
+      float dDot = min(w, h) * 0.5 - max(dq.x, dq.y);
+      d = lerp(dDot, dTri, fragIn.triBlend);
     }
 
     alpha *= smoothstep(-0.5, 0.5, d);
-    // The collapsed insertion line is intentionally thin; gate its min-size
+    // The collapsed insertion dot fits within the row height; gate its min-size
     // fade on height alone so it stays opaque rather than fading on width.
     float minSide = fragIn.shapeType == 3u ? h : min(w, h);
     alpha *= smoothstep(0.0, 3.0, minSide);

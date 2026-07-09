@@ -37,23 +37,26 @@ describe('computeVariantHitQuery genomicPos', () => {
 })
 
 describe('computeVariantHitQuery row band', () => {
-  test('normal rows: band is roughly one row around the cursor', () => {
+  test('normal rows: band collapses to the single row under the cursor', () => {
+    // cursor at content-Y 25, rowHeight 10 → row 2.5. The flatbush box for row 2
+    // is [2,3], so a point query at 2.5 selects only row 2 (not row 1 above it).
     const { rowLo, rowHi } = computeVariantHitQuery(fwd, 0, 25, 0, 10)
-    expect(rowLo).toBe(1.5)
-    expect(rowHi).toBe(2.6)
+    expect(rowLo).toBe(2.5)
+    expect(rowHi).toBe(2.5)
   })
 
   test('scrollTop shifts the band down into the scrolled content', () => {
     const { rowLo, rowHi } = computeVariantHitQuery(fwd, 0, 25, 100, 10)
-    expect(rowLo).toBe(11.5)
-    expect(rowHi).toBe(12.6)
+    expect(rowLo).toBe(12.5)
+    expect(rowHi).toBe(12.5)
   })
 
   test('sub-pixel rows: one cursor pixel spans a band of many rows', () => {
-    // rowHeight 0.5 draws at the 1px minimum, so the cursor overlaps rows
-    // 48..52 — a single Y-point query would miss most of them.
+    // rowHeight 0.5 draws at the 2px minimum, so the drawn cells for rows
+    // 46..50 all contain content-Y 25. The query [47,50] overlaps the flatbush
+    // boxes down to [46,47] — a single Y-point query would miss most.
     const { rowLo, rowHi } = computeVariantHitQuery(fwd, 0, 25, 0, 0.5)
-    expect(rowLo).toBe(48)
-    expect(rowHi).toBe(52)
+    expect(rowLo).toBe(47)
+    expect(rowHi).toBe(50)
   })
 })

@@ -279,15 +279,15 @@ describe('Canvas2DVariantRenderer', () => {
       expect(pathOps).toContain('fill')
     })
 
-    test('shape 3 zoomed out collapses to a thin vertical line', () => {
-      const { canvas, pathOps } = createMockCanvas()
+    test('shape 3 zoomed out collapses to a small centered square', () => {
+      const { canvas, fillRectCalls, pathOps } = createMockCanvas()
       const renderer = new Canvas2DVariantRenderer(canvas)
       const regions = new Map([
         [
           0,
           // 1bp span; the 800bp/800px block below is 1px/bp, so the span is 1px
-          // on screen — below INS_LINE_SPAN_PX, so the glyph is a full-height
-          // 2px-wide box rather than a triangle.
+          // on screen — below INS_DOT_SPAN_PX, so the glyph collapses to a small
+          // centered square rather than a triangle.
           makeRegionData({
             numCells: 1,
             cellPositions: [500, 501],
@@ -300,14 +300,11 @@ describe('Canvas2DVariantRenderer', () => {
 
       renderer.renderBlocks([makeBlock({ end: 800 })], regions, DEFAULT_STATE)
 
-      // center = px 500.5; topWidth == bottomWidth == 2 (a rectangle, not a
-      // triangle): top and bottom edges are equal width.
-      const moveOp = pathOps.find(op => op.startsWith('moveTo'))
-      expect(moveOp).toBe('moveTo(499.5,0)')
-      expect(pathOps).toContain('lineTo(501.5,0)')
-      expect(pathOps).toContain('lineTo(501.5,10)')
-      expect(pathOps).toContain('lineTo(499.5,10)')
-      expect(pathOps).toContain('fill')
+      // center = px 500.5; the 10px-tall row gives a square of side
+      // min(INS_DOT_SIZE_PX, 10) = 6, so fillRect(500.5-3, (10-6)/2, 6, 6). No
+      // triangle edges.
+      expect(fillRectCalls).toEqual([[497.5, 2, 6, 6]])
+      expect(pathOps.some(op => op.startsWith('moveTo'))).toBe(false)
     })
   })
 

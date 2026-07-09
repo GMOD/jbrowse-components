@@ -5,6 +5,7 @@ import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import { computeVariantHitQuery } from './variantHitTest.ts'
+import { SHAPE_TRI_DOWN, insertionGlyph } from './variantShape.ts'
 import {
   buildVariantHit,
   variantTooltipKey,
@@ -28,6 +29,7 @@ interface HoveredCell {
   genomicStart: number
   genomicEnd: number
   displayedRegionIndex: number
+  shapeType: number
 }
 
 interface VariantHit {
@@ -131,6 +133,7 @@ function getFeatureUnderMouse(
       genomicStart,
       genomicEnd,
       displayedRegionIndex: region.displayedRegionIndex,
+      shapeType: regionCellData.cellShapeTypes[bestIdx]!,
     },
   }
 }
@@ -139,12 +142,7 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   cell,
   model,
 }: {
-  cell: {
-    rowIndex: number
-    genomicStart: number
-    genomicEnd: number
-    displayedRegionIndex: number
-  }
+  cell: HoveredCell
   model: LinearMultiSampleVariantDisplayModel
 }) {
   const region = model.visibleRegions.find(
@@ -156,8 +154,17 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   const toX = makeBpMapper(region)
   const px1 = toX(cell.genomicStart)
   const px2 = toX(cell.genomicEnd)
-  const left = Math.min(px1, px2)
-  const right = Math.max(px1, px2)
+  // Insertions draw as a locus-centered glyph capped at the insertionGlyph
+  // width (dot/triangle), not the full alt-allele span — so the highlight
+  // brackets that glyph instead of the much wider genomic span behind it.
+  let left = Math.min(px1, px2)
+  let right = Math.max(px1, px2)
+  if (cell.shapeType === SHAPE_TRI_DOWN) {
+    const center = (px1 + px2) / 2
+    const half = insertionGlyph(Math.abs(px2 - px1)).topWidthPx / 2
+    left = center - half
+    right = center + half
+  }
   // Screen Y from model.scrollTop — the same value the GPU cells draw at, so
   // the highlight can't diverge from its cell (virtual scroll: one scroll
   // source). Cull when the row is fully outside the viewport.
