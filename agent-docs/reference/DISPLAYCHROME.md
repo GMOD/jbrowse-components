@@ -2,9 +2,9 @@
 
 "What it is" + the adoption map. For **why the layering stays** (rejected
 refactors — don't re-litigate them) see
-[ADR-026](architecture-decision-records/adr-026-displaychrome-layering-stays.md);
+[ADR-026](../architecture-decision-records/adr-026-displaychrome-layering-stays.md);
 for the mount/dispose contract see
-[ADR-025](architecture-decision-records/adr-025-gpu-canvas-stays-mounted-not-xor-error.md).
+[ADR-025](../architecture-decision-records/adr-025-gpu-canvas-stays-mounted-not-xor-error.md).
 
 ## What it is
 

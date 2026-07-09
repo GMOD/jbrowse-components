@@ -1,6 +1,6 @@
 # Display-type defaults (promotable config slots)
 
-The third config axis, alongside per-track [`trackConfigDeltas`](../packages/product-core/src/Session/CLAUDE.md)
+The third config axis, alongside per-track [`trackConfigDeltas`](../../packages/product-core/src/Session/CLAUDE.md)
 and app-scope `preferences`: a **session-wide default for one config slot, keyed
 by display type**. "Make all my alignments tracks compact", "show soft-clipping
 on every alignments track by default" — set it once, every track of that type

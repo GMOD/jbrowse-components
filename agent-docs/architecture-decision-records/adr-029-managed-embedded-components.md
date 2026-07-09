@@ -35,7 +35,7 @@ Three roles, cleanly separated:
 
 - **declarative input** — a single launch blob. For the single-view products
   this is the view's own `init` (`InitState` / `CircularViewInit`, see
-  `VIEW_INIT.md`); for the app it's a session-centric `views[]` array. Reusing
+  `../reference/VIEW_INIT.md`); for the app it's a session-centric `views[]` array. Reusing
   the view's own init shape means the same blob round-trips through saved
   sessions and URL specs — no new vocabulary.
 - **declarative output** — `onChange` (patch observer), already on

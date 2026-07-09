@@ -10,7 +10,7 @@ into `useRenderingBackend`" under Rejected alternatives for why the original
 testability objection no longer holds. The rest of the layering stands.
 
 Builds on [ADR-025](adr-025-gpu-canvas-stays-mounted-not-xor-error.md)
-and [DISPLAYCHROME.md](../DISPLAYCHROME.md) (the "what it is" + the adoption
+and [DISPLAYCHROME.md](../reference/DISPLAYCHROME.md) (the "what it is" + the adoption
 map, including the SVG arc exception). This ADR records the outcome of a **leakiness / radical-simplification
 audit** of the chrome stack so the rejected refactors aren't re-litigated.
 
@@ -138,7 +138,7 @@ Keep the current layering. Each layer maps to a genuine concern boundary:
   DisplayChrome), and the generic block-path `display-${id}-done` from
   `BaseLinearDisplay.tsx` (the legacy `LinearBlocks` wrapper, gated
   `'canvasDrawn' in model`). Distinct roles, distinct wrappers — not drift. See
-  [DISPLAYCHROME.md](../DISPLAYCHROME.md) "First-paint `-done` testid".
+  [DISPLAYCHROME.md](../reference/DISPLAYCHROME.md) "First-paint `-done` testid".
 - `renderTick` stays: it is a justified workaround for MobX's inability to express
   "re-fire on A's *effect* when A doesn't change my deps' identity," and one
   counter serves both triggers (post-upload + tab-restore).

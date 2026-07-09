@@ -1472,7 +1472,7 @@ Session-wide per-display-type slot defaults (the missing third config axis
 alongside per-track `trackConfigDeltas` and app-scope `preferences`). **Shipped**
 as promotable config slots that resolve at read-time on the display — NOT the
 `mergeTrackConfig`-layers-in-the-tracks-getter design originally sketched here.
-See **`agent-docs/DISPLAY_TYPE_DEFAULTS.md`** for the master doc.
+See **`agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`** for the master doc.
 
 
 

@@ -379,7 +379,7 @@ ADR-030.
 
 - HAL — hardware abstraction layer; abstracts WebGL2 and WebGPU calls.
 
-Full vocabulary + Canvas2D→GPU primer (for papers/talks): `GPU_GLOSSARY.md`.
+Full vocabulary + Canvas2D→GPU primer (for papers/talks): `reference/GPU_GLOSSARY.md`.
 
 ---
 

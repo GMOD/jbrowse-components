@@ -133,7 +133,7 @@ asynchronous, never assert on a fixed timeout — wait on a signal instead:
 
 Run the suite with `pnpm test:browser` (builds `@jbrowse/web` first), or
 `pnpm test:browser:update` to refresh snapshots. See
-`agent-docs/TEST_INFRASTRUCTURE.md` for the full harness reference.
+`agent-docs/guides/TEST_INFRASTRUCTURE.md` for the full harness reference.
 
 ## Running tests
 

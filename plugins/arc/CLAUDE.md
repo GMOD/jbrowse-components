@@ -35,7 +35,7 @@ re-encode the terminal-state precedence by hand. `BaseDisplayComponent.tsx`:
   still-mounted SVG, `tooLarge` replaces the subtree.
 
 Don't reintroduce arc-local loading/error components — that was the drift this
-removed. See `agent-docs/DISPLAYCHROME.md` for the whole adoption map.
+removed. See `agent-docs/reference/DISPLAYCHROME.md` for the whole adoption map.
 
 ### `reload()` must clear `error`
 

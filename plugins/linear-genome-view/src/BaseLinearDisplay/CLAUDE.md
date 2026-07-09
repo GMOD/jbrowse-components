@@ -7,7 +7,7 @@
 The **status chrome** that renders this fetch state (loading overlay / error bar
 / too-large banner) is `components/DisplayChrome.tsx` — the single wrapper every
 GPU display uses, branching on `computeDisplayPhase`. See
-`agent-docs/DISPLAYCHROME.md` (adoption map + the SVG arc exception) and
+`agent-docs/reference/DISPLAYCHROME.md` (adoption map + the SVG arc exception) and
 `agent-docs/architecture-decision-records/adr-026-*` (why the layering stays;
 don't re-litigate). Its comment block holds the load-bearing early-`return` +
 loading-thunk constraints.

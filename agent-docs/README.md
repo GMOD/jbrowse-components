@@ -33,7 +33,7 @@ Correctness contracts — violations cause silent bugs.
   `void`) marks the canvas drawn via `markCanvasDrawn`.
 - **`readConfObject` / `getConf` are hot-path traversals.** Cache outside loops;
   prefer `getConfSnapshot` + `readConfigValue` on plain objects at the rendering
-  layer (`CONFIG_PATTERN.md`).
+  layer (`reference/CONFIG_PATTERN.md`).
 
 Coding conventions live in `CLAUDE.md` (root) and `~/.claude/CLAUDE.md`.
 
@@ -63,7 +63,7 @@ Verify against source, not memory.
 - **Unit tests** for changed paths (`pnpm test <path>`).
 - **Browser test** when UI behavior changed, on the backend(s) you touched
   (`node --experimental-strip-types browser-tests/runner.ts --filter=<suite>`;
-  flags in `TEST_INFRASTRUCTURE.md`).
+  flags in `guides/TEST_INFRASTRUCTURE.md`).
 - **Lint** with `--cache --fix` on changed files.
 - **Snapshots** regenerated only after intentional, visually verified change
   (`--update-snapshots`).
@@ -74,33 +74,53 @@ Do **not** open a PR (`gh pr create`) unless explicitly asked.
 
 ## Docs
 
-| Doc                                                                  | Purpose                                                      | When to read                                  |
-| -------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
-| **[TODO.md](TODO.md)**                                               | Action items to build/fix (backlog)                         | Picking up work                               |
-| **[OTHER_IDEAS.md](OTHER_IDEAS.md)**                                 | Future / exploratory concepts + folded proposals, incl. block-level synteny import and request-abort (not current work) | Brainstorming, product direction              |
-| **[CLUSTERING_WORKFLOW.md](CLUSTERING_WORKFLOW.md)**                 | In-app hierarchical clustering (wiggle + variants)          | Touching cluster dialogs, dendrograms, TreeSidebar |
-| **[ARCHITECTURE.md](ARCHITECTURE.md)**                               | Canonical GPU lifecycle / shaders / HAL reference           | Touching a display, backend, or shader        |
-| **[CONFIG_PATTERN.md](CONFIG_PATTERN.md)**                           | Display config → MST snapshot → plain object → renderer     | Touching config, JEXL callbacks, RPC payloads |
-| **[DISPLAY_TYPE_DEFAULTS.md](DISPLAY_TYPE_DEFAULTS.md)**             | Session-wide per-display-type slot defaults (promotable slots, CSS-cascade resolve) | Adding a "make default for all tracks like this" setting; touching `getConfResolved` / `promotable` slots |
-| **[VIEW_INIT.md](VIEW_INIT.md)**                                     | Declarative `init` launch spec → afterAttach → state machine | Touching view launch, URL params, createViewState |
-| **[TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md)**                 | Browser + unit tests, WebGPU CI                             | Running or writing tests, validating RPC      |
-| **[SCREENSHOT_REVIEW_HANDOFF.md](SCREENSHOT_REVIEW_HANDOFF.md)**     | Working the `bad`-status screenshot-review backlog (regen pipeline, hosted-track sources) | Fixing website screenshot specs / gallery figures |
-| **[PERF_INSTRUMENTATION.md](PERF_INSTRUMENTATION.md)**               | Instrumentation patterns for GPU render / scroll jank       | Diagnosing a perf regression                  |
-| **[DISPLAYCHROME.md](DISPLAYCHROME.md)**                             | The shared display status chrome: what it is + adoption map | Touching loading/error/retry UI on a display  |
-| **[GPU_GLOSSARY.md](GPU_GLOSSARY.md)**                               | Plain-language GPU rendering glossary + precise vocabulary   | Writing about GPU internals for a non-specialist audience |
-| **[RFC-001-community-plugin-api.md](RFC-001-community-plugin-api.md)** | Community plugin API proposal                              | Plugin API design                             |
-| **[PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md)**               | Why plugin exports ossify into permanent ABI + fixes (fleshes out RFC-001 §7) | Removing/renaming a plugin export; "why can't we delete this?" |
-| **[architecture-decision-records/](architecture-decision-records/)** | Design decisions (ADR-001 … ADR-034)                        | Understanding why something is the way it is  |
+Deep how-it-works references live in **[reference/](reference/)**, operational
+how-tos in **[guides/](guides/)**, and design rationale in
+**[architecture-decision-records/](architecture-decision-records/)**.
+
+### Start here
+
+| Doc                                     | Purpose                                                     | When to read                                  |
+| --------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
+| **[TODO.md](TODO.md)**                  | Action items to build/fix (backlog)                         | Picking up work                               |
+| **[OTHER_IDEAS.md](OTHER_IDEAS.md)**    | Future / exploratory concepts + folded proposals, incl. block-level synteny import and request-abort (not current work) | Brainstorming, product direction |
+| **[ARCHITECTURE.md](ARCHITECTURE.md)**  | Canonical GPU lifecycle / shaders / HAL reference           | Touching a display, backend, or shader        |
+
+### `reference/` — how the system works
+
+| Doc                                                                          | Purpose                                                     | When to read                                  |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
+| **[CONFIG_PATTERN.md](reference/CONFIG_PATTERN.md)**                         | Display config → MST snapshot → plain object → renderer     | Touching config, JEXL callbacks, RPC payloads |
+| **[DISPLAY_TYPE_DEFAULTS.md](reference/DISPLAY_TYPE_DEFAULTS.md)**           | Session-wide per-display-type slot defaults (promotable slots, CSS-cascade resolve) | Adding a "make default for all tracks like this" setting; touching `getConfResolved` / `promotable` slots |
+| **[VIEW_INIT.md](reference/VIEW_INIT.md)**                                   | Declarative `init` launch spec → afterAttach → state machine | Touching view launch, URL params, createViewState |
+| **[DISPLAYCHROME.md](reference/DISPLAYCHROME.md)**                           | The shared display status chrome: what it is + adoption map | Touching loading/error/retry UI on a display  |
+| **[GPU_GLOSSARY.md](reference/GPU_GLOSSARY.md)**                             | Plain-language GPU rendering glossary + precise vocabulary   | Writing about GPU internals for a non-specialist audience |
+| **[CLUSTERING_WORKFLOW.md](reference/CLUSTERING_WORKFLOW.md)**               | In-app hierarchical clustering (wiggle + variants)          | Touching cluster dialogs, dendrograms, TreeSidebar |
+| **[PLUGIN_ABI_STABILITY.md](reference/PLUGIN_ABI_STABILITY.md)**             | Why plugin exports ossify into permanent ABI + fixes (fleshes out RFC-001 §7) | Removing/renaming a plugin export; "why can't we delete this?" |
+| **[RFC-001-community-plugin-api.md](reference/RFC-001-community-plugin-api.md)** | Community plugin API proposal                           | Plugin API design                             |
+
+### `guides/` — operational how-tos
+
+| Doc                                                                       | Purpose                                                     | When to read                                  |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
+| **[TEST_INFRASTRUCTURE.md](guides/TEST_INFRASTRUCTURE.md)**               | Browser + unit tests, WebGPU CI                             | Running or writing tests, validating RPC      |
+| **[PERF_INSTRUMENTATION.md](guides/PERF_INSTRUMENTATION.md)**             | Instrumentation patterns for GPU render / scroll jank       | Diagnosing a perf regression                  |
+| **[SCREENSHOT_REVIEW_HANDOFF.md](guides/SCREENSHOT_REVIEW_HANDOFF.md)**   | Working the `bad`-status screenshot-review backlog (regen pipeline, hosted-track sources) | Fixing website screenshot specs / gallery figures |
+
+### `architecture-decision-records/`
+
+Design decisions (ADR-001 … ADR-034) — read to understand why something is the
+way it is.
 
 ## Common questions
 
 **"How do I add a new GPU display type?"** → `ARCHITECTURE.md` "Adding a new GPU
 display type".
 
-**"How do I debug failing browser tests?"** → `TEST_INFRASTRUCTURE.md`
+**"How do I debug failing browser tests?"** → `guides/TEST_INFRASTRUCTURE.md`
 "Debugging".
 
-**"Why does the worker get what it gets?"** → `CONFIG_PATTERN.md` +
+**"Why does the worker get what it gets?"** → `reference/CONFIG_PATTERN.md` +
 `ARCHITECTURE.md` §"The `rpcProps` / `gpuProps` pattern".
 
 **"What invariants must I preserve?"** → "Non-negotiable invariants" above.

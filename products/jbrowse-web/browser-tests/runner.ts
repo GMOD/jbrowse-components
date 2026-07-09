@@ -104,7 +104,7 @@ function chromeArgsForRenderingBackend(backend?: RenderingBackend) {
   const chromeArgs = [...BASE_CHROME_ARGS, '--disable-popup-blocking']
   // webgl runs on the machine's real GPU (run headed) — no swiftshader, whose
   // per-context memory growth is why we moved off it (see
-  // agent-docs/TEST_INFRASTRUCTURE.md). webgpu does not use Chrome at all
+  // agent-docs/guides/TEST_INFRASTRUCTURE.md). webgpu does not use Chrome at all
   // (it requires Firefox Nightly, see runWithRenderingBackend), so neither needs
   // extra chrome flags. --swiftshader forces the webgl backend to software-render
   // so it can run on a GPU-less CI runner; modern Chrome needs
@@ -207,7 +207,7 @@ async function runOneTest(
 // Run all selected suites, launching a fresh browser per test. A clean browser
 // each time is what keeps long runs stable: headless Chrome on swiftshader and
 // Firefox/WebGPU both accumulate per-context GPU/worker memory across tabs that
-// never returns to the OS (see agent-docs/TEST_INFRASTRUCTURE.md), and
+// never returns to the OS (see agent-docs/guides/TEST_INFRASTRUCTURE.md), and
 // the ~2s relaunch is far cheaper than the 15-30s penalty from that buildup.
 async function runSuites(
   launchBrowser: () => Promise<Browser>,
