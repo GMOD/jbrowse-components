@@ -108,7 +108,7 @@ copy, which fixes the same bug class with no edit-site changes.
   copies ↔ persisted deltas on save/load. That removes the reaction and both
   `comparer.structural` guards, but re-plumbs every delta consumer and the
   persistence round-trip (unshown-but-edited tracks included), so it is a
-  larger, separate change — see CONFIG_WORKING_COPY_PLAN.md.
+  larger, separate change, not pursued.
 - `CustomReferenceType` in the mobx-state-tree fork grows its own
   memoization/invalidation. Re-examine whether `getEditableTrackConfig`'s
   session-owned cache should move into the fork's reference cache.

@@ -12,6 +12,14 @@ where a child overrides a handful of slots and inherits the rest dynamically. Ne
 built; the current `baseConfiguration` extension covers most of the practical need
 (inherits the *schema*, not the live values).
 
+**Adapter-wrapper shorthands.** `refNameAliases`/`cytobands` still require the
+full `{ adapter: { type: 'RefNameAliasAdapter', uri: '...' } }` wrapper — a
+`refNameAliases: { uri: '...' }` shorthand (defaulting `adapter.type`) would trim
+that via the same `preProcessSnapshot` idiom already in place there. Riskier
+extension (deferred, only if you want maximal terseness): auto-detect adapter
+type from file extension (`fasta: 'foo.fa.gz'` → infer `BgzipFastaAdapter`) —
+implicit magic, do only if comfortable with that.
+
 **Declarative JBrowse spec.** Current config is internal MST serialization. Extend
 `session-spec` to a simpler data → encoding → mark grammar (Vega-Lite style). Infer
 adapter/display types, map encoding → colorBy/filterBy, fall back to raw config for
@@ -263,7 +271,7 @@ Encouragingly the geometry is already generic over an arbitrary view *pair* —
 non-adjacent ribbons are a level-model + z-ordering change, not a geometry rewrite — but a
 separate, larger step. The id is the prerequisite, not the whole feature. Start with MCScan
 (already block-structured) for populating the field. See "All-vs-all PAF → any-vs-any
-multi-way synteny" below and `SYNTENY_BLOCK_IMPORT.md`.
+multi-way synteny" and "Block-level synteny data" below.
 
 **All-vs-all PAF → any-vs-any multi-way synteny** (tracks GMOD/jbrowse-components PR
 #4985 "All-vs-all PAF adapter"; planning only, no code). Goal: a single all-vs-all PAF
@@ -473,6 +481,117 @@ not noise — e.g. a shared hue per source-block family, an explicit "paralog fa
 or a summary "×3" annotation on the region. Complements the barycenter/layer-sweep note above
 (which cuts *transitive* crossings but can't remove genuine many-to-many ones), and would let
 a caption/legend say "crossings here are the grape triplication" instead of looking broken.
+
+### Block-level synteny data: importing / generating from external tools
+
+Status: **partially implemented.** A coarse LOD *tier* (Route B's tiering
+architecture) now ships; true cross-row block **chaining** (Route B's algorithm)
+does not. Read "Implemented so far" before extending.
+
+#### Implemented so far
+
+- **Coarse LOD tier in `make-pif`** (`products/jbrowse-cli/src/commands/make-pif/`).
+  `make-pif` emits the uppercase `T`/`Q` coarse tier **by default** (`--no-coarse`
+  to opt out, `--coarse <bp>` to tune the split gap). A coarse row strips the
+  CIGAR and, wherever a single fine row has an insertion/deletion `>=` the split
+  gap (`DEFAULT_COARSE_SPLIT_GAP = 10kb`), splits that row into pieces so each
+  coarse bbox stays tight (`splitCigarOnLargeGaps` in `cigar-utils.ts`).
+- **`lodMode` (`auto | fine | coarse`)** plumbed model → RFC → RPC → adapter
+  (`BaseOptions.lodMode`; `LinearSyntenyView`/`DotplotView` models; consumed in
+  `PairwiseIndexedPAFAdapter.pickPifPrefix`). `auto` switches to coarse at
+  `bpPerPx >= coarseBpPerPxThreshold` when a coarse tier exists; a manual
+  `coarse` override falls back to fine when no coarse tier is present.
+- **Coarse-row identity** reuses the `de:f:` convention. minimap2's `de:f:` is
+  *gap-compressed* divergence (indel runs counted once), so the row's own tag —
+  when present — is written verbatim onto every coarse piece of that row,
+  including split pieces. This keeps split and un-split rows coloring identically
+  and continuous with the fine tier across the LOD switch. Only a row carrying
+  no tag falls back to a computed value, and that fallback is itself
+  gap-compressed (`gapCompressedDivergence` in `cigar-utils.ts`), never the
+  per-base `1 - numMatches/blockLen` proxy, which roughly doubles divergence by
+  counting every indel base.
+
+**Important:** this is a per-row *strip + split* pass, the opposite of the
+block *merge* below. It coarsens each alignment individually; it does **not**
+collapse runs of separate collinear alignments into blocks. The hairball's
+structural cause (many separate small alignments) is untouched — only per-ribbon
+CIGAR detail is dropped at overview. Route B's chaining is still the open work.
+
+#### The problem this addresses
+
+Whole-genome synteny overviews render as a *hairball*: thousands of raw
+minimap2 local alignments, each drawn as a ribbon, crisscrossing. We've
+attenuated the **visual** symptom in the renderer (per-ribbon width-proportional
+fade in the GPU fill shader + Canvas2D; sub-pixel decision keyed on
+*perpendicular* width so steep diagonals stroke a clean 1px centerline), but the
+structural cause is the *input*: we draw raw alignments, while the tools that
+produce elegant plots (plotsr, ntSynt-viz, circos) draw **detected synteny
+blocks** — a handful of large, classified regions collapsed by an upstream
+analysis step before those tools ever drew a pixel. The renderer fade softens
+the hairball for free but cannot truly declutter an all-to-all tangle of many
+*separate* small alignments; that needs blocks. The two compose.
+
+#### Tool landscape (get this right before picking a route)
+
+| Tool | What it is | Input | Cross-species? | Notes |
+| --- | --- | --- | --- | --- |
+| **plotsr** | plotter only | SyRI output | no | block detection is SyRI's, not plotsr's |
+| **SyRI** | block + rearrangement caller | whole-genome aln (minimap2/MUMmer SAM/BAM/PAF/delta) | **no** — same-species/strain | assumes near-complete, chromosome-level, ~1:1 collinear alignment; finds longest syntenic path then classifies residue. Degrades on fragmented/divergent/many-to-many. |
+| **ntSynt** | multi-genome synteny blocks | **FASTA genomes** (minimizer graphs, ntHash/ntJoin lineage) | **yes** — designed for it | robust to divergence + rearrangement. Does **not** consume a PAF — it replaces minimap2. Snakemake/C++/Python pipeline. Output = block TSV. ntSynt-viz draws ribbons from it. |
+| **MCScan / MCScanX / DAGchainer** | gene-anchor collinearity | anchor pairs (homology/BLAST) | yes (anchor-based) | we already have an MCScan adapter (block-level). Plant/WGD heritage. |
+| **(generic) PAF collinear chaining** | chain/merge alignments into blocks | minimap2 PAF | yes | the stage every tool above runs internally; implementable directly. |
+
+Key correction to the intuition that "we could import from SyRI/plotsr": **SyRI
+is same-species** — don't anchor cross-species work on it. **ntSynt is the
+cross-species reference**, but its input is FASTA, not PAF, so it's a *replace
+minimap2* path, not an *import-our-PAF* path.
+
+#### Three routes to block-level pif
+
+- **Route A — adopt a tool's block output (preprocessing).** Run ntSynt
+  (cross-species) or MCScan as an external step; write a small block-import
+  adapter reading its block TSV → pif. Highest-quality blocks, no algorithm to
+  maintain; but external pipeline (not in-browser), ntSynt is a heavy
+  Snakemake/C++/Python dependency, another format to parse.
+- **Route B — own PAF collinear chaining (recommended first step).** The
+  operation we literally want — "collapse a minimap2 PAF into block-level pif" —
+  is collinear chaining, the internal stage of every tool above: sort by target;
+  chain alignments whose query/target coords advance monotonically on a
+  consistent strand within gap tolerances; emit one block per chain; break on
+  strand flip / large gap / target jump. DAGchainer-style DP or greedy
+  diagonal-merge. Organism-agnostic, **no new dependency**, consumes the PAF we
+  already produce, slots in as `make-pif --blocks` (or `--merge`). We own the
+  algorithm; pure-PAF chaining won't match ntSynt on the hardest divergent cases
+  (acceptable — use Route A there).
+- **Route C — reimplement ntSynt's minimizer-graph algorithm. Don't.**
+  Substantial, and re-derives a maintained tool. Shell out (Route A) if that
+  specific quality is needed.
+
+#### Architecture: blocks are a zoom *tier*, not a replacement
+
+Block data should **not** replace raw alignments — it's a coarser LOD tier:
+whole-genome / coarse `coarseBpPerPx` serves **block** pif; zoomed in serves
+**raw** minimap2 pif (full CIGAR detail). This is our existing multi-tier format
+pattern, and the legitimate home for the adapter-level `lodMode` already plumbed
+RFC→RPC. `lodMode` selects the tier; it is **distinct** from the renderer fade
+(deliberately kept `lodMode`-independent). Blocks kill the structural hairball at
+overview; perpendicular fade keeps whatever raw alignments still render at
+intermediate zooms honest.
+
+#### Recommendation & open questions
+
+Route B first — a `make-pif --blocks` collinear-chaining pass emitting a
+block-level pif tier (no dependency, uses current data, fits `lodMode` tiering;
+A/B against raw alignments on grape/peach and hs1/mm39). ntSynt as the quality
+reference (and a Route-A importer later) for hard cross-species cases. Skip
+SyRI/plotsr for cross-species (a SyRI importer could still be a nice
+same-species/strain feature — separate, narrower). Open: chaining parameters
+(max gap, diagonal tolerance, min block length) exposed vs pixel/data-derived;
+where chaining runs (`make-pif` CLI precompute vs live worker pass — CLI matches
+the multi-tier-on-disk model); block-pif schema (reuse `de:f:` identity? carry a
+member count / syntenic-vs-inverted classification for coloring?); classify
+rearrangements like SyRI or emit collinear blocks + strand only; and multi-genome
+(>2) blocks (ntSynt's strength) vs today's pairwise pif container.
 
 ## Ortholog / multi-genome navigation
 
@@ -1113,9 +1232,132 @@ packed tarball), and programmatic consumers all use — which also closes the
 hook instead of its own copy. Don't bundle `@jbrowse/img` for this — it freezes the
 semver flow-through for one narrow consumer path.
 
+## Aborting in-flight network requests (proposal, not implemented)
+
+Cancel today (`FetchMixin.cancelFetchByUser` → `stopStopToken`) interrupts
+**processing**, not the **socket**. The `stopToken` is checked at await
+boundaries and inside sync worker loops, so on cancel we stop computing and
+discard the result — but any HTTP read already on the wire keeps downloading
+until it resolves. For a large BAM/CRAM range or a whole-file BigWig read,
+that's wasted bandwidth and a connection-pool slot held to completion.
+
+The bottom of the stack is already abort-ready and unused above it:
+
+- `BaseOptions.signal?: AbortSignal` **exists but is dead** — present only for
+  structural assignability to gmod `Options { signal? }` interfaces, never
+  populated. `VcfTabixAdapter` / `SplitVcfTabixAdapter` forward `opts.signal` to
+  readers, but it's always `undefined`.
+- `RemoteFileWithRangeCache.fetchRange(url, start, end, signal)` already accepts
+  a signal and passes it to `fetch`. The missing piece is entirely upstream:
+  producing a signal wired to cancel.
+
+### Why not "derive a signal from the stopToken" (SAB / `Atomics.waitAsync`)
+
+Tempting: the `stopToken` already crosses `postMessage`; on the worker side wrap
+the `SharedArrayBuffer` in `Atomics.waitAsync(view, 0, CLEAR).then(abort)` (plus
+an `Atomics.notify` added to `stopStopToken`) and you get a worker-local
+`AbortSignal` for free, no protocol change.
+
+**It can't be the general solution, because SAB isn't available by default.**
+SAB requires the page to be `crossOriginIsolated`, which requires two HTTP
+response headers on the **top-level document** (`Cross-Origin-Opener-Policy:
+same-origin` + `Cross-Origin-Embedder-Policy: require-corp`). Those are
+server-side, set by whoever serves the HTML. JBrowse is mostly a client-side
+library, and the embedded products (`@jbrowse/react-linear-genome-view` etc.)
+run inside *someone else's* top-level document whose headers we don't control.
+So we cannot assume isolation. The repo confirms it: there are no COOP/COEP
+headers anywhere, and `stopToken.ts` is built around the XHR/blob fallback being
+a real, common path (`ErrorMessageStackTraceDialog` reports `Worker abort:
+SharedArrayBuffer | XHR fallback` as a diagnostic). `coi-serviceworker` can
+force isolation without server config but reloads on first load, registers a SW
+on every host page, and `COEP: require-corp` breaks cross-origin subresources —
+unacceptable for an embeddable component. **Conclusion:** abort must work
+*without* SAB; `Atomics.waitAsync` stays an opportunistic fast-path for the rare
+isolated deployment, never a dependency.
+
+### Design: one fused cancel primitive, three sinks
+
+```ts
+// packages/core/src/util/stopToken.ts (or a new cancellation.ts)
+interface Cancellation {
+  stopToken: StopToken   // crosses postMessage; interrupts SYNC worker loops (today)
+  signal: AbortSignal    // aborts MAIN-thread fetches at the socket, directly
+  cancel(): void         // trips the token, aborts the signal, AND posts the abort message
+}
+function createCancellation(): Cancellation
+```
+
+`AbortSignal` is **not** structured-cloneable, so it can't ride `postMessage`
+into the worker. The fusion is conceptual: `cancel()` on the main thread drives
+(a) the stopToken (sync-loop interruption in the worker, exactly as today, on
+both SAB and XHR paths); (b) the local `signal` for fetches that run on the
+**main thread** (`MainThreadRpcDriver` executes methods in-thread, so the real
+signal flows straight into the adapter); (c) an out-of-band abort message for
+fetches in a **worker**, where the socket lives across the boundary.
+
+The worker path (the common, load-bearing case) reuses the uid-keyed RPC channel
+`statusCallback` already rides on:
+
+- **`RpcServer`**: keep a `Map<uid, AbortController>`. On a method call, create
+  the controller, inject its `signal` into the deserialized args, store it. On
+  an incoming `{ abort: uid, libRpc: true }` message, `controller.abort()` and
+  delete. Clean up the entry in `reply`/`throw` so the map can't leak.
+- **`RpcClient`**: expose `abort(uid)` → `postMessage({ abort: uid, libRpc:
+  true })`. `call()` already mints the `uid`; surface it so the driver can tie it
+  to a stopToken.
+- **Driver / `RpcManager`**: record `(stopToken → uid[])` at call time; the same
+  main-thread `cancel()` that trips the token fans out `client.abort(uid)`.
+- **Injection seam**: args are reconstructed worker-side in
+  `RpcMethodType.deserializeArguments`, but the `uid` lives at the
+  `RpcServer.handler` level — attach the controller's `signal` at the
+  server/worker-glue layer where the uid is known (or thread `uid` down).
+
+### The correctness trap: range-cache coalescing
+
+`RemoteFileWithRangeCache` coalesces chunk fetches (256 KiB-aligned). If two
+logical reads share one coalesced underlying fetch and one aborts, a naive abort
+tears down the fetch the other read still needs. Mitigations, preferred first:
+
+- **Abort at call (uid) granularity, not chunk granularity.** One RPC call = one
+  `AbortController` = all that call's reads abandoned together. A whole
+  `RenderFeatureData` aborting is coherent.
+- For the residual cross-call collision: **ref-counted abort** in the range
+  cache — track consumers per in-flight chunk fetch, only abort the underlying
+  `fetch` when the last consumer aborts.
+- Acceptable interim: don't abort shared chunk fetches at all (let them complete
+  into cache); only abort single-consumer fetches. Bounds the waste without a
+  correctness regression.
+
+This trap is the main reason to **prototype one path before a broad rollout.**
+
+### Suggested phasing
+
+- **Phase 0 — prototype one path.** Fused primitive + RPC abort message +
+  per-uid controller, wired through **one** adapter end-to-end (BAM
+  `getRecordsForRange` is the highest-value target). Verify in a browser that a
+  slow range read's `fetch` actually aborts (devtools network → "(canceled)")
+  and the overlay lands in "Loading canceled". Decide the coalescing policy here.
+- **Phase 1 — central injection.** Move signal injection to the worker glue so
+  every RPC method gets it without per-adapter edits.
+- **Phase 2 — range-cache ref-counting** if Phase 0 shows shared-chunk aborts
+  matter in practice.
+- **Phase 3 — optional SAB fast-path** (`waitAsync`) for isolated deployments.
+
+**Don't:** make SAB / `crossOriginIsolated` a *requirement* (can't guarantee
+COOP/COEP from a client-side/embedded library); try to send an `AbortSignal`
+across `postMessage` (doesn't clone); abort at chunk granularity over a
+coalescing cache without ref-counting; or remove the `stopToken` (it's the only
+thing that interrupts *synchronous* worker loops — the two are complementary).
+
+**Open questions:** exact seam for signal injection given `uid` lives above
+`deserializeArguments`; `WorkerPoolRpcDriver` must route the abort to the *same*
+worker the call landed on (reuse the reply routing); whether to abort on
+*internal* `cancelFetch` (viewport change / settings invalidate) too, or only
+user cancel; and whether the wasted-bandwidth problem is big enough outside
+large alignment/whole-file reads to justify Phases 1–2 (index reads are short).
+
 ## Search / misc
 
-- Sophisticated abort system.
 - Search advanced panel; may need a pagefind inverted index.
 - Check [LDZip](https://github.com/23andMe/LDZip).
 

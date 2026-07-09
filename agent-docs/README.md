@@ -76,22 +76,21 @@ Do **not** open a PR (`gh pr create`) unless explicitly asked.
 
 | Doc                                                                  | Purpose                                                      | When to read                                  |
 | -------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
-| **[TODO.md](TODO.md)**                                               | Action items to build/fix, plus a Pending-verification list | Picking up work                               |
-| **[OTHER_IDEAS.md](OTHER_IDEAS.md)**                                 | Future / exploratory concepts (not current work)            | Brainstorming, product direction              |
-| **[SYNTENY_BLOCK_IMPORT.md](SYNTENY_BLOCK_IMPORT.md)**               | Block-level synteny data: import from ntSynt/SyRI/MCScan vs own PAF chaining; LOD tiering | Whole-genome synteny hairball, block adapters, `make-pif --blocks` |
+| **[TODO.md](TODO.md)**                                               | Action items to build/fix (backlog)                         | Picking up work                               |
+| **[OTHER_IDEAS.md](OTHER_IDEAS.md)**                                 | Future / exploratory concepts + folded proposals, incl. block-level synteny import and request-abort (not current work) | Brainstorming, product direction              |
 | **[CLUSTERING_WORKFLOW.md](CLUSTERING_WORKFLOW.md)**                 | In-app hierarchical clustering (wiggle + variants)          | Touching cluster dialogs, dendrograms, TreeSidebar |
 | **[ARCHITECTURE.md](ARCHITECTURE.md)**                               | Canonical GPU lifecycle / shaders / HAL reference           | Touching a display, backend, or shader        |
 | **[CONFIG_PATTERN.md](CONFIG_PATTERN.md)**                           | Display config → MST snapshot → plain object → renderer     | Touching config, JEXL callbacks, RPC payloads |
 | **[DISPLAY_TYPE_DEFAULTS.md](DISPLAY_TYPE_DEFAULTS.md)**             | Session-wide per-display-type slot defaults (promotable slots, CSS-cascade resolve) | Adding a "make default for all tracks like this" setting; touching `getConfResolved` / `promotable` slots |
 | **[VIEW_INIT.md](VIEW_INIT.md)**                                     | Declarative `init` launch spec → afterAttach → state machine | Touching view launch, URL params, createViewState |
 | **[TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md)**                 | Browser + unit tests, WebGPU CI                             | Running or writing tests, validating RPC      |
+| **[SCREENSHOT_REVIEW_HANDOFF.md](SCREENSHOT_REVIEW_HANDOFF.md)**     | Working the `bad`-status screenshot-review backlog (regen pipeline, hosted-track sources) | Fixing website screenshot specs / gallery figures |
 | **[PERF_INSTRUMENTATION.md](PERF_INSTRUMENTATION.md)**               | Instrumentation patterns for GPU render / scroll jank       | Diagnosing a perf regression                  |
-| **[REQUEST_ABORT_PLAN.md](REQUEST_ABORT_PLAN.md)**                   | Proposal (not implemented) for tearing down in-flight network requests on cancel | Touching request cancellation / abort / stopToken |
 | **[DISPLAYCHROME.md](DISPLAYCHROME.md)**                             | The shared display status chrome: what it is + adoption map | Touching loading/error/retry UI on a display  |
 | **[GPU_GLOSSARY.md](GPU_GLOSSARY.md)**                               | Plain-language GPU rendering glossary + precise vocabulary   | Writing about GPU internals for a non-specialist audience |
 | **[RFC-001-community-plugin-api.md](RFC-001-community-plugin-api.md)** | Community plugin API proposal                              | Plugin API design                             |
 | **[PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md)**               | Why plugin exports ossify into permanent ABI + fixes (fleshes out RFC-001 §7) | Removing/renaming a plugin export; "why can't we delete this?" |
-| **[architecture-decision-records/](architecture-decision-records/)** | Design decisions (ADR-001 … ADR-031)                        | Understanding why something is the way it is  |
+| **[architecture-decision-records/](architecture-decision-records/)** | Design decisions (ADR-001 … ADR-034)                        | Understanding why something is the way it is  |
 
 ## Common questions
 
