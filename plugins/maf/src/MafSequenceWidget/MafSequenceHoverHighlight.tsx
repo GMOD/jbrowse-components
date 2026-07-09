@@ -1,6 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha } from '@mui/material'
+import { HoverPositionHighlight } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
@@ -18,27 +17,12 @@ function isConnectedMafSequenceWidget(
   )
 }
 
-const useStyles = makeStyles()(theme => ({
-  highlight: {
-    height: '100%',
-    position: 'absolute',
-    background: alpha(theme.palette.primary.main, 0.4),
-    borderLeft: `2px solid ${theme.palette.primary.main}`,
-    borderRight: `2px solid ${theme.palette.primary.main}`,
-    pointerEvents: 'none',
-    zIndex: 10,
-  },
-}))
-
 const MafSequenceHoverHighlight = observer(function MafSequenceHoverHighlight({
   model,
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { classes } = useStyles()
   const session = getSession(model)
-  const { assemblyManager } = session
-
   const widgets =
     'widgets' in session ? (session.widgets as Map<string, unknown>) : undefined
 
@@ -49,36 +33,13 @@ const MafSequenceHoverHighlight = observer(function MafSequenceHoverHighlight({
           isConnectedMafSequenceWidget(widget, model.id) &&
           widget.hoverHighlight
         ) {
-          const { refName, start, end, assemblyName } = widget.hoverHighlight
-          const canonicalRefName =
-            assemblyManager.get(assemblyName)?.getCanonicalRefName(refName) ??
-            refName
-          const startPx = model.bpToPx({
-            refName: canonicalRefName,
-            coord: start,
-          })
-          const endPx = model.bpToPx({
-            refName: canonicalRefName,
-            coord: end,
-          })
-
-          return startPx && endPx
-            ? [
-                <div
-                  key={`maf-hover-${widget.id}`}
-                  className={classes.highlight}
-                  style={{
-                    left:
-                      Math.min(startPx.offsetPx, endPx.offsetPx) -
-                      model.offsetPx,
-                    width: Math.max(
-                      Math.abs(endPx.offsetPx - startPx.offsetPx),
-                      3,
-                    ),
-                  }}
-                />,
-              ]
-            : []
+          return [
+            <HoverPositionHighlight
+              key={`maf-hover-${widget.id}`}
+              model={model}
+              position={widget.hoverHighlight}
+            />,
+          ]
         } else {
           return []
         }
