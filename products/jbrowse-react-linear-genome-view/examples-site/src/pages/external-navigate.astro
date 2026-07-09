@@ -1,0 +1,12 @@
+---
+import Example from '../examples/ExternalNavigate.tsx'
+import code from '../examples/ExternalNavigate.tsx?raw'
+import { examples } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+
+const meta = examples.find(e => e.slug === 'external-navigate')!
+---
+
+<Layout slug={meta.slug} title={meta.title} description={meta.description} code={code}>
+  <Example client:only="react" />
+</Layout>

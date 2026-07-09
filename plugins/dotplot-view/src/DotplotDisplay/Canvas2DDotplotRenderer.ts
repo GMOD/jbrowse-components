@@ -6,12 +6,17 @@ import type {
   DotplotRenderingBackend,
 } from './dotplotRenderingBackendTypes.ts'
 
+function getDpr() {
+  return typeof window !== 'undefined' ? window.devicePixelRatio : 1
+}
+
 export class Canvas2DDotplotRenderer implements DotplotRenderingBackend {
   private ctx: CanvasRenderingContext2D
   private canvas: HTMLCanvasElement
   private geometries = new Map<number, DotplotGeometryData>()
   private width = 0
   private height = 0
+  private dpr = 0
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -23,12 +28,15 @@ export class Canvas2DDotplotRenderer implements DotplotRenderingBackend {
   }
 
   resize(width: number, height: number) {
-    if (this.width === width && this.height === height) {
+    // Include dpr in the guard so moving the window to a different-density
+    // monitor re-sizes the backing store instead of leaving it blurry/stale.
+    const dpr = getDpr()
+    if (this.width === width && this.height === height && this.dpr === dpr) {
       return
     }
     this.width = width
     this.height = height
-    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
+    this.dpr = dpr
     this.canvas.width = Math.round(width * dpr)
     this.canvas.height = Math.round(height * dpr)
   }
@@ -50,9 +58,8 @@ export class Canvas2DDotplotRenderer implements DotplotRenderingBackend {
       lineWidth,
       displayKeys,
     } = state
-    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1
     const ctx = this.ctx
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
     ctx.clearRect(0, 0, this.width, this.height)
 
     for (const displayKey of displayKeys) {

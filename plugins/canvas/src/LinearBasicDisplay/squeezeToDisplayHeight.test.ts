@@ -34,11 +34,12 @@ function stackedRegionData(rows: number, heightPx: number) {
   })
 }
 
-// State-machine coverage for squeeze-to-display-height mode (the "Fit to
-// display height" menu preset). The squeeze arithmetic itself is covered by
-// scaleLaidOutData in layout.test.ts; here we only drive the mode flag, scroll
-// reset, and the preset-picks-exit-squeeze interplay. With no feature data maxY
-// is 0, so squeezeScale stays 1 (a no-op) throughout.
+// State-machine coverage for squeeze-to-display-height mode (the "Squeeze
+// content to fit" track-height radio). The squeeze arithmetic itself is covered
+// by scaleLaidOutData in layout.test.ts; here we only drive the mode flag,
+// scroll reset, the density-is-orthogonal invariant, and the mutually-exclusive
+// track-height radio (heightMode/setHeightMode). With no feature data maxY is 0,
+// so squeezeScale stays 1 (a no-op) throughout.
 describe('canvas display squeeze-to-display-height', () => {
   it('squeezeScale is 1 and squeeze is off by default', () => {
     const { createDisplay } = createTestEnvironment()
@@ -77,27 +78,35 @@ describe('canvas display squeeze-to-display-height', () => {
     expect(display.scrollTop).toBe(120)
   })
 
-  it('setDisplayMode exits squeeze mode', () => {
+  // Feature size (density) is orthogonal to the track-height strategy: squeeze
+  // scales whatever size the density preset produces, so changing density must
+  // leave squeeze active (the two live in separate radio groups now).
+  it('changing feature-size density leaves squeeze mode active', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setSqueezeToDisplayHeight(true)
     display.setDisplayMode('compact')
-    expect(display.squeezeToDisplayHeight).toBe(false)
-  })
-
-  it('resetDisplayMode exits squeeze mode', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setSqueezeToDisplayHeight(true)
-    display.resetDisplayMode()
-    expect(display.squeezeToDisplayHeight).toBe(false)
-  })
-
-  it('setCompactness exits squeeze mode', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    display.setSqueezeToDisplayHeight(true)
+    expect(display.squeezeToDisplayHeight).toBe(true)
     display.setCompactness('super-compact')
+    expect(display.squeezeToDisplayHeight).toBe(true)
+    display.setDisplayMode('normal')
+    expect(display.squeezeToDisplayHeight).toBe(true)
+  })
+
+  it('heightMode reflects the active track-height strategy', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    expect(display.heightMode).toBe('fixed')
+    display.setHeightMode('grow')
+    expect(display.heightMode).toBe('grow')
+    expect(display.autoHeight).toBe(true)
+    display.setHeightMode('squeeze')
+    expect(display.heightMode).toBe('squeeze')
+    expect(display.squeezeToDisplayHeight).toBe(true)
+    expect(display.autoHeight).toBe(false) // grow and squeeze are exclusive
+    display.setHeightMode('fixed')
+    expect(display.heightMode).toBe('fixed')
+    expect(display.autoHeight).toBe(false)
     expect(display.squeezeToDisplayHeight).toBe(false)
   })
 

@@ -15,8 +15,7 @@ orientation via `view.horizontallyFlip()`. An `observer`-wrapped component reads
 with the view's actual state. Multi-region views are the building block for
 gene-centric layouts and synteny ribbons.
 
-See [flip via button](../horizontally-flipped-via-button/) and
-[flip via locstring](../horizontally-flipped-via-locstring/) for the
-single-region cases, and the
+See [horizontally flip the view](../horizontally-flip/) for the single-region
+cases, and the
 [LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/)
 for `displayedRegions` and the other view properties read here.

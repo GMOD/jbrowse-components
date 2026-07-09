@@ -55,7 +55,10 @@ function rampColorFn(
   }
   return (_data, i) => {
     const v = values[i]!
-    return v < 0 ? missing : lut[Math.min(255, ((v / max) * 255 + 0.5) | 0)]!
+    // Clamp to the LUT's 0..255 domain *before* truncating: applying Math.min to
+    // the float (not to the already-`| 0`'d int) keeps a pathological v/max from
+    // int32-overflowing to a negative index that would read past the LUT.
+    return v < 0 ? missing : lut[(Math.min(255, (v / max) * 255) + 0.5) | 0]!
   }
 }
 

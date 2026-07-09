@@ -53,19 +53,11 @@ export const examples: ExampleMeta[] = [
 
   // --- Navigation ---
   {
-    slug: 'external-navigate-locstring',
-    name: 'ExternalNavigateLocstring',
-    title: 'External navigation by locstring',
+    slug: 'external-navigate',
+    name: 'ExternalNavigate',
+    title: 'External navigation',
     description:
-      'Drive the view from your own UI by calling navToLocString with a location string.',
-    group: 'Navigation',
-  },
-  {
-    slug: 'external-navigate-object',
-    name: 'ExternalNavigateObject',
-    title: 'External navigation by location object',
-    description:
-      'Navigate by passing a {refName, start, end} location object instead of a string.',
+      'Drive the view from your own UI with navToLocString (a location string) or navToLocations (a {refName, start, end} object).',
     group: 'Navigation',
   },
   {
@@ -77,18 +69,11 @@ export const examples: ExampleMeta[] = [
     group: 'Navigation',
   },
   {
-    slug: 'horizontally-flipped-via-locstring',
-    name: 'HorizontallyFlippedViaLocstring',
-    title: 'Horizontally flipped via locstring',
+    slug: 'horizontally-flip',
+    name: 'HorizontallyFlip',
+    title: 'Horizontally flip the view',
     description:
-      'Open the view reverse-complemented by using a flipped location string.',
-    group: 'Navigation',
-  },
-  {
-    slug: 'horizontally-flipped-via-button',
-    name: 'HorizontallyFlippedViaButton',
-    title: 'Horizontally flipped via button',
-    description: 'Flip the view horizontally from your own external button.',
+      'Reverse-complement the view, either imperatively with a button or by opening on a [rev] location string.',
     group: 'Navigation',
   },
   {
@@ -215,17 +200,11 @@ export const examples: ExampleMeta[] = [
     group: 'Sessions & state',
   },
   {
-    slug: 'with-observe-visible-features',
-    name: 'WithObserveVisibleFeatures',
-    title: 'Observe visible features',
-    description: 'React to the set of features currently visible in the view.',
-    group: 'Sessions & state',
-  },
-  {
-    slug: 'with-observe-visible-regions',
-    name: 'WithObserveVisibleRegions',
-    title: 'Observe visible regions',
-    description: 'React to the genomic regions currently visible in the view.',
+    slug: 'observe-visible',
+    name: 'ObserveVisible',
+    title: 'Observe the visible view',
+    description:
+      'React to the regions and features currently visible in the view from your own companion panels.',
     group: 'Sessions & state',
   },
   {
@@ -305,43 +284,11 @@ export const examples: ExampleMeta[] = [
     group: 'Real-world demos',
   },
   {
-    slug: 'nextstrain-covid',
-    name: 'NextstrainCovid',
-    title: 'Nextstrain SARS-CoV-2',
+    slug: 'nextstrain-pathogens',
+    name: 'NextstrainPathogens',
+    title: 'Nextstrain pathogens',
     description:
-      'SARS-CoV-2 genes, diversity, and a per-sample genotype matrix from the Nextstrain phylogeny.',
-    group: 'Real-world demos',
-  },
-  {
-    slug: 'nextstrain-zika',
-    name: 'NextstrainZika',
-    title: 'Nextstrain Zika',
-    description:
-      'Zika polyprotein, diversity, and a genotype matrix, plus a CRAM of every published Zika genome.',
-    group: 'Real-world demos',
-  },
-  {
-    slug: 'nextstrain-ebola',
-    name: 'NextstrainEbola',
-    title: 'Nextstrain Ebola',
-    description:
-      'Ebola genes, diversity, and a per-sample genotype matrix from the Nextstrain phylogeny.',
-    group: 'Real-world demos',
-  },
-  {
-    slug: 'nextstrain-measles',
-    name: 'NextstrainMeasles',
-    title: 'Nextstrain measles',
-    description:
-      'Measles genes, diversity, and a genotype matrix, plus a CRAM of every published measles genome.',
-    group: 'Real-world demos',
-  },
-  {
-    slug: 'nextstrain-rsv-a',
-    name: 'NextstrainRsvA',
-    title: 'Nextstrain RSV-A',
-    description:
-      'RSV subgroup A genes, diversity, and a per-sample genotype matrix from the Nextstrain phylogeny.',
+      'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A — pick a pathogen from the dropdown.',
     group: 'Real-world demos',
   },
   {

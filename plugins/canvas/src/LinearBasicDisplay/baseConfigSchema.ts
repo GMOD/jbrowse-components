@@ -129,10 +129,13 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'superCompact',
         ]),
         description:
-          'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` each pin an explicit height (including pinning `normal` over a compact session default)',
-        // `inherit` is the CSS-style sentinel default (the un-pinned state);
-        // `promotedBase` ('normal') is what it resolves to when nothing is
-        // promoted. See promotableDefaults.ts.
+          'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` pin the track explicitly (including pinning `normal` back over a `compact` session default)',
+        // Sentinel promotable slot (see promotableDefaults.ts / subfeatureLabels):
+        // `inherit` is the un-pinned state, `promotedBase` ('normal') is what it
+        // resolves to when nothing is promoted — so every real preset, `normal`
+        // included, is pinnable. Legacy stored normal/compact/superCompact are
+        // still valid members (pinned), so no snapshot migration is needed. Read
+        // through the resolved `displayMode` getter (getConfResolved), never raw.
         defaultValue: 'inherit',
         promotedBase: 'normal',
         promotable: true,

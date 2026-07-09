@@ -11,7 +11,7 @@ import { SearchResultsNotFoundError } from '../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { HighlightType, InitState } from './types.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
 
 // Derived from InitState so the two can't drift: the Record requires exactly
 // one entry per InitState key, so adding/removing a field without updating
@@ -19,6 +19,7 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 const knownInitKeyMap: Record<keyof InitState, true> = {
   loc: true,
   assembly: true,
+  displayedRegionNames: true,
   tracks: true,
   tracklist: true,
   nav: true,
@@ -72,6 +73,29 @@ async function openTracklist(
   }
 }
 
+// Restrict a whole-genome view to a named subset of the assembly's regions, in
+// the requested order. Selects from the assembly's own (canonical) regions so
+// coordinates/lengths are correct; names resolve through the assembly aliases.
+function showNamedRegions(
+  self: LinearGenomeViewModel,
+  session: AbstractSessionModel,
+  assemblyName: string,
+  names: string[],
+) {
+  const assembly = session.assemblyManager.get(assemblyName)
+  const all = assembly?.regions
+  if (all) {
+    const byRefName = new Map(all.map(r => [r.refName, r]))
+    const regions = names
+      .map(n => byRefName.get(assembly.getCanonicalRefName(n) ?? n))
+      .filter((r): r is Region => r !== undefined)
+    if (regions.length) {
+      self.setDisplayedRegions(regions)
+      self.showAllRegions()
+    }
+  }
+}
+
 async function navigateInit(
   self: LinearGenomeViewModel,
   session: AbstractSessionModel,
@@ -86,7 +110,11 @@ async function navigateInit(
     } else if (!self.hasDisplayedRegions) {
       // a highlight-only init (no loc) must not clobber a defaultSession's
       // existing navigation, so only auto-navigate when nothing is shown yet
-      self.showAllRegionsInAssembly(init.assembly)
+      if (init.displayedRegionNames) {
+        showNamedRegions(self, session, init.assembly, init.displayedRegionNames)
+      } else {
+        self.showAllRegionsInAssembly(init.assembly)
+      }
     }
   } catch (e) {
     console.error(init, e)

@@ -62,6 +62,11 @@ export type TrackInit =
 export interface InitState {
   loc?: string
   assembly: string
+  // restrict a whole-genome view to these assembly refNames (whole
+  // chromosomes), in the order given — e.g. the main chromosomes without the
+  // unplaced/alt contigs. Names resolve through the assembly's aliases. Ignored
+  // when `loc` is set (which navigates to a single region instead).
+  displayedRegionNames?: string[]
   tracks?: TrackInit[]
   tracklist?: boolean
   nav?: boolean

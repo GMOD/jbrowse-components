@@ -10,7 +10,11 @@ import NoDataMessage from '../../shared/NoDataMessage.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { useWiggleMouseHandlers } from '../../shared/useWiggleMouseHandlers.ts'
-import { getRowTop, hitTestMouse } from '../../shared/wiggleComponentUtils.ts'
+import {
+  getRowTop,
+  hitTestMouse,
+  legendRightEdgePx,
+} from '../../shared/wiggleComponentUtils.ts'
 import MultiWiggleSvgScales from '../MultiWiggleSvgScales.tsx'
 
 import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
@@ -121,6 +125,11 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
   const treeShowing = model.showTree && !!model.hierarchy
   const labelOffset = treeShowing ? model.treeAreaWidth : 0
 
+  // Pin the right-aligned legends to the content's right edge, not the full
+  // track width (see legendRightEdgePx).
+  const view = getContainingView(model) as LGV
+  const legendWidth = legendRightEdgePx(view.visibleRegions, totalWidth)
+
   return (
     <>
       <div>
@@ -149,7 +158,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
       >
         <MultiWiggleSvgScales
           model={model}
-          canvasWidth={totalWidth}
+          canvasWidth={legendWidth}
           scalebarLeft={scalebarLeft || 50}
           labelOffset={labelOffset}
         />

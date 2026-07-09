@@ -1,20 +1,15 @@
 import { lazy } from 'react'
 
 import {
-  areSlotsAtSessionDefault,
   getConf,
   getConfResolved,
-  getSlotInheritedValue,
-  isSlotPinned,
   makeCurrentValueSessionDefaultControl,
   readConfObject,
-  setSlotsSessionDefault,
 } from '@jbrowse/core/configuration'
 import { promotableToggleItem } from '@jbrowse/core/ui'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
-import HeightIcon from '@mui/icons-material/Height'
 import SegmentIcon from '@mui/icons-material/Segment'
 
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
@@ -25,29 +20,11 @@ const CollapseIntronsDialog = lazy(
   () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
 )
 
-import type {
-  DisplayConfig,
-  DisplayMode,
-} from '../RenderFeatureDataRPC/renderConfig.ts'
+import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export type { Region } from '@jbrowse/core/util'
-
-// Single source for the "Set feature height" radio options and the
-// "Use ... by default" checkbox label, so a fourth mode can't drift between
-// the two.
-const displayModeOptions: { value: DisplayMode; label: string }[] = [
-  { value: 'normal', label: 'Normal' },
-  { value: 'compact', label: 'Compact' },
-  { value: 'superCompact', label: 'Super-compact' },
-]
-
-// Label for a mode; the fallback is unreachable (every DisplayMode is listed
-// above) but keeps the lookup total without a non-null assertion.
-function displayModeLabel(mode: DisplayMode) {
-  return displayModeOptions.find(o => o.value === mode)?.label ?? mode
-}
 
 /**
  * #stateModel LinearBasicDisplay
@@ -114,25 +91,6 @@ export default function stateModelFactory(
         return getConfResolved(self, 'displayDirectionalChevrons')
       },
 
-      // true when the current displayMode is already the session-wide default
-      // for this display type (drives the "make default" checkbox + toggle)
-      get isDisplayModeDefault() {
-        return areSlotsAtSessionDefault(self, ['displayMode'])
-      },
-
-      // true when this track pins an explicit mode rather than inheriting the
-      // session default; drives which "Set feature height" radio is checked
-      // (the pinned mode vs the top "Default" entry).
-      get isDisplayModePinned() {
-        return isSlotPinned(self, 'displayMode')
-      },
-
-      // the mode an un-pinned track would follow (session default, else base);
-      // labels the "Default (X)" radio entry even while this track is pinned.
-      get inheritedDisplayMode(): DisplayMode {
-        return getSlotInheritedValue<DisplayMode>(self, 'displayMode')
-      },
-
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
         if (this.geneGlyphMode === 'auto') {
           // coarseBpPerPx (debounced) so crossing the threshold during a zoom
@@ -193,32 +151,11 @@ export default function stateModelFactory(
         self.configuration.setSlot('geneGlyphMode', value)
       },
 
-      setDisplayMode(value: DisplayMode) {
-        self.setSqueezeToDisplayHeight(false)
-        self.configuration.setSlot('displayMode', value)
-      },
-
-      // Revert to 'inherit' (the slot default), which strips the pin so the
-      // track follows the session-wide type default again.
-      resetDisplayMode() {
-        self.setSqueezeToDisplayHeight(false)
-        self.configuration.setSlot('displayMode', 'inherit')
-      },
-
+      // Cross-display "compactness" API (see buildAllTracksMenu). Maps a level
+      // onto the base feature-size preset; leaves the track-height strategy
+      // alone (orthogonal), same as the base setDisplayMode.
       setCompactness(level: 'normal' | 'compact' | 'super-compact') {
-        self.setSqueezeToDisplayHeight(false)
-        self.configuration.setSlot(
-          'displayMode',
-          level === 'super-compact' ? 'superCompact' : level,
-        )
-      },
-
-      // Promote (or clear) the current displayMode as the session-wide default
-      // for this display type (persisted via preferences). Every open track at
-      // the schema default picks this up reactively through the displayMode
-      // getter; tracks with an explicit per-track choice keep it.
-      setDisplayModeDefault(promote: boolean) {
-        setSlotsSessionDefault(self, ['displayMode'], promote)
+        self.setDisplayMode(level === 'super-compact' ? 'superCompact' : level)
       },
 
       setShowOnlyGenes(value: boolean) {
@@ -297,54 +234,6 @@ export default function stateModelFactory(
                   self.setGeneGlyphMode(value)
                 },
               ),
-            },
-            {
-              icon: HeightIcon,
-              label: 'Set feature height',
-              // One radio group. The top "Default" entry follows the session
-              // default (un-pins); each explicit mode pins the track. Below it,
-              // one checkbox promotes the current mode as the session default.
-              // Squeeze-to-height and an explicit/default display mode are one
-              // exclusive choice, so squeeze wins the radio state when it's on.
-              subMenu: [
-                {
-                  label: `Default (${displayModeLabel(self.inheritedDisplayMode)})`,
-                  type: 'radio' as const,
-                  checked:
-                    !self.squeezeToDisplayHeight && !self.isDisplayModePinned,
-                  onClick: () => {
-                    self.resetDisplayMode()
-                  },
-                },
-                ...displayModeOptions.map(option => ({
-                  label: option.label,
-                  type: 'radio' as const,
-                  checked:
-                    !self.squeezeToDisplayHeight &&
-                    self.isDisplayModePinned &&
-                    self.displayMode === option.value,
-                  onClick: () => {
-                    self.setDisplayMode(option.value)
-                  },
-                })),
-                {
-                  label: 'Fit to display height',
-                  type: 'radio' as const,
-                  checked: self.squeezeToDisplayHeight,
-                  onClick: () => {
-                    self.setSqueezeToDisplayHeight(true)
-                  },
-                },
-                { type: 'divider' as const },
-                {
-                  label: `Use "${displayModeLabel(self.displayMode)}" as the default for feature tracks`,
-                  type: 'checkbox' as const,
-                  checked: self.isDisplayModeDefault,
-                  onClick: () => {
-                    self.setDisplayModeDefault(!self.isDisplayModeDefault)
-                  },
-                },
-              ],
             },
           ]
         },

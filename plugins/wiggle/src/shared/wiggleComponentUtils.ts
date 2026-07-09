@@ -43,6 +43,23 @@ export function getRowHeight(canvasHeight: number, numRows: number) {
   return numRows > 0 ? canvasHeight / numRows : canvasHeight
 }
 
+// Right edge (track-local px) to pin the right-aligned overlays (color/score
+// legend) to: the last visible content block's right edge, clamped to the track
+// width. At whole-genome zoom the regions can end before the track's right edge,
+// where the trailing region-separator/elided PaddingBlock (a TrackContainer
+// sibling painted above the `contain: strict` track container) would otherwise
+// mask a full-track-width-pinned legend. When content fills the track this is
+// just the track width, so the common case is unchanged.
+export function legendRightEdgePx(
+  visibleRegions: { screenEndPx: number }[],
+  totalWidth: number,
+) {
+  return Math.min(
+    totalWidth,
+    visibleRegions.at(-1)?.screenEndPx ?? totalWidth,
+  )
+}
+
 export function getRowTop(rowIndex: number, rowHeight: number) {
   return rowIndex * rowHeight
 }

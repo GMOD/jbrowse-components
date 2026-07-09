@@ -11,42 +11,15 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// hg19 main-chromosome regions (1..22, X, Y) in karyotype order. A plain
-// whole-genome showAllRegionsInAssembly also appends the *_hap / *_random / Un
-// contigs, whose far-right elided-block column (PaddingBlocks) paints over the
-// top-right MultiWiggle color legend — the legend is sealed inside the
-// trackRenderingContainer `contain: strict` stacking context, so it cannot
-// z-index above the sibling PaddingBlocks. Listing only the main chromosomes as
-// displayedRegions drops that unplaced-contig clutter (and the collision), and
-// reads better for a genome-wide CNV overview. Lengths from hg19.fa.gz.fai.
-const HG19_MAIN_CHROMS = (
-  [
-    ['1', 249250621],
-    ['2', 243199373],
-    ['3', 198022430],
-    ['4', 191154276],
-    ['5', 180915260],
-    ['6', 171115067],
-    ['7', 159138663],
-    ['8', 146364022],
-    ['9', 141213431],
-    ['10', 135534747],
-    ['11', 135006516],
-    ['12', 133851895],
-    ['13', 115169878],
-    ['14', 107349540],
-    ['15', 102531392],
-    ['16', 90354753],
-    ['17', 81195210],
-    ['18', 78077248],
-    ['19', 59128983],
-    ['20', 63025520],
-    ['21', 48129895],
-    ['22', 51304566],
-    ['X', 155270560],
-    ['Y', 59373566],
-  ] as const
-).map(([refName, end]) => ({ refName, start: 0, end, assemblyName: 'hg19' }))
+// hg19 main chromosomes (1..22, X, Y) in karyotype order. A plain whole-genome
+// showAllRegionsInAssembly also appends the *_hap / *_random / Un contigs, whose
+// far-right elided-block column reads as clutter in a genome-wide overview.
+// Passed as the view's `displayedRegionNames` so the LGV init restricts to just
+// these (resolved through the assembly aliases against hg19's own regions).
+const HG19_MAIN_CHROMS = [
+  '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
+  '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y',
+]
 
 export const svSpecs: ScreenshotSpec[] = [
   // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
@@ -213,9 +186,8 @@ export const svSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg19',
           // main chromosomes only (see HG19_MAIN_CHROMS): a genome-wide CNV
-          // overview without the trailing unplaced-contig blocks that masked
-          // the color legend
-          displayedRegions: HG19_MAIN_CHROMS,
+          // overview without the trailing unplaced-contig blocks
+          displayedRegionNames: HG19_MAIN_CHROMS,
           tracks: [
             {
               trackId: 'colo829_cnv_coverage',

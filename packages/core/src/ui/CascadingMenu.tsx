@@ -165,7 +165,7 @@ function CascadingMenuList({
   )
   // When any row carries a trailing endAdornment, reserve a fixed-width slot on
   // every row so the checkbox/radio decorations stay column-aligned and the
-  // adornments float in their own rightmost column.
+  // adornments right-align in their own rightmost column.
   const hasEndAdornment = menuItems.some(
     m => 'endAdornment' in m && m.endAdornment,
   )
@@ -294,7 +294,7 @@ function CascadingMenuList({
               {hasEndAdornment ? (
                 <div
                   style={{
-                    width: 40,
+                    width: 28,
                     display: 'flex',
                     justifyContent: 'flex-end',
                     alignItems: 'center',

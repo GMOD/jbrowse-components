@@ -82,6 +82,12 @@ export function createTestEnvironment() {
       name: 'testSession',
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.frozen()),
+      // same shape as BaseSession's preferencesOverrides.displayTypeDefaults:
+      // displayType -> slot -> value, reassigned wholesale so the promotable
+      // display getters (getConfResolved) track it reactively
+      displayTypeDefaults: types.frozen<
+        Record<string, Record<string, unknown>>
+      >({}),
     })
     .volatile(() => ({
       rpcManager: {
@@ -127,7 +133,7 @@ export function createTestEnvironment() {
         isValidRefName: () => true,
       },
     }))
-    .views(() => ({
+    .views(self => ({
       getTracksById() {
         return {
           test_track: trackConfig,
@@ -135,6 +141,9 @@ export function createTestEnvironment() {
       },
       get tracksById() {
         return this.getTracksById()
+      },
+      getDisplayTypeDefault(displayType: string, slot: string): unknown {
+        return self.displayTypeDefaults[displayType]?.[slot]
       },
     }))
     .actions(self => ({
@@ -145,6 +154,18 @@ export function createTestEnvironment() {
       notify() {},
       notifyError() {},
       queueDialog() {},
+      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
+        const forType = { ...self.displayTypeDefaults[displayType] }
+        if (value === undefined) {
+          delete forType[slot]
+        } else {
+          forType[slot] = value
+        }
+        self.displayTypeDefaults = {
+          ...self.displayTypeDefaults,
+          [displayType]: forType,
+        }
+      },
     }))
 
   function createDisplay(displaySnapshot?: Record<string, unknown>) {

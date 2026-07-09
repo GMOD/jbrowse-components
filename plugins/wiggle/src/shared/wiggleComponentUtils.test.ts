@@ -7,6 +7,7 @@ import {
   getRowTop,
   isOverlayMode,
   isScatterMode,
+  legendRightEdgePx,
   makeWhiskersLayers,
   renderingTypeToInt,
 } from './wiggleComponentUtils.ts'
@@ -87,6 +88,27 @@ describe('getRowTop', () => {
     expect(getRowTop(0, 50)).toBe(0)
     expect(getRowTop(1, 50)).toBe(50)
     expect(getRowTop(3, 50)).toBe(150)
+  })
+})
+
+describe('legendRightEdgePx', () => {
+  test('pins to the last visible content block, off a trailing padding block', () => {
+    // whole-genome view: content ends at 1400 but the track is 1500 wide (the
+    // trailing 100px is a region-separator/elided PaddingBlock that would mask a
+    // 1500-pinned legend)
+    const regions = [
+      { screenEndPx: 700 },
+      { screenEndPx: 1400 },
+    ]
+    expect(legendRightEdgePx(regions, 1500)).toBe(1400)
+  })
+
+  test('clamps to the track width when content overflows (scrolled/zoomed in)', () => {
+    expect(legendRightEdgePx([{ screenEndPx: 3000 }], 1500)).toBe(1500)
+  })
+
+  test('falls back to the track width with no visible regions', () => {
+    expect(legendRightEdgePx([], 1500)).toBe(1500)
   })
 })
 

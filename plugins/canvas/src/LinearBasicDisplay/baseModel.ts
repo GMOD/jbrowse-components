@@ -4,10 +4,12 @@ import {
   ConfigurationReference,
   getConf,
   getConfResolved,
+  makeSessionDefaultControl,
   readConfObject,
   resolvePromotableConfigSnapshot,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { promotableRadioItem } from '@jbrowse/core/ui'
 import {
   getContainingTrack,
   getContainingView,
@@ -34,6 +36,7 @@ import ClearAllIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
+import HeightIcon from '@mui/icons-material/Height'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
@@ -92,6 +95,7 @@ import type {
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -102,6 +106,19 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+// The three mutually-exclusive track-height strategies, derived from the
+// `autoHeight` (grow) and `squeezeToDisplayHeight` (squeeze) primitives so the
+// "Track height" radio group can present one exclusive choice.
+export type HeightMode = 'fixed' | 'grow' | 'squeeze'
+
+// Single source for the "Feature height" radio options and their labels, so a
+// fourth mode can't drift between the menu and the label lookup.
+export const displayModeOptions: { value: DisplayMode; label: string }[] = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'compact', label: 'Compact' },
+  { value: 'superCompact', label: 'Super-compact' },
+]
 
 // Persistent, declarative feature-highlight request (see featureHighlight.ts).
 // A plain span+name signature — never the adapter uniqueId — so it can be
@@ -270,15 +287,17 @@ export default function baseStateModelFactory(
           ),
           /**
            * #property
-           * Squeeze-to-display-height mode (the "Fit to display height" menu
-           * preset): laid-out glyphs are uniformly shrunk so every row fits the
-           * track height without scrolling. A persistent snapshot value so it can
-           * be opened declaratively (a session/spec — or jbrowse-img's
-           * `fitToDisplayHeight` modifier — seeds it in the display snapshot),
-           * and picking any feature-height preset turns it off. The `height`
-           * config slot is never written, so it stays pure user intent. Only ever
-           * shrinks (scale <= 1); a track that already fits is left untouched.
-           * stripDefault so a display not squeezing omits it from its snapshot.
+           * Squeeze-to-display-height mode (the "Squeeze content to fit"
+           * track-height radio): laid-out glyphs are uniformly shrunk so every
+           * row fits the track height without scrolling. A persistent snapshot
+           * value so it can be opened declaratively (a session/spec — or
+           * jbrowse-img's `fitToDisplayHeight` modifier — seeds it in the display
+           * snapshot). Orthogonal to the feature-size preset, which it scales;
+           * mutually exclusive only with auto-fit (the other track-height mode).
+           * The `height` config slot is never written, so it stays pure user
+           * intent. Only ever shrinks (scale <= 1); a track that already fits is
+           * left untouched. stripDefault so a display not squeezing omits it from
+           * its snapshot.
            */
           squeezeToDisplayHeight: types.stripDefault(types.boolean, false),
         }),
@@ -450,12 +469,25 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // `displayMode` is a promotable slot with an inherit sentinel: 'inherit'
-        // (the slot default) follows the session-wide default; normal/compact/
-        // superCompact each pin the track. getConfResolved walks the cascade and
-        // always yields a real mode (never 'inherit' or a corrupt promoted value).
+        // Feature height preset (normal/compact/superCompact). Promotable
+        // sentinel enum (see baseConfigSchema.ts): getConfResolved walks the
+        // pinned-track -> session-default -> `normal` cascade and always returns
+        // a concrete preset, never the `inherit` sentinel.
         get displayMode(): DisplayMode {
-          return getConfResolved<DisplayMode>(self, 'displayMode')
+          return getConfResolved(self, 'displayMode')
+        },
+
+        /**
+         * #getter
+         */
+        // The active track-height strategy, one exclusive value derived from the
+        // two underlying primitives (which the setters keep mutually exclusive).
+        get heightMode(): HeightMode {
+          return self.squeezeToDisplayHeight
+            ? 'squeeze'
+            : this.autoHeight
+              ? 'grow'
+              : 'fixed'
         },
 
         /**
@@ -1263,10 +1295,10 @@ export default function baseStateModelFactory(
           self.squeezeToDisplayHeight = squeeze
           if (squeeze) {
             // Auto-fit grows the height to the content, which keeps base ===
-            // height and makes the squeeze a no-op; the two modes are opposite
-            // intents, so entering squeeze turns auto-fit off (mirrors how
-            // setAutoHeight/setDisplayMode clear the other mode). setAutoHeight
-            // is defined in a later actions block, so clear the slot directly.
+            // height and makes the squeeze a no-op; the two are the mutually
+            // exclusive track-height modes, so entering squeeze turns auto-fit
+            // off (setAutoHeight does the mirror). setAutoHeight is defined in a
+            // later actions block, so clear the slot directly.
             self.configuration.setSlot('autoHeight', false)
             // A pending expand/restore marker ("Restore previous height") is
             // stale once squeeze drives the fit — same reasoning setAutoHeight
@@ -1731,6 +1763,33 @@ export default function baseStateModelFactory(
         }
       })
       .actions(self => ({
+        /**
+         * #action
+         */
+        // Set the feature-size (density) preset. Orthogonal to the track-height
+        // strategy — squeeze/grow scale or accommodate whatever size this sets —
+        // so it deliberately leaves heightMode untouched.
+        setDisplayMode(value: DisplayMode) {
+          self.configuration.setSlot('displayMode', value)
+        },
+
+        /**
+         * #action
+         */
+        // Set the track-height strategy as one exclusive choice, delegating to
+        // the two primitives (each already clears the other) so "fixed" is the
+        // only state that needs both cleared explicitly.
+        setHeightMode(mode: HeightMode) {
+          if (mode === 'grow') {
+            self.setAutoHeight(true)
+          } else if (mode === 'squeeze') {
+            self.setSqueezeToDisplayHeight(true)
+          } else {
+            self.setAutoHeight(false)
+            self.setSqueezeToDisplayHeight(false)
+          }
+        },
+
         /**
          * #action
          */
@@ -2275,14 +2334,6 @@ export default function baseStateModelFactory(
                 self.setShowOutline(!self.showOutline)
               },
             },
-            {
-              label: 'Auto-fit height',
-              type: 'checkbox' as const,
-              checked: self.autoHeight,
-              onClick: () => {
-                self.setAutoHeight(!self.autoHeight)
-              },
-            },
           ]
         },
       }))
@@ -2493,12 +2544,80 @@ export default function baseStateModelFactory(
             },
           ]
         },
+
+        /**
+         * #method
+         * The "Feature height" submenu. The top level is only the three intuitive
+         * size presets (the one thing ~everyone wants). The less-obvious
+         * container-sizing strategy lives under a "Track height" nested entry
+         * with effect-describing labels, so a first-time user never has to parse
+         * "grow/squeeze/fit". Shared by every canvas display (genes, variants).
+         */
+        featureHeightMenuItems() {
+          return [
+            {
+              label: 'Feature height',
+              icon: HeightIcon,
+              subMenu: [
+                // Each preset row carries its own pin (endAdornment): the radio
+                // selects the mode for this track, the pin promotes that preset
+                // as the session-wide default for this display type. displayMode
+                // is a sentinel promotable slot, so every preset — `normal`
+                // included — is pinnable back over another session default.
+                ...displayModeOptions.map(option =>
+                  promotableRadioItem({
+                    label: option.label,
+                    checked: self.displayMode === option.value,
+                    onClick: () => {
+                      self.setDisplayMode(option.value)
+                    },
+                    sessionDefault: makeSessionDefaultControl(
+                      self,
+                      'displayMode',
+                      option.value,
+                    ),
+                  }),
+                ),
+                { type: 'divider' as const },
+                {
+                  label: 'Track height',
+                  subMenu: [
+                    {
+                      label: 'Fixed height — scroll to see all features',
+                      type: 'radio' as const,
+                      checked: self.heightMode === 'fixed',
+                      onClick: () => {
+                        self.setHeightMode('fixed')
+                      },
+                    },
+                    {
+                      label: 'Auto height — grow track to show all features',
+                      type: 'radio' as const,
+                      checked: self.heightMode === 'grow',
+                      onClick: () => {
+                        self.setHeightMode('grow')
+                      },
+                    },
+                    {
+                      label: 'Fixed height — compress features to fit',
+                      type: 'radio' as const,
+                      checked: self.heightMode === 'squeeze',
+                      onClick: () => {
+                        self.setHeightMode('squeeze')
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ]
+        },
       }))
       .views(self => ({
         /**
          * #method
          */
-        trackMenuItems() {
+        trackMenuItems(): MenuItem[] {
           const hiddenCount = self.hiddenFeatureIds.length
           const hasFeatureFilters =
             self.jexlFiltersSetting !== undefined ||
@@ -2510,6 +2629,7 @@ export default function baseStateModelFactory(
               icon: VisibilityIcon,
               subMenu: self.showSubmenuMenuItems(),
             },
+            ...self.featureHeightMenuItems(),
             ...self.colorMenuItems(),
             {
               label: 'Edit filters',

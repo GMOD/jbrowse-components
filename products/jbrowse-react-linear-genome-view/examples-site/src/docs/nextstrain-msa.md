@@ -1,7 +1,7 @@
 The Nextstrain view is fundamentally a **tree + multiple sequence alignment**.
 This demo renders exactly that with [react-msaview](https://gmod.org/JBrowseMSA)
 (the JBrowse MSA viewer), reusing the same Nextstrain datasets as the
-[genome-browser demos](../nextstrain-covid/).
+[genome-browser demos](../nextstrain-pathogens/).
 
 All the data prep is server-side in `scripts/gen-nextstrain-demos.mjs`. Because
 Nextstrain sequences are aligned to the reference (insertions relative to it are

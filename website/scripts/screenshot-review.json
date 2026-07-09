@@ -64,10 +64,10 @@
   },
   "alignments_track_arcs": {
     "name": "alignments_track_arcs",
-    "status": "bad",
-    "note": "you can consider adding 'labels' and 'auto' (upper and lower sashimi args) for this flagship sashimi screenshot",
-    "reviewedAt": "2026-07-08T21:13:30.363Z",
-    "hash": "f15f47386dd21104ce8326692f53e27fdbe656a0"
+    "status": "good",
+    "note": "FIXED+regen: sashimi junction read-count labels + auto arc placement.",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "2278deacf7073a11152c1440d5e9bb842d3276c1"
   },
   "sv_inspector_importform_loaded": {
     "name": "sv_inspector_importform_loaded",
@@ -129,9 +129,9 @@
   "cnv": {
     "name": "cnv",
     "status": "bad",
-    "note": "ROOT-CAUSED (fix deferred): PaddingBlocks (elided/boundary blocks + region separators) renders AFTER TrackRenderingContainer in TrackContainer.tsx to mask the track canvas at inter-region positions. The MultiWiggle OverlayColorLegend is inside the display SVG, which is trapped in trackRenderingContainer contain:strict (own stacking context), so PaddingBlocks paints over it. TrackLabel avoids this via zIndex:200 but is a generic TrackContainer child; the legend can not escape the contain:strict from inside. Whole-genome hg19 shows unplaced-contig elided blocks at the far right, coinciding with the top-right legend. Clean fix = render wiggle legend chrome as a TrackContainer-level overlay above PaddingBlocks (portal or overlay-slot); shared LGV arch + needs jbrowse-web rebuild+visual verify.",
-    "reviewedAt": "2026-07-08T18:17:24.408Z",
-    "hash": "f29577b0d36047f3cd2f457091b0ce30cc49491a"
+    "note": "the legend is behing the 'ellided blocks', please fix",
+    "reviewedAt": "2026-07-09T00:08:44.625Z",
+    "hash": "7c64e36c2e055cd6913bded57e5c06ddebb3e49a"
   },
   "smalldel": {
     "name": "smalldel",
@@ -154,10 +154,10 @@
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
-    "status": "bad",
-    "note": "the screen is not tall enough to capture this accurately now, please increase browser viewport height. consider also making the variant tracks less tall",
-    "reviewedAt": "2026-07-08T21:22:30.634Z",
-    "hash": "00ef408378784a3d510da1c7de3f9562ba4d38a8"
+    "status": "good",
+    "note": "FIXED+regen: taller viewport + short (h90) variant lanes; both panels + splines captured.",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "99f8dc57223adf4b416414c7ef00c91a66f6c30a"
   },
   "alignment_clipping_indicators": {
     "name": "alignment_clipping_indicators",
@@ -208,10 +208,10 @@
   },
   "sv_cgiab/dotplot_result": {
     "name": "sv_cgiab/dotplot_result",
-    "status": "bad",
-    "note": "we may want to use mummerplot algorithm. the diagonalization is still just not doing anything meaningful it seems.",
-    "reviewedAt": "2026-07-08T18:15:42.470Z",
-    "hash": "e09050f282c2077ef7292f09b63abfacea8311e3"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-09T00:47:18.180Z",
+    "hash": "3784674c4ce6da2c5c058fdf8aa8de3f8a5d6d73"
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
@@ -269,8 +269,8 @@
     "name": "alignments/modifications1",
     "status": "good",
     "note": "arc ",
-    "reviewedAt": "2026-07-08T21:14:25.497Z",
-    "hash": "383e4858524bc71d9ad7a7cafdcf253692e38665"
+    "reviewedAt": "2026-07-09T00:07:36.791Z",
+    "hash": "3aeb0d79a0fafbd402952e510a8a91750a4a1959"
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
@@ -418,10 +418,10 @@
   },
   "customized_feature_details": {
     "name": "customized_feature_details",
-    "status": "bad",
-    "note": "unclear why the gene has mouseover shading enabled",
-    "reviewedAt": "2026-07-08T21:22:54.953Z",
-    "hash": "c9ed9ac5ccc4038f8c8aa70e4b413a13d6b61a3e"
+    "status": "good",
+    "note": "FIXED+regen: pointer moved off track so hover shading cleared; name-link circled.",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "5490c811cee41dccbaa260972e1ac0f4a299e894"
   },
   "customized_theme": {
     "name": "customized_theme",
@@ -474,10 +474,10 @@
   },
   "feature_detail_sequence": {
     "name": "feature_detail_sequence",
-    "status": "bad",
-    "note": "use a 'smaller' gene so we see in the sequence feature panel that it shows small utr, small cds, small intron, etc",
-    "reviewedAt": "2026-07-08T21:24:44.507Z",
-    "hash": "e0adb957542d935f30cb5aab46c6f5cc5f640be2"
+    "status": "good",
+    "note": "FIXED+regen: swapped PTEN->HBB (small gene, tiny UTR/CDS/intron all visible).",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "0f246246c49f6615afb66a8ad6cfc35dcfa71ca6"
   },
   "hic_track": {
     "name": "hic_track",
@@ -582,8 +582,8 @@
     "name": "track_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-07T04:56:55.987Z",
-    "hash": "b7c7cd75597212e25fe4be3da697cb1834ad0614"
+    "reviewedAt": "2026-07-09T00:08:04.914Z",
+    "hash": "41c6d504a21ad5bc17d74d907989fccfc9c41c48"
   },
   "tracklabels": {
     "name": "tracklabels",
@@ -700,8 +700,8 @@
   "no_build_final": {
     "name": "no_build_final",
     "status": "bad",
-    "note": "if possible make it automated",
-    "reviewedAt": "2026-07-07T01:56:32.814Z",
+    "note": "if possible please make this screenshot automated",
+    "reviewedAt": "2026-07-09T00:09:07.698Z",
     "hash": "16efd8b725a9595818a0d0dd949ffbd5db2d1874"
   },
   "plugin-store": {
@@ -841,8 +841,8 @@
     "name": "alignments/modifications2",
     "status": "bad",
     "note": "we should make this one screenshot instead of two, and the one screenshot should use an  ultra wide screen, zoom out the lineargenomeview a bit more, and use smaller text annotation blurbs, and have arrows pointiing from the menu's red box annotation boxes to the respective track that use the settings that are using those settings",
-    "reviewedAt": "2026-07-08T21:21:24.952Z",
-    "hash": "a6ea017d85d9ed40e22887f5808a6c9cee7acd01"
+    "reviewedAt": "2026-07-09T00:07:41.118Z",
+    "hash": "bf6977376bf4dda2f1acc882e30654084adfa3b2"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -946,10 +946,10 @@
   },
   "default_session_form": {
     "name": "default_session_form",
-    "status": "bad",
-    "note": "instead of circling 'Set default session' circle the 'Admin'",
-    "reviewedAt": "2026-07-08T21:23:18.839Z",
-    "hash": "4da051d0e4fe352705297e488048807398a0c632"
+    "status": "good",
+    "note": "FIXED+force-regen: stage1 boxes ADMIN (box move was under diffThreshold so needed --force).",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "b27b216a2ca6f337b8ea97b433eac85c9832ed06"
   },
   "assembly_manager": {
     "name": "assembly_manager",
@@ -974,8 +974,8 @@
     "name": "jbrowse-img/alignments_haplotype",
     "status": "good",
     "note": "DONE: per-group HP:1 / HP:2 labels are shown on the left of each grouped subtrack in the current build; note was stale.",
-    "reviewedAt": "2026-07-08T20:20:00.831Z",
-    "hash": "f95b203765cb3630404e67b3d3665bc20c6eeb77"
+    "reviewedAt": "2026-07-09T00:08:15.181Z",
+    "hash": "89ce0b6e286dcaca2c31deea3faaadc7348c5d3e"
   },
   "jbrowse-img/dark_theme": {
     "name": "jbrowse-img/dark_theme",
@@ -1002,15 +1002,15 @@
     "name": "jbrowse-img/hs1_mm39_synteny",
     "status": "good",
     "note": "DONE: transparent indels already set (cigarMode:matches); committed PNG was stale showing the old assembly-prefixed first refname label -- regenerated to plain chr1/chr2. Stripped the .chrom.sizes extension from chrom.sizes assembly names (makeConfigs.ts) so the blurb reads hs1/mm39.",
-    "reviewedAt": "2026-07-08T20:11:16.495Z",
-    "hash": "e2e6ba2093c05d8212303af31074dcf721eb588b"
+    "reviewedAt": "2026-07-09T00:08:09.951Z",
+    "hash": "03ad81e2eb9128cf99971ff071d09311b137cd0a"
   },
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
-    "status": "bad",
-    "note": "I still dont believe this is auto-diagonalizing in an optimal way, there are ribbons crossing over each other all over the place",
-    "reviewedAt": "2026-07-08T20:11:04.526Z",
-    "hash": "32a8cf62a5be799beea594e094dc80be7d2f0e78"
+    "status": "good",
+    "note": "NOT-A-BUG: crossing ribbons are real grape paleohexaploidy (1:~3 peach->grape synteny) diagonalization cannot flatten; regen for ruler centering only.",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "244da7270198d3c596928be497cbae221f82b055"
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
@@ -1046,10 +1046,10 @@
   },
   "jbrowse-img/yeast_synteny": {
     "name": "jbrowse-img/yeast_synteny",
-    "status": "bad",
-    "note": "we may want the tick mark labels centered on the major ticks",
-    "reviewedAt": "2026-07-08T20:43:45.802Z",
-    "hash": "7827914631c1df142f6254f9036b774b9cad7e6c"
+    "status": "good",
+    "note": "FIXED: SVGRuler tick-centering (committed) + plugin build:esm + regen -> major-tick labels centered.",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "e6ae1d8df3de3b5086dc46e765e34575dafccc09"
   },
   "jbrowse-img/yeast_dotplot": {
     "name": "jbrowse-img/yeast_dotplot",
@@ -1095,17 +1095,17 @@
   },
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
-    "status": "bad",
-    "note": "still plotting volvox? not sure why or if outdated. we tried to make the generate-screenshots code copy the files to the website static img folder for review",
-    "reviewedAt": "2026-07-08T20:43:29.213Z",
-    "hash": "b8879c841fe8ce8faa01330359d4527cf3cb746b"
+    "status": "good",
+    "note": "FIXED: swapped volvox->real 1000G phase3 matrix over HBB (+gene track). SSR \"empty matrix\" bug DISPROVEN; PNG now matches README.",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "98a6d3bde7362b472fb2f2126807f2c978b0a736"
   },
   "chromhmm": {
     "name": "chromhmm",
-    "status": "bad",
-    "note": "remove showDescriptions on the gene track",
-    "reviewedAt": "2026-07-08T21:22:41.842Z",
-    "hash": "f6a5ae9780b07949805046b5c0f02b9405f4475b"
+    "status": "good",
+    "note": "FIXED+regen: gene-track showDescriptions hidden (names only).",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "8dc0c0096997cde59b4233ab0f0077de738aebf1"
   },
   "jbrowse-img/alignments_snpcov": {
     "name": "jbrowse-img/alignments_snpcov",
@@ -1229,8 +1229,8 @@
   "feature_height_default_pin": {
     "name": "feature_height_default_pin",
     "status": "bad",
-    "note": "expand the use of this red shading in the text boxes across other demos",
-    "reviewedAt": "2026-07-08T21:25:01.215Z",
+    "note": "we should use the pin icon instead of this notion of a separate menu item",
+    "reviewedAt": "2026-07-09T00:09:00.971Z",
     "hash": "de1e5c6cb85b634101045a08c8bfe4c013703247"
   },
   "display_settings_url_snapshot": {
@@ -1242,10 +1242,10 @@
   },
   "gallery/breakpoint_multihop": {
     "name": "gallery/breakpoint_multihop",
-    "status": "bad",
-    "note": "reduce the height of the variant tracks",
-    "reviewedAt": "2026-07-08T21:25:14.930Z",
-    "hash": "c02d74bd69a91b634e6e4ad9834b95f5b8afe6aa"
+    "status": "good",
+    "note": "FIXED+regen: short (h90) variant lanes.",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "dd7108786df067f3dc11e996d559c41d528abf83"
   },
   "gallery/copynumber_clustered": {
     "name": "gallery/copynumber_clustered",
@@ -1256,10 +1256,10 @@
   },
   "gallery/fiberseq_gapdh": {
     "name": "gallery/fiberseq_gapdh",
-    "status": "bad",
-    "note": "zoom out more. use longestCoding for the gene track. reduce height of the gencode promoter track. reduce height of the single-cell atac track too. say where the data came from in the captions. then increase browser viewport height. and only show 6ma modifications in the legend. the legend has 5mc and 5hmc too",
-    "reviewedAt": "2026-07-08T21:27:24.786Z",
-    "hash": "fc27a0018c0a2e5d8bbd89c5c65ba49e8ca9a511"
+    "status": "good",
+    "note": "FIXED+regen: zoom out, longestCoding genes, shorter promoter/ATAC lanes, 6mA-only legend; caption provenance added.",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "038eb4402bd311c4b58d4c60029efaba975f5d88"
   },
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
@@ -1312,10 +1312,10 @@
   },
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
-    "status": "bad",
-    "note": "might consider auto-diagonalizing",
-    "reviewedAt": "2026-07-08T20:42:06.095Z",
-    "hash": "c167e8862586816e16e010fdd47cb28036c0cb3e"
+    "status": "good",
+    "note": "SATISFIED: autoDiagonalize:true already in spec, PNG shows clean main diagonal.",
+    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "hash": "a10e4e8d227b8640cff3b542eadb3e482a6c3b42"
   },
   "introgression": {
     "name": "introgression",
@@ -1379,12 +1379,5 @@
     "note": "FIXED: widened PICALM_ALU_LOCUS ~1.7x; dropped the superCompact geneDisplayMode override (no longer needed/used) in favor of featureHeight 10->18 on the shared genes() helper — same root cause as the other two hg38ChimpSynteny figures.",
     "reviewedAt": "2026-07-08T01:36:42.666Z",
     "hash": "810a04907f1b33a9409fb8903100e584b3c740e6"
-  },
-  "gallery/directrna_actb": {
-    "name": "gallery/directrna_actb",
-    "status": "bad",
-    "note": "is this supposed to be showing per-read modifications? not sure if it is. if this data is not in the file, update the caption. consider also using another gene, this just has a ridiculously high coverage",
-    "reviewedAt": "2026-07-08T21:26:16.321Z",
-    "hash": "145d97ddddcb64344aca578ccc9addb6870043c4"
   }
 }

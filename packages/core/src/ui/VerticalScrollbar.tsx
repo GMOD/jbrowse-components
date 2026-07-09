@@ -1,8 +1,9 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import type React from 'react'
 
 import { clamp } from '../util/numericUtils.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
+import { useVirtualScrollWheel } from '../util/useVirtualScrollWheel.ts'
 
 const TRACK_WIDTH = 12
 const MIN_THUMB_HEIGHT = 20
@@ -65,8 +66,24 @@ export default function VerticalScrollbar({
   // track) delivers move/up here even when the pointer leaves the thin track,
   // and auto-releases on unmount — so no document listeners or effect cleanup.
   const dragRef = useRef<{ startY: number; startScroll: number }>(undefined)
+  const [trackEl, setTrackEl] = useState<HTMLDivElement | null>(null)
 
   const scrollableHeight = Math.max(0, contentHeight - viewportHeight)
+
+  // Wheeling while the pointer is over the scrollbar always scrolls the panel,
+  // never zooms the view. The scrollbar overlay is a sibling of the canvas, so
+  // its wheel events would otherwise bubble straight past the canvas's own
+  // handler to the containing view's scroll-zoom. A native non-passive listener
+  // here (via useVirtualScrollWheel) consumes the vertical delta into
+  // setScrollTop and stopPropagation keeps it from reaching that scroll-zoom.
+  useVirtualScrollWheel(trackEl, (e, applyScroll) => {
+    const next = applyScroll(e, { scrollTop, viewportHeight, scrollableHeight })
+    if (next !== null) {
+      setScrollTop(next)
+    }
+    e.stopPropagation()
+  })
+
   if (scrollableHeight <= 0) {
     return null
   }
@@ -122,6 +139,7 @@ export default function VerticalScrollbar({
 
   return (
     <div
+      ref={setTrackEl}
       data-testid="vertical-scrollbar"
       className={classes.track}
       style={{ top, height: viewportHeight }}
