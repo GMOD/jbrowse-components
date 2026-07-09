@@ -86,26 +86,26 @@ the breakpoint, the evidence is indirect — a cluster of same-orientation (LL/R
 or split pairs arcing across the two junctions, a minority signal in an
 otherwise concordant (grey) pileup. Long reads span the whole event, so a single
 read crosses both breakpoints and splits into a forward and a reverse-strand
-alignment. With **View as pairs / link supplementary alignments** on, those
-split segments chain onto one row: the inverted middle segment paints the
-flipped (reverse-strand) color while the flanks stay forward, so the inverted
-interval reads out as a colored block, and the split junctions are joined by a
-magenta inversion arc (the split-read color scheme, shared with the pileup fill
-and the linked-read connectors). The figure below shows the same ~1.2 kb
-inversion in one 1000 Genomes sample (HG00151) with both technologies — Illumina
+alignment. With View as pairs / link supplementary alignments on, those split
+segments chain onto one row: the inverted middle segment paints the flipped
+(reverse-strand) color while the flanks stay forward, so the inverted interval
+reads out as a colored block, and the split junctions are joined by a magenta
+inversion arc (the split-read color scheme, shared with the pileup fill and the
+linked-read connectors). The figure below shows the same ~1.2 kb inversion in
+one 1000 Genomes sample (HG00151) with both technologies — Illumina
 high-coverage on top, Oxford Nanopore below.
 
 <Figure caption="The same inversion (HGSV_10047, chr1:197,787,660-197,788,855) shown with short and long reads from one sample, both with supplementary alignments linked. Top (Illumina paired-end): the inversion is only inferred — a minority of same-orientation pairs and split-read arcs cluster at the breakpoints in an otherwise concordant grey pileup. Bottom (Oxford Nanopore): each long read spans the whole inverted segment, so its reverse-strand middle paints a distinct color between forward-strand flanks and the split junctions arc in magenta — the inversion is read out directly rather than triangulated." src="/img/inversion_long_read.png" />
 
 ### Insert size color scheme
 
-**In the pileup**, set the color scheme to Insert size from the track menu.
-Reads are colored red (insert larger than expected), pink (smaller than
-expected), or light grey (normal). A separate Insert size (gradient) option
-shades reads continuously by the magnitude of the deviation. Reads with a mate
-on a different chromosome are handled separately (see the table below).
+In the pileup, set the color scheme to Insert size from the track menu. Reads
+are colored red (insert larger than expected), pink (smaller than expected), or
+light grey (normal). A separate Insert size (gradient) option shades reads
+continuously by the magnitude of the deviation. Reads with a mate on a different
+chromosome are handled separately (see the table below).
 
-**With paired arcs or linked reads enabled** (via Read connections in the track
+With paired arcs or linked reads enabled (via Read connections in the track
 menu), the Insert size option uses threshold-based coloring:
 
 <!-- COLOR_TABLE alignments-insert-size START -->
@@ -122,22 +122,22 @@ The "expected" range is a robust band around the typical insert size,
 `median ± 3·1.4826·MAD`, rather than `mean ± 3σ`. Real insert-size distributions
 are a tight bulk plus a long right tail of large inserts (deletions, SVs); that
 tail inflates the standard deviation, which pushes the `mean − 3σ` lower bound
-below zero so that **nothing** is ever flagged as a short insert and the
-insertion signal silently disappears. The median and MAD measure the spread of
-the normal-insert bulk and ignore the tail, so the short-insert (pink) threshold
+below zero so that nothing is ever flagged as a short insert and the insertion
+signal silently disappears. The median and MAD measure the spread of the
+normal-insert bulk and ignore the tail, so the short-insert (pink) threshold
 stays positive and meaningful, and moderate deletions aren't masked by a few
 very large outliers.
 
-**Insert size and orientation** combines both signals and is often the most
+Insert size and orientation combines both signals and is often the most
 informative setting for a general SV scan. The two signals are prioritized so
 that the strongest cue wins:
 
-- **Short insert always paints pink**, even if the pair orientation is abnormal.
-  At a short insert the useful signal is simply "an insertion is here" —
+- Short insert always paints pink, even if the pair orientation is abnormal. At
+  a short insert the useful signal is simply "an insertion is here" —
   distinguishing orientation adds little, so pink takes priority.
-- Otherwise an **abnormal pair orientation wins** (teal RL → tandem duplication;
+- Otherwise an abnormal pair orientation wins (teal RL → tandem duplication;
   green LL / dark blue RR → inversion).
-- A **large insert with normal orientation paints red** — the classic deletion
+- A large insert with normal orientation paints red — the classic deletion
   signature.
 
 ## SV-type signatures
@@ -154,7 +154,7 @@ is a useful companion reference.
 - A coverage drop between those positions is a classic deletion signal;
   heterozygous deletions typically show only a ~50% reduction rather than a
   complete drop
-- Paired reads flanking the gap colored **red** (larger insert than expected)
+- Paired reads flanking the gap colored red (larger insert than expected)
   suggest a deletion spanning the pair
 - With paired arcs enabled, unusually long arcs point to a deletion
 
@@ -165,7 +165,7 @@ is a useful companion reference.
 - Soft-clipped reads at a single site suggest an insertion; with Show soft
   clipping enabled, the inserted bases become visible on each side
 - When the insertion is large enough that pairs flank it, those pairs colored
-  **pink** (smaller insert on reference) suggest an insertion between them
+  pink (smaller insert on reference) suggest an insertion between them
 - For insertions larger than the sequenced fragment size, mates may become
   unmapped; long reads are needed to fully span the event
 - A purple insertion indicator triangle suggests an insertion when enough reads
@@ -177,9 +177,8 @@ is a useful companion reference.
 
 ### Inversion
 
-- **LL (green)** and **RR (dark blue)** read pairs at a boundary suggest an
-  inversion — normally LR-oriented reads become same-direction across the
-  junction
+- LL (green) and RR (dark blue) read pairs at a boundary suggest an inversion —
+  normally LR-oriented reads become same-direction across the junction
 - If you're zoomed into the inverted region itself, interior reads may look
   concordant
 - Soft-clipped reads appear at both breakpoints, sometimes with short homology
@@ -190,8 +189,8 @@ in the [pair orientation section](#pair-orientation-color-scheme) above.
 
 ### Tandem duplication
 
-- **RL (teal)** read pairs suggest a tandem duplication: reads appear to point
-  away from each other when the duplicated segment is joined back to its origin
+- RL (teal) read pairs suggest a tandem duplication: reads appear to point away
+  from each other when the duplicated segment is joined back to its origin
 - Elevated coverage over the duplicated region is another supporting signal
 - With paired arcs enabled, arcs pointing backward (upstream) across a junction
   point to a tandem duplication
@@ -202,7 +201,7 @@ The teal RL signature also appears in the inverted-duplication figure in the
 ### Translocation / inter-chromosomal fusion
 
 - With paired arcs or linked reads enabled, reads with mates on a different
-  chromosome are colored **purple**; in the pileup they appear **dark grey**
+  chromosome are colored purple; in the pileup they appear dark grey
 - A cluster of such reads at a locus marks one end of a translocation; open the
   [breakpoint split view](#breakpoint-split-view) from the feature details to
   see both ends at once
@@ -218,8 +217,8 @@ track menu.
 
 <Figure caption="Read arcs over a deletion in the 1000 Genomes Kinh-Vietnamese trio (child, mother, father; Illumina reads), with the 1KGP ensemble SV call on top. The red arcs are pairs spanning the deleted region — drawn red for a larger-than-expected insert size — and they line up with the called breakpoints across all three samples." src="/img/multi-sv-trio.png" />
 
-With **View as pairs** on, each mate pair collapses onto a single row joined by
-its own bezier curve, colored here by pair orientation. The abnormal
+With View as pairs on, each mate pair collapses onto a single row joined by its
+own bezier curve, colored here by pair orientation. The abnormal
 same-orientation pairs of an inverted duplication then read as a coherent bundle
 of curves rather than scattered singleton pileup rows.
 
@@ -250,9 +249,9 @@ supplementary alignments are connected by an orange line.
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-ofjI26CNas&password=ohqlR)
 — inversion example in linked reads mode
 
-The Edit filters option in the track menu lets you show or hide **proper pairs**
-and **singletons**. The color scheme provides insert size, orientation, or
-combined coloring.
+The Edit filters option in the track menu lets you show or hide proper pairs and
+singletons. The color scheme provides insert size, orientation, or combined
+coloring.
 
 ## Inspecting individual reads
 
@@ -296,7 +295,7 @@ The header bar accepts location searches directly in either panel.
 
 <Figure caption="Feature details panel for a TRA variant. The BREAKENDS section at the bottom contains 'Launch split views with breakend source and target' — clicking that link (e.g. '14:84871468 // 17:74803924 (split view)') opens both breakpoint loci simultaneously in the breakpoint split view, with any open alignment tracks pre-loaded." src="/img/link_to_split_view.png" />
 
-The view also supports **multi-hop events** where a single read has multiple
+The view also supports multi-hop events where a single read has multiple
 supplementary alignments, connecting more than two breakpoints simultaneously.
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fbreakpoint%2Fconfig.json&session=share-xeUuLRakik&password=vh0ca)
@@ -333,18 +332,18 @@ Loading a very large genomic region can trigger an error when the window would
 require fetching more data than JBrowse allows in a single request. For large or
 inter-chromosomal SVs, a better approach is:
 
-- Use a **BigWig coverage track** (or a
+- Use a BigWig coverage track (or a
   [multi-quantitative track](/docs/user_guides/multiquantitative_track) for
   tumor vs normal comparison) instead of a full alignments track when surveying
   the region — it loads at any scale and makes copy-number changes immediately
   visible
-- Load the **SV call set as a variant track** for a compact overview of all
-  calls; clicking a feature navigates directly to it
-- Open the **breakpoint split view** to inspect the breakpoint loci themselves —
+- Load the SV call set as a variant track for a compact overview of all calls;
+  clicking a feature navigates directly to it
+- Open the breakpoint split view to inspect the breakpoint loci themselves —
   each panel shows only a local window around one end of the SV, so the
   inter-breakpoint distance doesn't matter
-- Use the **SV inspector** for whole-genome triage before drilling into
-  individual calls
+- Use the SV inspector for whole-genome triage before drilling into individual
+  calls
 
 <Figure caption="COLO829 melanoma tumor (red) and matched normal (blue) whole-genome coverage as a multi-quantitative BigWig track. Copy-number changes are visible at chromosome scale without loading any reads." src="/img/cnv.png" />
 
@@ -386,16 +385,16 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 
 ## Limitations
 
-- **Read-level displays require zooming in**: the pileup, paired arcs, and
-  linked reads modes only render when the view is zoomed in enough to load
-  individual reads; very large SVs can't be spanned in a single pileup view
-- **Paired-end evidence is fragment-size limited**: for insertions larger than
-  the sequenced fragment, paired-end evidence disappears; long reads are
-  required to fully resolve the inserted sequence
-- **Repetitive regions**: SVs in segmental duplications or repeats produce
-  noisy, ambiguous signals; soft-clipped reads and orientation anomalies are
-  common artifacts in these regions
-- **Short-read orientation coloring** assumes `fr` (Illumina) read pairs;
+- Read-level displays require zooming in: the pileup, paired arcs, and linked
+  reads modes only render when the view is zoomed in enough to load individual
+  reads; very large SVs can't be spanned in a single pileup view
+- Paired-end evidence is fragment-size limited: for insertions larger than the
+  sequenced fragment, paired-end evidence disappears; long reads are required to
+  fully resolve the inserted sequence
+- Repetitive regions: SVs in segmental duplications or repeats produce noisy,
+  ambiguous signals; soft-clipped reads and orientation anomalies are common
+  artifacts in these regions
+- Short-read orientation coloring assumes `fr` (Illumina) read pairs;
   SOLiD-style orientations are not supported.
 
 ## See also
