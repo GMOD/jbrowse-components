@@ -71,7 +71,7 @@ genomic position. This lets you read a coding variant straight onto the folded
 protein — for example, to see whether a ClinVar missense variant lands in a
 functional domain or is buried in the core.
 
-<Figure caption="A connected session on human TP53 (UniProt P04637). The genome view (left) shows the NCBI RefSeq gene models and ClinVar variants; the protein view (right) shows the AlphaFold structure together with the genome-to-structure sequence alignment and per-residue tracks (pLDDT confidence, domains, helices, hydrophobicity). Hovering a variant in the genome highlights the matching residue on the structure." src="/img/protein/connected.png" />
+<Figure caption="A connected session on human TP53 (UniProt P04637). The genome view (left) shows the NCBI RefSeq gene models and ClinVar variants, while the protein view (right) shows the AlphaFold structure together with the genome-to-structure sequence alignment and per-residue tracks (pLDDT confidence, domains, helices, hydrophobicity). Hovering a variant in the genome highlights the matching residue on the structure." src="/img/protein/connected.png" />
 
 The genome-to-protein mapping is derived from the transcript's coding exons, so
 intronic and UTR positions are skipped and each codon maps to a single residue.
@@ -110,7 +110,7 @@ https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json&session=spec-
 
 [Live demo — TP53 connected structure](https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22uniprotId%22%3A%22P04637%22%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C421-7%2C687%2C550%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeqCurated%22%2C%22hg38-clinvarMain%22%5D%7D%7D%5D%7D)
 
-The transcript must be present in one of the listed `tracks` at `loc`; if you
+The transcript must be present in one of the listed `tracks` at `loc`. If you
 need a transcript that isn't loaded as a track, you can instead pass the
 structure `url`, the `feature`, and the protein sequence explicitly. Both forms,
 the full parameter list, and ready-to-open URLs are documented in the

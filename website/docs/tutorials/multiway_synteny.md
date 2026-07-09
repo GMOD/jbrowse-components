@@ -13,7 +13,7 @@ standard way the comparative-genomics community encodes a cross-species,
 gene-level ortholog table.
 
 For closely related genomes — strains or accessions of one species — a
-whole-genome all-vs-all PAF is usually a better source; see
+whole-genome all-vs-all PAF is usually a better source. See
 [Synteny all-vs-all](/docs/tutorials/allvsall_synteny).
 
 Open the finished demo:
@@ -35,7 +35,7 @@ GSVIVT01012261001   .                  .
 - Each further column is that gene's ortholog in another genome (`.` = none).
 - One row per reference gene.
 
-This is a coordinate-free gene-id table; the accompanying `.bed` files (one per
+This is a coordinate-free gene-id table. The accompanying `.bed` files (one per
 genome, produced alongside) map each gene id to a genomic position.
 
 ## Producing the data
@@ -78,7 +78,7 @@ You now have `grape.blocks` plus `grape.bed`, `peach.bed`, and `cacao.bed`.
 
 A synteny band draws one pair of genomes, but a `.blocks` file describes N. The
 `MCScanBlocksAdapter` bridges this: **one `.blocks` file — and one track — backs
-every band of the stacked view.** List all the genomes in `assemblyNames`; the
+every band of the stacked view.** List all the genomes in `assemblyNames`. The
 view tells the adapter which pair each band draws, and the adapter pulls those
 two columns from the table.
 
@@ -136,7 +136,7 @@ diagonal cascades down the whole stack.
 
 That view snapshot goes straight into the config's `defaultSession`, which is
 how JBrowse opens a view declaratively on load — no clicks, no imperative setup.
-The session is just a `views` array of the same snapshots; sibling fields like
+The session is a `views` array of the same snapshots. Sibling fields like
 `displayName` and `showColorLegend` are ordinary view properties, while the
 one-time load settings (row order, tracks, `colorBy`, `autoDiagonalize`) go
 under `init`:
@@ -181,21 +181,21 @@ band above — by joining the two columns on their shared grape gene. That link
 means "both are orthologous to the same grape gene": a **transitive** ortholog
 relationship, not a direct alignment.
 
-So row order is a choice, and here it is a deliberate one. Grape carries the
-ancestral eudicot genome triplication and has more chromosomes (19) than peach
-(8) or cacao (10), so any band _containing_ grape fans out into a busy
-many-to-one ribbon tangle. Peach and cacao have similar chromosome counts and
-read close to one-to-one, so stacking peach – cacao – grape puts the cleanest,
-most legible band on top — at the cost of making it a transitive link (peach and
-cacao joined through their shared grape ortholog, not directly aligned). When no
-genome dominates the ploidy like this, prefer the reference in the **middle** —
-peach – grape – cacao — so _every_ band is a direct comparison.
+So row order is a choice. Grape has more chromosomes (19) than peach (8) or
+cacao (10), a consequence of an ancestral genome triplication, so any band
+_containing_ grape fans out into a busy many-to-one ribbon tangle. Peach and
+cacao have similar chromosome counts and align close to one-to-one. Stacking
+peach – cacao – grape therefore puts the most legible band on top, at the cost
+of making it a transitive link (peach and cacao joined through their shared
+grape ortholog, not directly aligned). When no genome dominates like this, put
+the reference in the **middle** — peach – grape – cacao — so _every_ band is a
+direct comparison.
 
 That triplication is easiest to see one chromosome at a time. Restrict a
 peach-vs-grape dotplot to a single peach chromosome and it resolves into three
 diagonal blocks — the three grape paralogs of that region:
 
-<Figure caption="Peach chromosome Pp01 (x-axis) against the whole grape genome (y-axis), MCScan anchor blocks. Pp01 aligns as three diagonal segments onto grape chr5, chr1, and chr18 — the three paralogous copies grape retains from the ancestral eudicot gamma triplication, where peach kept a single copy. This 1:3 mapping, repeated for every peach chromosome, is why a whole-genome grape/peach synteny looks like crossing ribbons everywhere: the crossings are the polyploidy, not a bad diagonalization." src="/img/grape_triplication.png" />
+<Figure caption="Peach chromosome Pp01 (x-axis) against the whole grape genome (y-axis), MCScan anchor blocks. Pp01 aligns as three diagonal segments onto three different grape chromosomes — the paralogous copies grape retains from an ancestral genome triplication. This 1:3 mapping, repeated for every peach chromosome, is why a whole-genome grape/peach synteny shows crossing ribbons: the crossings reflect the extra grape copies, not a bad diagonalization." src="/img/grape_triplication.png" />
 
 ## See also
 

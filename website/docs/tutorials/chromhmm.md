@@ -18,18 +18,18 @@ per-cell-type segmentation BEDs into a single **multi-row bigBed**, and how to
 configure the **multi-row feature display** so the file draws as one color-coded
 row per cell type.
 
-<Figure src="/img/chromhmm.png" caption="The multi-row feature display showing dense ChromHMM chromatin-state annotations from ENCODE. Each row is a cell type; each feature is colored by its chromatin state via the BED itemRgb field. The white regions aren't gaps — Quiescent/Low, the most common state genome-wide, is white in the standard 15-state palette (the same convention UCSC and other browsers use)."/>
+<Figure src="/img/chromhmm.png" caption="The multi-row feature display showing dense ChromHMM chromatin-state annotations from ENCODE. Each row is a cell type, and each feature is colored by its chromatin state via the BED itemRgb field. The white regions aren't gaps — Quiescent/Low, the most common state genome-wide, is white in the standard 15-state palette (the same convention UCSC and other browsers use)."/>
 
 ## The idea: one file, one row per cell type
 
 ChromHMM's per-cell-type output is a stack of separate BED files (`Gm12878.bed`,
 `K562.bed`, …), each a BED9 whose `name` column is the state (e.g.
 `1_Active_Promoter`) and whose `itemRgb` column carries the ENCODE state color.
-Rather than adding one JBrowse track per cell type — which quickly becomes
-unmanageable at 9, let alone 127 cell types — we merge them into a single file
-that carries an extra `cellType` column, then let the **multi-row feature
-display** split that one track back into a labeled sub-row per cell type. All
-rows share one config, one adapter, and one fetch.
+Adding one JBrowse track per cell type is impractical at 9 cell types and worse
+at 127. Instead, we merge them into a single file that carries an extra
+`cellType` column, then let the **multi-row feature display** split that one
+track back into a labeled sub-row per cell type. All rows share one config, one
+adapter, and one fetch.
 
 ## Combine the per-cell-type BEDs
 

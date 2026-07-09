@@ -14,7 +14,7 @@ can open the same view yourself, using JBrowse's
 
 ## What RNA-seq looks like in the genome browser
 
-An RNA-seq BAM file over the ACTB gene. Each grey box is a **read**; the thin
+An RNA-seq BAM file over the ACTB gene. Each grey box is a **read**. The thin
 teal lines jumping across a gap are **spliced alignments**, where a read maps
 partly to one exon and partly to the next, skipping the intron between them. The
 histogram along the top is read coverage at each position, and the reference
@@ -46,7 +46,7 @@ For a read spanning exon 1 and exon 2, the CIGAR might say:
 10M 500N 10M
 ```
 
-(CIGAR strings normally have no spaces; they are added here for readability.)
+(CIGAR strings normally have no spaces. They are added here for readability.)
 
 That means 10 bp (`M`, match) aligned to exon 1, a 500 bp skip (`N`) over the
 intron, and another 10 bp (`M`) aligned to exon 2.

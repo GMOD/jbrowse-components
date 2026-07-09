@@ -8,18 +8,17 @@ guide_category: Tutorials
 
 Population-genetic scans — **Fst** (differentiation between groups),
 **nucleotide diversity (π)** within a group, and **dxy** (divergence between
-groups) — are per-window statistics along the genome, which is the natural shape
-of a wiggle track. Once you compute them from a multi-sample VCF you can load
-them into JBrowse and read the peaks and troughs against genes.
+groups) — are per-window statistics along the genome, the same form as a wiggle
+track. Once you compute them from a multi-sample VCF you can load them into
+JBrowse and read the peaks and troughs against genes.
 
-JBrowse does no population-genetic inference itself; it draws the windowed
-statistic your tool produced. This tutorial is an end-to-end **reproducible
-pipeline**: every command below runs against real, publicly hosted _Drosophila
-melanogaster_ data on the dm6 assembly and produces bigWig tracks you can load.
-It reproduces two signals from the
-[Drosophila Genetic Reference Panel](http://dgrp2.gnets.ncsu.edu/) (DGRP), a
-panel of 205 inbred lines from a single Raleigh, North Carolina population
-([Mackay et al. 2012](https://doi.org/10.1038/nature10811)):
+JBrowse does no population-genetic inference itself. It draws the windowed
+statistic your tool produced. This tutorial is a reproducible pipeline: every
+command below runs against publicly hosted _Drosophila melanogaster_ data on the
+dm6 assembly and produces bigWig tracks you can load. It reproduces two signals
+from the [Drosophila Genetic Reference Panel](http://dgrp2.gnets.ncsu.edu/)
+(DGRP), a panel of 205 inbred lines from a single Raleigh, North Carolina
+population ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)):
 
 - **Fst across the `In(2L)t` inversion** — lines carrying the cosmopolitan
   `In(2L)t` inversion are strongly differentiated from standard-arrangement
@@ -51,7 +50,7 @@ All three are on [bioconda](https://bioconda.github.io/):
 ## Get the data
 
 Two downloads, both on stable HTTPS hosts. The genotypes are the DGRP freeze-2
-calls lifted to dm6 ([aertslab](https://resources.aertslab.org/DGRP2/)); the
+calls lifted to dm6 ([aertslab](https://resources.aertslab.org/DGRP2/)). The
 inversion karyotypes come from [DGRPool](https://dgrpool.epfl.ch/)
 ([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)), which harmonizes
 the `In(2L)t` typing of
@@ -76,7 +75,7 @@ bcftools view -h "$VCF" \
 ```
 
 This VCF names the chromosome arms `2L`, `2R`, `3L`, `3R`, `X`, `4` (FlyBase
-style). UCSC dm6 prefixes them `chr2L`, etc.; if your JBrowse dm6 assembly uses
+style). UCSC dm6 prefixes them `chr2L`, etc. If your JBrowse dm6 assembly uses
 the UCSC names, JBrowse's
 [refname aliasing](/docs/developer_guides/refname_aliasing) reconciles the two
 at display time.
@@ -149,12 +148,12 @@ done
 
 Because this VCF holds only variant sites, `--window-pi` sums diversity over the
 genotyped SNPs and omits invariant positions, so the absolute values are not
-calibrated; they are still directly comparable **across windows of the same
+calibrated. They are still directly comparable **across windows of the same
 VCF**. For calibrated absolute π and dxy you need an allSites VCF below.
 
 ## Full pipeline
 
-The whole thing as one script — save as `popgen.sh` and run it in an empty
+The complete pipeline as one script — save as `popgen.sh` and run it in an empty
 directory:
 
 ```bash
@@ -227,16 +226,17 @@ its own data:
 }
 ```
 
-Load the Fst and π scans as two such tracks: Fst tops out near 0.83 while π
-stays under 0.016, so each needs its own y-axis to read (this is the figure
-below). Don't reach for a multi-wiggle here — a
-[multi-wiggle](/docs/config_guides/multiquantitative_track) shares **one**
-y-axis across its rows, which would flatten π against the ~50× larger Fst.
+Load the Fst and π scans as two separate tracks. Fst and π sit on very different
+scales (Fst approaches 1, π stays near 0.01), so each needs its own y-axis (this
+is the figure below). A
+[multi-wiggle](/docs/config_guides/multiquantitative_track) is not appropriate
+here: it shares one y-axis across its rows, which would flatten π against the
+much larger Fst.
 
-A multi-wiggle is the right tool when the rows _are_ on the same scale — for
-example the same statistic across groups. The per-group π bigWigs
-(`pi_INV.bw`/`pi_STD.bw`) stack cleanly, so you can read inverted against
-standard diversity window-for-window on a shared axis:
+A multi-wiggle is appropriate when the rows are on the same scale, such as the
+same statistic across groups. The per-group π bigWigs (`pi_INV.bw`/`pi_STD.bw`)
+share a scale, so inverted and standard diversity can be compared
+window-for-window on a shared axis:
 
 ```json
 {
@@ -262,38 +262,36 @@ standard diversity window-for-window on a shared axis:
 }
 ```
 
-On the shared axis, inverted-arrangement π reads mildly below standard across
-the inverted region on `2L` (about 14% lower on average, versus roughly equal
-outside). The contrast between arrangements is far stronger in the Fst scan than
-in within-group π.
+On the shared axis, inverted-arrangement π runs mildly below standard across the
+inverted region on `2L`, and roughly equal to it outside. The contrast between
+arrangements is stronger in the Fst scan than in within-group π.
 
 ## Reading the signals
 
 Navigate to chromosome arm **`2L`**. The `In(2L)t` Fst track rises across the
 whole inverted region — roughly `2L:2,200,000–13,200,000` — and peaks near the
-breakpoints, so the differentiation reads as a broad plateau rather than a
-single spike. (The inversion suppresses recombination between arrangements
-across this span.)
+breakpoints, so the differentiation forms a broad plateau rather than a single
+peak. (The inversion suppresses recombination between arrangements across this
+span.)
 
 <Figure src="/img/popgen/fst_in2lt_2L.png" caption="Two quantitative tracks over the whole 2L arm, each auto-scaled to its own data. Top: Fst between In(2L)t-inverted and standard-arrangement lines — an elevated plateau across the inverted region (~2.2–13.2 Mb) that drops back to background past the distal breakpoint. Bottom: whole-panel nucleotide diversity (π). Output from this tutorial's pipeline, hosted at jbrowse.org/demos/popgen."/>
 
 Then use the search box to jump to **`Cyp6g1`** (on `2R`) and inspect its window
-in the π track: diversity drops into a sharp, deep valley over the locus,
-falling to ~0.0004 — under 10% of the `2R` average of ~0.0049 — between
-high-diversity flanks (~0.008–0.009). The valley marks a selective sweep at this
-insecticide-resistance gene.
+in the π track. π over the locus drops well below the surrounding windows, to
+under a tenth of the arm-wide average. The reduced diversity is consistent with
+a selective sweep at this insecticide-resistance gene.
 
-<Figure src="/img/popgen/pi_cyp6g1.png" caption="Whole-panel π zoomed to the Cyp6g1 locus on 2R, over the NCBI RefSeq gene track. Diversity drops into a deep valley across ~12.13–12.20 Mb — the boxed Cyp6g1 window falls to ~0.0004, under a tenth of the arm-wide average — flanked by high-diversity windows (~0.008–0.009). The valley marks a selective sweep at this insecticide-resistance gene."/>
+<Figure src="/img/popgen/pi_cyp6g1.png" caption="Whole-panel π zoomed to the Cyp6g1 locus on 2R, over the NCBI RefSeq gene track. π over the boxed Cyp6g1 window drops to under a tenth of the arm-wide average, between higher-diversity flanking windows. The reduction is consistent with a selective sweep at this insecticide-resistance gene."/>
 
-Other well-documented resistance and selection loci make good places to look
-next, each read the same way — signal against gene:
+Other resistance and selection loci can be examined the same way, reading the
+signal against the gene:
 
-| Gene / locus  | Arm | Signal                                                             |
-| ------------- | --- | ------------------------------------------------------------------ |
-| `Cyp6g1`      | 2R  | DDT / neonicotinoid resistance; recent worldwide sweep             |
-| `Ace`         | 3R  | Organophosphate resistance (acetylcholinesterase target-site)      |
-| `CHKov1`      | 3R  | Organophosphate / viral resistance; sweep from a transposon insert |
-| `In(3R)Payne` | 3R  | Cosmopolitan inversion under clinal / latitudinal selection        |
+| Gene / locus  | Arm | Signal                                                        |
+| ------------- | --- | ------------------------------------------------------------- |
+| `Cyp6g1`      | 2R  | DDT / neonicotinoid resistance, recent worldwide sweep        |
+| `Ace`         | 3R  | Organophosphate resistance (acetylcholinesterase target-site) |
+| `CHKov1`      | 3R  | Organophosphate / viral resistance, from a transposon insert  |
+| `In(3R)Payne` | 3R  | Cosmopolitan inversion under clinal / latitudinal selection   |
 
 `In(3R)Payne` is typed in the same DGRPool table set — repeat the grouping step
 with its phenotype to scan `3R` the same way.
@@ -314,7 +312,7 @@ variant-only VCFs and missing data bias absolute π and dxy estimates.
 ([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)) computes π,
 dxy, and Fst together without that bias — at the cost of needing an **allSites
 VCF** that includes invariant sites (the DGRP2 SNPs-only file above does not
-have these; you would call your own allSites VCF with `bcftools mpileup` or
+have these, so you would call your own allSites VCF with `bcftools mpileup` or
 GATK):
 
 ```bash
@@ -326,7 +324,7 @@ pixy --stats pi fst dxy \
 # -> scan_pi.txt, scan_dxy.txt, scan_fst.txt
 ```
 
-The window columns are `chromosome, window_pos_1, window_pos_2`; the value is
+The window columns are `chromosome, window_pos_1, window_pos_2`. The value is
 `avg_pi` (π file, column 5), `avg_dxy` (dxy file, column 6), or `avg_wc_fst`
 (Fst file, column 6). Convert each to its own bigWig with the same
 awk-to-`bedGraphToBigWig` pattern used above and load them as more multi-wiggle
@@ -334,14 +332,14 @@ rows.
 
 ## Notes
 
-- **Window size** trades resolution for smoothness — 5–10 kb windows resolve
-  single-gene signals in the compact _Drosophila_ genome; larger windows suit
-  broad, genome-wide overviews.
+- **Window size** trades resolution for smoothness. 5–10 kb windows resolve
+  single-gene signals in the compact _Drosophila_ genome, while larger windows
+  suit broad, genome-wide overviews.
 - **Negative Fst** estimates are an expected artifact of the Weir & Cockerham
-  estimator at low-differentiation sites; flooring at 0 for display (as above)
+  estimator at low-differentiation sites. Flooring at 0 for display (as above)
   is conventional.
-- **Heterozygous karyotypes** were dropped from both groups above; contrasting
-  homozygous arrangements gives the cleanest inversion signal.
+- **Heterozygous karyotypes** were dropped from both groups above. Contrasting
+  homozygous arrangements gives the clearest inversion signal.
 - **Haplotype-based selection statistics** (iHS, XP-EHH, e.g. from
   [selscan](https://github.com/szpiech/selscan)) capture sweeps that Fst misses
   and, being per-site or per-window scores, load as bigWig quantitative tracks

@@ -79,14 +79,14 @@ JBrowse reads the modification type from the `name` column (e.g. `m` for 5mC,
 ```
 
 The Y-axis shows the percent methylation (0–100). Each CpG position appears as a
-vertical bar; the two subtracks (`h` for 5hmC and `m` for 5mC) are stacked in
+vertical bar. The two subtracks (`h` for 5hmC and `m` for 5mC) are stacked in
 multirow mode by default so their scales are independent.
 
 ### Example: COLO829 tumor with CRAM and bedMethyl
 
 The screenshot below shows the COLO829 melanoma tumor ONT dataset at
 chr20:10,000,000–10,003,000. The upper track is the CRAM alignment with reads
-colored by modification; the lower track is the modkit bedMethyl file loaded as
+colored by modification. The lower track is the modkit bedMethyl file loaded as
 a `MultiQuantitativeTrack` with `h` (5hmC) and `m` (5mC) subtracks.
 
 <Figure caption="COLO829 tumor ONT alignments (top) with per-read modification coloring, alongside the modkit bedMethyl MultiQuantitativeTrack (bottom) showing 5hmC ('h') and 5mC ('m') methylation fractions at individual CpG positions." src="/img/methylation/colo829_cram_and_bedmethyl.png" />

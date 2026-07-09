@@ -35,7 +35,7 @@ Two normalization points matter so rows are comparable to each other:
   each track (CPM / RPKM, or per-cell-count) so a tall peak means "more
   accessible", not "more cells in this group".
 - Pick a bin size. Smaller bins (10–25 bp) preserve peak shape at the cost of
-  larger files; larger bins (50–100 bp) are smaller and fine for a zoomed-out
+  larger files. Larger bins (50–100 bp) are smaller and fine for a zoomed-out
   overview. 10–25 bp is typical for ATAC.
 
 ## Generating per-group BigWigs
@@ -70,7 +70,7 @@ snap.ex.export_coverage(
 
 ArchR's `getGroupBW` groups cells, sums their Tn5 insertions, and exports one
 BigWig per group. `normMethod = "ReadsInTSS"` normalizes at the pseudobulk level
-by signal-in-TSS (accounting for both depth and data quality); `"nCells"` or
+by signal-in-TSS (accounting for both depth and data quality). `"nCells"` or
 `"nFrags"` are alternatives.
 
 ```r
@@ -116,7 +116,7 @@ done
 
 `--normalizeUsing CPM` (or `RPKM`) makes rows comparable across groups. Use
 `RPGC` (1x depth) only if you also pass `--effectiveGenomeSize` (GRCh38:
-`2913022398`); CPM/RPKM do not need it. `--extendReads` extends paired-end
+`2913022398`). CPM/RPKM do not need it. `--extendReads` extends paired-end
 fragments to their full length.
 
 ### Manual fallback (fragments.tsv.gz → bedGraph → bigWig)
@@ -131,7 +131,7 @@ bedtools genomecov -bg -i group.bed -g hg38.chrom.sizes \
 bedGraphToBigWig group.bedGraph hg38.chrom.sizes group.bw
 ```
 
-This route is unnormalized; scale each group (e.g. by 1e6 / total fragments for
+This route is unnormalized. Scale each group (e.g. by 1e6 / total fragments for
 CPM) before `bedGraphToBigWig` if you need comparable rows.
 
 ## Loading the BigWigs as a MultiWiggle track
@@ -146,7 +146,7 @@ and an optional `group` (which seeds the sidebar clustering tree).
 Track menu → **Add track**, choose the multi-wiggle workflow, and paste your
 BigWig URLs one per line (or a JSON array of subadapter objects). JBrowse builds
 the `MultiQuantitativeTrack` for you. This is the fastest way to try a set of
-files; export the session to get the JSON config.
+files. Export the session to get the JSON config.
 
 ### Via config JSON
 
@@ -225,10 +225,10 @@ how the subtracks are drawn — set it under the track's `displays` (or the
 `displayDefaults` shorthand), or switch it live from the track menu.
 
 - **`multirowxy`** (default) — one stacked XY-plot row per cell type. This is
-  the "one coverage row per cell type" look of the gallery card; best for
+  the "one coverage row per cell type" look of the gallery card, and is best for
   comparing peak shape across many groups.
 - **`multirowdensity`** — one row per cell type, but score mapped to color
-  intensity instead of bar height. Compact; good for a heatmap-style view of
+  intensity instead of bar height. Compact, and good for a heatmap-style view of
   many cell types at once.
 - **`multixyplot`** — all cell types overlaid in a single shared plot (one Y
   axis). Good for a few groups you want superimposed rather than stacked.
@@ -241,7 +241,7 @@ are automatically remapped to their multi-row equivalents, so an accidental
 
 Other useful controls:
 
-- **height** — total track height in pixels (default 200); raise it when you
+- **height** — total track height in pixels (default 200). Raise it when you
   have many rows.
 - **summaryScoreMode** — `avg` (default), `min`, `max`, or `whiskers` for how
   each bin's summary is drawn when zoomed out.

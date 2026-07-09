@@ -46,7 +46,7 @@ The SV inspector combines a searchable/filterable table of all calls with a
 whole-genome circular overview. Open it from the **Add** menu in the menu bar,
 then provide the VCF from the demo config (the URL is listed in the track's
 About track menu). The circular view renders inter-chromosomal translocations as
-orange chords; the table can be sorted and filtered by any column.
+orange chords. The table can be sorted and filtered by any column.
 
 <Figure caption="The SV inspector loaded with a large SV callset. The circular plot on the right renders inter-chromosomal events as orange chords connecting the two loci. The table on the left lists every call and can be sorted or filtered by SVTYPE, chromosome, quality, or any INFO field. Clicking a row navigates the linear view to that locus." src="/img/sv_inspector_importform_loaded.png" />
 
@@ -85,7 +85,7 @@ father) to stack them beneath the variant track.
 Once you have an SV of interest, check the three trio rows in the SAMPLES table
 and the corresponding read tracks:
 
-<Figure caption="Multi-sample SV view with trio BAM tracks loaded. The top track shows the 1KGP SV callset; the three alignment tracks below are the mother, child, and father. The feature details panel on the right shows the BREAKENDS section (with a link to open the breakpoint split view) and the SAMPLES table listing each sample's GT, depth, and other per-sample fields." src="/img/multi-sv-trio.png" />
+<Figure caption="Multi-sample SV view with trio BAM tracks loaded. The top track shows the 1KGP SV callset, and the three alignment tracks below are the mother, child, and father. The feature details panel on the right shows the BREAKENDS section (with a link to open the breakpoint split view) and the SAMPLES table listing each sample's GT, depth, and other per-sample fields." src="/img/multi-sv-trio.png" />
 
 | Genotype pattern            | Interpretation                               |
 | --------------------------- | -------------------------------------------- |
@@ -113,12 +113,12 @@ the breakpoints rather than trusting the call outright. Navigate to
 
 At this scale the variant track shows the inversion call as a wide bar spanning
 the region. Use the **Cluster by genotype** option in the track menu to group
-samples into ref/ref (0/0), het (0/1), and hom-alt (1/1) rows, making the
-population frequency of the inversion immediately visible — most samples are
+samples into ref/ref (0/0), het (0/1), and hom-alt (1/1) rows. The grouping
+shows the population frequency of the inversion directly: most samples are
 reference homozygous, with a subset carrying one or two copies of the inverted
 allele.
 
-<Figure caption="chr19 region containing the large inversion shown in the 1KGP SV callset alongside pileup tracks from multiple samples. The dense colored variation in the alignment tracks reflects the two orientations of the inverted segment segregating in the population. The track selector panel on the right shows the 1000 Genomes track categories; enabling 1000 Genomes → Alignments adds coverage and pileup panels per sample." src="/img/multisv.png" />
+<Figure caption="chr19 region containing the large inversion shown in the 1KGP SV callset alongside pileup tracks from multiple samples. The dense colored variation in the alignment tracks reflects the two orientations of the inverted segment segregating in the population. The track selector panel on the right shows the 1000 Genomes track categories, and enabling 1000 Genomes → Alignments adds coverage and pileup panels per sample." src="/img/multisv.png" />
 
 [Open the inversion demo session](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"19:41,700,000-42,000,000","tracks":[{"trackId":"1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf","displaySnapshot":{"type":"MultiLinearVariantDisplay"}},"ncbi_refseq_109_hg38_latest"]}]})
 
@@ -159,12 +159,12 @@ For more on navigating the breakpoint split view, see
 
 | Step                    | Tool                                   | What to look for                                             |
 | ----------------------- | -------------------------------------- | ------------------------------------------------------------ |
-| Population triage       | SV inspector table + circular view     | SV type counts; inter-chr translocations as chords           |
+| Population triage       | SV inspector table + circular view     | SV type counts, inter-chr translocations as chords           |
 | Per-sample genotypes    | Feature details → SAMPLES              | GT 0/0 / 0/1 / 1/1 across all 2,504 samples                  |
-| Genotype patterns       | Multi-sample display (regular)         | High-frequency vs private calls; row pattern per sample      |
-| Trio inheritance        | Trio BAM tracks + SAMPLES table        | De novo vs inherited; which parent contributed the alt       |
+| Genotype patterns       | Multi-sample display (regular)         | High-frequency vs private calls, row pattern per sample      |
+| Trio inheritance        | Trio BAM tracks + SAMPLES table        | De novo vs inherited, which parent contributed the alt       |
 | Inversion genotyping    | Cluster by genotype                    | Alt-genotype samples grouped into distinct rows              |
-| Inversion read evidence | Pair orientation coloring; Paired arcs | LL/RR pairs at breakpoints; long arcs spanning the inversion |
+| Inversion read evidence | Pair orientation coloring, paired arcs | LL/RR pairs at breakpoints, long arcs spanning the inversion |
 | Breakpoint detail       | Breakpoint split view                  | Splines + variant call across both junctions                 |
 
 ## See also

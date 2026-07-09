@@ -14,7 +14,7 @@ The [LGV storybook](https://jbrowse.org/storybook/lgv/) is the reference for
 _customizing_ this component. It has live, runnable, copy-pasteable examples for
 custom themes, per-feature colors, text searching, drawer widgets, reacting to
 view state, web-worker rendering, and much more. This tutorial covers getting a
-basic view on the page; reach for the storybook for anything beyond that.
+basic view on the page. Reach for the storybook for anything beyond that.
 
 :::
 

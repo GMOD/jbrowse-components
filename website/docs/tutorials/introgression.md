@@ -11,10 +11,10 @@ segments they call as Neanderthal- or Denisovan-derived. That output is a set of
 intervals with a per-haplotype label and a source, which is what the **multi-row
 feature display** is built to draw: one labeled row per haplotype, features
 colored by source. This tutorial takes a published callset, reshapes it into one
-BED, and configures the display. JBrowse does no inference; it draws the
+BED, and configures the display. JBrowse does no inference. It draws the
 segments the caller produced.
 
-<Figure src="/img/introgression.png" caption="hmmix archaic-segment calls as a multi-row feature track: one row per haplotype, features colored by inferred source — Neanderthal (red), Denisovan (blue), both (purple). Whole chr1 arm, five individuals × two haplotypes; the four Oceanian rows (bottom) carry the blue Denisovan segments."/>
+<Figure src="/img/introgression.png" caption="hmmix archaic-segment calls as a multi-row feature track: one row per haplotype, features colored by inferred source — Neanderthal (red), Denisovan (blue), both (purple). Whole chr1 arm, five individuals × two haplotypes. The four Oceanian rows (bottom) carry the blue Denisovan segments."/>
 
 ## Get the segment calls
 
@@ -136,9 +136,9 @@ The display config, field by field:
   the caller's posterior. There's no built-in legend, so put the color mapping
   in the track name or figure caption. (The `sampleColorMap` slot is a different
   axis — it colors whole rows by sample, not features by source.)
-- **`rowOrder`** — pins the row order; omit it and rows fall back to first-seen
+- **`rowOrder`** — pins the row order. Omit it and rows fall back to first-seen
   order.
-- **`rowHeight`** — fixed 20px per row; the default `0` auto-fits all rows into
+- **`rowHeight`** — fixed 20px per row. The default `0` auto-fits all rows into
   the display height.
 
 ## Zooming in

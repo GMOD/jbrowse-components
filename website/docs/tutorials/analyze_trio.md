@@ -27,7 +27,7 @@ Switch the track to the
 display. Each sample becomes a row, each variant a column, with black lines
 connecting columns back to their genomic positions.
 
-<Figure caption="Multi-sample variant display (matrix). Each sample is a row and each variant is a column; black lines connect columns to their genome positions." src="/img/trio-matrix.png"/>
+<Figure caption="Multi-sample variant display (matrix). Each sample is a row and each variant is a column, and black lines connect columns to their genome positions." src="/img/trio-matrix.png"/>
 
 ## Enabling the phased mode
 
@@ -105,16 +105,20 @@ them into clean inheritance blocks.
 ## Converting hap-ibd data into painted inheritance blocks
 
 We want **one row per parental haplotype** — father copy 1, father copy 2,
-mother copy 1, mother copy 2 — and we want the child's inherited chromosome
-tiled across each parent's pair of rows, so that a crossover shows up as the
-painted block stepping from one row to its partner. A short post-processing step
-turns those raw segments into clean painted blocks. Per child haplotype it
-merges adjacent segments of the same parental copy into runs, drops short
-interior runs (the switch-error specks), and snaps each remaining crossover to
-the midpoint of the gap between runs so the blocks abut (leaving genuine large
-gaps, like the centromere, blank). It emits one BED9 line per block plus a
-trailing `parenthap` label, coloring the father's two copies in blues and the
-mother's in reds via `itemRgb`.
+mother copy 1, mother copy 2 — with the child's inherited chromosome tiled
+across each parent's pair of rows. A crossover then shows up as the painted
+block stepping from one row to its partner.
+
+A short post-processing step turns the raw hap-ibd segments into clean blocks.
+Per child haplotype it:
+
+- merges adjacent segments of the same parental copy into runs,
+- drops short interior runs (the switch-error specks), and
+- snaps each remaining crossover to the midpoint of the gap between runs, so the
+  blocks abut (genuine large gaps, like the centromere, stay blank).
+
+It writes one BED9 line per block plus a `parenthap` label, coloring the
+father's two copies in blues and the mother's in reds via `itemRgb`.
 
 `bgzip` and `tabix -p bed` the resulting BED so the `BedTabixAdapter` below can
 read it. The finished track for this dataset is already loaded in the
@@ -166,12 +170,12 @@ The painting is now automatic — no manual markup needed. The four rows are the
 two parental copies of each parent (blues for father HG02026, reds for mother
 HG02025):
 
-<Figure caption="hap-ibd inheritance blocks painted with the multi-row feature display. The top two rows (blue) are father HG02026's two haplotypes; the bottom two (red) are mother HG02025's. The child's paternal chromosome is tiled across the two blue rows and its maternal chromosome across the two red rows, so each crossover is the crisp boundary where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
+<Figure caption="hap-ibd inheritance blocks painted with the multi-row feature display. The top two rows (blue) are father HG02026's two haplotypes, and the bottom two (red) are mother HG02025's. The child's paternal chromosome is tiled across the two blue rows and its maternal chromosome across the two red rows, so each crossover is the boundary where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
 
 Read the two blue rows together as the child's single **paternal** chromosome:
 at any position exactly one of them is filled, telling you which of the father's
 two copies the child inherited there. Each place the block steps between the two
-blue rows is a **crossing-over point**. The two red rows are the same story for
+blue rows is a **crossing-over point**. The two red rows work the same way for
 the **maternal** chromosome.
 
 ## Relating the painting back to the genotypes
@@ -180,18 +184,17 @@ Stacking the painting directly above the same VCF in the **phased multi-sample
 variant display** shows where the blocks come from. That display draws the
 genotypes at their genomic positions (use it rather than the _matrix_ mode,
 whose evenly-spaced columns no longer line up with the painting). It has six
-rows — the two haplotypes of each trio member — and the painting is just a
-summary of which parental haplotype the child's haplotype matches at each
-position.
+rows — the two haplotypes of each trio member — and the painting summarizes
+which parental haplotype the child's haplotype matches at each position.
 
-A crossover spans only a single base, so the whole-chromosome view is far too
-zoomed-out to read it off the genotypes — at that scale the matrix is a solid
-wall of color. Zoom instead to a few hundred kb around one boundary, where the
-painting's block-step is unmistakable and the genotype columns resolve into
-individual variants. The clearest crossover to start with is the **paternal**
-one near chr1:29.7 Mb:
+A crossover spans a single base, so the whole-chromosome view is too zoomed-out
+to read it off the genotypes. At that scale the matrix is a solid block of
+color. Zoom instead to a few hundred kb around one boundary, where the
+painting's block-step is clear and the genotype columns resolve into individual
+variants. The clearest crossover to start with is the **paternal** one near
+chr1:29.7 Mb:
 
-<Figure caption="Paternal crossover near chr1:29.7 Mb (~400 kb wide). In the painting (top) the child's paternal chromosome steps from Father hap2 (light blue) to Father hap1 (dark blue); an arrow drops to the same breakpoint in the genotypes below. The tinted frames read the switch off the raw genotypes: left of the crossover the yellow frame ties Child hap1 to Father hap2, right of it the purple frame ties Child hap1 to Father hap1, and the yellow/purple blocks on the Child hap1 row abut exactly at the breakpoint." src="/img/trio-crossover-paternal.png"/>
+<Figure caption="Paternal crossover near chr1:29.7 Mb (~400 kb wide). In the painting (top) the child's paternal chromosome steps from Father hap2 (light blue) to Father hap1 (dark blue), and an arrow drops to the same breakpoint in the genotypes below. The tinted frames read the switch off the raw genotypes: left of the crossover the yellow frame ties Child hap1 to Father hap2, right of it the purple frame ties Child hap1 to Father hap1, and the yellow/purple blocks on the Child hap1 row abut exactly at the breakpoint." src="/img/trio-crossover-paternal.png"/>
 
 The **maternal** chromosome does the same thing at its own boundaries. Near
 chr1:55.8 Mb the child's maternal haplotype steps between the mother's two
@@ -199,16 +202,14 @@ copies:
 
 <Figure caption="Maternal crossover near chr1:55.8 Mb (~400 kb wide), the cleanest maternal boundary on chr1. The child's maternal chromosome steps from Mother hap2 (pink) to Mother hap1 (red). Same idea as the paternal figure in its own palette: the green frame ties Child hap2 to Mother hap2 left of the crossover, the orange frame ties it to Mother hap1 right of it, and the green/orange blocks abut at the breakpoint on the Child hap2 row." src="/img/trio-crossover-maternal.png"/>
 
-The painting is the clean, readable summary; the genotype rows are the raw,
-statistically-phased evidence it is built from, and that evidence is noisy. If
-you read the inherited copy site-by-site straight off the genotypes it flickers
-between the two parental copies every few kb; those flickers are phasing switch
-errors, not crossovers. hap-ibd's length threshold filters most of them out,
-which is why we trust its block-step over the raw genotypes. It does not filter
-all of them, though: many of the painting's smaller boundaries do not survive a
-check against the genotype transmission, so treat the two crossovers above as
-the well-supported ones and the rest as approximate. The next section is about
-why.
+The painting is the clean summary. The genotype rows are the raw evidence behind
+it, and that evidence is noisy. Read the inherited copy site-by-site off the
+genotypes and it flickers between the two parental copies every few kb. Those
+flickers are phasing switch errors, not crossovers, and hap-ibd's length
+threshold filters most of them out — which is why we trust its block-step over
+the raw genotypes. It doesn't catch all of them, so treat the two crossovers
+above as the well-supported ones and the smaller boundaries as approximate. The
+next section explains why.
 
 ## A caveat on the input data
 

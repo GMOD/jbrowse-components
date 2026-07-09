@@ -41,7 +41,7 @@ prefixes let the adapter tell which record belongs to which pair.
 Because the file already contains every pairwise comparison,
 `AllVsAllPAFAdapter` lets **one track back every band** of the stacked view — no
 per-pair alignment step and no duplicate tracks. List every assembly the file
-covers in `assemblyNames`; the synteny view tells the adapter which pair each
+covers in `assemblyNames`. The synteny view tells the adapter which pair each
 band draws, and the adapter keeps only those records (classified by PanSN
 prefix):
 
@@ -91,7 +91,7 @@ jbrowse make-pif all_vs_all.paf
 ```
 
 Everything else — `assemblyNames`, `assemblyNameToPanSN`, stacking the rows — is
-identical to the un-indexed adapter above; only the `adapter` block differs. The
+identical to the un-indexed adapter above. Only the `adapter` block differs. The
 `.pif.gz` keeps its PanSN sequence names, and `make-pif` also emits a coarse
 zoomed-out tier so whole-genome views stay responsive.
 
@@ -150,12 +150,12 @@ snapshot in the config's `defaultSession`. Four rows means three bands, so
 1–2, and `tracks[2]` rows 2–3 — all the same `ecoli_ava` track, which lists
 every assembly in `assemblyNames` so it can back any pair. `minAlignmentLength`
 hides the short minimap2 alignments so the shared backbone reads as clean
-ribbons instead of a dense noise band — raise or lower it to taste. The one-time
+ribbons instead of a dense noise band. Raise or lower it as needed. The one-time
 load settings (row order, tracks, `drawCurves`, `minAlignmentLength`) go under
-`init`; see the [ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for
+`init`. See the [ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for
 a fuller walk-through of the `defaultSession` structure.
 
-<Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from a single minimap2 all-vs-all PAF, with short alignments filtered out (minAlignmentLength). Every adjacent band is a direct alignment because an all-vs-all file is a complete graph; the ribbons trace the shared chromosomal backbone with strain-specific rearrangements." src="/img/multiway_synteny/ecoli_pangenome.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json" />
+<Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from a single minimap2 all-vs-all PAF, with short alignments filtered out (minAlignmentLength). Every adjacent band is a direct alignment because an all-vs-all file is a complete graph, and the ribbons trace the shared chromosomal backbone with strain-specific rearrangements." src="/img/multiway_synteny/ecoli_pangenome.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json" />
 
 Unlike a reference-anchored `.blocks` table, an all-vs-all file is a **complete
 graph** — every adjacent band is a real, direct alignment, so you can stack the
