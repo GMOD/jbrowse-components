@@ -458,6 +458,19 @@ genuinely different geometry, and the file split is what keeps `isCurve` branche
 hot path (see the header comment in `syntenyTypes.slang`). Merging them would reintroduce the
 branch the split exists to avoid.
 
+### Polyploidy-aware many-to-many synteny
+
+Whole-genome synteny between species with an ancestral WGD / paleopolyploidy (grape's
+paleohexaploidy is the resident demo — `grape_peach_synteny`) is intrinsically 1:many: each
+peach region maps to ~3 grape blocks, so ribbons cross no matter how you reorder, and
+single-axis `diagonalizeRegions` cannot flatten it. Reviewers repeatedly read the crossings
+as a diagonalization *failure*; they're real biology. Idea: detect the fan (a query region
+with M target hits above a length/identity floor) and make the multi-mapping read as signal,
+not noise — e.g. a shared hue per source-block family, an explicit "paralog fan" affordance,
+or a summary "×3" annotation on the region. Complements the barycenter/layer-sweep note above
+(which cuts *transitive* crossings but can't remove genuine many-to-many ones), and would let
+a caption/legend say "crossings here are the grape triplication" instead of looking broken.
+
 ## Ortholog / multi-genome navigation
 
 Two synteny pains: no way to say "show me gene X across all these genomes" (search is
@@ -774,6 +787,22 @@ per track, not per gene, sits with existing track controls; (3) corner badge ove
 the render area — more discoverable, but floats over the data; (4) per-gene stacked-shadow
 glyph — communicates without text but is the noisiest since it repeats per gene.
 
+**Display floating-chrome overlay slot (`TrackOverlay`).** A display that draws
+top-corner chrome inside its own render — today the MultiWiggle `OverlayColorLegend`, and
+any future in-canvas badge/score-key — is sealed inside `TrackRenderingContainer`'s
+`contain: strict` stacking context, so the sibling `PaddingBlocks` (region separators +
+elided/boundary blocks) *always* paints over it in multi-region / whole-genome views; the
+chrome can't `z-index` its way out of a contained box. `TrackLabel` dodges this only
+because it's a direct `TrackContainer` child (`zIndex:200`), outside the contained
+subtree. Generalize that escape: add an optional `TrackOverlay` component to the display
+(mirroring the existing `DisplayBlurb` hook, but rendered by `TrackContainer` *after*
+`<PaddingBlocks>`, `pointerEvents:none`, top-right by default). MultiWiggle feeds its color
+legend through it for the interactive path while `renderSvg` keeps compositing the legend
+into the exported SVG (add a suppress-in-SVG flag so the two paths don't double-draw).
+Fixes the `cnv` screenshot's masked legend at the source and gives any display a clean
+home for floating chrome that must sit above region separators. Blast radius = just the
+interactive overlay-multiwiggle legend.
+
 ## Display height system redesign
 
 `TrackHeightMixin` persists `heightOverride` (`types.maybe`, `>= MIN_DISPLAY_HEIGHT`); the
@@ -966,6 +995,16 @@ so blank grid regions give no tooltip — reads as "the UI is dead here." Small 
 overwrites the real `description` with the literal `'multiple ALT alleles'` when
 `alt.length >= 3`, discarding the actual annotation. Straightforward correctness fix.
 
+**jb2export population coloring (`samplesTsv:` modifier).** The multi-sample variant
+matrix now renders real 1000 Genomes data correctly in jb2export — the old "static SSR
+renders the genotype matrix empty for real data" blocker was **stale** (verified by
+rendering both `display:multivariant` and `display:multivariantmatrix` against
+`ALL.chr11.phase3…genotypes.vcf.gz` → full 2,504-sample matrix). The remaining gap for the
+flagship figure is `colorBy:'population'`: it needs the VCF adapter's `samplesTsv`
+(sample→population map), which the CLI can't yet pass. Add a `samplesTsv:<uri>` track
+modifier → `samplesTsvLocation` on the adapter so a genome-wide callset can be colored by
+super-population instead of reading as reference-dominant grey.
+
 ## Config & sessions
 
 **Global config overrides.** Admin-level defaults (e.g. show paired arcs by default)
@@ -1092,6 +1131,21 @@ Recommendation: hybrid weighted toward GitHub — per-page button → GitHub raw
 build SHA; `llms.txt` curated index → generated at build with links pointing at GitHub
 raw URLs; `llms-full.txt` optional generate-and-commit. The only thing hosted is a tiny
 index file.
+
+## Website: screenshot spec ↔ PNG staleness guard
+
+Recurring drift: a screenshot spec is edited and committed but its PNG is not regenerated
+(regen needs a jbrowse-web build, so it is easy to skip), so reviewers keep seeing stale
+images and re-flag "already fixed" figures. This bit the `6f0392a387` batch hard — 8 specs
+fixed, **0 PNGs committed**, all 8 re-marked bad against the old images. A guard could catch
+it: hash each spec's *render inputs* (its serialized spec object + the git SHAs of the
+source/config files the render depends on) and record that hash next to the committed PNG (a
+sidecar, or a field in `screenshot-review.json`); a CI check fails when a spec's current
+input-hash ≠ the hash the committed PNG was built from. Cheaper heuristic: fail when a spec
+file's git commit time is newer than its PNG's. Either turns "forgot to regen" from a silent
+multi-session review loop into one red check. (Related: the review tool already hashes the
+PNG bytes to expire verdicts — this is the same idea one step upstream, keyed on the spec's
+inputs rather than its output.)
 
 ## expressive SV search language for the SV inspector import form
 Current import-form filtering matches query strings like `CHR2=17` against the
