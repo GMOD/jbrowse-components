@@ -1,4 +1,4 @@
-import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
+import { IDENTITY_FIELDS, extraColumns } from '../sourcesGridUtils.ts'
 
 // Detect the primary delimiter from the first line (whichever of tab/comma
 // appears first). Defaults to comma when neither is found.
@@ -133,16 +133,7 @@ function toCsvField(val: string): string {
 // because `source` always equals `name` for multi-wiggle and `baseUri` is
 // plumbing.
 function csvExportFields(rows: Record<string, unknown>[]): string[] {
-  const skip = new Set<string>(IDENTITY_FIELDS)
-  const others = new Set<string>()
-  for (const row of rows) {
-    for (const k of Object.keys(row)) {
-      if (!skip.has(k)) {
-        others.add(k)
-      }
-    }
-  }
-  return ['name', ...others]
+  return ['name', ...extraColumns(rows, new Set<string>(IDENTITY_FIELDS))]
 }
 
 // Serialize the current layout as a CSV string suitable for pasting back.

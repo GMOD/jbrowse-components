@@ -7,7 +7,10 @@ import { Menu, MenuItem, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getLeafNames } from './clusterUtils.ts'
-import { TREE_RESIZE_HANDLE_WIDTH } from './treeSidebarGeometry.ts'
+import {
+  TREE_RESIZE_HANDLE_WIDTH,
+  treeContentHeight,
+} from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -52,7 +55,6 @@ const TreeSidebar = observer(function TreeSidebar({
   const {
     hierarchy,
     treeAreaWidth,
-    height,
     lineZoneHeight = 0,
     scrollTop = 0,
     showTree,
@@ -79,8 +81,22 @@ const TreeSidebar = observer(function TreeSidebar({
       const rect = event.currentTarget.getBoundingClientRect()
       const x = event.clientX - rect.left
       const y = event.clientY - rect.top + scrollTop
-      const results = spatialIndex.index.search(x, y, x, y)
-      return results.length > 0 ? spatialIndex.nodes[results[0]!] : undefined
+      // node.y = tree depth → horizontal, node.x = row → vertical. Overlapping
+      // hit boxes come back in tree order, so pick the node whose center is
+      // nearest the cursor rather than an arbitrary first match.
+      let bestIdx: number | undefined
+      let best = Infinity
+      for (const idx of spatialIndex.index.search(x, y, x, y)) {
+        const node = spatialIndex.nodes[idx]!
+        const dx = node.y - x
+        const dy = node.x - y
+        const d = dx * dx + dy * dy
+        if (d < best) {
+          best = d
+          bestIdx = idx
+        }
+      }
+      return bestIdx === undefined ? undefined : spatialIndex.nodes[bestIdx]
     }
     return undefined
   }
@@ -107,7 +123,7 @@ const TreeSidebar = observer(function TreeSidebar({
     return null
   }
 
-  const contentHeight = height - lineZoneHeight
+  const contentHeight = treeContentHeight(model)
 
   return (
     <>

@@ -14,6 +14,7 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
+  buildClusteredLayout,
   generateClusterRScript,
   matrixToTsv,
   parseClusterOrder,
@@ -223,14 +224,15 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
             const { sourcesWithoutLayout } = model
             if (sourcesWithoutLayout) {
               try {
+                // parseClusterOrder yields 1-based R indices; buildClusteredLayout
+                // (shared with the auto dialog) expects 0-based, and merges
+                // existing layout so colors/labels survive a re-cluster.
                 model.setLayout(
-                  parseClusterOrder(paste).map(idx => {
-                    const ret = sourcesWithoutLayout[idx - 1]
-                    if (!ret) {
-                      throw new Error(`out of bounds at ${idx}`)
-                    }
-                    return ret
-                  }),
+                  buildClusteredLayout(
+                    sourcesWithoutLayout,
+                    model.layout,
+                    parseClusterOrder(paste).map(idx => idx - 1),
+                  ),
                 )
               } catch (e) {
                 console.error(e)

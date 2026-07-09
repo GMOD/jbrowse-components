@@ -4,6 +4,7 @@ import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { autorun } from 'mobx'
 
 import { TREE_STROKE, links, treeLinkSegments } from './hierarchy.ts'
+import { treeContentHeight } from './treeSidebarGeometry.ts'
 
 import type { TreeDrawingModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -23,20 +24,13 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
         // touch totalHeight so MobX tracks it as a dependency (row height changes)
         void self.totalHeight
-        const {
-          treeCanvas,
-          hierarchy,
-          treeAreaWidth,
-          height,
-          lineZoneHeight = 0,
-          scrollTop = 0,
-        } = self
+        const { treeCanvas, hierarchy, treeAreaWidth, scrollTop = 0 } = self
 
         if (!treeCanvas || !hierarchy) {
           return
         }
 
-        const contentHeight = height - lineZoneHeight
+        const contentHeight = treeContentHeight(self)
         const ctx = getPreparedCanvas2D(
           treeCanvas,
           treeAreaWidth,
@@ -77,8 +71,6 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           hierarchy,
           rowHeight,
           hoveredTreeNode,
-          height,
-          lineZoneHeight = 0,
           scrollTop = 0,
           sources,
         } = self
@@ -91,7 +83,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           return
         }
         const viewWidth = view.width
-        const contentHeight = height - lineZoneHeight
+        const contentHeight = treeContentHeight(self)
         const ctx = getPreparedCanvas2D(
           mouseoverCanvas,
           viewWidth,
