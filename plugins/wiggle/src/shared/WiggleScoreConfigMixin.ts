@@ -152,9 +152,11 @@ export function WiggleScoreConfigMixin() {
        * #action
        */
       setResolution(res: number) {
-        // clamp so repeated finer/coarser stepping can't drive unbounded RPC
-        // fetches (finer) or degenerate binning (coarser)
-        self.resolution = Math.min(16, Math.max(1 / 16, res))
+        // Only the coarser side needs a floor (1/16) to avoid degenerate
+        // binning. The finer side is self-limiting: bbi caps at raw (per-base)
+        // data, so past the raw threshold more resolution returns identical
+        // data — a high ceiling lets whiskers reach raw at wider zooms.
+        self.resolution = Math.min(1024, Math.max(1 / 16, res))
       },
       /**
        * #action
