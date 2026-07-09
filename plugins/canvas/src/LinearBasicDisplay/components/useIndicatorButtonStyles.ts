@@ -4,8 +4,8 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 // (overflow expand/restore, isoform-collapse dropdown, ...) so they read as one
 // quiet system rather than a grab-bag of differently-styled widgets.
 export const useIndicatorButtonStyles = makeStyles()(theme => ({
-  // consumed cross-file (GeneGlyphControl, TrackHeightControl), which the
-  // same-file-only unused-classes rule can't see
+  // consumed cross-file (GeneGlyphControl), which the same-file-only
+  // unused-classes rule can't see
   // eslint-disable-next-line tss-unused-classes/unused-classes
   button: {
     padding: 2,

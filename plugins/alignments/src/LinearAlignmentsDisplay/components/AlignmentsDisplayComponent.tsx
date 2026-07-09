@@ -5,7 +5,10 @@ import { LoadingOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import {
+  DisplayChrome,
+  TrackHeightIndicator,
+} from '@jbrowse/plugin-linear-genome-view'
 import { Link } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -23,11 +26,20 @@ const useStyles = makeStyles()(theme => ({
     width: '100%',
     minHeight: '100%',
   },
-  maxHeight: {
+  // Anchor row for the ambient bottom-right indicators (height switcher, plus
+  // the max-layout-height notice when it applies) so they lay out as one row
+  // instead of stacking on top of each other.
+  bottomRight: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    zIndex: 1,
+    bottom: 2,
+    right: 2,
+    zIndex: 3,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    pointerEvents: 'auto',
+  },
+  maxHeight: {
     display: 'flex',
     alignItems: 'center',
     gap: 4,
@@ -94,21 +106,30 @@ const AlignmentsDisplayComponent = observer(
         {({ canvasRef, canvas }) => (
           <>
             <PileupBody model={model} canvasRef={canvasRef} canvas={canvas} />
-            {pileupTruncated ? (
-              <div className={classes.maxHeight}>
-                <span>Max layout height reached</span>
-                <Link
-                  component="button"
-                  variant="caption"
-                  underline="hover"
-                  onClick={() => {
-                    model.setMaxHeight(SHOW_ALL_MAX_HEIGHT)
-                  }}
-                >
-                  Show all alignments
-                </Link>
-              </div>
-            ) : null}
+            <div className={classes.bottomRight}>
+              {pileupTruncated ? (
+                <div className={classes.maxHeight}>
+                  <span>Max layout height reached</span>
+                  <Link
+                    component="button"
+                    variant="caption"
+                    underline="hover"
+                    onClick={() => {
+                      model.setMaxHeight(SHOW_ALL_MAX_HEIGHT)
+                    }}
+                  >
+                    Show all alignments
+                  </Link>
+                </div>
+              ) : null}
+              <TrackHeightIndicator
+                heightMode={model.heightMode}
+                hasOverflow={model.scrollableHeight > 0}
+                scrollZoom={view.scrollZoom}
+                noun="reads"
+                onSetHeightMode={mode => { model.setHeightMode(mode) }}
+              />
+            </div>
             <Suspense fallback={null}>
               <TooltipComponent
                 model={model}

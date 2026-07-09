@@ -5,7 +5,10 @@ import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import {
+  DisplayChrome,
+  TrackHeightIndicator,
+} from '@jbrowse/plugin-linear-genome-view'
 import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
@@ -16,7 +19,6 @@ import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
 import PeptideCanvas from './PeptideCanvas.tsx'
 import SoloSelectionChip from './SoloSelectionChip.tsx'
-import TrackHeightControl from './TrackHeightControl.tsx'
 import {
   hoverTooltip,
   isHitFeature,
@@ -576,10 +578,11 @@ const FeatureBody = observer(function FeatureBody({
             model.setGeneGlyphMode(value)
           }}
         />
-        <TrackHeightControl
+        <TrackHeightIndicator
           heightMode={model.heightMode}
           hasOverflow={model.hasOverflow}
           scrollZoom={view.scrollZoom}
+          noun="features"
           onSetHeightMode={mode => {
             model.setHeightMode(mode)
           }}

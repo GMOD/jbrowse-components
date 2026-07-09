@@ -94,6 +94,7 @@ export {
   StaleViewportRescaleMixin,
   TOO_MANY_FEATURES_REASON,
   TooLargeMessage,
+  TrackHeightIndicator,
   TrackHeightMixin,
   autorunOnReadyView,
   baseLinearDisplayConfigSchema,
