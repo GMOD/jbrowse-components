@@ -127,15 +127,24 @@ bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
 ## Windowed diversity (π) → bigWig
 
 The same tool computes per-window nucleotide diversity. Run it on the whole
-panel, or per group to compare inverted against standard:
+panel, or restrict it with `--keep` to one group at a time so the two groups'
+diversity can be compared on the same scale:
 
 ```bash
+# whole panel
 vcftools --gzvcf "$VCF" --window-pi 10000 --out pi_all
 # -> pi_all.windowed.pi   CHROM  BIN_START  BIN_END  N_VARIANTS  PI
 
-awk 'NR>1 && $5!="nan" {print $1"\t"($2-1)"\t"$3"\t"$5}' pi_all.windowed.pi \
-  | sort -k1,1 -k2,2n > pi_all.bedgraph
-bedGraphToBigWig pi_all.bedgraph dm6.chrom.sizes pi_all.bw
+# per In(2L)t group (reuses the sample lists from above)
+vcftools --gzvcf "$VCF" --keep In2Lt_INV.txt --window-pi 10000 --out pi_INV
+vcftools --gzvcf "$VCF" --keep In2Lt_STD.txt --window-pi 10000 --out pi_STD
+
+# same awk-to-bigWig conversion for each
+for g in all INV STD; do
+  awk 'NR>1 && $5!="nan" {print $1"\t"($2-1)"\t"$3"\t"$5}' pi_$g.windowed.pi \
+    | sort -k1,1 -k2,2n > pi_$g.bedgraph
+  bedGraphToBigWig pi_$g.bedgraph dm6.chrom.sizes pi_$g.bw
+done
 ```
 
 Because this VCF holds only variant sites, `--window-pi` sums diversity over the
@@ -179,17 +188,20 @@ awk 'NR>1 && $5!="-nan" {v=($5<0?0:$5); print $1"\t"($2-1)"\t"$3"\t"v}' \
   fst_In2Lt.windowed.weir.fst | sort -k1,1 -k2,2n > fst_In2Lt.bedgraph
 bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
 
-# 5. windowed pi -> bigWig
+# 5. windowed pi -> bigWig (whole panel + each In(2L)t arrangement)
 vcftools --gzvcf "$VCF" --window-pi 10000 --out pi_all
-awk 'NR>1 && $5!="nan" {print $1"\t"($2-1)"\t"$3"\t"$5}' \
-  pi_all.windowed.pi | sort -k1,1 -k2,2n > pi_all.bedgraph
-bedGraphToBigWig pi_all.bedgraph dm6.chrom.sizes pi_all.bw
+vcftools --gzvcf "$VCF" --keep In2Lt_INV.txt --window-pi 10000 --out pi_INV
+vcftools --gzvcf "$VCF" --keep In2Lt_STD.txt --window-pi 10000 --out pi_STD
+for g in all INV STD; do
+  awk 'NR>1 && $5!="nan" {print $1"\t"($2-1)"\t"$3"\t"$5}' \
+    pi_$g.windowed.pi | sort -k1,1 -k2,2n > pi_$g.bedgraph
+  bedGraphToBigWig pi_$g.bedgraph dm6.chrom.sizes pi_$g.bw
+done
 
-echo "done: fst_In2Lt.bw pi_all.bw"
+echo "done: fst_In2Lt.bw pi_all.bw pi_INV.bw pi_STD.bw"
 ```
 
-Host `fst_In2Lt.bw` and `pi_all.bw` somewhere JBrowse can reach (any static web
-server, or
+Host the `.bw` files somewhere JBrowse can reach (any static web server, or
 [open them as local track files](/docs/user_guides/basic_usage#opening-tracks)
 in JBrowse Desktop).
 
@@ -198,8 +210,9 @@ in JBrowse Desktop).
 You need a dm6 assembly loaded, ideally with a FlyBase or RefSeq gene track so
 gene-name search works — see
 [configuring assemblies](/docs/config_guides/assemblies) and
-[gene tracks](/docs/user_guides/gene_track). A single bigWig loads as an
-ordinary [quantitative track](/docs/user_guides/quantitative_track):
+[gene tracks](/docs/user_guides/gene_track). Each scan loads as an ordinary
+[quantitative track](/docs/user_guides/quantitative_track), which auto-scales to
+its own data:
 
 ```json
 {
@@ -214,52 +227,70 @@ ordinary [quantitative track](/docs/user_guides/quantitative_track):
 }
 ```
 
-To read the Fst and diversity scans together, put one `BigWigAdapter` per scan
-into a single **multi-wiggle** track so the rows stack in alignment (see the
-[multi-quantitative track guide](/docs/config_guides/multiquantitative_track)):
+Load the Fst and π scans as two such tracks: Fst tops out near 0.83 while π
+stays under 0.016, so each needs its own y-axis to read (this is the figure
+below). Don't reach for a multi-wiggle here — a
+[multi-wiggle](/docs/config_guides/multiquantitative_track) shares **one**
+y-axis across its rows, which would flatten π against the ~50× larger Fst.
+
+A multi-wiggle is the right tool when the rows _are_ on the same scale — for
+example the same statistic across groups. The per-group π bigWigs
+(`pi_INV.bw`/`pi_STD.bw`) stack cleanly, so you can read inverted against
+standard diversity window-for-window on a shared axis:
 
 ```json
 {
   "type": "MultiQuantitativeTrack",
-  "trackId": "popgen_scans",
-  "name": "Population-genomic scans",
+  "trackId": "pi_by_arrangement",
+  "name": "π by In(2L)t arrangement",
   "assemblyNames": ["dm6"],
   "adapter": {
     "type": "MultiWiggleAdapter",
     "subadapters": [
       {
         "type": "BigWigAdapter",
-        "source": "Fst In(2L)t vs standard",
-        "uri": "https://jbrowse.org/demos/popgen/fst_In2Lt.bw"
+        "source": "π inverted",
+        "uri": "https://jbrowse.org/demos/popgen/pi_INV.bw"
       },
       {
         "type": "BigWigAdapter",
-        "source": "π (whole panel)",
-        "uri": "https://jbrowse.org/demos/popgen/pi_all.bw"
+        "source": "π standard",
+        "uri": "https://jbrowse.org/demos/popgen/pi_STD.bw"
       }
     ]
   }
 }
 ```
 
+Across the inverted region on `2L`, inverted-arrangement π runs mildly below
+standard (about 14% lower on average, versus roughly equal outside) — the
+reduced within-arrangement diversity expected under recombination suppression.
+The effect is subtle because `In(2L)t` is an old, gene-flux-rich cosmopolitan
+inversion; the differentiation between arrangements shows up far more strongly
+in the Fst scan than in within-group π.
+
 ## Reading the signals
 
-Navigate to chromosome arm **`2L`**. The `In(2L)t` Fst row rises across the
+Navigate to chromosome arm **`2L`**. The `In(2L)t` Fst track rises across the
 whole inverted region — roughly `2L:2,200,000–13,200,000` — and peaks near the
 breakpoints: the inversion suppresses recombination between arrangements, so
 inverted and standard lines diverge across the entire span rather than at a
 single locus. This is the recombination-suppression footprint of a segregating
 inversion, the fly analog of any large balanced polymorphism.
 
-<!-- FIGURE PENDING: multi-wiggle over 2L — Fst (In(2L)t vs standard) elevated
-     plateau across ~2.2–13.2 Mb with breakpoint peaks, π rows below, FlyBase
-     gene track. Needs the bigWigs hosted in a dm6 demo config + screenshot spec. -->
+<Figure src="/img/popgen/fst_in2lt_2L.png" caption="The two scans over the whole 2L arm, each its own auto-scaled quantitative track. Top: Fst between In(2L)t-inverted and standard-arrangement DGRP lines rises into an elevated plateau across the inverted region (~2.2–13.2 Mb) with peaks near the breakpoints, then drops sharply back to background past the distal breakpoint — the inversion suppresses recombination between arrangements, so the two groups diverge across the entire span rather than at a single locus. Bottom: whole-panel nucleotide diversity (π). Data is the exact pipeline output from this tutorial, hosted at jbrowse.org/demos/popgen."/>
 
-Then search **`Cyp6g1`** (on `2R`) and inspect its window in the π row: the
-insecticide-resistance haplotype rose to high frequency in this derived
-population, locally depressing diversity. Other well-documented resistance and
-selection loci make good places to look next, each read the same way — signal
-against gene:
+Then search **`Cyp6g1`** (on `2R`) and inspect its window in the π track:
+diversity collapses into a sharp, deep valley over the locus — the gene's window
+drops to ~0.0004, under 10% of the `2R` average of ~0.0049, between
+high-diversity flanks (~0.008–0.009). This is the classic hard-sweep signature:
+the DDT/neonicotinoid-resistance haplotype rose to near-fixation in this derived
+population, and hitchhiking stripped variation from the region around it.
+
+<Figure src="/img/popgen/pi_cyp6g1.png" caption="Whole-panel π zoomed to the Cyp6g1 locus on 2R. Diversity plunges into a deep valley across ~12.13–12.20 Mb — the boxed Cyp6g1 window falls to ~0.0004, under a tenth of the arm-wide average — flanked by high-diversity windows (~0.008–0.009) on both sides. The individually rendered NCBI RefSeq genes give the gene-level context that a whole-arm view can't. This is the recombination-hitchhiking footprint of the insecticide-resistance sweep at Cyp6g1."/>
+
+Other well-documented resistance and selection loci make good places to look
+next, each read the same way — signal against gene:
 
 | Gene / locus  | Arm | Signal                                                             |
 | ------------- | --- | ------------------------------------------------------------------ |

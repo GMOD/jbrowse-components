@@ -10,6 +10,7 @@ import { gallerySpecs } from './specs/gallery.ts'
 import { gwasSpecs } from './specs/gwas.ts'
 import { mafSpecs } from './specs/maf.ts'
 import { methylationSpecs } from './specs/methylation.ts'
+import { popgenSpecs } from './specs/popgen.ts'
 import { svSpecs } from './specs/sv.ts'
 import { syntenySpecs } from './specs/synteny.ts'
 import { trioSpecs } from './specs/trio.ts'
@@ -26,6 +27,7 @@ export const specs: ScreenshotSpec[] = [
   ...featuresSpecs,
   ...uiSpecs,
   ...methylationSpecs,
+  ...popgenSpecs,
   ...svSpecs,
   ...gwasSpecs,
   ...trioSpecs,
