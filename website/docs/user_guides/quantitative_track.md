@@ -8,7 +8,7 @@ BigWig and BedGraph files store genome-wide quantitative signals — read depth,
 ChIP-seq enrichment, conservation scores, and more. JBrowse renders them as
 continuous tracks with several visual styles.
 
-## Renderer types
+## Rendering types
 
 The **Rendering type** option offers four styles:
 
@@ -20,9 +20,9 @@ The **Rendering type** option offers four styles:
 - **Scatter** — draws individual points without filling; useful for sparse data
   and seeing single values
 
-<Figure caption="XY plot (bar) renderer for a wiggle/BigWig track. Each bar represents the signal value at that position; colored mismatches relative to the reference appear in the coverage of alignment-derived BigWigs." src="/img/bigwig_xyplot.png" />
+<Figure caption="XY plot (bar) rendering for a wiggle/BigWig track. Each bar represents the signal value at that position; colored mismatches relative to the reference appear in the coverage of alignment-derived BigWigs." src="/img/bigwig_xyplot.png" />
 
-<Figure caption="Line renderer for the same track. The line renderer emphasizes the shape of the signal rather than amplitude, and is useful for comparing multiple overlapping tracks." src="/img/bigwig_line.png" />
+<Figure caption="Line rendering for the same track. The line style emphasizes the shape of the signal rather than amplitude, and is useful for comparing multiple overlapping tracks." src="/img/bigwig_line.png" />
 
 ## Autoscale options
 

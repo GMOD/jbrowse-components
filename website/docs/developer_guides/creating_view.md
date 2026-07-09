@@ -65,11 +65,10 @@ Read these alongside the simple plugin tutorial when designing your own.
 
 ## See also
 
-- [Creating custom display types](/docs/developer_guides/creating_display) — if
-  you only need to render features differently inside an existing view
+- [Custom track and display types](/docs/developer_guides/creating_display) — if
+  you only need to render features differently inside an existing view, or for
+  views like `DotplotView`/`LinearSyntenyView` that host tracks
 - [Extension points](/docs/developer_guides/extension_points) — the
   `LaunchView-*` points are a reference for launching your own view type
 - [MST patterns](/docs/developer_guides/mst_patterns)
 - [Pluggable elements](/docs/developer_guides/pluggable_elements)
-- [Creating custom track types](/docs/developer_guides/creating_track) — for
-  views like `DotplotView`/`LinearSyntenyView` that host tracks

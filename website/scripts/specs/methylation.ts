@@ -109,10 +109,12 @@ export const methylationSpecs: ScreenshotSpec[] = [
                 type: 'LinearAlignmentsDisplay',
                 // this is a 6mA chromatin-accessibility assay; the basecaller
                 // also emits 5mC/5hmC calls on the same reads, but those
-                // aren't what this figure is about (reviewer: 6mA only)
+                // aren't what this figure is about (reviewer: 6mA only). An
+                // allow-list (shownModifications: 6mA code 'a') keeps it
+                // 6mA-only regardless of what else the caller emitted.
                 colorBy: {
                   type: 'modifications',
-                  modifications: { hiddenModifications: ['m', 'h'] },
+                  modifications: { shownModifications: ['a'] },
                 },
                 // compact pileup: displayMode isn't a real slot on this
                 // display (that's the shared canvas base schema) — fixed
@@ -131,7 +133,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
                 type: 'LinearAlignmentsDisplay',
                 colorBy: {
                   type: 'modifications',
-                  modifications: { hiddenModifications: ['m', 'h'] },
+                  modifications: { shownModifications: ['a'] },
                 },
                 heightMode: 'fixed',
                 featureHeight: 3,

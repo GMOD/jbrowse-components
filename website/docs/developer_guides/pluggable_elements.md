@@ -21,7 +21,7 @@ in the application's state to modify its behavior.
 
 Plugins often also have their `install` method add "pluggable elements" into the
 host JBrowse application. This is how plugins can add new kinds of views,
-tracks, renderers, and so forth.
+tracks, displays, and so forth.
 
 :::info
 
@@ -40,7 +40,6 @@ Examples of pluggable types include:
 - Track types
 - View types
 - Display types
-- Renderer types
 - Widgets
 - RPC calls
 - Extension points
@@ -77,8 +76,8 @@ Adapters parse a given data format. To write your own, see
 ## Track types
 
 Track types are a high level type that controls how features are drawn. In most
-cases, a track combines a renderer and an adapter, and can do additional things
-like:
+cases, a track combines an adapter with one or more displays, and can do
+additional things like:
 
 - Control what widget pops up on feature click
 - Add extra menu items to the track menu
@@ -116,31 +115,23 @@ which has two display methods
 - `ChordVariantDisplay` - used in the circular view to draw breakends and
   structural variants
 
-## Renderers
+## Rendering
 
-A renderer draws features for a display. High-volume track types (alignments,
-wiggle, features, variants) render on the main thread with GPU/Canvas2D from
-worker-fetched data — see
-[renderer architecture](/docs/developer_guides/renderer_architecture/) and
+Drawing is owned by the **display** — there is no separate renderer pluggable
+element. High-volume track types (alignments, wiggle, features, variants) draw
+on the main thread with GPU/Canvas2D from worker-fetched data; a few low-volume
+displays (the arc and circular-chord displays) draw with plain main-thread SVG.
+See [renderer architecture](/docs/developer_guides/renderer_architecture/) and
 [creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display).
-
-A few specialized renderers still draw in the worker:
-
-- `ArcRenderer` (`@jbrowse/plugin-arc`) - draws arcs connecting features, used
-  by the arc plugin's `LinearArcDisplay`
-- `StructuralVariantChordRenderer` (`@jbrowse/plugin-circular-view`) - draws
-  breakends and structural variants as chords in the circular view
 
 :::info
 
-How views, tracks, displays, and renderers relate:
+How views, tracks, and displays relate:
 
 - A **view** is a container that typically _has tracks_
-- A **track** controls _what_ data (adapter) and _how_ it's displayed
-  (display/renderer)
-- A **display** is a specific way to render a track's data — a track may have
-  multiple displays for different view types
-- A **renderer** controls the actual drawing, e.g. what happens on mouse over
+- A **track** controls _what_ data (adapter) and _how_ it's displayed (display)
+- A **display** is a specific way to draw a track's data, and owns the drawing —
+  a track may have multiple displays for different view types
 
 :::
 
@@ -197,16 +188,15 @@ menu items.
 
 ## See also
 
-- [Custom track types](/docs/developer_guides/creating_track) — define new
-  high-level track concepts backed by display types
-- [Custom display types](/docs/developer_guides/creating_display) — control how
-  a track renders in a given view type
+- [Custom track and display types](/docs/developer_guides/creating_display) —
+  define new track categories and control how a track renders in a given view
+  type
 - [Custom view types](/docs/developer_guides/creating_view) — add entirely new
   view panels such as `DotplotView` or `CircularView`
 - [Custom widgets](/docs/developer_guides/creating_widget) — add new
   drawer/panel UI components
-- [Config model basics](/docs/developer_guides/config_model) — config slot
-  types, defaults, and how configuration schemas work
+- [Configuration schema](/docs/developer_guides/configuration_schema) — config
+  slot types, defaults, and how configuration schemas work
 - [Writing a plugin](/docs/developer_guides/simple_plugin) — scaffold a plugin
   that registers pluggable elements from an official template
 - [Text search adapters](/docs/developer_guides/creating_text_search_adapter) —

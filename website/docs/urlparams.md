@@ -378,7 +378,7 @@ additional configuration options:
         {
           "trackId": "my_bam_track",
           "displaySnapshot": {
-            "type": "LinearPileupDisplay",
+            "type": "LinearAlignmentsDisplay",
             "height": 300
           }
         },
@@ -396,8 +396,8 @@ Each track object supports the following properties:
 
 - `trackId` (required): The track identifier from config.json
 - `displaySnapshot` (optional): Initial display state. Can include:
-  - `type`: Override the display type (e.g., `LinearPileupDisplay`,
-    `LinearSNPCoverageDisplay`, `LinearAlignmentsDisplay`)
+  - `type`: Override the display type (e.g., `LinearBasicDisplay`,
+    `LinearArcDisplay`, `LinearAlignmentsDisplay`)
   - `height`: Display height in pixels
   - `color`: Feature color for feature/wiggle tracks (a CSS color, or a `jexl:`
     expression for per-feature coloring)

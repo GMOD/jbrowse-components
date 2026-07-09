@@ -19,14 +19,12 @@ See `plugins/canvas` and `packages/render-core` for the implementation, and
 [creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
 to build one.
 
-## Specialized renderers
+## Low-volume displays
 
-A few specialized renderers still draw in the worker and transfer the rendered
-output back — `ArcRenderer` (`@jbrowse/plugin-arc`) and
-`StructuralVariantChordRenderer` (`@jbrowse/plugin-circular-view`). They
-subclass `ServerSideRendererType` in
-`packages/core/src/pluggableElementTypes/renderers`. New track types should use
-the GPU path above rather than this pattern.
+A few low-volume displays skip the GPU path and draw with plain main-thread SVG:
+the arc display (`@jbrowse/plugin-arc`, `LinearArcDisplay`) and the circular
+chord display (`@jbrowse/plugin-circular-view`, `ChordVariantDisplay`). New
+track types should use the GPU path above rather than emitting SVG per feature.
 
 ## See also
 
@@ -36,7 +34,7 @@ the GPU path above rather than this pattern.
 - [RPC and worker system](/docs/developer_guides/rpc_workers)
 - [Adding SVG export to a display](/docs/developer_guides/svg_export) — the
   shared `paintLayer` draw path
-- [Custom display types](/docs/developer_guides/creating_display) — displays are
-  the natural owner/invoker of a renderer
+- [Custom display types](/docs/developer_guides/creating_display) — displays own
+  the drawing
 - [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
-  all element types, including renderers
+  all element types

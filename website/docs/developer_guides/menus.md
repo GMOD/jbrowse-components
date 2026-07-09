@@ -326,8 +326,7 @@ The new length of the sub-menu
 
 - [Extension points](/docs/developer_guides/extension_points) —
   `Core-extendPluggableElement` and the full extension-point API
-- [Creating custom track types](/docs/developer_guides/creating_track) and
-  [display types](/docs/developer_guides/creating_display) — where
-  `trackMenuItems` / `contextMenuItems` live
+- [Custom track and display types](/docs/developer_guides/creating_display) —
+  where `trackMenuItems` / `contextMenuItems` live
 - [Pluggable elements](/docs/developer_guides/pluggable_elements) — menus are
   one of the element types surveyed there

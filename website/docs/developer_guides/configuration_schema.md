@@ -1,7 +1,8 @@
 ---
 title: Configuration schema
 description:
-  Slot types, inheritance, preProcessSnapshot, and reading config values
+  Slot types, inheritance, callbacks, preProcessSnapshot, and reading config
+  values
 guide_category: Core concepts
 ---
 
@@ -42,9 +43,9 @@ const MyAdapterConfigSchema = ConfigurationSchema(
 
 ## Slot types
 
-This is the canonical list of slot types; the
-[configuration model basics](/docs/developer_guides/config_model) guide
-describes how each renders in the graphical config editor.
+This is the canonical list of slot types. The configuration system is typed so
+each slot can be edited graphically; see [Graphical editing](#graphical-editing)
+below for how each type renders in the config editor.
 
 | Type             | JS type                    | Notes                                               |
 | ---------------- | -------------------------- | --------------------------------------------------- |
@@ -70,6 +71,22 @@ displayMode: {
   defaultValue: 'normal',
 },
 ```
+
+## Graphical editing
+
+Because slots are typed, the configuration editor renders an appropriate control
+for each one:
+
+- `stringEnum` — dropdown box
+- `color` — color picker
+- `boolean` — checkbox
+- `number` / `integer` — numeric input
+- `string` — text input
+- `text` — textarea
+- `frozen` — textarea holding arbitrary JSON
+- `fileLocation` — URL, local file path (desktop), or file blob (browser)
+- `stringArray` — "todolist" editor to add/remove entries
+- `stringArrayMap` / `numberMap` — key-value editors
 
 ## Schema inheritance with baseConfiguration
 
@@ -206,13 +223,100 @@ MST node.
 This is why `session.tracksById` returns plain objects: access them with
 `readConfObject`, not `getConf`.
 
+## Config callbacks (jexl)
+
+Any slot can hold a callback instead of a plain value. A slot's
+`contextVariable` field lists the arguments the callback expects; the calling
+code supplies them as the third argument to `readConfObject`:
+
+```js
+color: {
+  type: 'color',
+  defaultValue: 'goldenrod',
+  contextVariable: ['feature'],
+},
+```
+
+```js
+readConfObject(config, 'color', { feature })
+```
+
+Callbacks are written in [jexl](https://github.com/TomFrost/Jexl). For example,
+a `VariantTrack` display can color SNVs green and everything else purple:
+
+```json
+{
+  "type": "LinearVariantDisplay",
+  "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
+  "color": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
+}
+```
+
+Any slot with a `contextVariable` can take a jexl callback as its default value,
+including [custom jexl functions](/docs/developer_guides/pluggable_elements)
+your plugin registers. See the [jexl config guide](/docs/config_guides/jexl) for
+more.
+
+## Configuration internals
+
+A configuration is a `@jbrowse/mobx-state-tree` model tree: leaf nodes are
+config-slot types and inner nodes are `ConfigurationSchema` types. All
+configurations descend from a single root, `root.configuration`.
+
+```
+       Schema
+    /     |     \
+   Slot  Schema  Slot
+         |    \
+         Slot  Slot
+```
+
+A schema can nest a sub-schema as a slot — e.g. `BamAdapter` embeds its index
+config:
+
+```js
+ConfigurationSchema(
+  'BamAdapter',
+  {
+    bamLocation: {
+      type: 'fileLocation',
+      defaultValue: { uri: '/path/to/my.bam', locationType: 'UriLocation' },
+    },
+    index: ConfigurationSchema('BamIndex', {
+      indexType: {
+        model: types.enumeration('IndexType', ['BAI', 'CSI']),
+        type: 'stringEnum',
+        defaultValue: 'BAI',
+      },
+      location: {
+        type: 'fileLocation',
+        defaultValue: {
+          uri: '/path/to/my.bam.bai',
+          locationType: 'UriLocation',
+        },
+      },
+    }),
+  },
+  { explicitlyTyped: true },
+)
+```
+
+Read a nested slot with a path array:
+
+```js
+const indexType = readConfObject(config, ['index', 'indexType'])
+```
+
+Avoid reading properties directly off the result (e.g.
+`readConfObject(config, ['index']).indexType`) — that bypasses default-value
+resolution.
+
 ## See also
 
-- [Configuration model basics](/docs/developer_guides/config_model) — slot types
-  in the graphical editor and config callbacks (jexl)
 - [Configuration API reference](/docs/api/core-configuration) — `getConf`,
   `readConfObject`, `ConfigurationReference` signatures
+- [jexl config callbacks](/docs/config_guides/jexl)
 - [MST patterns](/docs/developer_guides/mst_patterns) — `types.frozen` and model
   composition
-- [Custom track types](/docs/developer_guides/creating_track) — a concrete
-  pluggable element that declares a `configSchema` like the ones above
+- [Custom track and display types](/docs/developer_guides/creating_display) — a
+  concrete pluggable element that declares a `configSchema` like the ones above

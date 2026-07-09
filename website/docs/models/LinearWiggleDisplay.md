@@ -207,7 +207,6 @@ and docs.
 **Getters:**
 [autoscaleSourceNames](../wigglecommonmixin#getter-autoscalesourcenames),
 [visibleScoreRange](../wigglecommonmixin#getter-visiblescorerange),
-[hasNoData](../wigglecommonmixin#getter-hasnodata),
 [domain](../wigglecommonmixin#getter-domain)
 
 **Actions:**

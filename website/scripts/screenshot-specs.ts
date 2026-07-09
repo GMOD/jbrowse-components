@@ -4,6 +4,7 @@ export type * from './screenshot-spec-types.ts'
 import { jbrowseImgSpecs } from './screenshot-spec-helpers.ts'
 import { alignmentsSpecs } from './specs/alignments.ts'
 import { bigwigSpecs } from './specs/bigwig.ts'
+import { cookbookSpecs } from './specs/cookbook.ts'
 import { embeddedSpecs } from './specs/embedded.ts'
 import { featuresSpecs } from './specs/features.ts'
 import { gallerySpecs } from './specs/gallery.ts'
@@ -11,6 +12,7 @@ import { gwasSpecs } from './specs/gwas.ts'
 import { mafSpecs } from './specs/maf.ts'
 import { methylationSpecs } from './specs/methylation.ts'
 import { popgenSpecs } from './specs/popgen.ts'
+import { qtlSpecs } from './specs/qtl.ts'
 import { svSpecs } from './specs/sv.ts'
 import { syntenySpecs } from './specs/synteny.ts'
 import { trioSpecs } from './specs/trio.ts'
@@ -30,9 +32,11 @@ export const specs: ScreenshotSpec[] = [
   ...popgenSpecs,
   ...svSpecs,
   ...gwasSpecs,
+  ...qtlSpecs,
   ...trioSpecs,
   ...gallerySpecs,
   ...mafSpecs,
+  ...cookbookSpecs,
   ...embeddedSpecs,
   ...jbrowseImgSpecs,
 ]

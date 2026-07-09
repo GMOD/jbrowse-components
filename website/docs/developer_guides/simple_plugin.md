@@ -33,8 +33,7 @@ methods, where you register your pluggable elements against the `pluginManager`.
 The element-specific guides walk through each type:
 
 - [Creating custom view types](/docs/developer_guides/creating_view)
-- [Creating custom track types](/docs/developer_guides/creating_track)
-- [Creating custom display types](/docs/developer_guides/creating_display)
+- [Custom track and display types](/docs/developer_guides/creating_display)
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
 - [Creating custom adapters](/docs/developer_guides/creating_adapter)
 - [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter)

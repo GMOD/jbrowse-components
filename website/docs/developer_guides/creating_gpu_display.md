@@ -8,9 +8,12 @@ guide_category: Creating pluggable elements
 :::note
 
 This guide covers the GPU rendering path introduced in the WebGL/WebGPU
-migration. If you only need Canvas2D rendering, the standard `createDisplay`
-path is simpler. Use this guide when you need hardware-accelerated rendering for
-large or dense datasets.
+migration — the scale-up path for large or dense datasets (roughly ≳100K
+features per frame). For typical annotation tracks, start with
+[Plotting features in a custom display](/docs/developer_guides/plotting_features),
+which uses the shader-free Canvas2D path. The two share the same model, fetch
+chain, and lifecycle; only the renderer differs, so moving up later is a small
+change.
 
 :::
 
@@ -133,8 +136,10 @@ float4 fragmentMain(InstanceInput inst) -> SV_Target {
 Run `pnpm gen:shaders` after every edit. This emits `my.generated.ts` with:
 
 - `WGSL_SOURCE`, `GLSL_VERTEX`, `GLSL_FRAGMENT`
-- `INSTANCE_STRIDE_BYTES` and `FIELD_OFFSET_F32` for packing instances
-- `UNIFORMS_SIZE_BYTES` and a typed `writeUniforms()` function
+- `INSTANCE_STRIDE_BYTES` / `FIELD_OFFSET_F32` and a typed `packInstances()`
+  that interleaves your parallel arrays into one instance buffer
+- `UNIFORMS_SIZE_BYTES`, `UNIFORM_OFFSET_F32` (Float32 indices), and a typed
+  `writeUniforms()` function
 - `GL_ATTRIBUTES` for WebGL2 binding
 
 **Never hand-edit `*.generated.ts`.**
@@ -148,76 +153,78 @@ The `canvas_width` / `canvas_height` uniforms are CSS pixels — do not scale by
 
 ## Step 3: GPU renderer
 
+The base class `GpuPerRegionRenderingBackend` owns the per-frame scaffold —
+`resize`, `beginFrame`/`endFrame`, and the per-block scissor/viewport clip. You
+implement only two methods: `uploadRegion` (pack a region's features into a HAL
+buffer) and `drawRegion` (write uniforms and issue the draw pass for one
+already-clipped block).
+
 ```ts
 // GpuMyRenderer.ts
-import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
-import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
-import * as MY_SHADER from './shaders/my.generated.ts'
+import * as shader from './shaders/my.generated.ts'
 
-import type { GpuHal } from '@jbrowse/render-core/hal'
+import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
+import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { MyUploadData, MyRenderState } from './myRenderingBackendTypes.ts'
 
-const MY_PASS = slangPass({ id: 'my', mod: MY_SHADER })
+const PASS = 'my'
+const U = shader.UNIFORM_OFFSET_F32
+
+// exported so the factory (Step 5) can hand the pass list to the HAL
+export const MY_PASSES: PassDescriptor[] = [
+  slangPass({ id: PASS, mod: shader }),
+]
 
 export class GpuMyRenderer extends GpuPerRegionRenderingBackend<
   MyUploadData,
   MyRenderState
 > {
+  private uniformF32: Float32Array
+
   constructor(hal: GpuHal) {
-    // The base class allocates a reusable this.uniformData scratch buffer
-    super(hal, MY_SHADER.UNIFORMS_SIZE_BYTES)
+    // the base class allocates a reusable this.uniformData scratch buffer
+    super(hal, shader.UNIFORMS_SIZE_BYTES)
+    this.uniformF32 = new Float32Array(this.uniformData)
   }
 
+  // pack one region's features into a GPU buffer (or drop the buffer when empty)
   uploadRegion(regionIndex: number, data: MyUploadData) {
-    this.hal.deleteRegion(regionIndex)
-    if (data.featureCount > 0) {
-      // Pack one instance per feature into an interleaved buffer laid out to
-      // match MY_SHADER.GL_ATTRIBUTES (stride MY_SHADER.INSTANCE_STRIDE_BYTES).
-      const buf = new ArrayBuffer(
-        data.featureCount * MY_SHADER.INSTANCE_STRIDE_BYTES,
+    if (data.featureCount === 0) {
+      this.hal.deleteRegion(regionIndex)
+    } else {
+      // the generated packInstances() interleaves your parallel arrays into the
+      // GL_ATTRIBUTES layout — no manual DataView offsets
+      const buf = shader.packInstances(
+        { startBp: data.positionsU32, color: data.colorsU32 },
+        data.featureCount,
       )
-      // ... write each instance's fields via a DataView using
-      // MY_SHADER.FIELD_OFFSET_F32 as the byte offsets
-      this.hal.uploadBuffer(regionIndex, MY_PASS.id, buf, data.featureCount)
+      this.hal.uploadBuffer(regionIndex, PASS, buf, data.featureCount)
     }
   }
 
-  renderBlocks(
-    blocks: RenderBlock[],
-    regions: ReadonlyMap<number, MyUploadData>,
+  // draw one block whose scissor/viewport the base already set to its span
+  protected drawRegion(
+    block: RenderBlock,
+    clip: BlockClipResult,
+    _region: MyUploadData,
     state: MyRenderState,
   ) {
-    const dpr = getDpr()
-    this.hal.resize(state.canvasWidth, state.canvasHeight)
-    // beginFrame clears the canvas to transparent (r, g, b, a)
-    this.hal.beginFrame(0, 0, 0, 0)
-    for (const block of blocks) {
-      const region = regions.get(block.displayedRegionIndex)
-      const clip = region
-        ? clipBlock(block, state.canvasWidth, state.canvasHeight, dpr)
-        : undefined
-      if (clip) {
-        // Write frame-level uniforms into the reused this.uniformData buffer,
-        // then hand them to the HAL right before the draw.
-        MY_SHADER.writeUniforms(this.uniformData, {
-          bpPerPx: clip.bpPerPx,
-          canvasWidth: state.canvasWidth,
-          canvasHeight: state.canvasHeight,
-          // ... remaining uniform fields
-        })
-        this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
-        this.hal.writeUniforms(this.uniformData)
-        this.hal.drawPass(MY_PASS.id, block.displayedRegionIndex)
-      }
-    }
-    this.hal.clearScissor()
-    this.hal.endFrame()
+    // writeBpRangeUniforms fills the hp-split genomic→clip transform for you
+    writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
+    this.uniformF32[U.canvasHeight] = state.canvasHeight
+    // ... set the remaining uniform fields by UNIFORM_OFFSET_F32 index
+    this.hal.writeUniforms(this.uniformData)
+    this.hal.drawPass(PASS, block.displayedRegionIndex)
   }
 }
 ```
+
+For a real, complete example of this shape see
+`plugins/gwas/src/LinearManhattanDisplay/GpuManhattanRenderer.ts`.
 
 ## Step 4: Canvas2D renderer (fallback)
 

@@ -170,9 +170,8 @@ Returns an rxjs `Observable`. Emit features with
 
 ## See also
 
-- [Creating custom track types](/docs/developer_guides/creating_track) and
-  [display types](/docs/developer_guides/creating_display) — pair an adapter
-  with a display to draw its features
+- [Custom track and display types](/docs/developer_guides/creating_display) —
+  pair an adapter with a display to draw its features
 - [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter)
 - [Configuration schema](/docs/developer_guides/configuration_schema) — define
   the adapter's config slots

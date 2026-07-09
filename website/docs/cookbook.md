@@ -1,8 +1,8 @@
 ---
 title: Cookbook
 description:
-  Copy-paste recipes for the most common JBrowse 2 configuration tasks —
-  colors, labels, tooltips, tracks, themes, and more
+  Copy-paste recipes for the most common JBrowse 2 configuration tasks — colors,
+  labels, tooltips, tracks, themes, and more
 ---
 
 A collection of short, copy-paste recipes for the things people configure most
@@ -24,8 +24,9 @@ the terse syntax used by every recipe below. Then jump to the recipe you need:
   [wiggle](#quantitative-wiggle-tracks) · [variants](#variant-tracks) ·
   [inline data](#inline-data-no-files)
 - **The instance** — [assemblies](#assemblies) ·
-  [organizing tracks](#organizing-tracks) · [search](#text-searching-gene-name-search) ·
-  [theme](#theming) · [open to a region](#opening-to-a-specific-view-on-load)
+  [organizing tracks](#organizing-tracks) ·
+  [search](#text-searching-gene-name-search) · [theme](#theming) ·
+  [open to a region](#opening-to-a-specific-view-on-load)
 - **Launching** — [config → URL](#from-config-to-a-url) ·
   [color a track in the link](#setting-a-tracks-color-or-height-in-the-link) ·
   [reuse a view everywhere](#the-same-view-definition-works-everywhere)
@@ -138,10 +139,10 @@ index, or an index whose name doesn't follow `file + .bai/.crai/.tbi`:
 }
 ```
 
-A location is really a `{ "uri": "..." }` object. `"locationType":
-"UriLocation"` is optional for URLs and only needed for local desktop paths.
-See [supported file types](/docs/config_guides/file_types) for the `uri`
-shorthand of every format.
+A location is really a `{ "uri": "..." }` object.
+`"locationType": "UriLocation"` is optional for URLs and only needed for local
+desktop paths. See [supported file types](/docs/config_guides/file_types) for
+the `uri` shorthand of every format.
 
 ### `displayDefaults` shorthand
 
@@ -161,7 +162,7 @@ expands to:
   {
     "type": "LinearBasicDisplay",
     "displayId": "<trackId>-LinearBasicDisplay",
-    "renderer": { "type": "...", "color": "green" },
+    "color": "green",
     "height": 200
   }
 ]
@@ -173,9 +174,10 @@ its circular one, both in the same object. A setting nothing uses is ignored
 with a console warning, so typos surface.
 
 Reach for the **full `displays` array** only when you need precise control:
-two displays with different values, choosing the default display, or a fixed
-`displayId`. The [tooltip recipe](#tooltips-mouseover) below is one such case,
-because `mouseover` sits on the renderer, not in `displayDefaults`.
+selecting a non-default display type (like the
+[arc display](#draw-features-as-arcs-with-a-jexl-computed-height) below), two
+displays with different values, or a fixed `displayId`. Everything else —
+including `mouseover` and `jexlFilters` — routes through `displayDefaults`.
 
 ### `jexl:` callbacks
 
@@ -205,7 +207,8 @@ jbrowse text-index      # build search index for gene names
 npx serve -S .          # serve locally
 ```
 
-Everything below is the config those commands generate, which you can also hand-edit.
+Everything below is the config those commands generate, which you can also
+hand-edit.
 
 ## A minimal config.json
 
@@ -304,6 +307,8 @@ See [assemblies](/docs/config_guides/assemblies) for the file-based form.
 "displayDefaults": { "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'" }
 ```
 
+<Figure caption="The volvox genes track with this recipe applied: + strand genes blue, - strand genes red." src="/img/cookbook_color_by_strand.png"/>
+
 ### Color by feature type (lookup table with default)
 
 ```json
@@ -383,29 +388,19 @@ the full plugin file.
 
 ### Custom tooltip template
 
+`mouseover` is a per-feature callback; its returned string shows on hover. Like
+color and labels, it's a display setting, so it goes straight in
+`displayDefaults`:
+
 ```json
-{
-  "type": "FeatureTrack",
-  "trackId": "custom_tooltips",
-  "name": "Custom tooltips",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displays": [
-    {
-      "type": "LinearBasicDisplay",
-      "displayId": "custom_tooltips-LinearBasicDisplay",
-      "renderer": {
-        "type": "CanvasFeatureRenderer",
-        "mouseover": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`",
-        "subfeatureMouseover": "jexl:feature.name+' — parent: '+feature.parent.name"
-      }
-    }
-  ]
+"displayDefaults": {
+  "mouseover": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
 }
 ```
 
-Tooltips render the returned string as HTML, so you can include `<b>`, `<br/>`,
-and links.
+Reach subfeature attributes through `feature.parent` (e.g.
+`feature.parent.name`). Tooltips render the returned string as HTML, so you can
+include `<b>`, `<br/>`, and links.
 
 ---
 
@@ -435,17 +430,17 @@ Each is the same track with a different adapter:
 
 ### Draw features as arcs, with a jexl-computed height
 
-Useful for interactions, breakpoints, or paired features:
+Useful for interactions, breakpoints, or paired features. The arc display isn't
+a `FeatureTrack`'s default, so select it with a `displays` array. Its appearance
+slots (`color`, `arcHeight`, `thickness`, `label`) sit directly on the display
+and each accepts a `jexl:` expression:
 
 ```json
 "displays": [
   {
     "type": "LinearArcDisplay",
     "displayId": "arcs-LinearArcDisplay",
-    "renderer": {
-      "type": "ArcRenderer",
-      "height": "jexl:log10(feature.end-feature.start)*20"
-    }
+    "arcHeight": "jexl:log10(feature.end-feature.start)*20"
   }
 ]
 ```
@@ -456,6 +451,8 @@ Useful for interactions, breakpoints, or paired features:
 
 ### Color reads by mapping quality (or other schemes) and set a taller height
 
+`colorBy` and `height` are display settings, so they go in `displayDefaults`:
+
 ```json
 {
   "type": "AlignmentsTrack",
@@ -463,14 +460,7 @@ Useful for interactions, breakpoints, or paired features:
   "name": "My alignments",
   "assemblyNames": ["volvox"],
   "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
-  "displays": [
-    {
-      "type": "LinearPileupDisplay",
-      "displayId": "my_bam-LinearPileupDisplay",
-      "height": 400,
-      "colorBy": { "type": "mappingQuality" }
-    }
-  ]
+  "displayDefaults": { "height": 400, "colorBy": { "type": "mappingQuality" } }
 }
 ```
 
@@ -518,16 +508,33 @@ Other `colorBy` types include `strand`, `pairOrientation`, `insertSize`, and
   "adapter": {
     "type": "MultiWiggleAdapter",
     "subadapters": [
-      { "type": "BigWigAdapter", "name": "Grain1", "uri": "v1.cram.bw", "color": "#f00" },
-      { "type": "BigWigAdapter", "name": "Grain2", "uri": "v2.cram.bw", "color": "#f60" },
-      { "type": "BigWigAdapter", "name": "Grain3", "uri": "v3.cram.bw", "color": "#fa0" }
+      {
+        "type": "BigWigAdapter",
+        "name": "Grain1",
+        "uri": "v1.cram.bw",
+        "color": "#f00"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "Grain2",
+        "uri": "v2.cram.bw",
+        "color": "#f60"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "Grain3",
+        "uri": "v3.cram.bw",
+        "color": "#fa0"
+      }
     ]
   },
   "displayDefaults": { "defaultRendering": "multiline" }
 }
 ```
 
-`defaultRendering` also accepts `xyplot`, `density`, and `multirowxy`.
+`defaultRendering` also accepts `multirowxy` (the default — one stacked row per
+signal), `multirowdensity`, and `multixyplot` (all signals overlaid in one
+plot).
 
 ---
 
@@ -535,21 +542,26 @@ Other `colorBy` types include `strand`, `pairOrientation`, `insertSize`, and
 
 ### Filter which variants are shown
 
-Apply `jexl` filters so only matching features render:
+Apply `jexl` filters so only matching features render. Note `jexlFilters`
+entries omit the `jexl:` prefix (they use a deferred-evaluation convention),
+while `color` keeps it:
 
 ```json
-"displays": [
-  {
-    "type": "LinearVariantDisplay",
-    "displayId": "vcf-LinearVariantDisplay",
-    "jexlFilters": ["feature.start<8000"],
-    "color": "jexl:feature.start>5000?'darkgreen':'red'"
-  }
-]
+"displayDefaults": {
+  "jexlFilters": ["feature.start<8000"],
+  "color": "jexl:feature.start>5000?'darkgreen':'red'"
+}
 ```
 
-Multi-sample VCFs automatically get a genotype matrix display; no extra config
-is needed. See [variant tracks](/docs/config_guides/variant_track).
+Multi-sample VCFs open in the standard variant display; to see genotypes as a
+grid, switch to the genotype-matrix display from the track menu, or select it in
+the config:
+
+```json
+"displays": [{ "type": "LinearMultiSampleVariantMatrixDisplay" }]
+```
+
+See [variant tracks](/docs/config_guides/variant_track).
 
 ---
 
@@ -567,8 +579,22 @@ handy for demos, tests, or annotations you maintain by hand:
   "adapter": {
     "type": "FromConfigAdapter",
     "features": [
-      { "uniqueId": "f1", "refName": "ctgA", "start": 190, "end": 400, "name": "SE_001", "type": "gene" },
-      { "uniqueId": "f2", "refName": "ctgA", "start": 191, "end": 300, "name": "SE_002", "type": "gene" }
+      {
+        "uniqueId": "f1",
+        "refName": "ctgA",
+        "start": 190,
+        "end": 400,
+        "name": "SE_001",
+        "type": "gene"
+      },
+      {
+        "uniqueId": "f2",
+        "refName": "ctgA",
+        "start": 191,
+        "end": 300,
+        "name": "SE_002",
+        "type": "gene"
+      }
     ]
   }
 }
@@ -717,13 +743,13 @@ that isn't already in the config.
 One thing to know: a link like the one above starts a **fresh** view and ignores
 any `defaultSession` you configured. If you've carefully curated a default
 session and just want to jump to a different region within it, add
-`&extendSession=true` — then JBrowse keeps your session's tracks and settings and
-only changes the location (and you can drop `&assembly=`, since it comes from the
-session).
+`&extendSession=true` — then JBrowse keeps your session's tracks and settings
+and only changes the location (and you can drop `&assembly=`, since it comes
+from the session).
 
 ### Setting a track's color (or height) in the link
 
-Everything above turns tracks *on*. You can also control how a track *looks*
+Everything above turns tracks _on_. You can also control how a track _looks_
 right from the link — the same appearance settings you'd normally put in
 `displayDefaults` in the config. Instead of listing a track as a plain
 `"genes"`, list it as an object and add a `displaySnapshot`:
@@ -733,8 +759,8 @@ right from the link — the same appearance settings you'd normally put in
 ```
 
 This opens the genes track colored green without changing the config. Anything
-you'd write in `displayDefaults` (color, height, display type, score range) works
-here too.
+you'd write in `displayDefaults` (color, height, display type, score range)
+works here too.
 
 ### Adding a whole track that isn't in the config
 
@@ -755,8 +781,8 @@ and the shareable encoded links the "Share" button produces — see the
 ### The same view definition works everywhere
 
 Once you've described a view — an assembly, a location, some tracks, maybe a few
-display settings — you've written something you can reuse in three places without
-rewriting it:
+display settings — you've written something you can reuse in three places
+without rewriting it:
 
 - in the config, as `defaultSession.views[].init`, so it loads for everyone;
 - in a URL, as a session spec, so you can hand it to one person; and

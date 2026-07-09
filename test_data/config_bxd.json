@@ -1,0 +1,164 @@
+{
+  "assemblies": [
+    {
+      "name": "mm10",
+      "aliases": ["GRCm38"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "mm10-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/mm10/fasta/mm10.fa.gz"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/mm10/bigZips/latest/mm10.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/mm10/cytoBandIdeo.bed.gz"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "mm10_ncbi_refseq",
+      "name": "NCBI RefSeq genes (mm10)",
+      "assemblyNames": ["mm10"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "GtfTabixAdapter",
+        "gtfGzLocation": {
+          "uri": "https://jbrowse.org/demos/bxd/mm10.ncbiRefSeq.sorted.gtf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/bxd/mm10.ncbiRefSeq.sorted.gtf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "bxd_chromosome_painting_mm10",
+      "name": "BXD chromosome painting (GeneNetwork, 198 strains)",
+      "assemblyNames": ["mm10"],
+      "category": ["GeneNetwork / BXD"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample",
+          "genotype"
+        ],
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/bxd/bxd_painting.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/bxd/bxd_painting.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "bxd_chromosome_painting_mm10-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+          "showTree": true,
+          "height": 700
+        }
+      ]
+    },
+    {
+      "type": "GWASTrack",
+      "trackId": "bxd_gwas_coatcolor_mm10",
+      "name": "BXD QTL: coat color (peak at Tyrp1, chr4)",
+      "assemblyNames": ["mm10"],
+      "category": ["GeneNetwork / BXD"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "scoreTransform": "none",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_coatcolor.tsv.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_coatcolor.tsv.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearManhattanDisplay",
+          "displayId": "bxd_gwas_coatcolor_mm10-LinearManhattanDisplay"
+        }
+      ]
+    },
+    {
+      "type": "GWASTrack",
+      "trackId": "bxd_gwas_brainweight_mm10",
+      "name": "BXD QTL: brain weight (chr19)",
+      "assemblyNames": ["mm10"],
+      "category": ["GeneNetwork / BXD"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "scoreTransform": "none",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_brainweight.tsv.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/bxd/bxd_gwas_brainweight.tsv.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearManhattanDisplay",
+          "displayId": "bxd_gwas_brainweight_mm10-LinearManhattanDisplay"
+        }
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "BXD systems genetics (GeneNetwork)",
+    "views": [
+      {
+        "id": "bxd_lgv",
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "mm10",
+          "loc": "chr4",
+          "tracks": ["bxd_gwas_coatcolor_mm10", "bxd_chromosome_painting_mm10"]
+        }
+      }
+    ]
+  }
+}

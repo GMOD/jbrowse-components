@@ -112,9 +112,7 @@ Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the
 display chrome via `TooLargeMessage`, not the model.
 
 ```ts
-type regionCannotBeRenderedText = (
-  _region?: Region | undefined,
-) => '' | 'Force load to see features'
+type regionCannotBeRenderedText = () => '' | 'Force load to see features'
 ```
 
 </details>

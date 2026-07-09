@@ -131,11 +131,12 @@ export const gallerySpecs: ScreenshotSpec[] = [
               trackId: 'PAY22766-nanopore',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
-                // fiber-seq is a 6mA (code 'a') assay — hide the incidental 5mC
-                // ('m') / 5hmC ('h') calls so the legend shows only 6mA
+                // fiber-seq is a 6mA (code 'a') assay — allow-list only 6mA so
+                // the incidental 5mC/5hmC calls the caller also emits are never
+                // drawn and the legend shows only 6mA
                 colorBy: {
                   type: 'modifications',
-                  modifications: { hiddenModifications: ['m', 'h'] },
+                  modifications: { shownModifications: ['a'] },
                 },
                 displayMode: 'compact',
                 showLegend: true,

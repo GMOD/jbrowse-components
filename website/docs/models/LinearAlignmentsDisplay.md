@@ -90,6 +90,7 @@ State model factory for LinearAlignmentsDisplay
 | [contextMenuCoord](#volatile-contextmenucoord)                                 | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [contextMenuCigarHit](#volatile-contextmenucigarhit)                           | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [contextMenuIndicatorHit](#volatile-contextmenuindicatorhit)                   | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [contextMenuGenomicPos](#volatile-contextmenugenomicpos)                       | Volatiles  | Genomic column under a right-click, anchoring the read menu's "sort at the clicked position" items. Set with the block/hits as a unit.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [contextMenuBlock](#volatile-contextmenublock)                                 | Volatiles  | The block under a right-click (refName + block-level worker result + bp range). The position sort reads its refName and the indicator/coverage detail items read its rpcData to open the aggregate widget (mirrors the left-click path in useAlignmentsBase).                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | [rpcDataMap](#volatile-rpcdatamap)                                             | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [scrollTop](#volatile-scrolltop)                                               | Volatiles  | pileup vertical scroll offset in px. Also read by the BreakpointSplitView overlay to position its SVG curves.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -134,8 +135,9 @@ State model factory for LinearAlignmentsDisplay
 | [softClippingSessionDefault](#getter-softclippingsessiondefault)               | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [isChainMode](#getter-ischainmode)                                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [showLinkedReadLines](#getter-showlinkedreadlines)                             | Getters    | Whether to draw the straight-line pass connecting normal read-pairs in pileup layout. Only meaningful when bezier connections are on AND we are in pileup mode — chain layout has its own connecting-line pass that already covers normal pairs.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| [fitHeightToDisplay](#getter-fitheighttodisplay)                               | Getters    | "Fit to display height" mode: reads pack to fill the display without scrolling. Derived from the promotable `heightMode` sentinel slot so it flows through the session-default cascade (track value, else session-wide default, else `fixed`) — same machinery as the numeric height slots. The `featureHeight`/`height` slots are never written, so they stay pure user intent.                                                                                                                                                                                                                                                                                                    |
-| [autoHeight](#getter-autoheight)                                               | Getters    | "Grow" mode: the track resizes to fit every read at the configured height (no scrolling), rather than scrolling (`fixed`) or shrinking reads to fit (`fit`). Derived from the same promotable `heightMode` sentinel slot. Shared vocabulary + getter name with the canvas display.                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [fitHeightToDisplay](#getter-fitheighttodisplay)                               | Getters    | "Fit to display height" mode: reads pack to fill the display without scrolling. Derived from the resolved `heightMode` getter (the single source of truth), so it flows through the same session-default cascade — track value, else session-wide default, else `fixed`. The `featureHeight`/`height` slots are never written, so they stay pure user intent. Mirrors the canvas display's getter.                                                                                                                                                                                                                                                                                  |
+| [autoHeight](#getter-autoheight)                                               | Getters    | "Grow" mode: the track resizes to fit every read at the configured height (no scrolling), rather than scrolling (`fixed`) or shrinking reads to fit (`fit`). Derived from the same resolved `heightMode` getter. Shared vocabulary + getter name with the canvas display.                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [heightMode](#getter-heightmode)                                               | Getters    | The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel slot: getConfResolved walks the pinned-track -> session-default -> `fixed` cascade and always returns a concrete mode, never `inherit`. The single source of truth `fitHeightToDisplay`/`autoHeight` derive from — like the canvas display's getter of the same name — so the "Track height" radio group can drive one exclusive choice off a single value.                                                                                                                                                                                                                                          |
 | [scaleType](#getter-scaletype)                                                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [autoscaleType](#getter-autoscaletype)                                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [minScore](#getter-minscore)                                                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -202,6 +204,7 @@ State model factory for LinearAlignmentsDisplay
 | [scalebarOverlapLeft](#getter-scalebaroverlapleft)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [showOutline](#getter-showoutline)                                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [visibleLabels](#getter-visiblelabels)                                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [highlightChainIds](#getter-highlightchainids)                                 | Getters    | Chain member ids to highlight, empty unless in `normal` linked-read mode. Single source for the "is this a chain highlight" decision that both `highlightBoxes` (which ids to box) and `HighlightOverlay` (how strongly to shade them) read, so the two can't drift.                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [highlightBoxes](#getter-highlightboxes)                                       | Getters    | Screen boxes for the hovered read / chain, painted by the `HighlightOverlay` div. Deliberately NOT part of `renderState`: the hovered id changes on nearly every mousemove, and routing it through the canvas would repaint the whole pileup each move.                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [fittedFeatureHeight](#getter-fittedfeatureheight)                             | Getters    | The read height that makes every uncollapsed group's reads fill the display without scrolling. Row count is fixed by read overlaps, so we lay the groups out uncapped (a fixed maxHeight-row cap, independent of the current featureHeight — so the fit autorun that writes featureHeight can't feed back into this) and divide the pileup space by it. Fractional (not floored): the pileup then fills the display exactly rather than leaving up to a row of slack at the bottom. Clamped up to a 1px floor — below 1px the reads can't all fit, so the stack scrolls instead. 0 when there's nothing to fit (no data / no room), signalling "leave the configured height as-is". |
 | [scrollableHeight](#getter-scrollableheight)                                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -237,7 +240,7 @@ State model factory for LinearAlignmentsDisplay
 | [setColorByDefault](#action-setcolorbydefault)                                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [updateColorTagMap](#action-updatecolortagmap)                                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setFilterBy](#action-setfilterby)                                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [toggleSoftClipping](#action-togglesoftclipping)                               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setShowSoftClipping](#action-setshowsoftclipping)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setMismatchAlpha](#action-setmismatchalpha)                                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setSortedBy](#action-setsortedby)                                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [setSortedByAtPosition](#action-setsortedbyatposition)                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -469,6 +472,18 @@ configuration: ConfigurationReference(configSchema)
 <details>
 <summary>LinearAlignmentsDisplay - Volatiles</summary>
 
+#### volatile: contextMenuGenomicPos
+
+Genomic column under a right-click, anchoring the read menu's "sort at the
+clicked position" items. Set with the block/hits as a unit.
+
+```ts
+// type signature
+type contextMenuGenomicPos = number | undefined
+// code
+contextMenuGenomicPos: undefined as number | undefined
+```
+
 #### volatile: contextMenuBlock
 
 The block under a right-click (refName + block-level worker result + bp range).
@@ -697,10 +712,10 @@ type showLinkedReadLines = boolean
 #### getter: fitHeightToDisplay
 
 "Fit to display height" mode: reads pack to fill the display without scrolling.
-Derived from the promotable `heightMode` sentinel slot so it flows through the
-session-default cascade (track value, else session-wide default, else `fixed`) —
-same machinery as the numeric height slots. The `featureHeight`/`height` slots
-are never written, so they stay pure user intent.
+Derived from the resolved `heightMode` getter (the single source of truth), so
+it flows through the same session-default cascade — track value, else
+session-wide default, else `fixed`. The `featureHeight`/`height` slots are never
+written, so they stay pure user intent. Mirrors the canvas display's getter.
 
 ```ts
 type fitHeightToDisplay = boolean
@@ -710,11 +725,24 @@ type fitHeightToDisplay = boolean
 
 "Grow" mode: the track resizes to fit every read at the configured height (no
 scrolling), rather than scrolling (`fixed`) or shrinking reads to fit (`fit`).
-Derived from the same promotable `heightMode` sentinel slot. Shared vocabulary +
-getter name with the canvas display.
+Derived from the same resolved `heightMode` getter. Shared vocabulary + getter
+name with the canvas display.
 
 ```ts
 type autoHeight = boolean
+```
+
+#### getter: heightMode
+
+The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel
+slot: getConfResolved walks the pinned-track -> session-default -> `fixed`
+cascade and always returns a concrete mode, never `inherit`. The single source
+of truth `fitHeightToDisplay`/`autoHeight` derive from — like the canvas
+display's getter of the same name — so the "Track height" radio group can drive
+one exclusive choice off a single value.
+
+```ts
+type heightMode = HeightMode
 ```
 
 #### getter: isFitting
@@ -1061,6 +1089,17 @@ MIN_DISPLAY_HEIGHT.
 
 ```ts
 type grownHeight = number
+```
+
+#### getter: highlightChainIds
+
+Chain member ids to highlight, empty unless in `normal` linked-read mode. Single
+source for the "is this a chain highlight" decision that both `highlightBoxes`
+(which ids to box) and `HighlightOverlay` (how strongly to shade them) read, so
+the two can't drift.
+
+```ts
+type highlightChainIds = string[]
 ```
 
 #### getter: highlightBoxes
@@ -1623,7 +1662,7 @@ type chainIdsForRead = (rpcData: PileupDataResult, index: number) => string[]
 Track menu items
 
 ```ts
-type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; } | { ...; })[]
+type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 </details>
@@ -1810,6 +1849,7 @@ a repositioned menu can't inherit the prior read's items.
 type openContextMenu = (args: {
   coord: [number, number]
   block?: ResolvedBlock | undefined
+  genomicPos?: number | undefined
   cigarHit?: CigarHitResult | undefined
   indicatorHit?: IndicatorHitResult | undefined
   featureId?: string | undefined
@@ -1924,10 +1964,10 @@ type updateColorTagMap = (uniqueTag: string[]) => void
 type setFilterBy = (filterBy: FilterBy) => void
 ```
 
-#### action: toggleSoftClipping
+#### action: setShowSoftClipping
 
 ```ts
-type toggleSoftClipping = () => void
+type setShowSoftClipping = (value: boolean) => void
 ```
 
 #### action: setMismatchAlpha
@@ -1945,11 +1985,12 @@ type setSortedBy = (type: string, tag?: string | undefined) => void
 #### action: setSortedByAtPosition
 
 ```ts
-type setSortedByAtPosition = (
-  type: string,
-  pos: number,
-  refName: string,
-) => void
+type setSortedByAtPosition = (arg: {
+  type: string
+  pos: number
+  refName: string
+  tag?: string | undefined
+}) => void
 ```
 
 #### action: clearSortedBy

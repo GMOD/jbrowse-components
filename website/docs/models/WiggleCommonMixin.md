@@ -23,7 +23,6 @@ instead.
 | [rpcDataMap](#volatile-rpcdatamap)                           | Volatiles |                                                                                                                                                                                                                                                                                                                    |
 | [autoscaleSourceNames](#getter-autoscalesourcenames)         | Getters   | Source names to include when computing the autoscale domain; `undefined` means every fetched source. Multi-wiggle always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. |
 | [visibleScoreRange](#getter-visiblescorerange)               | Getters   |                                                                                                                                                                                                                                                                                                                    |
-| [hasNoData](#getter-hasnodata)                               | Getters   | True once a fetch has completed (loadedBpPerPx set) but every loaded region came back with zero features — lets the display show a "no data" message instead of an ambiguous flat baseline at score 0.                                                                                                             |
 | [domain](#getter-domain)                                     | Getters   |                                                                                                                                                                                                                                                                                                                    |
 | [clearDisplaySpecificData](#action-cleardisplayspecificdata) | Actions   |                                                                                                                                                                                                                                                                                                                    |
 
@@ -95,16 +94,6 @@ filter that hides sources would leave the Y-axis scaled to the hidden ones.
 
 ```ts
 type autoscaleSourceNames = Set<string> | undefined
-```
-
-#### getter: hasNoData
-
-True once a fetch has completed (loadedBpPerPx set) but every loaded region came
-back with zero features — lets the display show a "no data" message instead of
-an ambiguous flat baseline at score 0.
-
-```ts
-type hasNoData = boolean
 ```
 
 </details>
