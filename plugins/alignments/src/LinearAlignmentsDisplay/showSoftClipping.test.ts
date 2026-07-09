@@ -515,6 +515,48 @@ describe('alignments fit-to-display-height session default', () => {
   })
 })
 
+// mismatchAlpha fades mismatch bases by their per-base Phred quality. It rides
+// the config-slot round-trip and reaches the renderers via renderState (tier-4
+// rerender), so toggling it must flip both the getter and the render state.
+describe('alignments mismatchAlpha (fade by base quality)', () => {
+  it('is off by default', () => {
+    const { display } = createDisplay()
+    expect(display.mismatchAlpha).toBe(false)
+  })
+
+  it('toggleMismatchAlpha flips the config slot', () => {
+    const { display } = createDisplay()
+    display.toggleMismatchAlpha()
+    expect(display.mismatchAlpha).toBe(true)
+    display.toggleMismatchAlpha()
+    expect(display.mismatchAlpha).toBe(false)
+  })
+
+  it('follows a config default', () => {
+    const { display } = createDisplay({ mismatchAlpha: true })
+    expect(display.mismatchAlpha).toBe(true)
+  })
+
+  it('the Show menu exposes the fade-by-quality toggle', () => {
+    interface MenuNode {
+      label?: string
+      onClick?: () => void
+      subMenu?: MenuNode[]
+    }
+    const byLabel = (items: MenuNode[] | undefined, label: string) =>
+      items?.find(i => i.label === label)
+
+    const { display } = createDisplay()
+    const items = display.trackMenuItems() as MenuNode[]
+    const show = byLabel(items, 'Show...')
+    const advanced = byLabel(show?.subMenu, 'Advanced')
+    const item = byLabel(advanced?.subMenu, 'Fade mismatches by base quality')
+    expect(item?.onClick).toBeDefined()
+    item?.onClick?.()
+    expect(display.mismatchAlpha).toBe(true)
+  })
+})
+
 // `grow` is the third value of the shared `heightMode` vocabulary (with the
 // canvas display): the track resizes to fit all reads rather than scrolling
 // (fixed) or shrinking reads (fit). autoHeight/fitHeightToDisplay are mutually

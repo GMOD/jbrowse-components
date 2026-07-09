@@ -110,6 +110,7 @@ function makePileupData(opts: {
     mismatchStrands: new Int8Array(numMismatches),
     mismatchReadIndices,
     mismatchFrequencies: new Uint8Array(numMismatches),
+    mismatchQuals: new Uint8Array(numMismatches),
     softclipBasePositions: new Uint32Array(0),
     softclipBaseYs: new Uint16Array(0),
     softclipBaseBases: new Uint8Array(0),

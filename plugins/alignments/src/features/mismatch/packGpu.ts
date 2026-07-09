@@ -22,12 +22,14 @@ export function packMismatches(data: MismatchUploadData): ArrayBuffer {
   const ys = data.mismatchYs
   const bases = data.mismatchBases
   const freq = data.mismatchFrequencies
+  const quals = data.mismatchQuals
   for (let i = 0; i < n; i++) {
     const o = i * s32
     u32[o + F.position] = pos[i]!
     u32[o + F.y] = ys[i]!
     u32[o + F.base] = bases[i]!
     f32[o + F.frequency] = freq[i]! / 255
+    f32[o + F.qual] = quals[i]!
   }
   return buf
 }

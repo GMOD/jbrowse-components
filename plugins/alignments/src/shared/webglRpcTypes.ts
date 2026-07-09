@@ -31,6 +31,7 @@ export interface MismatchData {
   position: number
   base: number
   strand: number // -1=reverse, 1=forward
+  qual: number // per-base Phred quality; 0 when the read has no QUAL ('*')
 }
 
 export interface InsertionData {

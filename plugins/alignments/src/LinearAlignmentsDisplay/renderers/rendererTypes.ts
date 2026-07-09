@@ -32,6 +32,8 @@ export interface RenderState {
   coverageIsLog: boolean
   showMismatches: boolean
   filterMismatchesByFrequency: boolean
+  // Fade mismatch bases by their per-base Phred quality (advanced setting).
+  mismatchAlpha: boolean
   showSoftClipping: boolean
   showInterbaseIndicators: boolean
   showModifications: boolean

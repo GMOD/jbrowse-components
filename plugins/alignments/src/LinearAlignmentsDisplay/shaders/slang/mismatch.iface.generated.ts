@@ -41,56 +41,57 @@ export const UNIFORM_OFFSET_F32 = {
   flipStrandLongRead: 29,
   coverageScaleType: 30,
   filterMismatchesByFrequency: 31,
-  reversed: 32,
-  colorFwd: 33,
-  colorRev: 34,
-  colorNostrand: 35,
-  colorPairLR: 36,
-  colorPairRL: 37,
-  colorPairRR: 38,
-  colorPairLL: 39,
-  colorBaseA: 40,
-  colorBaseC: 41,
-  colorBaseG: 42,
-  colorBaseT: 43,
-  colorBaseN: 44,
-  colorInsertion: 45,
-  colorDeletion: 46,
-  colorSkip: 47,
-  colorSoftclip: 48,
-  colorHardclip: 49,
-  colorInsertionIndicator: 50,
-  colorSoftclipIndicator: 51,
-  colorHardclipIndicator: 52,
-  colorCoverage: 53,
-  colorModFwd: 54,
-  colorModRev: 55,
-  colorLongInsert: 56,
-  colorShortInsert: 57,
-  colorSupplementary: 58,
-  colorUnmappedMate: 59,
-  colorInterchrom: 60,
-  colorMutedSnpBase: 61,
-  arcColor0: 62,
-  arcColor1: 63,
-  arcColor2: 64,
-  arcColor3: 65,
-  arcColor4: 66,
-  arcColor5: 67,
-  arcColor6: 68,
-  arcColor7: 69,
-  linkedReadColor0: 70,
-  linkedReadColor1: 71,
-  linkedReadColor2: 72,
-  linkedReadColor3: 73,
-  linkedReadColor4: 74,
-  linkedReadColor5: 75,
-  linkedReadColor6: 76,
-  linkedReadColor7: 77,
-  pxPerBp: 78,
-  colorSuppChains: 79,
-  colorSplitInversion: 80,
-  arcColor8: 81,
+  mismatchAlpha: 32,
+  reversed: 33,
+  colorFwd: 34,
+  colorRev: 35,
+  colorNostrand: 36,
+  colorPairLR: 37,
+  colorPairRL: 38,
+  colorPairRR: 39,
+  colorPairLL: 40,
+  colorBaseA: 41,
+  colorBaseC: 42,
+  colorBaseG: 43,
+  colorBaseT: 44,
+  colorBaseN: 45,
+  colorInsertion: 46,
+  colorDeletion: 47,
+  colorSkip: 48,
+  colorSoftclip: 49,
+  colorHardclip: 50,
+  colorInsertionIndicator: 51,
+  colorSoftclipIndicator: 52,
+  colorHardclipIndicator: 53,
+  colorCoverage: 54,
+  colorModFwd: 55,
+  colorModRev: 56,
+  colorLongInsert: 57,
+  colorShortInsert: 58,
+  colorSupplementary: 59,
+  colorUnmappedMate: 60,
+  colorInterchrom: 61,
+  colorMutedSnpBase: 62,
+  arcColor0: 63,
+  arcColor1: 64,
+  arcColor2: 65,
+  arcColor3: 66,
+  arcColor4: 67,
+  arcColor5: 68,
+  arcColor6: 69,
+  arcColor7: 70,
+  linkedReadColor0: 71,
+  linkedReadColor1: 72,
+  linkedReadColor2: 73,
+  linkedReadColor3: 74,
+  linkedReadColor4: 75,
+  linkedReadColor5: 76,
+  linkedReadColor6: 77,
+  linkedReadColor7: 78,
+  pxPerBp: 79,
+  colorSuppChains: 80,
+  colorSplitInversion: 81,
+  arcColor8: 82,
 } as const
 
 
@@ -98,8 +99,8 @@ export const UNIFORM_OFFSET_F32 = {
 // fields, indexed into the 4-byte-word uniform buffer (works with
 // either Uint32Array or Float32Array views — the field kind picks).
 export const UNIFORM_SLOT_ARRAYS = {
-  arcColor: [62, 63, 64, 65, 66, 67, 68, 69, 81] as const,
-  linkedReadColor: [70, 71, 72, 73, 74, 75, 76, 77] as const,
+  arcColor: [63, 64, 65, 66, 67, 68, 69, 70, 82] as const,
+  linkedReadColor: [71, 72, 73, 74, 75, 76, 77, 78] as const,
 } as const
 
 export interface Uniforms {
@@ -135,6 +136,7 @@ export interface Uniforms {
   flipStrandLongRead: number
   coverageScaleType: number
   filterMismatchesByFrequency: number
+  mismatchAlpha: number
   reversed: number
   colorFwd: number
   colorRev: number
@@ -223,66 +225,68 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   i32[29] = uniforms.flipStrandLongRead
   i32[30] = uniforms.coverageScaleType
   i32[31] = uniforms.filterMismatchesByFrequency
-  f32[32] = uniforms.reversed
-  u32[33] = uniforms.colorFwd
-  u32[34] = uniforms.colorRev
-  u32[35] = uniforms.colorNostrand
-  u32[36] = uniforms.colorPairLR
-  u32[37] = uniforms.colorPairRL
-  u32[38] = uniforms.colorPairRR
-  u32[39] = uniforms.colorPairLL
-  u32[40] = uniforms.colorBaseA
-  u32[41] = uniforms.colorBaseC
-  u32[42] = uniforms.colorBaseG
-  u32[43] = uniforms.colorBaseT
-  u32[44] = uniforms.colorBaseN
-  u32[45] = uniforms.colorInsertion
-  u32[46] = uniforms.colorDeletion
-  u32[47] = uniforms.colorSkip
-  u32[48] = uniforms.colorSoftclip
-  u32[49] = uniforms.colorHardclip
-  u32[50] = uniforms.colorInsertionIndicator
-  u32[51] = uniforms.colorSoftclipIndicator
-  u32[52] = uniforms.colorHardclipIndicator
-  u32[53] = uniforms.colorCoverage
-  u32[54] = uniforms.colorModFwd
-  u32[55] = uniforms.colorModRev
-  u32[56] = uniforms.colorLongInsert
-  u32[57] = uniforms.colorShortInsert
-  u32[58] = uniforms.colorSupplementary
-  u32[59] = uniforms.colorUnmappedMate
-  u32[60] = uniforms.colorInterchrom
-  u32[61] = uniforms.colorMutedSnpBase
-  u32[62] = uniforms.arcColor0
-  u32[63] = uniforms.arcColor1
-  u32[64] = uniforms.arcColor2
-  u32[65] = uniforms.arcColor3
-  u32[66] = uniforms.arcColor4
-  u32[67] = uniforms.arcColor5
-  u32[68] = uniforms.arcColor6
-  u32[69] = uniforms.arcColor7
-  u32[70] = uniforms.linkedReadColor0
-  u32[71] = uniforms.linkedReadColor1
-  u32[72] = uniforms.linkedReadColor2
-  u32[73] = uniforms.linkedReadColor3
-  u32[74] = uniforms.linkedReadColor4
-  u32[75] = uniforms.linkedReadColor5
-  u32[76] = uniforms.linkedReadColor6
-  u32[77] = uniforms.linkedReadColor7
-  f32[78] = uniforms.pxPerBp
-  i32[79] = uniforms.colorSuppChains
-  u32[80] = uniforms.colorSplitInversion
-  u32[81] = uniforms.arcColor8
+  i32[32] = uniforms.mismatchAlpha
+  f32[33] = uniforms.reversed
+  u32[34] = uniforms.colorFwd
+  u32[35] = uniforms.colorRev
+  u32[36] = uniforms.colorNostrand
+  u32[37] = uniforms.colorPairLR
+  u32[38] = uniforms.colorPairRL
+  u32[39] = uniforms.colorPairRR
+  u32[40] = uniforms.colorPairLL
+  u32[41] = uniforms.colorBaseA
+  u32[42] = uniforms.colorBaseC
+  u32[43] = uniforms.colorBaseG
+  u32[44] = uniforms.colorBaseT
+  u32[45] = uniforms.colorBaseN
+  u32[46] = uniforms.colorInsertion
+  u32[47] = uniforms.colorDeletion
+  u32[48] = uniforms.colorSkip
+  u32[49] = uniforms.colorSoftclip
+  u32[50] = uniforms.colorHardclip
+  u32[51] = uniforms.colorInsertionIndicator
+  u32[52] = uniforms.colorSoftclipIndicator
+  u32[53] = uniforms.colorHardclipIndicator
+  u32[54] = uniforms.colorCoverage
+  u32[55] = uniforms.colorModFwd
+  u32[56] = uniforms.colorModRev
+  u32[57] = uniforms.colorLongInsert
+  u32[58] = uniforms.colorShortInsert
+  u32[59] = uniforms.colorSupplementary
+  u32[60] = uniforms.colorUnmappedMate
+  u32[61] = uniforms.colorInterchrom
+  u32[62] = uniforms.colorMutedSnpBase
+  u32[63] = uniforms.arcColor0
+  u32[64] = uniforms.arcColor1
+  u32[65] = uniforms.arcColor2
+  u32[66] = uniforms.arcColor3
+  u32[67] = uniforms.arcColor4
+  u32[68] = uniforms.arcColor5
+  u32[69] = uniforms.arcColor6
+  u32[70] = uniforms.arcColor7
+  u32[71] = uniforms.linkedReadColor0
+  u32[72] = uniforms.linkedReadColor1
+  u32[73] = uniforms.linkedReadColor2
+  u32[74] = uniforms.linkedReadColor3
+  u32[75] = uniforms.linkedReadColor4
+  u32[76] = uniforms.linkedReadColor5
+  u32[77] = uniforms.linkedReadColor6
+  u32[78] = uniforms.linkedReadColor7
+  f32[79] = uniforms.pxPerBp
+  i32[80] = uniforms.colorSuppChains
+  u32[81] = uniforms.colorSplitInversion
+  u32[82] = uniforms.arcColor8
 }
 
-export const INSTANCE_STRIDE_BYTES = 16
-export const INSTANCE_STRIDE_F32 = 4
+export const INSTANCE_STRIDE_BYTES = 20
+export const INSTANCE_STRIDE_F32 = 5
 
 export const FIELD_OFFSET_F32 = {
   position: 0,
   y: 1,
   base: 2,
   frequency: 3,
+  qual: 4,
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
@@ -290,6 +294,7 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_y', components: 1, type: 'uint', offsetBytes: 4, integer: true },
   { name: 'a_base', components: 1, type: 'uint', offsetBytes: 8, integer: true },
   { name: 'a_frequency', components: 1, type: 'float', offsetBytes: 12, integer: false },
+  { name: 'a_qual', components: 1, type: 'float', offsetBytes: 16, integer: false },
 ]
 
 export interface InstanceArrays {
@@ -297,6 +302,7 @@ export interface InstanceArrays {
   y: ArrayLike<number>
   base: ArrayLike<number>
   frequency: ArrayLike<number>
+  qual: ArrayLike<number>
 }
 
 export function packInstances(
@@ -306,13 +312,14 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { position, y, base, frequency } = arrays
+  const { position, y, base, frequency, qual } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_F32
     u32[o + 0] = position[i]!
     u32[o + 1] = y[i]!
     u32[o + 2] = base[i]!
     f32[o + 3] = frequency[i]!
+    f32[o + 4] = qual[i]!
   }
   return buf
 }

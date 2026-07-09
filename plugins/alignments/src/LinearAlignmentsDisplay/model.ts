@@ -850,6 +850,13 @@ export default function stateModelFactory(
         /**
          * #getter
          */
+        get mismatchAlpha(): boolean {
+          return !!getConf(self, 'mismatchAlpha')
+        },
+
+        /**
+         * #getter
+         */
         get showLegend() {
           // Opt-in: the floating color legend is hidden by default for every
           // color scheme (including modifications) and shown only on demand via
@@ -1758,6 +1765,7 @@ export default function stateModelFactory(
             coverageIsLog: self.coverageIsLog,
             showMismatches: self.showMismatches,
             filterMismatchesByFrequency: !self.showLowFreqMismatches,
+            mismatchAlpha: self.mismatchAlpha,
             showSoftClipping: self.showSoftClipping,
             showInterbaseIndicators: self.showInterbaseIndicators,
             showModifications: self.showModifications,
@@ -2062,6 +2070,16 @@ export default function stateModelFactory(
             self.configuration.setSlot(
               'showSoftClipping',
               !self.showSoftClipping,
+            )
+          },
+
+          /**
+           * #action
+           */
+          toggleMismatchAlpha() {
+            self.configuration.setSlot(
+              'mismatchAlpha',
+              !getConf(self, 'mismatchAlpha'),
             )
           },
 

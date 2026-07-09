@@ -15,6 +15,7 @@ struct Instance {
   uint  y         : ATTR1;   // pileup row
   uint  base      : ATTR2;   // ASCII: A=65/97 C=67/99 G=71/103 T=84/116
   float frequency : ATTR3;   // 0..1, fraction of reads with this base
+  float qual      : ATTR4;   // per-base Phred quality; 0 = none (softclip pass leaves it 0)
 };
 
 float3 baseColor(uint b, Uniforms u) {
@@ -42,6 +43,12 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float alpha = 1.0;
   if (u.filterMismatchesByFrequency != 0 && pxPerBp < 1.0) {
     alpha = frequencyAlpha(pxPerBp, inst.frequency);
+  }
+  // Fade by base quality: Phred 50+ stays opaque, lower qualities fade toward
+  // transparent. qual == 0 (no quality, and the softclip-bases pass) is left
+  // untouched. Mirrors the Canvas2D drawMismatches path.
+  if (u.mismatchAlpha != 0 && inst.qual > 0.0) {
+    alpha *= min(1.0, inst.qual / 50.0);
   }
   if (alpha <= 0.0) { return discardVertex(); }
 

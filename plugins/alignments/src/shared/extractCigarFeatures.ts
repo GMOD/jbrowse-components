@@ -68,11 +68,12 @@ export function extractCigarFeatures(
   windowEnd?: number,
 ) {
   feature.forEachMismatch(
-    (type, start, length, base, qual, altbase, cliplen) => {
+    (type, start, length, base, qual, _altbase, cliplen) => {
       if (type === MISMATCH_TYPE) {
         emitMismatch(
           start,
           base,
+          qual,
           readIndex,
           featureStart,
           strand,

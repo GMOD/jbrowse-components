@@ -27,6 +27,8 @@ interface ReadsModel {
   softClippingSessionDefault: SessionDefaultControl
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
+  mismatchAlpha: boolean
+  toggleMismatchAlpha: () => void
   drawProperPairs: boolean
   setDrawProperPairs: (v: boolean) => void
   drawSingletons: boolean
@@ -107,6 +109,20 @@ export function getReadsMenuItem(model: ReadsModel) {
             model.showInterbaseIndicators,
             () => {
               model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
+            },
+          ),
+          checkboxItem(
+            'Fade mismatches by base quality',
+            model.mismatchAlpha,
+            () => {
+              model.toggleMismatchAlpha()
+            },
+            {
+              helpText:
+                'Fades each mismatch base toward transparent by its per-base ' +
+                'Phred quality score (Phred 50+ stays fully opaque), so ' +
+                'low-confidence base calls stand out less. Bases with no ' +
+                'recorded quality stay opaque.',
             },
           ),
           {

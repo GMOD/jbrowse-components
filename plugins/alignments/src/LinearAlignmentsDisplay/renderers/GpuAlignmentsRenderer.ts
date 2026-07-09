@@ -171,6 +171,7 @@ function fillFrameUniforms(
   f[U.depthDomainMax] = domainMax ?? 0
   i[U.coverageScaleType] = state.coverageIsLog ? 1 : 0
   i[U.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
+  i[U.mismatchAlpha] = state.mismatchAlpha ? 1 : 0
   f[U.binSize] = region.binSize
   // Scale clip/insertion bars to half the coverage drawing height (matches
   // origin/main + the Canvas2D path in drawInterbaseSegments). The worker bakes

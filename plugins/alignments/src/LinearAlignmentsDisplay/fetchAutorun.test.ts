@@ -50,6 +50,7 @@ function makeEmptyPileupData(_regionStart: number): PileupDataResult {
     mismatchStrands: new Int8Array(0),
     mismatchReadIndices: new Uint32Array(0),
     mismatchFrequencies: new Uint8Array(0),
+    mismatchQuals: new Uint8Array(0),
     softclipBasePositions: new Uint32Array(0),
     softclipBaseYs: new Uint16Array(0),
     softclipBaseBases: new Uint8Array(0),

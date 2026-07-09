@@ -29,6 +29,7 @@ function makeState(overrides: Partial<RenderState> = {}): RenderState {
     showPerBaseLetter: false,
     showMismatches: true,
     filterMismatchesByFrequency: true,
+    mismatchAlpha: false,
     showSoftClipping: false,
     showInterbaseIndicators: false,
     showModifications: false,

@@ -5,4 +5,5 @@ export interface MismatchUploadData {
   mismatchYs: Uint16Array
   mismatchBases: Uint8Array
   mismatchFrequencies: Uint8Array
+  mismatchQuals: Uint8Array
 }
