@@ -1,5 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
-import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
+import { EmbeddedSessionThemeMixin } from '@jbrowse/embedded-core'
 import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
@@ -12,7 +11,6 @@ import {
 
 import type { ViewModel } from './createModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { SerializableThemeArgs } from '@jbrowse/core/ui'
 import type { AssemblyManager } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
@@ -50,6 +48,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       TracksManagerSessionMixin(pluginManager),
       ReferenceManagementSessionMixin(pluginManager),
       TrackMenuSessionMixin(pluginManager),
+      EmbeddedSessionThemeMixin(pluginManager),
     )
     .props({
       /**
@@ -87,28 +86,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       get views() {
         return [self.view]
-      },
-      /**
-       * #getter
-       */
-      // Serializable theme description (the canonical `themeOptions` contract
-      // shared with the app-core/web sessions), safe to cross the RPC worker
-      // boundary. There is no theme switching here, so the active theme is
-      // always 'default'.
-      get themeOptions(): SerializableThemeArgs {
-        return {
-          configTheme: getConf(self, 'theme'),
-          themeName: 'default',
-        }
-      },
-      /**
-       * #getter
-       */
-      // Resolved MUI theme, mirroring the product's ThemeProvider. Lets
-      // headless/RPC consumers derive theme-dependent state without a mounted
-      // component.
-      get theme() {
-        return createJBrowseThemeFromArgs(this.themeOptions)
       },
     }))
     .actions(self => ({

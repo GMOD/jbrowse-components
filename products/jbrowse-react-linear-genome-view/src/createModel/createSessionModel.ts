@@ -1,5 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
-import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
+import { EmbeddedSessionThemeMixin } from '@jbrowse/embedded-core'
 import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
@@ -12,7 +11,6 @@ import {
 
 import type { ViewModel } from './createModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { SerializableThemeArgs } from '@jbrowse/core/ui'
 import type { AssemblyManager } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
@@ -52,6 +50,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       ReferenceManagementSessionMixin(pluginManager),
       SessionTracksManagerSessionMixin(pluginManager),
       TrackMenuSessionMixin(pluginManager),
+      EmbeddedSessionThemeMixin(pluginManager),
     )
     .props({
       /**
@@ -95,30 +94,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       get views() {
         return [self.view]
-      },
-      /**
-       * #getter
-       */
-      // Serializable theme description (the canonical `themeOptions` contract
-      // shared with the app-core/web sessions). This is what crosses the RPC
-      // worker boundary — e.g. the canvas display reads
-      // `getSession(self).themeOptions` in its rpcProps so worker-baked colors
-      // (CDS frames, stroke fallback) honor the config `theme` slot. There is
-      // no theme switching here, so the active theme is always 'default'.
-      get themeOptions(): SerializableThemeArgs {
-        return {
-          configTheme: getConf(self, 'theme'),
-          themeName: 'default',
-        }
-      },
-      /**
-       * #getter
-       */
-      // Resolved MUI theme, mirroring JBrowseLinearGenomeView's ThemeProvider.
-      // Lets headless/RPC consumers derive theme-dependent state without a
-      // mounted component.
-      get theme() {
-        return createJBrowseThemeFromArgs(this.themeOptions)
       },
     }))
     .actions(self => ({

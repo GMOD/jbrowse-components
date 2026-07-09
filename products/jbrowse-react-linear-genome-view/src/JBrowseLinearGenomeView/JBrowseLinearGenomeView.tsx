@@ -1,7 +1,6 @@
-import { Suspense, lazy, useMemo } from 'react'
+import { Suspense, lazy } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
-import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
@@ -10,7 +9,6 @@ import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { ViewModel } from '../createModel/createModel.ts'
-import type { SessionWithDrawerWidgets } from '@jbrowse/product-core'
 
 const DrawerWidget = lazy(() =>
   import('@jbrowse/product-core').then(m => ({
@@ -43,16 +41,12 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   viewState: ViewModel
 }) {
   const { session } = viewState
-  const { view } = session
+  const { view, theme } = session
   const { pluginManager } = getEnv(session)
   const { ReactComponent } = pluginManager.getViewType(view.type)
-  const themeConfig = readConfObject(viewState.config.configuration, 'theme')
-  const theme = useMemo(() => createJBrowseTheme(themeConfig), [themeConfig])
   const { classes } = useStyles()
 
-  const drawerSession = session as SessionWithDrawerWidgets
-  const { drawerPosition, drawerWidth, minimized, visibleWidget } =
-    drawerSession
+  const { drawerPosition, drawerWidth, minimized, visibleWidget } = session
   const drawerVisible = Boolean(visibleWidget) && !minimized
   const gridTemplateColumns = drawerGridTemplateColumns({
     drawerVisible,
