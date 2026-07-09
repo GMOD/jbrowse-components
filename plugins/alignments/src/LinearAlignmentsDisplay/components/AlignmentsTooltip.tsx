@@ -7,7 +7,7 @@ import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { pct } from './tooltipUtils.ts'
+import { formatSashimiLocation, pct } from './tooltipUtils.ts'
 import { getModificationName } from '../../shared/modificationData.ts'
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
@@ -378,9 +378,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
             <div>
               <strong>Intron/Skip</strong>
             </div>
-            <div>
-              Location: {refName}:{toLocale(start)}-{toLocale(end)}
-            </div>
+            <div>Location: {formatSashimiLocation(refName, start, end)}</div>
             <div>Length: {toLocale(end - start)} bp</div>
             <div>Reads supporting junction: {score}</div>
             <div>Strand: {strand}</div>

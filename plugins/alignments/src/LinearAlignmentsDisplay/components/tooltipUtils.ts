@@ -353,6 +353,19 @@ export function formatModificationTooltip(
   }
 }
 
+// 1-based inclusive display range for a sashimi junction's half-open
+// [start, end) intron span. Renders `start + 1` to match formatLocation /
+// formatCigarTooltip and the detail widget (openSashimiWidget stores the raw
+// 0-based start, which BaseFeatureDetail then shows as start + 1) — so the hover
+// and the click-through can't disagree on the coordinate.
+export function formatSashimiLocation(
+  refName: string,
+  start: number,
+  end: number,
+) {
+  return `${refName}:${toLocale(start + 1)}-${toLocale(end)}`
+}
+
 export function formatSashimiTooltip(
   sashimiHit: SashimiArcHitResult,
 ): SashimiTooltipPayload {
