@@ -1,6 +1,6 @@
 /**
- * Shared utilities for interval-based layout algorithms.
- * Used by both GranularRectLayout and PileupLayout.
+ * Shared utilities for interval-based layout algorithms, used by
+ * GranularRectLayout.
  */
 
 /**
