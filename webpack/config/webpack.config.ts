@@ -107,7 +107,7 @@ export default function webpackBuilder(): webpack.Configuration {
               // getWorkspaces() includes the monorepo root, so node_modules
               // sits under an included path; exclude it so only our own
               // untranspiled workspace source runs through babel.
-              include: [appSrc, getWorkspaces()],
+              include: [appSrc, ...getWorkspaces()],
               exclude: /node_modules/,
               loader: 'babel-loader',
               options: babelOptions,
@@ -139,6 +139,9 @@ export default function webpackBuilder(): webpack.Configuration {
       ],
     },
     plugins: [
+      // @jbrowse/mobx-state-tree reads process.env.ENABLE_TYPE_CHECK at runtime
+      // to run full type-checking; substitute "true" so validation stays on in
+      // production bundles (where NODE_ENV would otherwise disable dev checks)
       new webpack.DefinePlugin({
         'process.env.ENABLE_TYPE_CHECK': '"true"',
       }),

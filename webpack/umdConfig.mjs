@@ -18,14 +18,9 @@ export default function umdConfig({ filename, library, cssUse }) {
       library,
       libraryTarget: 'umd',
     },
-    devServer: {
-      port: 9000,
-      open: 'umd_example/',
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-      },
-    },
+    // UMD bundles are intentionally a single chunk (LimitChunkCountPlugin
+    // below), so webpack's code-splitting size hints are pure noise
+    performance: false,
     plugins: [new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 })],
     resolve: {
       extensions: ['.mjs', '.js', '.ts', '.tsx', '.jsx', '.json'],
