@@ -1476,106 +1476,138 @@ See **`agent-docs/DISPLAY_TYPE_DEFAULTS.md`** for the master doc.
 
 
 
-## display types
+## Promotable-slot UI (config editor + track menus)
 
+Follow-on to the SHIPPED display-type defaults above: how far the single
+promotable flag can drive UI generation, and where it can't.
 
-What I got wrong
+**What the earlier sketch got wrong.** `ConfigurationEditorWidget.target` is not
+the live display model — it's either `track.configuration` or a temporary MST
+config `trackSchema.create(...)` (`DrawerWidgets.ts:184`), and edits are
+debounce-saved back as a `trackConfigDeltas` diff, not a live mutation. Three
+consequences:
 
-ConfigurationEditorWidget.target is not the live display model. It's either track.configuration or a temporary MST config trackSchema.create(...) (DrawerWidgets.ts:184), and edits are debounce-saved back as a trackConfigDeltas diff (Session/CLAUDE.md), not a live mutation. Three consequences I hadn't accounted for:
+- The node can be **detached**, so `getSession(node)` inside `makeSlotFacade` can
+  throw. Session has to be threaded from the widget (which can reach it, as its
+  own debounce autorun proves) — prop-drilling/context, not a tidy SlotFacade
+  field.
+- **Two persistence axes in one form.** The value editor writes a per-track
+  delta; a promotion checkbox writes a session-wide preference. Mixing them in
+  one panel is conceptually muddy — workable, but not the clean "it's just more
+  chrome like the jexl toggle" story.
+- **Raw stripped values diverge from what's rendered.** An un-pinned track has
+  the slot stripped, so `slot.value` is the default (or the `'inherit'`
+  sentinel), while the track visually renders the active session default
+  (Compact). So the editor would show `displayMode: 'inherit'` on a track that's
+  drawing Compact. The "inheriting…" caption papers over it, but the
+  raw-vs-resolved gap is real, and worst exactly for the sentinel slots.
 
-- The node can be detached — so getSession(node) inside makeSlotFacade can throw. Session has to be threaded from the widget (which can reach it, as its own debounce autorun proves). So it's prop-drilling/context, not a tidy SlotFacade field.
-- Two different persistence axes in one form. The value editor writes a per-track delta; a promotion checkbox writes a session-wide preference. Mixing them in one panel is conceptually muddy — workable, but not the clean "it's just more chrome like the jexl toggle" story I told.
-- The editor shows raw stripped values, which diverge from what's rendered. An un-pinned track has the slot stripped, so slot.value is the default (or the 'inherit' sentinel), while the track visually renders the active session default (Compact). So the editor would show displayMode: 'inherit' on a track that's drawing Compact. The "inheriting…" caption papers over it, but the raw-vs-resolved gap is real, and worst exactly for the sentinel slots.
+**Calibrated confidence.**
 
-Calibrated confidence
+- Metadata-driven, single promotable flag feeds the UI (~85%): architecturally
+  sound; the badge already proves zero-per-slot enumeration works.
+- Track-menu auto-generation via the mixin (~80%): operates on the live display
+  model, where `resolveSlot`/`getConfResolved` already work correctly and
+  reactively. The safe generalization.
+- Config-editor GUI as a clean drop-in (~40%): feasible, but it's the three
+  frictions above — detached target, two persistence axes, raw-vs-resolved
+  display — not a small SlotEditor addition.
 
-- Direction — metadata-driven, single promotable flag feeds the UI: high (~85%). Architecturally sound; the badge already proves zero-per-slot enumeration works.
-- Track-menu auto-generation via the mixin: high (~80%). It operates on the live display model, where resolveSlot/getConfResolved already work correctly and reactively. This is the safe generalization, and it's where the
-- Config-editor GUI as a clean drop-in: low (~40%). Feasible, but it's athree frictions above — detached taaw-vs-resolved display — not a small SlotEditor addition. I over-sold it last turn.
-Things I still haven't measured that gate any of this: the field-wise slmany existing subclasses override only inherit baseadvanced/description — unknown, potentially wide), and the test surface (displayMode/showSoftClipping/Overr).
-                                                                                                     What I'd actually recommend
-                                                                                                     Do the mixin-driven track-menu autohigh-confidence generalization, runs where the resolver already behaves, and gets per-slot cost down to a schema line without touching    the editor's delta/detached-target ditor control as a separate, laterspike, and only after deciding how you want raw-vs-resolved and the two-axes mixing to read — that's a UX call, not just code.
-                                                                                                     Want me to prototype the mixin auto (low blast radius, easy to verifyagainst the existing displayMode/showSoftClipping tests), and leave the editor question parked until we've seen that land?
+Unmeasured, and gating: the field-wise slot surface (how many existing
+subclasses override only `inherit`/`base`/`advanced`/`description` — unknown,
+potentially wide) and the test surface (`displayMode`/`showSoftClipping`
+overrides).
 
-
-
+**Recommendation.** Do the mixin-driven track-menu auto-generation first — the
+high-confidence generalization, running where the resolver already behaves, which
+gets per-slot cost down to a schema line without touching the editor's
+delta/detached-target problem. Treat the config-editor control as a separate,
+later spike, and only after deciding how raw-vs-resolved and the two-axes mixing
+should read — that's a UX call, not just code.
 
 ## R export
 
+Export actual R plotting code corresponding to a JBrowse visualization, to
+connect JBrowse to reproducible R/ggplot2 figures (`ggplot2`/Bioconductor).
+Prototype work exists on the **`R_export2`** branch.
 
-I am thinking about R figure export from our jbrowse genome browser. These were previous notes. Please continue evaluation. I want fair pushback where warranted, but this could be a highly valuable feature that would connect jbrowse to the world of reproducible R code: I have a very complicated feature request: I am strongly interested in potentially outputting actual R plotting code that corresponds with our jbrowse data visualizations. I understand this is an insanely complicated method, but I just feel like it would be a way to connect jbrowse to the world of actual clean R data visualizations. what could be done for this? leaning into ggplot2 might be valuable. We started some work on this in R_export2 branch.
+**What's already built** (a two-part system, further along than "started"):
 
-  I'll start by exploring what's already been done on the R_export2 branch and understanding the existing export infrastructure.
+- **R side — `packages/r/ggjbrowse/`.** Data access: `jb_features()` dispatches
+  per track type to rtracklayer / VariantAnnotation / Rsamtools (`R/features.R`).
+  Custom geoms: `geom_gene`, `geom_transcript`, `geom_wiggle`, `geom_alignment`,
+  `geom_variant`. JBrowse-semantics helpers: `compute_x_genomic`,
+  `theme_jbrowse_track`, plus a `jb_session`/`jb_from_config` model mirroring
+  JBrowse config.
+- **JS side — a codegen pipeline.** `LinearGenomeView/exportR.ts` orchestrates;
+  each display contributes a fragment via `exportRCode.ts` (base feature,
+  multiwiggle, canvas), surfaced through `ExportRDialog.tsx` + a menu item.
+  Output is a runnable script (`test_data/volvox/jbrowse_view.R`).
 
-    Ran 4 shell commands
+**The implicit key decision:** the exported script is a **recipe** — it emits
+data URIs + region + params and re-derives the visualization in R, rather than
+exporting baked pixels/geometry.
 
-  There's a substantial R package already: packages/r/ggjbrowse. Let me examine what's been built there so I understand the existing approach before advising.
+**The coloring-fidelity cost.** JBrowse's per-read color logic is already
+hand-mirrored across two lockstep copies (`colorUtils.ts` for Canvas2D/SVG,
+`read.slang` for GPU, with "SYNC: change both together" comments). A recipe that
+re-derives coloring in R adds a *third* hand-synced copy. It splits into two
+tiers, only one expensive:
 
-    Ran 1 shell command
+- **Tier 1 — cheap, low-drift, pure functions of one BAM record:** strand,
+  mappingQuality (ramp), insert-size-by-tag, pair orientation, color-by-tag.
+  Every input is a field R already has after `readGAlignments` (flags, mapq,
+  tlen, an arbitrary tag) — even the MAD upper/lower computed over the read set
+  is reproducible. A few dozen lines of R, low drift.
+- **Tier 2 — expensive, drift-prone, where the custom logic lives:** split/chain
+  classification (reconstructing the chain + inversion/deletion/supplementary
+  precedence), interchrom buckets, unmapped-mate, modifications/methylation
+  (MM/ML tag parsing → per-base mod colors), perBaseQuality/perBaseLetter. The
+  `ReadColorCategory` classifier is exactly 21 members and splits cleanly at the
+  Tier-1/Tier-2 line. This is the exact code JBrowse itself can't keep in one
+  place; a third R copy is a permanent three-way sync tax.
 
-  Let me look at the data-access layer, a representative geom, and the worked example to see how the two approaches (native-R vs. export-from-JBrowse) are being reconciled.
+**The reframe.** The split isn't Tier1/Tier2 by *difficulty* — it's by
+*purpose*. The 21-category classifier is diagnostic browsing color ("show me
+split-read inversions, discordant mates, methylation") — a tool for hunting
+anomalies interactively, almost never what goes into a published figure. A figure
+says "here are the reads over my locus, colored by strand / mapq / a tag."
 
-    Ran 1 shell command
+**The pushback.** Don't reimplement Tier 2 in R, ever — it's the code JBrowse
+can't keep in one place, and it isn't what figures need. The only faithful option
+for Tier 2 is a **sidecar**: emit the per-read category as a join keyed by
+qname+flag, joined in R after loading. But be honest that this breaks the "R
+loads the file" purity — those colors were computed by JBrowse, not derivable
+from the BAM. Fine if opt-in and labeled, but a real seam, not a free win.
 
-  Now let me find the JBrowse-side (TypeScript) code generator that emits these R scripts, and check if it exists yet.
+**Recommendation.** Ship Tier 1 as a pure-R recipe; treat Tier 2 as an
+explicitly-labeled sidecar escape hatch, emitted only when the user actually has
+that colorBy active (default off). Document the boundary so nobody expects
+methylation pixel-parity from a pure-R reload.
 
-    Ran 1 shell command
+**Prerequisite for any of this being correct:** `exportRCode.ts` must emit the
+active colorBy scheme + resolved palette. Right now even the trivial strand case
+is wrong — it hardcodes `fill = factor(strand)` with a two-color scale regardless
+of what the user picked. Smallest, highest-leverage fix, independent of
+everything else. (Confirmed in `R_export2`: `fetch_bam_features` does `end =
+bam$pos + nchar(bam$cigar)` — the CIGAR *string length*, not the reference span —
+and `ref_name = seqnames(gr)[1]` hardcodes a single region; it's a stub.)
 
-  Let me read the TS-side generator and the per-display code generators to see the current strategy.
+**Concrete first milestone** (dependency order, testable against
+`test_data/volvox` alignments):
 
-    Ran 2 shell commands
+- Fix the BAM fetcher — `GenomicAlignments::readGAlignments()` (correct
+  CIGAR-aware ends, N-introns, multi-region) + `IRanges::disjointBins()` for
+  pileup rows. Deletes the broken `nchar` line and the hand-rolled
+  `compute_pileup` greedy loop, giving JBrowse-equivalent stacking.
+- Emit colorBy state — active scheme + palette from the model into the codegen so
+  `geom_alignment` colors by what the user chose (Tier 1 schemes only for now).
+- Reference-based mismatches — emit the assembly sequence adapter URI (currently
+  omitted; without the reference, R can only do mismatches when an MD tag happens
+  to be present — a silent fidelity gap). Then `pileup()`/`sequenceLayer()` in R.
 
-  I dug into origin/R_export2 (the remote branch — your local R_export is an older, smaller cut). Here's what's actually there and where I'd take it.
-
-  What you've already built
-
-  You have a two-part system that's further along than "started":
-
-  R side — packages/r/ggjbrowse/ — a
-  - Data access: jb_features() dispatches per track type to rtracklayer / VariantAnnotation /
-  Rsamtools (R/features.R)
-  - Custom geoms: geom_gene, geom_transcript, geom_wiggle, geom_alignment, geom_variant
-  - JBrowse-semantics helpers: computale_x_genomic, theme_jbrowse_track,a jb_session/jb_from_config model mirroring JBrowse config
-
-  JS side — a code-gen pipeline: LinearGenomeView/exportR.ts orchestrates, each display contributes a
-  fragment via exportRCode.ts (base fultiwiggle, canvas), surfacedthrough ExportRDialog.tsx + a menu item. Output is a runnable script
-  (test_data/volvox/jbrowse_view.R + -trips).
-
-  The key decision you've implicitly
-
-  The exported script is a recipe, noURIs + region + params a
-  ──── (130 lines hidden) ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   hand-mirre reading is the Canvas2D/SVGfallback; read.slang is the GPU twin, with big "SYNC: change both together" comments). The recipe                                                        path re-derives everything in R, so a third hand-synced copy in R.That's the real cost
-                                                                                                                                                                                                  But it splits cleanly into two tiers, and only one is expensive:
-                                                                                                                                                                                                  Tier 1 — cheap, low-drift, pure functions of one BAM record:
-  strand, mappingQuality (ramp), insert-by-tag. Every input is a field Ralready has after readGAlignments (flags, mapq, tlen, an arbitrary tag). These port to a few lines                         of R and won't drift much. Even inshe MAD upper/lower you compute overthe read set — r
-                                                                                                                                                                                                  Tier 2 — expensive, drift-prone, where your "custom logic" actually lives:
-  - Split/chain classification (chain and reconstructing the chain, plusthe inversion/deletion/supplementary precedence                                                                           - interchrom buckets, unmapped-mate
-  - Modifications/methylation (MM/ML tag parsing → per-base mod colors)                                                                                                                           - perBaseQuality / perBaseLetter
-                                                                                                                                                                                                  Reproducing Tier 2 exactly in R mea JBrowse itself keeps in twolockstep copies. Every way sync. That's the honest ceiling on fidelity.
-                                                                                                                                                                                                  Two things follow:
-                                                                                                                                                                                                  1. The codegen has to emit the color state, or even Tier 1 is wrong. Right now the alides strand colardless of what the user picked. Itmust emit the active colorBy scheme +the resolved palette so R colors by the same scheme with the same hues. Do this first — it makess most people use.                                                                              2. For Tier 2, consider an escape hatch that still honors "R loads the BAM": R loads tges/pileup/coveragea), but the per-read color category— the one thing that's gnarly tore-derive — rides along as a tiny sidebar keyed by qname+flag,    joined in R after loading. One factmplementation of the precedencechain. It's a compromise on "pure R," but it's the pragmaticget faithful split/mod coloringwithout a third copy of the classif
-                                                                                                     My recommendation: port Tier 1 to R/palette through the codegen — thatcovers                 strand/mapq/insertSize/pairOrientation/tag faithfully. Treat Tier 2 (splits, modificatlicitly best qname-join sidecar, and documentthat boundary so nobody expectspixel-parity on methylation coloring from a pure-R reload.                                                                                                                                      Do you want coloring to be pure-R (reimplement Tier 1, best-effort Tier 2), or are youar for the hard mod
-                                                                                                                                                                                                  I'll ground the continued evaluation in the actual code rather than more speculation —om the R_export2 branch so my read of the coloring/BAM situation is current.
-                                                                                                                                                                                                  Ran 5 shell commands
-                                                                                                                                                                                                  I checked out the actual R_export2 code to make sure this evaluation isn't running on aimed earlier is real, not hand-wavy:
-                                                                                                                                                                                                - fetch_bam_features really does end = bam$pos + nchar(bam$cigar) — that's the string " → span of 4. And ref_name = ...seqnames(gr)[1] hardcodes a single region. It's a stub.
-- alignments/exportRCode.ts really does hardcode fill = factor(strand) with a two-color scale, ignoring whatever colorBy the user actually set.                                                 - ReadColorCategory is exactly 21 members, and it splits cleanly at the line I describe
-                                                                                                                                                                                                So the picture is accurate. Here's where I land, with the pushback you asked for.
-                                                                                                                                                                                                The reframe that resolves the coloring question
-                                                                                                                                                                                                You're asking "pure-R vs sidecar for the hard color cases," but I think that's the sechat is this export actually for?
-                                                                                                                                                                                                The 21-category classifier is diagnostic browsing color — "show me split-read inversio mates, methylation." That's a tool for hunting anomalies in an interactive browser. Itis almost never what goes into a published figure. A figure says "here are the reads over my locus, colored by strand / mapq / a tag." So the honest scope split isn't Tier1/Tier2 by difficultypurpose:
-                                                                                                                                                                                                - Tier 1 (strand, mapq ramp, insert-size, pair-orientation, color-by-tag) — these are ord's fields that readGAlignments already hands you. A few dozen lines of R, low drift.This covers the overwhelming majority of real figure requests. Reimplement in R.                                                                                                                - Tier 2 (split/chain precedence, interchrom, MM/ML modifications, per-base) — this isthat fights the whole "reproducible from the BAM" promise, because JBrowse derives it in the worker and keeps it in two hand-synced copies already (colorUtils.ts + read.slang). A third R copy is a permanent three-way sync tax.
-The pushback
-Don't reimplement Tier 2 in R. Ever. Two reasons: it's the exact code JBrowse itself can't keep in one place, and it isn't what figures need. The sidecar (emit the per-read category as a join keyed by qname+flag) is the only faithful option for Tier 2 — but be honest that it brit loads" purity: those colors were computed by JBrowse, not derivable from the file.That's fine if it's opt-in and labeled, but it's a real seam, not a free win.
-So my recommendation: ship Tier 1 as pure-R recipe, and treat Tier 2 as an explicitly-labeled sidecar escape hatch that's only emitted when the user actually has that colorBy active. Default enever carry it. Document the boundary so nobody expects methylation pixel-parity from
-                                                                                                                                                                                                And the prerequisite for any of this being correct: exportRCode.ts must emit the activalette, because right now even the trivial strand case is wrong (it hardcodes colorsregardless of what you picked). That's the smallest, highest-leverage fix and it's independent of everything else.
-Concrete first milestone
-Three changes, in dependency order, testable against test_data/volvox alignments:
-1. Fix the BAM fetcher — GenomicAlignments::readGAlignments() (correct CIGAR-aware ends, N-introns, multi-region) + IRanges::disjointBins() for pileup rows. This deletes the broken nchar line hand-rolled compute_pileup greedy loop, and gets you JBrowse-equivalent stacking for f
-2. Emit colorBy state — active scheme + palette from the model into the codegen, so geom_alignment colors by what the user chose. Tier 1 schemes only for now.                                  3. Reference-based mismatches — emit the assembly sequence adapter URI (currently the  without the reference, R can only do mismatches when an MD tag happens to be present —a silent fidelity gap). Then pileup()/sequenceLayer() in R.
-Milestone 1 alone turns the BAM export from "wrong" to "correct reads with correct stacking," which is the load-bearing thing you actually asked for. 2 and 3 layer on top.
-Want me to check out R_export2 and do milestone 1 (BAM fetcher rewrite + a golden-file test against volvox)? That's the piece that proves the whole recipe direction works or doesn't, and it's self-contained.
+Milestone 1 alone turns the BAM export from "wrong" to "correct reads with
+correct stacking" — the load-bearing piece; 2 and 3 layer on top.
 
 ## expressiveness
 
