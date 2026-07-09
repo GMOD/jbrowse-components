@@ -14,8 +14,6 @@ import type {
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAdapterConfig> {
-  public static capabilities = ['hasLocalStats']
-
   public async configure() {
     const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
     if (!adapter) {

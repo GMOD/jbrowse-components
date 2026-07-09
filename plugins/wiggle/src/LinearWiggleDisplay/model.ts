@@ -307,10 +307,10 @@ export default function stateModelFactory(
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
           ...makePointSizeMenuItems(self),
+          ...makeResolutionSubMenu(self),
           // scaleType: true keeps the scale-type submenu (manhattan, linear-only,
           // drops it); summary score mode leads the Score submenu, matching
           // multi-wiggle.
-          ...makeResolutionSubMenu(self),
           makeScoreSubMenu(self, {
             scaleType: true,
             leadingItems: makeSummaryScoreModeSubMenu(self),

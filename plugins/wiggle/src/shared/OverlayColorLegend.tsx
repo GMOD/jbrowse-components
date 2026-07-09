@@ -1,4 +1,4 @@
-import { measureText } from '@jbrowse/core/util'
+import { measureLegendText } from './measureLegendText.ts'
 
 interface LegendSource {
   name: string
@@ -84,10 +84,7 @@ export default function OverlayColorLegend({
   const entries = buildLegendEntries(sources)
   let maxLabelWidth = 0
   for (const e of entries) {
-    // measureText uses a Helvetica width table, but the SVG <text> below has no
-    // font-family and renders in the wider app font (Roboto), so scale the
-    // estimate up before sizing the paper or it clips the label.
-    const w = measureText(e.label, 10) * 1.1
+    const w = measureLegendText(e.label, 10)
     if (w > maxLabelWidth) {
       maxLabelWidth = w
     }

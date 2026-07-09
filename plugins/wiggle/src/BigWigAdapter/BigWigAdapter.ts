@@ -91,7 +91,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     header: Awaited<ReturnType<BigWig['getHeader']>>
   }>
 
-  public static capabilities = ['hasResolution', 'hasLocalStats']
+  public static capabilities = ['hasResolution']
 
   private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts ?? {}

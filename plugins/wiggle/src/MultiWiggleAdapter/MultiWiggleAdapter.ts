@@ -72,7 +72,7 @@ function hasFeatureArrays(
 }
 
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
-  public static capabilities = ['hasResolution', 'hasLocalStats']
+  public static capabilities = ['hasResolution']
 
   private adaptersP?: Promise<AdapterEntry[]>
 
