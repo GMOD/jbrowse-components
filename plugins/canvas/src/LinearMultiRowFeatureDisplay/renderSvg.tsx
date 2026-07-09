@@ -6,18 +6,42 @@ import {
   SvgClipRect,
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
-import { SvgRowLabels } from '@jbrowse/tree-sidebar'
+import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
 
 import { drawMultiRowBlocks } from './rendering/drawMultiRowBlocks.ts'
 
-import type { LinearMultiRowFeatureDisplayModel } from './model.ts'
+import type {
+  MultiRowRegionData,
+  MultiRowRenderState,
+} from './rendering/multiRowRenderingBackendTypes.ts'
+import type { MultiRowSource } from './sourcesLogic.ts'
+import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
+
+// Duck-typed slice of the display the export reads, mirroring
+// LinearBasicDisplay's RenderSvgModel: it decouples renderSvg from the full MST
+// model (so it's unit-testable with a plain object) and makes the export's data
+// dependencies explicit.
+export interface RenderSvgModel extends SvgExportable {
+  id: string
+  height: number
+  rpcDataMap: { get: (key: number) => MultiRowRegionData | undefined }
+  renderBlocks: RenderBlock[]
+  renderState: MultiRowRenderState
+  sources: MultiRowSource[]
+  rowHeight: number
+  sidebarOffset: number
+  showTree: boolean
+  hierarchy: ClusterHierarchyNode | undefined
+}
 
 export async function renderSvg(
-  self: LinearMultiRowFeatureDisplayModel,
+  self: RenderSvgModel,
   opts: ExportSvgDisplayOptions,
 ) {
   await awaitSvgReady(self)
@@ -41,7 +65,7 @@ function MultiRowSvgBody({
   height,
   opts,
 }: {
-  self: LinearMultiRowFeatureDisplayModel
+  self: RenderSvgModel
   view: LinearGenomeViewModel
   height: number
   opts: ExportSvgDisplayOptions
@@ -61,6 +85,9 @@ function MultiRowSvgBody({
       >
         {el}
       </SvgClipRect>
+      {self.showTree && self.hierarchy ? (
+        <SvgTreePath hierarchy={self.hierarchy} />
+      ) : null}
       {self.sources.length ? (
         <SvgRowLabels
           sources={self.sources}
