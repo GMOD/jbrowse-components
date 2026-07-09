@@ -585,6 +585,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return pinnedTracksTop
       },
 
+      /**
+       * #getter
+       */
       get pinnedTracksTop() {
         return this.rubberbandTop + SCALE_BAR_HEIGHT
       },
@@ -774,6 +777,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
           y += this.trackHeight(t) + RESIZE_HANDLE_HEIGHT
         }
         return undefined
+      },
+
+      /**
+       * #method
+       * the pinned or unpinned sibling list a track renders within; move
+       * up/down/top/bottom reorder inside this section rather than the full
+       * `tracks` array, since the two sections lay out independently
+       */
+      trackSection(id: string) {
+        return self.tracks.find(t => t.id === id)?.pinned
+          ? self.pinnedTracks
+          : self.unpinnedTracks
       },
 
       /**
@@ -1160,36 +1175,39 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       moveTrackDown(id: string) {
-        const idx = self.tracks.findIndex(v => v.id === id)
-        if (idx !== -1 && idx < self.tracks.length - 1) {
-          self.tracks.splice(idx, 2, self.tracks[idx + 1], self.tracks[idx])
+        const section = self.trackSection(id)
+        const idx = section.findIndex(t => t.id === id)
+        if (idx !== -1 && idx < section.length - 1) {
+          this.moveTrack(id, section[idx + 1]!.id)
         }
       },
       /**
        * #action
        */
       moveTrackUp(id: string) {
-        const idx = self.tracks.findIndex(track => track.id === id)
+        const section = self.trackSection(id)
+        const idx = section.findIndex(t => t.id === id)
         if (idx > 0) {
-          self.tracks.splice(idx - 1, 2, self.tracks[idx], self.tracks[idx - 1])
+          this.moveTrack(id, section[idx - 1]!.id)
         }
       },
       /**
        * #action
        */
       moveTrackToTop(id: string) {
-        const track = self.tracks.find(track => track.id === id)
-        if (track) {
-          self.tracks = cast([track, ...self.tracks.filter(t => t.id !== id)])
+        const section = self.trackSection(id)
+        if (section.length && section[0]!.id !== id) {
+          this.moveTrack(id, section[0]!.id)
         }
       },
       /**
        * #action
        */
       moveTrackToBottom(id: string) {
-        const track = self.tracks.find(track => track.id === id)
-        if (track) {
-          self.tracks = cast([...self.tracks.filter(t => t.id !== id), track])
+        const section = self.trackSection(id)
+        const last = section[section.length - 1]
+        if (last && last.id !== id) {
+          this.moveTrack(id, last.id)
         }
       },
       /**

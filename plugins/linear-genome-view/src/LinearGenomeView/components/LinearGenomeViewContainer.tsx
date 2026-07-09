@@ -26,6 +26,10 @@ const useStyles = makeStyles()(theme => ({
   pinnedTracks: {
     position: 'sticky',
     zIndex: 3,
+    // cap the sticky block at the viewport space below its top offset so
+    // pinning many/tall tracks scrolls within the block instead of burying
+    // the unpinned tracks underneath it
+    overflowY: 'auto',
   },
   rel: {
     position: 'relative',
@@ -115,7 +119,10 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
                 <Paper
                   elevation={6}
                   className={classes.pinnedTracks}
-                  style={{ top: pinnedTracksTop }}
+                  style={{
+                    top: pinnedTracksTop,
+                    maxHeight: `calc(100vh - ${pinnedTracksTop}px)`,
+                  }}
                 >
                   {pinnedTracks.map(track => (
                     <TrackContainer

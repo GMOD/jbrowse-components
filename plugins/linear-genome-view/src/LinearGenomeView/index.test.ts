@@ -1794,6 +1794,55 @@ describe('onTrackDragOver reorders tracks', () => {
   })
 })
 
+describe('move actions respect pinned/unpinned sections', () => {
+  function setup() {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        id: 'moveSections',
+        type: 'LinearGenomeView',
+        tracks: [
+          { name: 'a', type: 'BasicTrack' },
+          { name: 'b', type: 'BasicTrack' },
+          { name: 'c', type: 'BasicTrack' },
+        ],
+      }),
+    )
+    const [a, b, c] = model.tracks.map(t => t.id)
+    return { model, a: a!, b: b!, c: c! }
+  }
+
+  // pinning the *middle* track leaves the array as [a(unpinned), b(pinned),
+  // c(unpinned)] -- the two unpinned tracks straddle a pinned track, so
+  // array-adjacency swaps would cross the section boundary
+  test('move up crosses the pinned track without a silent no-op', () => {
+    const { model, a, c } = setup()
+    model.tracks[1]!.setPinned(true)
+    // c is below a in the unpinned section; moving it up must land it above a,
+    // not silently swap with the pinned track b sitting between them
+    model.moveTrackUp(c)
+    expect(model.unpinnedTracks.map(t => t.id)).toEqual([c, a])
+  })
+
+  test('move down crosses the pinned track without a silent no-op', () => {
+    const { model, a, c } = setup()
+    model.tracks[1]!.setPinned(true)
+    model.moveTrackDown(a)
+    expect(model.unpinnedTracks.map(t => t.id)).toEqual([c, a])
+  })
+
+  test('move to top/bottom stay within the unpinned section', () => {
+    const { model, a, b, c } = setup()
+    model.tracks[1]!.setPinned(true)
+    model.moveTrackToTop(c)
+    expect(model.unpinnedTracks.map(t => t.id)).toEqual([c, a])
+    model.moveTrackToBottom(c)
+    expect(model.unpinnedTracks.map(t => t.id)).toEqual([a, c])
+    // pinned track b never leaves the pinned section
+    expect(model.pinnedTracks.map(t => t.id)).toEqual([b])
+  })
+})
+
 describe('getTrackOrderSubMenu gates items by track count and view level', () => {
   function makeView(trackCount: number, nested = false) {
     const { Session, LinearGenomeModel } = initialize()
