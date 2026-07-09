@@ -570,7 +570,7 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
     ).toBe(true)
   })
 
-  it('the Show menu exposes the fade-by-quality toggle', () => {
+  it('the top-level Show menu exposes the fade-by-quality toggle', () => {
     interface MenuNode {
       label?: string
       onClick?: () => void
@@ -582,8 +582,8 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
     const { display } = createDisplay()
     const items = display.trackMenuItems() as MenuNode[]
     const show = byLabel(items, 'Show...')
-    const advanced = byLabel(show?.subMenu, 'Advanced')
-    const item = byLabel(advanced?.subMenu, 'Fade mismatches by base quality')
+    // Top-level Show item, not nested under Advanced.
+    const item = byLabel(show?.subMenu, 'Fade mismatches by base quality')
     expect(item?.onClick).toBeDefined()
     item?.onClick?.()
     expect(display.mismatchAlpha).toBe(true)

@@ -59,6 +59,19 @@ export function getReadsMenuItem(model: ReadsModel) {
         model.setShowMismatches(!model.showMismatches)
       }),
       promotableToggleItem({
+        label: 'Fade mismatches by base quality',
+        checked: model.mismatchAlpha,
+        onToggle: () => {
+          model.setMismatchAlpha(!model.mismatchAlpha)
+        },
+        sessionDefault: model.mismatchAlphaSessionDefault,
+        helpText:
+          'Fades each mismatch base toward transparent by its per-base ' +
+          'Phred quality score (Phred 50+ stays fully opaque), so ' +
+          'low-confidence base calls stand out less. Bases with no ' +
+          'recorded quality stay opaque.',
+      }),
+      promotableToggleItem({
         label: 'Show soft clipping',
         checked: model.showSoftClipping,
         onToggle: () => {
@@ -112,19 +125,6 @@ export function getReadsMenuItem(model: ReadsModel) {
               model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
             },
           ),
-          promotableToggleItem({
-            label: 'Fade mismatches by base quality',
-            checked: model.mismatchAlpha,
-            onToggle: () => {
-              model.setMismatchAlpha(!model.mismatchAlpha)
-            },
-            sessionDefault: model.mismatchAlphaSessionDefault,
-            helpText:
-              'Fades each mismatch base toward transparent by its per-base ' +
-              'Phred quality score (Phred 50+ stays fully opaque), so ' +
-              'low-confidence base calls stand out less. Bases with no ' +
-              'recorded quality stay opaque.',
-          }),
           {
             label: 'Set max layout height...',
             onClick: () => {
