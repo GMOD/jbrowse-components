@@ -1,5 +1,6 @@
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
+import { LABEL_PADDING_PX } from '../RenderFeatureDataRPC/constants.ts'
 import {
   HEIGHT_MULTIPLIERS,
   ROW_PADDING,
@@ -63,9 +64,12 @@ function reservedLabelWidthPx(
   showLabels: boolean,
   showDescriptions: boolean,
 ) {
-  // Reserve exactly the measured text width, matching the legacy renderer — no
-  // extra padding, which would widen every labeled feature and cut density.
-  return maxLabelTextWidth(labelData, showLabels, showDescriptions)
+  // Add LABEL_PADDING_PX so adjacent labels packed onto one row keep a small
+  // gap and small measureText underestimates don't cause visual overlap. Keep 0
+  // when there's no label so the collapse-to-row-0 path (hasRenderedLabel) and
+  // empty-feature packing stay unaffected.
+  const width = maxLabelTextWidth(labelData, showLabels, showDescriptions)
+  return width > 0 ? width + LABEL_PADDING_PX : 0
 }
 
 // Scales all height/y fields in a cloned FeatureDataResult by the compact

@@ -3,6 +3,12 @@
 // main-thread layout's row reservations, and the DOM/SVG renderers all agree.
 export const LABEL_FONT_SIZE = 11
 
+// Horizontal breathing room added to each label's reserved layout span so two
+// labels packed onto the same row never abut. Also absorbs small discrepancies
+// between measureText's Helvetica width table and the actually-rendered font,
+// which otherwise let neighboring labels overlap by a few pixels.
+export const LABEL_PADDING_PX = 6
+
 // Max rendered width of a description label. Enforced by truncating the text to
 // this width at creation, so the stored textWidth is bounded by construction and
 // layout/hit-test reservations always match what is drawn.
