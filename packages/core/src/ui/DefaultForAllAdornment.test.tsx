@@ -22,7 +22,24 @@ function renderAdornment(isDefault: boolean) {
 describe('DefaultForAllAdornment', () => {
   it('renders a labeled toggle button', () => {
     const { getByRole } = renderAdornment(false)
-    expect(getByRole('button', { name: 'default for all tracks' })).toBeTruthy()
+    expect(
+      getByRole('button', { name: 'make this the default for all tracks' }),
+    ).toBeTruthy()
+  })
+
+  it('names the pin after its setting so sibling pins are distinguishable', () => {
+    const { getByRole } = render(
+      <ThemeProvider theme={theme}>
+        <DefaultForAllAdornment
+          label="Compact"
+          isDefault={false}
+          onToggleDefault={() => {}}
+        />
+      </ThemeProvider>,
+    )
+    expect(
+      getByRole('button', { name: 'make Compact the default for all tracks' }),
+    ).toBeTruthy()
   })
 
   it('reflects the promoted state via aria-pressed', () => {

@@ -796,17 +796,6 @@ export default function stateModelFactory(
             : getConfResolved(self, 'featureSpacing')
         },
 
-        // true when the current size already equals the session-wide default
-        // (drives the "use current height by default" checkbox). heightMode joins
-        // the group so promoting "fit" persists fit-to-display, not just a size.
-        get isCompactnessDefault(): boolean {
-          return areSlotsAtSessionDefault(self, [
-            'featureHeight',
-            'featureSpacing',
-            'heightMode',
-          ])
-        },
-
         /**
          * #getter
          */
@@ -2048,21 +2037,6 @@ export default function stateModelFactory(
             self.configuration.setSlot(
               'showSoftClipping',
               !self.showSoftClipping,
-            )
-          },
-
-          /**
-           * #action
-           */
-          // Promote (or clear) the current size (any preset or custom size) as
-          // the session-wide default for this display type. Every alignments
-          // track left at the default size picks it up through the
-          // featureHeight/featureSpacing getters.
-          setCompactnessDefault(promote: boolean) {
-            setSlotsSessionDefault(
-              self,
-              ['featureHeight', 'featureSpacing', 'heightMode'],
-              promote,
             )
           },
 

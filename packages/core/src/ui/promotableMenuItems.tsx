@@ -27,6 +27,7 @@ export function promotableToggleItem({
     },
     endAdornment: (
       <DefaultForAllAdornment
+        label={label}
         isDefault={sessionDefault.active}
         onToggleDefault={() => {
           sessionDefault.toggle()
@@ -64,6 +65,7 @@ export function promotableRadioItem({
     ...(sessionDefault && {
       endAdornment: (
         <DefaultForAllAdornment
+          label={label}
           isDefault={sessionDefault.active}
           onToggleDefault={() => {
             // pinning a value also selects it for this track, so the radio and

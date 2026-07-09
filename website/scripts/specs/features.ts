@@ -4,7 +4,6 @@ import {
   PTEN_RNASEQ_ADAPTER,
   VOLVOX,
   cascadeBoxes,
-  dismissMenus,
   lgvSession,
   menuCascade,
   openFeatureHeightSubmenu,
@@ -18,11 +17,11 @@ export const featuresSpecs: ScreenshotSpec[] = [
   {
     // Single frame showing the session-wide feature-height default on alignments
     // tracks. featureHeight/featureSpacing are promotable slots (getConfResolved:
-    // track value → session default → schema default). We set the first track to
-    // Compact and enable "Use ... as the default for alignments tracks", which
-    // promotes Compact to a session default; the second (un-pinned) track follows
-    // via inherit. The "Set feature height" submenu is left open with the now-
-    // checked default toggle boxed.
+    // track value → session default → schema default). Each height row in the
+    // "Set feature height..." submenu carries its own pin (endAdornment); clicking
+    // the Compact row's pin selects Compact for this track *and* promotes it as
+    // the session-wide default, so the second (un-pinned) track follows via
+    // inherit. The submenu is left open with the now-filled Compact pin ringed.
     mode: 'url',
     name: 'feature_height_default_pin',
     url: lgvSession(VOLVOX, {
@@ -37,47 +36,38 @@ export const featuresSpecs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     viewportHeight: 700,
     // alignments pileups keep re-laying-out while reads stream in; wait long
-    // enough that the menu geometry is stable before the hover/click sequence
+    // enough that the menu geometry is stable before the click sequence
     settleMs: 14000,
     hideTooltip: true,
-    // set the first track to Compact, then enable "Use current height by default
-    // on all alignments tracks" — the second (un-pinned) track follows via
-    // inherit. Re-open the submenu so the now-checked default toggle (the item
-    // actually clicked) is visible and boxed.
+    // The Compact row's pin does both jobs at once (promotableRadioItem: pinning
+    // an unpinned value selects it first) and stopPropagation keeps the submenu
+    // open, so one click both compacts this track and promotes Compact — the
+    // second track compacts via inherit. The pin's stable aria-label targets it
+    // for both the click and the callout ring.
     actions: [
       trackMenuIcon('volvox_alignments_pileup_coverage'),
       ...openFeatureHeightSubmenu(),
-      // exact-text match so "Compact" hits the radio, not a longer label
       {
         type: 'click',
-        selector:
-          '::-p-xpath(//li[@role="menuitem"][normalize-space(.)="Compact"])',
+        selector: '[aria-label="make Compact the default for all tracks"]',
       },
-      { type: 'delay', ms: 300 },
-      ...dismissMenus(),
-      trackMenuIcon('volvox_alignments_pileup_coverage'),
-      ...openFeatureHeightSubmenu(),
-      { type: 'click', text: 'as the default for alignments tracks' },
-      { type: 'delay', ms: 600 },
-      ...dismissMenus(),
-      // re-open to display the checkbox now ticked, kept on screen for capture
-      trackMenuIcon('volvox_alignments_pileup_coverage'),
-      ...openFeatureHeightSubmenu(),
+      { type: 'delay', ms: 800 },
     ],
     annotations: [
       {
-        type: 'box',
-        anchor: { text: 'as the default for alignments tracks' },
+        type: 'circle',
+        anchor: {
+          selector: '[aria-label="make Compact the default for all tracks"]',
+        },
         strokeWidth: 3,
-        fillOpacity: 0.12,
       },
       {
         type: 'text',
-        x: 620,
+        x: 560,
         y: 34,
-        maxWidth: 440,
+        maxWidth: 480,
         fontSize: 15,
-        text: '"Use ... as the default for alignments tracks" promotes the chosen height to a session default — every un-pinned track follows',
+        text: 'Each height has a pin — click it to make that height the default for all alignments tracks; un-pinned tracks follow',
       },
     ],
   },

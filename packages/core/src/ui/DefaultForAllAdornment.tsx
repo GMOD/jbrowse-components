@@ -28,17 +28,22 @@ const useStyles = makeStyles()(theme => ({
 export function DefaultForAllAdornment({
   isDefault,
   onToggleDefault,
+  label,
 }: {
   isDefault: boolean
   onToggleDefault: () => void
+  // the setting this pin promotes (e.g. a preset name); names the pin in its
+  // tooltip/aria-label so screen readers and tests can tell sibling pins apart
+  label?: string
 }) {
   const { classes } = useStyles()
+  const what = label ?? 'this'
   return (
     <Tooltip
       title={
         isDefault
-          ? 'Default for all tracks of this type (click to clear)'
-          : 'Make this the default for all tracks of this type'
+          ? `${what} is the default for all tracks of this type (click to clear)`
+          : `Make ${what} the default for all tracks of this type`
       }
     >
       <ToggleButton
@@ -47,7 +52,7 @@ export function DefaultForAllAdornment({
         selected={isDefault}
         color="primary"
         size="small"
-        aria-label="default for all tracks"
+        aria-label={`make ${what} the default for all tracks`}
         onChange={e => {
           e.stopPropagation()
           onToggleDefault()

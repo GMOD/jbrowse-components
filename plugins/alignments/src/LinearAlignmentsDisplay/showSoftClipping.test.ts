@@ -1,3 +1,5 @@
+import { isValidElement } from 'react'
+
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -12,7 +14,9 @@ import {
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 
+
 import configSchemaFactory from './configSchema.ts'
+import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
 import stateModelFactory from './model.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -260,11 +264,11 @@ describe('alignments showSoftClipping session default', () => {
 })
 
 // Compactness is the featureHeight + featureSpacing + heightMode promotable
-// slots moved together behind one menu item. Each resolves independently through
-// getConfResolved (same rule as showSoftClipping): a slot at its schema default
-// is un-pinned and follows the session-wide default; any other value pins it.
-// heightMode='fixed' equals its promotedBase, so it never shows up as a
-// sessionDefaultChanges diff — it only gates isCompactnessDefault.
+// slots. Each resolves independently through getConfResolved (same rule as
+// showSoftClipping): a slot at its schema default is un-pinned and follows the
+// session-wide default; any other value pins it. heightMode='fixed' equals its
+// promotedBase, so it never shows up as a sessionDefaultChanges diff. The menu's
+// per-preset pins that promote these values are exercised below.
 const setCompact = (session: {
   setDisplayTypeDefault: (t: string, s: string, v: unknown) => void
 }) => {
@@ -282,7 +286,6 @@ describe('alignments compactness session default', () => {
     const { display } = createDisplay()
     expect(display.featureHeight).toBe(7)
     expect(display.featureSpacing).toBe(1)
-    expect(display.isCompactnessDefault).toBe(false)
   })
 
   it('follows a session-wide compact default when the track is not pinned', () => {
@@ -290,7 +293,6 @@ describe('alignments compactness session default', () => {
     setCompact(session)
     expect(display.featureHeight).toBe(3)
     expect(display.featureSpacing).toBe(0)
-    expect(display.isCompactnessDefault).toBe(true)
     expect(display.sessionDefaultChanges()).toEqual([
       { path: ['featureHeight'], from: 7, to: 3 },
       { path: ['featureSpacing'], from: 1, to: 0 },
@@ -337,74 +339,6 @@ describe('alignments compactness session default', () => {
     expect(display.featureHeight).toBe(7)
   })
 
-  describe('setCompactnessDefault', () => {
-    it('promotes the current size to the session default', () => {
-      const { session, display } = createDisplay({
-        featureHeight: 3,
-        featureSpacing: 0,
-      })
-      expect(display.isCompactnessDefault).toBe(false)
-
-      display.setCompactnessDefault(true)
-      expect(
-        session.getDisplayTypeDefault(
-          'LinearAlignmentsDisplay',
-          'featureHeight',
-        ),
-      ).toBe(3)
-      expect(
-        session.getDisplayTypeDefault(
-          'LinearAlignmentsDisplay',
-          'featureSpacing',
-        ),
-      ).toBe(0)
-      expect(display.isCompactnessDefault).toBe(true)
-    })
-
-    it('promotes a custom (non-preset) size too', () => {
-      const { session, display } = createDisplay({
-        featureHeight: 5,
-        featureSpacing: 2,
-      })
-      display.setCompactnessDefault(true)
-      expect(
-        session.getDisplayTypeDefault(
-          'LinearAlignmentsDisplay',
-          'featureHeight',
-        ),
-      ).toBe(5)
-      expect(
-        session.getDisplayTypeDefault(
-          'LinearAlignmentsDisplay',
-          'featureSpacing',
-        ),
-      ).toBe(2)
-    })
-
-    it('clears the session default when promote is false', () => {
-      const { session, display } = createDisplay({
-        featureHeight: 3,
-        featureSpacing: 0,
-      })
-      display.setCompactnessDefault(true)
-      expect(display.isCompactnessDefault).toBe(true)
-
-      display.setCompactnessDefault(false)
-      expect(
-        session.getDisplayTypeDefault(
-          'LinearAlignmentsDisplay',
-          'featureHeight',
-        ),
-      ).toBeUndefined()
-      expect(
-        session.getDisplayTypeDefault(
-          'LinearAlignmentsDisplay',
-          'featureSpacing',
-        ),
-      ).toBeUndefined()
-    })
-  })
-
   it('clearSessionDefaults reverts inheriting tracks and empties changes', () => {
     const { session, display } = createDisplay()
     setCompact(session)
@@ -439,6 +373,75 @@ describe('alignments compactness session default', () => {
   })
 })
 
+// The "Set feature height..." submenu surfaces the promote-as-default control as
+// a per-preset pin (endAdornment) on each value row — not the former standalone
+// "Use X as the default" checkbox. Each pin's isDefault/onToggleDefault is
+// independent, so only the promoted preset reads as pinned.
+describe('feature-height menu per-preset pins', () => {
+  function pinProps(display: ReturnType<typeof createDisplay>['display'], label: string) {
+    const row = getFeatureHeightMenuItem(display).subMenu.find(
+      i => i.label === label,
+    )
+    const adornment = row && 'endAdornment' in row ? row.endAdornment : undefined
+    return isValidElement(adornment)
+      ? (adornment.props as {
+          isDefault: boolean
+          onToggleDefault: () => void
+        })
+      : undefined
+  }
+
+  it('has no standalone "as the default" checkbox row', () => {
+    const { display } = createDisplay()
+    expect(
+      getFeatureHeightMenuItem(display).subMenu.some(i =>
+        String(i.label).includes('as the default'),
+      ),
+    ).toBe(false)
+  })
+
+  it('gives every preset (and fit) its own pin', () => {
+    const { display } = createDisplay()
+    for (const label of [
+      'Normal',
+      'Compact',
+      'Super-compact',
+      'Fit to display height',
+    ]) {
+      expect(pinProps(display, label)).toBeDefined()
+    }
+  })
+
+  it("only the promoted preset's pin reads as active", () => {
+    const { session, display } = createDisplay()
+    setCompact(session)
+    expect(pinProps(display, 'Compact')?.isDefault).toBe(true)
+    expect(pinProps(display, 'Normal')?.isDefault).toBe(false)
+    expect(pinProps(display, 'Super-compact')?.isDefault).toBe(false)
+    expect(pinProps(display, 'Fit to display height')?.isDefault).toBe(false)
+  })
+
+  it("clicking a preset's pin promotes that exact preset", () => {
+    const { session, display } = createDisplay()
+    pinProps(display, 'Compact')?.onToggleDefault()
+    expect(
+      session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight'),
+    ).toBe(3)
+    expect(
+      session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'featureSpacing'),
+    ).toBe(0)
+    expect(pinProps(display, 'Compact')?.isDefault).toBe(true)
+  })
+
+  it("the fit pin promotes heightMode='fit'", () => {
+    const { session, display } = createDisplay()
+    pinProps(display, 'Fit to display height')?.onToggleDefault()
+    expect(
+      session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
+    ).toBe('fit')
+  })
+})
+
 // Fit-to-display-height is the `heightMode` sentinel promotable slot
 // ('inherit' | 'fit' | 'fixed', promotedBase 'fixed'). It rides the same
 // "make default" grouping as featureHeight/featureSpacing so promoting a fit
@@ -465,18 +468,6 @@ describe('alignments fit-to-display-height session default', () => {
       'fit',
     )
     expect(display.fitHeightToDisplay).toBe(true)
-  })
-
-  it('promotes the current fit mode to the session default', () => {
-    const { session, display } = createDisplay()
-    display.setFitHeightToDisplay(true)
-    expect(display.isCompactnessDefault).toBe(false)
-
-    display.setCompactnessDefault(true)
-    expect(
-      session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
-    ).toBe('fit')
-    expect(display.isCompactnessDefault).toBe(true)
   })
 
   it('picking a preset pins fixed and escapes even a promoted fit default', () => {

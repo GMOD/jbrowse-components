@@ -343,6 +343,32 @@ export function makeCurrentValueSessionDefaultControl(
 
 /**
  * #api core/configuration
+ * Per-value control over a *group* of slots: "make this exact combination of
+ * slot values the session default". Like `makeSessionDefaultControl` but for a
+ * multi-slot value (e.g. a feature-height preset = height + spacing + mode), so
+ * each row of a preset radio group gets its own independent pin whose `active`
+ * reflects that specific combination being the current default.
+ */
+export function makeSlotsValueSessionDefaultControl(
+  self: PromotableDisplay,
+  entries: { slot: string; value: unknown }[],
+): SessionDefaultControl {
+  const active = entries.every(({ slot, value }) =>
+    isSlotValueSessionDefault(self, slot, value),
+  )
+  return {
+    active,
+    toggle: () => {
+      for (const { slot, value } of entries) {
+        setSlotValueSessionDefault(self, slot, value, !active)
+      }
+      notifyDefaultToggled(self, !active)
+    },
+  }
+}
+
+/**
+ * #api core/configuration
  * Effective differences an un-pinned track inherits from session-wide defaults,
  * one per promotable slot whose inherited value differs from its schema default.
  * Drives the track-selector "affected by a session default" badge.

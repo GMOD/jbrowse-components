@@ -1,7 +1,11 @@
 import { lazy } from 'react'
 
+import { makeSlotsValueSessionDefaultControl } from '@jbrowse/core/configuration'
+import { promotableRadioItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import HeightIcon from '@mui/icons-material/Height'
+
+import type { PromotableDisplay } from '@jbrowse/core/configuration'
 
 const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),
@@ -30,33 +34,14 @@ export type CompactnessLevel = keyof typeof COMPACTNESS_PRESETS
 interface FeatureHeightModel {
   featureHeight: number
   featureSpacing: number
-  isCompactnessDefault: boolean
   fitHeightToDisplay: boolean
   setFeatureHeight: (height?: number) => void
   setFeatureSpacing: (spacing?: number) => void
-  setCompactnessDefault: (promote: boolean) => void
   setFitHeightToDisplay: (fit: boolean) => void
 }
 
-// Names the height the track currently shows — "fit to display height" when
-// that mode is active, else a preset label when it matches one, else "custom
-// height". Lets the "make default" checkbox say what it will promote instead of
-// the ambiguous "current height".
-function currentCompactnessLabel(model: FeatureHeightModel) {
-  const preset = Object.values(COMPACTNESS_PRESETS).find(
-    p =>
-      model.featureHeight === p.featureHeight &&
-      model.featureSpacing === p.featureSpacing,
-  )
-  return model.fitHeightToDisplay
-    ? '"fit to display height"'
-    : preset
-      ? `"${preset.label}"`
-      : 'the custom height'
-}
-
 export function getFeatureHeightMenuItem(
-  model: FeatureHeightModel,
+  model: FeatureHeightModel & PromotableDisplay,
   opts?: { disabled?: boolean; disabledHelpText?: string },
 ) {
   return {
@@ -66,26 +51,39 @@ export function getFeatureHeightMenuItem(
     disabled: opts?.disabled,
     disabledHelpText: opts?.disabledHelpText,
     subMenu: [
-      ...Object.values(COMPACTNESS_PRESETS).map(preset => ({
-        label: preset.label,
-        type: 'radio' as const,
-        checked:
-          !model.fitHeightToDisplay &&
-          model.featureHeight === preset.featureHeight &&
-          model.featureSpacing === preset.featureSpacing,
-        onClick: () => {
-          model.setFeatureHeight(preset.featureHeight)
-          model.setFeatureSpacing(preset.featureSpacing)
-        },
-      })),
-      {
+      // Each preset row carries its own pin (endAdornment): the value radio
+      // selects the height, the pin promotes that exact preset as the
+      // session-wide default for this display type — the same discoverable
+      // per-row control every other promotable setting uses, replacing the
+      // former standalone "Use X as the default" checkbox.
+      ...Object.values(COMPACTNESS_PRESETS).map(preset =>
+        promotableRadioItem({
+          label: preset.label,
+          checked:
+            !model.fitHeightToDisplay &&
+            model.featureHeight === preset.featureHeight &&
+            model.featureSpacing === preset.featureSpacing,
+          onClick: () => {
+            model.setFeatureHeight(preset.featureHeight)
+            model.setFeatureSpacing(preset.featureSpacing)
+          },
+          sessionDefault: makeSlotsValueSessionDefaultControl(model, [
+            { slot: 'featureHeight', value: preset.featureHeight },
+            { slot: 'featureSpacing', value: preset.featureSpacing },
+            { slot: 'heightMode', value: 'fixed' },
+          ]),
+        }),
+      ),
+      promotableRadioItem({
         label: 'Fit to display height',
-        type: 'radio' as const,
         checked: model.fitHeightToDisplay,
         onClick: () => {
           model.setFitHeightToDisplay(true)
         },
-      },
+        sessionDefault: makeSlotsValueSessionDefaultControl(model, [
+          { slot: 'heightMode', value: 'fit' },
+        ]),
+      }),
       {
         label: 'Custom',
         onClick: () => {
@@ -96,15 +94,6 @@ export function getFeatureHeightMenuItem(
               handleClose,
             },
           ])
-        },
-      },
-      { type: 'divider' as const },
-      {
-        label: `Use ${currentCompactnessLabel(model)} as the default for alignments tracks`,
-        type: 'checkbox' as const,
-        checked: model.isCompactnessDefault,
-        onClick: () => {
-          model.setCompactnessDefault(!model.isCompactnessDefault)
         },
       },
     ],

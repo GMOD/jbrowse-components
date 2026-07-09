@@ -32,6 +32,7 @@ export {
   isSlotValueSessionDefault,
   makeCurrentValueSessionDefaultControl,
   makeSessionDefaultControl,
+  makeSlotsValueSessionDefaultControl,
   resolvePromotableConfigSnapshot,
   setSlotValueSessionDefault,
   setSlotsSessionDefault,
