@@ -1,7 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
-import type { Region } from '@jbrowse/core/util/types'
 
 /**
  * Shared mixin owning "region too large" state and force-load UI.
@@ -61,7 +60,7 @@ export default function RegionTooLargeMixin() {
        * Plaintext reason (for SVG export); the on-screen too-large UI is
        * rendered by the display chrome via `TooLargeMessage`, not the model.
        */
-      regionCannotBeRenderedText(_region?: Region) {
+      regionCannotBeRenderedText() {
         return self.regionTooLarge ? 'Force load to see features' : ''
       },
     }))

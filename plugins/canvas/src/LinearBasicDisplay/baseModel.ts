@@ -29,6 +29,7 @@ import {
   TrackHeightMixin,
   autorunOnReadyView,
   evaluateRegionTooLarge,
+  getHeightModeOptions,
   onDisplayedRegionsChange,
   resolveByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -127,13 +128,11 @@ export const displayModeOptions: { value: DisplayMode; label: string }[] = [
   { value: 'superCompact', label: 'Super-compact' },
 ]
 
-// Single source for the "Track height" radio options, shared by the track menu
-// and the bottom-right track-height dropdown so the labels can't drift.
-export const heightModeOptions: { value: HeightMode; label: string }[] = [
-  { value: 'fixed', label: 'Fixed height — scroll to see all features' },
-  { value: 'grow', label: 'Auto height — grow to fit all features' },
-  { value: 'fit', label: 'Compressed — squeeze all features into view' },
-]
+// "Track height" radio options for the feature displays, shared by the track
+// menu and the bottom-right track-height dropdown. The labels themselves live in
+// linear-genome-view's shared heightMode module so the canvas and alignments
+// displays present identical wording.
+export const heightModeOptions = getHeightModeOptions('features')
 
 // Persistent, declarative feature-highlight request (see featureHighlight.ts).
 // A plain span+name signature — never the adapter uniqueId — so it can be
@@ -905,7 +904,8 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The cached byte estimate scaled from the span it was measured over
+         * The largest single region's cached byte estimate (see
+         * applyFetchResults), scaled from the span it was measured over
          * (`byteEstimateVisibleBp`) to the currently visible span. The estimate
          * is roughly proportional to span, so scaling makes it a pure function
          * of the current view — mirroring densityTooLarge. Crucially it
@@ -1215,8 +1215,8 @@ export default function baseStateModelFactory(
           const raw = maxBottom(self.laidOutDataMap)
           // Fit mode scales content to exactly fill the track, but the
           // base*scale round-trip rounds a hair above `height` in ~5% of float
-          // cases — which would spuriously arm the expand button, mark the track
-          // as overflowing, and open a sub-pixel scrollbar. Snap that away while
+          // cases — which would spuriously mark the track as overflowing and
+          // open a sub-pixel scrollbar. Snap that away while
           // squeezing. A larger overflow means the min-box floor (fitMinScale)
           // stopped the squeeze short of fitting, so it's real and must scroll —
           // keep it.
@@ -2085,17 +2085,17 @@ export default function baseStateModelFactory(
         }
 
         function applyFetchResults(fetches: RegionFetch[]) {
-          let totalBytes = 0
+          let maxBytes = 0
           for (const {
             displayedRegionIndex,
             region,
             bpPerPx,
             result,
           } of fetches) {
-            totalBytes += result.bytes ?? 0
+            maxBytes = Math.max(maxBytes, result.bytes ?? 0)
             // featureCount drives the density gate; absent only on a byte
             // short-circuit (no features were counted), which the byte gate
-            // covers via totalBytes instead.
+            // covers via maxBytes instead.
             if (result.featureCount !== undefined) {
               self.setDensityStats(displayedRegionIndex, {
                 featureCount: result.featureCount,
@@ -2106,9 +2106,13 @@ export default function baseStateModelFactory(
               self.setRpcData(displayedRegionIndex, result, bpPerPx, region)
             }
           }
-          // Feed the derived byte gate (bytesEstimateTooLarge) the way the
-          // pre-flight RPC used to — now sourced from the fetch itself.
-          self.setFeatureDensityStats({ bytes: totalBytes })
+          // Feed the derived byte gate the largest single region's estimate, not
+          // the sum: the worker gates each region against the same per-region
+          // byteSizeLimit, so a multi-region view (whole genome, collapsed
+          // introns) where every region individually fits must not be blanked
+          // just because the total across regions exceeds one region's budget.
+          // Mirrors the density gate, which already takes the per-region max.
+          self.setFeatureDensityStats({ bytes: maxBytes })
         }
 
         return {
@@ -2315,9 +2319,9 @@ export default function baseStateModelFactory(
             let prevShowDescriptions: boolean | undefined
             let prevFitScale: number | undefined
             // autorunOnReadyView gates on view.initialized — laidOutDataMap is
-            // empty until then, and showLabels/effectiveShowDescriptions read
-            // view.width (which throws pre-measure), so the body must not run
-            // until the view is ready. prevs stay undefined until the first
+            // empty until then, and renderedShowLabels/renderedShowDescriptions
+            // read view.width (which throws pre-measure), so the body must not
+            // run until the view is ready. prevs stay undefined until the first
             // ready run seeds them; they're only compared once prevLayout is
             // non-undefined, which can't happen before that first run.
             autorunOnReadyView(
@@ -2325,8 +2329,14 @@ export default function baseStateModelFactory(
               () => {
                 const current = self.laidOutDataMap
                 const mode = self.displayMode
-                const showLabels = self.showLabels
-                const showDescriptions = self.effectiveShowDescriptions
+                // Track what's actually reserved/drawn, not the raw config
+                // flags: in fit mode a zoom step can cross a fitStage level
+                // boundary (auto-dropping descriptions or names) which rescales
+                // every row without the raw showLabels/effectiveShowDescriptions
+                // changing. renderedShow* flip exactly at those crossings, so
+                // the change is treated like a mode change (snap) below.
+                const showLabels = self.renderedShowLabels
+                const showDescriptions = self.renderedShowDescriptions
                 // A fit-to-height rescale (e.g. a drag-resize) is a uniform
                 // fit, not a row re-pack, so treat it like a mode change:
                 // snap rather than morph, else every resize frame animates.

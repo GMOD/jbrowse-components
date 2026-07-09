@@ -496,6 +496,35 @@ describe('byte estimate pre-check', () => {
     expect(renderCalls.length).toBeGreaterThan(0)
   })
 
+  // Regression: the byte gate takes the per-region max, not the sum across
+  // regions. Each region here is ~2MB (under the 5MB limit) so the worker admits
+  // all three, but their sum (6MB) exceeds one region's budget. Summing would
+  // flip regionTooLarge true and blank data that was already fetched and laid
+  // out; the max keeps the whole multi-region view rendered.
+  it('does not gate a multi-region view whose regions each fit but sum over the limit', async () => {
+    const env = createTestEnvironment()
+    const { display, view } = env.createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 1_500_000, refName: 'ctgA' },
+      { assemblyName: 'volvox', start: 1_500_000, end: 3_000_000, refName: 'ctgA' },
+      { assemblyName: 'volvox', start: 3_000_000, end: 4_500_000, refName: 'ctgA' },
+    ])
+    // Show all three regions at once
+    view.showAllRegions()
+
+    // 2 bytes/bp × 1.5Mbp = 3MB per region (< 5MB limit), 9MB summed (> limit)
+    env.mockRpcCall.mockImplementation(makeByteGatedRender(2))
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(3)
+    })
+    expect(display.regionTooLarge).toBe(false)
+    expect(display.laidOutDataMap.size).toBeGreaterThan(0)
+  })
+
   it('allows fetch after force load raises the byte size limit', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 

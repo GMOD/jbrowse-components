@@ -1,6 +1,6 @@
 import { AUTO_FORCE_LOAD_BP } from '../../LinearGenomeView/model.ts'
 import {
-  bytesTooLargeReason,
+  evaluateRegionTooLarge,
   resolveByteLimit,
 } from '../../shared/featureDensityUtils.ts'
 
@@ -45,19 +45,19 @@ export async function checkByteEstimate(
     return null
   }
 
-  const effectiveLimit = resolveByteLimit({
-    userByteSizeLimit: config.userByteSizeLimit,
-    adapterFetchSizeLimit: stats.fetchSizeLimit,
-    configFetchSizeLimit: config.fetchSizeLimit,
+  // Same verdict helper as the arc and canvas paths, so the too-large decision
+  // and banner text can't drift between gating paths. This path measures bytes
+  // only (no density sample), so densityTooLarge is left unset.
+  const { tooLarge, reason } = evaluateRegionTooLarge({
+    visibleBp: config.visibleBp,
+    bytes: stats.bytes,
+    byteLimit: resolveByteLimit({
+      userByteSizeLimit: config.userByteSizeLimit,
+      adapterFetchSizeLimit: stats.fetchSizeLimit,
+      configFetchSizeLimit: config.fetchSizeLimit,
+    }),
+    alwaysRender: stats.alwaysRender,
   })
 
-  if (stats.bytes && stats.bytes > effectiveLimit) {
-    return {
-      stats,
-      tooLarge: true,
-      reason: bytesTooLargeReason(stats.bytes),
-    }
-  }
-
-  return { stats, tooLarge: false }
+  return { stats, tooLarge, reason }
 }
