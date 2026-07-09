@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 
+import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -55,7 +56,7 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
     <DisplayChrome
       model={model}
       factory={MafRendererFactory}
-      testid={`display-${model.configuration.displayId}`}
+      testid={`display-${getConf(model, 'displayId')}`}
       ref={ref}
       style={{ height: model.height }}
       onMouseDown={drag.handleMouseDown}
