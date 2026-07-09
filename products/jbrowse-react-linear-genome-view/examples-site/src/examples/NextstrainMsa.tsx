@@ -33,7 +33,12 @@ export default function NextstrainMsa() {
     <div>
       <label>
         Pathogen{' '}
-        <select value={slug} onChange={event => { setSlug(event.target.value) }}>
+        <select
+          value={slug}
+          onChange={event => {
+            setSlug(event.target.value)
+          }}
+        >
           {PATHOGENS.map(p => (
             <option key={p.slug} value={p.slug}>
               {p.label}

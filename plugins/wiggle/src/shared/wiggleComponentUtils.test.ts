@@ -96,10 +96,7 @@ describe('legendRightEdgePx', () => {
     // whole-genome view: content ends at 1400 but the track is 1500 wide (the
     // trailing 100px is a region-separator/elided PaddingBlock that would mask a
     // 1500-pinned legend)
-    const regions = [
-      { screenEndPx: 700 },
-      { screenEndPx: 1400 },
-    ]
+    const regions = [{ screenEndPx: 700 }, { screenEndPx: 1400 }]
     expect(legendRightEdgePx(regions, 1500)).toBe(1400)
   })
 

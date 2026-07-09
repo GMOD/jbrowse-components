@@ -97,20 +97,20 @@ _both_ states from one combined figure, `<Figure>` takes
 the compose spec (which has no session of its own).
 
 **A UI-click-chain waiting on a fixed timeout is a red flag**, not just for
-before/after figures. If the spec drives a real async RPC through a dialog
-(open menu → click "Run X" → guess a `delay`/`timeout` long enough), that
-guess will eventually be wrong on a slower runner or bigger dataset — see
+before/after figures. If the spec drives a real async RPC through a dialog (open
+menu → click "Run X" → guess a `delay`/`timeout` long enough), that guess will
+eventually be wrong on a slower runner or bigger dataset — see
 `variants/consequence_impact_1000g`'s clustering spec, which used to fail
 intermittently at ~24s against a 30s default. Prefer making the trigger itself
-declarative: a session/config flag the model consumes once on attach and
-clears afterward (`runClustering` on `MultiSampleVariantBaseModel`, the same
-pattern as `LinearGenomeView`'s `init`), paired with a `data-testid` on the
-real result (not a zero-size layout wrapper — `waitForVisible` requires a
-non-empty bounding box) so `readySelector` waits on actual completion instead
-of a duration guess. This keeps the RPC itself under real test coverage
-(unlike baking in a precomputed result, which goes stale and — for anything
-non-trivial in size — can blow past HTTP header limits once URL-encoded into
-`session=spec-{...}`) while removing the fragile menu-driving entirely.
+declarative: a session/config flag the model consumes once on attach and clears
+afterward (`runClustering` on `MultiSampleVariantBaseModel`, the same pattern as
+`LinearGenomeView`'s `init`), paired with a `data-testid` on the real result
+(not a zero-size layout wrapper — `waitForVisible` requires a non-empty bounding
+box) so `readySelector` waits on actual completion instead of a duration guess.
+This keeps the RPC itself under real test coverage (unlike baking in a
+precomputed result, which goes stale and — for anything non-trivial in size —
+can blow past HTTP header limits once URL-encoded into `session=spec-{...}`)
+while removing the fragile menu-driving entirely.
 
 **Gallery.** `/gallery/` and `/demos/` are driven by `src/lib/gallery.ts`. A
 figure item sets `spec:` (a `screenshot-specs.ts` name); both its card image

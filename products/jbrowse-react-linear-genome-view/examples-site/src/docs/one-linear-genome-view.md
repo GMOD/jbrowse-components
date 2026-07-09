@@ -20,6 +20,6 @@ a URL.
 `init.loc` only takes a locstring; to open on a `{refName, start, end}` object
 instead, see [Using a location object](../using-loc-object/). Need to reach the
 view imperatively too (e.g. to navigate from an outside button)? Add a `ref` —
-see [external navigation](../external-navigate/). For the lower-level,
-fully imperative form (`createViewState` + `<JBrowseLinearGenomeView>`), see the
+see [external navigation](../external-navigate/). For the lower-level, fully
+imperative form (`createViewState` + `<JBrowseLinearGenomeView>`), see the
 [embedded components guide](https://jbrowse.org/jb2/docs/embedded_components/).

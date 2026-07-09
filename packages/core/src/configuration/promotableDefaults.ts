@@ -273,7 +273,10 @@ export interface SessionDefaultControl {
 
 // Setting/clearing a session-wide default is otherwise a silent state change, so
 // surface it as a snackbar — the user asked for the pin click to be unmistakable.
-function notifyDefaultToggled(self: PromotableDisplay, promoted: boolean): void {
+function notifyDefaultToggled(
+  self: PromotableDisplay,
+  promoted: boolean,
+): void {
   getSession(self).notify(
     promoted
       ? 'Pinned as the default for all tracks of this type'

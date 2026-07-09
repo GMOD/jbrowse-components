@@ -64,7 +64,6 @@ export interface LinearBasicDisplayModel {
   contentHeight: number
   scrollableHeight: number
   canExpand: boolean
-  heightBeforeExpand: number | undefined
   autoHeight: boolean
   showLabels: boolean
   selectedFeatureId: string | undefined
@@ -556,7 +555,6 @@ const FeatureBody = observer(function FeatureBody({
         />
         <OverflowIndicator
           autoHeight={model.autoHeight}
-          expanded={model.heightBeforeExpand !== undefined}
           canExpand={model.canExpand}
           hasOverflow={model.hasOverflow}
           scrollZoom={view.scrollZoom}

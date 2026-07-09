@@ -31,8 +31,9 @@ ref.current?.session.view
 There's also a lower-level
 [`navTo(query)`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-navto)
 that only navigates if the target lies **inside the currently displayed
-regions** — it won't re-set them, so `navToLocations`/`navToLocString` are almost
-always what you want for external navigation. The full set of navigation actions
-(`zoomTo`, `centerAt`, `showAllRegions`, `moveTo`, …) is enumerated in the
+regions** — it won't re-set them, so `navToLocations`/`navToLocString` are
+almost always what you want for external navigation. The full set of navigation
+actions (`zoomTo`, `centerAt`, `showAllRegions`, `moveTo`, …) is enumerated in
+the
 [LinearGenomeView state model docs](https://jbrowse.org/jb2/docs/models/lineargenomeview/)
 — anything marked `#action` there is callable on `ref.current.session.view`.

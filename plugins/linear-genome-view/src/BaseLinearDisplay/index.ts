@@ -14,10 +14,7 @@ export { default as DisplayLoadingOverlay } from './components/DisplayLoadingOve
 export { default as TrackHeightMixin } from './models/TrackHeightMixin.tsx'
 export { default as PromotableDefaultsMixin } from './models/PromotableDefaultsMixin.tsx'
 export { MIN_DISPLAY_HEIGHT } from './models/const.ts'
-export {
-  GROW_MAX_HEIGHT,
-  HEIGHT_MODE_VALUES,
-} from './models/heightMode.ts'
+export { GROW_MAX_HEIGHT, HEIGHT_MODE_VALUES } from './models/heightMode.ts'
 export type { HeightMode } from './models/heightMode.ts'
 
 export { default as RegionTooLargeMixin } from '../shared/RegionTooLargeMixin.tsx'

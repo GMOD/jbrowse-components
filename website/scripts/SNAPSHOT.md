@@ -31,18 +31,18 @@ pnpm snapshot \
   --width 1500 --height 800 --scale 2
 ```
 
-| flag | meaning |
-| --- | --- |
-| `--url <url>` | page to capture (required) |
-| `--out <file.png>` | output path (required) |
-| `--wait-selector <css>` | wait for this selector to be visible before capture |
-| `--wait-text <text>` | wait for this visible text before capture |
-| `--width` / `--height` / `--scale` | viewport (default `1500`×`800` @`2`) |
-| `--settle <ms>` | extra settle before capture (default 250) |
-| `--diff-threshold <f>` | pixel-diff fraction below which the existing PNG is kept (default 0.005) |
-| `--force` | overwrite even if unchanged |
-| `--headed` | run a visible browser |
-| `--chrome <path>` | browser executable |
+| flag                               | meaning                                                                  |
+| ---------------------------------- | ------------------------------------------------------------------------ |
+| `--url <url>`                      | page to capture (required)                                               |
+| `--out <file.png>`                 | output path (required)                                                   |
+| `--wait-selector <css>`            | wait for this selector to be visible before capture                      |
+| `--wait-text <text>`               | wait for this visible text before capture                                |
+| `--width` / `--height` / `--scale` | viewport (default `1500`×`800` @`2`)                                     |
+| `--settle <ms>`                    | extra settle before capture (default 250)                                |
+| `--diff-threshold <f>`             | pixel-diff fraction below which the existing PNG is kept (default 0.005) |
+| `--force`                          | overwrite even if unchanged                                              |
+| `--headed`                         | run a visible browser                                                    |
+| `--chrome <path>`                  | browser executable                                                       |
 
 Exit status prints `new` / `updated` / `kept` per the content-stable result.
 
@@ -75,7 +75,7 @@ await snapshot({
   name: 'annotated',
   url: 'http://localhost:3000',
   annotations: [
-    { type: 'box', anchor: { text: 'Save' } },          // wraps the "Save" button
+    { type: 'box', anchor: { text: 'Save' } }, // wraps the "Save" button
     { type: 'text', x: 200, y: 400, text: 'click here' },
     { type: 'arrow', from: { x: 100, y: 500 }, to: { x: 400, y: 300 } },
   ],

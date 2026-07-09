@@ -201,8 +201,8 @@ override it per-driver in config:
 }
 ```
 
-(Older sessions stored `workerCount` under a per-driver `drivers` map; that shape
-is still read and hoisted to the flat `workerCount` slot on load.)
+(Older sessions stored `workerCount` under a per-driver `drivers` map; that
+shape is still read and hoisted to the flat `workerCount` slot on load.)
 
 ## See also
 

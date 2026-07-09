@@ -240,7 +240,10 @@ export const gallerySpecs: ScreenshotSpec[] = [
     // the chain file carries liftOver entries for alt/random contigs that the
     // karyotype-subset assemblies omit, so the dotplot shows a (benign,
     // dismissable) render warning; clear it for a clean gallery card
-    actions: [{ type: 'click', text: 'Dismiss' }, { type: 'delay', ms: 500 }],
+    actions: [
+      { type: 'click', text: 'Dismiss' },
+      { type: 'delay', ms: 500 },
+    ],
   },
   {
     mode: 'url',

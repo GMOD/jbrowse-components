@@ -21,11 +21,13 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Self-gating: visible only when there's something to expand/restore, so
-// callers can render it unconditionally inside BottomRightIndicators.
+// Self-gating: visible only when there's something to grow/restore, so callers
+// can render it unconditionally inside BottomRightIndicators. The button is a
+// toggle for the persistent `grow` (auto-fit) height mode: click it when content
+// overflows to start growing, click it again to stop and restore the previous
+// height. It mirrors the "Auto height" track-menu radio (both are `grow`).
 const OverflowIndicator = observer(function OverflowIndicator({
   autoHeight,
-  expanded,
   canExpand,
   hasOverflow,
   scrollZoom,
@@ -33,7 +35,6 @@ const OverflowIndicator = observer(function OverflowIndicator({
   onRestore,
 }: {
   autoHeight: boolean
-  expanded: boolean
   canExpand: boolean
   hasOverflow: boolean
   scrollZoom: boolean
@@ -47,18 +48,16 @@ const OverflowIndicator = observer(function OverflowIndicator({
   // next move, so MUI's default hover-driven Tooltip would stay stuck open.
   // Controlling open state lets us force it closed on click.
   const [open, setOpen] = useState(false)
-  // Once expanded, keep offering "restore" (resize back down) rather than
-  // flipping to expand again — the collapse affordance is the priority. The
-  // expand action is gated on canExpand so it never offers a no-op or a shrink.
-  const visible = !autoHeight && (canExpand || expanded)
-  const label = expanded ? 'Restore previous height' : 'Expand to fit features'
-  // Content still overflows but the track can't grow — pinned at the maxHeight
-  // cap. Surface that so a persistent scrollbar after "expand to fit" reads as
-  // intentional rather than a half-working button.
-  const atMaxHeight = hasOverflow && !canExpand
+  // While growing, always offer the toggle-off (restore). Otherwise offer to
+  // grow only when content actually overflows (canExpand gates out a no-op).
+  const growing = autoHeight
+  const visible = growing || canExpand
+  const label = growing ? 'Stop auto-fit height' : 'Expand to fit features'
+  // Growing but content still overflows — the track is pinned at the grow
+  // height cap. Surface that so the persistent scrollbar reads as intentional.
   const title = [
     label,
-    atMaxHeight ? 'maximum height reached' : undefined,
+    growing && hasOverflow ? 'capped at max height' : undefined,
     hasOverflow && scrollZoom ? 'shift+wheel to scroll' : undefined,
   ]
     .filter(Boolean)
@@ -81,14 +80,14 @@ const OverflowIndicator = observer(function OverflowIndicator({
         onClick={e => {
           e.stopPropagation()
           setOpen(false)
-          if (expanded) {
+          if (growing) {
             onRestore()
           } else {
             onExpand()
           }
         }}
       >
-        {expanded ? (
+        {growing ? (
           <UnfoldLessIcon className={classes.icon} />
         ) : (
           <UnfoldMoreIcon className={classes.icon} />

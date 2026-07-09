@@ -1287,21 +1287,33 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
+        // The "Expand to fit features" indicator enters persistent `grow` mode
+        // (rather than a one-shot resize) so the track keeps fitting as the user
+        // zooms/pans and new data loads — the same mode the "Auto height" track
+        // menu radio drives. The pre-grow height is stashed so toggling the
+        // indicator back off restores it non-destructively. Writes the heightMode
+        // slot directly because setHeightMode is defined in a later actions block;
+        // its only grow side effect (clearing heightBeforeExpand) is one we
+        // deliberately override here anyway.
         expandToFit() {
-          self.heightBeforeExpand = self.height
-          self.setHeight(self.fitHeight)
+          const prev = self.height
+          self.configuration.setSlot('heightMode', 'grow')
+          self.heightBeforeExpand = prev
           // Show the content from the top. Without this, a track scrolled down
-          // before expanding keeps its old scrollTop; if the grow removes
-          // overflow the GPU canvas paints at that now-invalid offset (top
-          // features clipped, blank below) until a DOM scroll event happens to
-          // sync it back.
+          // before growing keeps its old scrollTop; if the grow removes overflow
+          // the GPU canvas paints at that now-invalid offset (top features
+          // clipped, blank below) until a DOM scroll event syncs it back.
           self.setScrollTop(0)
         },
 
         /**
          * #action
          */
+        // Toggle the indicator back off: leave grow mode and restore the height
+        // the track had before growing. Writes the slot directly (setHeightMode
+        // is a later block); 'fixed' has no side effects to duplicate.
         collapseFromExpand() {
+          self.configuration.setSlot('heightMode', 'fixed')
           if (self.heightBeforeExpand !== undefined) {
             self.setHeight(self.heightBeforeExpand)
             self.heightBeforeExpand = undefined

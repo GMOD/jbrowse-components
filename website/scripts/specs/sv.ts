@@ -17,8 +17,30 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // Passed as the view's `displayedRegionNames` so the LGV init restricts to just
 // these (resolved through the assembly aliases against hg19's own regions).
 const HG19_MAIN_CHROMS = [
-  '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
-  '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+  '11',
+  '12',
+  '13',
+  '14',
+  '15',
+  '16',
+  '17',
+  '18',
+  '19',
+  '20',
+  '21',
+  '22',
+  'X',
+  'Y',
 ]
 
 export const svSpecs: ScreenshotSpec[] = [

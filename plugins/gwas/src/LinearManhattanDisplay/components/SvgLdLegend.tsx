@@ -32,7 +32,11 @@ export default function SvgLdLegend({ width }: { width: number }) {
             stroke="rgba(0,0,0,0.2)"
             strokeWidth={0.5}
           />
-          <text fontSize={10} x={LD_LEGEND_SWATCH_PX + 4} y={LD_LEGEND_SWATCH_PX - 1}>
+          <text
+            fontSize={10}
+            x={LD_LEGEND_SWATCH_PX + 4}
+            y={LD_LEGEND_SWATCH_PX - 1}
+          >
             {label}
           </text>
         </g>

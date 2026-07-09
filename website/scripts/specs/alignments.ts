@@ -711,7 +711,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             type: 'click',
             selector: '[role="dialog"] button[type="submit"]',
           },
-          { type: 'waitForSelector', selector: '[data-testid="pileup-display-done"]' },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="pileup-display-done"]',
+          },
           { type: 'delay', ms: 2000 },
         ],
       },

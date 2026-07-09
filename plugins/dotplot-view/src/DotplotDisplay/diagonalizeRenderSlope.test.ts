@@ -121,6 +121,8 @@ describe('diagonalize + render slope composition', () => {
     expect(newRegions.find(r => r.refName === 'rev')?.reversed).toBe(true)
     // dominant (reverse) alignment is parallel; minority (forward) is not
     expect(renderedIsParallel(mostlyRev[0]!, refRegions, newRegions)).toBe(true)
-    expect(renderedIsParallel(mostlyRev[1]!, refRegions, newRegions)).toBe(false)
+    expect(renderedIsParallel(mostlyRev[1]!, refRegions, newRegions)).toBe(
+      false,
+    )
   })
 })

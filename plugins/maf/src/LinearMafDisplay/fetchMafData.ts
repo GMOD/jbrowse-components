@@ -44,8 +44,7 @@ export function pickSamplesResult<R extends { samples: Sample[] }>(
   results: readonly { result: R }[],
 ): R | undefined {
   return (
-    results.find(r => r.result.samples.length > 0)?.result ??
-    results[0]?.result
+    results.find(r => r.result.samples.length > 0)?.result ?? results[0]?.result
   )
 }
 

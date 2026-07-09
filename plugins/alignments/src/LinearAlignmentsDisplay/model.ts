@@ -2816,7 +2816,8 @@ export default function stateModelFactory(
             getReadsMenuItem(self),
             getFeatureHeightMenuItem(self, {
               disabled: !self.showPileup,
-              disabledHelpText: 'Turn on "Show pileup" to change feature height',
+              disabledHelpText:
+                'Turn on "Show pileup" to change feature height',
             }),
             getCoverageMenuItem(self),
             getReadConnectionsMenuItem(self),

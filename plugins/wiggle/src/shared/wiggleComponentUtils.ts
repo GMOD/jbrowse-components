@@ -54,10 +54,7 @@ export function legendRightEdgePx(
   visibleRegions: { screenEndPx: number }[],
   totalWidth: number,
 ) {
-  return Math.min(
-    totalWidth,
-    visibleRegions.at(-1)?.screenEndPx ?? totalWidth,
-  )
+  return Math.min(totalWidth, visibleRegions.at(-1)?.screenEndPx ?? totalWidth)
 }
 
 export function getRowTop(rowIndex: number, rowHeight: number) {

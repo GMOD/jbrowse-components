@@ -114,8 +114,7 @@ describe('Feature height submenu', () => {
     display.setHeightMode('grow')
     const advanced2 = subMenuOf(featureHeightSubMenu(display), 'Track height')
     expect(
-      radio(advanced2, 'Auto height — grow track to show all features')
-        .checked,
+      radio(advanced2, 'Auto height — grow track to show all features').checked,
     ).toBe(true)
     expect(
       radio(advanced2, 'Fixed height — scroll to see all features').checked,

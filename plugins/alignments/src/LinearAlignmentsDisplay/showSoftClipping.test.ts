@@ -14,7 +14,6 @@ import {
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 
-
 import configSchemaFactory from './configSchema.ts'
 import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
 import stateModelFactory from './model.ts'
@@ -378,11 +377,15 @@ describe('alignments compactness session default', () => {
 // "Use X as the default" checkbox. Each pin's isDefault/onToggleDefault is
 // independent, so only the promoted preset reads as pinned.
 describe('feature-height menu per-preset pins', () => {
-  function pinProps(display: ReturnType<typeof createDisplay>['display'], label: string) {
+  function pinProps(
+    display: ReturnType<typeof createDisplay>['display'],
+    label: string,
+  ) {
     const row = getFeatureHeightMenuItem(display).subMenu.find(
       i => i.label === label,
     )
-    const adornment = row && 'endAdornment' in row ? row.endAdornment : undefined
+    const adornment =
+      row && 'endAdornment' in row ? row.endAdornment : undefined
     return isValidElement(adornment)
       ? (adornment.props as {
           isDefault: boolean
@@ -432,7 +435,10 @@ describe('feature-height menu per-preset pins', () => {
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight'),
     ).toBe(3)
     expect(
-      session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'featureSpacing'),
+      session.getDisplayTypeDefault(
+        'LinearAlignmentsDisplay',
+        'featureSpacing',
+      ),
     ).toBe(0)
     expect(pinProps(display, 'Compact')?.isDefault).toBe(true)
   })
@@ -576,7 +582,8 @@ describe('alignments grow (auto-height) mode', () => {
     const row = getFeatureHeightMenuItem(display).subMenu.find(
       i => i.label === 'Auto height — grow to fit all reads',
     )
-    const adornment = row && 'endAdornment' in row ? row.endAdornment : undefined
+    const adornment =
+      row && 'endAdornment' in row ? row.endAdornment : undefined
     const props = isValidElement(adornment)
       ? (adornment.props as { onToggleDefault: () => void })
       : undefined

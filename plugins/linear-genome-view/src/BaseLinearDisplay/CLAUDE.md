@@ -108,10 +108,10 @@ terminal `regionTooLarge`/`error`/`renderError` states in `computeDisplayPhase`.
 `DisplayLoadingOverlay` component, made visible by `DisplayChrome` passing
 `visible={displayPhase === 'loading'}` — alignments, canvas, wiggle,
 multi-wiggle, manhattan, maf (no per-display overlay wrappers, no
-`loadingOverlayVisible` getter). `isReady` stays `canvasDrawn && !isLoading` (the
-render-lifecycle axis) and `viewportWithinLoadedData` stays separate rather than
-folded into `isReady`, because the autorun reads `loadedRegions` untracked while
-the getter reads it tracked.
+`loadingOverlayVisible` getter). `isReady` stays `canvasDrawn && !isLoading`
+(the render-lifecycle axis) and `viewportWithinLoadedData` stays separate rather
+than folded into `isReady`, because the autorun reads `loadedRegions` untracked
+while the getter reads it tracked.
 
 Known gap: the check is spatial only, so wiggle-family displays still have a
 brief un-flagged window on _zoom_ (resolution rebinning is an `isCacheValid`

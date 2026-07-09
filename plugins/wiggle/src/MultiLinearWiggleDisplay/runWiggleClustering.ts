@@ -46,11 +46,15 @@ export async function runWiggleClustering({
 }) {
   const { sourcesWithoutLayout } = model
   if (sourcesWithoutLayout.length) {
-    const ret = await rpcManager.call(sessionId, 'MultiWiggleClusterScoreMatrix', {
-      ...clusterScoreMatrixArgs(model, samplesPerPixel),
-      stopToken,
-      statusCallback,
-    })
+    const ret = await rpcManager.call(
+      sessionId,
+      'MultiWiggleClusterScoreMatrix',
+      {
+        ...clusterScoreMatrixArgs(model, samplesPerPixel),
+        stopToken,
+        statusCallback,
+      },
+    )
     model.setLayoutAndClusterTree(
       buildClusteredLayout(sourcesWithoutLayout, model.layout, ret.order),
       ret.tree,

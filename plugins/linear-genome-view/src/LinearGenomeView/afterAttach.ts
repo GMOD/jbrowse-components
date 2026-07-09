@@ -111,7 +111,12 @@ async function navigateInit(
       // a highlight-only init (no loc) must not clobber a defaultSession's
       // existing navigation, so only auto-navigate when nothing is shown yet
       if (init.displayedRegionNames) {
-        showNamedRegions(self, session, init.assembly, init.displayedRegionNames)
+        showNamedRegions(
+          self,
+          session,
+          init.assembly,
+          init.displayedRegionNames,
+        )
       } else {
         self.showAllRegionsInAssembly(init.assembly)
       }

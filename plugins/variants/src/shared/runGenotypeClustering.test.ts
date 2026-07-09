@@ -13,7 +13,9 @@ const adapterConfig = ConfigurationSchema('TestAdapter', {}).create({
   type: 'TestAdapter',
 })
 
-const regions = [{ assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 }]
+const regions = [
+  { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+]
 
 function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
   return {

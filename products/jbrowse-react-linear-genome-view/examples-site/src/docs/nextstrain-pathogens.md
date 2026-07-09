@@ -22,11 +22,11 @@ The **Sample genotypes** track is a multi-sample variant matrix. The generator
 reconstructs each phylogeny tip's genotype at every variable site (walking the
 tree's nucleotide mutations root→tip) and writes a bgzipped/tabixed VCF plus a
 `samplesTsv` of each tip's metadata. JBrowse's
-`LinearMultiSampleVariantMatrixDisplay` renders it as samples × sites, colored by
-region — the genotype table behind the Nextstrain tree, in genome coordinates.
-The Zika and measles configs additionally carry a `CramAdapter` **Published
-genomes** track (every genome NCBI publishes, aligned to the hosted reference
-with `minimap2`).
+`LinearMultiSampleVariantMatrixDisplay` renders it as samples × sites, colored
+by region — the genotype table behind the Nextstrain tree, in genome
+coordinates. The Zika and measles configs additionally carry a `CramAdapter`
+**Published genomes** track (every genome NCBI publishes, aligned to the hosted
+reference with `minimap2`).
 
 Because each config is a plain JS object, it can be imported, generated, or
 templated by your own code. See [default session](../default-session/) for the

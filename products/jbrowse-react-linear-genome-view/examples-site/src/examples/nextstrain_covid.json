@@ -1,1 +1,241 @@
-{"assembly":{"name":"SARS-CoV-2","sequence":{"type":"ReferenceSequenceTrack","trackId":"SARS-CoV-2-ReferenceSequenceTrack","adapter":{"type":"IndexedFastaAdapter","fastaLocation":{"uri":"https://jbrowse.org/demos/nextstrain/covid/covid.fa"},"faiLocation":{"uri":"https://jbrowse.org/demos/nextstrain/covid/covid.fa.fai"}}}},"tracks":[{"type":"FeatureTrack","name":"Nextstrain annotations","trackId":"SARS-CoV-2-nextstrain-annotations","assemblyNames":["SARS-CoV-2"],"category":["Annotation"],"adapter":{"type":"FromConfigAdapter","features":[{"refName":"SARS-CoV-2","name":"ORF1a","uniqueId":0,"start":265,"end":13468,"strand":1,"fill":"#511EA8"},{"refName":"SARS-CoV-2","name":"ORF1b","uniqueId":1,"start":13467,"end":21555,"strand":1,"fill":"#3F50CC"},{"refName":"SARS-CoV-2","name":"S","uniqueId":2,"start":21562,"end":25384,"strand":1,"fill":"#4066D0"},{"refName":"SARS-CoV-2","name":"ORF3a","uniqueId":3,"start":25392,"end":26220,"strand":1,"fill":"#4B8AC3"},{"refName":"SARS-CoV-2","name":"E","uniqueId":4,"start":26244,"end":26472,"strand":1,"fill":"#63AC99"},{"refName":"SARS-CoV-2","name":"M","uniqueId":5,"start":26522,"end":27191,"strand":1,"fill":"#7CB879"},{"refName":"SARS-CoV-2","name":"ORF6","uniqueId":6,"start":27201,"end":27387,"strand":1,"fill":"#A6BE4F"},{"refName":"SARS-CoV-2","name":"ORF7a","uniqueId":7,"start":27393,"end":27759,"strand":1,"fill":"#BDBB48"},{"refName":"SARS-CoV-2","name":"ORF7b","uniqueId":8,"start":27755,"end":27887,"strand":1,"fill":"#D9AD3D"},{"refName":"SARS-CoV-2","name":"ORF8","uniqueId":9,"start":27893,"end":28259,"strand":1,"fill":"#E68E35"},{"refName":"SARS-CoV-2","name":"N","uniqueId":10,"start":28273,"end":29533,"strand":1,"fill":"#E4632E"},{"refName":"SARS-CoV-2","name":"ORF9b","uniqueId":11,"start":28283,"end":28577,"strand":1,"fill":"#DC2F24"}]},"displays":[{"type":"LinearBasicDisplay","displayId":"SARS-CoV-2-nextstrain-color-display","renderer":{"type":"SvgFeatureRenderer","color1":"jexl:get(feature,'fill') || 'black'"}}]},{"type":"QuantitativeTrack","name":"Diversity (entropy)","trackId":"SARS-CoV-2-entropy-score","assemblyNames":["SARS-CoV-2"],"category":["Annotation"],"adapter":{"type":"BigWigAdapter","bigWigLocation":{"uri":"https://jbrowse.org/demos/nextstrain/covid/covid_entropy.bw"}}},{"type":"VariantTrack","name":"Sample genotypes","trackId":"SARS-CoV-2-genotypes","assemblyNames":["SARS-CoV-2"],"category":["Nextstrain"],"adapter":{"type":"VcfTabixAdapter","vcfGzLocation":{"uri":"https://jbrowse.org/demos/nextstrain/covid/covid_genotypes.vcf.gz"},"index":{"location":{"uri":"https://jbrowse.org/demos/nextstrain/covid/covid_genotypes.vcf.gz.tbi"}},"samplesTsvLocation":{"uri":"https://jbrowse.org/demos/nextstrain/covid/covid_samples.tsv"}}}],"location":"SARS-CoV-2:1..29,903","defaultSession":{"name":"My session","view":{"id":"linearGenomeView","type":"LinearGenomeView","tracks":[{"type":"QuantitativeTrack","configuration":"SARS-CoV-2-entropy-score","displays":[{"type":"LinearWiggleDisplay","displayId":"SARS-CoV-2-entropy-score-LinearWiggleDisplay","renderers":{"DensityRenderer":{"type":"DensityRenderer"},"XYPlotRenderer":{"type":"XYPlotRenderer"},"LinePlotRenderer":{"type":"LinePlotRenderer"}}}]},{"type":"FeatureTrack","configuration":"SARS-CoV-2-nextstrain-annotations","displays":[{"type":"LinearBasicDisplay","configuration":"SARS-CoV-2-nextstrain-color-display"}]},{"type":"VariantTrack","configuration":"SARS-CoV-2-genotypes","displays":[{"type":"LinearMultiSampleVariantMatrixDisplay","displayId":"SARS-CoV-2-genotypes-LinearMultiSampleVariantMatrixDisplay","height":400,"colorBy":"region"}]},{"type":"ReferenceSequenceTrack","configuration":"SARS-CoV-2-ReferenceSequenceTrack","displays":[{"type":"LinearReferenceSequenceDisplay","configuration":"SARS-CoV-2-ReferenceSequenceTrack-LinearReferenceSequenceDisplay"}]}]}}}
+{
+  "assembly": {
+    "name": "SARS-CoV-2",
+    "sequence": {
+      "type": "ReferenceSequenceTrack",
+      "trackId": "SARS-CoV-2-ReferenceSequenceTrack",
+      "adapter": {
+        "type": "IndexedFastaAdapter",
+        "fastaLocation": {
+          "uri": "https://jbrowse.org/demos/nextstrain/covid/covid.fa"
+        },
+        "faiLocation": {
+          "uri": "https://jbrowse.org/demos/nextstrain/covid/covid.fa.fai"
+        }
+      }
+    }
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "name": "Nextstrain annotations",
+      "trackId": "SARS-CoV-2-nextstrain-annotations",
+      "assemblyNames": ["SARS-CoV-2"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "refName": "SARS-CoV-2",
+            "name": "ORF1a",
+            "uniqueId": 0,
+            "start": 265,
+            "end": 13468,
+            "strand": 1,
+            "fill": "#511EA8"
+          },
+          {
+            "refName": "SARS-CoV-2",
+            "name": "ORF1b",
+            "uniqueId": 1,
+            "start": 13467,
+            "end": 21555,
+            "strand": 1,
+            "fill": "#3F50CC"
+          },
+          {
+            "refName": "SARS-CoV-2",
+            "name": "S",
+            "uniqueId": 2,
+            "start": 21562,
+            "end": 25384,
+            "strand": 1,
+            "fill": "#4066D0"
+          },
+          {
+            "refName": "SARS-CoV-2",
+            "name": "ORF3a",
+            "uniqueId": 3,
+            "start": 25392,
+            "end": 26220,
+            "strand": 1,
+            "fill": "#4B8AC3"
+          },
+          {
+            "refName": "SARS-CoV-2",
+            "name": "E",
+            "uniqueId": 4,
+            "start": 26244,
+            "end": 26472,
+            "strand": 1,
+            "fill": "#63AC99"
+          },
+          {
+            "refName": "SARS-CoV-2",
+            "name": "M",
+            "uniqueId": 5,
+            "start": 26522,
+            "end": 27191,
+            "strand": 1,
+            "fill": "#7CB879"
+          },
+          {
+            "refName": "SARS-CoV-2",
+            "name": "ORF6",
+            "uniqueId": 6,
+            "start": 27201,
+            "end": 27387,
+            "strand": 1,
+            "fill": "#A6BE4F"
+          },
+          {
+            "refName": "SARS-CoV-2",
+            "name": "ORF7a",
+            "uniqueId": 7,
+            "start": 27393,
+            "end": 27759,
+            "strand": 1,
+            "fill": "#BDBB48"
+          },
+          {
+            "refName": "SARS-CoV-2",
+            "name": "ORF7b",
+            "uniqueId": 8,
+            "start": 27755,
+            "end": 27887,
+            "strand": 1,
+            "fill": "#D9AD3D"
+          },
+          {
+            "refName": "SARS-CoV-2",
+            "name": "ORF8",
+            "uniqueId": 9,
+            "start": 27893,
+            "end": 28259,
+            "strand": 1,
+            "fill": "#E68E35"
+          },
+          {
+            "refName": "SARS-CoV-2",
+            "name": "N",
+            "uniqueId": 10,
+            "start": 28273,
+            "end": 29533,
+            "strand": 1,
+            "fill": "#E4632E"
+          },
+          {
+            "refName": "SARS-CoV-2",
+            "name": "ORF9b",
+            "uniqueId": 11,
+            "start": 28283,
+            "end": 28577,
+            "strand": 1,
+            "fill": "#DC2F24"
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "SARS-CoV-2-nextstrain-color-display",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "color1": "jexl:get(feature,'fill') || 'black'"
+          }
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "name": "Diversity (entropy)",
+      "trackId": "SARS-CoV-2-entropy-score",
+      "assemblyNames": ["SARS-CoV-2"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/demos/nextstrain/covid/covid_entropy.bw"
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "name": "Sample genotypes",
+      "trackId": "SARS-CoV-2-genotypes",
+      "assemblyNames": ["SARS-CoV-2"],
+      "category": ["Nextstrain"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://jbrowse.org/demos/nextstrain/covid/covid_genotypes.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/nextstrain/covid/covid_genotypes.vcf.gz.tbi"
+          }
+        },
+        "samplesTsvLocation": {
+          "uri": "https://jbrowse.org/demos/nextstrain/covid/covid_samples.tsv"
+        }
+      }
+    }
+  ],
+  "location": "SARS-CoV-2:1..29,903",
+  "defaultSession": {
+    "name": "My session",
+    "view": {
+      "id": "linearGenomeView",
+      "type": "LinearGenomeView",
+      "tracks": [
+        {
+          "type": "QuantitativeTrack",
+          "configuration": "SARS-CoV-2-entropy-score",
+          "displays": [
+            {
+              "type": "LinearWiggleDisplay",
+              "displayId": "SARS-CoV-2-entropy-score-LinearWiggleDisplay",
+              "renderers": {
+                "DensityRenderer": { "type": "DensityRenderer" },
+                "XYPlotRenderer": { "type": "XYPlotRenderer" },
+                "LinePlotRenderer": { "type": "LinePlotRenderer" }
+              }
+            }
+          ]
+        },
+        {
+          "type": "FeatureTrack",
+          "configuration": "SARS-CoV-2-nextstrain-annotations",
+          "displays": [
+            {
+              "type": "LinearBasicDisplay",
+              "configuration": "SARS-CoV-2-nextstrain-color-display"
+            }
+          ]
+        },
+        {
+          "type": "VariantTrack",
+          "configuration": "SARS-CoV-2-genotypes",
+          "displays": [
+            {
+              "type": "LinearMultiSampleVariantMatrixDisplay",
+              "displayId": "SARS-CoV-2-genotypes-LinearMultiSampleVariantMatrixDisplay",
+              "height": 400,
+              "colorBy": "region"
+            }
+          ]
+        },
+        {
+          "type": "ReferenceSequenceTrack",
+          "configuration": "SARS-CoV-2-ReferenceSequenceTrack",
+          "displays": [
+            {
+              "type": "LinearReferenceSequenceDisplay",
+              "configuration": "SARS-CoV-2-ReferenceSequenceTrack-LinearReferenceSequenceDisplay"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

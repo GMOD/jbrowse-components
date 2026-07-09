@@ -205,8 +205,7 @@ interface MenuNode {
 function hasMenuLabel(items: MenuNode[], label: string): boolean {
   return items.some(
     i =>
-      i.label === label ||
-      (i.subMenu ? hasMenuLabel(i.subMenu, label) : false),
+      i.label === label || (i.subMenu ? hasMenuLabel(i.subMenu, label) : false),
   )
 }
 function findMenu(items: MenuNode[], label: string): MenuNode | undefined {

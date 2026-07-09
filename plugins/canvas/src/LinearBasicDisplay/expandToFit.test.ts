@@ -135,25 +135,30 @@ describe('canvas display expand-to-fit', () => {
     expect(display.canExpand).toBe(true)
   })
 
-  it('expandToFit stores the prior height, grows to fitHeight, resets scroll', () => {
+  it('expandToFit enters persistent grow mode, storing the prior height and resetting scroll', () => {
     const display = createDisplay()
     display.setHeight(30)
     display.setScrollTop(300)
 
     display.expandToFit()
+    // it's the persistent grow mode now, not a one-shot resize
+    expect(display.autoHeight).toBe(true)
     expect(display.heightBeforeExpand).toBe(30)
-    expect(display.height).toBe(50)
     expect(display.scrollTop).toBe(0)
-    // now fully fit, so no further expand is offered
+    // grow fits the content (grownHeight == fitHeight here), so nothing overflows
+    expect(display.height).toBe(50)
     expect(display.canExpand).toBe(false)
   })
 
-  it('collapseFromExpand restores the stored height and clears the marker', () => {
+  it('collapseFromExpand toggles grow off and restores the stored height', () => {
     const display = createDisplay()
     display.setHeight(30)
 
     display.expandToFit()
+    expect(display.autoHeight).toBe(true)
+
     display.collapseFromExpand()
+    expect(display.autoHeight).toBe(false)
     expect(display.height).toBe(30)
     expect(display.heightBeforeExpand).toBeUndefined()
   })

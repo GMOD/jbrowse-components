@@ -49,7 +49,8 @@ const DATASETS = [
     url: 'https://data.nextstrain.org/zika.json',
     ref: 'https://raw.githubusercontent.com/nextstrain/zika/main/phylogenetic/defaults/reference.gb',
     polyprotein: true,
-    genomesSeqs: 'https://data.nextstrain.org/files/workflows/zika/sequences.fasta.zst',
+    genomesSeqs:
+      'https://data.nextstrain.org/files/workflows/zika/sequences.fasta.zst',
   },
   {
     file: 'nextstrain_ebola',
@@ -63,7 +64,8 @@ const DATASETS = [
     assembly: 'Measles',
     url: 'https://data.nextstrain.org/measles.json',
     ref: 'https://raw.githubusercontent.com/nextstrain/measles/main/phylogenetic/defaults/measles_reference_genome.gb',
-    genomesSeqs: 'https://data.nextstrain.org/files/workflows/measles/sequences.fasta.zst',
+    genomesSeqs:
+      'https://data.nextstrain.org/files/workflows/measles/sequences.fasta.zst',
   },
   {
     file: 'nextstrain_rsv_a',
@@ -349,7 +351,9 @@ function writeEntropyBigWig(outDir, slug, refName, len, features) {
   const bedGraph = join(outDir, `${slug}_entropy.bedGraph`)
   const chromSizes = join(outDir, `${slug}.chrom.sizes`)
   const bw = join(outDir, `${slug}_entropy.bw`)
-  const lines = features.map(f => `${refName}\t${f.start}\t${f.end}\t${f.score}`)
+  const lines = features.map(
+    f => `${refName}\t${f.start}\t${f.end}\t${f.score}`,
+  )
   writeFileSync(bedGraph, `${lines.join('\n')}\n`)
   writeFileSync(chromSizes, `${refName}\t${len}\n`)
   execFileSync('bedGraphToBigWig', [bedGraph, chromSizes, bw])
@@ -442,7 +446,9 @@ function writeGenotypeVcf(outDir, slug, refName, len, { rootBase, tips }) {
     tsv,
     [
       'name\tregion\tcountry\tdate',
-      ...tips.map(t => `${t.name}\t${t.meta.region}\t${t.meta.country}\t${t.meta.date}`),
+      ...tips.map(
+        t => `${t.name}\t${t.meta.region}\t${t.meta.country}\t${t.meta.date}`,
+      ),
       '',
     ].join('\n'),
   )
@@ -474,7 +480,9 @@ function buildNewick(tree, keep) {
     const bl = Math.max(0, div(node) - parentDiv)
     const children = node.children || []
     if (children.length === 0) {
-      return keep.has(node.name) ? { nwk: safeName(node.name), len: bl } : undefined
+      return keep.has(node.name)
+        ? { nwk: safeName(node.name), len: bl }
+        : undefined
     }
     const kids = children.map(c => rec(c, div(node))).filter(Boolean)
     if (kids.length === 0) {
@@ -514,7 +522,10 @@ function reconstructMsaFasta(seq, tips, keep) {
 // for react-msaview; the MSA and tree share the exact same tip set.
 function writeMsaTree(outDir, slug, seq, tips, tree, nTips = 80) {
   const keep = subsampleTipNames(tips, nTips)
-  writeFileSync(join(outDir, `${slug}_msa.fasta`), reconstructMsaFasta(seq, tips, keep))
+  writeFileSync(
+    join(outDir, `${slug}_msa.fasta`),
+    reconstructMsaFasta(seq, tips, keep),
+  )
   writeFileSync(join(outDir, `${slug}.nwk`), buildNewick(tree, keep))
   return keep.size
 }
@@ -743,7 +754,9 @@ for (const ds of DATASETS) {
     slug: ds.slug,
     geneFeats,
     seq,
-    genomesCram: ds.genomesSeqs ? `${S3_BASE}/${ds.slug}/${ds.slug}_genomes.cram` : undefined,
+    genomesCram: ds.genomesSeqs
+      ? `${S3_BASE}/${ds.slug}/${ds.slug}_genomes.cram`
+      : undefined,
   })
   writeFileSync(join(exampleDir, `${ds.file}.json`), JSON.stringify(config))
   console.log(

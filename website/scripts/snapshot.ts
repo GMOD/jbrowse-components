@@ -127,7 +127,9 @@ export async function captureToTemp(page: Page, spec: SnapshotSpec) {
     os.tmpdir(),
     `snapshot-${process.pid}-${spec.name.replaceAll('/', '_')}.png`,
   )
-  await page.screenshot(spec.crop ? { path: tmp, clip: spec.crop } : { path: tmp })
+  await page.screenshot(
+    spec.crop ? { path: tmp, clip: spec.crop } : { path: tmp },
+  )
   optimizePng(tmp)
   return tmp
 }
@@ -164,7 +166,8 @@ export async function snapshot(
     fs.mkdirSync(path.dirname(outputPath), { recursive: true })
     return commitScreenshot(tmp, outputPath, spec.name, {
       force: opts.force ?? false,
-      diffThreshold: spec.diffThreshold ?? opts.diffThreshold ?? DEFAULT_DIFF_THRESHOLD,
+      diffThreshold:
+        spec.diffThreshold ?? opts.diffThreshold ?? DEFAULT_DIFF_THRESHOLD,
     })
   } finally {
     await browser.close()
@@ -248,7 +251,8 @@ async function cli() {
       viewport: {
         width: num(values.width) ?? DEFAULT_VIEWPORT.width,
         height: num(values.height) ?? DEFAULT_VIEWPORT.height,
-        deviceScaleFactor: num(values.scale) ?? DEFAULT_VIEWPORT.deviceScaleFactor,
+        deviceScaleFactor:
+          num(values.scale) ?? DEFAULT_VIEWPORT.deviceScaleFactor,
       },
       settleMs: num(values.settle),
       diffThreshold: num(values['diff-threshold']),
