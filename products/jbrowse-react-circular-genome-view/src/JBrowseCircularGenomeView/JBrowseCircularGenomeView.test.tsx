@@ -92,3 +92,21 @@ test('createViewState with no defaultSession auto-displays the assembly', async 
   expect(state.session.view.init).toBeUndefined()
   expect(state.session.view.displayedRegions.length).toBe(2)
 }, 10000)
+
+test('config internetAccounts are auto-initialized via the shared mixin', () => {
+  const state = createViewState({
+    assembly,
+    tracks: [],
+    internetAccounts: [
+      {
+        type: 'HTTPBasicInternetAccount',
+        internetAccountId: 'basic1',
+        name: 'basic auth',
+      },
+    ],
+  })
+  const account = state.internetAccounts.find(
+    a => a.internetAccountId === 'basic1',
+  )
+  expect(account?.type).toBe('HTTPBasicInternetAccount')
+})

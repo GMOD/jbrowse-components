@@ -86,12 +86,6 @@ export default function createViewState(opts: ViewStateOptions) {
     },
     { pluginManager },
   )
-  for (const account of stateTree.config.internetAccounts) {
-    stateTree.addInternetAccount({
-      type: account.type,
-      configuration: account,
-    })
-  }
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location || highlight) {
