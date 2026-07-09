@@ -1,6 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 
-import { computeLabelExtraWidth } from './highlightUtils.ts'
+import { computeLabelExtraWidth, computeOverlayRect } from './highlightUtils.ts'
 
 import type { FeatureLabelData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
@@ -72,5 +72,43 @@ describe('computeLabelExtraWidth', () => {
     const result = computeLabelExtraWidth(labelData, snpWidthPx)
     expect(result).toBeCloseTo(labelWidth - snpWidthPx)
     expect(result).toBeGreaterThan(labelWidth - 1)
+  })
+})
+
+describe('computeOverlayRect', () => {
+  const rect = { leftPx: 100, topPx: 50, width: 30, heightPx: 10 }
+
+  test('outsets the box by xPadding/yPadding and adds label extraWidth', () => {
+    expect(computeOverlayRect(rect, 12, 2, 2)).toEqual({
+      left: 98,
+      top: 48,
+      width: 46,
+      height: 14,
+    })
+  })
+
+  test('top-row feature: clamps top to 0 so the outset top border stays in view', () => {
+    // topPx≈0 outset by 2 would place the top border at y=-2, clipped by
+    // ScrollLockedOverlay's y=0 edge — clamp keeps it at 0
+    const box = computeOverlayRect({ ...rect, topPx: 0 }, 0, 2, 2)
+    expect(box.top).toBe(0)
+  })
+
+  test('top-row clamp keeps the bottom edge fixed', () => {
+    const unclamped = computeOverlayRect(rect, 0, 2, 2)
+    const topRow = computeOverlayRect({ ...rect, topPx: 0 }, 0, 2, 2)
+    // bottom = top + height is (topPx - yPadding) + heightPx + 2*yPadding =
+    // topPx + heightPx + yPadding; independent of the clamp
+    expect(unclamped.top + unclamped.height).toBe(50 + 10 + 2)
+    expect(topRow.top + topRow.height).toBe(0 + 10 + 2)
+  })
+
+  test('no padding is a plain rect passthrough', () => {
+    expect(computeOverlayRect(rect, 0, 0, 0)).toEqual({
+      left: 100,
+      top: 50,
+      width: 30,
+      height: 10,
+    })
   })
 })
