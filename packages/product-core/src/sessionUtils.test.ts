@@ -97,6 +97,54 @@ test('filterSessionInPlace drops an element whose walk throws, keeps the rest', 
   errorSpy.mockRestore()
 })
 
+// The array walk splices in place while iterating; two adjacent bad elements
+// must both go without the splice skipping the second.
+test('filterSessionInPlace drops multiple adjacent throwing array elements', () => {
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const container = ExplodingContainer.create({
+    items: { a: { id: 'a', name: 'A' } },
+    children: [
+      { id: 'bad1', target: 'x' },
+      { id: 'bad2', target: 'y' },
+      { id: 'good', target: 'a' },
+      { id: 'bad3', target: 'z' },
+    ],
+  })
+  unprotect(container)
+  runInAction(() => {
+    filterSessionInPlace(container, getType(container))
+  })
+  expect(container.children.map(c => c.id)).toEqual(['good'])
+  errorSpy.mockRestore()
+})
+
+const ExplodingMapContainer = types.model('ExplodingMapContainer', {
+  items: types.map(Item),
+  children: types.map(ExplodingChild),
+})
+
+// The map walk deletes keys while iterating map.keys(); several bad entries in a
+// row must all be dropped (guards against a concurrent-modification skip).
+test('filterSessionInPlace drops multiple throwing map elements', () => {
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const container = ExplodingMapContainer.create({
+    items: { a: { id: 'a', name: 'A' } },
+    children: {
+      bad1: { id: 'bad1', target: 'x' },
+      good1: { id: 'good1', target: 'a' },
+      bad2: { id: 'bad2', target: 'y' },
+      bad3: { id: 'bad3', target: 'z' },
+      good2: { id: 'good2', target: 'a' },
+    },
+  })
+  unprotect(container)
+  runInAction(() => {
+    filterSessionInPlace(container, getType(container))
+  })
+  expect([...container.children.keys()].sort()).toEqual(['good1', 'good2'])
+  errorSpy.mockRestore()
+})
+
 // Models a track (resolvable `configuration` reference) whose subtree contains
 // a child that throws when instantiated — standing in for a display whose
 // afterAttach reads view.width before the view is measured. The walk must
