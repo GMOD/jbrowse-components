@@ -74,6 +74,19 @@ test('tag grouping sorts values and pins untagged reads last', () => {
   expect(groups[0]!.features.map(f => f.id())).toEqual(['c', 'd'])
 })
 
+test('numeric tag values order by magnitude, not code point', () => {
+  // A numeric tag with values past 9 must stack 2 before 10 (not code-point
+  // '10' < '2'); untagged still pins last.
+  const features = [
+    feat('a', { tags: { RG: 10 } }),
+    feat('b', { tags: { RG: 2 } }),
+    feat('c', {}),
+    feat('d', { tags: { RG: 1 } }),
+  ]
+  const groups = partitionFeatures(features, { type: 'tag', tag: 'RG' })
+  expect(keys(groups)).toEqual(['1', '2', '10', ''])
+})
+
 test('mapq buckets sort numerically via zero-padded keys', () => {
   const features = [
     feat('a', { score: 60 }),

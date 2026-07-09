@@ -121,13 +121,21 @@ function groupKeyFor(feature: Feature, groupBy: GroupBy): GroupKey {
   return GROUP_BY_DIMENSIONS[groupBy.type].key(feature, groupBy)
 }
 
+// All-digit key: numeric tag values (a numeric RG, a count-based tag) and mapq's
+// zero-padded bins. Compared by magnitude below so '2' precedes '10' instead of
+// code-point '10' < '2'.
+const ALL_DIGITS = /^\d+$/
+
 // Stable group-key ordering with the empty-key ("untagged"/"unknown") group
-// pinned last. Plain code-point comparison (not localeCompare) keeps it
-// deterministic and orders '+' before '-' for strand grouping; zero-padded
-// numeric keys (mapq) already sort correctly under it. Exported so the
-// main-thread cross-region merge (`orderedGroups`) applies the identical order
-// — the worker's per-region sort alone doesn't fix merged order when a group is
-// absent from an early region.
+// pinned last. Two all-digit keys compare by numeric magnitude so numeric tag
+// values order 1,2,10 not 1,10,2 (code-point) — the `tag` dimension emits raw
+// values and, unlike `mapq`, can't zero-pad an arbitrary tag to fix this. Every
+// other pair falls back to plain code-point comparison (not localeCompare),
+// which stays deterministic and orders '+' before '-' for strand grouping;
+// mapq's zero-padded keys are all-digit so they take the numeric branch and keep
+// their order. Exported so the main-thread cross-region merge (`orderedGroups`)
+// applies the identical order — the worker's per-region sort alone doesn't fix
+// merged order when a group is absent from an early region.
 export function compareGroupKeys(a: string, b: string) {
   if (a === b) {
     return 0
@@ -137,6 +145,13 @@ export function compareGroupKeys(a: string, b: string) {
   }
   if (b === '') {
     return -1
+  }
+  if (ALL_DIGITS.test(a) && ALL_DIGITS.test(b)) {
+    const na = Number(a)
+    const nb = Number(b)
+    if (na !== nb) {
+      return na < nb ? -1 : 1
+    }
   }
   return a < b ? -1 : 1
 }

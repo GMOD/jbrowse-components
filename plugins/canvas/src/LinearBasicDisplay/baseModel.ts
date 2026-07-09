@@ -2193,7 +2193,7 @@ export default function baseStateModelFactory(
            * back on the next layout change and the drag appears to do nothing.
            */
           resizeHeight(distance: number) {
-            if (self.heightMode === 'grow') {
+            if (self.autoHeight) {
               self.setHeightMode('fixed')
             }
             return superResizeHeight(distance)

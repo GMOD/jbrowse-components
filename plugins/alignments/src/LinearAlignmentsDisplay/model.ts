@@ -636,25 +636,38 @@ export default function stateModelFactory(
         /**
          * #getter
          * "Fit to display height" mode: reads pack to fill the display without
-         * scrolling. Derived from the promotable `heightMode` sentinel slot so it
-         * flows through the session-default cascade (track value, else
-         * session-wide default, else `fixed`) — same machinery as the numeric
-         * height slots. The `featureHeight`/`height` slots are never written, so
-         * they stay pure user intent.
+         * scrolling. Derived from the resolved `heightMode` getter (the single
+         * source of truth), so it flows through the same session-default cascade —
+         * track value, else session-wide default, else `fixed`. The
+         * `featureHeight`/`height` slots are never written, so they stay pure user
+         * intent. Mirrors the canvas display's getter.
          */
         get fitHeightToDisplay(): boolean {
-          return getConfResolved(self, 'heightMode') === 'fit'
+          return this.heightMode === 'fit'
         },
 
         /**
          * #getter
          * "Grow" mode: the track resizes to fit every read at the configured
          * height (no scrolling), rather than scrolling (`fixed`) or shrinking
-         * reads to fit (`fit`). Derived from the same promotable `heightMode`
-         * sentinel slot. Shared vocabulary + getter name with the canvas display.
+         * reads to fit (`fit`). Derived from the same resolved `heightMode` getter.
+         * Shared vocabulary + getter name with the canvas display.
          */
         get autoHeight(): boolean {
-          return getConfResolved(self, 'heightMode') === 'grow'
+          return this.heightMode === 'grow'
+        },
+
+        /**
+         * #getter
+         * The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable
+         * sentinel slot: getConfResolved walks the pinned-track -> session-default
+         * -> `fixed` cascade and always returns a concrete mode, never `inherit`.
+         * The single source of truth `fitHeightToDisplay`/`autoHeight` derive from —
+         * like the canvas display's getter of the same name — so the "Track height"
+         * radio group can drive one exclusive choice off a single value.
+         */
+        get heightMode(): HeightMode {
+          return getConfResolved(self, 'heightMode')
         },
       }))
       // Canonical ScoreScaleModel shape (shared with wiggle/manhattan) so the
