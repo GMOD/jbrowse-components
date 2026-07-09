@@ -85,7 +85,10 @@ function collectCovered(items: SidebarItem[], covered: Set<string>): void {
 // build error. `link` entries can deliberately target non-doc pages (e.g. the
 // /docs/tutorials/ index), so only string entries — which always name a
 // docs-collection id — are validated here.
-function collectListedDocSlugs(items: SidebarItem[], listed: Set<string>): void {
+function collectListedDocSlugs(
+  items: SidebarItem[],
+  listed: Set<string>,
+): void {
   for (const item of items) {
     if (typeof item === 'string') {
       listed.add(entrySlug(item.toLowerCase()))

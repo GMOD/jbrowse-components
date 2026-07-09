@@ -165,7 +165,8 @@ export function buildSidebar(
 // the categorization in sidebars.json that silently drifts whenever a page
 // moves — see e.g. the 2026-07 sidebar reorg), derive it from the same
 // top-level sidebar categories every doc is already placed in.
-export type SearchCategory = 'user' | 'config' | 'developer' | 'autogen' | 'other'
+export type SearchCategory =
+  'user' | 'config' | 'developer' | 'autogen' | 'other'
 
 const TOP_LEVEL_CATEGORY_BUCKETS: Record<string, SearchCategory> = {
   'User guide': 'user',
@@ -187,7 +188,9 @@ const SEARCH_CATEGORY_OVERRIDES: Record<string, SearchCategory> = {
 }
 
 function entrySlugsOf(entry: SidebarEntry): string[] {
-  return entry.type === 'link' ? [entry.slug] : entry.items.flatMap(entrySlugsOf)
+  return entry.type === 'link'
+    ? [entry.slug]
+    : entry.items.flatMap(entrySlugsOf)
 }
 
 function collectSlugs(
