@@ -33,6 +33,7 @@ export default function MonospaceTextField({
   children,
   style,
   readOnly,
+  variant = 'outlined',
   ...rest
 }: {
   value: string
@@ -50,6 +51,7 @@ export default function MonospaceTextField({
         {label ? <InputLabel shrink>{label}</InputLabel> : null}
         <TextField
           {...rest}
+          variant={variant}
           multiline
           value={value}
           onChange={event => {
