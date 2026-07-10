@@ -13,6 +13,17 @@ groups) — are per-window statistics along the genome, the same form as a wiggl
 track. Once you compute them from a multi-sample VCF you can load them into
 JBrowse and read the peaks and troughs against genes.
 
+No single statistic is decisive, and the mindset this tutorial builds is to read
+them **together**. Fst asks how different two groups are; π asks how much
+variation a group carries; Tajima's D asks what shape its allele frequencies
+take. A real event — a selective sweep, an inversion, gene flow — leaves a
+_coordinated_ signature across all of them, and it is where the signals line up
+that tells the processes apart. A low-diversity window on its own could be a
+sweep or just low recombination, but a diversity valley that also sits under an
+Fst peak and a negative Tajima's D is a sweep. That is why the figures below
+stack the statistics on a shared genomic axis: the interpretation lives in the
+overlap.
+
 :::tip
 
 Working in a notebook? The
