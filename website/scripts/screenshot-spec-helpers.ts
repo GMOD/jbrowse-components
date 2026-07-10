@@ -413,12 +413,22 @@ export const HG38_470WAY_30 = [
 // symbol (Name, effectively the ortholog id in bacteria) makes orthologous
 // genes light up the same color across strains with no cross-track state.
 export function hpyloriSyntenyWithGenes(geneColor?: string) {
-  const geneTrack = (trackId: string) =>
-    geneColor ? { trackId, displaySnapshot: { color: geneColor } } : trackId
+  // showOnlyGenes collapses each locus to its gene glyph (no CDS/mRNA
+  // sub-features), so the colored variant traces one hue per gene cleanly and
+  // the uncolored variant reads as a tidy row of genes rather than nested boxes
+  const geneTrack = (trackId: string) => ({
+    trackId,
+    displaySnapshot: geneColor
+      ? { showOnlyGenes: true, color: geneColor }
+      : { showOnlyGenes: true },
+  })
   return hpyloriUrl({
     views: [
       {
         type: 'LinearSyntenyView',
+        // curved bezier ribbons connect the aligned blocks more legibly than
+        // straight quadrilaterals across the three stacked strains
+        drawCurves: true,
         // 2-D form: tracks[i] is the synteny shown between views[i] and
         // views[i+1]. A flat string[] is treated as a single level-0 entry, so
         // the level-1 band (chc155 vs j99) stayed empty — this nests each track
