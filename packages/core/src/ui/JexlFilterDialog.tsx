@@ -65,7 +65,7 @@ const JexlFilterDialog = observer(function JexlFilterDialog({
         handleClose()
       }}
     >
-      <div>
+      <div style={{ width: '80em' }}>
         Add filters, in jexl format, one per line, starting with the string
         jexl:. Examples:{' '}
         <ul>
