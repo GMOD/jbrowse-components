@@ -278,11 +278,14 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated height:90 \
 
 <Figure src="/img/jbrowse-img/sashimi_junctions.png" caption="RNA-seq sashimi plot over B2M: splice-junction arcs on the coverage band sized by junction read depth, over the spliced read pileup" />
 
-`arcs:up` draws read-connection arcs above the pileup, linking the split-read
-breakpoints that flag a structural variant. This 1000 Genomes ONT sample
-(HG00151, long reads streamed from the 1000G-ONT S3) over a ~1.2 kb inversion on
-chr1 shows the two breakpoints as clipped-read columns with the connecting arcs
-between them:
+`arcs:up` draws a read-connection arc above the pileup for every split
+(supplementary) read, linking its two alignment segments; the arc color encodes
+the junction's orientation. This 1000 Genomes ONT sample (HG00151, long reads
+streamed from the 1000G-ONT S3) over a ~1.2 kb inversion on chr1 shows the two
+breakpoints as clipped-read columns joined by arcs — **purple arcs are inversion
+junctions**, where a read's two halves map in opposite orientations (the direct
+signature of an inversion), while the fainter **orange arcs are same-strand,
+deletion-type splits**:
 
 ```bash
 jb2export --hub hg38 \
@@ -290,7 +293,7 @@ jb2export --hub hg38 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_arcs.png
 ```
 
-<Figure src="/img/jbrowse-img/sv_read_arcs.png" caption="HG00151 ONT long reads over a ~1.2 kb chr1 inversion: read-connection arcs link the two split-read breakpoints" />
+<Figure src="/img/jbrowse-img/sv_read_arcs.png" caption="HG00151 ONT long reads over a ~1.2 kb chr1 inversion: each arc connects one split read's two segments — purple arcs are inversion junctions (halves in opposite orientation), orange arcs are same-strand deletion-type splits" />
 
 More alignment recipes (see [Track modifiers](#track-modifiers) for all
 options):

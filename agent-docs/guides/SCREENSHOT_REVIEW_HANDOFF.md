@@ -70,6 +70,87 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
   `getBoundingClientRect()`. The trio figures broke because the VCF panel top
   drifted 276→268 when the painting track above shrank.
 
+## Session 2026-07-10 (webgl-poc) — 8 resolved, 27→19 bad, + a synteny code fix
+
+NOTE: specs now live in `website/scripts/specs/*.ts` (aggregated by
+`screenshot-specs.ts`), not inline in `screenshot-specs.ts`. jbrowse-img
+CliSpecs are in `screenshot-spec-helpers.ts`.
+
+**Shared-worktree state this session (critical):**
+
+- **popgen is another agent's** (`genotype_matrix_in2lt`, `ld_decay_2R`,
+  `combined_cyp6g1_dest`, `tajimad_cyp6g1`). I edited them early, then reverted
+  `specs/popgen.ts` + the 4 PNGs to HEAD. **Do not touch popgen.**
+- **A spec-format refactor is in flight**: `specs/*.ts` +
+  `screenshot-spec-helpers.ts` are being rewritten from `displaySnapshot:{...}`
+  track entries to a **flat** form (`{trackId, type, height, ...}`). Both forms
+  render (new `normalizeTrackInit`). Avoid big edits to those files until it
+  lands, or you clobber it. `hic.ts` was NOT part of the refactor (safe to edit).
+
+**Resolved (see screenshot-review.json notes for detail):**
+
+- `introgression_neanderthal` — simpler in-figure caption + `showDescriptions:false`.
+- `qtl/bxd_tyrp1_locus` — zoom 14→26 Mb (chr4:68–94M) so the full peak shows.
+- `multiway_synteny/ecoli_one_vs_all` — DELETED (spec+PNG + its section in
+  `allvsall_synteny.md`).
+- `methylation/colo829_haplotype_methylation` — DELETED (COLO829 LOH → no
+  allele-specific signal); reworked `methylation.md` to lead into hg002_snrpn.
+- `rnaseq/pkm_mutually_exclusive` — DELETED (MXE not visible in single-sample
+  arcs) + its alternative-splicing section in `rnaseq.md`.
+- `jbrowse-img/sv_read_arcs` — caption-only (CLI figure can't annotate):
+  explained arc colors in `products/jbrowse-img/README.md` (purple = split-read
+  inversion junction, orange = same-strand deletion split; verified vs
+  `linkedReadColorPalette`) + regen `jbrowse-img.md`.
+- `qtl/bxd_painting_input_order` / `bxd_painting_sorted` — KEEP: they're the two
+  parts + live-link targets of the `bxd_sort_before_after` compose, not
+  standalone figures.
+
+After deleting specs, ran `cd website && node --experimental-strip-types
+scripts/gen-gallery-links.ts` to drop stale galleryLinks entries (CI gate).
+
+**Synteny autoDiagonalize completion gate (CODE FIX — needs browser-test verify
+before commit):** The synteny `settled` getter (drives `synteny_canvas_done`,
+which screenshots + browser-tests wait on) only checked `canvasDrawn` +
+displays-not-loading, NOT that the init `autoDiagonalize` reorder actually
+finished — `awaitingAutoDiagonalize` clears in a `finally` even on skip/error, so
+a skipped/errored reorder could silently commit an undiagonalized hairball (the
+hole the dotplot fix, commit `97e9e132fd`, closed for dotplot only). Added
+`autoDiagonalizeRequested`/`autoDiagonalizeComplete` volatiles (mirroring
+dotplot) in `plugins/linear-comparative-view/src/LinearSyntenyView/model.ts` and
+gated `settled` on completion in
+`.../LinearSyntenyViewHelper/stateModelFactory.ts` (+ 2 fields on
+`ParentViewDuck`). Verified: `grape_peach_cacao`, `linear_synteny`,
+`hs1_vs_mm39_synteny` regen byte-identical + settle; dotplot-path autoDiagonalize
+specs unaffected. **TODO: run the synteny browser-test suite vs a fresh
+`pnpm --filter @jbrowse/web build` before committing** (couldn't — tree mid-refactor).
+See `key_pattern_synteny_autodiagonalize_gate` memory.
+
+`grape_peach_cacao` figure kept at committed peach/cacao/grape order (one clean
+cacao-grape band). Its top peach-cacao band is a TRANSITIVE pair (relate only via
+the grape MCScan ref) + cross-karyotype (8/19/10 chr) → crossy no matter the
+order (grape-in-middle is WORSE, double hairball). Real fix = conserved-block
+zoom. Left `bad` with this note.
+
+**Deferred (per-item how-to):**
+
+- Data-blocked: `sv_cgiab/*` ×3 (no hosted genome-wide raw tumor depth, only
+  indexcov); `trio-ancestry` (KHV is ~single-ancestry — needs a more-admixed
+  FLARE trio); `methylation/hg002_snrpn_allele_specific` (figure is GOOD; "plot
+  reads" blocked — only aggregate modkit bedMethyl hosted, no HG002 hg38 5mC read
+  BAM at chr15); `methylation/arabidopsis_wgbs_*` (zoom-out doable via the
+  `arabidopsisBisulfite` factory in `specs/methylation.ts`; CpG-islands +
+  Salk-epigenome multi-sample = new hosted data + a consolidation call —
+  `wgbs_contexts` could replace the singles).
+- Research: `encode_hic_loops_arcs` — download HiCCUPS bedpe (`ENCFF560LOS`) +
+  EPIraction (`ENCFF266FGY`), find a strong loop over a real enhancer-promoter
+  pair, navigate there + `showDescriptions:false`. Config
+  `test_data/encode_hic_loops.json`; `hic.ts` is safe to edit.
+- Menu/CLI (WAIT for the spec-format refactor): `rnaseq/strand_specific` +
+  `qtl/bxd_sort_before_after` need `stages`/`actions` menu-driving;
+  `jbrowse-img/sashimi_junctions` (super-compact reads) +
+  `jbrowse-img/scatac_multiwiggle` (zoom out — GCG ~chr2:162.14–162.15 Mb hg38)
+  are `cliSpec` arg edits in `screenshot-spec-helpers.ts`.
+
 ## IMPORTANT: the review log is largely STALE — triage by PNG hash first
 
 `screenshot-review.json` lists ~71 `bad` items, but most are already fixed or

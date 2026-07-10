@@ -173,26 +173,6 @@ Because the two pathogens' islands sit at _different_ backbone positions, they
 acquired virulence independently rather than from a shared ancestor
 ([Welch et al. 2002](https://www.pnas.org/doi/10.1073/pnas.252529799)).
 
-## One genome vs all the others
-
-Drop the same track into a plain **linear genome view** on one strain (say K-12)
-and it renders as an [`LGVSyntenyDisplay`](/docs/config/lgvsyntenydisplay): the
-adapter aligns K-12 against _every_ other strain at once. The islands become
-unmissable — a K-12 region every strain covers is backbone; a gap where nothing
-aligns is a K-12-specific island. In the UI just turn the track on;
-declaratively it's the track added to a `LinearGenomeView` with the synteny
-display:
-
-```json
-{
-  "type": "SyntenyTrack",
-  "configuration": "ecoli_ava",
-  "displays": [{ "type": "LGVSyntenyDisplay" }]
-}
-```
-
-<Figure caption="K-12 alone in a plain linear genome view (LGVSyntenyDisplay): the all-vs-all track draws K-12 against every other strain at once. The continuous coverage band is the backbone shared with the other three strains; each white gap is a K-12-specific island — sequence no other strain aligns to, such as one of K-12's cryptic prophages." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
-
 ## See also
 
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) — the

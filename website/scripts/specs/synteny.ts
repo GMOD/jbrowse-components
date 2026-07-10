@@ -120,12 +120,20 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // all three assemblies) backs both bands — the view tells the adapter which
     // pair each band draws. colorBy:'reference' anchors every level on the
     // middle row (cacao, shared by both bands) so a cacao chromosome carries ONE
-    // color as it's traced up into peach and down into grape. The top
-    // peach-cacao band is a transitive ortholog link (grape is the MCScan
-    // reference, so only grape-adjacent pairs are direct); the grape-cacao band
-    // is direct. autoDiagonalize reorders/flips each lower axis to follow the
-    // one above, so the ribbons run near-diagonal instead of crossing into a
-    // hairball. Mirrors the hosted config's defaultSession init otherwise.
+    // color as it's traced up into peach and down into grape. autoDiagonalize
+    // reorders/flips each lower axis to follow the one above.
+    //
+    // This order is deliberate: diagonalize cascades top-down (each level
+    // reorders its lower axis against the row above), and it can only clean a
+    // pair with ~1:1 chromosome correspondence. cacao-grape is that pair, so it
+    // goes LAST (bottom) where nothing downstream re-scrambles it → a clean
+    // diagonal band. The top peach-cacao band is transitive (peach and cacao
+    // relate only through the grape MCScan reference) AND cross-karyotype
+    // (peach 8 / grape 19 / cacao 10 chr), so it stays crossy no matter the
+    // order — verified: putting grape in the middle to make both bands direct
+    // produced a WORSE double-hairball, because peach-grape (8 vs 19 chr) is
+    // many-to-many and scrambles grape for the level below it. Mirrors the
+    // hosted config's defaultSession init otherwise.
     url: sessionSpec(
       encodeURIComponent(
         'https://jbrowse.org/demos/grape_peach_cacao/config.json',
@@ -277,44 +285,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ],
-  },
-
-  // One-vs-all in a plain LGV for allvsall_synteny.md's "One genome vs all the
-  // others" section. K-12 alone in a LinearGenomeView: with no targetAssemblyName
-  // (plain LGV), AllVsAllPAFAdapter draws K-12 against EVERY other strain at once,
-  // rendered as alignment reads over the K-12 coordinate by LGVSyntenyDisplay.
-  // Continuous coverage = backbone shared with the other strains; a gap where
-  // nothing aligns is a K-12-specific island. Loads the hosted demo config.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/ecoli_one_vs_all',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'K12',
-            // whole K-12 chromosome: the continuous coverage band is the backbone
-            // shared with the other strains; the several stark white gaps are
-            // K-12-specific islands where no other strain aligns
-            loc: 'chr',
-            tracks: [
-              {
-                trackId: 'ecoli_ava',
-                displaySnapshot: { type: 'LGVSyntenyDisplay', height: 200 },
-              },
-            ],
-          },
-        ],
-      },
-    ),
-    readySelector: '[data-testid="pileup-display-done"]',
-    readyTimeout: 120000,
-    settleMs: 15000,
-    viewportHeight: 420,
   },
 
   // For the gallery: load the exact curated share session the reviewer wants
