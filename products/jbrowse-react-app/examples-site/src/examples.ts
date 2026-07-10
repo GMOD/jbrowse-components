@@ -102,7 +102,7 @@ export const examples: ExampleMeta[] = [
     name: 'MultiwaySyntenyExample',
     title: 'Multi-way linear synteny view',
     description:
-      'Stack three assemblies in one synteny view — each adjacent pair connected by its own PAF track.',
+      'Stack four E. coli strains in one synteny view, all backed by a single all-vs-all PAF.',
     group: 'View types',
   },
   {
