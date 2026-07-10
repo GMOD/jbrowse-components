@@ -1027,8 +1027,9 @@ the terminal chrome for *any* rectangular display, and synteny is the proof.
 keep their own error UI (they have no rectangular width/height axis to host a
 message box), but still expose a `svgReady` getter and await it via the shared
 `awaitSvgReady` — **not** an inlined `when()`: dotplot
-(`svgReady = !!geometry || !!error`, hand-rolled `SVGErrorBox` on a square
-canvas) and circular chord (`svgReady = ready || error !== undefined`, renders
+(`svgReady = (!!geometry && dataCurrent) || !!error`, hand-rolled `SVGErrorBox`
+on a square canvas — the `dataCurrent` term makes it stale-safe, matching the
+capture gate above) and circular chord (`svgReady = ready || error !== undefined`, renders
 `<DisplayError>`). So the readiness gate is now uniform across **every** display
 (LGV, arc, synteny, dotplot, circular) — no `renderSvg` inlines `when()` — while
 the error chrome splits: `SvgChrome` for rectangular displays, bespoke for
