@@ -144,9 +144,13 @@ function pxToBpResult(
 
 export function pxToBp(self: ViewLayout, px: number): PxToBpResult {
   const { bpPerPx, offsetPx, displayedRegions } = self
+  const first = displayedRegions[0]
+  if (!first) {
+    throw new Error('pxToBp called with empty displayedRegions')
+  }
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
-    return pxToBpResult(displayedRegions[0]!, bp, 0, true)
+    return pxToBpResult(first, bp, 0, true)
   }
 
   let bpSoFar = 0
@@ -161,12 +165,9 @@ export function pxToBp(self: ViewLayout, px: number): PxToBpResult {
     bpSoFar += len
   }
 
-  const r = displayedRegions.at(-1)
-  if (!r) {
-    throw new Error('pxToBp called with empty displayedRegions')
-  }
-  const offset = bp - bpSoFar + r.end - r.start
-  return pxToBpResult(r, offset, displayedRegions.length - 1, true)
+  const last = displayedRegions.at(-1)!
+  const offset = bp - bpSoFar + last.end - last.start
+  return pxToBpResult(last, offset, displayedRegions.length - 1, true)
 }
 
 // Precise within-region float-bp-offset → track-px (unrounded). Use when the

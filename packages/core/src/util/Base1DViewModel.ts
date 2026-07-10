@@ -1,13 +1,12 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { bpToPx, moveTo, pxToBp } from './Base1DUtils.ts'
+import { layoutBpToPx, moveTo, pxToBp } from './Base1DUtils.ts'
 import calculateDynamicBlocks from './calculateDynamicBlocks.ts'
 import calculateStaticBlocks from './calculateStaticBlocks.ts'
 import { clamp } from './index.ts'
 import { ElementId } from './types/mst.ts'
 
 import type { BpOffset } from './Base1DUtils.ts'
-import type { Feature } from './simpleFeature.ts'
 import type { Region as IRegion } from './types/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -40,7 +39,6 @@ const Base1DView = types
     minimumBlockWidth: types.stripDefault(types.number, 0),
   })
   .volatile(() => ({
-    features: undefined as undefined | Feature[],
     volatileWidth: 0,
   }))
   .actions(self => ({
@@ -69,6 +67,20 @@ const Base1DView = types
      */
     get width() {
       return self.volatileWidth
+    },
+    /**
+     * #getter
+     * zoom-in floor; overridden by extensions (e.g. the dotplot axes)
+     */
+    get minBpPerPx() {
+      return 0
+    },
+    /**
+     * #getter
+     * zoom-out ceiling; overridden by extensions (e.g. the dotplot axes)
+     */
+    get maxBpPerPx() {
+      return Number.POSITIVE_INFINITY
     },
     /**
      * #getter
@@ -144,33 +156,23 @@ const Base1DView = types
     /**
      * #method
      */
-    bpToPx({
-      refName,
-      coord,
-      displayedRegionIndex,
-    }: {
+    bpToPx(args: {
       refName: string
       coord: number
       displayedRegionIndex?: number
     }) {
-      return bpToPx({ refName, coord, displayedRegionIndex, self })?.offsetPx
+      return layoutBpToPx(self, args)
     },
   }))
   .actions(self => ({
-    /**
-     * #action
-     */
-    setFeatures(features: Feature[]) {
-      self.features = features
-    },
-
     /**
      * #action
      * this makes a zoomed out view that shows all displayedRegions that makes
      * the overview bar square with the scale bar
      */
     showAllRegions() {
-      self.bpPerPx = self.totalBp / self.width
+      // guard width=0 (pre-measure) so bpPerPx doesn't become Infinity/NaN
+      self.bpPerPx = self.totalBp / Math.max(self.width, 1)
       self.offsetPx = 0
     },
 
@@ -192,13 +194,7 @@ const Base1DView = types
      * #action
      */
     zoomTo(bpPerPx: number, offset = self.width / 2) {
-      const newBpPerPx = clamp(
-        bpPerPx,
-        'minBpPerPx' in self ? (self.minBpPerPx as number) : 0,
-        'maxBpPerPx' in self
-          ? (self.maxBpPerPx as number)
-          : Number.POSITIVE_INFINITY,
-      )
+      const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
 
       const oldBpPerPx = self.bpPerPx
       if (Math.abs(oldBpPerPx - newBpPerPx) >= 0.000001) {
