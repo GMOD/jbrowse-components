@@ -150,7 +150,7 @@ export default class MyPlugin {
         'Diesh, Colin, et al. "JBrowse 2: a modular genome browser with views of synteny and structural variation." Genome Biology 24, 74 (2023).',
       )
 
-      return React.createElement('div', null, [header, content])
+      return React.createElement('div', null, header, content)
     }
 
     pluginManager.addWidgetType(() => {

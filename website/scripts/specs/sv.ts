@@ -1186,15 +1186,20 @@ export const svSpecs: ScreenshotSpec[] = [
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
                 // scatter of the per-bin average — the conventional CNV depth-
-                // ratio plot (see cnv_log2ratio_genome). Single color
+                // ratio plot, styled to match cnv_log2ratio_genome. Single color
                 // (useBicolor:false); gains/losses read off the 0 line
                 defaultRendering: 'scatter',
                 useBicolor: false,
                 summaryScoreMode: 'avg',
                 scatterPointSize: 1,
+                // finer bins than screen resolution so the single-chromosome
+                // scatter resolves the per-bin signal (reviewer: higher res)
+                resolution: 10,
                 minScore: -2,
                 maxScore: 2,
-                height: 140,
+                height: 180,
+                // log2=0 baseline + ±1 copy-number steps behind the scatter
+                displayCrossHatches: true,
               },
             },
             {
@@ -1221,7 +1226,9 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr3',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 560,
+    // taller so the benchmark CNV-calls track below the two wiggles is fully in
+    // frame (was clipped at 560) and the log2 track has room at height 180
+    viewportHeight: 740,
     settleMs: 30000,
   },
 

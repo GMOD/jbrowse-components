@@ -28,6 +28,33 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // The no-build plugin tutorial's result. The "Complete example" plugin
+  // (test_data/no_build_plugin/esmplugin.js, loaded via esmLoc) adds a
+  // "Citations" top-level menu whose item opens a custom "Cite this JBrowse
+  // session" widget. Driving that menu route regenerates the figure from the
+  // hosted plugin instead of a hand capture — keep the plugin in sync with the
+  // code block in developer_guides/no_build_plugin.md. readyText 'Citations'
+  // waits for the (async) plugin to finish configuring before the click.
+  {
+    mode: 'url',
+    name: 'no_build_final',
+    url: '?config=test_data/no_build_plugin/config.json&sessionName=Screenshot',
+    readyText: 'Citations',
+    settleMs: 3000,
+    viewportWidth: 1200,
+    // short capture: the launcher and the widget's citation both sit near the
+    // top, so a tall viewport would just be empty white below them
+    viewportHeight: 300,
+    actions: [
+      { type: 'click', text: 'Citations' },
+      { type: 'waitForText', text: 'Cite this JBrowse session' },
+      { type: 'delay', ms: 400 },
+      { type: 'click', text: 'Cite this JBrowse session' },
+      { type: 'waitForText', text: 'Diesh, Colin' },
+      { type: 'delay', ms: 600 },
+    ],
+  },
+
   // Location-search autocomplete: typing a gene name into the search box surfaces
   // matching features from the assembly's text-search index. Uses config_demo's
   // hg19 (whose trix index covers RefSeq/Gencode names) searching "brca".

@@ -1,0 +1,28 @@
+{
+  "plugins": [
+    {
+      "name": "MyPlugin",
+      "esmLoc": {
+        "uri": "esmplugin.js"
+      }
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "../volvox/volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": []
+}
