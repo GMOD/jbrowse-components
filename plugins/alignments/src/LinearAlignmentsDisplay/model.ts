@@ -1714,6 +1714,11 @@ export default function stateModelFactory(
          * 1px floor — below 1px the reads can't all fit, so the stack scrolls
          * instead. 0 when there's nothing to fit (no data / no room), signalling
          * "leave the configured height as-is".
+         *
+         * Reads the `fitTargetHeight` slot, NOT the reactive `height` getter — the
+         * same anti-cycle rule `laidOutByGroup` follows. Fit mode only, where the
+         * two are equal, but the slot can never chain back through
+         * height->grownHeight->layout->featureHeight if this ever moves.
          */
         get fittedFeatureHeight() {
           const empty = new Map<number, PileupDataResult>()
@@ -1728,7 +1733,7 @@ export default function stateModelFactory(
               0,
             )
           const pileupSpace =
-            self.height -
+            self.fitTargetHeight -
             Math.max(1, self.groupOrder.length) * self.coverageDisplayHeight
           return rows > 0 && pileupSpace > 0
             ? Math.max(1, pileupSpace / rows)
