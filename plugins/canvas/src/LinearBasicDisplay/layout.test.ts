@@ -102,8 +102,10 @@ function labeledFeatureData(
 }
 
 // The reserved label width is textWidth + LABEL_PADDING_PX (6); at bpPerPx 1 a
-// box is (endBp - startBp) px wide. So a 200px-wide box hosts a 40px name (kept),
-// a 10px-wide box does not (decimated).
+// box is (endBp - startBp) px wide. A name overhangs rightward past its box into
+// the whitespace before the next feature, so `fitWidth` keeps it when the box
+// plus that gap (>= 46px here) can host it and drops it only where a neighbor
+// crowds it out.
 describe('fitWidth label decimation', () => {
   const keys = new Map([[0, 'volvox:ctgA']])
   function decimate(
@@ -122,38 +124,54 @@ describe('fitWidth label decimation', () => {
     }).get(0)!
   }
 
+  // `crowded` (10px box) is followed 5px later by `blocker`, leaving 5px < 46px
+  // of overhang room, so its name is dropped; `blocker` itself is the last
+  // feature with open space to its right, so its name is kept.
   const mixed = () =>
     labeledFeatureData([
-      { featureId: 'wide', startBp: 100, endBp: 300, height: 20 }, // 200px box
-      { featureId: 'narrow', startBp: 1000, endBp: 1010, height: 20 }, // 10px box
+      { featureId: 'crowded', startBp: 100, endBp: 110, height: 20 },
+      { featureId: 'blocker', startBp: 115, endBp: 125, height: 20 },
     ])
 
-  it('keeps a name that fits its box, drops one that does not', () => {
+  it('drops a crowded narrow name but keeps one with overhang room', () => {
     const labels = decimate(mixed()).floatingLabelsData
-    expect(labels.wide).toBeDefined()
-    expect(labels.narrow).toBeUndefined()
+    expect(labels.crowded).toBeUndefined()
+    expect(labels.blocker).toBeDefined()
   })
 
-  it('keeps a pinned name even when its box is too narrow', () => {
-    const labels = decimate(mixed(), new Set(['narrow'])).floatingLabelsData
-    expect(labels.narrow).toBeDefined()
+  it('keeps a narrow name that has open whitespace to overhang into', () => {
+    // A lone narrow box whose name is far wider than the box keeps its name:
+    // nothing crowds the rightward overhang. The box-width-only rule wrongly
+    // dropped this.
+    const labels = decimate(
+      labeledFeatureData([
+        { featureId: 'lonely', startBp: 100, endBp: 110, height: 20 },
+      ]),
+    ).floatingLabelsData
+    expect(labels.lonely).toBeDefined()
+  })
+
+  it('keeps a pinned name even when a neighbor crowds it', () => {
+    const labels = decimate(mixed(), new Set(['crowded'])).floatingLabelsData
+    expect(labels.crowded).toBeDefined()
   })
 
   it('keeps every name under the default `all` policy', () => {
     const out = layout(new Map([[0, mixed()]]), keys, 1, true, false).get(0)!
-    expect(out.floatingLabelsData.wide).toBeDefined()
-    expect(out.floatingLabelsData.narrow).toBeDefined()
+    expect(out.floatingLabelsData.crowded).toBeDefined()
+    expect(out.floatingLabelsData.blocker).toBeDefined()
   })
 
   it('packs a shorter stack than `all` by dropping decimated name rows', () => {
-    // Five overlapping narrow features: `all` reserves a name line on every row,
-    // `fitWidth` reserves none (all boxes are narrower than their names).
+    // A dense run of narrow boxes at 5px pitch: each name (46px reserved) is
+    // crowded by its right neighbor, so `all` reserves a name line on every row
+    // while `fitWidth` drops all but the last (which has open space).
     const narrowStack = () =>
       labeledFeatureData(
-        Array.from({ length: 5 }, (_, i) => ({
+        Array.from({ length: 6 }, (_, i) => ({
           featureId: `n${i}`,
-          startBp: 100,
-          endBp: 110,
+          startBp: 100 + i * 5,
+          endBp: 110 + i * 5,
           height: 20,
         })),
       )
@@ -167,6 +185,77 @@ describe('fitWidth label decimation', () => {
     )
     const decimatedH = maxBottom(new Map([[0, decimate(narrowStack())]]))
     expect(decimatedH).toBeLessThan(allH)
+  })
+
+  // A 40px name reserves 40 + LABEL_PADDING_PX (6) = 46px. At bpPerPx 1 the
+  // overhang room is the neighbor's start minus this feature's start (px), so the
+  // keep/drop boundary sits exactly at a 46px gap.
+  it('keeps a name at exactly its reserved width of room, drops one below it', () => {
+    const atThreshold = decimate(
+      labeledFeatureData([
+        { featureId: 'probe', startBp: 100, endBp: 110, height: 20 },
+        { featureId: 'next', startBp: 146, endBp: 156, height: 20 }, // room 46
+      ]),
+    ).floatingLabelsData
+    expect(atThreshold.probe).toBeDefined()
+
+    const belowThreshold = decimate(
+      labeledFeatureData([
+        { featureId: 'probe', startBp: 100, endBp: 110, height: 20 },
+        { featureId: 'next', startBp: 145, endBp: 155, height: 20 }, // room 45
+      ]),
+    ).floatingLabelsData
+    expect(belowThreshold.probe).toBeUndefined()
+  })
+
+  // The decision keys on available room, not box width: keeping a name only
+  // shrinks (never grows) as its neighbor crowds in, so the kept set is monotone
+  // in the gap. The old box-width-only rule dropped `probe` at every gap (its
+  // 10px box never hosts the 46px name); the overhang rule keeps it wherever the
+  // gap does.
+  it('decimation is monotone in overhang room', () => {
+    const keptAt = (gap: number) =>
+      'probe' in
+      decimate(
+        labeledFeatureData([
+          { featureId: 'probe', startBp: 100, endBp: 110, height: 20 },
+          { featureId: 'next', startBp: 100 + gap, endBp: 110 + gap, height: 20 },
+        ]),
+      ).floatingLabelsData
+    const kept = [10, 30, 45, 46, 60, 100].map(keptAt)
+    // once kept as the gap widens, stays kept (no true precedes a later false)
+    expect(kept).toStrictEqual([...kept].sort((a, b) => Number(a) - Number(b)))
+    expect(kept.at(-1)).toBe(true)
+    expect(kept[0]).toBe(false)
+  })
+
+  // Reversed regions overhang the name leftward (toward lower bp; see the
+  // layoutStartBp reservation), so room is measured to the left neighbor's right
+  // edge. Mirrors the forward case.
+  it('measures overhang room leftward in a reversed region', () => {
+    const out = computeLaidOutData(
+      new Map([
+        [
+          0,
+          labeledFeatureData([
+            { featureId: 'edge', startBp: 100, endBp: 110, height: 20 },
+            { featureId: 'blockerL', startBp: 60, endBp: 105, height: 20 }, // ends 5 left of edge
+          ]),
+        ],
+      ]),
+      {
+        bpPerPx: 1,
+        regionKeys: keys,
+        showLabels: true,
+        showDescriptions: false,
+        reversedRegions: new Set([0]),
+        displayMode: 'normal',
+        pinnedFeatureIds: new Set<string>(),
+        labelDecimation: 'fitWidth',
+      },
+    ).get(0)!.floatingLabelsData
+    expect(out.edge).toBeUndefined() // crowded 5px on its left
+    expect(out.blockerL).toBeDefined() // leftmost end, open space to the left
   })
 })
 

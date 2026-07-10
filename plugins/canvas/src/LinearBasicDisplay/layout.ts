@@ -47,16 +47,22 @@ export interface LayoutInputs {
 
 // Whether a feature keeps its name under the active decimation policy. `all`
 // keeps every name; `fitWidth` keeps pinned/highlighted names always, plus any
-// name that fits within its own feature box (box px >= reserved label px) — so
-// narrow features at dense zoom shed their names (and the row height that
-// reserved them) while wide/important ones stay labeled.
+// name whose reserved width fits the whitespace its overhang can use — the
+// feature box PLUS the gap to the neighbor on the overhang side. A name renders
+// left-aligned to the box and overhangs rightward (leftward in a reversed
+// region) into free space (see computeLabelPosition), and the packer reserves
+// exactly that overhang, so keying on box width alone dropped names that plainly
+// had room; keying on the available room drops a name only where it would
+// genuinely collide. So an isolated feature keeps its name however narrow its
+// box, while a name crammed against its neighbor still sheds — thinning names
+// (and their reserved row height) precisely in the dense stretches that overflow.
 function keepFeatureLabel(
   labelDecimation: LabelDecimation,
-  boxWidthPx: number,
+  availableRoomPx: number,
   labelWidthPx: number,
   pinned: boolean,
 ) {
-  return labelDecimation === 'all' || pinned || boxWidthPx >= labelWidthPx
+  return labelDecimation === 'all' || pinned || availableRoomPx >= labelWidthPx
 }
 
 // Reserve strand-arrow space only on the side the arrow actually points,
@@ -454,6 +460,68 @@ function intersectsMerged(
   return idx >= 0 && merged[idx]![1] > queryStart
 }
 
+// Smallest value strictly greater than `x` in ascending `sorted`, or undefined
+// when none exists (x is at/after the last element).
+function firstGreater(sorted: number[], x: number) {
+  let lo = 0
+  let hi = sorted.length
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (sorted[mid]! > x) {
+      hi = mid
+    } else {
+      lo = mid + 1
+    }
+  }
+  return sorted[lo]
+}
+
+// Largest value strictly less than `x` in ascending `sorted`, or undefined when
+// none exists (x is at/before the first element).
+function lastLess(sorted: number[], x: number) {
+  let lo = 0
+  let hi = sorted.length
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (sorted[mid]! < x) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  return lo > 0 ? sorted[lo - 1] : undefined
+}
+
+// Per-feature horizontal whitespace (px) a label may overhang into, on each
+// side: rightward room is the distance from the feature's left edge to the next
+// feature's left edge (its box plus the gap after it, matching the rightward
+// overhang the packer reserves via layoutEndBp); leftward room mirrors it from
+// the right edge for reversed regions. A feature with no neighbor on a side has
+// open space there (Infinity). Only computed for the `fitWidth` decimation rung;
+// the default `all` policy keeps every name and never asks.
+function labelOverhangRoomPx(
+  features: Map<string, { startBp: number; endBp: number }>,
+  bpPerPx: number,
+) {
+  const starts = [...features.values()].map(f => f.startBp).sort((a, b) => a - b)
+  const ends = [...features.values()].map(f => f.endBp).sort((a, b) => a - b)
+  const rightRoom = new Map<string, number>()
+  const leftRoom = new Map<string, number>()
+  for (const [id, f] of features) {
+    const nextStart = firstGreater(starts, f.startBp)
+    const prevEnd = lastLess(ends, f.endBp)
+    rightRoom.set(
+      id,
+      nextStart === undefined ? Infinity : (nextStart - f.startBp) / bpPerPx,
+    )
+    leftRoom.set(
+      id,
+      prevEnd === undefined ? Infinity : (f.endBp - prevEnd) / bpPerPx,
+    )
+  }
+  return { rightRoom, leftRoom }
+}
+
 function packRef(
   regions: [number, FeatureDataResult][],
   bpPerPx: number,
@@ -540,6 +608,9 @@ function packRef(
     endBp: number
     layoutStartBp: number
     layoutEndBp: number
+    // Compact-scaled feature-body height (px), pre-label. `height` below adds the
+    // reserved label line(s) once the keep decision is made.
+    bodyHeightPx: number
     height: number
     strand: number
     hasReversed: boolean
@@ -555,6 +626,11 @@ function packRef(
   // deleted in applyLayoutToRegion so no renderer/hit-test draws the dropped
   // name. Empty under the default `all` policy.
   const droppedLabelIds = new Set<string>()
+
+  // Pass 1: gather each feature's extent and reversed/non-reversed sides. The
+  // keep-name decision is deferred to pass 2 because `fitWidth` decimation needs
+  // every feature's extent first, to measure the overhang whitespace between
+  // neighbors.
   const allFeatures = new Map<string, FeatureExtent>()
   for (const [displayedRegionIndex, data] of regions) {
     const reversed = reversedRegions.has(displayedRegionIndex)
@@ -566,51 +642,74 @@ function packRef(
         } else {
           existing.hasNonReversed = true
         }
-        continue
+      } else {
+        allFeatures.set(item.featureId, {
+          startBp: item.startBp,
+          endBp: item.endBp,
+          layoutStartBp: item.startBp,
+          layoutEndBp: item.endBp,
+          bodyHeightPx: item.featureHeightPx,
+          height: 0,
+          strand: item.strand ?? 0,
+          hasReversed: reversed,
+          hasNonReversed: !reversed,
+          densityFade: item.densityFade,
+          reservesLabel: false,
+        })
       }
-      const labelInfo = labelInfoByFeatureId.get(item.featureId)
-      // Keep this feature's name unless decimation drops it (too narrow to host
-      // it, and not pinned/highlighted). A dropped name is recorded so its label
-      // entry is deleted after layout.
-      const keepName =
-        showLabels &&
-        !!labelInfo?.hasName &&
-        keepFeatureLabel(
-          labelDecimation,
-          (item.endBp - item.startBp) / bpPerPx,
-          labelInfo.maxLabelWidthPx,
-          pinnedFeatureIds.has(item.featureId),
-        )
-      if (!keepName && showLabels && labelInfo?.hasName) {
-        droppedLabelIds.add(item.featureId)
-      }
-      const keepDescription = showDescriptions && !!labelInfo?.hasDescription
-
-      // featureHeightPx is already compact-scaled (see applyHeightScale); add
-      // the mode's inter-row gap (rowPadding) so rows pack tightly. Each kept
-      // label line reserves the mode's resolved font size (labelFontPx) so
-      // compact rows shrink with the smaller text the renderers draw.
-      let height = item.featureHeightPx + rowPadding
-      if (keepName) {
-        height += labelFontPx
-      }
-      if (keepDescription) {
-        height += labelFontPx
-      }
-
-      allFeatures.set(item.featureId, {
-        startBp: item.startBp,
-        endBp: item.endBp,
-        layoutStartBp: item.startBp,
-        layoutEndBp: item.endBp,
-        height,
-        strand: item.strand ?? 0,
-        hasReversed: reversed,
-        hasNonReversed: !reversed,
-        densityFade: item.densityFade,
-        reservesLabel: keepName || keepDescription,
-      })
     }
+  }
+
+  // `fitWidth` keeps a name where the box plus its overhang whitespace can host
+  // it; measure that per-side room once all extents are known. The default `all`
+  // policy keeps every name, so it never needs this.
+  const overhangRoom =
+    labelDecimation === 'fitWidth'
+      ? labelOverhangRoomPx(allFeatures, bpPerPx)
+      : undefined
+
+  // Pass 2: decide each feature's kept label lines and reserve their row height.
+  for (const [id, ext] of allFeatures) {
+    const labelInfo = labelInfoByFeatureId.get(id)
+    // Whitespace the name overhang can use, on the side(s) this feature points:
+    // the min across the sides it occupies so a feature spanning both directions
+    // must clear on both. Infinity (no room measured) under the `all` policy.
+    const availableRoomPx = overhangRoom
+      ? Math.min(
+          ext.hasNonReversed ? overhangRoom.rightRoom.get(id)! : Infinity,
+          ext.hasReversed ? overhangRoom.leftRoom.get(id)! : Infinity,
+        )
+      : Infinity
+    // Keep this feature's name unless decimation drops it (no room to host it,
+    // and not pinned/highlighted). A dropped name is recorded so its label entry
+    // is deleted after layout.
+    const keepName =
+      showLabels &&
+      !!labelInfo?.hasName &&
+      keepFeatureLabel(
+        labelDecimation,
+        availableRoomPx,
+        labelInfo.maxLabelWidthPx,
+        pinnedFeatureIds.has(id),
+      )
+    if (!keepName && showLabels && labelInfo?.hasName) {
+      droppedLabelIds.add(id)
+    }
+    const keepDescription = showDescriptions && !!labelInfo?.hasDescription
+
+    // bodyHeightPx is already compact-scaled (see applyHeightScale); add the
+    // mode's inter-row gap (rowPadding) so rows pack tightly. Each kept label
+    // line reserves the mode's resolved font size (labelFontPx) so compact rows
+    // shrink with the smaller text the renderers draw.
+    let height = ext.bodyHeightPx + rowPadding
+    if (keepName) {
+      height += labelFontPx
+    }
+    if (keepDescription) {
+      height += labelFontPx
+    }
+    ext.height = height
+    ext.reservesLabel = keepName || keepDescription
   }
 
   for (const [id, ext] of allFeatures) {
