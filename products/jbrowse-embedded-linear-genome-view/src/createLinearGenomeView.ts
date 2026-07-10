@@ -10,6 +10,7 @@ import { autorun } from 'mobx'
 import { createRoot } from 'react-dom/client'
 
 import { fetchHub } from './fetchHub.ts'
+import { isSequenceUri, makeAssembly } from './makeAssembly.ts'
 
 import type { HubConfig } from './fetchHub.ts'
 import type { LooseTrackInput } from '@jbrowse/core/util/tracks'
@@ -48,10 +49,11 @@ function resolveTracks(
 }
 
 /**
- * The three shapes an assembly can take: a hub name (`'hg38'`, `'GCF_...'`) that
- * is fetched from jbrowse.org, a full hub config (as `fetchHub` returns), or a
- * bare assembly config (e.g. from `makeAssembly`) — the latter two both being
- * plain config objects, discriminated at resolve time.
+ * The shapes an assembly can take, discriminated at resolve time: a sequence
+ * file URL (`'.../hg38.fa.gz'`, `.2bit`, ...) built into an assembly via
+ * `makeAssembly`; a hub name (`'hg38'`, `'GCF_...'`) fetched from jbrowse.org;
+ * a full hub config (as `fetchHub` returns); or a bare assembly config (e.g.
+ * from `makeAssembly`) — the latter two both being plain config objects.
  */
 export type AssemblyInput = string | AssemblyConfig
 
@@ -113,7 +115,9 @@ async function resolveAssembly(
   input: AssemblyInput,
 ): Promise<ResolvedAssembly> {
   if (typeof input === 'string') {
-    return fromHubConfig(await fetchHub(input))
+    return isSequenceUri(input)
+      ? { assembly: makeAssembly({ fastaUri: input }) }
+      : fromHubConfig(await fetchHub(input))
   } else if ('assemblies' in input) {
     return fromHubConfig(input)
   } else {
