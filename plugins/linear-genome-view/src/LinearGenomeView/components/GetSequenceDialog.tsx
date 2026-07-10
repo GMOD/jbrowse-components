@@ -106,7 +106,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         model.setOffsets()
       }}
     >
-      <DialogContent>
+      <DialogContent style={{ width: '80em' }}>
         {error ? (
           <ErrorBanner error={error} />
         ) : loading ? (
