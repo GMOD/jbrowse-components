@@ -135,7 +135,6 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [totalWidthPx](#getter-totalwidthpx)                                     | Getters    | Integer-rounded sum of all visible block widths. Slightly less than view.width when the genome ends before the right edge; use view.width for SVG clip rects (display boundary) and this for paint canvas sizing (actual content width).                                                                                                                                                                                                                |
 | [totalWidthPxWithoutBorders](#getter-totalwidthpxwithoutborders)         | Getters    | Like totalWidthPx but excluding inter-region boundary blocks. Used when column layout divides the canvas width by feature count.                                                                                                                                                                                                                                                                                                                        |
 | [visibleBp](#getter-visiblebp)                                           | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [roundedDynamicBlocks](#getter-roundeddynamicblocks)                     | Getters    | rounded dynamic blocks are dynamic blocks without fractions of bp                                                                                                                                                                                                                                                                                                                                                                                       |
 | [visibleRegions](#getter-visibleregions)                                 | Getters    | Returns the currently visible content blocks with screen pixel positions and displayedRegionIndex guaranteed. Used by WebGL displays for per-region data fetching and rendering.                                                                                                                                                                                                                                                                        |
 | [bufferedVisibleRegions](#getter-bufferedvisibleregions)                 | Getters    | visibleRegions expanded by a half-screen buffer on each side, clamped to displayedRegion bounds, with integer-rounded coordinates. Use this when fetching data that should extend slightly beyond the viewport for smooth scrolling.                                                                                                                                                                                                                    |
 | [visibleLocStrings](#getter-visiblelocstrings)                           | Getters    | a single "combo-locstring" representing all the regions visible on the screen                                                                                                                                                                                                                                                                                                                                                                           |
@@ -214,6 +213,7 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [setInit](#action-setinit)                                               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [slide](#action-slide)                                                   | Actions    | perform animated slide                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [zoom](#action-zoom)                                                     | Actions    | perform animated zoom                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [cancelZoomAnimation](#action-cancelzoomanimation)                       | Actions    | cancel an in-flight animated zoom, e.g. when the user takes over with the zoom slider or another direct zoomTo. Without this a running spring keeps driving self.zoomTo from its own internal position and overwrites the direct interaction on the next frame.                                                                                                                                                                                         |
 | [setCoarseDynamicBlocks](#action-setcoarsedynamicblocks)                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [moveTo](#action-moveto)                                                 | Actions    | offset is the base-pair-offset in the displayed region, index is the index of the displayed region in the linear genome view                                                                                                                                                                                                                                                                                                                            |
 | [navToLocString](#action-navtolocstring)                                 | Actions    | Navigate to the given locstring, will change displayed regions if needed, and wait for assemblies to be initialized                                                                                                                                                                                                                                                                                                                                     |
@@ -235,7 +235,7 @@ and docs.
 
 **Volatiles:** [width](../baseviewmodel#volatile-width)
 
-**Getters:** [menuItems](../baseviewmodel#getter-menuitems)
+**Methods:** [menuItems](../baseviewmodel#method-menuitems)
 
 **Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
 [setWidth](../baseviewmodel#action-setwidth),
@@ -831,14 +831,6 @@ layout divides the canvas width by feature count.
 type totalWidthPxWithoutBorders = number
 ```
 
-#### getter: roundedDynamicBlocks
-
-rounded dynamic blocks are dynamic blocks without fractions of bp
-
-```ts
-type roundedDynamicBlocks = { start: number; end: number; type: "ContentBlock"; assemblyName: string; refName: string; key: string; offsetPx: number; widthPx: number; reversed?: boolean | undefined; displayedRegionIndex?: number | undefined; isLeftEndOfDisplayedRegion?: boolean | undefined; isRightEndOfDisplayedRegion?: boolean | undefined; va...
-```
-
 #### getter: visibleRegions
 
 Returns the currently visible content blocks with screen pixel positions and
@@ -1374,6 +1366,17 @@ perform animated zoom
 
 ```ts
 type zoom = (targetBpPerPx: number) => void
+```
+
+#### action: cancelZoomAnimation
+
+cancel an in-flight animated zoom, e.g. when the user takes over with the zoom
+slider or another direct zoomTo. Without this a running spring keeps driving
+self.zoomTo from its own internal position and overwrites the direct interaction
+on the next frame.
+
+```ts
+type cancelZoomAnimation = () => void
 ```
 
 #### action: moveTo

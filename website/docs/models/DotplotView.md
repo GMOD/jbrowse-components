@@ -139,7 +139,7 @@ and docs.
 
 **Volatiles:** [width](../baseviewmodel#volatile-width)
 
-**Getters:** [menuItems](../baseviewmodel#getter-menuitems)
+**Methods:** [menuItems](../baseviewmodel#method-menuitems)
 
 **Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
 [setWidth](../baseviewmodel#action-setwidth),
@@ -910,7 +910,7 @@ type hideTrack = (trackId: string) => boolean
 #### action: toggleTrack
 
 ```ts
-type toggleTrack = (trackId: string) => void
+type toggleTrack = (trackId: string) => boolean
 ```
 
 #### action: setAssemblyNames

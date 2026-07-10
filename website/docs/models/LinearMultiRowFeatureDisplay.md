@@ -20,51 +20,60 @@ dendrogram + reorder) is the shared `TreeSidebarMixin`.
 
 ## Members
 
-| Member                                                       | Kind       | Description                                                                                                                                                                                                                                                   |
-| ------------------------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                       | Properties |                                                                                                                                                                                                                                                               |
-| [configuration](#property-configuration)                     | Properties |                                                                                                                                                                                                                                                               |
-| [rpcDataMap](#volatile-rpcdatamap)                           | Volatiles  |                                                                                                                                                                                                                                                               |
-| [prefersOffset](#volatile-prefersoffset)                     | Volatiles  |                                                                                                                                                                                                                                                               |
-| [hoveredFeature](#volatile-hoveredfeature)                   | Volatiles  | The feature under the mouse (+ client coords for tooltip placement), or undefined when not hovering a block.                                                                                                                                                  |
-| [conf](#getter-conf)                                         | Getters    | config typed off the concrete schema (ConfigurationReference erases it to any); direct reads route through here to stay typed                                                                                                                                 |
-| [showTree](#getter-showtree)                                 | Getters    |                                                                                                                                                                                                                                                               |
-| [showBranchLength](#getter-showbranchlength)                 | Getters    |                                                                                                                                                                                                                                                               |
-| [partitionField](#getter-partitionfield)                     | Getters    |                                                                                                                                                                                                                                                               |
-| [rowOrder](#getter-roworder)                                 | Getters    | Optional explicit row order from config; values listed here are placed first, remaining discovered values follow in sorted order.                                                                                                                             |
-| [colorConfig](#getter-colorconfig)                           | Getters    | Raw `color` slot (a CSS color or `jexl:` string), forwarded to the worker which resolves it per feature.                                                                                                                                                      |
-| [sampleColorMap](#getter-samplecolormap)                     | Getters    | Map of partition value → color, forwarded to the worker which applies it over the per-feature `color`.                                                                                                                                                        |
-| [rowProportion](#getter-rowproportion)                       | Getters    |                                                                                                                                                                                                                                                               |
-| [sourcesWithoutLayout](#getter-sourceswithoutlayout)         | Getters    | Rows discovered in the loaded data: the distinct partition values across all loaded regions, ordered by the config `rowOrder` then sorted. The pre-layout, pre-filter input to the arrangement dialog and to clustering.                                      |
-| [editableSources](#getter-editablesources)                   | Getters    | Discovered rows with the user's arrangement (reorder/relabel) applied — what the arrangement dialog edits. Not subtree-filtered.                                                                                                                              |
-| [sources](#getter-sources)                                   | Getters    | The display rows: `editableSources` narrowed by the active subtree filter. Render order, label order, and `rowIndexByValue` all key off this, so reordering/filtering flows through to the painting.                                                          |
-| [rowIndexByValue](#getter-rowindexbyvalue)                   | Getters    |                                                                                                                                                                                                                                                               |
-| [rowColorsByIndex](#getter-rowcolorsbyindex)                 | Getters    | Per-row color (ABGR) by display row — the single per-row resolver (dialog color > config `sampleColorMap` > palette-when-default). Applied at render time over the worker-baked per-feature `color` slot, so any color change repaints without a refetch.     |
-| [nrow](#getter-nrow)                                         | Getters    | Number of displayed rows (at least 1, so the auto-fit division is safe and the canvas mounts before data arrives).                                                                                                                                            |
-| [fitTargetHeight](#getter-fittargetheight)                   | Getters    | The track height that auto-fit mode divides among rows: the `height` config slot (its default, or a drag-resized value written to it).                                                                                                                        |
-| [rowHeightSetting](#getter-rowheightsetting)                 | Getters    | Resolved fixed row-height setting: `0` is auto-fit, any positive value is a pinned px height. Drag-resize / fit-toggle write it via `setSlot`.                                                                                                                |
-| [rowHeight](#getter-rowheight)                               | Getters    | Resolved per-row height. `rowHeightSetting === 0` auto-fits: the display height split evenly across rows so all rows stay visible as the row count grows. Any positive value is a pinned px height. Every consumer reads this, never `rowHeightSetting`.      |
-| [height](#getter-height)                                     | Getters    | Override BaseLinearDisplay.height so the track container matches the rendering canvas (numRows × rowHeight). In auto-fit mode this resolves to `fitTargetHeight`; in fixed mode it grows with the row count.                                                  |
-| [hierarchy](#getter-hierarchy)                               | Getters    | Positioned dendrogram (when a cluster tree exists and rows are loaded). Leaves spaced over `height`, branches over `treeAreaWidth`.                                                                                                                           |
-| [sidebarOffset](#getter-sidebaroffset)                       | Getters    | Pixel width reserved on the left for the tree (0 when no tree shows).                                                                                                                                                                                         |
-| [spatialIndex](#getter-spatialindex)                         | Getters    |                                                                                                                                                                                                                                                               |
-| [renderState](#getter-renderstate)                           | Getters    | Render state passed to the GPU/Canvas2D backend each frame.                                                                                                                                                                                                   |
-| [rpcProps](#method-rpcprops)                                 | Methods    | Fetch-input cache keys (tier-1, via SettingsInvalidate → refetch). Color is resolved in the worker, so the raw color slot is a key.                                                                                                                           |
-| [featureAt](#method-featureat)                               | Methods    | Hit-test the feature under a canvas-relative pixel: row from `mouseY / rowHeight`, genomic bp from the view, then the first feature on that row whose `[start,end)` covers the bp. Returns undefined over the sidebar, off-row, out-of-bounds, or over a gap. |
-| [trackMenuItems](#method-trackmenuitems)                     | Methods    |                                                                                                                                                                                                                                                               |
-| [setRowHeight](#action-setrowheight)                         | Actions    |                                                                                                                                                                                                                                                               |
-| [setShowTree](#action-setshowtree)                           | Actions    |                                                                                                                                                                                                                                                               |
-| [setShowBranchLength](#action-setshowbranchlength)           | Actions    |                                                                                                                                                                                                                                                               |
-| [setHoveredFeature](#action-sethoveredfeature)               | Actions    |                                                                                                                                                                                                                                                               |
-| [selectFeatureById](#action-selectfeaturebyid)               | Actions    | Re-fetch the full clicked feature by id and open it in the feature details widget. The painting ships only the slim render arrays, so the complete feature is fetched on demand (GetCanvasFeatureDetails).                                                    |
-| [setRpcData](#action-setrpcdata)                             | Actions    |                                                                                                                                                                                                                                                               |
-| [clearDisplaySpecificData](#action-cleardisplayspecificdata) | Actions    |                                                                                                                                                                                                                                                               |
-| [setHeight](#action-setheight)                               | Actions    | Set the track height. In auto-fit mode the rows restretch to it; in fixed mode it's distributed across the current rows as a pinned row height.                                                                                                               |
-| [resizeHeight](#action-resizeheight)                         | Actions    | Drag-resize. Defers to `setHeight`, which restretches rows in auto-fit mode and re-pins the row height in fixed mode.                                                                                                                                         |
-| [setFitToHeight](#action-setfittoheight)                     | Actions    | Switch to auto-fit: seed the `height` config slot from the current content height (so toggling on doesn't jump), then `rowHeight = 0` makes `rowHeight` derive from it.                                                                                       |
-| [startRenderingBackend](#action-startrenderingbackend)       | Actions    |                                                                                                                                                                                                                                                               |
-| [fetchNeeded](#action-fetchneeded)                           | Actions    |                                                                                                                                                                                                                                                               |
-| [renderSvg](#action-rendersvg)                               | Actions    |                                                                                                                                                                                                                                                               |
+| Member                                                       | Kind       | Description                                                                                                                                                                                                                                                                                                                                                                         |
+| ------------------------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                       | Properties |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [configuration](#property-configuration)                     | Properties |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [runClustering](#property-runclustering)                     | Properties | Transient declarative launch spec (like LinearGenomeView's `init`): set true — from the track menu or a saved session — to run row clustering once as soon as the display is ready; getMultiRowClusterAutorun clears it afterward so a saved session never re-triggers.                                                                                                             |
+| [sortRowsBy](#property-sortrowsby)                           | Properties | Transient declarative launch spec (like `runClustering`): set `{refName, pos}` to sort the rows once by the value each carries at that genomic position — the in-app, session-expressible equivalent of a hand-computed `rowOrder`. getMultiRowSortAutorun applies it (once the region is loaded) and clears it, so the resulting `layout` persists but the trigger never re-fires. |
+| [rpcDataMap](#volatile-rpcdatamap)                           | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [prefersOffset](#volatile-prefersoffset)                     | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [hoveredFeature](#volatile-hoveredfeature)                   | Volatiles  | The feature under the mouse (+ client coords for tooltip placement), or undefined when not hovering a block.                                                                                                                                                                                                                                                                        |
+| [contextMenuInfo](#volatile-contextmenuinfo)                 | Volatiles  | Right-click context menu anchor + the genomic position clicked (and the feature there, if any). Undefined when the menu is closed.                                                                                                                                                                                                                                                  |
+| [conf](#getter-conf)                                         | Getters    | config typed off the concrete schema (ConfigurationReference erases it to any); direct reads route through here to stay typed                                                                                                                                                                                                                                                       |
+| [showTree](#getter-showtree)                                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [showBranchLength](#getter-showbranchlength)                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [partitionField](#getter-partitionfield)                     | Getters    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [rowOrder](#getter-roworder)                                 | Getters    | Optional explicit row order from config; values listed here are placed first, remaining discovered values follow in sorted order.                                                                                                                                                                                                                                                   |
+| [colorConfig](#getter-colorconfig)                           | Getters    | Raw `color` slot (a CSS color or `jexl:` string), forwarded to the worker which resolves it per feature.                                                                                                                                                                                                                                                                            |
+| [sampleColorMap](#getter-samplecolormap)                     | Getters    | Map of partition value → color, forwarded to the worker which applies it over the per-feature `color`.                                                                                                                                                                                                                                                                              |
+| [rowProportion](#getter-rowproportion)                       | Getters    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [sourcesWithoutLayout](#getter-sourceswithoutlayout)         | Getters    | Rows discovered in the loaded data: the distinct partition values across all loaded regions, ordered by the config `rowOrder` then sorted. The pre-layout, pre-filter input to the arrangement dialog and to clustering.                                                                                                                                                            |
+| [editableSources](#getter-editablesources)                   | Getters    | Discovered rows with the user's arrangement (reorder/relabel) applied — what the arrangement dialog edits. Not subtree-filtered.                                                                                                                                                                                                                                                    |
+| [sources](#getter-sources)                                   | Getters    | The display rows: `editableSources` narrowed by the active subtree filter. Render order, label order, and `rowIndexByValue` all key off this, so reordering/filtering flows through to the painting.                                                                                                                                                                                |
+| [rowIndexByValue](#getter-rowindexbyvalue)                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [rowColorsByIndex](#getter-rowcolorsbyindex)                 | Getters    | Per-row color (ABGR) by display row — the single per-row resolver (dialog color > config `sampleColorMap` > palette-when-default). Applied at render time over the worker-baked per-feature `color` slot, so any color change repaints without a refetch.                                                                                                                           |
+| [nrow](#getter-nrow)                                         | Getters    | Number of displayed rows (at least 1, so the auto-fit division is safe and the canvas mounts before data arrives).                                                                                                                                                                                                                                                                  |
+| [fitTargetHeight](#getter-fittargetheight)                   | Getters    | The track height that auto-fit mode divides among rows: the `height` config slot (its default, or a drag-resized value written to it).                                                                                                                                                                                                                                              |
+| [rowHeightSetting](#getter-rowheightsetting)                 | Getters    | Resolved fixed row-height setting: `0` is auto-fit, any positive value is a pinned px height. Drag-resize / fit-toggle write it via `setSlot`.                                                                                                                                                                                                                                      |
+| [rowHeight](#getter-rowheight)                               | Getters    | Resolved per-row height. `rowHeightSetting === 0` auto-fits: the display height split evenly across rows so all rows stay visible as the row count grows. Any positive value is a pinned px height. Every consumer reads this, never `rowHeightSetting`.                                                                                                                            |
+| [height](#getter-height)                                     | Getters    | Override BaseLinearDisplay.height so the track container matches the rendering canvas (numRows × rowHeight). In auto-fit mode this resolves to `fitTargetHeight`; in fixed mode it grows with the row count.                                                                                                                                                                        |
+| [hierarchy](#getter-hierarchy)                               | Getters    | Positioned dendrogram (when a cluster tree exists and rows are loaded). Leaves spaced over `height`, branches over `treeAreaWidth`.                                                                                                                                                                                                                                                 |
+| [sidebarOffset](#getter-sidebaroffset)                       | Getters    | Pixel width reserved on the left for the tree (0 when no tree shows).                                                                                                                                                                                                                                                                                                               |
+| [spatialIndex](#getter-spatialindex)                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [renderState](#getter-renderstate)                           | Getters    | Render state passed to the GPU/Canvas2D backend each frame.                                                                                                                                                                                                                                                                                                                         |
+| [rpcProps](#method-rpcprops)                                 | Methods    | Fetch-input cache keys (tier-1, via SettingsInvalidate → refetch). Color is resolved in the worker, so the raw color slot is a key.                                                                                                                                                                                                                                                 |
+| [featureAt](#method-featureat)                               | Methods    | Hit-test the feature under a canvas-relative pixel: row from `mouseY / rowHeight`, genomic bp from the view, then the first feature on that row whose `[start,end)` covers the bp. Returns undefined over the sidebar, off-row, out-of-bounds, or over a gap.                                                                                                                       |
+| [contextMenuItems](#method-contextmenuitems)                 | Methods    | Items for the right-click context menu, built from the clicked position (contextMenuInfo). "Sort rows by value here" is the interactive twin of the declarative `sortRowsBy`.                                                                                                                                                                                                       |
+| [trackMenuItems](#method-trackmenuitems)                     | Methods    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setRowHeight](#action-setrowheight)                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setShowTree](#action-setshowtree)                           | Actions    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setShowBranchLength](#action-setshowbranchlength)           | Actions    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setRunClustering](#action-setrunclustering)                 | Actions    | Trigger (or clear) a one-shot row clustering run; consumed and reset by getMultiRowClusterAutorun.                                                                                                                                                                                                                                                                                  |
+| [setSortRowsBy](#action-setsortrowsby)                       | Actions    | Trigger (or clear) a one-shot declarative row sort; consumed and reset by getMultiRowSortAutorun. The right-click menu calls `sortRowsByValueAt` directly (instant, data already loaded); this prop is the session-level entry point.                                                                                                                                               |
+| [sortRowsByValueAt](#action-sortrowsbyvalueat)               | Actions    | Reorder the rows by the value each carries at (refName, pos) — the feature covering that position on each row. Reads the already-loaded region data (no refetch/RPC) and writes the new order via `layout`.                                                                                                                                                                         |
+| [openContextMenu](#action-opencontextmenu)                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [closeContextMenu](#action-closecontextmenu)                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setHoveredFeature](#action-sethoveredfeature)               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [selectFeatureById](#action-selectfeaturebyid)               | Actions    | Re-fetch the full clicked feature by id and open it in the feature details widget. The painting ships only the slim render arrays, so the complete feature is fetched on demand (GetCanvasFeatureDetails).                                                                                                                                                                          |
+| [setRpcData](#action-setrpcdata)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [clearDisplaySpecificData](#action-cleardisplayspecificdata) | Actions    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setHeight](#action-setheight)                               | Actions    | Set the track height. In auto-fit mode the rows restretch to it; in fixed mode it's distributed across the current rows as a pinned row height.                                                                                                                                                                                                                                     |
+| [resizeHeight](#action-resizeheight)                         | Actions    | Drag-resize. Defers to `setHeight`, which restretches rows in auto-fit mode and re-pins the row height in fixed mode.                                                                                                                                                                                                                                                               |
+| [setFitToHeight](#action-setfittoheight)                     | Actions    | Switch to auto-fit: seed the `height` config slot from the current content height (so toggling on doesn't jump), then `rowHeight = 0` makes `rowHeight` derive from it.                                                                                                                                                                                                             |
+| [startRenderingBackend](#action-startrenderingbackend)       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [fetchNeeded](#action-fetchneeded)                           | Actions    |                                                                                                                                                                                                                                                                                                                                                                                     |
+| [renderSvg](#action-rendersvg)                               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                     |
 
 ### LinearMultiRowFeatureDisplay - Configuration
 
@@ -233,6 +242,46 @@ and docs.
 <details>
 <summary>LinearMultiRowFeatureDisplay - Properties</summary>
 
+#### property: runClustering
+
+Transient declarative launch spec (like LinearGenomeView's `init`): set true —
+from the track menu or a saved session — to run row clustering once as soon as
+the display is ready; getMultiRowClusterAutorun clears it afterward so a saved
+session never re-triggers.
+
+```ts
+// type signature
+type runClustering = IMaybe<ISimpleType<boolean>>
+// code
+runClustering: types.maybe(types.boolean)
+```
+
+#### property: sortRowsBy
+
+Transient declarative launch spec (like `runClustering`): set `{refName, pos}`
+to sort the rows once by the value each carries at that genomic position — the
+in-app, session-expressible equivalent of a hand-computed `rowOrder`.
+getMultiRowSortAutorun applies it (once the region is loaded) and clears it, so
+the resulting `layout` persists but the trigger never re-fires.
+
+```ts
+// type signature
+type sortRowsBy = IMaybe<
+  IType<
+    { refName: string; pos: number },
+    { refName: string; pos: number },
+    { refName: string; pos: number }
+  >
+>
+// code
+sortRowsBy: types.maybe(types.frozen<{ refName: string; pos: number }>())
+```
+
+</details>
+
+<details>
+<summary>LinearMultiRowFeatureDisplay - Properties (other undocumented members)</summary>
+
 #### property: type
 
 ```ts
@@ -266,6 +315,34 @@ undefined when not hovering a block.
 type hoveredFeature = HoveredFeature | undefined
 // code
 hoveredFeature: undefined as HoveredFeature | undefined
+```
+
+#### volatile: contextMenuInfo
+
+Right-click context menu anchor + the genomic position clicked (and the feature
+there, if any). Undefined when the menu is closed.
+
+```ts
+// type signature
+type contextMenuInfo =
+  | {
+      clientX: number
+      clientY: number
+      refName: string
+      pos: number
+      hit?: MultiRowHit | undefined
+    }
+  | undefined
+// code
+contextMenuInfo: undefined as
+  | {
+      clientX: number
+      clientY: number
+      refName: string
+      pos: number
+      hit?: MultiRowHit
+    }
+  | undefined
 ```
 
 </details>
@@ -512,6 +589,16 @@ off-row, out-of-bounds, or over a gap.
 type featureAt = (mouseX: number, mouseY: number) => MultiRowHit | undefined
 ```
 
+#### method: contextMenuItems
+
+Items for the right-click context menu, built from the clicked position
+(contextMenuInfo). "Sort rows by value here" is the interactive twin of the
+declarative `sortRowsBy`.
+
+```ts
+type contextMenuItems = () => MenuItem[]
+```
+
 </details>
 
 <details>
@@ -527,6 +614,37 @@ type trackMenuItems = () => MenuItem[]
 
 <details>
 <summary>LinearMultiRowFeatureDisplay - Actions</summary>
+
+#### action: setRunClustering
+
+Trigger (or clear) a one-shot row clustering run; consumed and reset by
+getMultiRowClusterAutorun.
+
+```ts
+type setRunClustering = (arg?: boolean | undefined) => void
+```
+
+#### action: setSortRowsBy
+
+Trigger (or clear) a one-shot declarative row sort; consumed and reset by
+getMultiRowSortAutorun. The right-click menu calls `sortRowsByValueAt` directly
+(instant, data already loaded); this prop is the session-level entry point.
+
+```ts
+type setSortRowsBy = (
+  arg?: { refName: string; pos: number } | undefined,
+) => void
+```
+
+#### action: sortRowsByValueAt
+
+Reorder the rows by the value each carries at (refName, pos) — the feature
+covering that position on each row. Reads the already-loaded region data (no
+refetch/RPC) and writes the new order via `layout`.
+
+```ts
+type sortRowsByValueAt = (refName: string, pos: number) => void
+```
 
 #### action: selectFeatureById
 
@@ -590,6 +708,24 @@ type setShowTree = (f: boolean) => void
 
 ```ts
 type setShowBranchLength = (f: boolean) => void
+```
+
+#### action: openContextMenu
+
+```ts
+type openContextMenu = (info: {
+  clientX: number
+  clientY: number
+  refName: string
+  pos: number
+  hit?: MultiRowHit | undefined
+}) => void
+```
+
+#### action: closeContextMenu
+
+```ts
+type closeContextMenu = () => void
 ```
 
 #### action: setHoveredFeature

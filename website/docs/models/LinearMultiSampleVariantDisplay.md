@@ -24,8 +24,8 @@ per-cell feature widget on click.
 | [prefersOffset](#getter-prefersoffset)                 | Getters    |             |
 | [perRegionCellMap](#getter-perregioncellmap)           | Getters    |             |
 | [flatbushIndices](#getter-flatbushindices)             | Getters    |             |
-| [renderSvg](#method-rendersvg)                         | Methods    |             |
 | [showSubmenuItems](#method-showsubmenuitems)           | Methods    |             |
+| [renderSvg](#method-rendersvg)                         | Methods    |             |
 | [startRenderingBackend](#action-startrenderingbackend) | Actions    |             |
 
 ### LinearMultiSampleVariantDisplay - Configuration
@@ -358,16 +358,16 @@ type flatbushIndices = Map<number, Flatbush>
 <details>
 <summary>LinearMultiSampleVariantDisplay - Methods</summary>
 
-#### method: renderSvg
-
-```ts
-type renderSvg = (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
-```
-
 #### method: showSubmenuItems
 
 ```ts
 type showSubmenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; })[]
+```
+
+#### method: renderSvg
+
+```ts
+type renderSvg = (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
 ```
 
 </details>

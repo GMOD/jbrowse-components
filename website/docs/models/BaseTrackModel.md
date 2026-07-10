@@ -24,7 +24,7 @@ that multiple displayed tracks could use the same configuration.
 | [configuration](#property-configuration)                         | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [minimized](#property-minimized)                                 | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [pinned](#property-pinned)                                       | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [displays](#property-displays)                                   | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [displays](#property-displays)                                   | Properties | The runtime plugin union (`pluggableMstType`) is typed only as `IAnyType`, erasing the element to `any`. Assert the concrete `DisplayModel` instance every registered display satisfies so reads (`activeDisplay`, `viewMenuActions`, `trackMenuItems`) are checked; create/snapshot stay `unknown` since the union's snapshot shape is genuinely dynamic (`replaceDisplay` writes a partial snapshot).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [trackId](#getter-trackid)                                       | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [rpcSessionId](#getter-rpcsessionid)                             | Getters    | determines which webworker to send the track to, currently based on trackId                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [name](#getter-name)                                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -44,6 +44,33 @@ that multiple displayed tracks could use the same configuration.
 
 <details>
 <summary>BaseTrackModel - Properties</summary>
+
+#### property: displays
+
+The runtime plugin union (`pluggableMstType`) is typed only as `IAnyType`,
+erasing the element to `any`. Assert the concrete `DisplayModel` instance every
+registered display satisfies so reads (`activeDisplay`, `viewMenuActions`,
+`trackMenuItems`) are checked; create/snapshot stay `unknown` since the union's
+snapshot shape is genuinely dynamic (`replaceDisplay` writes a partial
+snapshot).
+
+```ts
+// type signature
+type displays = IArrayType<IType<unknown, unknown, DisplayModel>>
+// code
+displays: types.array(
+  pm.pluggableMstType('display', 'stateModel') as unknown as IType<
+    unknown,
+    unknown,
+    DisplayModel
+  >,
+)
+```
+
+</details>
+
+<details>
+<summary>BaseTrackModel - Properties (other undocumented members)</summary>
 
 #### property: id
 
@@ -90,15 +117,6 @@ type pinned = IOptionalIType<ISimpleType<boolean>, [undefined]>
 pinned: types.stripDefault(types.boolean, false)
 ```
 
-#### property: displays
-
-```ts
-// type signature
-type displays = IArrayType<IAnyType>
-// code
-displays: types.array(pm.pluggableMstType('display', 'stateModel'))
-```
-
 </details>
 
 <details>
@@ -117,7 +135,8 @@ type rpcSessionId = string
 a shown track always has at least one display
 
 ```ts
-type activeDisplay = any
+type activeDisplay = DisplayModel &
+  IStateTreeNode<IType<unknown, unknown, DisplayModel>>
 ```
 
 #### getter: saveTrackDataMenuItem

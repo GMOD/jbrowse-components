@@ -215,7 +215,7 @@ type hideTrack = (trackId: string) => boolean
 #### action: toggleTrack
 
 ```ts
-type toggleTrack = (trackId: string) => void
+type toggleTrack = (trackId: string) => boolean
 ```
 
 #### action: startRenderingBackend

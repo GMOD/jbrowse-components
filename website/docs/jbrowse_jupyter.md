@@ -77,16 +77,16 @@ line up even when they name chromosomes differently (`chr17` vs `17`).
 
 Each opens in Colab and runs top-to-bottom.
 
-| Notebook | What it shows |
-| --- | --- |
-| [Quickstart](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/01_quickstart.ipynb) | An assembly, a track by URL, two-way location sync |
-| [DataFrame → track](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/02_dataframe_analysis.ipynb) | A pandas DataFrame becomes a track; color by a computed value |
-| [GPU alignments](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/03_alignments.ipynb) | A BAM/CRAM pileup, colored by pair orientation |
-| [Multi-sample variants](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/04_multisample_variants.ipynb) | A multi-sample VCF as a per-sample band and a genotype matrix |
-| [Call CNVs → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/05_cnv_calling.ipynb) | Segment binned depth into gain/loss calls (ERBB2 amplification) |
-| [Selection scan → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/06_popgen_selection.ipynb) | Windowed Fst; the sweep lands over *LCT* |
-| [Differential expression → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/07_differential_expression.ipynb) | Counts → log2FC / t-test → a gene track colored by call |
-| [Hosted assembly hub](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/08_hosted_assembly_hub.ipynb) | `fetch_hub` for easy human data; navigate by gene name |
+| Notebook                                                                                                                                              | What it shows                                                   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| [Quickstart](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/01_quickstart.ipynb)                                  | An assembly, a track by URL, two-way location sync              |
+| [DataFrame → track](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/02_dataframe_analysis.ipynb)                   | A pandas DataFrame becomes a track; color by a computed value   |
+| [GPU alignments](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/03_alignments.ipynb)                              | A BAM/CRAM pileup, colored by pair orientation                  |
+| [Multi-sample variants](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/04_multisample_variants.ipynb)             | A multi-sample VCF as a per-sample band and a genotype matrix   |
+| [Call CNVs → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/05_cnv_calling.ipynb)                           | Segment binned depth into gain/loss calls (ERBB2 amplification) |
+| [Selection scan → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/06_popgen_selection.ipynb)                 | Windowed Fst; the sweep lands over _LCT_                        |
+| [Differential expression → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/07_differential_expression.ipynb) | Counts → log2FC / t-test → a gene track colored by call         |
+| [Hosted assembly hub](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/08_hosted_assembly_hub.ipynb)                | `fetch_hub` for easy human data; navigate by gene name          |
 
 The "→ view" notebooks are the core loop — **run an analysis in Python, load the
 result onto the genome** — with everything computed in the notebook.

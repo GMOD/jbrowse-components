@@ -38,7 +38,6 @@ with optional clustering and a tree sidebar.
 | [configuration](#property-configuration)                             | Properties |                                                                                                                          |
 | [runClustering](#property-runclustering)                             | Properties |                                                                                                                          |
 | [sourcesVolatile](#volatile-sourcesvolatile)                         | Volatiles  |                                                                                                                          |
-| [featureUnderMouse](#volatile-featureundermouse)                     | Volatiles  |                                                                                                                          |
 | [DisplayMessageComponent](#getter-displaymessagecomponent)           | Getters    |                                                                                                                          |
 | [isDensityMode](#getter-isdensitymode)                               | Getters    |                                                                                                                          |
 | [isOverlay](#getter-isoverlay)                                       | Getters    |                                                                                                                          |
@@ -66,8 +65,6 @@ with optional clustering and a tree sidebar.
 | [setShowTree](#action-setshowtree)                                   | Actions    |                                                                                                                          |
 | [setShowBranchLength](#action-setshowbranchlength)                   | Actions    |                                                                                                                          |
 | [setShowRowSeparators](#action-setshowrowseparators)                 | Actions    |                                                                                                                          |
-| [setFeatureUnderMouse](#action-setfeatureundermouse)                 | Actions    |                                                                                                                          |
-| [selectFeature](#action-selectfeature)                               | Actions    |                                                                                                                          |
 | [setRunClustering](#action-setrunclustering)                         | Actions    |                                                                                                                          |
 | [fetchNeeded](#action-fetchneeded)                                   | Actions    |                                                                                                                          |
 | [renderSvg](#action-rendersvg)                                       | Actions    |                                                                                                                          |
@@ -211,7 +208,8 @@ and docs.
 
 ### Available via [WiggleCommonMixin](../wigglecommonmixin)
 
-**Volatiles:** [rpcDataMap](../wigglecommonmixin#volatile-rpcdatamap)
+**Volatiles:** [rpcDataMap](../wigglecommonmixin#volatile-rpcdatamap),
+[featureUnderMouse](../wigglecommonmixin#volatile-featureundermouse)
 
 **Getters:**
 [autoscaleSourceNames](../wigglecommonmixin#getter-autoscalesourcenames),
@@ -219,7 +217,9 @@ and docs.
 [domain](../wigglecommonmixin#getter-domain)
 
 **Actions:**
-[clearDisplaySpecificData](../wigglecommonmixin#action-cleardisplayspecificdata)
+[clearDisplaySpecificData](../wigglecommonmixin#action-cleardisplayspecificdata),
+[setFeatureUnderMouse](../wigglecommonmixin#action-setfeatureundermouse),
+[selectFeature](../wigglecommonmixin#action-selectfeature)
 
 ### Available via [WiggleScoreConfigMixin](../wigglescoreconfigmixin)
 
@@ -327,15 +327,6 @@ runClustering: types.maybe(types.boolean)
 type sourcesVolatile = SourceInfo[]
 // code
 sourcesVolatile: [] as SourceInfo[]
-```
-
-#### volatile: featureUnderMouse
-
-```ts
-// type signature
-type featureUnderMouse = WiggleFeatureUnderMouse | undefined
-// code
-featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined
 ```
 
 </details>
@@ -531,18 +522,6 @@ type setShowBranchLength = (arg: boolean) => void
 
 ```ts
 type setShowRowSeparators = (arg: boolean) => void
-```
-
-#### action: setFeatureUnderMouse
-
-```ts
-type setFeatureUnderMouse = (feat?: WiggleFeatureUnderMouse | undefined) => void
-```
-
-#### action: selectFeature
-
-```ts
-type selectFeature = (feat: WiggleFeatureUnderMouse) => void
 ```
 
 #### action: setRunClustering

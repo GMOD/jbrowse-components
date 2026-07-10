@@ -23,9 +23,10 @@ dotplot use this
 | [bpPerPx](#property-bpperpx)                               | Properties |                                                                                                                              |
 | [offsetPx](#property-offsetpx)                             | Properties |                                                                                                                              |
 | [minimumBlockWidth](#property-minimumblockwidth)           | Properties |                                                                                                                              |
-| [features](#volatile-features)                             | Volatiles  |                                                                                                                              |
 | [volatileWidth](#volatile-volatilewidth)                   | Volatiles  |                                                                                                                              |
 | [width](#getter-width)                                     | Getters    |                                                                                                                              |
+| [minBpPerPx](#getter-minbpperpx)                           | Getters    | zoom-in floor; overridden by extensions (e.g. the dotplot axes)                                                              |
+| [maxBpPerPx](#getter-maxbpperpx)                           | Getters    | zoom-out ceiling; overridden by extensions (e.g. the dotplot axes)                                                           |
 | [assemblyNames](#getter-assemblynames)                     | Getters    |                                                                                                                              |
 | [displayedRegionsTotalPx](#getter-displayedregionstotalpx) | Getters    |                                                                                                                              |
 | [maxOffset](#getter-maxoffset)                             | Getters    |                                                                                                                              |
@@ -39,7 +40,6 @@ dotplot use this
 | [setDisplayedRegions](#action-setdisplayedregions)         | Actions    |                                                                                                                              |
 | [setBpPerPx](#action-setbpperpx)                           | Actions    |                                                                                                                              |
 | [setVolatileWidth](#action-setvolatilewidth)               | Actions    |                                                                                                                              |
-| [setFeatures](#action-setfeatures)                         | Actions    |                                                                                                                              |
 | [showAllRegions](#action-showallregions)                   | Actions    | this makes a zoomed out view that shows all displayedRegions that makes the overview bar square with the scale bar           |
 | [zoomOut](#action-zoomout)                                 | Actions    |                                                                                                                              |
 | [zoomIn](#action-zoomin)                                   | Actions    |                                                                                                                              |
@@ -105,15 +105,6 @@ minimumBlockWidth: types.stripDefault(types.number, 0)
 <details>
 <summary>Base1DView - Volatiles</summary>
 
-#### volatile: features
-
-```ts
-// type signature
-type features = Feature[] | undefined
-// code
-features: undefined as undefined | Feature[]
-```
-
 #### volatile: volatileWidth
 
 ```ts
@@ -127,6 +118,27 @@ volatileWidth: 0
 
 <details>
 <summary>Base1DView - Getters</summary>
+
+#### getter: minBpPerPx
+
+zoom-in floor; overridden by extensions (e.g. the dotplot axes)
+
+```ts
+type minBpPerPx = number
+```
+
+#### getter: maxBpPerPx
+
+zoom-out ceiling; overridden by extensions (e.g. the dotplot axes)
+
+```ts
+type maxBpPerPx = number
+```
+
+</details>
+
+<details>
+<summary>Base1DView - Getters (other undocumented members)</summary>
 
 #### getter: width
 
@@ -196,11 +208,7 @@ type pxToBp = (px: number) => PxToBpResult
 #### method: bpToPx
 
 ```ts
-type bpToPx = ({
-  refName,
-  coord,
-  displayedRegionIndex,
-}: {
+type bpToPx = (args: {
   refName: string
   coord: number
   displayedRegionIndex?: number | undefined
@@ -259,12 +267,6 @@ type setBpPerPx = (val: number) => void
 
 ```ts
 type setVolatileWidth = (width: number) => void
-```
-
-#### action: setFeatures
-
-```ts
-type setFeatures = (features: Feature[]) => void
 ```
 
 #### action: zoomOut

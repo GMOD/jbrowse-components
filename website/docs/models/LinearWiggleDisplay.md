@@ -42,7 +42,6 @@ State model factory for the single-source wiggle display.
 | ---------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [type](#property-type)                                     | Properties |                                                                                                                                                                                                                                                                                                                                         |
 | [configuration](#property-configuration)                   | Properties |                                                                                                                                                                                                                                                                                                                                         |
-| [featureUnderMouse](#volatile-featureundermouse)           | Volatiles  |                                                                                                                                                                                                                                                                                                                                         |
 | [DisplayMessageComponent](#getter-displaymessagecomponent) | Getters    |                                                                                                                                                                                                                                                                                                                                         |
 | [color](#getter-color)                                     | Getters    |                                                                                                                                                                                                                                                                                                                                         |
 | [useBicolor](#getter-usebicolor)                           | Getters    |                                                                                                                                                                                                                                                                                                                                         |
@@ -57,8 +56,6 @@ State model factory for the single-source wiggle display.
 | [setColor](#action-setcolor)                               | Actions    |                                                                                                                                                                                                                                                                                                                                         |
 | [setPosColor](#action-setposcolor)                         | Actions    |                                                                                                                                                                                                                                                                                                                                         |
 | [setNegColor](#action-setnegcolor)                         | Actions    |                                                                                                                                                                                                                                                                                                                                         |
-| [setFeatureUnderMouse](#action-setfeatureundermouse)       | Actions    |                                                                                                                                                                                                                                                                                                                                         |
-| [selectFeature](#action-selectfeature)                     | Actions    |                                                                                                                                                                                                                                                                                                                                         |
 | [fetchNeeded](#action-fetchneeded)                         | Actions    |                                                                                                                                                                                                                                                                                                                                         |
 | [renderSvg](#action-rendersvg)                             | Actions    |                                                                                                                                                                                                                                                                                                                                         |
 | [startRenderingBackend](#action-startrenderingbackend)     | Actions    |                                                                                                                                                                                                                                                                                                                                         |
@@ -202,7 +199,8 @@ and docs.
 
 ### Available via [WiggleCommonMixin](../wigglecommonmixin)
 
-**Volatiles:** [rpcDataMap](../wigglecommonmixin#volatile-rpcdatamap)
+**Volatiles:** [rpcDataMap](../wigglecommonmixin#volatile-rpcdatamap),
+[featureUnderMouse](../wigglecommonmixin#volatile-featureundermouse)
 
 **Getters:**
 [autoscaleSourceNames](../wigglecommonmixin#getter-autoscalesourcenames),
@@ -210,7 +208,9 @@ and docs.
 [domain](../wigglecommonmixin#getter-domain)
 
 **Actions:**
-[clearDisplaySpecificData](../wigglecommonmixin#action-cleardisplayspecificdata)
+[clearDisplaySpecificData](../wigglecommonmixin#action-cleardisplayspecificdata),
+[setFeatureUnderMouse](../wigglecommonmixin#action-setfeatureundermouse),
+[selectFeature](../wigglecommonmixin#action-selectfeature)
 
 ### Available via [WiggleScoreConfigMixin](../wigglescoreconfigmixin)
 
@@ -268,20 +268,6 @@ type: types.literal('LinearWiggleDisplay')
 type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
-```
-
-</details>
-
-<details>
-<summary>LinearWiggleDisplay - Volatiles</summary>
-
-#### volatile: featureUnderMouse
-
-```ts
-// type signature
-type featureUnderMouse = WiggleFeatureUnderMouse | undefined
-// code
-featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined
 ```
 
 </details>
@@ -407,18 +393,6 @@ type setPosColor = (color?: string | undefined) => void
 
 ```ts
 type setNegColor = (color?: string | undefined) => void
-```
-
-#### action: setFeatureUnderMouse
-
-```ts
-type setFeatureUnderMouse = (feat?: WiggleFeatureUnderMouse | undefined) => void
-```
-
-#### action: selectFeature
-
-```ts
-type selectFeature = (feat: WiggleFeatureUnderMouse) => void
 ```
 
 #### action: fetchNeeded

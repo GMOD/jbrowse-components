@@ -21,10 +21,13 @@ instead.
 | Member                                                       | Kind      | Description                                                                                                                                                                                                                                                                                                        |
 | ------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [rpcDataMap](#volatile-rpcdatamap)                           | Volatiles |                                                                                                                                                                                                                                                                                                                    |
+| [featureUnderMouse](#volatile-featureundermouse)             | Volatiles |                                                                                                                                                                                                                                                                                                                    |
 | [autoscaleSourceNames](#getter-autoscalesourcenames)         | Getters   | Source names to include when computing the autoscale domain; `undefined` means every fetched source. Multi-wiggle always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. |
 | [visibleScoreRange](#getter-visiblescorerange)               | Getters   |                                                                                                                                                                                                                                                                                                                    |
 | [domain](#getter-domain)                                     | Getters   |                                                                                                                                                                                                                                                                                                                    |
 | [clearDisplaySpecificData](#action-cleardisplayspecificdata) | Actions   |                                                                                                                                                                                                                                                                                                                    |
+| [setFeatureUnderMouse](#action-setfeatureundermouse)         | Actions   |                                                                                                                                                                                                                                                                                                                    |
+| [selectFeature](#action-selectfeature)                       | Actions   |                                                                                                                                                                                                                                                                                                                    |
 
 ## Inherited members
 
@@ -80,6 +83,15 @@ type rpcDataMap = ObservableMap<number, WiggleDataResult>
 rpcDataMap: observable.map<number, WiggleDataResult>()
 ```
 
+#### volatile: featureUnderMouse
+
+```ts
+// type signature
+type featureUnderMouse = WiggleFeatureUnderMouse | undefined
+// code
+featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined
+```
+
 </details>
 
 <details>
@@ -122,6 +134,18 @@ type domain = [number, number] | undefined
 
 ```ts
 type clearDisplaySpecificData = () => void
+```
+
+#### action: setFeatureUnderMouse
+
+```ts
+type setFeatureUnderMouse = (feat?: WiggleFeatureUnderMouse | undefined) => void
+```
+
+#### action: selectFeature
+
+```ts
+type selectFeature = (feat: WiggleFeatureUnderMouse) => void
 ```
 
 </details>

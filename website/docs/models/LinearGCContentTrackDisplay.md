@@ -78,9 +78,6 @@ and docs.
 **Properties:** [type](../linearwiggledisplay#property-type),
 [configuration](../linearwiggledisplay#property-configuration)
 
-**Volatiles:**
-[featureUnderMouse](../linearwiggledisplay#volatile-featureundermouse)
-
 **Getters:**
 [DisplayMessageComponent](../linearwiggledisplay#getter-displaymessagecomponent),
 [color](../linearwiggledisplay#getter-color),
@@ -98,8 +95,6 @@ and docs.
 [setColor](../linearwiggledisplay#action-setcolor),
 [setPosColor](../linearwiggledisplay#action-setposcolor),
 [setNegColor](../linearwiggledisplay#action-setnegcolor),
-[setFeatureUnderMouse](../linearwiggledisplay#action-setfeatureundermouse),
-[selectFeature](../linearwiggledisplay#action-selectfeature),
 [fetchNeeded](../linearwiggledisplay#action-fetchneeded),
 [renderSvg](../linearwiggledisplay#action-rendersvg),
 [startRenderingBackend](../linearwiggledisplay#action-startrenderingbackend)
@@ -233,7 +228,8 @@ and docs.
 
 ### Available via [WiggleCommonMixin](../wigglecommonmixin)
 
-**Volatiles:** [rpcDataMap](../wigglecommonmixin#volatile-rpcdatamap)
+**Volatiles:** [rpcDataMap](../wigglecommonmixin#volatile-rpcdatamap),
+[featureUnderMouse](../wigglecommonmixin#volatile-featureundermouse)
 
 **Getters:**
 [autoscaleSourceNames](../wigglecommonmixin#getter-autoscalesourcenames),
@@ -241,7 +237,9 @@ and docs.
 [domain](../wigglecommonmixin#getter-domain)
 
 **Actions:**
-[clearDisplaySpecificData](../wigglecommonmixin#action-cleardisplayspecificdata)
+[clearDisplaySpecificData](../wigglecommonmixin#action-cleardisplayspecificdata),
+[setFeatureUnderMouse](../wigglecommonmixin#action-setfeatureundermouse),
+[selectFeature](../wigglecommonmixin#action-selectfeature)
 
 ### Available via [WiggleScoreConfigMixin](../wigglescoreconfigmixin)
 

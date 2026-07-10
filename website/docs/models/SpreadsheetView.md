@@ -65,7 +65,7 @@ and docs.
 
 **Volatiles:** [width](../baseviewmodel#volatile-width)
 
-**Getters:** [menuItems](../baseviewmodel#getter-menuitems)
+**Methods:** [menuItems](../baseviewmodel#method-menuitems)
 
 **Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
 [setWidth](../baseviewmodel#action-setwidth),
