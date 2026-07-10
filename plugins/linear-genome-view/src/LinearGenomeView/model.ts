@@ -1805,17 +1805,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         get visibleBp() {
           return this.dynamicBlocks.totalBp
         },
-        /**
-         * #getter
-         * rounded dynamic blocks are dynamic blocks without fractions of bp
-         */
-        get roundedDynamicBlocks() {
-          return this.dynamicBlocks.contentBlocks.map(block => ({
-            ...block,
-            start: Math.floor(block.start),
-            end: Math.ceil(block.end),
-          }))
-        },
 
         /**
          * #getter

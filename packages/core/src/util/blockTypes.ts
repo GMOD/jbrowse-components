@@ -82,6 +82,11 @@ export class BlockSet {
   push(block: BaseBlock) {
     const last = this.blocks.at(-1)
     if (block.type === 'ElidedBlock' && last?.type === 'ElidedBlock') {
+      // A merged elided run can span several displayed regions, so its
+      // per-region identity is meaningless: refName/start/end are cleared and
+      // only widthPx/elidedBlockCount stay valid. The leftover key,
+      // assemblyName, displayedRegionIndex, isRightEndOfDisplayedRegion belong
+      // to the FIRST sub-block — don't key off them for an ElidedBlock.
       last.elidedBlockCount += 1
       last.refName = ''
       last.start = 0

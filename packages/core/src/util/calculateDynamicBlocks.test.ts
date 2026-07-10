@@ -121,6 +121,11 @@ test('off-screen regions have correct block positions', () => {
   expect(chr3Blocks[0]!.offsetPx).toBe(2000)
 })
 
+test('zero-width view yields empty blocks instead of throwing', () => {
+  const params = makeParams(makeRegions(2), { width: 0 })
+  expect(calculateDynamicBlocks(params).blocks).toHaveLength(0)
+})
+
 function makeParams(
   regions: {
     assemblyName: string
