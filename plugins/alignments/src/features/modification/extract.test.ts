@@ -4,7 +4,7 @@ import {
   unmethylated5mC,
 } from '@jbrowse/core/ui/theme'
 import { SimpleFeature } from '@jbrowse/core/util'
-import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import { extractMethylation, extractModifications } from './extract.ts'
@@ -146,11 +146,10 @@ describe('extractModifications', () => {
 
     // exactly one mark per CpG, no purple unmethylated-5hmC flooding
     expect(out.map(m => m.position)).toEqual([100, 102, 104, 106])
-    const rgb = (m: ModificationEntry) => [m.r, m.g, m.b]
-    expect(rgb(out[0]!)).toEqual(cssColorToRgb(methylated5mC))
-    expect(rgb(out[1]!)).toEqual(cssColorToRgb(unmethylated5mC))
-    expect(rgb(out[2]!)).toEqual(cssColorToRgb(methylated5hmC))
-    expect(rgb(out[3]!)).toEqual(cssColorToRgb(methylated5mC))
+    expect(out[0]!.color).toBe(cssColorToABGR(methylated5mC))
+    expect(out[1]!.color).toBe(cssColorToABGR(unmethylated5mC))
+    expect(out[2]!.color).toBe(cssColorToABGR(methylated5hmC))
+    expect(out[3]!.color).toBe(cssColorToABGR(methylated5mC))
     // unmethylated cytosine reports the no-mod confidence, not 1-hProb purple
     expect(out[1]!.modType).toBe('m')
     expect(out[1]!.prob).toBeCloseTo(1 - (10.5 + 10.5) / 256, 5)
@@ -165,10 +164,9 @@ describe('extractModifications', () => {
     // both present despite threshold 50 (twoColor ignores the threshold)
     expect(Object.keys(byType).sort()).toEqual(['a', 'm'])
     // high-confidence m keeps its modification color (red)
-    expect([byType.m!.r, byType.m!.g, byType.m!.b]).toEqual([255, 0, 0])
+    expect(byType.m!.color).toBe(packAbgr(255, 0, 0, 255))
     // low-confidence a is rendered in the unmethylated/blue color
-    const [br, bg, bb] = cssColorToRgb(unmethylated5mC)
-    expect([byType.a!.r, byType.a!.g, byType.a!.b]).toEqual([br, bg, bb])
+    expect(byType.a!.color).toBe(cssColorToABGR(unmethylated5mC))
     expect(byType.a!.prob).toBeCloseTo(1 - (50 + 0.5) / 256, 5)
   })
 })

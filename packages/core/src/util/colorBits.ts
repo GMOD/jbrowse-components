@@ -85,6 +85,13 @@ export function cssColorToABGR(color: string) {
   return packAbgr(getRed(c), getGreen(c), getBlue(c), getAlpha(c))
 }
 
+// Replace the alpha byte of an ABGR-packed u32, keeping its RGB. RGB already
+// occupies the low 24 bits (b<<16 | g<<8 | r), so this is a mask + or — no
+// per-channel unpack/repack. >>> 0 keeps the result unsigned (see packAbgr).
+export function withAbgrAlpha(c: number, a: number) {
+  return ((c & 0x00ffffff) | (a << 24)) >>> 0
+}
+
 // Pack a 0..1 normalized RGB triple into an ABGR u32 (opaque alpha). Inverse
 // of cssColorToNormalizedRgb at the GPU write boundary — the shader side
 // unpacks with unpackRGBA() (see packages/render-core/src/shaders/colorPack.slang).

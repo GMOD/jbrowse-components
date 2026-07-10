@@ -13,7 +13,7 @@ import {
   methylated5mC,
   unmethylated5mC,
 } from '@jbrowse/core/ui/theme'
-import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   getMethBins,
   getModPositions,
@@ -34,26 +34,27 @@ import type {
   ParsedModData,
 } from '@jbrowse/modifications-utils'
 
-// Methylated/unmethylated display colors for bisulfite/ONT methylation mode.
+// Methylated/unmethylated display colors for bisulfite/ONT methylation mode,
+// packed once to opaque ABGR (the modificationColors / GPU vertex format).
 // Differ from the modification-mode colors in shared/modificationData.ts —
 // theme.ts is source of truth, converted once here for the worker context.
-const METH_5MC_METHYLATED_RGB = cssColorToRgb(methylated5mC)
-const METH_5MC_UNMETHYLATED_RGB = cssColorToRgb(unmethylated5mC)
-const METH_5HMC_METHYLATED_RGB = cssColorToRgb(methylated5hmC)
+const METH_5MC_METHYLATED = cssColorToABGR(methylated5mC)
+const METH_5MC_UNMETHYLATED = cssColorToABGR(unmethylated5mC)
+const METH_5HMC_METHYLATED = cssColorToABGR(methylated5hmC)
 
-// getColorForModification + cssColorToRgb are pure functions of the mod code,
+// getColorForModification + cssColorToABGR are pure functions of the mod code,
 // but the mods.forEach loop below hits them once per modified base — thousands
 // of times per nanopore read, nearly all the same code ('m'). Memoize the
-// parsed RGB per code (globally deterministic) so each distinct code parses once
-// for the whole session instead of once per base.
-const modRgbCache = new Map<string, [number, number, number]>()
-function modRgbForType(type: string) {
-  let rgb = modRgbCache.get(type)
-  if (!rgb) {
-    rgb = cssColorToRgb(getColorForModification(type))
-    modRgbCache.set(type, rgb)
+// packed ABGR per code (globally deterministic) so each distinct code parses
+// once for the whole session instead of once per base.
+const modColorCache = new Map<string, number>()
+function modColorForType(type: string) {
+  let color = modColorCache.get(type)
+  if (color === undefined) {
+    color = cssColorToABGR(getColorForModification(type))
+    modColorCache.set(type, color)
   }
-  return rgb
+  return color
 }
 
 export function extractModifications(
@@ -118,16 +119,13 @@ export function extractModifications(
         (twoColor || prob >= modThreshold)
       ) {
         const isMeth = !twoColor || prob > 0.5
-        const rgb = isMeth ? modRgbForType(type) : METH_5MC_UNMETHYLATED_RGB
         modificationsData.push({
           readIndex,
           position: featureStart + refPos,
           base,
           modType: type,
           strand: modStrand,
-          r: rgb[0],
-          g: rgb[1],
-          b: rgb[2],
+          color: isMeth ? modColorForType(type) : METH_5MC_UNMETHYLATED,
           prob: isMeth ? prob : 1 - prob,
           noMod: !isMeth,
         })
@@ -177,23 +175,20 @@ export function extractMethylation(
     const noModProb = Math.max(0, 1 - mProb - hProb)
 
     // Winner selection, allocation-free: pick 5hmC, then 5mC, else the no-mod
-    // bucket. `rgb` references a module-level constant (no per-cytosine alloc).
+    // bucket. Each color is a module-level packed constant (no per-cytosine work).
     const isHydroxy = hProb > mProb && hProb > noModProb
     const isMeth = !isHydroxy && mProb > noModProb
-    const rgb = isHydroxy
-      ? METH_5HMC_METHYLATED_RGB
-      : isMeth
-        ? METH_5MC_METHYLATED_RGB
-        : METH_5MC_UNMETHYLATED_RGB
     modificationsData.push({
       readIndex,
       position: i + featureStart,
       base: 'C',
       modType: isHydroxy ? 'h' : 'm',
       strand: methStrand,
-      r: rgb[0],
-      g: rgb[1],
-      b: rgb[2],
+      color: isHydroxy
+        ? METH_5HMC_METHYLATED
+        : isMeth
+          ? METH_5MC_METHYLATED
+          : METH_5MC_UNMETHYLATED,
       prob: isHydroxy ? hProb : isMeth ? mProb : noModProb,
       noMod: !isHydroxy && !isMeth,
     })
@@ -265,18 +260,13 @@ export function extractBisulfite(
             // Bisulfite is a binary call (converted vs protected), not a
             // likelihood — full confidence either way. Methylated paints the
             // 5mC color, unmethylated the no-mod color.
-            const rgb = methylated
-              ? METH_5MC_METHYLATED_RGB
-              : METH_5MC_UNMETHYLATED_RGB
             modificationsData.push({
               readIndex,
               position: genomicPos,
               base: 'C',
               modType: 'm',
               strand: methStrand,
-              r: rgb[0],
-              g: rgb[1],
-              b: rgb[2],
+              color: methylated ? METH_5MC_METHYLATED : METH_5MC_UNMETHYLATED,
               prob: 1,
               noMod: !methylated,
             })

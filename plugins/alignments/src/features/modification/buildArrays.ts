@@ -1,4 +1,4 @@
-import { packAbgr } from '@jbrowse/core/util/colorBits'
+import { withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 
@@ -28,7 +28,7 @@ export function buildModificationArrays(
     // Quadratic curve with 0.1 floor: low-prob mods stay faintly visible,
     // high-prob mods are strongly opaque (matches main branch alphaColor).
     const a = Math.round(Math.min(1, m.prob * m.prob + 0.1) * 255) & 0xff
-    modificationColors[i] = packAbgr(m.r, m.g, m.b, a)
+    modificationColors[i] = withAbgrAlpha(m.color, a)
     modificationProbabilities[i] = Math.round(m.prob * 255) & 0xff
     modificationReadIndices[i] = m.readIndex
     if (modificationTypeIndices && modTypeToIdx) {

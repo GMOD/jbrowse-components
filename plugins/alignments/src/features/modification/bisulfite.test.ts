@@ -1,6 +1,6 @@
 import { methylated5mC } from '@jbrowse/core/ui/theme'
 import { SimpleFeature } from '@jbrowse/core/util'
-import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { extractBisulfite } from './extract.ts'
 
@@ -16,9 +16,8 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 // On the bottom strand the G at pos2 is the CpG partner; the G at pos6 is a CHG.
 const REF = 'acgacagacatt'
 
-const [METH_R, METH_G, METH_B] = cssColorToRgb(methylated5mC)
-const isMeth = (e: ModificationEntry) =>
-  e.r === METH_R && e.g === METH_G && e.b === METH_B
+const METH_COLOR = cssColorToABGR(methylated5mC)
+const isMeth = (e: ModificationEntry) => e.color === METH_COLOR
 
 function run(
   opts: { strand: number; flags: number; seq: string },

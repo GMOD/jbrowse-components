@@ -1,4 +1,4 @@
-import { packAbgr } from '@jbrowse/core/util/colorBits'
+import { withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 
 import { calculateModificationCounts } from '../../shared/calculateModificationCounts.ts'
 
@@ -6,9 +6,7 @@ import type { StrandBaseCounts } from '../../shared/calculateModificationCounts.
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 
 interface ModificationColorEntry {
-  r: number
-  g: number
-  b: number
+  color: number // packed ABGR (opaque)
   probabilityTotal: number
   probabilityCount: number
   base: string
@@ -85,6 +83,22 @@ export function computeModificationCoverage(
 
   const byPosition = new Map<number, Map<number, ModificationColorEntry>>()
 
+  // Stable small integer id per modType, so each stacked segment can be keyed by
+  // its modification identity with a numeric (fast, allocation-free) Map key
+  // rather than a per-mod template string. Distinguishing by type — not color —
+  // keeps two distinct types that happen to share an RGB (possible for numeric
+  // ChEBI codes) from merging into one base/denominator below, matching
+  // buildModTooltipData's grouping.
+  const modTypeIds = new Map<string, number>()
+  const modKey = (mod: ModificationEntry) => {
+    let id = modTypeIds.get(mod.modType)
+    if (id === undefined) {
+      id = modTypeIds.size
+      modTypeIds.set(mod.modType, id)
+    }
+    return id * 2 + (mod.noMod ? 1 : 0)
+  }
+
   for (const mod of modifications) {
     if (mod.position < regionStart) {
       continue
@@ -94,15 +108,11 @@ export function computeModificationCoverage(
       colorMap = new Map()
       byPosition.set(mod.position, colorMap)
     }
-    // Pack the 0-255 rgb channels into one integer key — avoids a per-call
-    // template-string allocation in this per-modification hot loop.
-    const key = (mod.r << 16) | (mod.g << 8) | mod.b
+    const key = modKey(mod)
     let entry = colorMap.get(key)
     if (!entry) {
       entry = {
-        r: mod.r,
-        g: mod.g,
-        b: mod.b,
+        color: mod.color,
         probabilityTotal: 0,
         probabilityCount: 0,
         base: mod.base,
@@ -123,9 +133,7 @@ export function computeModificationCoverage(
     yOffset: number
     height: number
     relDepth: number
-    r: number
-    g: number
-    b: number
+    color: number // packed ABGR (opaque)
     alpha: number
   }[] = []
 
@@ -174,9 +182,7 @@ export function computeModificationCoverage(
         yOffset,
         height,
         relDepth: depthAtPosition / regionMaxDepth,
-        r: entry.r,
-        g: entry.g,
-        b: entry.b,
+        color: entry.color,
         alpha: Math.round(avgProbability * 255),
       })
       yOffset += height
@@ -195,7 +201,7 @@ export function computeModificationCoverage(
     positions[i] = seg.position
     yOffsets[i] = seg.yOffset
     heights[i] = seg.height
-    colors[i] = packAbgr(seg.r, seg.g, seg.b, seg.alpha)
+    colors[i] = withAbgrAlpha(seg.color, seg.alpha)
     relDepths[i] = seg.relDepth
   }
 

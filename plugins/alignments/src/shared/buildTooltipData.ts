@@ -1,3 +1,5 @@
+import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
+
 import { getModificationName } from './modificationData.ts'
 
 import type { ModificationEntry } from './webglRpcTypes.ts'
@@ -25,7 +27,7 @@ export function buildModTooltipData({
       posEntry = {}
       result[mod.position] = posEntry
     }
-    const modKey = `${mod.modType}_${mod.noMod ? 'nomod' : 'mod'}_${mod.r}_${mod.g}_${mod.b}`
+    const modKey = `${mod.modType}_${mod.noMod ? 'nomod' : 'mod'}_${mod.color}`
     let entry = posEntry[modKey]
     if (!entry) {
       entry = {
@@ -33,7 +35,7 @@ export function buildModTooltipData({
         fwd: 0,
         rev: 0,
         probabilityTotal: 0,
-        color: `rgb(${mod.r},${mod.g},${mod.b})`,
+        color: `rgb(${abgrRed(mod.color)},${abgrGreen(mod.color)},${abgrBlue(mod.color)})`,
         // The no-mod bucket is "Unmodified C" (IGV's NONE_C), not "5mC"; its
         // probability is the confidence the base is unmodified.
         name: mod.noMod
