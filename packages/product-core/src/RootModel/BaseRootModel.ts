@@ -11,6 +11,16 @@ import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { NotificationLevel } from '@jbrowse/core/util'
 import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
+// `session` is typed as the bare IAnyType `sessionModelType` here (a stronger
+// type would make root↔session mutually recursive), so the two members the base
+// root actually reaches for are named once instead of re-shadowed per action.
+// Every concrete session composes BaseSessionModel (setName) + SnackbarModel
+// (notify), so both are present at runtime; optional keeps the cast honest.
+interface SessionShadow {
+  setName?: (name: string) => void
+  notify?: (message: string, level?: NotificationLevel) => void
+}
+
 /**
  * #stateModel BaseRootModel
  * #category root
@@ -113,11 +123,7 @@ export function BaseRootModelFactory({
                 .map(d => d.configuration ?? d.type ?? 'unknown')
                 .join(', ')
               const plural = dropped.length > 1
-              ;(
-                self.session as {
-                  notify?: (message: string, level?: NotificationLevel) => void
-                }
-              ).notify?.(
+              ;(self.session as SessionShadow).notify?.(
                 `Removed ${dropped.length} track${plural ? 's' : ''} that could not be loaded: ${names}`,
                 'warning',
               )
@@ -152,9 +158,7 @@ export function BaseRootModelFactory({
         // Every concrete session model is composed from BaseSessionModel, which
         // provides setName — avoid a full setSession rebuild here since the
         // only field changing is `name`.
-        ;(
-          self.session as { setName?: (s: string) => void } | undefined
-        )?.setName?.(newName)
+        ;(self.session as SessionShadow | undefined)?.setName?.(newName)
       },
     }))
 }

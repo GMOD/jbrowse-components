@@ -20,55 +20,59 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
     .volatile(() => ({
       sessionThemeName: localStorageGetItem('themeName') ?? 'default',
     }))
-    .views(s => ({
-      /**
-       * #method
-       */
-      allThemes(): ThemeMap {
-        const self = s as typeof s & BaseSession
-        const extraThemes = getConf(self.jbrowse, 'extraThemes')
-        return { ...defaultThemes, ...extraThemes }
-      },
-      /**
-       * #getter
-       */
-      get themeName() {
-        const { sessionThemeName } = s
-        const all = this.allThemes()
-        return all[sessionThemeName] ? sessionThemeName : 'default'
-      },
-      /**
-       * #getter
-       */
-      // Structurally-serializable description of the active theme, safe to send
-      // across the RPC worker boundary (the created `theme` carries functions
-      // and cannot be cloned). The worker rebuilds via createJBrowseThemeFromArgs.
-      get themeOptions(): SerializableThemeArgs {
-        const self = s as typeof s & BaseSession
-        return {
-          configTheme: getConf(self.jbrowse, 'theme'),
-          extraThemes: getConf(self.jbrowse, 'extraThemes'),
-          themeName: this.themeName,
-        }
-      },
-      /**
-       * #getter
-       */
-      get theme() {
-        return createJBrowseThemeFromArgs(this.themeOptions)
-      },
-      /**
-       * #method
-       * Raw `ThemeOptions` for the active theme, or a named override (used by
-       * the SVG-export theme picker). Unlike `theme` (a built, non-serializable
-       * MUI theme), this is the plain options object every view's SVG export
-       * threads into each display's `renderSvg`, which rebuilds the theme via
-       * `createJBrowseTheme` outside React context.
-       */
-      getActiveThemeOptions(name?: string) {
-        return this.allThemes()[name ?? this.themeName]
-      },
-    }))
+    .views(s => {
+      // this mixin is always composed onto a base session; alias once instead
+      // of re-casting self in every view
+      const self = s as typeof s & BaseSession
+      return {
+        /**
+         * #method
+         */
+        allThemes(): ThemeMap {
+          const extraThemes = getConf(self.jbrowse, 'extraThemes')
+          return { ...defaultThemes, ...extraThemes }
+        },
+        /**
+         * #getter
+         */
+        get themeName() {
+          const { sessionThemeName } = self
+          const all = this.allThemes()
+          return all[sessionThemeName] ? sessionThemeName : 'default'
+        },
+        /**
+         * #getter
+         */
+        // Structurally-serializable description of the active theme, safe to
+        // send across the RPC worker boundary (the created `theme` carries
+        // functions and cannot be cloned). The worker rebuilds via
+        // createJBrowseThemeFromArgs.
+        get themeOptions(): SerializableThemeArgs {
+          return {
+            configTheme: getConf(self.jbrowse, 'theme'),
+            extraThemes: getConf(self.jbrowse, 'extraThemes'),
+            themeName: this.themeName,
+          }
+        },
+        /**
+         * #getter
+         */
+        get theme() {
+          return createJBrowseThemeFromArgs(this.themeOptions)
+        },
+        /**
+         * #method
+         * Raw `ThemeOptions` for the active theme, or a named override (used by
+         * the SVG-export theme picker). Unlike `theme` (a built,
+         * non-serializable MUI theme), this is the plain options object every
+         * view's SVG export threads into each display's `renderSvg`, which
+         * rebuilds the theme via `createJBrowseTheme` outside React context.
+         */
+        getActiveThemeOptions(name?: string) {
+          return this.allThemes()[name ?? this.themeName]
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action

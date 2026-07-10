@@ -12,6 +12,7 @@ import {
 import { comparer } from 'mobx'
 
 import { isBaseSession } from './BaseSession.ts'
+import { isSessionWithConnections } from './Connections.ts'
 import { TracksManagerSessionMixin } from './Tracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -46,6 +47,14 @@ export interface PlainTrackConfig {
 function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
   const node = base as unknown
   return isStateTreeNode(node) ? (getSnapshot(node) as PlainTrackConfig) : base
+}
+
+// jbrowse.tracks holds frozen plain objects (app-core, web/desktop) or MST
+// config nodes (product-core, embedded react views); the delta math reads both
+// as plain track configs. Single site for that documented cast — per-node
+// normalization still happens in toPlainConfig.
+function baseTracks(self: { jbrowse: { tracks: unknown } }): PlainTrackConfig[] {
+  return self.jbrowse.tracks as PlainTrackConfig[]
 }
 
 // A delta must not be stored unless it records a real user edit, or it would
@@ -142,7 +151,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         get tracks(): AnyConfigurationModel[] {
           const deltas = self.trackConfigDeltas
           const sessionIds = new Set(self.sessionTracks.map(t => t.trackId))
-          const configTracks = self.jbrowse.tracks as PlainTrackConfig[]
+          const configTracks = baseTracks(self)
           const merged = configTracks
             .filter(t => !sessionIds.has(t.trackId))
             .map(base => {
@@ -171,9 +180,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          */
         getTrackConfigChanges(trackId: string) {
           const delta = self.trackConfigDeltas[trackId]
-          const base = (self.jbrowse.tracks as PlainTrackConfig[]).find(
-            t => t.trackId === trackId,
-          )
+          const base = baseTracks(self).find(t => t.trackId === trackId)
           return delta && base ? flattenTrackConfigDelta(base, delta) : []
         },
         /**
@@ -212,7 +219,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         // Convert those to deltas so the whole app uses one override mechanism.
         // Genuinely-added session tracks (no matching base) are left in place.
         const configById = new Map(
-          (self.jbrowse.tracks as PlainTrackConfig[]).map(t => [t.trackId, t]),
+          baseTracks(self).map(t => [t.trackId, t]),
         )
         const legacy = self.sessionTracks.filter(t => configById.has(t.trackId))
         if (legacy.length > 0) {
@@ -247,9 +254,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       // or for a track that was never edited (no working copy).
       function revertEditableTrackConfig(trackId: string) {
         const node = self.editableTrackConfigs.get(trackId)
-        const base = (self.jbrowse.tracks as PlainTrackConfig[]).find(
-          t => t.trackId === trackId,
-        )
+        const base = baseTracks(self).find(t => t.trackId === trackId)
         if (node && base) {
           applySnapshot(node, base)
         }
@@ -328,9 +333,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             self.jbrowse.updateTrackConf(trackConf)
           } else {
             const { trackId } = trackConf
-            const base = (self.jbrowse.tracks as PlainTrackConfig[]).find(
-              t => t.trackId === trackId,
-            )
+            const base = baseTracks(self).find(t => t.trackId === trackId)
             const sessionIdx = self.sessionTracks.findIndex(
               t => t.trackId === trackId,
             )
@@ -372,19 +375,14 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
                 )
               }
             } else if (
-              'connectionTrackConfigs' in self &&
-              trackId in
-                (self.connectionTrackConfigs as Record<string, unknown>)
+              isSessionWithConnections(self) &&
+              trackId in self.connectionTrackConfigs
             ) {
               // an opened connection track: persist the full edited config into
               // connectionTrackConfigs (in place, not a delta — the connection's
               // fetched base isn't present at load, so only a complete config
               // resolves synchronously)
-              ;(
-                self as typeof self & {
-                  updateConnectionTrackConfig: (c: PlainTrackConfig) => void
-                }
-              ).updateConnectionTrackConfig(trackConf)
+              self.updateConnectionTrackConfig(trackConf)
             }
             // else: a track with neither an admin base, a sessionTracks entry,
             // nor a captured connection config. No persistent home, so the edit

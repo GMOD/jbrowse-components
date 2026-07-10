@@ -7,10 +7,7 @@ import {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import type {
-  BaseSession,
-  SessionWithSessionTracks,
-} from '@jbrowse/product-core'
+import type { BaseSession } from '@jbrowse/product-core'
 
 export interface WebSessionWithConnections {
   sessionConnections: AnyConfigurationModel[]
@@ -43,7 +40,7 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
       }),
     )
     .actions(s => {
-      const self = s as typeof s & BaseSession & SessionWithSessionTracks
+      const self = s as typeof s & BaseSession
       const superDeleteConnection = self.deleteConnection
       const superAddConnectionConf = self.addConnectionConf
       return {

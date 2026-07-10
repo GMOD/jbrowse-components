@@ -2,7 +2,6 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import type { AppRootModel } from './AppRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseSession } from '@jbrowse/product-core'
 
 /**
  * #stateModel AppSessionMixin
@@ -16,17 +15,14 @@ import type { BaseSession } from '@jbrowse/product-core'
 export function AppSessionMixin(_pluginManager: PluginManager) {
   return types
     .model({})
-    .views(s => {
-      const self = s as typeof s & BaseSession
-      return {
-        /**
-         * #getter
-         */
-        get root(): AppRootModel {
-          return getParent<AppRootModel>(self)
-        },
-      }
-    })
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get root(): AppRootModel {
+        return getParent<AppRootModel>(self)
+      },
+    }))
     .views(self => ({
       /**
        * #getter
