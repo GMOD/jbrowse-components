@@ -1,0 +1,56 @@
+{
+  "name": "@jbrowse/embedded-app",
+  "version": "4.3.0",
+  "type": "module",
+  "description": "Framework-agnostic imperative mount API for the full JBrowse 2 app (multi-view: linear, synteny, dotplot, circular, ...)",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "embed"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "products/jbrowse-embedded-app"
+  },
+  "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "esm",
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run /^build:/",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "clean": "rimraf esm *.tsbuildinfo",
+    "prebuild": "pnpm clean",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@jbrowse/core": "workspace:^",
+    "@jbrowse/react-app2": "workspace:^",
+    "mobx": "^6.16.1"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      }
+    }
+  },
+  "sideEffects": false
+}

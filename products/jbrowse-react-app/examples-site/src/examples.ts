@@ -98,6 +98,14 @@ export const examples: ExampleMeta[] = [
     group: 'View types',
   },
   {
+    slug: 'embedded-app-synteny',
+    name: 'EmbeddedAppSynteny',
+    title: 'Synteny via the imperative mount',
+    description:
+      'Mount the full app with createApp() — the framework-agnostic primitive non-React hosts (anywidget, htmlwidgets) use — and open a synteny view declaratively.',
+    group: 'View types',
+  },
+  {
     slug: 'multiway-synteny-example',
     name: 'MultiwaySyntenyExample',
     title: 'Multi-way linear synteny view',
