@@ -18,6 +18,33 @@ const TYRP1_PEAK = { refName: 'chr4', pos: 80_975_000 }
 // of a real BXD phenotype stacked over the B/D haplotype mosaic of 198 strains.
 // Data + config: test_data/config_bxd.json (hosted at jbrowse.org/demos/bxd/).
 // ──────────────────────────────────────────────────────────────────────────
+
+// Before/after control for the sorted overview: the SAME whole-chr4 view with
+// only the painting's `sortRowsBy` toggled. Default row order is alphabetical by
+// strain (unrelated to genotype at the peak, so salt-and-pepper); sorted groups
+// D strains over B, and the split is clean/wide because neighbours share long
+// flanking haplotypes (linkage). Proves the split is real structure aligned with
+// the peak, not an artifact of sorting.
+const paintingSortPanel = (sorted: boolean) =>
+  lgvSession('test_data/config_bxd.json', {
+    assembly: 'mm10',
+    loc: 'chr4',
+    tracks: [
+      {
+        trackId: 'bxd_gwas_coatcolor_mm10',
+        displaySnapshot: { type: 'LinearManhattanDisplay', height: 140 },
+      },
+      {
+        trackId: 'bxd_chromosome_painting_mm10',
+        displaySnapshot: {
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 420,
+          sortRowsBy: sorted ? TYRP1_PEAK : undefined,
+        },
+      },
+    ],
+  })
+
 export const qtlSpecs: ScreenshotSpec[] = [
   // Whole-chr4 overview: the coat-color QTL Manhattan peaks over Tyrp1 (~80Mb)
   // above the 198-strain BXD chromosome painting, showing how a phenotype scan
@@ -115,5 +142,55 @@ export const qtlSpecs: ScreenshotSpec[] = [
         text: 'Tyrp1 (red band): the coat-color gene, sitting under the QTL',
       },
     ],
+  },
+
+  // "Before" panel of the sort proof: painting in default alphabetical order.
+  {
+    mode: 'url',
+    name: 'qtl/bxd_painting_input_order',
+    url: paintingSortPanel(false),
+    readySelector: '[data-testid="manhattan-display-done"]',
+    readyTimeout: 90000,
+    // chrome + manhattan(140) + painting(420) clears the bottom crop
+    viewportHeight: 840,
+    settleMs: 16000,
+    annotations: [
+      {
+        type: 'text',
+        x: 520,
+        y: 60,
+        maxWidth: 400,
+        fontSize: 15,
+        text: 'Strains in default (alphabetical) order — salt-and-pepper at the peak',
+      },
+    ],
+  },
+
+  // "After" panel: identical view, painting sorted by genotype at the peak.
+  {
+    mode: 'url',
+    name: 'qtl/bxd_painting_sorted',
+    url: paintingSortPanel(true),
+    readySelector: '[data-testid="manhattan-display-done"]',
+    readyTimeout: 90000,
+    viewportHeight: 840,
+    settleMs: 16000,
+    annotations: [
+      {
+        type: 'text',
+        x: 520,
+        y: 60,
+        maxWidth: 400,
+        fontSize: 15,
+        text: 'Same strains sorted by genotype at the peak — a clean B/D split appears under it',
+      },
+    ],
+  },
+
+  // Stack the two panels (input order over sorted) into one before/after figure.
+  {
+    mode: 'compose',
+    name: 'qtl/bxd_sort_before_after',
+    parts: ['qtl/bxd_painting_input_order', 'qtl/bxd_painting_sorted'],
   },
 ]

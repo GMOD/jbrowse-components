@@ -169,13 +169,15 @@ at that peak, so the clean B/D split directly beneath it is exactly the contrast
 the scan scores — and it breaks up into a recombinant mosaic away from the
 locus.
 
+<Figure src="/img/qtl/bxd_sort_before_after.png" links="Input order=qtl/bxd_painting_input_order,Sorted at peak=qtl/bxd_painting_sorted" caption="The same whole-chr4 view with the painting's row sort toggled. Top: strains in default (alphabetical) order — salt-and-pepper under the peak. Bottom: sorted by genotype at the peak, resolving into a clean, wide red-over-blue split directly beneath the Manhattan peak. Strains that share the peak allele share long flanking haplotypes (linkage), so the split is wide and fades with distance — that coherence, aligned with the independent QTL signal, is the mapping result, not an artifact of the sort."/>
+
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="Zoomed to the Tyrp1 locus (chr4 ~80 Mb, red band). Tyrp1 sits under the top of the association, and the painting resolves the individual B↔D recombination breakpoints that the whole-chromosome view blurs together."/>
 
 A second bundled scan maps **brain weight** to a subtler QTL on chr19.
 
 Open the whole demo live in the
 [JBrowse BXD demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_bxd.json),
-or click **Open this view in JBrowse** under either figure above.
+or click the **Open in JBrowse** link under any figure above.
 
 ## See also
 
