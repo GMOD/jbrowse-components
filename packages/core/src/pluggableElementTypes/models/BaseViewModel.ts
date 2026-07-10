@@ -34,7 +34,7 @@ const BaseViewModel = types
   }))
   .views(() => ({
     /**
-     * #getter
+     * #method
      */
     menuItems(): MenuItem[] {
       return []

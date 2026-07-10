@@ -327,7 +327,7 @@ export function createBaseTrackModel(
                           self.replaceDisplay(
                             shownId,
                             d.displayId,
-                            self.displays[0].getPortableSettings?.(
+                            self.activeDisplay.getPortableSettings?.(
                               d.displayId,
                             ) ?? {},
                           )

@@ -216,20 +216,17 @@ export const InternetAccount = types
      * #action
      */
     addAuthHeaderToInit(init?: RequestInit, token?: string) {
-      return {
-        ...init,
-        headers: new Headers({
-          // eslint-disable-next-line @typescript-eslint/no-misused-spread
-          ...init?.headers,
-          ...(token
-            ? {
-                [self.authHeader]: self.tokenType
-                  ? `${self.tokenType} ${token}`
-                  : token,
-              }
-            : {}),
-        }),
+      // build from init.headers via the Headers constructor so all HeadersInit
+      // shapes are preserved — object-spreading a Headers *instance* yields
+      // nothing (no enumerable own props), silently dropping caller headers
+      const headers = new Headers(init?.headers)
+      if (token) {
+        headers.set(
+          self.authHeader,
+          self.tokenType ? `${self.tokenType} ${token}` : token,
+        )
       }
+      return { ...init, headers }
     },
     /**
      * #action
