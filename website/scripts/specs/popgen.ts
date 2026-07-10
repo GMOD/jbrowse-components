@@ -67,6 +67,124 @@ const IN2LT_INVERSION_TRACK = {
   },
 }
 
+// Genome-wide Tajima's D (10 kb windows, whole panel) from the same pipeline.
+// Pairs with π: a hard sweep drives BOTH down — π (fewer segregating sites) and
+// Tajima's D (an excess of rare alleles as new mutations accumulate on the swept
+// background), so the Cyp6g1 window shows a joint dip.
+const TAJD_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'tajd_all',
+  name: "Tajima's D (whole panel)",
+  assemblyNames: ['dm6'],
+  adapter: {
+    type: 'BigWigAdapter',
+    uri: 'https://jbrowse.org/demos/popgen/tajimad_all.bw',
+  },
+}
+
+// The 180 In(2L)t-karyotyped lines (161 standard + 19 inverted) at the
+// arrangement-informative SNPs — the ~16k sites whose allele frequency differs
+// sharply between the two karyotypes (|Δfreq| > 0.7), i.e. the markers that tag
+// the inversion. A samples TSV assigns each line its karyotype so the matrix can
+// color by arrangement. Using the informative markers (rather than all genotypes)
+// makes the two arrangements read as clean opposing blocks; the full genotype set
+// is hosted alongside as dgrp_In2Lt_2L.vcf.gz.
+const KARYOTYPE_VCF_TRACK = {
+  type: 'VariantTrack',
+  trackId: 'dgrp_In2Lt_matrix',
+  name: 'DGRP genotypes at In(2L)t-informative SNPs',
+  assemblyNames: ['dm6'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    vcfGzLocation: {
+      uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_informative.vcf.gz',
+    },
+    index: {
+      location: {
+        uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_informative.vcf.gz.tbi',
+      },
+    },
+    samplesTsvLocation: {
+      uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv',
+    },
+  },
+  displays: [
+    {
+      type: 'LinearMultiSampleVariantMatrixDisplay',
+      displayId: 'dgrp_In2Lt_matrix-matrix',
+      // color the left sidebar strip by the karyotype metadata column; clustering
+      // (below) reorders the rows so the two karyotypes fall into contiguous
+      // clades
+      colorBy: 'karyotype',
+    },
+  ],
+}
+
+// Pre-computed pairwise LD (PLINK --r2) over a euchromatic 2R window, tabix
+// indexed for the LD-heatmap display.
+const LD_TRACK = {
+  type: 'LDTrack',
+  trackId: 'ld_decay_2R',
+  name: 'LD (r², DGRP panel)',
+  assemblyNames: ['dm6'],
+  adapter: {
+    type: 'PlinkLDTabixAdapter',
+    uri: 'https://jbrowse.org/demos/popgen/ld_2R_decay_chr.ld.gz',
+  },
+}
+
+// Between-population Fst (African vs cosmopolitan) across the Cyp6g1 region,
+// computed from DEST Pool-Seq allele frequencies (dm6). The African group pools
+// the sub-Saharan samples (ancestral range); the cosmopolitan group is the North
+// American (US) samples (derived range where the insecticide-resistance allele
+// swept). Windowed Hudson Fst, hosted as a bigWig — a single QuantitativeTrack so
+// it auto-scales to its own domain and the Cyp6g1 peak reads at full height.
+const FST_DEST_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'dest_fst_afr_cosmo',
+  name: 'Fst (African vs cosmopolitan)',
+  assemblyNames: ['dm6'],
+  adapter: {
+    type: 'BigWigAdapter',
+    uri: 'https://jbrowse.org/demos/popgen/dest_cyp6g1_fst.bw',
+  },
+}
+
+// The two populations' nucleotide diversity (expected heterozygosity) as a
+// two-row multi-wiggle sharing one y-domain, so the sweep reads as a split: the
+// cosmopolitan row collapses in the Cyp6g1 window while the African row holds at
+// background. Same statistic on both rows, so a shared scale is correct here
+// (unlike Fst-vs-π, which differ ~50x).
+const DIVERSITY_DEST_TRACK = {
+  type: 'MultiQuantitativeTrack',
+  trackId: 'dest_diversity_afr_cosmo',
+  name: 'Nucleotide diversity (African vs cosmopolitan)',
+  assemblyNames: ['dm6'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    subadapters: [
+      {
+        type: 'BigWigAdapter',
+        source: 'African (ancestral)',
+        color: '#377eb8',
+        bigWigLocation: {
+          uri: 'https://jbrowse.org/demos/popgen/dest_cyp6g1_div_african.bw',
+          locationType: 'UriLocation',
+        },
+      },
+      {
+        type: 'BigWigAdapter',
+        source: 'Cosmopolitan (derived)',
+        color: '#e41a1c',
+        bigWigLocation: {
+          uri: 'https://jbrowse.org/demos/popgen/dest_cyp6g1_div_cosmopolitan.bw',
+          locationType: 'UriLocation',
+        },
+      },
+    ],
+  },
+}
+
 export const popgenSpecs: ScreenshotSpec[] = [
   // Genome-wide (all six dm6 arms): the In(2L)t Fst track rises into a tall
   // elevated block across the whole left arm of chromosome 2 — the
@@ -187,5 +305,199 @@ export const popgenSpecs: ScreenshotSpec[] = [
         text: 'π collapses to under a tenth of the arm-wide background here — the hard-sweep signature at the Cyp6g1 insecticide-resistance gene',
       },
     ],
+  },
+
+  // The raw genotypes behind the Fst block: the 180 In(2L)t-karyotyped lines as a
+  // multi-sample genotype matrix at the arrangement-informative SNPs, over a
+  // 200 kb window inside the inversion, colored by karyotype and clustered by
+  // genotype similarity. Because every column is a marker that tags the
+  // arrangement, the 19 inverted lines cluster into one clade carrying the alt
+  // allele (one solid block) against the 161 standard lines carrying the
+  // reference (the other block) — the recombination-suppressed inversion holds
+  // these alleles together across the whole region. This is the direct,
+  // per-sample view of what the windowed Fst scan summarizes. runClustering runs
+  // the real cluster-by-genotype RPC once (declarative, no dialog); the ready
+  // wait is on the dendrogram, which only renders once the RPC lands.
+  {
+    mode: 'url',
+    name: 'popgen/genotype_matrix_in2lt',
+    url: `${DM6_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [KARYOTYPE_VCF_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'dm6',
+          loc: 'chr2L:2,225,744-2,425,744',
+          tracks: [
+            {
+              trackId: 'dgrp_In2Lt_matrix',
+              displaySnapshot: {
+                type: 'LinearMultiSampleVariantMatrixDisplay',
+                height: 520,
+                runClustering: true,
+              },
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readyText: 'chr2L',
+    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
+    readyTimeout: 90000,
+    viewportHeight: 620,
+    settleMs: 4000,
+  },
+
+  // Tajima's D + π at Cyp6g1 (chr2R:12,185,667): the two-part hard-sweep signature
+  // read against the gene. Both statistics dip together in the swept window — π
+  // collapses (diversity removed by the hitchhiking haplotype) and Tajima's D goes
+  // sharply negative (to about -2, an excess of rare alleles on the swept
+  // background) — against a genome-wide-neutral Tajima's D baseline near zero.
+  // Seeing both drop at the same window is what distinguishes a sweep from a plain
+  // low-diversity region.
+  {
+    mode: 'url',
+    name: 'popgen/tajimad_cyp6g1',
+    url: `${DM6_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [TAJD_TRACK, PI_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'dm6',
+          loc: 'chr2R:11,900,000-12,450,000',
+          highlight: [
+            {
+              refName: 'chr2R',
+              start: 12_185_000,
+              end: 12_189_000,
+              assemblyName: 'dm6',
+              label: 'Cyp6g1',
+            },
+          ],
+          tracks: [
+            {
+              trackId: 'tajd_all',
+              displaySnapshot: { type: 'LinearWiggleDisplay', height: 200 },
+            },
+            {
+              trackId: 'pi_all',
+              displaySnapshot: { type: 'LinearWiggleDisplay', height: 180 },
+            },
+            {
+              trackId: 'dm6-ncbiRefSeqCurated',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                height: 110,
+                showOnlyGenes: true,
+              },
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readySelector: '[data-testid="wiggle-display-done"]',
+    readyText: 'Tajima',
+    readyTimeout: 90000,
+    // tajd(200) + pi(180) + gene(110) + 3 track headers + ruler/overview: the
+    // old 640 clipped the gene track the caption promises
+    viewportHeight: 820,
+    settleMs: 12000,
+  },
+
+  // LD-heatmap display over a euchromatic 2R window: the classic triangle where
+  // pairwise r² is high for nearby SNP pairs (bright band hugging the diagonal)
+  // and decays with physical distance (fading into the body of the triangle),
+  // resolving into discrete haplotype blocks. This LD decay is the phenomenon that
+  // sets the resolution of association mapping — how far a tag SNP's signal
+  // reaches. Pre-computed with PLINK --r2 in this tutorial's pipeline and loaded
+  // through PlinkLDTabixAdapter.
+  {
+    mode: 'url',
+    name: 'popgen/ld_decay_2R',
+    url: `${DM6_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [LD_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'dm6',
+          loc: 'chr2R:5,050,000-5,300,000',
+          tracks: [
+            {
+              trackId: 'ld_decay_2R',
+              displaySnapshot: { type: 'LDTrackDisplay', height: 380 },
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readySelector: '[data-testid="ld_canvas"]',
+    readyText: 'chr2R',
+    readyTimeout: 90000,
+    // the SNP-position connector rake + full triangle need more room than the
+    // old 470 gave — the triangle apex was clipped
+    viewportHeight: 640,
+    settleMs: 8000,
+  },
+
+  // The payoff combined figure: at the Cyp6g1 insecticide-resistance sweep, three
+  // inter-related population-genetic signals converge in one window between an
+  // ancestral African and a derived cosmopolitan population (DEST Pool-Seq, dm6).
+  // Fst (top) spikes to its regional maximum — the resistance haplotype swept in
+  // the cosmopolitan population but not in Africa, so the two diverge sharply here.
+  // Below, the two diversity rows split: cosmopolitan diversity (red) collapses in
+  // the same window (the hitchhiking hard sweep), while African diversity (blue)
+  // stays at background (no sweep there). A peak of differentiation sitting exactly
+  // on top of a population-specific diversity valley is the textbook signature of
+  // local adaptation — and it lands on the gene the tutorial already features.
+  {
+    mode: 'url',
+    name: 'popgen/combined_cyp6g1_dest',
+    url: `${DM6_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [FST_DEST_TRACK, DIVERSITY_DEST_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'dm6',
+          loc: 'chr2R:11,950,000-12,450,000',
+          highlight: [
+            {
+              refName: 'chr2R',
+              start: 12_130_000,
+              end: 12_190_000,
+              assemblyName: 'dm6',
+              label: 'Cyp6g1',
+            },
+          ],
+          tracks: [
+            {
+              trackId: 'dest_fst_afr_cosmo',
+              displaySnapshot: { type: 'LinearWiggleDisplay', height: 180 },
+            },
+            {
+              trackId: 'dest_diversity_afr_cosmo',
+              displaySnapshot: {
+                type: 'MultiLinearWiggleDisplay',
+                height: 200,
+                defaultRendering: 'multiline',
+              },
+            },
+            {
+              trackId: 'dm6-ncbiRefSeqCurated',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                height: 90,
+                showOnlyGenes: true,
+              },
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readySelector: '[data-testid="wiggle-display-done"]',
+    readyText: 'cosmopolitan',
+    readyTimeout: 90000,
+    // fst(180) + diversity(200) + gene(90) + 3 headers + ruler/overview
+    viewportHeight: 720,
+    settleMs: 12000,
   },
 ]
