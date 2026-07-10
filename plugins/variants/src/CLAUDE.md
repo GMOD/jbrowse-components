@@ -106,8 +106,8 @@ standard filter contract. The model's `filters` getter (a
 it. `MultiSampleVariantGet{CellData,GenotypeMatrix,ClusterGenotypeMatrix}`
 extend `RpcMethodTypeWithFiltersAndRenameRegions`, which serializes the chain to
 string[] and rebuilds it in the worker with `pluginManager.jexl`. The worker
-applies it in `getFeaturesThatPassMinorAlleleFrequencyFilter` (`filterChain`
-param), so cell data and clustering share one filtered set. Pass `filters` as a
+applies it in `getFilteredVariants` (`filterChain` param), so cell data and
+clustering share one filtered set. Pass `filters` as a
 chain, not a string[] — `serializeArguments` calls `.toJSON()`. That same
 chokepoint applies the two frequency ceilings off one allele-count pass:
 `minorAlleleFrequencyFilter` (floor) and `maxMissingnessFilter` (no-call

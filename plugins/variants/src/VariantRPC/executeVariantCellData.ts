@@ -7,7 +7,7 @@ import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/componen
 import { computeVariantMatrixCells } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
 import { internGenotype } from '../shared/genotypeCodec.ts'
 import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
+import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
   CONSEQUENCE_IMPACT_JEXL,
   featureHasConsequence,
@@ -17,7 +17,7 @@ import {
 import type { GetCellDataArgs } from './types.ts'
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
-import type { MAFFilteredFeature } from '../shared/minorAlleleFrequencyUtils.ts'
+import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type {
   SampleInfo,
   VariantFeatureGenotypes,
@@ -151,7 +151,7 @@ function accumulateSampleInfo(
 }
 
 function computeSampleInfo(
-  mafs: MAFFilteredFeature[],
+  mafs: FilteredVariant[],
   genotypesCache: Map<string, Record<string, string>>,
   report?: ProgressReporter,
 ) {
@@ -308,8 +308,8 @@ export async function executeVariantCellData({
     stopToken,
   }
 
-  let mafs: MAFFilteredFeature[]
-  let perRegionMafs: Map<number, MAFFilteredFeature[]> | undefined
+  let mafs: FilteredVariant[]
+  let perRegionMafs: Map<number, FilteredVariant[]> | undefined
   if (perRegionRawFeatures) {
     perRegionMafs = await withProgress(
       {
@@ -320,11 +320,11 @@ export async function executeVariantCellData({
       report => {
         // one shared reporter spans all regions: per-region calls accumulate
         // into one global bar with no offset bookkeeping
-        const result = new Map<number, MAFFilteredFeature[]>()
+        const result = new Map<number, FilteredVariant[]>()
         for (const [regionNum, features] of perRegionRawFeatures) {
           result.set(
             regionNum,
-            getFeaturesThatPassMinorAlleleFrequencyFilter({
+            getFilteredVariants({
               features,
               minorAlleleFrequencyFilter,
               maxMissingnessFilter,
@@ -337,7 +337,7 @@ export async function executeVariantCellData({
         return result
       },
     )
-    const allMafs: MAFFilteredFeature[] = []
+    const allMafs: FilteredVariant[] = []
     for (const regionMafs of perRegionMafs.values()) {
       for (const maf of regionMafs) {
         allMafs.push(maf)
@@ -352,7 +352,7 @@ export async function executeVariantCellData({
         total: rawFeatures.length,
       },
       report =>
-        getFeaturesThatPassMinorAlleleFrequencyFilter({
+        getFilteredVariants({
           features: rawFeatures,
           minorAlleleFrequencyFilter,
           maxMissingnessFilter,

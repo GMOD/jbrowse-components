@@ -33,8 +33,10 @@ export function calculateMinorAlleleFrequency(
   return secondMax / (total || 1)
 }
 
-// Fraction of called alleles that are no-call ('.'); high on sparse
-// multi-sample panels where many samples lack a genotype at a site.
+// Fraction of alleles that are no-call ('.'); high on sparse multi-sample
+// panels where many samples lack a genotype at a site. This is the complement
+// of the LD display's `callRateFilter` (call rate === 1 - missingness); the two
+// display families expose the same concept under different names and dialogs.
 export function calculateMissingnessFrequency(
   alleleCounts: Record<string, number>,
 ) {
@@ -59,7 +61,7 @@ function getMostFrequentAlt(alleleCounts: Record<string, number>) {
   return mostFrequentAlt
 }
 
-export interface MAFFilteredFeature {
+export interface FilteredVariant {
   feature: Feature
   mostFrequentAlt: string
 }
@@ -90,7 +92,7 @@ function computeAlleleCounts(
 // paths: a jexl `filterChain`, a minor-allele-frequency floor, and a
 // no-call-missingness ceiling, all evaluated off the one allele-count pass.
 // `maxMissingnessFilter` of 1 (or undefined) disables the missingness ceiling.
-export function getFeaturesThatPassMinorAlleleFrequencyFilter({
+export function getFilteredVariants({
   features,
   minorAlleleFrequencyFilter,
   maxMissingnessFilter,
@@ -105,7 +107,7 @@ export function getFeaturesThatPassMinorAlleleFrequencyFilter({
   genotypesCache?: Map<string, Record<string, string>>
   report?: ProgressReporter
 }) {
-  const results: MAFFilteredFeature[] = []
+  const results: FilteredVariant[] = []
   const missingnessCeiling = maxMissingnessFilter ?? 1
   const filterMissingness = missingnessCeiling < 1
 

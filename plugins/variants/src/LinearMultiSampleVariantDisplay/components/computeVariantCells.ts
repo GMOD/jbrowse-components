@@ -9,7 +9,7 @@ import {
 } from '../../shared/getPhasedColor.ts'
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
-import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
+import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type {
   ProcessedSource,
   VariantFeatureGenotypes,
@@ -58,7 +58,7 @@ export function computeVariantCells({
   genotypesCache,
   report,
 }: {
-  mafs: MAFFilteredFeature[]
+  mafs: FilteredVariant[]
   sources: ProcessedSource[]
   renderingMode: string
   referenceDrawingMode: string

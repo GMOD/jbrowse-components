@@ -5,7 +5,7 @@ import { calculateAlleleCounts } from './alleleCounts.ts'
 import {
   calculateMinorAlleleFrequency,
   calculateMissingnessFrequency,
-  getFeaturesThatPassMinorAlleleFrequencyFilter,
+  getFilteredVariants,
 } from './minorAlleleFrequencyUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -266,7 +266,7 @@ describe('calculateMinorAlleleFrequency edge cases', () => {
   })
 })
 
-describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
+describe('getFilteredVariants', () => {
   it('filters out variants below MAF threshold', () => {
     const features = [
       // MAF = 0.1 (should be filtered with threshold 0.2)
@@ -287,7 +287,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    const result = getFilteredVariants({
       features,
       minorAlleleFrequencyFilter: 0.2,
     })
@@ -304,7 +304,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       createMockFeature('indel1', 200, 250, { s1: '0/1', s2: '0/1' }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    const result = getFilteredVariants({
       features,
       minorAlleleFrequencyFilter: 0,
       filterChain: new SerializableFilterChain({
@@ -328,7 +328,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    const result = getFilteredVariants({
       features,
       minorAlleleFrequencyFilter: 0,
     })
@@ -348,7 +348,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    const result = getFilteredVariants({
       features,
       minorAlleleFrequencyFilter: 0,
     })
@@ -369,7 +369,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    const result = getFilteredVariants({
       features,
       minorAlleleFrequencyFilter: 0.01,
     })
@@ -390,7 +390,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    const result = getFilteredVariants({
       features: features2,
       minorAlleleFrequencyFilter: 0.2,
     })
@@ -399,7 +399,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
   })
 
   it('handles empty feature list', () => {
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    const result = getFilteredVariants({
       features: [],
       minorAlleleFrequencyFilter: 0.01,
     })
@@ -413,7 +413,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
 
     const features = [createMockFeature('snp1', 100, 101, genotypes)]
 
-    getFeaturesThatPassMinorAlleleFrequencyFilter({
+    getFilteredVariants({
       features,
       minorAlleleFrequencyFilter: 0,
       genotypesCache,
@@ -443,7 +443,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    const result = getFilteredVariants({
       features,
       minorAlleleFrequencyFilter: 0,
       maxMissingnessFilter: 0.5,
@@ -465,7 +465,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     ]
 
     expect(
-      getFeaturesThatPassMinorAlleleFrequencyFilter({
+      getFilteredVariants({
         features,
         minorAlleleFrequencyFilter: 0,
         maxMissingnessFilter: 1,
@@ -473,7 +473,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     ).toHaveLength(1)
     // undefined behaves the same as the no-filter ceiling
     expect(
-      getFeaturesThatPassMinorAlleleFrequencyFilter({
+      getFilteredVariants({
         features,
         minorAlleleFrequencyFilter: 0,
       }),
@@ -493,7 +493,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
     ]
 
     expect(
-      getFeaturesThatPassMinorAlleleFrequencyFilter({
+      getFilteredVariants({
         features,
         minorAlleleFrequencyFilter: 0,
         maxMissingnessFilter: 0.4,

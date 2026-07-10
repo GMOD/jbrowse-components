@@ -66,26 +66,22 @@ export default class VariantsPlugin extends Plugin {
   configure(pluginManager: PluginManager) {
     const { jexl } = pluginManager
 
-    // Add jexl function to calculate MAF for a feature
+    // Both jexl filters share the same genotypes->allele-count scan. Returns
+    // undefined (no allocation) when a feature carries no genotypes, so the
+    // callers keep their 0 fallback without building an empty counts object.
+    const featureAlleleCounts = (feature: Feature) => {
+      const genotypes = feature.get('genotypes') as
+        | Record<string, string>
+        | undefined
+      return genotypes ? calculateAlleleCounts(genotypes) : undefined
+    }
     jexl.addFunction('maf', (feature: Feature) => {
-      const genotypes = feature.get('genotypes') as
-        Record<string, string> | undefined
-      if (!genotypes) {
-        return 0
-      }
-      const alleleCounts = calculateAlleleCounts(genotypes)
-      return calculateMinorAlleleFrequency(alleleCounts)
+      const counts = featureAlleleCounts(feature)
+      return counts ? calculateMinorAlleleFrequency(counts) : 0
     })
-
-    // Add jexl function to calculate the no-call (missing) genotype fraction
     jexl.addFunction('missingness', (feature: Feature) => {
-      const genotypes = feature.get('genotypes') as
-        Record<string, string> | undefined
-      if (!genotypes) {
-        return 0
-      }
-      const alleleCounts = calculateAlleleCounts(genotypes)
-      return calculateMissingnessFrequency(alleleCounts)
+      const counts = featureAlleleCounts(feature)
+      return counts ? calculateMissingnessFrequency(counts) : 0
     })
 
     // Variant-consequence helpers, reading SnpEff ANN / VEP CSQ. `impact` and

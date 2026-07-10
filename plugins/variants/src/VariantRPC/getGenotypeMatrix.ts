@@ -1,7 +1,7 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
+import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import { classifyGenotypeDosage } from '../shared/parseGenotypeDosage.ts'
 
 import type { Source } from '../shared/types.ts'
@@ -73,7 +73,7 @@ export async function getGenotypeMatrix({
     statusCallback,
     () => dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
   )
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
+  const mafs = getFilteredVariants({
     minorAlleleFrequencyFilter,
     maxMissingnessFilter,
     filterChain: filters,

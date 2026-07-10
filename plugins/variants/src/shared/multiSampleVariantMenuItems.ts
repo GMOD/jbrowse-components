@@ -14,8 +14,10 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { titleCase } from './constants.ts'
-import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
-import { createMissingnessFilterMenuItem } from './missingnessFilterUtils.ts'
+import {
+  createMAFFilterMenuItem,
+  createMissingnessFilterMenuItem,
+} from './numberFilterMenuItems.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
