@@ -2,6 +2,7 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import { isDataCurrent } from '@jbrowse/synteny-core'
 
 import { dotplotFetchKey } from './fetchKey.ts'
 import { renderSvg } from './renderSvg.tsx'
@@ -102,10 +103,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * dotplot analog of LGV's `viewportWithinLoadedData`.
        */
       get dataCurrent(): boolean {
-        return (
-          self.loadedFetchKey !== undefined &&
-          self.loadedFetchKey === this.currentFetchKey
-        )
+        return isDataCurrent(self.loadedFetchKey, this.currentFetchKey)
       },
       /**
        * #getter

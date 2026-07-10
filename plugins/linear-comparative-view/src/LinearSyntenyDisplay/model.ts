@@ -2,7 +2,7 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
-import { NO_CIGAR_OPS, coerceColorBy } from '@jbrowse/synteny-core'
+import { NO_CIGAR_OPS, coerceColorBy, isDataCurrent } from '@jbrowse/synteny-core'
 
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
@@ -178,7 +178,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setRpcData(
         featureData: SyntenyFeatureData | undefined,
         instanceData: SyntenyGeometry | undefined,
-        fetchKey?: string,
+        fetchKey: string | undefined,
       ) {
         self.featureData = featureData
         self.instanceData = instanceData
@@ -351,10 +351,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * `loadedRegionSignature === currentRegionSignature`.
        */
       get dataCurrent(): boolean {
-        return (
-          self.loadedFetchKey !== undefined &&
-          self.loadedFetchKey === this.currentFetchKey
-        )
+        return isDataCurrent(self.loadedFetchKey, this.currentFetchKey)
       },
       /**
        * #getter

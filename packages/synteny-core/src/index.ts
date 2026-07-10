@@ -1,6 +1,7 @@
 export { bpToCumBp, buildBpRegionIndex } from './bpRegionIndex.ts'
 export type { BpIndexViewSnap, BpRegionIndex } from './bpRegionIndex.ts'
 export { extractAlignmentData } from './extractAlignmentData.ts'
+export { isDataCurrent } from './fetchKeyFreshness.ts'
 export {
   detectAssembliesSwapped,
   detectDisplayAssembliesSwapped,
