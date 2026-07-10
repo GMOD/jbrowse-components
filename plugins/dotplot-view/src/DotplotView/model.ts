@@ -752,7 +752,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * #action
          */
         toggleTrack(trackId: string) {
-          toggleTrackGeneric(self, trackId)
+          return toggleTrackGeneric(self, trackId)
         },
         /**
          * #action

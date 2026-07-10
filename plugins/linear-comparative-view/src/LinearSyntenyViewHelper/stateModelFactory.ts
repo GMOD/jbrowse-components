@@ -97,7 +97,7 @@ export function linearSyntenyViewHelperModelFactory(
        * #action
        */
       toggleTrack(trackId: string) {
-        toggleTrackGeneric(self, trackId)
+        return toggleTrackGeneric(self, trackId)
       },
     }))
     .views(self => ({

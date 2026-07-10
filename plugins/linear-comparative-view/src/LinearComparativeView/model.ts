@@ -252,7 +252,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string, level = 0) {
-        self.levels[level]?.toggleTrack(trackId)
+        return self.levels[level]?.toggleTrack(trackId)
       },
 
       /**
