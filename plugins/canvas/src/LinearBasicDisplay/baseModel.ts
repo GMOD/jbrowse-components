@@ -1147,27 +1147,26 @@ export default function baseStateModelFactory(
          */
         get fitStage(): FitStage {
           const base = self.baseLaidOutDataMap
-          return self.fitHeightToDisplay
-            ? resolveFitLadder(
-                [
+          const fit = self.fitHeightToDisplay
+          // Non-fit mode is the `full` rung with no scaling freedom:
+          // minScale=maxScale=1 pins the scale at 1 and the lone rung lays out
+          // only `base` (resolveFitLadder returns immediately on the last rung).
+          // Routing both modes through resolveFitLadder keeps FitStage assembled
+          // in one place, so its fields (level/layout/scale/contentHeight) can't
+          // drift apart.
+          return resolveFitLadder(
+            fit
+              ? [
                   { level: 'full', layout: () => base },
                   { level: 'labels', layout: () => self.fitLabelsOnlyLayout },
-                  {
-                    level: 'decimated',
-                    layout: () => self.fitDecimatedLayout,
-                  },
+                  { level: 'decimated', layout: () => self.fitDecimatedLayout },
                   { level: 'bodies', layout: () => self.fitBodiesOnlyLayout },
-                ],
-                self.height,
-                self.fitMinScale,
-                self.fitMaxScale,
-              )
-            : {
-                level: 'full',
-                layout: base,
-                scale: 1,
-                contentHeight: maxBottom(base),
-              }
+                ]
+              : [{ level: 'full', layout: () => base }],
+            self.height,
+            fit ? self.fitMinScale : 1,
+            fit ? self.fitMaxScale : 1,
+          )
         },
       }))
       .views(self => ({
