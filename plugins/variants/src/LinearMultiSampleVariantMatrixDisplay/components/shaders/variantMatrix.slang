@@ -102,6 +102,9 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // Crisp opaque columns: this pixel is painted only if its center falls inside
   // the column's span, so each pixel is a single pure cell color (no neighbor
   // blending). fragIn.position.x is the framebuffer pixel center (gl_FragCoord.x).
+  // The floor+0.5 reconstructs the pixel center explicitly so the test stays
+  // deterministic under the HAL's 4x MSAA (an edge-pixel fragment can otherwise
+  // sample position.x off-center) — do NOT "simplify" it to fragIn.position.x.
   float center = floor(fragIn.position.x) + 0.5;
   float inside = (center >= fragIn.xspan.x && center < fragIn.xspan.y) ? 1.0 : 0.0;
   // Sub-pixel columns contribute proportional coverage so dense regions blend
