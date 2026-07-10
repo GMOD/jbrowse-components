@@ -1,5 +1,5 @@
+import { formatRelativeTime } from '@jbrowse/core/util'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import { formatDistanceToNow } from 'date-fns'
 
 import type { SvgIconComponent } from '@mui/icons-material'
 
@@ -24,7 +24,7 @@ function sessionLabel(
   const suffix =
     r.id === currentSessionId
       ? 'current'
-      : formatDistanceToNow(r.createdAt, { addSuffix: true })
+      : formatRelativeTime(r.createdAt)
   return `${r.name} (${suffix})`
 }
 

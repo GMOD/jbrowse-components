@@ -73,10 +73,8 @@ export function useGenomesData({
   url?: string
   cladeTaxonIds?: Set<number>
 }): { data: RawEntry[]; error: unknown } {
-  const { data, error } = useFetch<RawData>(
-    url,
-    (u: string) => fetchJson<RawData>(u),
-    { errorRetryCount: 3 },
+  const { data, error } = useFetch<RawData>(url, (u: string) =>
+    fetchJson<RawData>(u),
   )
 
   const rows = data

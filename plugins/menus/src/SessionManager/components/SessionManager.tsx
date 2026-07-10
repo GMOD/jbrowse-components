@@ -1,6 +1,10 @@
 import { ActionLink } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import { measureGridWidth, useLocalStorage } from '@jbrowse/core/util'
+import {
+  formatRelativeTime,
+  measureGridWidth,
+  useLocalStorage,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import StarIcon from '@mui/icons-material/Star'
@@ -13,7 +17,6 @@ import {
   Tooltip,
 } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { differenceInDays, formatDistanceToNow } from 'date-fns'
 import { observer } from 'mobx-react'
 
 import type { SessionModel } from './util.ts'
@@ -53,7 +56,9 @@ const SessionManager = observer(function SessionManager({
 
   async function handleDeleteOld() {
     const toDelete = (session.savedSessionMetadata ?? []).filter(
-      elt => differenceInDays(Date.now(), elt.createdAt) > 1 && !elt.favorite,
+      elt =>
+        (Date.now() - elt.createdAt.getTime()) / (1000 * 60 * 60 * 24) > 1 &&
+        !elt.favorite,
     )
     await Promise.all(toDelete.map(elt => session.deleteSavedSession(elt.id)))
     session.notify(`${toDelete.length} sessions deleted`, 'info')
@@ -101,7 +106,7 @@ const SessionManager = observer(function SessionManager({
           slotProps={{ transition: { timeout: 0 } }}
           title={row.createdAt.toLocaleString()}
         >
-          <div>{formatDistanceToNow(row.createdAt, { addSuffix: true })}</div>
+          <div>{formatRelativeTime(row.createdAt)}</div>
         </Tooltip>
       ),
     },

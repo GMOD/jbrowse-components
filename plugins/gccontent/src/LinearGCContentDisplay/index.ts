@@ -9,10 +9,8 @@ import stateModelF2 from './stateModel2.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-const LazyWiggleDisplayComponent = lazy(() =>
-  import('@jbrowse/plugin-wiggle').then(m => ({
-    default: m.LinearWiggleDisplayReactComponent,
-  })),
+const LazyWiggleDisplayComponent = lazy(
+  () => import('./components/WiggleDisplayComponent.ts'),
 )
 
 export default function LinearGCContentDisplayF(pluginManager: PluginManager) {

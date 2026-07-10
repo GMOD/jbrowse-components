@@ -1,12 +1,17 @@
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { addDisplayConfigMigration } from '@jbrowse/core/pluggableElementTypes/models'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaFactory from './configSchema.ts'
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
 import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+const BaseLinearDisplayComponent = lazy(
+  () => import('./components/BaseLinearDisplayComponent.ts'),
+)
 
 export default function register(pluginManager: PluginManager) {
   // geneGlyphMode "longest" and a boolean showLabels are legacy values on

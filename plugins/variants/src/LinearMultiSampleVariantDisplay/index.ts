@@ -1,10 +1,15 @@
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import VariantDisplayComponent from './components/VariantDisplayComponent.tsx'
 import configSchemaFactory from './configSchema.ts'
 import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+const VariantDisplayComponent = lazy(
+  () => import('./components/VariantDisplayComponent.tsx'),
+)
 
 export default function LinearMultiSampleVariantDisplayF(
   pluginManager: PluginManager,

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { ErrorMessage } from '@jbrowse/core/ui'
-import { useFetch, useLocalStorage } from '@jbrowse/core/util'
+import { mutate, useFetch, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ListIcon from '@mui/icons-material/List'
@@ -18,7 +18,6 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { mutate } from 'swr'
 
 import RecentSessionsCards from './RecentSessionsCards.tsx'
 import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'

@@ -1,10 +1,15 @@
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import LinearVariantDisplayComponent from './components/LinearVariantDisplayComponent.tsx'
 import configSchemaF from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+const LinearVariantDisplayComponent = lazy(
+  () => import('./components/LinearVariantDisplayComponent.tsx'),
+)
 
 export default function LinearVariantDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {

@@ -1,10 +1,15 @@
+import { lazy } from 'react'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
-import LinearMultiRowFeatureDisplayComponent from './components/LinearMultiRowFeatureDisplayComponent.tsx'
 import configSchemaFactory from './configSchema.ts'
 import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+
+const LinearMultiRowFeatureDisplayComponent = lazy(
+  () => import('./components/LinearMultiRowFeatureDisplayComponent.tsx'),
+)
 
 export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
