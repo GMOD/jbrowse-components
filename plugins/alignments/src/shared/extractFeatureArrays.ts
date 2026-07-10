@@ -175,8 +175,12 @@ export function extractFeatureArrays<T extends FeatureData>(
     }
   }
 
-  modifications.sort((a, b) => a.modType.localeCompare(b.modType))
-
+  // modifications is intentionally left in read-arrival order: every downstream
+  // consumer (buildModificationArrays' modType→index Map, buildModTooltipData's
+  // position/modKey grouping, computeModificationCoverage's per-position sort)
+  // groups by an explicit key, so array order is never observed. Sorting it —
+  // localeCompare over a per-base nanopore array of 100k+ entries — was pure
+  // overhead; don't reintroduce it.
   const uniqueTagValues = isTagColorMode
     ? [...new Set(tagColorValues)].filter(v => v !== '')
     : undefined

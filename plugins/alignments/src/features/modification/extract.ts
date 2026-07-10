@@ -41,6 +41,21 @@ const METH_5MC_METHYLATED_RGB = cssColorToRgb(methylated5mC)
 const METH_5MC_UNMETHYLATED_RGB = cssColorToRgb(unmethylated5mC)
 const METH_5HMC_METHYLATED_RGB = cssColorToRgb(methylated5hmC)
 
+// getColorForModification + cssColorToRgb are pure functions of the mod code,
+// but the mods.forEach loop below hits them once per modified base — thousands
+// of times per nanopore read, nearly all the same code ('m'). Memoize the
+// parsed RGB per code (globally deterministic) so each distinct code parses once
+// for the whole session instead of once per base.
+const modRgbCache = new Map<string, [number, number, number]>()
+function modRgbForType(type: string) {
+  let rgb = modRgbCache.get(type)
+  if (!rgb) {
+    rgb = cssColorToRgb(getColorForModification(type))
+    modRgbCache.set(type, rgb)
+  }
+  return rgb
+}
+
 function methColorAndProb(
   methP: number,
   methylatedRgb: readonly [number, number, number],
@@ -103,7 +118,7 @@ export function extractModifications(
     detectedModifications.add(type)
     const typeVisible = isModificationTypeVisible(colorBy?.modifications, type)
     if (colorBy?.type === 'modifications' && typeVisible) {
-      const modRgb = cssColorToRgb(getColorForModification(type))
+      const modRgb = modRgbForType(type)
       // twoColor renders every call, painting low-confidence ones blue; the
       // default mode hides calls below the probability threshold instead.
       const shouldPush = twoColor || prob >= modThreshold
