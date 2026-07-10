@@ -884,36 +884,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 700,
   },
 
-  // Tighter window on a few spliced reads: the grey exon-aligned ends joined by a
-  // thin teal line across the skipped intron, the per-read connector the "Looking
-  // at a specific read" section describes.
-  {
-    mode: 'url',
-    name: 'rnaseq/single_read',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg19',
-      loc: 'chr7:5,568,200-5,569,200',
-      trackLabels: 'offset',
-      tracks: [
-        'ncbi_gff_hg19',
-        {
-          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            coverageHeight: 100,
-            height: 460,
-            maxHeight: 2000,
-            minSashimiScore: 3,
-          },
-        },
-      ],
-    }),
-    readyText: 'ACTB',
-    readyTimeout: 60000,
-    settleMs: 15000,
-    viewportHeight: 700,
-  },
-
   // Compact read drawing mode: featureHeight 3 / spacing 0 packs the full ACTB
   // read stack into view, with maxHeight raised so the whole pileup renders
   // instead of clipping at "Max layout height reached" — that full, dense stack
@@ -988,5 +958,77 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     // tall enough for the 620px compact pileup + the coverage band + chrome
     viewportHeight: 900,
+  },
+
+  // Alternative splicing at PKM (pyruvate kinase M) — the Warburg-effect switch.
+  // PKM1 and PKM2 come from two mutually-exclusive exons: exon 10 (PKM2,
+  // chr15:72,494,795-72,494,961) and exon 9 (PKM1, 72,495,363-72,495,529). This
+  // proliferating cell line splices IN the PKM2 exon (mean depth ~99, sashimi
+  // arcs on both flanks) and SKIPS the PKM1 exon (depth ~0.3) — the arc jumps
+  // right over the empty PKM1 exon. Zoomed to ~8kb so both MXE exons + both
+  // flanking constitutive exons + the arcs are all in frame; at this zoom the
+  // gene track's geneGlyphMode:auto resolves to 'all', so every PKM isoform
+  // renders and the reader sees which annotated transcripts use which exon.
+  {
+    mode: 'url',
+    name: 'rnaseq/pkm_mutually_exclusive',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr15:72,492,600-72,499,300',
+      trackLabels: 'offset',
+      tracks: [
+        'ncbi_gff_hg19',
+        {
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            coverageHeight: 150,
+            height: 480,
+            maxHeight: 2000,
+            minSashimiScore: 3,
+          },
+        },
+      ],
+    }),
+    readyText: 'PKM',
+    readyTimeout: 60000,
+    settleMs: 15000,
+    viewportHeight: 720,
+  },
+
+  // Strand-specific RNA-seq at the surfeit locus — the most tightly-packed gene
+  // cluster in the vertebrate genome, with genes on alternating strands
+  // (RPL7A +, SURF1 -, SURF2 +, SURF4 -) sharing bidirectional promoters.
+  // colorBy firstOfPairStrand colors each read pair by its fragment strand, so
+  // the strongly-transcribed RPL7A reads are all one color even though SURF1
+  // sits immediately downstream on the opposite strand — the per-read strand is
+  // exactly what assigns each read to the correct gene when transcripts abut or
+  // overlap.
+  {
+    mode: 'url',
+    name: 'rnaseq/strand_specific',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr9:136,214,000-136,229,000',
+      trackLabels: 'offset',
+      tracks: [
+        'ncbi_gff_hg19',
+        {
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            colorBy: { type: 'firstOfPairStrand' },
+            coverageHeight: 110,
+            height: 460,
+            maxHeight: 2000,
+            minSashimiScore: 3,
+          },
+        },
+      ],
+    }),
+    readyText: 'RPL7A',
+    readyTimeout: 60000,
+    settleMs: 15000,
+    viewportHeight: 700,
   },
 ]
