@@ -32,7 +32,7 @@ const tracks = [
   },
 ]
 
-export default function App() {
+export default function WithWebWorker() {
   const [state] = useState(() => {
     const s = createViewState({
       assembly,

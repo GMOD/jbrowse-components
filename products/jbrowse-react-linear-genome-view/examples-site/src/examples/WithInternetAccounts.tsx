@@ -13,7 +13,7 @@ const assembly = {
   },
 }
 
-export default function App() {
+export default function WithInternetAccounts() {
   const state = useCreateViewState({
     assembly,
     tracks: [

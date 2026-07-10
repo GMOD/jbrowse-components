@@ -26,7 +26,7 @@ const assembly = {
 
 type ViewState = ReturnType<typeof createViewState>
 
-export default function App() {
+export default function WithExternalPlugin() {
   const [error, setError] = useState<unknown>()
   const [viewState, setViewState] = useState<ViewState>()
 

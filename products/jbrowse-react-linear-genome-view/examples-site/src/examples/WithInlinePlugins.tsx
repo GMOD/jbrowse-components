@@ -71,7 +71,7 @@ class HighlightRegionPlugin extends Plugin {
   configure() {}
 }
 
-export default function App() {
+export default function WithInlinePlugins() {
   const state = useCreateViewState({
     assembly,
     plugins: [HighlightRegionPlugin],

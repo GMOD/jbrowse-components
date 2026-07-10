@@ -1,8 +1,6 @@
-import { useState } from 'react'
-
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
@@ -28,23 +26,21 @@ const tracks = [
   },
 ]
 
-export default function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      aggregateTextSearchAdapters: [
-        {
-          type: 'TrixTextSearchAdapter',
-          textSearchAdapterId: 'volvox-index',
-          ixFilePath: { uri: 'storybook_data/volvox.ix' },
-          ixxFilePath: { uri: 'storybook_data/volvox.ixx' },
-          metaFilePath: { uri: 'storybook_data/volvox_meta.json' },
-          assemblyNames: ['volvox'],
-        },
-      ],
-      tracks,
-      location: 'ctgA:1..800',
-    }),
-  )
+export default function WithAggregateTextSearching() {
+  const state = useCreateViewState({
+    assembly,
+    aggregateTextSearchAdapters: [
+      {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: 'volvox-index',
+        ixFilePath: { uri: 'storybook_data/volvox.ix' },
+        ixxFilePath: { uri: 'storybook_data/volvox.ixx' },
+        metaFilePath: { uri: 'storybook_data/volvox_meta.json' },
+        assemblyNames: ['volvox'],
+      },
+    ],
+    tracks,
+    location: 'ctgA:1..800',
+  })
   return <JBrowseLinearGenomeView viewState={state} />
 }

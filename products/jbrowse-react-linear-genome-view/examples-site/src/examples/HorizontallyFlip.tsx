@@ -52,7 +52,7 @@ function FlipButton({ viewRef }: { viewRef: RefObject<ViewModel | null> }) {
   )
 }
 
-export default function App() {
+export default function HorizontallyFlip() {
   const ref = useRef<ViewModel>(null)
   return (
     <div>

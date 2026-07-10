@@ -1,8 +1,6 @@
-import { useState } from 'react'
-
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 // LocusZoom-style demo: genome-wide GIANT BMI summary stats colored by LD r² to
@@ -89,22 +87,20 @@ const NCBI_REFSEQ_TRACK = {
 }
 
 export default function LocusZoomLD() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks: [GIANT_BMI_TRACK, NCBI_REFSEQ_TRACK],
-      defaultSession: {
-        name: 'LocusZoom-style LD coloring',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            assembly: 'hg19',
-            loc: FTO_LOC,
-            tracks: ['giant_bmi_ld', 'ncbi_refseq_hg19'],
-          },
+  const state = useCreateViewState({
+    assembly,
+    tracks: [GIANT_BMI_TRACK, NCBI_REFSEQ_TRACK],
+    defaultSession: {
+      name: 'LocusZoom-style LD coloring',
+      view: {
+        type: 'LinearGenomeView',
+        init: {
+          assembly: 'hg19',
+          loc: FTO_LOC,
+          tracks: ['giant_bmi_ld', 'ncbi_refseq_hg19'],
         },
       },
-    }),
-  )
+    },
+  })
   return <JBrowseLinearGenomeView viewState={state} />
 }

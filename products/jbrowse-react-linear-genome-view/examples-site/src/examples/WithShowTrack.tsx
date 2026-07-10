@@ -28,7 +28,7 @@ const tracks = [
   },
 ]
 
-export default function App() {
+export default function WithShowTrack() {
   const [state] = useState(() => {
     const s = createViewState({ assembly, tracks, location: 'ctgA:1105..1221' })
     // showTrack API: https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-showtrack

@@ -26,7 +26,7 @@ const tracks = [
   },
 ]
 
-export default function App() {
+export default function UsingLocObject() {
   const state = useCreateViewState({
     assembly,
     tracks,

@@ -36,7 +36,7 @@ const tracks = [
   },
 ]
 
-export default function App() {
+export default function DefaultSession() {
   const state = useCreateViewState({
     assembly,
     tracks,

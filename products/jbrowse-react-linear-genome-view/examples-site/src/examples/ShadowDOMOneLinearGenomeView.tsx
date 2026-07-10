@@ -103,7 +103,7 @@ const ShadowComponent = () => {
 
 const JBrowseCustom = () => createElement(ShadowComponent, null, null)
 
-export default function App() {
+export default function ShadowDOMOneLinearGenomeView() {
   if (customElements.get('jbrowse-linear-view') === undefined) {
     customElements.define('jbrowse-linear-view', r2wc(JBrowseCustom))
   }

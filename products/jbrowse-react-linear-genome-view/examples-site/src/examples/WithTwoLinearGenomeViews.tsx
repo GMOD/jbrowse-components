@@ -1,8 +1,6 @@
-import { useState } from 'react'
-
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
@@ -28,13 +26,17 @@ const tracks = [
   },
 ]
 
-export default function App() {
-  const [state1] = useState(() =>
-    createViewState({ assembly, tracks, location: 'ctgA:1105..1221' }),
-  )
-  const [state2] = useState(() =>
-    createViewState({ assembly, tracks, location: 'ctgA:5560..30589' }),
-  )
+export default function WithTwoLinearGenomeViews() {
+  const state1 = useCreateViewState({
+    assembly,
+    tracks,
+    location: 'ctgA:1105..1221',
+  })
+  const state2 = useCreateViewState({
+    assembly,
+    tracks,
+    location: 'ctgA:5560..30589',
+  })
   return (
     <div>
       <JBrowseLinearGenomeView viewState={state1} />

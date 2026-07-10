@@ -41,7 +41,7 @@ const tracks = [
 ]
 
 // managed API: props are initial values, the component owns the engine
-export default function App() {
+export default function HumanExomeExample() {
   return (
     <LinearGenomeView
       assembly={assembly}

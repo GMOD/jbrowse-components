@@ -1,8 +1,6 @@
-import { useState } from 'react'
-
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
@@ -15,40 +13,38 @@ const assembly = {
   },
 }
 
-export default function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks: [
-        {
-          type: 'FeatureTrack',
-          trackId: 'gff3tabix_genes',
-          assemblyNames: ['volvox'],
-          name: 'GFF3Tabix genes',
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-          },
-          textSearching: {
-            textSearchAdapter: {
-              type: 'TrixTextSearchAdapter',
-              textSearchAdapterId: 'gff3tabix_genes-index',
-              ixFilePath: {
-                uri: 'https://example.com/storybook_data/gff3tabix_genes.ix',
-              },
-              ixxFilePath: {
-                uri: 'https://example.com/storybook_data/gff3tabix_genes.ixx',
-              },
-              metaFilePath: {
-                uri: 'https://example.com/storybook_data/gff3tabix_genes_meta.json',
-              },
-              assemblyNames: ['volvox'],
+export default function WithPerTrackTextSearching() {
+  const state = useCreateViewState({
+    assembly,
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'gff3tabix_genes',
+        assemblyNames: ['volvox'],
+        name: 'GFF3Tabix genes',
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+        },
+        textSearching: {
+          textSearchAdapter: {
+            type: 'TrixTextSearchAdapter',
+            textSearchAdapterId: 'gff3tabix_genes-index',
+            ixFilePath: {
+              uri: 'https://example.com/storybook_data/gff3tabix_genes.ix',
             },
+            ixxFilePath: {
+              uri: 'https://example.com/storybook_data/gff3tabix_genes.ixx',
+            },
+            metaFilePath: {
+              uri: 'https://example.com/storybook_data/gff3tabix_genes_meta.json',
+            },
+            assemblyNames: ['volvox'],
           },
         },
-      ],
-      location: 'ctgA:1..800',
-    }),
-  )
+      },
+    ],
+    location: 'ctgA:1..800',
+  })
   return <JBrowseLinearGenomeView viewState={state} />
 }

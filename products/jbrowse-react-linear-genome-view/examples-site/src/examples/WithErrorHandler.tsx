@@ -16,7 +16,7 @@ const assembly = {
   },
 }
 
-export default function App() {
+export default function WithErrorHandler() {
   const [{ viewState, error }] = useState(() => {
     try {
       return {

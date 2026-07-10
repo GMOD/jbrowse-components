@@ -120,7 +120,7 @@ const VisibleFeatures = observer(function VisibleFeatures({
   )
 })
 
-export default function App() {
+export default function ObserveVisible() {
   const state = useCreateViewState({
     assembly,
     tracks,

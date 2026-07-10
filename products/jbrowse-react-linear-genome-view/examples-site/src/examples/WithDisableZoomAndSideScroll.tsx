@@ -1,10 +1,8 @@
-import { useState } from 'react'
-
 import Plugin from '@jbrowse/core/Plugin'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -57,14 +55,12 @@ class MyPlugin extends Plugin {
   configure() {}
 }
 
-export default function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      plugins: [MyPlugin],
-      location: 'ctgA:1105..1221',
-    }),
-  )
+export default function WithDisableZoomAndSideScroll() {
+  const state = useCreateViewState({
+    assembly,
+    tracks,
+    plugins: [MyPlugin],
+    location: 'ctgA:1105..1221',
+  })
   return <JBrowseLinearGenomeView viewState={state} />
 }

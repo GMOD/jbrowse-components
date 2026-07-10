@@ -48,7 +48,7 @@ const tracks = [
 ]
 
 // managed API: props are initial values, the component owns the engine
-export default function App() {
+export default function WithMultiSampleVariantDisplay() {
   return (
     <LinearGenomeView
       assembly={assembly}

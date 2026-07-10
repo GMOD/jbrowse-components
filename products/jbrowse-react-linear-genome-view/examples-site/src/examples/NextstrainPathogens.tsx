@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 import covid from './nextstrain_covid.json'
@@ -29,9 +29,12 @@ function PathogenView({
   config: (typeof pathogens)[number]['config']
 }) {
   const { assembly, tracks, defaultSession, location } = config
-  const [state] = useState(() =>
-    createViewState({ assembly, tracks, defaultSession, location }),
-  )
+  const state = useCreateViewState({
+    assembly,
+    tracks,
+    defaultSession,
+    location,
+  })
   return <JBrowseLinearGenomeView viewState={state} />
 }
 

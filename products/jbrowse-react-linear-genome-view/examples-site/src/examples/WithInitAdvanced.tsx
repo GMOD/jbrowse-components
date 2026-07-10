@@ -32,7 +32,7 @@ const tracks = [
 // managed API: the `init` blob is the component's whole declarative input —
 // loc, which tracks to open (with per-display snapshots), tracklist/nav
 // visibility, and highlights
-export default function App() {
+export default function WithInitAdvanced() {
   return (
     <LinearGenomeView
       assembly={assembly}

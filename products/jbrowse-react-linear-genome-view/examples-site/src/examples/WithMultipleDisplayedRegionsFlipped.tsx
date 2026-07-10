@@ -1,8 +1,6 @@
-import { useState } from 'react'
-
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -56,23 +54,21 @@ const FlipView = observer(function FlipView({ state }: { state: ViewModel }) {
   )
 })
 
-export default function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'Multi-region flipped example',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            loc: 'chr1:113073119..113073695 chr1:113091267..113091433',
-            assembly: 'GRCh38',
-            tracks: ['ncbi-refseq-genes'],
-          },
+export default function WithMultipleDisplayedRegionsFlipped() {
+  const state = useCreateViewState({
+    assembly,
+    tracks,
+    defaultSession: {
+      name: 'Multi-region flipped example',
+      view: {
+        type: 'LinearGenomeView',
+        init: {
+          loc: 'chr1:113073119..113073695 chr1:113091267..113091433',
+          assembly: 'GRCh38',
+          tracks: ['ncbi-refseq-genes'],
         },
       },
-    }),
-  )
+    },
+  })
   return <FlipView state={state} />
 }

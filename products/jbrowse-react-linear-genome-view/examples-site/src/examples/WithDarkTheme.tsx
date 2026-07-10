@@ -1,8 +1,6 @@
-import { useState } from 'react'
-
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
@@ -28,21 +26,19 @@ const tracks = [
   },
 ]
 
-export default function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      configuration: {
-        theme: {
-          palette: {
-            mode: 'dark',
-            primary: { main: '#333' },
-            secondary: { main: '#444' },
-          },
+export default function WithDarkTheme() {
+  const state = useCreateViewState({
+    assembly,
+    tracks,
+    configuration: {
+      theme: {
+        palette: {
+          mode: 'dark',
+          primary: { main: '#333' },
+          secondary: { main: '#444' },
         },
       },
-    }),
-  )
+    },
+  })
   return <JBrowseLinearGenomeView viewState={state} />
 }

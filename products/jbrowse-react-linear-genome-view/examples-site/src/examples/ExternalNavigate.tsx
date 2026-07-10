@@ -42,7 +42,7 @@ const hits = [
   { label: 'gene3', refName: 'ctgB', start: 100, end: 1500 },
 ]
 
-export default function App() {
+export default function ExternalNavigate() {
   const ref = useRef<ViewModel>(null)
   return (
     <div>

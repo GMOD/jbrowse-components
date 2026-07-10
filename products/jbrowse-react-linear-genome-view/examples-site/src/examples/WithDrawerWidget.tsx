@@ -1,8 +1,6 @@
-import { useState } from 'react'
-
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
@@ -28,25 +26,23 @@ const tracks = [
   },
 ]
 
-export default function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      location: 'ctgA:1105..1221',
-      drawerViewHeight: '100vh',
-      defaultSession: {
-        name: 'Drawer Widget Example',
-        view: {
-          id: 'linearGenomeView',
-          type: 'LinearGenomeView',
-          init: {
-            assembly: 'volvox',
-            tracklist: true,
-          },
+export default function WithDrawerWidget() {
+  const state = useCreateViewState({
+    assembly,
+    tracks,
+    drawerViewHeight: '100vh',
+    defaultSession: {
+      name: 'Drawer Widget Example',
+      view: {
+        id: 'linearGenomeView',
+        type: 'LinearGenomeView',
+        init: {
+          assembly: 'volvox',
+          loc: 'ctgA:1105..1221',
+          tracklist: true,
         },
       },
-    }),
-  )
+    },
+  })
   return <JBrowseLinearGenomeView viewState={state} />
 }

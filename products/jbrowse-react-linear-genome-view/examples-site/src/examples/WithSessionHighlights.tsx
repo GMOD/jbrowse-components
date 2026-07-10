@@ -1,8 +1,6 @@
-import { useState } from 'react'
-
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
@@ -35,49 +33,47 @@ const tracks = [
   },
 ]
 
-export default function App() {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks,
-      defaultSession: {
-        name: 'Session highlights',
-        view: {
-          type: 'LinearGenomeView',
-          // highlights authored on the view snapshot carry per-highlight color
-          // and label, and round-trip through saved sessions. compare with
-          // init.highlight, which only accepts plain loc-strings
-          highlight: [
+export default function WithSessionHighlights() {
+  const state = useCreateViewState({
+    assembly,
+    tracks,
+    defaultSession: {
+      name: 'Session highlights',
+      view: {
+        type: 'LinearGenomeView',
+        // highlights authored on the view snapshot carry per-highlight color
+        // and label, and round-trip through saved sessions. compare with
+        // init.highlight, which only accepts plain loc-strings
+        highlight: [
+          {
+            assemblyName: 'hg38',
+            refName: 'chr1',
+            start: 11_130_000,
+            end: 11_145_000,
+            color: 'rgba(255, 0, 0, 0.25)',
+            label: 'Region of interest',
+          },
+          {
+            assemblyName: 'hg38',
+            refName: 'chr1',
+            start: 11_200_000,
+            end: 11_220_000,
+            color: 'rgba(0, 128, 255, 0.25)',
+            label: 'Promoter',
+          },
+        ],
+        init: {
+          loc: 'chr1:11,106,077-11,261,675',
+          assembly: 'hg38',
+          tracks: [
             {
-              assemblyName: 'hg38',
-              refName: 'chr1',
-              start: 11_130_000,
-              end: 11_145_000,
-              color: 'rgba(255, 0, 0, 0.25)',
-              label: 'Region of interest',
-            },
-            {
-              assemblyName: 'hg38',
-              refName: 'chr1',
-              start: 11_200_000,
-              end: 11_220_000,
-              color: 'rgba(0, 128, 255, 0.25)',
-              label: 'Promoter',
+              trackId: 'ncbi-refseq-genes',
+              displaySnapshot: { height: 200 },
             },
           ],
-          init: {
-            loc: 'chr1:11,106,077-11,261,675',
-            assembly: 'hg38',
-            tracks: [
-              {
-                trackId: 'ncbi-refseq-genes',
-                displaySnapshot: { height: 200 },
-              },
-            ],
-          },
         },
       },
-    }),
-  )
+    },
+  })
   return <JBrowseLinearGenomeView viewState={state} />
 }

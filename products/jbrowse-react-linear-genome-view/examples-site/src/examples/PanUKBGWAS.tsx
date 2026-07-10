@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 // Pan-UKBB per-phenotype flat files (tabix-indexed TSV, GRCh37/hg38-aliased)
@@ -135,23 +135,21 @@ function GenomeView({
   scoreColumn: string
   label: string
 }) {
-  const [state] = useState(() =>
-    createViewState({
-      assembly,
-      tracks: [makeTrack(phenotype, scoreColumn, label), NCBI_REFSEQ_TRACK],
-      defaultSession: {
-        name: 'Pan-UKB GWAS',
-        view: {
-          type: 'LinearGenomeView',
-          init: {
-            assembly: 'hg38',
-            loc: FEATURED[phenotype.id] ?? 'chr1',
-            tracks: ['panukb_gwas', 'ncbi_refseq_hg38'],
-          },
+  const state = useCreateViewState({
+    assembly,
+    tracks: [makeTrack(phenotype, scoreColumn, label), NCBI_REFSEQ_TRACK],
+    defaultSession: {
+      name: 'Pan-UKB GWAS',
+      view: {
+        type: 'LinearGenomeView',
+        init: {
+          assembly: 'hg38',
+          loc: FEATURED[phenotype.id] ?? 'chr1',
+          tracks: ['panukb_gwas', 'ncbi_refseq_hg38'],
         },
       },
-    }),
-  )
+    },
+  })
   return <JBrowseLinearGenomeView viewState={state} />
 }
 

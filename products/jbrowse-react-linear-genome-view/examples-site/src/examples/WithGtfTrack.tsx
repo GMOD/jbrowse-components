@@ -31,7 +31,7 @@ const tracks = [
   },
 ]
 
-export default function App() {
+export default function WithGtfTrack() {
   return (
     <LinearGenomeView
       assembly={assembly}
