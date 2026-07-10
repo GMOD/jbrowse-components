@@ -29,6 +29,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { observable } from 'mobx'
 
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
+import { getMultiRowSortAutorun } from './getMultiRowSortAutorun.ts'
 import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import { MULTIROW_DEFAULT_COLOR } from '../MultiRowGetFeaturesRPC/multiRowColors.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
@@ -489,12 +490,8 @@ export default function stateModelFactory(
        */
       sortRowsByValueAt(refName: string, pos: number) {
         const regions = [...self.rpcDataMap.entries()].map(([index, data]) => ({
+          ...data,
           refName: self.loadedRegions.get(index)?.refName ?? '',
-          featureStarts: data.featureStarts,
-          featureEnds: data.featureEnds,
-          featureColors: data.featureColors,
-          partitionValues: data.partitionValues,
-          featurePartitionIndex: data.featurePartitionIndex,
         }))
         const byName = new Map(self.editableSources.map(s => [s.name, s]))
         const order = rowOrderByValueAt(
@@ -648,6 +645,10 @@ export default function stateModelFactory(
       return {
         async afterAttach() {
           superAfterAttach()
+          // Light autorun (mobx-only, already bundled): install synchronously.
+          // The two below genuinely code-split heavy d3/clustering code.
+          getMultiRowSortAutorun(self)
+
           try {
             const { setupTreeDrawingAutorun } =
               await import('@jbrowse/tree-sidebar')
@@ -663,16 +664,6 @@ export default function stateModelFactory(
               await import('./getMultiRowClusterAutorun.ts')
             if (isAlive(self)) {
               getMultiRowClusterAutorun(self)
-            }
-          } catch (e) {
-            console.error(e)
-          }
-
-          try {
-            const { getMultiRowSortAutorun } =
-              await import('./getMultiRowSortAutorun.ts')
-            if (isAlive(self)) {
-              getMultiRowSortAutorun(self)
             }
           } catch (e) {
             console.error(e)
