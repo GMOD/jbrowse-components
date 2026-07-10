@@ -95,21 +95,6 @@
         "craiLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.crai",
           "locationType": "UriLocation"
-        },
-        "sequenceAdapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
-            "locationType": "UriLocation"
-          }
         }
       }
     },
@@ -175,21 +160,6 @@
         "craiLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram.crai",
           "locationType": "UriLocation"
-        },
-        "sequenceAdapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
-            "locationType": "UriLocation"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
-            "locationType": "UriLocation"
-          }
         }
       }
     },
@@ -264,7 +234,12 @@
       "offsetPx": 752150,
       "bpPerPx": 25.084820116171613,
       "displayedRegions": [
-        { "assemblyName": "hg38", "refName": "1", "start": 0, "end": 248956422 }
+        {
+          "assemblyName": "hg38",
+          "refName": "1",
+          "start": 0,
+          "end": 248956422
+        }
       ],
       "tracks": [
         {
@@ -305,7 +280,10 @@
               "configuration": "hg38.100way.phyloP100way-LinearWiggleDisplay",
               "selectedRendering": "",
               "resolution": 5,
-              "constraints": { "max": 10, "min": -10 }
+              "constraints": {
+                "max": 10,
+                "min": -10
+              }
             }
           ]
         },
@@ -320,7 +298,10 @@
               "configuration": "skbr3.ont.sort.mod-LinearAlignmentsDisplay",
               "height": 250,
               "showCoverage": true,
-              "filterBySetting": { "flagInclude": 0, "flagExclude": 1536 }
+              "filterBySetting": {
+                "flagInclude": 0,
+                "flagExclude": 1536
+              }
             }
           ]
         }

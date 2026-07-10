@@ -46,17 +46,6 @@
             "locationType": "UriLocation"
           },
           "indexType": "BAI"
-        },
-        "sequenceAdapter": {
-          "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "ref.fa",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "ref.fa.fai",
-            "locationType": "UriLocation"
-          }
         }
       }
     }

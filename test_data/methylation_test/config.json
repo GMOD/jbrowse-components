@@ -82,17 +82,6 @@
             "locationType": "UriLocation"
           },
           "indexType": "BAI"
-        },
-        "sequenceAdapter": {
-          "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "hg38_clip.fa",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "hg38_clip.fa.fai",
-            "locationType": "UriLocation"
-          }
         }
       },
       "assemblyNames": ["hg38_clip"]

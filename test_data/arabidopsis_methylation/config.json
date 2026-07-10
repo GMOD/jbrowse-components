@@ -36,17 +36,6 @@
             "locationType": "UriLocation"
           },
           "indexType": "BAI"
-        },
-        "sequenceAdapter": {
-          "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "arabidopsis_chr1.fa",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "arabidopsis_chr1.fa.fai",
-            "locationType": "UriLocation"
-          }
         }
       },
       "assemblyNames": ["arabidopsis"]
@@ -67,7 +56,9 @@
                 "type": "LinearAlignmentsDisplay",
                 "colorBy": {
                   "type": "methylation",
-                  "modifications": { "cytosineContext": "CHH" }
+                  "modifications": {
+                    "cytosineContext": "CHH"
+                  }
                 }
               }
             }
@@ -76,5 +67,7 @@
       }
     ]
   },
-  "configuration": { "disableAnalytics": true }
+  "configuration": {
+    "disableAnalytics": true
+  }
 }

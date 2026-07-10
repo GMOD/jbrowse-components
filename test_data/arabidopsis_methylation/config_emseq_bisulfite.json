@@ -7,14 +7,7 @@
         "trackId": "arabidopsis-ReferenceSequenceTrack",
         "adapter": {
           "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_chr1.fa",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_chr1.fa.fai",
-            "locationType": "UriLocation"
-          }
+          "uri": "https://jbrowse.org/bisulfite/arabidopsis_chr1.fa"
         }
       }
     }
@@ -25,29 +18,8 @@
       "trackId": "arabidopsis_wgbs",
       "name": "Arabidopsis WGBS (Col-0, DRR029742)",
       "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_wgbs_bisulfite.bam",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_wgbs_bisulfite.bam.bai",
-            "locationType": "UriLocation"
-          },
-          "indexType": "BAI"
-        },
-        "sequenceAdapter": {
-          "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_chr1.fa",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_chr1.fa.fai",
-            "locationType": "UriLocation"
-          }
-        }
+        "type": "CramAdapter",
+        "uri": "https://jbrowse.org/bisulfite/arabidopsis_wgbs_bisulfite.cram"
       },
       "assemblyNames": ["arabidopsis"]
     }
@@ -65,7 +37,9 @@
               "trackId": "arabidopsis_wgbs",
               "displaySnapshot": {
                 "type": "LinearAlignmentsDisplay",
-                "colorBy": { "type": "bisulfite" }
+                "colorBy": {
+                  "type": "bisulfite"
+                }
               }
             }
           ]
@@ -73,5 +47,7 @@
       }
     ]
   },
-  "configuration": { "disableAnalytics": true }
+  "configuration": {
+    "disableAnalytics": true
+  }
 }
