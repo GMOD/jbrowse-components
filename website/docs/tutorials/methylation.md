@@ -1,15 +1,23 @@
 ---
 title: DNA methylation
-description: Per-read and aggregate methylation from ONT and modkit
+description:
+  Per-read, aggregate, allele-specific, and chromatin-accessibility (6mA)
+  methylation from ONT/PacBio long reads and modkit
 guide_category: Tutorials
 ---
 
-JBrowse 2 supports two complementary views of DNA methylation: **per-read
-modification coloring** directly on BAM/CRAM alignments, and **aggregate
-methylation** from bedMethyl files produced by tools like
-[modkit](https://github.com/nanoporetech/modkit). This tutorial demonstrates
-both using publicly available COLO829 melanoma ONT data and a chr20 nanopore
-methylation dataset.
+DNA methylation (**5mC** at **CpG** sites, and other base modifications) is read
+straight off long reads: ONT and PacBio basecallers emit per-base modification
+calls in the BAM/CRAM `MM`/`ML` tags, and JBrowse renders them with no extra
+processing. This tutorial demonstrates each view JBrowse offers, using public
+COLO829 melanoma ONT data, an HG002 fiber-seq dataset, and a chr20 nanopore
+methylation dataset:
+
+- **Per-read modification coloring** on BAM/CRAM alignments
+- **Aggregate methylation** from
+  [modkit](https://github.com/nanoporetech/modkit) bedMethyl files
+- **Allele-specific methylation** by grouping reads on their haplotype tag
+- **6mA chromatin accessibility** from fiber-seq
 
 ## Per-read methylation with BAM/CRAM
 
@@ -50,6 +58,11 @@ tabix -p bed output_dir/combined.bedmethyl.gz
 (bisulfite-equivalent). Omit it to keep separate rows for each modification type
 (`m` for 5mC, `h` for 5hmC).
 
+To _compare_ two samples — tumor vs normal, treated vs control — run
+`modkit dmr` on the per-sample pileups to score differentially-methylated
+regions, and load its BED output as a `FeatureTrack` beside the bedMethyl tracks
+so the DMRs line up with the positions driving them.
+
 ### Loading as a MultiQuantitativeTrack
 
 Because bedMethyl is a BED-format file with a numeric score column, it can be
@@ -85,38 +98,60 @@ multirow mode by default so their scales are independent.
 ### Example: COLO829 tumor with CRAM and bedMethyl
 
 The screenshot below shows the COLO829 melanoma tumor ONT dataset at
-chr20:10,000,000–10,003,000. The upper track is the CRAM alignment with reads
-colored by modification. The lower track is the modkit bedMethyl file loaded as
-a `MultiQuantitativeTrack` with `h` (5hmC) and `m` (5mC) subtracks.
+chr20:21,505,200–21,514,000, spanning two adjacent CpG islands. Top: the UCSC
+CpG-island annotation. Middle: the CRAM alignment with reads colored by
+modification. Bottom: the modkit bedMethyl file as a `MultiQuantitativeTrack`
+with `h` (5hmC) and `m` (5mC) subtracks. The per-read calls and the aggregate
+fractions track each other, and both drop over the leftmost, hypomethylated
+island.
 
 <Figure caption="COLO829 tumor ONT alignments (top) with per-read modification coloring, alongside the modkit bedMethyl MultiQuantitativeTrack (bottom) showing 5hmC ('h') and 5mC ('m') methylation fractions at individual CpG positions." src="/img/methylation/colo829_cram_and_bedmethyl.png" />
 
-[Live demo — COLO829 CRAM + bedMethyl](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"20:10,000,000-10,003,000","tracks":["COLO829_tumor.ht","COLO829_tumor.ht_modkit.bed_multi"]}]})
+## Allele-specific methylation by haplotype
+
+Because each long read is one DNA molecule, reads carrying an `HP` haplotype tag
+(from WhatsHap, HiPhase, or ONT's `wf-somatic-variation` haplotagged `.ht`
+output) can be split by allele. **Group by** the `HP` tag from the track menu,
+leave coloring on modifications (or methylation), and the pileup stacks into one
+per-haplotype profile — computed live in the browser, no external tool.
+
+<Figure caption="The same COLO829 CRAM with modification coloring and grouped by the HP haplotype tag: the pileup splits into HP 1, HP 2, and unphased (HP: none) sections, each with its own coverage row, so 5mC calls can be read per allele. Comparing the haplotype bands is how allele-specific and imprinted methylation is spotted." src="/img/methylation/colo829_haplotype_methylation.png" />
+
+`modkit pileup --partition-tag HP` writes the same split as an aggregate
+bedMethyl per haplotype (`wf-human-variation` emits these as its `.1`/`.2`
+outputs). Loaded as two `MultiQuantitativeTrack`s, they give a phased 0–100% 5mC
+profile per allele that reads cleanest at a germline imprinting center — for
+example the SNRPN / Prader-Willi imprinting center (`chr15:24.95Mb`) in HG002,
+where one parental allele is methylated and the other is not.
+
+<Figure caption="Allele-specific methylation at the SNRPN / Prader-Willi imprinting center in HG002 ONT data. modkit's phased bedMethyl is loaded as one MultiQuantitativeTrack per haplotype (HP1, HP2), each a 0–100% 5mC profile. Over the CpG island one allele is ~89% methylated while the other is ~10% — the canonical imprinted split, read straight off the two stacked profiles." src="/img/methylation/hg002_snrpn_allele_specific.png" />
+
+See the
+[alignments track guide](/docs/user_guides/alignments_track#grouping-reads) for
+the Group-by dialog and the [phased-trio tutorial](/docs/tutorials/analyze_trio)
+for producing `HP`-tagged reads.
 
 ## Plant methylation in non-CpG contexts (CHG/CHH)
 
 Mammalian methylation is overwhelmingly in the CpG context, but plants also
 methylate cytosines in the **CHG** and **CHH** contexts (where H is A, C, or T).
-JBrowse 2 lets you restrict modification coloring to a specific cytosine context
-via the `cytosineContext` setting, which is useful for examining plant
-methylation patterns.
-
-For example, on an _Arabidopsis_ ONT dataset you can set `cytosineContext` to
-**CHH** so that only cytosines in a CHH context are colored.
-
-JBrowse 2 can also infer methylation from **bisulfite** (or EM-seq) data via
-C-to-T conversion in the read alignment (the `bisulfite` coloring mode) rather
-than from MM/ML tags.
+JBrowse restricts modification (or bisulfite) coloring to a chosen context via
+the `cytosineContext` setting, so CpG, CHG, and CHH can each be read off the
+same reads. The [bisulfite / EM-seq tutorial](/docs/tutorials/bisulfite) works
+through all three contexts on an _Arabidopsis_ WGBS dataset, where methylation
+is inferred from C→T conversion in the alignment rather than from MM/ML tags.
 
 ## 6mA base modifications (fiber-seq)
 
-Modification coloring is not limited to 5mC. Fiber-seq and related assays call
-**N6-methyladenine (6mA)**, tagged as `A+a` in the MM/ML tags. JBrowse draws 6mA
-the same as any other modification: set the track's color mode to
-**modifications** and the `A+a` calls paint directly on the reads. The figure
-below uses Oxford Nanopore's
-[HG002 chromatin-accessibility dataset](https://epi2me.nanoporetech.com/chromatin-acc-hg002/),
-comparing an enzyme-treated sample with an untreated control.
+Modification coloring is not limited to 5mC. Fiber-seq calls **N6-methyladenine
+(6mA)**, tagged `A+a` in the MM/ML tags, and JBrowse draws it like any other
+modification — set the color mode to **modifications** and the `A+a` calls paint
+on the reads. Because the assay's adenine methyltransferase stencils 6mA onto
+accessible DNA, the density is a **chromatin-accessibility** readout: below,
+Oxford Nanopore's
+[HG002 chromatin-accessibility dataset](https://epi2me.nanoporetech.com/chromatin-acc-hg002/)
+shows a clear 6mA peak over the GAPDH promoter in the enzyme-treated sample that
+the no-enzyme control lacks.
 
 <Figure caption="ONT HG002 fiber-seq at the GAPDH promoter in modifications mode: the enzyme-treated sample (top, PAY22766) carries 6mA (A+a) calls that the native no-enzyme control (bottom, PBA15131) does not." src="/img/methylation/chromatin_accessibility_6ma.png" />
 
@@ -127,15 +162,20 @@ comparing an enzyme-treated sample with an untreated control.
 | Per-read BAM/CRAM coloring       | Haplotype-aware methylation, allele-specific methylation, individual read inspection         |
 | bedMethyl MultiQuantitativeTrack | Whole-genome methylation overview, comparing tumor vs normal, fast loading at any zoom level |
 
-For haplotype-aware analysis, combine both: load a haplotagged BAM (with HP tags
-from WhatsHap or HiPhase), color by modification, and sort by HP tag to see
-per-haplotype methylation patterns. The bedMethyl track provides the aggregate
-signal for quick navigation to regions of interest.
+The two are complementary rather than exclusive: keep the bedMethyl track for
+fast, whole-genome navigation to regions of interest, then drop the per-read
+CRAM/BAM below it for single-molecule and
+[allele-specific](#allele-specific-methylation-by-haplotype) detail once you're
+there.
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track) — per-read modification
-  coloring, sorting, and filtering options for BAM/CRAM
+- [Alignments track](/docs/user_guides/alignments_track#grouping-reads) —
+  per-read modification coloring plus grouping/sorting reads by the `HP`
+  haplotype tag
+- [Phased trio](/docs/tutorials/analyze_trio) — generating and working with
+  `HP`-tagged reads alongside a phased VCF, the basis for allele-specific
+  methylation
 - [Multi-quantitative track](/docs/user_guides/multiquantitative_track) —
   display modes for the bedMethyl subtracks (multirow, overlap, shared scales)
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) — another

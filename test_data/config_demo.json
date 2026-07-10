@@ -4970,6 +4970,48 @@
     },
     {
       "type": "MultiQuantitativeTrack",
+      "trackId": "HG002_snrpn_modkit_hp1",
+      "name": "HG002 methylation HP1 (modkit)",
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/methylation/HG002_SNRPN_hp1.modkit.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/methylation/HG002_SNRPN_hp1.modkit.bed.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "HG002_snrpn_modkit_hp2",
+      "name": "HG002 methylation HP2 (modkit)",
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/methylation/HG002_SNRPN_hp2.modkit.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/methylation/HG002_SNRPN_hp2.modkit.bed.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
       "trackId": "bilby",
       "name": "Bilby transition matrix",
       "assemblyNames": ["hg19"],

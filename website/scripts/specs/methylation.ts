@@ -7,7 +7,96 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
+const ARABIDOPSIS_WGBS_CONFIG =
+  'test_data/arabidopsis_methylation/config_emseq_bisulfite.json'
+
+// One Arabidopsis WGBS pileup (Col-0 DRR029742, bwameth-aligned) over an
+// NC_003070.9:4.398-4.412Mb window that pairs two methylation regimes side by
+// side: the expressed ARM-repeat gene AT1G12930 (~4.398-4.406Mb) carries
+// gene-body CpG methylation only, while the silenced element at its right
+// (pseudogene AT1G12935 + unannotated repeat, ~4.406-4.410Mb) is methylated in
+// all three plant contexts. The bisulfite color mode reads C-vs-T against the
+// reference (no MM/ML tags): methylated C = red, unmethylated (C->T) = blue.
+// Restricting the context to CpG / CHG / CHH re-scores the same reads, so the
+// gene body stays red only under CpG while the TE stays red under all three —
+// the tri-context signature that distinguishes plant heterochromatin from gene
+// bodies. One spec per context; the compose stacks them CpG/CHG/CHH.
+function arabidopsisBisulfite(
+  name: string,
+  colorBy: Record<string, unknown>,
+): ScreenshotSpec {
+  return {
+    mode: 'url',
+    name,
+    url: lgvSession(ARABIDOPSIS_WGBS_CONFIG, {
+      assembly: 'arabidopsis',
+      loc: 'NC_003070.9:4,398,000-4,412,000',
+      tracks: [
+        {
+          trackId: 'arabidopsis_wgbs',
+          displaySnapshot: { type: 'LinearAlignmentsDisplay', colorBy },
+        },
+      ],
+    }),
+    readyText: 'Arabidopsis WGBS',
+    // remote BAM over CDN, ~30x across 14kb: settles well under these caps
+    readyTimeout: 90000,
+    settleMs: 20000,
+    // just the ruler + coverage + pileup so the stacked contexts aren't mostly
+    // whitespace (equal heights give a clean 3-panel stack)
+    viewportHeight: 360,
+  }
+}
+
 export const methylationSpecs: ScreenshotSpec[] = [
+  arabidopsisBisulfite('methylation/arabidopsis_wgbs_cpg', {
+    type: 'bisulfite',
+  }),
+  arabidopsisBisulfite('methylation/arabidopsis_wgbs_chg', {
+    type: 'bisulfite',
+    modifications: { cytosineContext: 'CHG' },
+  }),
+  arabidopsisBisulfite('methylation/arabidopsis_wgbs_chh', {
+    type: 'bisulfite',
+    modifications: { cytosineContext: 'CHH' },
+  }),
+  {
+    mode: 'compose',
+    name: 'methylation/arabidopsis_wgbs_contexts',
+    parts: [
+      'methylation/arabidopsis_wgbs_cpg',
+      'methylation/arabidopsis_wgbs_chg',
+      'methylation/arabidopsis_wgbs_chh',
+    ],
+  },
+  // Zoomed to ~800bp straddling the gene->TE boundary (CpG methylation jumps
+  // from ~0% through 4,405,600 to ~90% at 4,406,000, MethylDackel-measured), so
+  // individual reads are wide enough to read per-base: the C->T calls resolve
+  // into blue (unmethylated) cytosines on the gene-body side and red
+  // (methylated) cytosines once the reads cross into the silenced element. The
+  // boundary is even visible within single reads that span it.
+  {
+    mode: 'url',
+    name: 'methylation/arabidopsis_wgbs_boundary',
+    url: lgvSession(ARABIDOPSIS_WGBS_CONFIG, {
+      assembly: 'arabidopsis',
+      loc: 'NC_003070.9:4,405,500-4,406,300',
+      tracks: [
+        {
+          trackId: 'arabidopsis_wgbs',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            colorBy: { type: 'bisulfite' },
+          },
+        },
+      ],
+    }),
+    readyText: 'Arabidopsis WGBS',
+    readyTimeout: 90000,
+    settleMs: 20000,
+    viewportHeight: 640,
+  },
+
   // CRAM modifications + bedmethyl together over a chr20:21.505-21.514Mb window
   // that captures a methylation *contrast* the reviewer asked for: the leftmost
   // CpG island (UCSC "CpG: 158", chr20:21,505,294-21,506,966) is hypomethylated
@@ -64,6 +153,46 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // under these caps now that the empty-region loading hang is fixed)
     readyTimeout: 90000,
     settleMs: 30000,
+  },
+
+  // Same COLO829 chr20:21.5Mb CpG-island locus, but the reads are now GROUPED BY
+  // HAPLOTYPE (HP tag, straight from the wf-somatic-variation haplotagged .ht
+  // CRAM) while colored by modifications. Proves group-by-tag and per-read
+  // base-modification coloring compose: the single pileup splits into one
+  // 5mC-colored profile per haplotype (HP 1 / HP 2 / unphased), each with its
+  // own coverage row, so allele-resolved methylation is readable with no
+  // external tool. Compact rows keep all groups in frame. chr20:21.5Mb is used
+  // (not a canonical imprinted DMR) because COLO829 is a cancer line with LOH at
+  // H19/SNRPN/GNAS — those loci render a single unphased pileup, whereas 21.5Mb
+  // retains heterozygosity and phases into distinct HP groups.
+  {
+    mode: 'url',
+    name: 'methylation/colo829_haplotype_methylation',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr20:21,505,200-21,514,000',
+      tracks: [
+        'cpgisland_ucsc_hg38',
+        {
+          trackId: 'COLO829_tumor.ht',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            colorBy: { type: 'modifications' },
+            // the demo: stack the pileup into one section per HP tag value
+            groupBy: { type: 'tag', tag: 'HP' },
+            heightMode: 'fixed',
+            featureHeight: 3,
+            featureSpacing: 0,
+          },
+        },
+      ],
+    }),
+    readyText: 'COLO829',
+    readyTimeout: 90000,
+    settleMs: 30000,
+    // three stacked groups (HP1/HP2/unphased), each coverage + compact pileup;
+    // trimmed to just the content so the stacked groups aren't mostly whitespace
+    viewportHeight: 620,
   },
 
   // ONT HG002 fiber-seq (6mA) at the GAPDH promoter, modifications mode. The
@@ -151,5 +280,66 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // taller so both alignment tracks' full pileup (compact mode still stacks
     // many rows for this depth) fit below the gene + promoter context tracks
     viewportHeight: 1000,
+  },
+
+  // Allele-specific methylation at the SNRPN / PWS-IC imprinting center
+  // (chr15:24.95Mb) from HG002 ONT data. modkit emits a phased bedMethyl pileup
+  // per haplotype (wf-human-variation .1/.2 outputs); the two tracks are those
+  // per-haplotype pileups as 0-100% multi-row XY plots. At this germline
+  // imprinting center one parental allele is ~89% 5mC and the other ~10% — the
+  // textbook allele-specific-methylation split, readable directly off the two
+  // stacked profiles with no external analysis. COLO829 can't show this (it's a
+  // cancer line with LOH at every canonical DMR), so the demo switches data to
+  // HG002 for this figure. Region files are the chr15:24.85-25.05Mb slice of
+  // modkit's whole-genome phased bedMethyl, committed under test_data/hg002.
+  {
+    mode: 'url',
+    name: 'methylation/hg002_snrpn_allele_specific',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      // SNRPN gene body + PWS-IC, wide enough to read the DMR against the CpG
+      // island and the gene's first exons
+      loc: 'chr15:24,952,000-24,958,000',
+      tracks: [
+        // UCSC CpG-island annotation: the imprinting center overlaps a CpG
+        // island, so the methylated/unmethylated split lands on it
+        'cpgisland_ucsc_hg38',
+        // NCBI RefSeq gene track for SNRPN context
+        {
+          trackId: 'ncbi_refseq_109_hg38_latest',
+          displaySnapshot: {
+            type: 'LinearBasicDisplay',
+            geneGlyphMode: 'longestCoding',
+          },
+        },
+        {
+          trackId: 'HG002_snrpn_modkit_hp1',
+          displaySnapshot: {
+            type: 'MultiLinearWiggleDisplay',
+            defaultRendering: 'multirowxy',
+            minScore: 0,
+            maxScore: 100,
+            height: 120,
+          },
+        },
+        {
+          trackId: 'HG002_snrpn_modkit_hp2',
+          displaySnapshot: {
+            type: 'MultiLinearWiggleDisplay',
+            defaultRendering: 'multirowxy',
+            minScore: 0,
+            maxScore: 100,
+            height: 120,
+          },
+        },
+      ],
+    }),
+    readyText: 'HG002',
+    // small local region files, so both settle quickly
+    readyTimeout: 60000,
+    settleMs: 15000,
+    // both single-row HP profiles (120px each) plus the CpG-island + gene
+    // context on top, trimmed so the stacked haplotypes aren't mostly whitespace
+    viewportHeight: 810,
   },
 ]
