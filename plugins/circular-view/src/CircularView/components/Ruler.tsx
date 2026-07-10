@@ -125,7 +125,7 @@ const RulerLabel = observer(function RulerLabel({
     <text
       x={0}
       y={0}
-      fontSize="0.8rem"
+      fontSize={13}
       fontWeight={500}
       letterSpacing="0.0075em"
       textAnchor={textAnchor}
