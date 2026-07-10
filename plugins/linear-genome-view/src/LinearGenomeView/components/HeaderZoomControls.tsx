@@ -109,6 +109,7 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
         max={-Math.log2(minBpPerPx) * 100}
         onChangeCommitted={val => {
           setDragValue(null)
+          model.cancelZoomAnimation()
           model.zoomTo(2 ** (-val / 100))
         }}
         valueLabelDisplay="auto"
@@ -119,6 +120,11 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
           valueLabel: ValueLabelComponent,
         }}
         onChange={val => {
+          // Take over from any in-flight animated zoom as soon as the user
+          // grabs the thumb, so the view stops lurching underneath the drag.
+          if (dragValue === null) {
+            model.cancelZoomAnimation()
+          }
           setDragValue(val)
         }}
       />

@@ -805,7 +805,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (this.totalBp === 0 || self.width === 0) {
           return 1
         }
-        return this.totalBp / (self.width * SHOW_ALL_REGIONS_FILL)
+        // Floor at minBpPerPx so tiny displayed regions (totalBp small enough
+        // that the fill-scaled ratio drops below MIN_BP_PER_PX) can't produce
+        // maxBpPerPx < minBpPerPx, which would invert the zoom-slider bounds
+        // and the clamp() range in zoomTo.
+        return Math.max(
+          MIN_BP_PER_PX,
+          this.totalBp / (self.width * SHOW_ALL_REGIONS_FILL),
+        )
       },
 
       /**
@@ -1507,7 +1514,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
         animate()
       }
 
-      return { zoom }
+      /**
+       * #action
+       * cancel an in-flight animated zoom, e.g. when the user takes over with
+       * the zoom slider or another direct zoomTo. Without this a running spring
+       * keeps driving self.zoomTo from its own internal position and overwrites
+       * the direct interaction on the next frame.
+       */
+      function cancelZoomAnimation() {
+        cancelLastAnimation()
+      }
+
+      return { zoom, cancelZoomAnimation }
     })
     .views(self => ({
       /**

@@ -357,6 +357,27 @@ test('can instantiate a model that lets you navigate', () => {
   expect(model.pxToBp(100).offset).toEqual(1000)
 })
 
+test('maxBpPerPx never drops below minBpPerPx for tiny regions', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'test-tiny-region',
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(800)
+  // 10bp region: totalBp / (width * 0.9) = 10 / 720 ≈ 0.0139, below the
+  // MIN_BP_PER_PX floor of 0.02, so without the floor the zoom slider bounds
+  // and zoomTo clamp range would invert.
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 10, refName: 'ctgA' },
+  ])
+  expect(model.maxBpPerPx).toBeGreaterThanOrEqual(model.minBpPerPx)
+  expect(model.maxBpPerPx).toBe(model.minBpPerPx)
+})
+
 test('can instantiate a model that has multiple displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
