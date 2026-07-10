@@ -36,21 +36,24 @@ export function useRangeSelect(
   }, [])
 
   useEffect(() => {
-    if (!mouseDragging) {
+    const el = ref.current
+    if (!mouseDragging || !el) {
       return
     }
+    // the container's left edge is fixed for the duration of a drag, so measure
+    // it once here rather than calling getBoundingClientRect on every mousemove
+    const { left } = el.getBoundingClientRect()
+
     function globalMouseMove(event: MouseEvent) {
-      if (ref.current) {
-        setCurrentX(getRelativeX(event, ref.current))
-      }
+      setCurrentX(event.clientX - left)
     }
 
     function globalMouseUp(event: MouseEvent) {
-      if (startX === undefined || !ref.current) {
+      if (startX === undefined) {
         return
       }
       const { clientX, clientY } = event
-      const offsetX = getRelativeX(event, ref.current)
+      const offsetX = clientX - left
       const isClick = Math.abs(offsetX - startX) <= 3
 
       // Clear the flag unconditionally once consumed: the label's own onClick

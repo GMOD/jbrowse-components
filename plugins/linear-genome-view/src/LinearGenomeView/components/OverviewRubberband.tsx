@@ -43,20 +43,23 @@ const OverviewRubberband = observer(function OverviewRubberband({
   const mouseDragging = startX !== undefined
 
   useEffect(() => {
-    if (!mouseDragging) {
+    const el = controlsRef.current
+    if (!mouseDragging || !el) {
       return
     }
+    // the container's left edge is fixed for the duration of a drag, so measure
+    // it once here rather than calling getBoundingClientRect on every mousemove
+    const { left } = el.getBoundingClientRect()
+
     function globalMouseMove(event: MouseEvent) {
-      if (controlsRef.current) {
-        setCurrentX(getRelativeX(event, controlsRef.current))
-      }
+      setCurrentX(event.clientX - left)
     }
 
     function globalMouseUp(event: MouseEvent) {
       // read the up position from the event so currentX state doesn't need to
       // be a dep (which would re-subscribe these listeners every mousemove)
-      if (startX !== undefined && controlsRef.current) {
-        const offsetX = getRelativeX(event, controlsRef.current)
+      if (startX !== undefined) {
+        const offsetX = event.clientX - left
         if (Math.abs(offsetX - startX) > 3) {
           const left = Math.min(startX, offsetX)
           const right = Math.max(startX, offsetX)
