@@ -63,16 +63,21 @@ MUI/Emotion CSS-in-JS per render**.
    settle (coarse blocks, mirroring `coverageStats`' `coarseDynamicBlocks` at
    `model.ts:985`). This is the biggest lever — it removes the per-frame React
    commit + DOM churn wholesale.
-2. **Cut CSS-in-JS from per-frame renders.** Any `makeStyles`/`styled`/MUI
-   component that re-renders each frame re-runs Emotion serialize/hash +
-   `createStyled`/`useSlot`. Hoist static styles, avoid dynamic style props on
-   per-frame components, prefer stable class names / plain style objects.
-3. **Cheap concrete win — the tooltip subtree.** `@mui/material/Tooltip`
-   (`AlignmentsDisplayComponent.tsx`, the `TooltipComponent` under `Suspense`)
-   shows ~40ms self-time and re-renders every zoom frame **even with nothing
-   hovered**. Gate the whole tooltip subtree on "is anything hovered" (render
-   `null` otherwise) and/or hoist its styles, so it isn't in the per-frame path
-   at all. Small, self-contained, testable.
+2. **The CSS-in-JS cost is MUI, not tss-react — and it's a symptom of #1.** The
+   vendored tss-react is already efficient: `makeStyles` memoizes `classes` on
+   `[css, theme]`, `useCssAndCx` memoizes `css`/`cx` on `[cache]`, and the
+   expensive `fixClassName` workaround was already removed (the profile's
+   `fixClassName` was the *June* build). So it does NOT re-serialize per render —
+   no win left there. The remaining CSS-in-JS self-time is **MUI's own
+   `@emotion/styled` / `@mui/system/createStyled` / `useSlot`**, which re-runs
+   only when a MUI component re-renders. So "reduce CSS-in-JS" ≡ **"reduce
+   per-frame re-renders" (#1)**: each render you avoid avoids its MUI/emotion
+   styling cost. Don't chase a styling-runtime rewrite; chase the re-renders.
+3. **DONE — tooltip cleared on zoom** (`ce1e168b71`). The hover tooltip (MUI
+   `BaseTooltip`) + hover highlight are removed from the per-frame path during a
+   zoom via a `bpPerPx` reaction that clears mouseover state. Also fixes
+   stale-position UX. Remaining MUI re-renderers on zoom are largely LGV *chrome*
+   (header zoom controls, ruler) — outside `plugins/alignments`.
 
 Note: `VisibleLabelsOverlay` is a **canvas** (draws in a `useEffect`), so it does
 NOT contribute DOM churn; `model.visibleLabels` still recomputes on zoom but was
