@@ -38,6 +38,12 @@ const pifInsPath =
   require.resolve('../../../../test_data/volvox/volvox_ins.pif.gz')
 const pifDelPath =
   require.resolve('../../../../test_data/volvox/volvox_del.pif.gz')
+// volvox_ins_coarse.pif.gz is `jbrowse make-pif` on volvox_ins.paf with the
+// default coarse tier, so it carries the uppercase T/Q no-CIGAR rows alongside
+// the fine tier.
+const pifInsCoarsePath = require.resolve(
+  '../../../../test_data/volvox/volvox_ins_coarse.pif.gz',
+)
 describe('PairwiseIndexedPAFAdapter', () => {
   describe('coordinate extraction from PIF format', () => {
     it('fetches features from query assembly perspective (q-lines)', async () => {
@@ -321,6 +327,41 @@ describe('PairwiseIndexedPAFAdapter', () => {
           .pipe(toArray()),
       )
       expect(features.length).toBe(1)
+    })
+  })
+
+  describe('coarse tier integration', () => {
+    it('serves fine-tier features (with CIGAR) when zoomed in', async () => {
+      const adapter = makeAdapter(pifInsCoarsePath, ['volvox_ins', 'volvox'])
+      const features = await firstValueFrom(
+        adapter
+          .getFeatures(
+            { refName: 'ctgA', start: 0, end: 60000, assemblyName: 'volvox' },
+            { bpPerPx: 1 },
+          )
+          .pipe(toArray()),
+      )
+      expect(features.length).toBe(1)
+      expect(features[0]!.get('CIGAR')).toBe('31198M4800I18803M')
+    })
+
+    it('serves coarse-tier features (no CIGAR) when zoomed out past threshold', async () => {
+      const adapter = makeAdapter(pifInsCoarsePath, ['volvox_ins', 'volvox'])
+      const features = await firstValueFrom(
+        adapter
+          .getFeatures(
+            { refName: 'ctgA', start: 0, end: 60000, assemblyName: 'volvox' },
+            { bpPerPx: 50000 },
+          )
+          .pipe(toArray()),
+      )
+      expect(features.length).toBe(1)
+      const feature = features[0]!
+      // The coarse T-row carries the same target-perspective coords as the fine
+      // row but no CIGAR — it is the whole-genome LOD summary.
+      expect(feature.get('CIGAR')).toBeUndefined()
+      expect(feature.get('start')).toBe(0)
+      expect(feature.get('end')).toBe(50001)
     })
   })
 
