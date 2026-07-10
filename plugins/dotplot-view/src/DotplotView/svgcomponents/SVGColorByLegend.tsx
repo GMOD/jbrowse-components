@@ -16,6 +16,7 @@ const rowH = 14
 const swatchBox = 10
 const gap = 4
 const barW = 54
+const perSequenceNote = 'Distinct color per sequence'
 
 // SVG counterpart of the on-screen ColorByLegend: a bordered, translucent box
 // floated at the top-right of the plot. Reads the same swatch spec the HTML
@@ -49,11 +50,8 @@ export function SVGColorByLegend({
           ),
         )
       : 0
-  const noteRow = swatch
-    ? 0
-    : measureText('Distinct color per sequence', rowSize)
-  const bodyRows =
-    swatch?.kind === 'chips' ? swatch.chips.length : swatch ? 1 : 1
+  const noteRow = swatch ? 0 : measureText(perSequenceNote, rowSize)
+  const bodyRows = swatch?.kind === 'chips' ? swatch.chips.length : 1
 
   const contentW = Math.max(
     measureText(title, titleSize),
@@ -161,7 +159,7 @@ export function SVGColorByLegend({
           dominantBaseline="middle"
           fill={text}
         >
-          Distinct color per sequence
+          {perSequenceNote}
         </text>
       )}
     </g>

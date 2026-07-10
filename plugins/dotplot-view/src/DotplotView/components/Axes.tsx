@@ -58,7 +58,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewWidth, borderX, borderY, hview } = model
+  const { viewWidth, borderY, hview } = model
   // Horizontal-axis labels are drawn vertically (rotated -90° about their anchor).
   const rotate = -90
   const { offsetPx, width, dynamicBlocks, bpPerPx } = hview
@@ -119,7 +119,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
       ))}
       <text
         y={borderY - 12}
-        x={(viewWidth - borderX) / 2}
+        x={viewWidth / 2}
         textAnchor="middle"
         fontSize={11}
         dominantBaseline="hanging"
@@ -150,7 +150,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewHeight, borderX, borderY, vview } = model
+  const { viewHeight, borderX, vview } = model
   const { offsetPx, dynamicBlocks, bpPerPx } = vview
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.vblockLabelKeysToHide
@@ -211,9 +211,9 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
         )
       })}
       <text
-        y={(viewHeight - borderY) / 2}
+        y={viewHeight / 2}
         x={12}
-        transform={`rotate(-90,12,${(viewHeight - borderY) / 2})`}
+        transform={`rotate(-90,12,${viewHeight / 2})`}
         textAnchor="middle"
         fontSize={11}
         {...fill}
