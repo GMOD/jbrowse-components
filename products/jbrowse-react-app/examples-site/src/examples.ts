@@ -34,6 +34,14 @@ export const examples: ExampleMeta[] = [
       'onChange fires on every MST patch — persist the session, drive undo/redo, or sync external UI.',
     group: 'Getting started',
   },
+  {
+    slug: 'fit-to-container',
+    name: 'FitToContainer',
+    title: 'Fit the app to a container',
+    description:
+      'By default the app fills the viewport (100vh). Set the --jbrowse-app-height CSS variable to make it fit a sized container instead — e.g. below your own header bar.',
+    group: 'Getting started',
+  },
 
   // --- Loading config ---
   {
