@@ -172,11 +172,17 @@ the verdict, threshold, and banner text are unified in
   skipped; guards both `0` and a negative sentinel).
 - `bytesTooLargeReason(bytes)` / `TOO_MANY_FEATURES_REASON` — the one source
   for the two banner strings.
-- `evaluateRegionTooLarge({ visibleBp, bytes, byteLimit, densityTooLarge })` —
-  the canonical verdict+reason: below `AUTO_FORCE_LOAD_BP` nothing gates, else
+- `evaluateRegionTooLarge({ visibleBp, bytes, byteLimit, densityTooLarge, alwaysRender })`
+  — the canonical verdict+reason: an `alwaysRender` adapter never gates (checked
+  first, regardless of span), then below `AUTO_FORCE_LOAD_BP` nothing gates, else
   bytes-over-limit takes precedence over density. `densityTooLarge` is
   **opt-in**, so byte-only displays (alignments, LD) pass only bytes and never
-  gate on density. Called directly by the arc path (`RegionTooLargeMixin` via
+  gate on density. `alwaysRender` is the self-summarizing-adapter escape hatch:
+  adapters that cap returned data at screen resolution (BigWig, HiC, BigMaf,
+  MultiWiggle) report `{ alwaysRender: true }` from `getFeatureDensityStats`, so
+  no region is ever too large no matter how wide the view — threaded through both
+  the pre-flight path (`fetchHelpers.checkByteEstimate`) and the arc path
+  (`fetchArcFeatures`). Called directly by the arc path (`RegionTooLargeMixin` via
   `fetchArcFeatures`) and by the LD display (which passes the resolved
   `byteLimit` + `stats.bytes`, no density axis); the derived canvas path
   composes the same pieces around its scaled `estimatedVisibleBytes`.
@@ -673,8 +679,13 @@ It ships its own `GetManhattanData` RPC (per-feature points, not pre-binned
 density), implements its own `ManhattanRenderingBackend`
 (`PerRegionRenderingBackend<ManhattanRpcResult, ManhattanRenderState>`) with its
 own pass, and is zoom-independent by **never setting `loadedBpPerPx`** — the
-inherited `isCacheValid` short-circuits to `true` whenever `loadedBpPerPx` is
-`undefined` — rather than by overriding `isCacheValid`.
+`isCacheValid` it inherits from `WiggleScoreConfigMixin` (composed after, and so
+winning over, `MultiRegionDisplayMixin`'s bare `return true` default)
+short-circuits to `true` whenever `loadedBpPerPx` is `undefined` — rather than by
+overriding `isCacheValid`. (The first fetch still fires: `FetchVisibleRegions`
+gates it on `isBlockCovered` — empty `loadedRegions` ⇒ not covered ⇒ fetch — and
+only consults `isCacheValid` for already-covered blocks, so an always-`true`
+`isCacheValid` suppresses only *re*-fetches.)
 
 #### Three upload patterns
 
@@ -971,7 +982,9 @@ mixin:
 - **`MultiRegionDisplayMixin.svgReady`** (per-region streamed displays — canvas,
   alignments, MAF, manhattan, wiggle / multi-wiggle, multi-variant,
   multi-variant-matrix): `(viewportWithinLoadedData && loadedRegions.size > 0)
-  || error || regionTooLarge`. The spatial-coverage check is what waits for
+  || error || regionTooLarge || svgReadyExtraTerminal` (the last term is the
+  overridable hook the sequence display uses — see below). The
+  spatial-coverage check is what waits for
   *every* visible region (not the first to stream in) and goes false the instant
   a pan/zoom moves the viewport past loaded data. Wiggle-family + manhattan gate
   on it the same way as every other display — `await awaitSvgReady(model)` in
@@ -994,12 +1007,15 @@ mixin:
   matrix during the debounce+RPC window, since neither fetch clears `rpcData` at
   refetch start (the live canvas repositions that stale blob via
   `renderTransform`, so it must stay). A display that forgets to override
-  `dataLoaded` leaves `svgReady` unable to resolve on a successful load, hanging
-  SVG export.
+  `dataLoaded` leaves `svgReady` unable to resolve on a successful load, so
+  `awaitSvgReady` waits out its `SVG_READY_TIMEOUT_MS` (60s) and rejects with a
+  diagnostic rather than exporting.
 
-The sequence display layers one extra disjunct (`svgReady || zoomedOut`) because
-zoomed past its base-render threshold it shows a static "zoom in" message and
-issues no fetch, so `svgReady` alone would never resolve.
+The sequence display adds one extra terminal disjunct — it overrides the
+`svgReadyExtraTerminal` hook (which `MultiRegionDisplayMixin.svgReady` ORs in) to
+return `zoomedOut` — because zoomed past its base-render threshold it shows a
+static "zoom in" message and issues no fetch, so `svgReady` alone would never
+resolve.
 
 **Displays outside the two LGV GPU mixins define their own `svgReady`** rather
 than inheriting a mixin's — they don't track `loadedRegions`/`displayPhase` the
@@ -1410,6 +1426,12 @@ float dLo = split.y - u.bpLo;  // exact: small-small = small
 float clipX = (dHi + dLo) / bpLen * 2.0 - 1.0;
 ```
 
+This is a *simplification*. The real `hpToClipX` keeps the subtraction in a
+`max(…, -inf)` + `dot()` structure (and threads an `hpZero` term) precisely so
+the compiler can't algebraically collapse `dHi + dLo` back into a single
+large-magnitude subtraction — which would destroy the float32 precision the
+split exists to preserve. Read `hpmath.slang`, don't retype this snippet.
+
 #### Why we need both representations
 
 - **uint32 only (no split)**: shader would convert uint32 → float directly,
@@ -1529,8 +1551,8 @@ hp-math.
 
 | Shader group | Attribute | Precision technique |
 |---|---|---|
-| Point/edge shaders (read, gap, mismatch, insertion, modification, clip, connectingLine, arcLine, coverage, snpCoverage, noncovHistogram, indicator, modCoverage) | `uint position` | `hpClipX(hpSplitUint(absPos), u)` — hi/lo split against `bpHi`/`bpLo`. Exact at 3 Gbp. |
-| arc (paired-end bezier curves) | `uint x1, x2` | `hpLinear(hpSplitUint(absPos), u)` → normalized [0,1]; bezier runs on small floats. Same precision floor. |
+| Point/edge shaders (read, gap, mismatch, insertion, modification, clip, connectingLine, arcLine, coverage, snpCoverage, noncovHistogram, indicator, modCoverage) | `uint position` | `hpToClipX(hpSplitUint(absPos), u)` — hi/lo split against `bpHi`/`bpLo`. Exact at 3 Gbp. |
+| arc (paired-end bezier curves) | `uint x1, x2` | `hpScaleLinear(hpSplitUint(absPos), u)` → normalized [0,1]; bezier runs on small floats. Same precision floor. |
 
 The alignments UBO has **no `regionStart`**, **no `domainStart`/`domainEnd`**.
 
