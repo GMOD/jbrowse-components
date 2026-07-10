@@ -1,5 +1,6 @@
 ---
 title: Developer guide
+sidebar_label: Overview
 ---
 
 This guide covers how JBrowse 2 code is packaged and structured, and how to

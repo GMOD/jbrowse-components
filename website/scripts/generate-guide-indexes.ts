@@ -1,32 +1,18 @@
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-const docsDir = join(import.meta.dirname, '..', 'docs')
-const check = process.argv.includes('--check')
-
+import { checkOrWrite } from './check-utils.ts'
 // The category order (and thus the allowed `guide_category` values) for each
-// guide index. A page tagged with a category not in its guide's list is silently
+// guide index, shared with the sidebar builder so the two groupings can't
+// drift. A page tagged with a category not in its guide's list is silently
 // dropped from every index, so these double as the validation allow-lists below.
-const USER_CATEGORIES = [
-  'General usage',
-  'Track types',
-  'Views',
-  'Other features',
-  'Tutorials',
-]
-const CONFIG_CATEGORIES = [
-  'Getting started',
-  'Core configuration',
-  'Track types',
-  'Callbacks and customization',
-  'Other features',
-]
-const DEVELOPER_CATEGORIES = [
-  'Getting started',
-  'Core concepts',
-  'Creating pluggable elements',
-  'Advanced topics',
-]
+import {
+  CONFIG_CATEGORIES,
+  DEVELOPER_CATEGORIES,
+  USER_CATEGORIES,
+} from '../src/lib/guide-categories.ts'
+
+const docsDir = join(import.meta.dirname, '..', 'docs')
 
 interface Entry {
   title: string
@@ -136,6 +122,7 @@ function buildUserGuide(): string {
   const lines: string[] = [
     '---',
     'title: User guide',
+    'sidebar_label: Overview',
     '---',
     '',
     ...buildTocSection(USER_CATEGORIES, [
@@ -150,6 +137,7 @@ function buildConfigGuide(): string {
   const lines: string[] = [
     '---',
     'title: Config guide',
+    'sidebar_label: Overview',
     '---',
     '',
     'This guide covers the structure and usage of the `config.json` file that drives',
@@ -165,6 +153,7 @@ function buildConfigGuide(): string {
 function buildDeveloperGuide(): string {
   const preamble = `---
 title: Developer guide
+sidebar_label: Overview
 ---
 
 This guide covers how JBrowse 2 code is packaged and structured, and how to
@@ -234,20 +223,6 @@ own via pull request.
   return preamble + ['## Developer guides', '', ...toc].join('\n')
 }
 
-function checkOrWrite(path: string, generated: string, label: string) {
-  if (check) {
-    const current = readFileSync(path, 'utf8')
-    if (current !== generated) {
-      console.error(`${label} is out of date — run: pnpm lint-docs`)
-      process.exit(1)
-    }
-    console.error(`${label} is up to date`)
-  } else {
-    writeFileSync(path, generated)
-    console.error(`${label} regenerated`)
-  }
-}
-
 // Check for guide files missing required frontmatter fields.
 // tutorials/ is excluded: it's a mixed-use directory (user + developer tutorials)
 // managed explicitly in sidebars.json rather than auto-indexed.
@@ -305,14 +280,22 @@ if (badCategories.length) {
   process.exit(1)
 }
 
-checkOrWrite(join(docsDir, 'user_guide.md'), buildUserGuide(), 'user_guide.md')
-checkOrWrite(
-  join(docsDir, 'config_guide.md'),
-  buildConfigGuide(),
-  'config_guide.md',
-)
-checkOrWrite(
-  join(docsDir, 'developer_guide.md'),
-  buildDeveloperGuide(),
-  'developer_guide.md',
-)
+const staleHint = 'run: pnpm lint-docs'
+checkOrWrite({
+  path: join(docsDir, 'user_guide.md'),
+  content: buildUserGuide(),
+  label: 'user_guide.md',
+  staleHint,
+})
+checkOrWrite({
+  path: join(docsDir, 'config_guide.md'),
+  content: buildConfigGuide(),
+  label: 'config_guide.md',
+  staleHint,
+})
+checkOrWrite({
+  path: join(docsDir, 'developer_guide.md'),
+  content: buildDeveloperGuide(),
+  label: 'developer_guide.md',
+  staleHint,
+})

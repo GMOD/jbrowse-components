@@ -513,29 +513,27 @@ export const featuresSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'protein/connected',
-    url: `?config=${PROTEIN3D_CONFIG}&session=${encodeURIComponent(
-      `spec-${JSON.stringify({
-        views: [
-          {
-            type: 'ProteinView',
-            uniprotId: 'P04637',
-            transcriptId: 'NM_000546.6',
-            height: 540,
-            // place the protein view to the right of its connected genome view
-            // (left genome | right protein) via the workspaces split layout
-            sideBySide: true,
-            // keep the connected genome at the gene-wide view when a domain is
-            // clicked so the domain shows as a highlighted sub-region
-            zoomToBaseLevel: false,
-            connectedView: {
-              assembly: 'hg38',
-              loc: 'chr17:7,671,000-7,684,500',
-              tracks: ['hg38-ncbiRefSeq', 'clinvar_ncbi_hg38'],
-            },
+    url: sessionSpec(PROTEIN3D_CONFIG, {
+      views: [
+        {
+          type: 'ProteinView',
+          uniprotId: 'P04637',
+          transcriptId: 'NM_000546.6',
+          height: 540,
+          // place the protein view to the right of its connected genome view
+          // (left genome | right protein) via the workspaces split layout
+          sideBySide: true,
+          // keep the connected genome at the gene-wide view when a domain is
+          // clicked so the domain shows as a highlighted sub-region
+          zoomToBaseLevel: false,
+          connectedView: {
+            assembly: 'hg38',
+            loc: 'chr17:7,671,000-7,684,500',
+            tracks: ['hg38-ncbiRefSeq', 'clinvar_ncbi_hg38'],
           },
-        ],
-      })}`,
-    )}`,
+        },
+      ],
+    }),
     // Waits for both the structure load and the genome↔structure pairwise
     // alignment to settle (this view has a connected transcript, so the test-id
     // only flips once the alignment is computed). settleMs is the molstar raster
@@ -543,9 +541,11 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 90000,
     settleMs: 6000,
-    // the molstar 3D structure canvas only rasterizes cleanly (cartoon detail +
-    // the magenta motif selection highlight) under headless Firefox; headless
-    // Chrome's swiftshader renders it as a featureless blob, which is needed on mac only
+    // On macOS, headless Chrome's swiftshader rasterizes the molstar 3D canvas as
+    // a featureless blob (no cartoon detail, no magenta motif highlight), so
+    // uncomment firefox: true when regenerating there. Headless Chrome on Linux
+    // renders it cleanly (the committed connected.png is such a capture), so the
+    // flag stays off by default.
     // firefox: true,
 
     // Click the TP53 nuclear export signal (UniProt "Motif" 339-350) on the

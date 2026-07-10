@@ -63,8 +63,8 @@ CIGAR like:
 
 (CIGAR strings normally have no spaces; they're added here for readability.)
 That means 18 bp (`M`, match) aligned to one exon, a 95 bp skip (`N`) across the
-intron, and 33 bp (`M`) aligned to the next. ACTB's introns run from roughly
-95 bp to 860 bp, and every `N` in a read's CIGAR is one skipped intron.
+intron, and 33 bp (`M`) aligned to the next. ACTB's introns run from roughly 95
+bp to 860 bp, and every `N` in a read's CIGAR is one skipped intron.
 
 JBrowse counts, on the fly, every read whose CIGAR contains a skip and draws
 each as an arc. It also reads the splice signal (the GT/AG dinucleotides

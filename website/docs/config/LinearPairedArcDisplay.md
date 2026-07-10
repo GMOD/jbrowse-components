@@ -52,9 +52,10 @@ _See the **Config slots** section below for all available configuration fields._
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                 | Type    | Description           |
-| -------------------- | ------- | --------------------- |
-| [color](#slot-color) | `color` | the color of the arcs |
+| Slot                         | Type     | Description                             |
+| ---------------------------- | -------- | --------------------------------------- |
+| [color](#slot-color)         | `color`  | the color of the arcs                   |
+| [lineWidth](#slot-linewidth) | `number` | the stroke width of the arcs, in pixels |
 
 <details>
 <summary>LinearPairedArcDisplay - Slots</summary>
@@ -74,6 +75,13 @@ the color of the arcs
   contextVariable: ['feature', 'alt'],
 }
 ```
+
+#### slot: lineWidth
+
+the stroke width of the arcs, in pixels
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`defaultArcLineWidth`
 
 </details>
 

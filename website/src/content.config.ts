@@ -9,6 +9,10 @@ const docsSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
   sidebar_label: z.string().optional(),
+  // Groups the page under a labeled section in both its guide's landing-page
+  // index and the sidebar (see src/lib/guide-categories.ts). Only meaningful
+  // for user_guides/config_guides/developer_guides pages.
+  guide_category: z.string().optional(),
   // introduction.md uses `slug: /` so the glob loader keys it at the docs root
   slug: z.string().optional(),
 })

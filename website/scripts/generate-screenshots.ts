@@ -50,6 +50,7 @@ import type {
   EmbeddedSpec,
   ScreenshotAction,
   ScreenshotSpec,
+  ScreenshotStage,
   SessionUrlSpec,
 } from './screenshot-specs.ts'
 import type { Server } from 'node:http'
@@ -507,40 +508,64 @@ async function renderSpecToTemp(
   await assertViewsRendered(page, spec.name)
 
   const renderPath = tempPath('jb-final', spec.name, suffix)
-
   if (spec.stages && spec.stages.length > 0) {
-    // capture each stage to a temp file, then stack them vertically with
-    // ImageMagick (`convert f0 f1 -append`), the same composition the hand-made
-    // two-stage teaching figures used
-    const stageFiles = spec.stages.map((_, i) =>
-      tempPath('jb-shot', spec.name, `-${i}`),
-    )
-    for (const [i, stage] of spec.stages.entries()) {
-      if (stage.closeMenusFirst) {
-        await page.keyboard.press('Escape')
-        await delay(300)
-      }
-      // drop the previous stage's annotation overlay before this stage acts on
-      // the page, so its SVG callout text can't be matched by a ::-p-text() click
-      // target in this stage's actions
-      await clearAnnotations(page)
-      await runActions(page, spec.name, stage.actions)
-      await shoot(page, spec, stage.annotations, stageFiles[i]!)
-      // re-check after each stage capture: assertViewsRendered only runs once
-      // before the loop, so a stage that captures a blank view body (a rare
-      // paint race after the stage's interaction) would otherwise be committed
-      // silently — the staged frames ARE the published image.
-      await assertViewsRendered(page, spec.name)
-    }
-    execFileSync('convert', [...stageFiles, '-append', renderPath])
-    for (const f of stageFiles) {
-      fs.rmSync(f, { force: true })
-    }
+    await captureStages(page, spec, spec.stages, renderPath)
   } else {
     await shoot(page, spec, spec.annotations, renderPath)
   }
   optimizePng(renderPath)
   return renderPath
+}
+
+// Capture each stage of a multi-stage figure to its own temp file, then stack
+// them top-to-bottom with ImageMagick (`convert f0 f1 -append`) into
+// `renderPath` — the same composition the hand-made two-stage teaching figures
+// used.
+async function captureStages(
+  page: Page,
+  spec: BrowserScreenshotSpec,
+  stages: ScreenshotStage[],
+  renderPath: string,
+) {
+  const stageFiles = stages.map((_, i) =>
+    tempPath('jb-shot', spec.name, `-${i}`),
+  )
+  for (const [i, stage] of stages.entries()) {
+    if (stage.closeMenusFirst) {
+      await page.keyboard.press('Escape')
+      await delay(300)
+    }
+    // drop the previous stage's annotation overlay before this stage acts on
+    // the page, so its SVG callout text can't be matched by a ::-p-text() click
+    // target in this stage's actions
+    await clearAnnotations(page)
+    await runActions(page, spec.name, stage.actions)
+    await shoot(page, spec, stage.annotations, stageFiles[i]!)
+    // re-check after each stage capture: assertViewsRendered only runs once
+    // before the loop, so a stage that captures a blank view body (a rare
+    // paint race after the stage's interaction) would otherwise be committed
+    // silently — the staged frames ARE the published image.
+    await assertViewsRendered(page, spec.name)
+  }
+  execFileSync('convert', [...stageFiles, '-append', renderPath])
+  for (const f of stageFiles) {
+    fs.rmSync(f, { force: true })
+  }
+}
+
+// Per-spec pixel-diff gate: a spec can raise the global threshold when its
+// render carries irreducible jitter (remote-data timing, heavy text).
+function specThreshold(spec: ScreenshotSpec) {
+  return spec.diffThreshold ?? diffThreshold
+}
+
+// Commit a freshly rendered temp PNG to its output path under the shared
+// force / diff-gate options, reporting what happened.
+function commit(renderPath: string, outputPath: string, spec: ScreenshotSpec) {
+  return commitScreenshot(renderPath, outputPath, spec.name, {
+    force,
+    diffThreshold: specThreshold(spec),
+  })
 }
 
 async function captureSpec(
@@ -551,10 +576,7 @@ async function captureSpec(
   const renderPath = await renderSpecToTemp(page, spec, port)
   const outputPath = path.join(outDir, `${spec.name}.png`)
   fs.mkdirSync(path.dirname(outputPath), { recursive: true })
-  return commitScreenshot(renderPath, outputPath, spec.name, {
-    force,
-    diffThreshold: spec.diffThreshold ?? diffThreshold,
-  })
+  return commit(renderPath, outputPath, spec)
 }
 
 // jb2export renders the products/jbrowse-img/README example images straight
@@ -584,10 +606,7 @@ async function captureCliSpec(spec: CliSpec) {
   const renderPath = await renderCliSpecToTemp(spec)
   const baseName = spec.name.replace(/^jbrowse-img\//, '')
   const outputPath = path.join(jbrowseImgOutDir, `${baseName}.png`)
-  const result = commitScreenshot(renderPath, outputPath, spec.name, {
-    force,
-    diffThreshold: spec.diffThreshold ?? diffThreshold,
-  })
+  const result = commit(renderPath, outputPath, spec)
   // jb2export writes into products/jbrowse-img/img — the README/npm copy served
   // via raw.github. The docs site and the screenshot-review UI instead read the
   // website's own mirror at static/img/jbrowse-img (spec name `jbrowse-img/x`
@@ -627,10 +646,7 @@ async function captureComposeSpec(spec: ComposeSpec) {
   execFileSync('convert', [...partPaths, '-append', renderPath])
   optimizePng(renderPath)
   const outputPath = path.join(outDir, `${spec.name}.png`)
-  return commitScreenshot(renderPath, outputPath, spec.name, {
-    force,
-    diffThreshold: spec.diffThreshold ?? diffThreshold,
-  })
+  return commit(renderPath, outputPath, spec)
 }
 
 // Print a titled, ===-barred block of lines to stderr (failure/flaky summaries).
@@ -696,7 +712,11 @@ async function main() {
   // wider viewport for more genomic context; deviceScaleFactor 2 keeps the
   // capture hidpi/retina-crisp (2x backing store) at the larger size
   const defaultViewport = { width: 1500, height: 800, deviceScaleFactor: 2 }
-  const { width: vpWidth, deviceScaleFactor } = defaultViewport
+  const {
+    width: vpWidth,
+    height: vpHeight,
+    deviceScaleFactor,
+  } = defaultViewport
 
   // Chrome leans on swiftshader for headless WebGL; Firefox needs WebGL forced
   // on past the headless GL caveat so molstar's canvas renders at all.
@@ -718,15 +738,21 @@ async function main() {
         }),
   })
 
+  // Compose specs stack other specs' committed PNGs, so they run in a second,
+  // sequential pass after the render pool refreshes those parts. --check writes
+  // nothing, so a deterministic append has nothing to verify — skip them there
+  // (and drop them from the [n/total] denominator, which is why total sums the
+  // two lists rather than counting filteredSpecs).
+  const renderSpecs = filteredSpecs.filter(s => s.mode !== 'compose')
+  const composeSpecs = check
+    ? []
+    : filteredSpecs.filter(s => s.mode === 'compose')
+
   let passed = 0
   let failed = 0
   let kept = 0
   let started = 0
-  // --check skips compose specs (a deterministic append has nothing to verify),
-  // so exclude them from the counter denominator or [n/total] never reaches total.
-  const total = check
-    ? filteredSpecs.filter(s => s.mode !== 'compose').length
-    : filteredSpecs.length
+  const total = renderSpecs.length + composeSpecs.length
   const failures: { name: string; error: string }[] = []
   const flaky: { name: string; frac: number }[] = []
   const changed: { name: string; result: CommitResult }[] = []
@@ -750,7 +776,7 @@ async function main() {
       if (spec.viewportHeight || spec.viewportWidth) {
         await page.setViewport({
           width: spec.viewportWidth ?? vpWidth,
-          height: spec.viewportHeight ?? 800,
+          height: spec.viewportHeight ?? vpHeight,
           deviceScaleFactor,
         })
       }
@@ -770,47 +796,27 @@ async function main() {
     }
   }
 
-  // Shared by checkSpec/checkCliSpec: diff two captures of the same spec and
-  // either flag it flaky or report it stable. Doesn't touch committed files.
-  function reportDiffOrFlaky(
-    name: string,
-    a: string,
-    b: string,
-    limit: number,
+  // --check: render the spec twice (via the caller's `render`, which decides
+  // browser-vs-cli) and compare the two captures to each other. A drift past
+  // threshold means the spec is nondeterministic — it would churn its committed
+  // PNG on every regen. Doesn't touch committed files.
+  async function checkTwice(
+    spec: BrowserScreenshotSpec | CliSpec,
+    render: (suffix: string) => Promise<string>,
   ) {
+    const a = await render('-a')
+    const b = await render('-b')
     const frac = pngDiffFraction(a, b)
     fs.rmSync(a, { force: true })
     fs.rmSync(b, { force: true })
-    if (frac === null || frac >= limit) {
+    if (frac === null || frac >= specThreshold(spec)) {
       const pct =
         frac === null ? 'size-mismatch' : `${(frac * 100).toFixed(3)}%`
-      console.log(`  ✗ ${name} FLAKY (${pct} between two renders)`)
-      flaky.push({ name, frac: frac ?? 1 })
+      console.log(`  ✗ ${spec.name} FLAKY (${pct} between two renders)`)
+      flaky.push({ name: spec.name, frac: frac ?? 1 })
     } else {
-      console.log(`  ✓ ${name} stable (${(frac * 100).toFixed(3)}%)`)
+      console.log(`  ✓ ${spec.name} stable (${(frac * 100).toFixed(3)}%)`)
     }
-  }
-
-  // --check: render the spec twice (fresh browser each) and compare the two
-  // captures to each other. A drift past threshold means the spec is
-  // nondeterministic — it would churn its committed PNG on every regen. Doesn't
-  // touch committed files.
-  async function checkSpec(spec: BrowserScreenshotSpec) {
-    const a = await withFreshPage(spec, p =>
-      renderSpecToTemp(p, spec, port, '-a'),
-    )
-    const b = await withFreshPage(spec, p =>
-      renderSpecToTemp(p, spec, port, '-b'),
-    )
-    reportDiffOrFlaky(spec.name, a, b, spec.diffThreshold ?? diffThreshold)
-  }
-
-  // --check for cli specs: render jb2export twice and diff, same contract as
-  // checkSpec but without a browser.
-  async function checkCliSpec(spec: CliSpec) {
-    const a = await renderCliSpecToTemp(spec, '-a')
-    const b = await renderCliSpecToTemp(spec, '-b')
-    reportDiffOrFlaky(spec.name, a, b, spec.diffThreshold ?? diffThreshold)
   }
 
   async function runSpec(spec: ScreenshotSpec) {
@@ -827,12 +833,14 @@ async function main() {
         result = await captureComposeSpec(spec)
       } else if (spec.mode === 'cli') {
         if (check) {
-          await checkCliSpec(spec)
+          await checkTwice(spec, suffix => renderCliSpecToTemp(spec, suffix))
         } else {
           result = await captureCliSpec(spec)
         }
       } else if (check) {
-        await checkSpec(spec)
+        await checkTwice(spec, suffix =>
+          withFreshPage(spec, p => renderSpecToTemp(p, spec, port, suffix)),
+        )
       } else {
         result = await withFreshPage(spec, page =>
           captureSpec(page, spec, port),
@@ -857,15 +865,6 @@ async function main() {
   console.log(`Running with concurrency ${CONCURRENCY}`)
 
   try {
-    // Compose specs stack other specs' committed PNGs, so they must run after
-    // the render pool has refreshed those parts — split them into a second,
-    // sequential pass. --check doesn't write committed files, so a deterministic
-    // append has nothing to verify; skip compose specs there.
-    const renderSpecs = filteredSpecs.filter(s => s.mode !== 'compose')
-    const composeSpecs = check
-      ? []
-      : filteredSpecs.filter(s => s.mode === 'compose')
-
     // Pool: keep CONCURRENCY browsers running at once
     const queue = [...renderSpecs]
     const workers = Array.from({ length: CONCURRENCY }, async () => {

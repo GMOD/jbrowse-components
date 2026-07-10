@@ -1,5 +1,6 @@
 ---
 title: Config guide
+sidebar_label: Overview
 ---
 
 This guide covers the structure and usage of the `config.json` file that drives

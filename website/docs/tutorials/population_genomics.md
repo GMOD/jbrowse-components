@@ -350,11 +350,11 @@ a selective sweep at this insecticide-resistance gene.
 <Figure src="/img/popgen/pi_cyp6g1.png" caption="Whole-panel π across a ~3 Mb window of 2R centered on Cyp6g1 (highlighted band), over the NCBI RefSeq gene track. π over the Cyp6g1 window collapses to under a tenth of the arm-wide background — a sharp, localized dip between higher-diversity flanks. The reduction is consistent with a selective sweep at this insecticide-resistance gene."/>
 
 Now add the **Tajima's D** track from the pipeline and jump to the same locus.
-Where π only tells you diversity is low, Tajima's D tells you _why_: at Cyp6g1 it
-drops sharply negative while sitting near zero genome-wide. The two statistics
-dipping together in the same window is the diagnostic hard-sweep signature —
-diversity removed by the sweep, then rebuilt as an excess of rare alleles on the
-swept background.
+Where π only tells you diversity is low, Tajima's D tells you _why_: at Cyp6g1
+it drops sharply negative while sitting near zero genome-wide. The two
+statistics dipping together in the same window is the diagnostic hard-sweep
+signature — diversity removed by the sweep, then rebuilt as an excess of rare
+alleles on the swept background.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across a 550 kb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Both statistics dip together at the locus: Tajima's D falls to about -2 against a genome-wide-neutral baseline near zero, and π collapses in the same window. The joint dip — a diversity valley skewed toward rare alleles — is the classic footprint of the hard sweep at this insecticide-resistance gene."/>
 
@@ -383,10 +383,9 @@ with its phenotype to scan `3R` the same way.
 
 The In(2L)t scan above contrasts two _arrangements_ within one panel. Reading
 the same statistics across two _populations_ picks out the top row of the table
-directly. [DEST](https://dest.bio) publishes Pool-Seq allele frequencies for
-_D. melanogaster_ populations worldwide on dm6, spanning the ancestral African
-range and the derived cosmopolitan range where the Cyp6g1 resistance allele
-swept.
+directly. [DEST](https://dest.bio) publishes Pool-Seq allele frequencies for _D.
+melanogaster_ populations worldwide on dm6, spanning the ancestral African range
+and the derived cosmopolitan range where the Cyp6g1 resistance allele swept.
 
 Grouping the sub-Saharan African samples against the North American samples and
 scanning the Cyp6g1 region produces that first-row pattern in a single figure:
@@ -446,15 +445,16 @@ for f in fst div_african div_cosmopolitan; do
 done
 ```
 
-Load the Fst bigWig as a `QuantitativeTrack` and the two diversity bigWigs as one
-`MultiWiggleAdapter` track (shared scale — same statistic on both rows) to
+Load the Fst bigWig as a `QuantitativeTrack` and the two diversity bigWigs as
+one `MultiWiggleAdapter` track (shared scale — same statistic on both rows) to
 reproduce the figure.
 
 ## Per-sample view: the genotype matrix
 
 The windowed Fst scan _summarizes_ the inversion into one number per window. To
 see the raw signal it summarizes — the actual per-line genotypes — load the
-genotypes as a [multi-sample variant matrix](/docs/user_guides/multivariant_track).
+genotypes as a
+[multi-sample variant matrix](/docs/user_guides/multivariant_track).
 
 Subset the panel to the karyotyped lines over `2L`, then keep the
 **arrangement-informative** SNPs: the sites whose alternate-allele frequency
@@ -522,10 +522,10 @@ Load it as a `VariantTrack` whose adapter carries the samples TSV, with a
 ```
 
 Open the track inside the inversion and choose **Cluster by genotype** from the
-track menu. The 19 inverted lines carry the alternate allele at these markers and
-the 161 standard lines carry the reference, so clustering separates them into two
-clades — a solid block of shared genotypes per arrangement, with the karyotype
-color strip down the sidebar confirming the split.
+track menu. The 19 inverted lines carry the alternate allele at these markers
+and the 161 standard lines carry the reference, so clustering separates them
+into two clades — a solid block of shared genotypes per arrangement, with the
+karyotype color strip down the sidebar confirming the split.
 
 <Figure src="/img/popgen/genotype_matrix_in2lt.png" caption="Genotype matrix of the 180 karyotyped DGRP lines at In(2L)t-informative SNPs, over a 200 kb window inside the inversion, clustered by genotype similarity (dendrogram at left) and colored by karyotype (sidebar strip). The 19 inverted lines form one clade carrying the alternate allele across the whole window (one solid block); the 161 standard lines form the other, carrying the reference. This is the per-line reality behind the Fst block — the recombination-suppressed inversion holds these alleles together, so every informative marker agrees on the same split."/>
 
@@ -538,8 +538,8 @@ arrangements is suppressed across the whole region.
 That suppression is itself measurable, as **linkage disequilibrium** (LD) — the
 non-random association of alleles at different sites. Where recombination is
 free, LD between two SNPs decays as they get farther apart; where recombination
-is suppressed (or a sweep is recent), it persists. JBrowse draws pairwise LD as a
-triangular heatmap. Pre-compute it with PLINK's `--r2` and load it through the
+is suppressed (or a sweep is recent), it persists. JBrowse draws pairwise LD as
+a triangular heatmap. Pre-compute it with PLINK's `--r2` and load it through the
 `PlinkLDTabixAdapter`:
 
 ```bash
@@ -592,8 +592,8 @@ between arrangements is suppressed, LD does **not** decay the same way — pairs
 megabases apart stay associated, the flip side of the arrangement-informative
 block seen in the genotype matrix above. Note that with the inversion at only
 ~10% frequency in this panel, that persistence is clearest among the
-arrangement-informative markers (and in `D'`) rather than as a bright genome-wide
-r² block.
+arrangement-informative markers (and in `D'`) rather than as a bright
+genome-wide r² block.
 
 ## Unbiased π and dxy with pixy {#unbiased-pi-and-dxy-with-pixy}
 

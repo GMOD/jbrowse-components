@@ -96,7 +96,10 @@ export const methylationSpecs: ScreenshotSpec[] = [
           trackId: 'arabidopsis_wgbs',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            colorBy: { type: 'bisulfite', modifications: { cytosineContext: 'all' } },
+            colorBy: {
+              type: 'bisulfite',
+              modifications: { cytosineContext: 'all' },
+            },
           },
         },
       ],

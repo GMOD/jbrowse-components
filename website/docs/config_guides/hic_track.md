@@ -31,8 +31,8 @@ Hi-C contact matrices are drawn with a built-in color ramp, selectable from the
 track menu via the
 [`colorScheme`](/docs/config/linearhicdisplay/#slot-colorscheme) slot —
 `juicebox`, `fall`, or `viridis`. Log scaling and percentile clipping are also
-slots; see the
-[LinearHicDisplay config docs](/docs/config/linearhicdisplay) for the full list.
+slots; see the [LinearHicDisplay config docs](/docs/config/linearhicdisplay) for
+the full list.
 
 ## Loops and interactions as arcs
 

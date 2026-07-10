@@ -209,9 +209,9 @@
   "sv_cgiab/dotplot_result": {
     "name": "sv_cgiab/dotplot_result",
     "status": "good",
-    "note": "FIXED: regenerated (forced) — confirmed post-autoDiagonalize: HG008T.hap1 contigs on the y-axis are reordered into a diagonal cascade against GRCh38 chr1..chrY on x. Image is now up to date.",
-    "reviewedAt": "2026-07-10T06:21:29.908Z",
-    "hash": "f94d747fc42ebc30a4836f5c8692bef45a868ed3"
+    "note": "",
+    "reviewedAt": "2026-07-10T15:43:50.939Z",
+    "hash": "d16cfead23f1d5c36b9702032f06e39650a0e38b"
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
@@ -1200,10 +1200,10 @@
   },
   "multiway_synteny/grape_peach_cacao": {
     "name": "multiway_synteny/grape_peach_cacao",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T18:14:58.774Z",
-    "hash": "54d14920e50f57c58f15c6fbe079019e77fbadb4"
+    "status": "bad",
+    "note": "the peach vs cacao ribbons has many cross overs. not sure if that layer is diagonalized. the cacao vs grape looks good though",
+    "reviewedAt": "2026-07-10T15:39:14.639Z",
+    "hash": "aa3dd53fa7a65cdec1391433a6b98cd64e3ee649"
   },
   "search_feature_highlight": {
     "name": "search_feature_highlight",
@@ -1313,9 +1313,9 @@
   "introgression_locus": {
     "name": "introgression_locus",
     "status": "good",
-    "note": "Zoomed out (600kb -> 1.2Mb), shortened the caption, added why-it-matters framing (Melanesians carry the most Denisovan ancestry of any population) plus a citation (Vernot et al. 2016, Science), and moved the caption below the panel.",
-    "reviewedAt": "2026-07-08T02:55:28.417Z",
-    "hash": "cad7c577f769c1b07282fb25726811acef20d53b"
+    "note": "unclear what this figure is showing. all rows have blue. so what is the point. avoid all these weird numbers and complexity in the text annotation, text annotation should just explain what is in the figure. the caption can be slightly more expanded but not much more, simpler prose. showDescriptions:false on gene track too",
+    "reviewedAt": "2026-07-10T15:33:13.927Z",
+    "hash": "e6f9ad902f5d00c28237a4a6487f5abe905a1a0b"
   },
   "inversion_long_read": {
     "name": "inversion_long_read",
@@ -1396,17 +1396,17 @@
   },
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
-    "status": "good",
-    "note": "FIXED: zoomed out to ~14Mb (chr4:74-88M) so the QTL peak reads as a full rise-and-fall; viewportHeight->1060 (painting no longer clipped); added a visible red Tyrp1 highlight band + callout so the gene is identifiable at this scale.",
-    "reviewedAt": "2026-07-10T06:14:04.754Z",
-    "hash": "245a7b8b045589d101f65226536859c65969d5e4"
+    "status": "bad",
+    "note": "zoom out even more, so we see the entire region of the peak",
+    "reviewedAt": "2026-07-10T15:42:41.415Z",
+    "hash": "a1b834c1f19afc5bce87f36636126f961ebb08c5"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
-    "status": "good",
-    "note": "FIXED: gene track showOnlyGenes (clean gene models), hid the Hi-C resolution-controls box + enabled log scale, and score-filtered the EPIraction enhancer arcs (score>=500 via color jexl) so only strong links show instead of a hairball.",
-    "reviewedAt": "2026-07-10T06:14:04.754Z",
-    "hash": "8571c5187e3fd9e3c8745590f02e66f085ed9a80"
+    "status": "bad",
+    "note": "can you look for another interesting region to plot.there is no correspondance between the hi-c loops and anything we are looking at. try to make it biologically interesting. also make showDescriptions:false on genes.  ",
+    "reviewedAt": "2026-07-10T15:31:54.482Z",
+    "hash": "e392c47a0292dd3634ec466fcb67590ccf0162f6"
   },
   "sv_synteny/linear_synteny_genes_colored": {
     "name": "sv_synteny/linear_synteny_genes_colored",
@@ -1414,5 +1414,152 @@
     "note": "FIXED: regenerated — showOnlyGenes gives clean per-gene colored glyphs (orthologs same hue across strains) and drawCurves renders curved synteny ribbons; both were already in the spec, the committed PNG was stale.",
     "reviewedAt": "2026-07-10T06:21:29.908Z",
     "hash": "0ddd0d88eb7e20f9dd1d8c7f472f80fa2f762f99"
+  },
+  "introgression_neanderthal": {
+    "name": "introgression_neanderthal",
+    "status": "bad",
+    "note": "unclear what this figure is showing. all the rows have red. so what is the point. unclear what this figure is showing. all rows have blue. so what is the point. avoid all these weird numbers and complexity in the text annotation, text annotation should just explain what is in the figure. the caption can be slightly more expanded but not much more, simpler prose. showDescriptions:false on gene track too",
+    "reviewedAt": "2026-07-10T15:33:18.317Z",
+    "hash": "5939c7537d080e582149da68bf432fd9dd670b90"
+  },
+  "jbrowse-img/sashimi_junctions": {
+    "name": "jbrowse-img/sashimi_junctions",
+    "status": "bad",
+    "note": "may want to show the reads in super compact mode",
+    "reviewedAt": "2026-07-10T15:33:42.479Z",
+    "hash": "64fd11bbc9cc7cbff13d562ace847310df926e83"
+  },
+  "jbrowse-img/scatac_multiwiggle": {
+    "name": "jbrowse-img/scatac_multiwiggle",
+    "status": "bad",
+    "note": "while it might be biologically relevant that alpha is active, it is hard to tell how significant this is. we should present a zoomed out view maybe",
+    "reviewedAt": "2026-07-10T15:34:45.213Z",
+    "hash": "4c0cb47fb8962348ffe3c2e8c57d2dcaa6eb5db8"
+  },
+  "methylation/arabidopsis_wgbs_boundary": {
+    "name": "methylation/arabidopsis_wgbs_boundary",
+    "status": "bad",
+    "note": "zoom out more. plot cpg islands too ideally. what is the point of these boundaries?",
+    "reviewedAt": "2026-07-10T15:37:03.954Z",
+    "hash": "5a62672be43e1e8bfe983b152ea6ebe35ca4e6ff"
+  },
+  "jbrowse-img/sv_read_arcs": {
+    "name": "jbrowse-img/sv_read_arcs",
+    "status": "bad",
+    "note": "explain what the purple arcs mean. the orange arcs are also hard to see",
+    "reviewedAt": "2026-07-10T15:35:15.680Z",
+    "hash": "fea935a1545174a51a45b104fbcb25df6a9f3a89"
+  },
+  "methylation/arabidopsis_wgbs_contexts": {
+    "name": "methylation/arabidopsis_wgbs_contexts",
+    "status": "bad",
+    "note": "this figure could replace all the other arabidopsis figures potentially, but take into account their 'bad' notes",
+    "reviewedAt": "2026-07-10T15:36:59.709Z",
+    "hash": "1b28a2a96b1b74218a5eebc7ceaf4850134e2192"
+  },
+  "methylation/arabidopsis_wgbs_chh": {
+    "name": "methylation/arabidopsis_wgbs_chh",
+    "status": "bad",
+    "note": "zoom out more. plot cpg islands too ideally. what is the point of these boundaries? plot other known datasets from arabiddopsis. mhy understanding is they do like thousaands of these studies so dense multisample quantitative track from salk epigenome browser could be good",
+    "reviewedAt": "2026-07-10T15:37:01.065Z",
+    "hash": "f2b8de2ceba3e8f0e6b9f7ccbf5d35507c4a0879"
+  },
+  "methylation/arabidopsis_wgbs_chg": {
+    "name": "methylation/arabidopsis_wgbs_chg",
+    "status": "bad",
+    "note": "zoom out more. plot cpg islands too ideally. what is the point of these boundaries? plot other known datasets from arabiddopsis. mhy understanding is they do like thousaands of these studies so dense multisample quantitative track from salk epigenome browser could be good",
+    "reviewedAt": "2026-07-10T15:37:02.985Z",
+    "hash": "0ce655a575148e03fe95d68bdabcd78073ee7c2f"
+  },
+  "methylation/colo829_haplotype_methylation": {
+    "name": "methylation/colo829_haplotype_methylation",
+    "status": "bad",
+    "note": "this is not a very interesting screenshot. no haplotype specific methylation. look for dmr with modkit if needed. see methylation/hg002_snrpn_allele_specific . if needed just delete this screenshot",
+    "reviewedAt": "2026-07-10T15:38:12.642Z",
+    "hash": "13bbc80a34f5e48b149a0cf5b284d3760f1fda0a"
+  },
+  "methylation/hg002_snrpn_allele_specific": {
+    "name": "methylation/hg002_snrpn_allele_specific",
+    "status": "bad",
+    "note": "if possible also plot the reads",
+    "reviewedAt": "2026-07-10T15:38:04.468Z",
+    "hash": "16170cfaca1cca632a4c54b3e77654d8c0d57101"
+  },
+  "multiway_synteny/ecoli_one_vs_all": {
+    "name": "multiway_synteny/ecoli_one_vs_all",
+    "status": "bad",
+    "note": "this is not a very interesting screenshot. just delete",
+    "reviewedAt": "2026-07-10T15:38:23.732Z",
+    "hash": "5eec522a75467462fb856caa595f64e7cf6962ac"
+  },
+  "popgen/genotype_matrix_in2lt": {
+    "name": "popgen/genotype_matrix_in2lt",
+    "status": "bad",
+    "note": "hard to tell what is going on in this screenshot. if it is supposed to say something specific, plot alogn with another track to co-emphasize. add gene track and highlights if needed.",
+    "reviewedAt": "2026-07-10T15:40:40.075Z",
+    "hash": "159bbfbab8ac91b268bffd5fcea39ed493b66c6d"
+  },
+  "popgen/ld_decay_2R": {
+    "name": "popgen/ld_decay_2R",
+    "status": "bad",
+    "note": "hard to tell what is going on in this screenshot. if it is supposed to say something specific, plot alogn with another track to co-emphasize. add gene track and highlights if needed.",
+    "reviewedAt": "2026-07-10T15:40:46.498Z",
+    "hash": "bc5ffa417046eb2bc313bf56b6170f225a67276b"
+  },
+  "popgen/combined_cyp6g1_dest": {
+    "name": "popgen/combined_cyp6g1_dest",
+    "status": "bad",
+    "note": "the highlight appears 'before' the fst goes to zero. not sure if that is exected. might want to zoom out more. i see ",
+    "reviewedAt": "2026-07-10T15:41:06.726Z",
+    "hash": "3b760a41d2c12849283c51604159f5a76e1c0d30"
+  },
+  "popgen/tajimad_cyp6g1": {
+    "name": "popgen/tajimad_cyp6g1",
+    "status": "bad",
+    "note": "zoom out more. if it is possible to get finer grained bigwis that would be ideal. more 'frission' from the detailed data. make gene track taller e.g. heightmode grow",
+    "reviewedAt": "2026-07-10T15:41:47.350Z",
+    "hash": "db9ad6f1ec620c59a09335e5816c89c7942b10b1"
+  },
+  "qtl/bxd_painting_input_order": {
+    "name": "qtl/bxd_painting_input_order",
+    "status": "bad",
+    "note": "unclear why we need this input order. might delete",
+    "reviewedAt": "2026-07-10T15:41:58.723Z",
+    "hash": "64ab1e2cce5529993bf6878e61263ef0157edd05"
+  },
+  "qtl/bxd_painting_sorted": {
+    "name": "qtl/bxd_painting_sorted",
+    "status": "bad",
+    "note": "looks good in sorted mode. should be on doc page?",
+    "reviewedAt": "2026-07-10T15:42:09.672Z",
+    "hash": "0ee9a22e4a9ee949b6c21abd0dc816df3f83cf71"
+  },
+  "qtl/bxd_sort_before_after": {
+    "name": "qtl/bxd_sort_before_after",
+    "status": "bad",
+    "note": "if possible add the right click context menu in the first screenshot",
+    "reviewedAt": "2026-07-10T15:42:26.337Z",
+    "hash": "38797eb818f1504581ba0bd45a53aaa7a0147d0c"
+  },
+  "rnaseq/pkm_mutually_exclusive": {
+    "name": "rnaseq/pkm_mutually_exclusive",
+    "status": "bad",
+    "note": "unclear if the rnaseq actually shows the mutually specific splicing. might just delete",
+    "reviewedAt": "2026-07-10T15:43:07.276Z",
+    "hash": "2acd8900cf0f22cae0fe4e7d2d64715b8dc82e8e"
+  },
+  "rnaseq/strand_specific": {
+    "name": "rnaseq/strand_specific",
+    "status": "bad",
+    "note": "show in screenshot how to select the strand specific rendering using trackmenu->color by first of pair",
+    "reviewedAt": "2026-07-10T15:43:43.991Z",
+    "hash": "eff9797c2d3cd776dd5171f82d826912910fb9c9"
+  },
+  "trio-ancestry": {
+    "name": "trio-ancestry",
+    "status": "bad",
+    "note": "is this showing anything interesting? might look for more admixed sample or trio. it would be good to see how the child inherits the parents admixture too",
+    "reviewedAt": "2026-07-10T15:44:42.737Z",
+    "hash": "f54d7d6822f4a269e377ef7f111116eda96537de"
   }
 }

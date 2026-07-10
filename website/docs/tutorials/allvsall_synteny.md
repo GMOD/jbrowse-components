@@ -165,9 +165,9 @@ most convenient source when you have it.
 ## Backbone and islands
 
 The stacked view is a landmark comparative-genomics result in miniature. The
-four strains share a ~4 Mb collinear **backbone** — the continuous ribbons —
-and each carries its own **islands** in the gaps: in Sakai the prophage S-loops
-that carry the Shiga-toxin genes
+four strains share a ~4 Mb collinear **backbone** — the continuous ribbons — and
+each carries its own **islands** in the gaps: in Sakai the prophage S-loops that
+carry the Shiga-toxin genes
 ([Hayashi et al. 2001](https://academic.oup.com/dnaresearch/article/8/1/11/466363)).
 Because the two pathogens' islands sit at _different_ backbone positions, they
 acquired virulence independently rather than from a shared ancestor

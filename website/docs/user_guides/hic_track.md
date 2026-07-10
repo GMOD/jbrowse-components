@@ -51,8 +51,8 @@ Load a BEDPE file like any other track (paste its URL into "Add a track"), then
 add the `.hic` matrix as a separate track and reorder so the arcs sit above it.
 Arc thickness is adjustable from the track menu: open **Arc width** and drag the
 slider (this writes the `lineWidth` slot on the
-[paired-arc display](/docs/config/linearpairedarcdisplay), which you can also set
-in config).
+[paired-arc display](/docs/config/linearpairedarcdisplay), which you can also
+set in config).
 
 ## See also
 

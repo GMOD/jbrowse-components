@@ -188,11 +188,12 @@ AFR/EUR/EAS/SAS 1000 Genomes reference (100 samples per superpopulation, the
 trio's own KHV population and the admixed panels excluded) assigns every marker
 of every haplotype an inferred ancestry.
 
-FLARE writes its calls per marker in the `AN1`/`AN2` `FORMAT` fields of an output
-VCF. A short post-processing step collapses those per-marker calls into
+FLARE writes its calls per marker in the `AN1`/`AN2` `FORMAT` fields of an
+output VCF. A short post-processing step collapses those per-marker calls into
 per-haplotype runs and writes one BED9 line per run, labeling rows
-`Child/Mother/Father hap1|hap2` and coloring each by ancestry via `itemRgb`. Load
-it as a second `LinearMultiRowFeatureDisplay`, partitioned this time by `sample`:
+`Child/Mother/Father hap1|hap2` and coloring each by ancestry via `itemRgb`.
+Load it as a second `LinearMultiRowFeatureDisplay`, partitioned this time by
+`sample`:
 
 ```json
 {

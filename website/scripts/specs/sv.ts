@@ -1465,6 +1465,100 @@ export const svSpecs: ScreenshotSpec[] = [
     settleMs: 20000,
   },
 
+  // chr17: the copy-neutral-LOH teaching example — why BAF is read alongside the
+  // depth ratio. The whole chromosome shows two allelic-loss states the log2 ratio
+  // alone cannot tell apart:
+  //   - p-arm (covering TP53): single-copy loss WITH LOH (benchmark CNA_20, CN 1,
+  //     1+0) — negative log2 AND the BAF het SNPs split off the 0.5 line.
+  //   - q-arm: copy-neutral LOH (benchmark CNA_21, CN 2, 2+0) — one haplotype lost
+  //     and the other duplicated, so total CN stays 2 and the log2 ratio stays flat
+  //     at 0, YET the BAF still splits off 0.5. Invisible to depth alone; only the
+  //     BAF reveals it.
+  // Same stack as the chr3/SMAD4 two-panel views: log2 over raw BAF over the
+  // CN-labeled benchmark CNV calls (hg008_cnv_calls, from the cgiab config).
+  {
+    mode: 'url',
+    name: 'sv_cgiab/cnv_chr17_loh',
+    url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_log2ratio',
+          name: 'HG008 log2(tumor/normal) coverage ratio',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_baf',
+          name: 'HG008-T B-allele frequency (BAF)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr17:1-83,257,441',
+          // overlay the long track names on the tracks instead of a label row
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'hg008_log2ratio',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                defaultRendering: 'scatter',
+                useBicolor: false,
+                summaryScoreMode: 'avg',
+                scatterPointSize: 1,
+                minScore: -2,
+                maxScore: 2,
+                height: 140,
+                // finer bigwig bins so the 500bp-binned log2 shows across chr17
+                resolution: 10,
+              },
+            },
+            {
+              trackId: 'hg008_baf',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                // raw 0..1 BAF scatter: BOTH arms split off the 0.5 het line — the
+                // p-arm (loss+LOH) and the q-arm (copy-neutral LOH) — which is the
+                // whole point of the figure. resolution:10 keeps bins fine enough
+                // that the split reads at chromosome scale.
+                defaultRendering: 'scatter',
+                scatterPointSize: 1,
+                resolution: 10,
+                minScore: 0,
+                maxScore: 1,
+                height: 140,
+              },
+            },
+            'hg008_cnv_calls',
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr17',
+    readyTimeout: 90000,
+    viewportWidth: 1500,
+    viewportHeight: 640,
+    settleMs: 20000,
+  },
+
   // SMAD4 (DPC4), the mirror image of the TP53 event: 18q loss with LOH
   // (CN 1, 0+1) — negative log2 AND the BAF het SNPs splitting off the 0.5 line.
   // The CNV calls use the config's CN-labeled hg008_cnv_calls track so the 18q

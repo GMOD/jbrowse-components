@@ -53,11 +53,14 @@ start–end use [LinearArcDisplay](../lineararcdisplay) instead.
 | [loadedRegionSignature](#volatile-loadedregionsignature) | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | [loading](#volatile-loading)                             | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | [conf](#getter-conf)                                     | Getters    | the config typed off the concrete schema; `ConfigurationReference` erases `self.configuration` to `any`, so reads route through this to stay typed (same move as `BaseAdapter<CONF>`)                                                                                                                                                                                                                                                                                                                                                                                  |
+| [lineWidth](#getter-linewidth)                           | Getters    | arc stroke width in px, from the `lineWidth` slot (track-menu slider writes it); flat across all arcs                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [svgReady](#getter-svgready)                             | Getters    | the SVG-export terminal-state gate (the `SvgExportable` contract every LGV track display shares). Non-stale: `features` must have been fetched for the _current_ static-block region set (`loadedRegionSignature` matches), so an export fired mid-refetch after a pan/zoom waits for fresh arcs instead of capturing stale ones — arc's analogue of the GPU mixins' `viewportWithinLoadedData`. The first-paint testid + loading anti-flash use `features !== undefined` (painted-once) directly, not this, so they don't flip on refetch (see BaseDisplayComponent). |
 | [arcStyles](#getter-arcstyles)                           | Getters    | per-arc styling and endpoint pairs (one per ALT), evaluated once when features/config change. Keeps the color jexl and makeFeaturePair (which runs parseSvAlt) out of the per-pan render loop. Deduped on a canonical endpoint-pair key: a paired feature is emitted from both endpoints and reciprocal BNDs arrive as two records, so the same arc otherwise draws twice whenever both endpoints are in the fetched regions.                                                                                                                                          |
+| [trackMenuItems](#method-trackmenuitems)                 | Methods    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | [selectFeature](#action-selectfeature)                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | [setLoading](#action-setloading)                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | [setFeatures](#action-setfeatures)                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [setLineWidth](#action-setlinewidth)                     | Actions    | set arc stroke width; `undefined` resets to the config-slot default                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | [reload](#action-reload)                                 | Actions    | retry after an error: clearing `error` re-fires the (error-gated) fetch autorun. The shared `DisplayErrorBar` retry calls this; the base `reload` is a no-op, which would leave the display stuck on error.                                                                                                                                                                                                                                                                                                                                                            |
 | [renderSvg](#action-rendersvg)                           | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
@@ -201,6 +204,15 @@ move as `BaseAdapter<CONF>`)
 type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
+#### getter: lineWidth
+
+arc stroke width in px, from the `lineWidth` slot (track-menu slider writes it);
+flat across all arcs
+
+```ts
+type lineWidth = number
+```
+
 #### getter: svgReady
 
 the SVG-export terminal-state gate (the `SvgExportable` contract every LGV track
@@ -251,7 +263,26 @@ type arcStyles =
 </details>
 
 <details>
+<summary>LinearPairedArcDisplay - Methods</summary>
+
+#### method: trackMenuItems
+
+```ts
+type trackMenuItems = () => MenuItem[]
+```
+
+</details>
+
+<details>
 <summary>LinearPairedArcDisplay - Actions</summary>
+
+#### action: setLineWidth
+
+set arc stroke width; `undefined` resets to the config-slot default
+
+```ts
+type setLineWidth = (n?: number | undefined) => void
+```
 
 #### action: reload
 

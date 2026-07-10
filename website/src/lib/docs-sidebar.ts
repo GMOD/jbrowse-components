@@ -1,3 +1,4 @@
+import { GUIDE_CATEGORY_ORDER } from './guide-categories.ts'
 import sidebarsJson from '../../sidebars.json'
 
 export interface SidebarLink {
@@ -17,7 +18,7 @@ export type SidebarEntry = SidebarLink | SidebarGroup
 
 interface DocEntry {
   id: string
-  data: { title: string; sidebar_label?: string }
+  data: { title: string; sidebar_label?: string; guide_category?: string }
 }
 
 type DocusaurusSidebarItem =
@@ -75,34 +76,67 @@ function groupByCategory(links: SidebarLink[]): SidebarEntry[] {
     }))
 }
 
+// Groups a guide directory's pages into collapsible sections by their
+// `guide_category` frontmatter — the same buckets, in the same order, the
+// guide's landing page uses (see src/lib/guide-categories.ts). `docs` and
+// `links` are aligned by position. Categories not in `categoryOrder` (a stray
+// value) fall to the end alphabetically rather than vanishing.
+function groupByGuideCategory(
+  docs: DocEntry[],
+  links: SidebarLink[],
+  categoryOrder: string[],
+): SidebarEntry[] {
+  const byCategory = new Map<string, SidebarLink[]>()
+  for (let i = 0; i < docs.length; i++) {
+    const category = docs[i]!.data.guide_category ?? 'Other'
+    if (!byCategory.has(category)) {
+      byCategory.set(category, [])
+    }
+    byCategory.get(category)!.push(links[i]!)
+  }
+
+  const ordered = categoryOrder.filter(c => byCategory.has(c))
+  const extra = [...byCategory.keys()]
+    .filter(c => !categoryOrder.includes(c))
+    .sort()
+  return [...ordered, ...extra].map(category => ({
+    type: 'group' as const,
+    label: category,
+    items: byCategory.get(category)!,
+  }))
+}
+
 function getAutoItems(
   dirName: string,
   allDocs: DocEntry[],
   baseUrl: string,
 ): SidebarEntry[] {
   const dirDepth = dirName.split('/').length + 1
-  const links = allDocs
-    .flatMap(d => {
+  const docs = allDocs
+    .filter(d => {
       const slug = entrySlug(d.id)
-      const parts = slug.split('/')
-      if (parts.length !== dirDepth || !slug.startsWith(`${dirName}/`)) {
-        return []
-      }
-      return [
-        {
-          type: 'link' as const,
-          label: docLabel(d),
-          href: docHref(baseUrl, slug),
-          slug,
-        },
-      ]
+      return (
+        slug.startsWith(`${dirName}/`) && slug.split('/').length === dirDepth
+      )
     })
-    .sort((a, b) => a.label.localeCompare(b.label))
+    .sort((a, b) => docLabel(a).localeCompare(docLabel(b)))
 
-  if (dirName === 'config' || dirName === 'models') {
-    return groupByCategory(links)
-  }
-  return links
+  const links: SidebarLink[] = docs.map(d => {
+    const slug = entrySlug(d.id)
+    return {
+      type: 'link',
+      label: docLabel(d),
+      href: docHref(baseUrl, slug),
+      slug,
+    }
+  })
+
+  const categoryOrder = GUIDE_CATEGORY_ORDER[dirName]
+  return dirName === 'config' || dirName === 'models'
+    ? groupByCategory(links)
+    : categoryOrder
+      ? groupByGuideCategory(docs, links, categoryOrder)
+      : links
 }
 
 function convertItems(

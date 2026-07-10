@@ -137,8 +137,8 @@ The display config, field by field:
   in the track name or figure caption. (The `sampleColorMap` slot is a different
   axis — it colors whole rows by sample, not features by source.)
 - **`rowOrder`** — pins the row order. Ordering the rows by region (non-Oceanian
-  first, Oceanian last) makes the Denisovan-in-Oceania pattern group visually, as
-  in the figure above. Omit it and rows fall back to first-seen order.
+  first, Oceanian last) makes the Denisovan-in-Oceania pattern group visually,
+  as in the figure above. Omit it and rows fall back to first-seen order.
 - **[`rowHeight`](/docs/config/linearmultirowfeaturedisplay/#slot-rowheight)** —
   set a fixed pixel height per row (e.g. 20); leave it unset to auto-fit all
   rows into the display height.

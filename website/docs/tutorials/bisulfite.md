@@ -30,8 +30,8 @@ three are visible on the same reads.
 ### Get the reference and reads
 
 We use the TAIR10 reference and one wild-type Col-0 WGBS run
-([`DRR029742`](https://www.ebi.ac.uk/ena/browser/view/DRR029742), paired-end
-150 bp, HiSeq 2500).
+([`DRR029742`](https://www.ebi.ac.uk/ena/browser/view/DRR029742), paired-end 150
+bp, HiSeq 2500).
 
 ```bash
 # reference (TAIR10)
@@ -55,8 +55,8 @@ trim_galore --paired DRR029742_1.fastq.gz DRR029742_2.fastq.gz
 
 [bwameth](https://github.com/brentp/bwa-meth) aligns bisulfite reads by
 in-silico C→T converting both reads and reference, then running `bwa mem`. It
-emits an ordinary BAM with the **original** read sequences, so the C→T
-signal is preserved for JBrowse to read.
+emits an ordinary BAM with the **original** read sequences, so the C→T signal is
+preserved for JBrowse to read.
 
 ```bash
 bwameth.py index tair10.fa
@@ -86,19 +86,20 @@ Load these as a `MultiQuantitativeTrack` exactly as in the
 
 ## Coloring reads in JBrowse
 
-Open the alignments track and, from the track menu, choose
-**Color by → Advanced → Bisulfite / EM-seq**, then pick a cytosine context (CpG,
-CHG, CHH, or all cytosines). Methylated cytosines paint **red**, unmethylated
-**blue**. (It is under **Advanced** because it is reference-based and only
-meaningful for bisulfite/EM-seq libraries — no MM/ML tags are involved.)
+Open the alignments track and, from the track menu, choose **Color by → Advanced
+→ Bisulfite / EM-seq**, then pick a cytosine context (CpG, CHG, CHH, or all
+cytosines). Methylated cytosines paint **red**, unmethylated **blue**. (It is
+under **Advanced** because it is reference-based and only meaningful for
+bisulfite/EM-seq libraries — no MM/ML tags are involved.)
 
 The demo view opens on `NC_003070.9` (chromosome 1) around
 `4,398,000–4,412,000`, a window that places two methylation regimes side by
 side. On the left, the expressed ARM-repeat gene **AT1G12930** carries
 **gene-body methylation** — cytosines methylated only in the **CpG** context. On
 the right, a silenced element (the pseudogene **AT1G12935** and the unannotated
-repeat sequence beyond it, ~`4,406,000–4,410,000`) is methylated in **all three**
-contexts, the signature of transposon/heterochromatin silencing in plants.
+repeat sequence beyond it, ~`4,406,000–4,410,000`) is methylated in **all
+three** contexts, the signature of transposon/heterochromatin silencing in
+plants.
 
 Switching the context re-scores the same reads. Under **CpG** both the gene body
 and the element read out red; under **CHG** and **CHH** only the element stays
