@@ -116,6 +116,30 @@ describe('JBrowseWebSessionModel', () => {
         'conn2',
       ])
     })
+
+    it.each([false, true])(
+      'persists an edit to an opened connection track (adminMode=%s)',
+      adminMode => {
+        // an opened connection track lives in connectionTrackConfigs, not
+        // jbrowse.tracks or sessionTracks, so its edit must route to
+        // updateConnectionTrackConfig regardless of adminMode — jbrowse's
+        // updateTrackConf would silently no-op (the track isn't in the config)
+        const session = createTestSession({
+          adminMode,
+          sessionSnapshot: {
+            sessionConnections: [connSnap],
+            connectionTrackConfigs: {
+              t1: {
+                connectionId: 'conn1',
+                config: { trackId: 't1', name: 'original' },
+              },
+            },
+          },
+        })
+        session.updateTrackConfiguration({ trackId: 't1', name: 'edited' })
+        expect(session.connectionTrackConfigs.t1!.config.name).toBe('edited')
+      },
+    )
   })
 
   describe('displayTypeDefaults store', () => {

@@ -12,7 +12,6 @@ import {
 import { comparer } from 'mobx'
 
 import { isBaseSession } from './BaseSession.ts'
-import { isSessionWithConnections } from './Connections.ts'
 import { TracksManagerSessionMixin } from './Tracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -247,6 +246,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       const {
         addTrackConf: superAddTrackConf,
         deleteTrackConf: superDeleteTrackConf,
+        updateTrackConfiguration: superUpdateTrackConfiguration,
       } = self
       // A cleared delta reverts the track's live working copy to the base in
       // place, so an open view re-renders to the default. applySnapshot keeps
@@ -322,71 +322,61 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * Persist an edited track config. Admins edit the jbrowse config in
-         * place; everyone else gets a delta (trackConfigDeltas) against the
-         * admin-owned base — only the changed slots — so the edits persist and
-         * are shared while admin changes to untouched fields still flow through.
-         * A user-added session track (no base) keeps living in sessionTracks.
+         * Persist a non-admin's edited track config as a delta (trackConfigDeltas)
+         * against the admin-owned base — only the changed slots — so the edits
+         * persist and are shared while admin changes to untouched fields still
+         * flow through. A user-added session track (no base) is edited in place.
+         * Everything else (admin edits, opened connection tracks) defers to the
+         * base mixin, which routes connection tracks to connectionTrackConfigs and
+         * the rest to the jbrowse config.
          */
         updateTrackConfiguration(trackConf: PlainTrackConfig) {
-          if (self.adminMode) {
-            self.jbrowse.updateTrackConf(trackConf)
-          } else {
-            const { trackId } = trackConf
-            const base = baseTracks(self).find(t => t.trackId === trackId)
-            const sessionIdx = self.sessionTracks.findIndex(
-              t => t.trackId === trackId,
-            )
-            if (base) {
-              const plainBase = toPlainConfig(base)
-              const delta = diffTrackConfig(
-                plainBase,
-                trackConf,
-              ) as PlainTrackConfig
-              // an edit that nets back to the base carries no changed slots:
-              // clear any prior override (implicit reset) instead of pinning a
-              // content-free delta; skip a no-op write when there's nothing to
-              // clear, so the tracks getter doesn't needlessly churn identity
-              if (deltaHasChanges(plainBase, delta)) {
-                // Two views showing the same track each run BaseTrackModel's
-                // persist reaction against the shared config node, so a single
-                // edit calls this twice with an identical delta (and the config
-                // editor can re-save an unchanged config). Skip a
-                // structurally-identical re-store: writing a fresh
-                // trackConfigDeltas object would churn its identity and make the
-                // tracks getter rehydrate a new merged node for no real change.
-                const existing = self.trackConfigDeltas[trackId]
-                if (!existing || !comparer.structural(existing, delta)) {
-                  writeDelta(trackId, delta)
-                }
-                syncEditableTrackConfig(trackId, trackConf)
-              } else if (trackId in self.trackConfigDeltas) {
-                writeDelta(trackId, undefined)
+          const { trackId } = trackConf
+          const base = self.adminMode
+            ? undefined
+            : baseTracks(self).find(t => t.trackId === trackId)
+          const sessionIdx = self.adminMode
+            ? -1
+            : self.sessionTracks.findIndex(t => t.trackId === trackId)
+          if (base) {
+            const plainBase = toPlainConfig(base)
+            const delta = diffTrackConfig(plainBase, trackConf) as PlainTrackConfig
+            // an edit that nets back to the base carries no changed slots: clear
+            // any prior override (implicit reset) instead of pinning a
+            // content-free delta; skip a no-op write when there's nothing to
+            // clear, so the tracks getter doesn't needlessly churn identity
+            if (deltaHasChanges(plainBase, delta)) {
+              // Two views showing the same track each run BaseTrackModel's
+              // persist reaction against the shared config node, so a single edit
+              // calls this twice with an identical delta (and the config editor
+              // can re-save an unchanged config). Skip a structurally-identical
+              // re-store: writing a fresh trackConfigDeltas object would churn its
+              // identity and make the tracks getter rehydrate a new merged node
+              // for no real change.
+              const existing = self.trackConfigDeltas[trackId]
+              if (!existing || !comparer.structural(existing, delta)) {
+                writeDelta(trackId, delta)
               }
-            } else if (sessionIdx !== -1) {
-              // a user-added session track (no admin base): edit it in place. A
-              // typed MST array throws on an invalid config — snackbar it.
-              try {
-                self.sessionTracks[sessionIdx] = trackConf
-              } catch (e) {
-                self.notifyError(
-                  `Track "${trackId}" has an invalid configuration: ${e}`,
-                  e,
-                )
-              }
-            } else if (
-              isSessionWithConnections(self) &&
-              trackId in self.connectionTrackConfigs
-            ) {
-              // an opened connection track: persist the full edited config into
-              // connectionTrackConfigs (in place, not a delta — the connection's
-              // fetched base isn't present at load, so only a complete config
-              // resolves synchronously)
-              self.updateConnectionTrackConfig(trackConf)
+              syncEditableTrackConfig(trackId, trackConf)
+            } else if (trackId in self.trackConfigDeltas) {
+              writeDelta(trackId, undefined)
             }
-            // else: a track with neither an admin base, a sessionTracks entry,
-            // nor a captured connection config. No persistent home, so the edit
-            // applies in-memory to the resolved config for this session only.
+          } else if (sessionIdx !== -1) {
+            // a user-added session track (no admin base): edit it in place. A
+            // typed MST array throws on an invalid config — snackbar it.
+            try {
+              self.sessionTracks[sessionIdx] = trackConf
+            } catch (e) {
+              self.notifyError(
+                `Track "${trackId}" has an invalid configuration: ${e}`,
+                e,
+              )
+            }
+          } else {
+            // admin edit, or a track with no admin base / sessionTracks entry
+            // (an opened connection track, or a homeless in-memory-only edit):
+            // the base mixin routes these
+            superUpdateTrackConfiguration(trackConf)
           }
         },
 

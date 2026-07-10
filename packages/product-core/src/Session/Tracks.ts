@@ -1,6 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
+import { isSessionWithConnections } from './Connections.ts'
 import { ReferenceManagementSessionMixin } from './ReferenceManagement.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -104,7 +105,19 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
         trackId: string
         [key: string]: unknown
       }) {
-        self.jbrowse.updateTrackConf(trackConf)
+        // an opened connection track lives in connectionTrackConfigs, not
+        // jbrowse.tracks; persist its edit there (jbrowse.updateTrackConf would
+        // no-op, since the track isn't in the config). Desktop uses this base
+        // mixin, so without this branch a connection-track edit is lost on
+        // reload.
+        if (
+          isSessionWithConnections(self) &&
+          trackConf.trackId in self.connectionTrackConfigs
+        ) {
+          self.updateConnectionTrackConfig(trackConf)
+        } else {
+          self.jbrowse.updateTrackConf(trackConf)
+        }
       },
 
       /**

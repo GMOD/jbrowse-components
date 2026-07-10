@@ -255,13 +255,12 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
          * rendering from `connectionTrackConfigs` meanwhile. Idempotent.
          */
         hydrateConnection(connectionId: string) {
-          const isLive = self.connectionInstances.some(
-            c => c.connectionId === connectionId,
-          )
+          // makeConnection is idempotent (returns the existing live instance if
+          // one matches), so no separate liveness check is needed
           const conf = self.connections.find(
             c => c.connectionId === connectionId,
           )
-          if (!isLive && conf) {
+          if (conf) {
             this.makeConnection(conf, { silent: true })
           }
         },
