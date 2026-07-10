@@ -28,7 +28,9 @@ app, and as embeddable React components inside other websites.
   tag, including base modification / methylation coloring, with per-track
   display modes for pileup and coverage
 
-- **Hi-C contact matrices** - render `.hic` contact data alongside other tracks
+- **Hi-C, multi-sample variants, and MAF** - render `.hic` contact matrices,
+  population-scale variant matrices, and multiple-alignment (MAF) data alongside
+  everything else
 
 - **Pre-loaded genomes** - launch any of a
   [large database of species](https://genomes.jbrowse.org) without configuring
@@ -48,56 +50,33 @@ JBrowse 2 can do.
 
 ## View types
 
-JBrowse 2 supports multiple view types that can be shown simultaneously in the
-app. Third-party plugins can also add new view types.
+Any number of these can be open at once and linked together, and plugins can add
+more. See the
+[user guide](https://jbrowse.org/jb2/docs/user_guide/) for full walkthroughs.
 
-- **Linear genome view** - The primary view for browsing genomic data along a
-  reference sequence. Supports multiple tracks, zooming, navigation, and split
-  view for comparing two regions simultaneously
-
-- **Circular view** - Whole genome overview of chromosomal translocations. VCF
-  breakend `<BND>` and `<TRA>` features are rendered as arcs across the genome
-
-- **Breakpoint split view** - Shows the connection between long split alignments
-  or paired-end reads across chromosomes using stacked linear genome views
-
-- **Dotplot view** - Zoomable comparison of whole genome alignments or synteny
-  datasets
-
-- **Linear synteny view** - Exploration of syntenic alignments using stacked
-  linear genome views
-
-- **SV inspector** - Spreadsheet-like view of structural variants with a linked
-  circular overview for visual context
-
-- **Tabular view** - Open BED, VCF, CSV, TSV, or bespoke formats like
-  STAR-fusion output in a sortable, filterable table
+- **Linear genome view** - browse tracks along a reference, with split view for
+  comparing regions side by side
+- **Circular view** - whole-genome overview of translocations, drawn as arcs
+- **Breakpoint split view** - connect split or paired-end reads across
+  chromosomes with stacked linear views
+- **Dotplot view** - zoomable whole-genome alignment / synteny comparison
+- **Linear synteny view** - stacked genomes with their syntenic alignments drawn
+  between them
+- **SV inspector** - spreadsheet of structural variants with a linked circular
+  overview
+- **Spreadsheet view** - BED, VCF, CSV/TSV, or bespoke formats like STAR-fusion
+  output in a sortable, filterable table
 
 ## Supported data formats
 
-Core JBrowse 2 supports the following formats. Plugins extend this list further.
+JBrowse reads common genomics formats directly in the browser — sequence (FASTA,
+2bit), alignments (BAM, CRAM, htsget), features (GFF3, GTF, BED, BigBed),
+quantitative signal (BigWig, bedGraph), variants (VCF), Hi-C (`.hic`), synteny
+(PAF, chain, delta, PIF, MCScan), multiple alignment (MAF), and tabular data
+(CSV, TSV, BEDPE). It also connects to UCSC track hubs, and plugins add more.
 
-- Indexed FASTA / BGZip indexed FASTA
-- 2bit
-- BAM / CRAM
-- htsget
-- VCF (Tabix-indexed or plain text)
-- GFF3 (Tabix-indexed or plain text)
-- BED (Tabix-indexed or plain text)
-- BigBed
-- BigWig
-- .hic (Hi-C contact matrix)
-- JBrowse 1 nested containment lists (NCLists)
-- CSV, TSV, BEDPE, STAR-fusion output (tabular view)
-- UCSC track hubs [^1]
-
-### Synteny and dotplot formats
-
-- PAF
-- Chain
-- Delta
-- Pairwise indexed format (PIF)
-- [MCScan (Python version)](https://github.com/tanghaibao/jcvi)
+For the complete list — every format and the adapter it maps to — see
+[supported file types](https://jbrowse.org/jb2/docs/config_guides/file_types/).
 
 ## Integration and embedding
 
@@ -108,7 +87,3 @@ as embeddable components for other web applications, as demonstrated by
 
 See the full list of
 [embedded components](https://jbrowse.org/jb2/docs/embedded_components/).
-
-[^1]:
-    Requires the trackhub server to allow
-    [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
