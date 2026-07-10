@@ -13,29 +13,13 @@
 // checked; external URLs, mailto:, tel:, and pure `#fragment` anchors are
 // skipped. Fragment *targets* within a page are not validated — only that the
 // page itself was emitted. Run: `pnpm check-links`.
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+
+import { isFile, reportProblems, walkFiles } from './check-utils.ts'
 
 const distDir = join(import.meta.dirname, '..', 'dist')
 const BASE = process.env.SITE_BASE_PATH || '/jb2'
-
-function walk(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const full = join(dir, entry.name)
-    if (entry.isDirectory()) {
-      return walk(full)
-    }
-    return entry.name.endsWith('.html') ? [full] : []
-  })
-}
-
-function exists(path: string) {
-  try {
-    return statSync(path).isFile()
-  } catch {
-    return false
-  }
-}
 
 // A site-absolute path (already stripped of BASE, hash, query) resolves if dist
 // emitted a file for it. Don't guess page-vs-asset by extension — version-number
@@ -44,12 +28,12 @@ function exists(path: string) {
 function resolves(sitePath: string) {
   const clean = sitePath.replace(/\/+$/, '')
   if (clean === '') {
-    return exists(join(distDir, 'index.html'))
+    return isFile(join(distDir, 'index.html'))
   }
   return (
-    exists(join(distDir, clean, 'index.html')) ||
-    exists(join(distDir, clean)) ||
-    exists(join(distDir, `${clean}.html`))
+    isFile(join(distDir, clean, 'index.html')) ||
+    isFile(join(distDir, clean)) ||
+    isFile(join(distDir, `${clean}.html`))
   )
 }
 
@@ -106,27 +90,28 @@ function checkFile(htmlPath: string): Problem[] {
   return problems
 }
 
-if (!exists(join(distDir, 'index.html'))) {
+if (!isFile(join(distDir, 'index.html'))) {
   console.error('dist/ not found or empty — run `pnpm build` first.')
   process.exit(1)
 }
 
-const problems = walk(distDir).flatMap(checkFile)
+const problems = walkFiles(distDir, name => name.endsWith('.html')).flatMap(
+  checkFile,
+)
 
+const errorLines: string[] = []
 if (problems.length > 0) {
   const byFile = new Map<string, string[]>()
   for (const p of problems) {
     const rel = p.file.slice(distDir.length + 1)
     byFile.set(rel, [...(byFile.get(rel) ?? []), p.link])
   }
-  console.error(`Found ${problems.length} broken internal link(s):\n`)
+  errorLines.push(`Found ${problems.length} broken internal link(s):\n`)
   for (const [file, links] of byFile) {
-    console.error(`  ${file}`)
+    errorLines.push(`  ${file}`)
     for (const link of links) {
-      console.error(`    → ${link}`)
+      errorLines.push(`    → ${link}`)
     }
   }
-  process.exit(1)
-} else {
-  console.log('All internal links resolve.')
 }
+reportProblems(errorLines, 'All internal links resolve.')

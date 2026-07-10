@@ -1,7 +1,9 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { format, resolveConfig } from 'prettier'
+
+import { checkOrWrite } from './check-utils.ts'
 
 // Mirrors products/jbrowse-cli/README.md into website/docs/cli.md. That README
 // is itself generated from the CLI (products/jbrowse-cli/generate_readme.sh
@@ -13,7 +15,6 @@ import { format, resolveConfig } from 'prettier'
 const repoRoot = join(import.meta.dirname, '..', '..')
 const readmePath = join(repoRoot, 'products', 'jbrowse-cli', 'README.md')
 const outPath = join(repoRoot, 'website', 'docs', 'cli.md')
-const check = process.argv.includes('--check')
 
 const title = 'Command line tools (JBrowse CLI)'
 
@@ -57,17 +58,9 @@ async function generate() {
   return format(raw, { ...prettierConfig, filepath: outPath })
 }
 
-const md = await generate()
-
-if (check) {
-  if (readFileSync(outPath, 'utf8') !== md) {
-    console.error(
-      `${outPath} is out of date — run \`pnpm autogen\` to regenerate.`,
-    )
-    process.exit(1)
-  }
-  console.log('cli.md is up to date')
-} else {
-  writeFileSync(outPath, md)
-  console.log(`wrote ${outPath}`)
-}
+checkOrWrite({
+  path: outPath,
+  content: await generate(),
+  label: 'cli.md',
+  staleHint: 'run `pnpm autogen` to regenerate.',
+})

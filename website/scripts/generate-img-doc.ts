@@ -9,6 +9,7 @@ import { join } from 'node:path'
 
 import { format, resolveConfig } from 'prettier'
 
+import { check } from './check-utils.ts'
 import {
   syntenyTrackTypes,
   trackTypes,
@@ -26,7 +27,6 @@ const readmePath = join(productDir, 'README.md')
 const outPath = join(repoRoot, 'website', 'docs', 'jbrowse-img.md')
 const imgSrcDir = join(productDir, 'img')
 const imgDestDir = join(repoRoot, 'website', 'static', 'img', 'jbrowse-img')
-const check = process.argv.includes('--check')
 
 const githubBase =
   'https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img'

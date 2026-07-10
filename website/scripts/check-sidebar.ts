@@ -8,8 +8,10 @@
 //
 // The sidebar-resolution logic here mirrors src/lib/docs-sidebar.ts
 // (getAutoItems depth match + entrySlug). Run: `pnpm check-sidebar`.
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+
+import { reportProblems, walkFiles } from './check-utils.ts'
 
 const docsDir = join(import.meta.dirname, '..', 'docs')
 const sidebarPath = join(import.meta.dirname, '..', 'sidebars.json')
@@ -33,19 +35,14 @@ function hasRootSlug(file: string): boolean {
   return fm ? /^slug:\s*\/\s*$/m.test(fm[1]!) : false
 }
 
-function walk(dir: string, prefix = ''): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const rel = prefix ? `${prefix}/${entry.name}` : entry.name
-    if (entry.isDirectory()) {
-      return walk(join(dir, entry.name), rel)
-    }
-    // CLAUDE.md is excluded from the docs collection (content.config.ts).
-    return entry.name.endsWith('.md') && entry.name !== 'CLAUDE.md' ? [rel] : []
-  })
-}
-
+// CLAUDE.md is excluded from the docs collection (content.config.ts).
 const allSlugs = new Map(
-  walk(docsDir).map(rel => [slugOf(rel, hasRootSlug(join(docsDir, rel))), rel]),
+  walkFiles(docsDir, name => name.endsWith('.md') && name !== 'CLAUDE.md').map(
+    full => {
+      const rel = full.slice(docsDir.length + 1)
+      return [slugOf(rel, hasRootSlug(full)), rel]
+    },
+  ),
 )
 
 // Mirrors entrySlug(): strip a trailing /index, and treat "introduction" as the
@@ -126,11 +123,7 @@ if (dangling.length > 0) {
   )
 }
 
-if (problems.length > 0) {
-  console.error(problems.join('\n'))
-  process.exit(1)
-} else {
-  console.log(
-    `All ${allSlugs.size} docs are reachable; all sidebar entries resolve.`,
-  )
-}
+reportProblems(
+  problems,
+  `All ${allSlugs.size} docs are reachable; all sidebar entries resolve.`,
+)

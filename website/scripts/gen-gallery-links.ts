@@ -7,10 +7,10 @@
 // gallery.ts imports the generated map (pure data) rather than screenshot-specs.ts
 // directly, because that module's `@jbrowse/browser-test-utils` barrel pulls in
 // puppeteer and can't be evaluated in the Astro/browser build.
-import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { checkOrWrite } from './check-utils.ts'
 import { type ScreenshotSpec, specs } from './screenshot-specs.ts'
 
 function isUrlSpec(
@@ -52,19 +52,9 @@ export const specSessionUrls: Record<string, string> = ${JSON.stringify(
 )}
 `
 
-// --check (for CI): fail if the committed file is stale rather than rewriting it
-if (process.argv.includes('--check')) {
-  const current = readFileSync(outFile, 'utf8')
-  if (current !== body) {
-    console.error(
-      'src/lib/galleryLinks.generated.ts is stale — run `pnpm gen:gallery-links`',
-    )
-    process.exit(1)
-  }
-  console.log(
-    `galleryLinks.generated.ts up to date (${Object.keys(map).length} urls)`,
-  )
-} else {
-  writeFileSync(outFile, body)
-  console.log(`wrote ${Object.keys(map).length} spec urls -> ${outFile}`)
-}
+checkOrWrite({
+  path: outFile,
+  content: body,
+  label: 'src/lib/galleryLinks.generated.ts',
+  staleHint: 'run `pnpm gen:gallery-links`',
+})

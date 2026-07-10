@@ -19,6 +19,8 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { isFile, reportProblems, walkFiles } from './check-utils.ts'
+
 const root = join(import.meta.dirname, '..', '..')
 const docsDir = join(import.meta.dirname, '..', 'docs')
 // The agent-docs knowledge base (ARCHITECTURE.md et al.) is where architecture
@@ -70,13 +72,7 @@ function fileExists(target: string) {
   const withIndex = CODE_EXTS.filter(Boolean).map(ext =>
     join(target, `index${ext}`),
   )
-  return [...candidates, ...withIndex].some(p => {
-    try {
-      return statSync(p).isFile()
-    } catch {
-      return false
-    }
-  })
+  return [...candidates, ...withIndex].some(isFile)
 }
 
 // Pull the first string target out of an exports entry (string or conditional
@@ -177,16 +173,6 @@ function scanImports(path: string, lines: string[]): Problem[] {
   return problems
 }
 
-function walk(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const full = join(dir, entry.name)
-    if (entry.isDirectory()) {
-      return walk(full)
-    }
-    return /\.mdx?$/.test(entry.name) ? [full] : []
-  })
-}
-
 // Repo file-path references in prose (e.g. `packages/core/src/gpu`) can go stale
 // when code moves — the same class of bug as a broken import, but not an import
 // so the check above can't see it. A path is only validated when its package
@@ -262,7 +248,11 @@ function isPointInTimeDoc(file: string) {
 
 // Read each doc once; imports are checked everywhere, prose paths only in
 // hand-written guides (autogen dirs embed GitHub blob URLs, not repo paths).
-const problems = [...walk(docsDir), ...walk(agentDocsDir)].flatMap(file => {
+const isDoc = (name: string) => /\.mdx?$/.test(name)
+const problems = [
+  ...walkFiles(docsDir, isDoc),
+  ...walkFiles(agentDocsDir, isDoc),
+].flatMap(file => {
   if (isPointInTimeDoc(file)) {
     return []
   }
@@ -273,15 +263,19 @@ const problems = [...walk(docsDir), ...walk(agentDocsDir)].flatMap(file => {
   ]
 })
 
+const errorLines: string[] = []
 if (problems.length > 0) {
-  console.error(`Found ${problems.length} broken reference(s) in docs:\n`)
+  errorLines.push(`Found ${problems.length} broken reference(s) in docs:\n`)
   for (const p of problems) {
     const rel = p.file.slice(root.length + 1)
-    console.error(`  ${rel}:${p.line}`)
-    console.error(`    ${p.specifier}`)
-    console.error(`    → ${p.reason}\n`)
+    errorLines.push(
+      `  ${rel}:${p.line}`,
+      `    ${p.specifier}`,
+      `    → ${p.reason}\n`,
+    )
   }
-  process.exit(1)
-} else {
-  console.log('All @jbrowse imports and repo paths in docs resolve.')
 }
+reportProblems(
+  errorLines,
+  'All @jbrowse imports and repo paths in docs resolve.',
+)
