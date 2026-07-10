@@ -34,7 +34,16 @@ function arabidopsisBisulfite(
       tracks: [
         {
           trackId: 'arabidopsis_wgbs',
-          displaySnapshot: { type: 'LinearAlignmentsDisplay', colorBy },
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            colorBy,
+            // tall enough that the whole ~30x pileup fits without the display's
+            // internal scroll clipping it mid-stack — a methylation-pattern
+            // overview reads best with the full column of reads at normal row
+            // height (taller marks are more legible; per-read detail is the
+            // boundary-zoom figure's job)
+            height: 320,
+          },
         },
       ],
     }),
@@ -42,9 +51,9 @@ function arabidopsisBisulfite(
     // remote BAM over CDN, ~30x across 14kb: settles well under these caps
     readyTimeout: 90000,
     settleMs: 20000,
-    // just the ruler + coverage + pileup so the stacked contexts aren't mostly
-    // whitespace (equal heights give a clean 3-panel stack)
-    viewportHeight: 360,
+    // ruler + coverage + the full compact pileup, trimmed so the stacked
+    // contexts aren't mostly whitespace (equal heights give a clean 3-panel stack)
+    viewportHeight: 470,
   }
 }
 
@@ -69,12 +78,13 @@ export const methylationSpecs: ScreenshotSpec[] = [
       'methylation/arabidopsis_wgbs_chh',
     ],
   },
-  // Zoomed to ~800bp straddling the gene->TE boundary (CpG methylation jumps
-  // from ~0% through 4,405,600 to ~90% at 4,406,000, MethylDackel-measured), so
-  // individual reads are wide enough to read per-base: the C->T calls resolve
-  // into blue (unmethylated) cytosines on the gene-body side and red
-  // (methylated) cytosines once the reads cross into the silenced element. The
-  // boundary is even visible within single reads that span it.
+  // Zoomed to ~800bp straddling the gene->TE boundary (methylation jumps from
+  // ~0% through 4,405,600 to ~90% at 4,406,000, MethylDackel-measured), colored
+  // by ALL cytosines so every C on every read is a mark — individual reads are
+  // now wide enough to read per-base: dense blue (unmethylated C->T) cytosines
+  // on the gene-body side resolve into dense red (methylated) cytosines once the
+  // reads cross into the silenced element, the boundary visible within single
+  // reads that span it.
   {
     mode: 'url',
     name: 'methylation/arabidopsis_wgbs_boundary',
@@ -86,7 +96,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
           trackId: 'arabidopsis_wgbs',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            colorBy: { type: 'bisulfite' },
+            colorBy: { type: 'bisulfite', modifications: { cytosineContext: 'all' } },
           },
         },
       ],
@@ -94,7 +104,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readyText: 'Arabidopsis WGBS',
     readyTimeout: 90000,
     settleMs: 20000,
-    viewportHeight: 640,
+    viewportHeight: 470,
   },
 
   // CRAM modifications + bedmethyl together over a chr20:21.505-21.514Mb window

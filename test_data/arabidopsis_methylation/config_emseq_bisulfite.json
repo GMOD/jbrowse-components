@@ -22,17 +22,17 @@
   "tracks": [
     {
       "type": "AlignmentsTrack",
-      "trackId": "arabidopsis_emseq",
-      "name": "Arabidopsis EM-seq (bisulfite-style)",
+      "trackId": "arabidopsis_wgbs",
+      "name": "Arabidopsis WGBS (Col-0, DRR029742)",
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_emseq.bam",
+          "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_wgbs_bisulfite.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_emseq.bam.bai",
+            "uri": "https://jbrowse.org/demos/arabidopsis/arabidopsis_wgbs_bisulfite.bam.bai",
             "locationType": "UriLocation"
           },
           "indexType": "BAI"
@@ -53,22 +53,19 @@
     }
   ],
   "defaultSession": {
-    "name": "Arabidopsis EM-seq bisulfite (CHH context)",
+    "name": "Arabidopsis WGBS bisulfite (CpG context)",
     "views": [
       {
         "type": "LinearGenomeView",
         "init": {
           "assembly": "arabidopsis",
-          "loc": "NC_003070.9:16,000-18,000",
+          "loc": "NC_003070.9:4,398,000-4,412,000",
           "tracks": [
             {
-              "trackId": "arabidopsis_emseq",
+              "trackId": "arabidopsis_wgbs",
               "displaySnapshot": {
                 "type": "LinearAlignmentsDisplay",
-                "colorBy": {
-                  "type": "bisulfite",
-                  "modifications": { "cytosineContext": "CHH" }
-                }
+                "colorBy": { "type": "bisulfite" }
               }
             }
           ]
