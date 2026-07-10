@@ -7,35 +7,18 @@ import DisplayChrome from './DisplayChrome.tsx'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
-// Direct, fast guard for the commit rules documented in DisplayChrome.tsx (and
-// displayPhase.ts): the terminal banners must be literal `if (...) return`s, and
-// the loading term must stay a lazy thunk. These tests assert the
-// banner/overlay/canvas subtrees actually COMMIT to the DOM (via Testing Library
-// `findBy*`), not merely that the right element was returned — the historical
+// Fast guard that the banner/overlay/canvas subtrees actually COMMIT to the DOM
+// (via Testing Library `findBy*`) across mobx-driven transitions — the historical
 // bug was a returned-but-never-committed subtree.
 //
-// Negative-control status (both mutations verified to fail this file, then
-// reverted — NOT left in production):
-//
-//   - Rule 1 (rewrite the two `if (...) return`s as a single ternary `return`):
-//     deterministically fails the two RE-RENDER-driven cases — the
-//     `tooLarge -> ready` transition and the `canvasDrawn` `-done` flip. With
-//     the ternary the mobx-react observer still RE-RENDERS (its body runs and
-//     returns the updated element) but React never COMMITS the new subtree, so
-//     `chrome-done` / `probe-canvas` never reach the DOM. This reproduces the
-//     production hazard at the unit level — crucially on the mobx-driven
-//     re-render, not on initial mount (the first-paint banner cases still commit
-//     under the ternary, which is why only the transition/flip cases bite). Root
-//     cause is `babel-plugin-react-compiler`, not jsdom: toggling only the
-//     compiler flips it, and it emits the same JS for the browser (so this is a
-//     real production hazard). See `agent-docs/COMPILER_TERNARY_FINDING.md`.
-//
-//   - Rule 1b (evaluate the `loading` term eagerly so the observer subscribes to
-//     the churning loading observable while a terminal flag is set): fails
-//     `terminal banner survives loading-condition churn` — the churn re-fires
-//     the observer during `tooLarge` and the banner drops out of the DOM. With
-//     the production lazy thunk the loading observable isn't read during a
-//     terminal state, so the churn is inert and the banner stays committed.
+// That bug was `babel-plugin-react-compiler` memoizing a MobX read on stable
+// identity; `DisplayChromeInner` now carries `'use no memo'`, so it is no longer
+// compiled and the ternary-vs-early-`return` sensitivity is gone (see
+// `agent-docs/COMPILER_TERNARY_FINDING.md`). These tests still guard the runtime
+// commit behavior, plus rule 1b: the `displayPhase` loading term must stay a lazy
+// thunk so the observer doesn't track the churning `visibleRegions`/`loadedRegions`
+// set while a terminal banner is up (`terminal banner survives loading-condition
+// churn`).
 //
 // products/jbrowse-web/src/tests/StatsEstimation.test.tsx remains the heavier
 // end-to-end guard (real force-load path); this file is the fast co-located one.

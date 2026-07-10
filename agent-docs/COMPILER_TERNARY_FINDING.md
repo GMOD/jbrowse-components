@@ -1,5 +1,11 @@
 # Finding: the DisplayChrome early-`return` rule is a React-Compiler bug, not a jsdom artifact
 
+> **RESOLVED.** `DisplayChromeInner` now carries `'use no memo'`, so the compiler
+> no longer compiles it — the only compiled `observer` in the codebase. With zero
+> compiled observers, this staleness class is structurally impossible; the
+> early-`return`-vs-ternary sensitivity below is neutralized (early-`return` is
+> kept only as a clear pattern). Everything below is the historical analysis.
+
 Investigation of deferred item **#5** (the "early-return-vs-ternary jsdom rule").
 The rule is **real and load-bearing** — but every doc that describes it
 (`ARCHITECTURE.md` §"Terminal states early-return their own root", the

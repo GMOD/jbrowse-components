@@ -50,39 +50,15 @@ interface CanvasHandle {
 //
 // The two subtree-replacing states (renderError, tooLarge) **early-`return`**
 // their own component; `error` and `loading` are overlays drawn *over* the
-// still-mounted canvas (the `ready` branch). Two non-obvious constraints make
-// this work — guarded directly by DisplayChrome.test.tsx (co-located, fast) and
-// originally confirmed by instrumenting StatsEstimation.test (the heavier
-// integration guard); both reintroduce a real bug if violated:
+// still-mounted canvas (the `ready` branch).
 //
-//   1. The terminal UI must be a literal early-`return`, NOT a branch of a
-//      single ternary `return`. The two produce an identical React element
-//      tree, yet the ternary form makes a mobx-driven re-render fail to *commit*
-//      (the `tooLarge → ready` transition and the `canvasDrawn → -done` flip):
-//      the observer re-renders but React skips the commit. The cause is pinned:
-//      `babel-plugin-react-compiler` memoizes a block whose dependency set omits
-//      the in-place-mutated observable (`model` keeps stable identity), so a
-//      referential memo never invalidates. It is NOT a jsdom artifact — toggling
-//      only the compiler flips it, and the compiler emits the same JS for the
-//      browser, so this drops updates in production too. Two ingredients are
-//      BOTH required (verified at runtime + in compiled output, minimal repro in
-//      `agent-docs/COMPILER_TERNARY_FINDING.md`): (a) `model.canvasDrawn` read
-//      inside the ternary *expression* — this stops the compiler hoisting it to
-//      an unconditional per-render `const`, so it stays in a memoized block; and
-//      (b) `model` passed WHOLE to a child in that same block (here
-//      `<DisplayErrorBar model={model}/>` / `<DisplayLoadingOverlay
-//      model={model}/>`), which coarsens the block's memo dep from
-//      `model.canvasDrawn` down to `model` IDENTITY — stable under mobx in-place
-//      mutation, so it never re-evaluates. The early-`return` breaks (a): each
-//      literal return is its own scope and the read hoists out as an
-//      unconditional `const`, so mobx re-subscribes and the memo rebuilds.
-//
-//   2. `displayPhase`'s loading term is evaluated lazily (a thunk in
-//      `computeDisplayPhase`) so that when a terminal flag is set this observer
-//      tracks ONLY that flag — not the containing view's `visibleRegions` /
-//      `loadedRegions`. Tracking those during a terminal state churns the
-//      observer and reproduces failure (1) even with the early-`return`. Lazy
-//      evaluation keeps the tracked set identical to the old direct reads.
+// `displayPhase`'s loading term is evaluated lazily (a thunk in
+// `computeDisplayPhase`) so that when a terminal flag is set this observer tracks
+// ONLY that flag — not the containing view's `visibleRegions` / `loadedRegions` —
+// avoiding needless re-renders while a banner is up. (This component carries
+// `'use no memo'`, so the react-compiler staleness that once made the terminal
+// branches sensitive to early-`return`-vs-ternary no longer applies; see the
+// directive below and `agent-docs/COMPILER_TERNARY_FINDING.md`.)
 //
 // Early-`return` also gives the canvas a clean dispose/re-init: unmounting the
 // body fires `canvasRef(null)` → effect cleanup → `backend.dispose()` +
@@ -105,6 +81,12 @@ interface CanvasHandle {
 // give the inner <canvas> a *static* selector (`hic_canvas`) for that lookup —
 // the readiness gate stays here on the chrome div, never duplicated as a
 // `canvasDrawn`/`rpcData` ternary on the canvas.
+// Must stay the `function Decl(){}; observer(Decl)` form (not inline
+// `observer(function(){})`) because the generic `<B>` only infers through
+// `observer` from a named declaration. That form IS compiled by
+// babel-plugin-react-compiler, so it carries `'use no memo'` below to opt out —
+// otherwise the compiler can memoize a MobX read on stable identity and drop an
+// update (see agent-docs/COMPILER_TERNARY_FINDING.md).
 function DisplayChromeInner<B extends { dispose(): void }>({
   model,
   factory,
@@ -118,14 +100,13 @@ function DisplayChromeInner<B extends { dispose(): void }>({
   children: (handle: CanvasHandle) => ReactNode
   testid?: string
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
+  // eslint-plugin-react-compiler (react-compiler@19.1.0-rc.2) thinks this
+  // directive is unused, but the babel plugin (@1.0.0, the real build) DOES
+  // compile this fn — version skew. The directive is load-bearing; keep it.
+  // eslint-disable-next-line react-compiler/react-compiler
+  'use no memo'
   const { canvas, canvasRef, retry } = useRenderingBackend(factory, model)
   const phase = model.displayPhase
-  // WARNING — DO NOT rewrite these as a ternary. Terminal states MUST be literal
-  // early-`return`s: the ternary form makes a mobx-driven re-render skip its
-  // commit under babel-plugin-react-compiler (real in-browser, not a jsdom
-  // artifact). Full rule in the comment block above; analysis + minimal repro in
-  // agent-docs/COMPILER_TERNARY_FINDING.md (keep in sync with babel.config.cjs +
-  // ARCHITECTURE.md §1a).
   if (phase === 'renderError') {
     return (
       <DisplayRenderErrorOverlay

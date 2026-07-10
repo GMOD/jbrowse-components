@@ -38,12 +38,11 @@ regionStart-relative arithmetic crosses the worker boundary. See
 
 ## React Compiler × MobX
 
-The compiler invalidates by identity; MobX mutates in place, so a compiled read
-of a MobX value can go stale (UI stops updating). It skips inline
-`observer(function(){})`/`observer(()=>…)` — always use that form (never
-`function Foo(){}; observer(Foo)`, the one compiled shape; `DisplayChrome` is the
-sole case, needs early-`return`). Derive lists via computed `views` getters, not
-inline over a raw `types.array`. Dropping `useMemo`/`useCallback` is safe. See
+`babel-plugin-react-compiler` does NOT compile inline `observer(function(){})` /
+`observer(()=>…)` — always write observers that way, so MobX drives their
+reactivity. The `function F(){}; observer(F)` form DOES get compiled and can
+stale a MobX read (it memoizes on stable identity); avoid it, or add
+`'use no memo'` (as `DisplayChrome` does). See
 `agent-docs/COMPILER_TERNARY_FINDING.md`.
 
 ## Tooling

@@ -193,74 +193,33 @@ when the work callback returns.
 replacing the display subtree — *not* by keeping its container `<div>` mounted
 and rendering the banner as a swapped-in child beside the canvas/overlays. This
 looks like a leak (the caller's `className` / `ref` / mouse handlers are absent
-in those two states) but the leak is benign — a too-large region has no canvas
-to interact with, and the ref re-attaches on force-load — and the structure is
-**load-bearing**: one subtle React-commit reason (1, with two sharp sub-rules
-1a/1b) and one GPU-lifecycle reason (2).
+in those two states) but the leak is benign — a too-large region has no canvas to
+interact with, and the ref re-attaches on force-load. Don't "fix" it by nesting
+the banner. Three things make this the right shape:
 
-**1. React won't render a nested swapped-in terminal child.** If the banner is
-nested — `{regionTooLarge ? <TooLargeMessage/> : children}` inside the
-persistent container, next to the `DisplayErrorBar` / `DisplayLoadingOverlay`
-siblings — the banner never reaches the DOM and `StatsEstimation.test` times
-out. Instrumenting every site shows why: `DisplayChrome` re-renders with
-`tooLarge`, the sibling overlays render normally, but **React never descends
-into the `<TooLargeMessage>` element** — its component body never runs (verified
-with a `console` probe inside `TooLargeMessage`: 0 calls when nested, 2 when
-returned as a root). Returning the banner as a fresh top-level root mounts it
-reliably. The cause is now pinned (see 1a): **`babel-plugin-react-compiler`**
-memoization, not a jsdom artifact — it emits identical JS for browser builds, so
-the **rule** — terminal UI is its own `return`, never a nested child — is
-load-bearing in a real browser, not just under test.
+**Clean GPU dispose/re-init (ADR-025, superseded by ADR-026).** Early-`return`
+unmounts the canvas subtree, which fires `canvasRef(null)` → effect cleanup →
+`backend.dispose()` + `stopRenderingBackend()`; force-load then remounts and
+re-inits via the callback ref. Nesting the banner beside a still-mounted canvas
+would skip that cycle. ADR-025's headline ("GPU canvas stays mounted") is
+superseded: unmounting is safe *so long as* the transition runs a full
+dispose→re-init cycle, which this does; the detached-context bug ADR-025 warns of
+only happens when the canvas unmounts *without* disposing. Invariant:
+mount-lifetime is not required, clean dispose-on-unmount is.
 
-**1a. A literal `return`, not a ternary branch — and the reason is the React
-Compiler.** Rewriting the two `if (phase === …) return`s as a single ternary
-`return` (`return phase === 'tooLarge' ? <TooLargeMessage/> : <div>…</div>`)
-reproduces the failure despite producing an identical element tree. A controlled
-experiment isolated the cause (see `agent-docs/COMPILER_TERNARY_FINDING.md`):
-holding jsdom constant and toggling only `babel-plugin-react-compiler` (enabled
-globally in `babel.config.cjs`), the ternary form fails **only with the compiler
-on** and passes with a temporary `'use no memo'` probe. jsdom is therefore *not*
-the variable. The symptom is a mobx-driven **re-render that never commits** — the
-`tooLarge → ready` transition and the ready-branch `canvasDrawn → -done` flip: the
-observer body runs and returns updated elements, but React skips the commit
-because the compiler cached a JSX block whose dependency set omits the
-in-place-mutated observable (`model` keeps stable identity, so a referential
-memo never invalidates and mobx-react never re-tracks `canvasDrawn`). First-paint
-banner cases still commit under the ternary; only re-render-driven cases bite.
-Since the compiler emits the same JS for browser bundles, this drops updates
-in-browser too. So the rule is specifically *early-`return` statements*, and it
-overrides the repo's usual "prefer ternaries over early return" style **here** —
-but narrowly: a minimal ternary `observer` reading an observable in the taken
-branch commits fine under the compiler, so the house prefer-ternary style is not
-broadly unsafe. The mechanism, confirmed at runtime and in the compiled output
-(minimal repro + truth table in `agent-docs/COMPILER_TERNARY_FINDING.md`),
-requires **two** ingredients together: **(a)** the `model.canvasDrawn` read sits
-inside the ternary *expression*, which stops the compiler hoisting it to an
-unconditional per-render `const` — it stays in a memoized block; and **(b)** the
-same block passes `model` as a **whole object** to a child
-(`<DisplayErrorBar model={model}/>` / `<DisplayLoadingOverlay model={model}/>`),
-which coarsens that block's memo dependency from `model.canvasDrawn` down to
-`model` **identity**. Coarsening to `model` is sound for an immutable object, but
-mobx mutates `canvasDrawn` in place with `model` identity stable, so the block
-never re-evaluates and the read goes stale (mobx even unsubscribes). The
-early-`return` form breaks (a): each literal `return` is its own scope, so the
-compiler hoists the read out as an unconditional `const t2 = …model.canvasDrawn…`,
-mobx re-subscribes, and the enclosing `<div>` memo (which depends on `t2`)
-rebuilds on the flip. Removing either ingredient — early-`return`, or not passing
-`model` whole in that branch — fixes it; that is why the minimal single-`div`
-probes commit.
+**The loading term stays lazy.** `computeDisplayPhase(self, loading)` takes
+`loading` as a **thunk** and calls it only after ruling out the terminal flags,
+so when a banner is up the chrome's observer tracks only that flag — not the
+containing view's churning `visibleRegions` / `loadedRegions`. Evaluating it
+eagerly would re-fire the observer during a terminal state for no reason.
 
-**1b. `displayPhase`'s loading term must be lazy.** `computeDisplayPhase(self,
-loading)` takes `loading` as a **thunk** and only calls it after ruling out the
-three terminal flags. The loading condition reads the containing view
-(`visibleRegions` / `loadedRegions`); evaluating it eagerly makes the chrome's
-observer track that churning set even while a banner is up, which re-fires the
-observer during the terminal state and reproduces the same commit failure (1) —
-*even with* the early-`return`. Lazy evaluation keeps the tracked set to just the
-terminal flags when one is active, identical to the old direct `model.regionTooLarge`
-reads that always committed. (This is why the older writeup couldn't pin the
-React cause: the visible symptom is reconciliation, but the trigger is the
-observer's tracked-dependency set.)
+**React Compiler opt-out.** `DisplayChromeInner` carries `'use no memo'`, so
+babel-plugin-react-compiler does not compile it. Otherwise the compiler could
+memoize a MobX read on `model`'s (stable) identity and silently drop an update —
+the historical hazard that once made the terminal branches sensitive to
+early-`return`-vs-ternary; with the function opted out that is now a style
+choice. Full analysis + minimal repro + codebase audit (DisplayChrome was the
+only compiled observer): `agent-docs/COMPILER_TERNARY_FINDING.md`.
 
 There is **no** `regionTooLarge` oscillation here, despite what earlier writeups
 of this section (and commit `614465dd51`) claimed. Instrumentation shows
@@ -271,25 +230,6 @@ was wrong: the failure is React reconciliation, not the fetch machinery. (The
 `FetchVisibleRegions` gate and `ClearBlockingStateOnViewportChange` clear,
 described in the table above, are real and correct — they just don't loop during
 a steady too-large state.)
-
-**2. Clean GPU dispose/re-init (ADR-025, as superseded by ADR-026).** ADR-025's
-*headline* ("GPU canvas stays mounted across error/retry") reads as the opposite
-of the current behavior, but its own "Update" section supersedes that: unmounting
-the canvas is safe **so long as the transition runs a full
-`stopRenderingBackend` → `startRenderingBackend` dispose/re-init cycle**, which is
-exactly what the terminal-state early-`return` does — firing `canvasRef(null)` →
-effect cleanup → `backend.dispose()` + `stopRenderingBackend()`; force-load
-remounts and re-inits via the callback ref. The detached-context bug ADR-025
-warns of only occurs when the canvas is unmounted **without** disposing — which
-the early-return never does. (Current invariant: mount-lifetime is *not* required;
-clean dispose-on-unmount is.)
-
-The `DisplayChrome.tsx` comment block restates the rule so a future pass doesn't
-"fix" the apparent leak. The **derived** canvas `regionTooLarge` (above) is a
-pure function of cached stats, so its *value* never flickers regardless — but
-that's orthogonal to the DOM-commit rule here, which is shared by **every**
-display because it lives in `DisplayChrome`'s JSX shape, not in how
-`regionTooLarge` is computed.
 
 ### `rpcProps()` loop trap and how to break it
 
