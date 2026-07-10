@@ -260,9 +260,13 @@ function pairJitter01(p1Bp: number, p2Bp: number) {
 }
 
 // Pick the shape constant and target Y (in genomic bp) for a single arc.
-// Samplot: flat line at Y=|tlen| with ±8% multiplicative jitter so coincident
-// reads separate visually. Otherwise it's the single curved ARC shape (the
-// renderer chooses dome vs vertical-lines by zoom); Y is the genomic radius.
+// Samplot: flat line with ±8% multiplicative jitter so coincident reads separate
+// visually. Y is the pair's genomic span on the shared insert-size axis: a mate
+// link plots at Y=|tlen|; a split junction (no tlen) at the full breakpoint gap
+// |p2Bp−p1Bp| — NOT half of it, so a split-supported SV lands on the same
+// insertSizeTicks ruler height as the equivalent-span discordant pair (and isn't
+// mislabeled at half its real size). Otherwise it's the single curved ARC shape
+// (the renderer chooses dome vs vertical-lines by zoom); Y is the genomic radius.
 function computeArcShape({
   samplot,
   isSplit,
@@ -279,7 +283,7 @@ function computeArcShape({
   p2Bp: number
 }) {
   if (samplot) {
-    const baseY = tlen !== undefined ? Math.abs(tlen) : absrad
+    const baseY = tlen !== undefined ? Math.abs(tlen) : Math.abs(p2Bp - p1Bp)
     const jitter =
       1 + SAMPLOT_JITTER_BOUNDS * (pairJitter01(p1Bp, p2Bp) * 2 - 1)
     return {

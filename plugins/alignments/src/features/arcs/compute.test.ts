@@ -712,8 +712,11 @@ describe('computeArcsFromPileupData', () => {
     expect(inv).toHaveLength(1)
     // dashed split shape, not solid ARC_SHAPE_FLAT
     expect(inv[0]!.shapeType).toBe(ARC_SHAPE_FLAT_SPLIT)
-    // Y is the gap-span radius (|3001-1500|/2 ≈ 750), not collapsed to 0
-    expect(inv[0]!.yBp).toBeGreaterThan(500)
+    // Y is the full breakpoint gap span (~1700, ±8% jitter), so a split SV sits
+    // at the same ruler height as an equivalent-span discordant pair — not half
+    // of it (~850), and never collapsed to 0 by the supplementary's tlen.
+    expect(inv[0]!.yBp).toBeGreaterThan(1400)
+    expect(inv[0]!.yBp).toBeLessThan(1850)
     // opposite strands → split-inversion slot 7 (magenta arc)
     expect(inv[0]!.colorType).toBe(7)
 
