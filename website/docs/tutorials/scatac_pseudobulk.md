@@ -220,12 +220,13 @@ anything.
 
 ## Rendering options
 
-The display is a `MultiLinearWiggleDisplay`. Its `defaultRendering` slot chooses
-how the subtracks are drawn — set it under the track's `displays` (or the
-`displayDefaults` shorthand), or switch it live from the track menu.
+The display is a `MultiLinearWiggleDisplay`. Its
+[`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
+slot chooses how the subtracks are drawn — set it under the track's `displays`
+(or the `displayDefaults` shorthand), or switch it live from the track menu.
 
-- **`multirowxy`** (default) — one stacked XY-plot row per cell type. This is
-  the "one coverage row per cell type" look of the gallery card, and is best for
+- **`multirowxy`** — one stacked XY-plot row per cell type. This is the "one
+  coverage row per cell type" look of the gallery card, and is best for
   comparing peak shape across many groups.
 - **`multirowdensity`** — one row per cell type, but score mapped to color
   intensity instead of bar height. Compact, and good for a heatmap-style view of
@@ -241,10 +242,12 @@ are automatically remapped to their multi-row equivalents, so an accidental
 
 Other useful controls:
 
-- **height** — total track height in pixels (default 200). Raise it when you
-  have many rows.
-- **summaryScoreMode** — `avg` (default), `min`, `max`, or `whiskers` for how
-  each bin's summary is drawn when zoomed out.
+- **height** — total track height in pixels (the
+  [`height`](/docs/config/multilinearwiggledisplay/#slot-height) slot). Raise it
+  when you have many rows.
+- **summaryScoreMode** — `avg`, `min`, `max`, or `whiskers` (the
+  [`summaryScoreMode`](/docs/config/multilinearwiggledisplay/#slot-summaryscoremode)
+  slot) for how each bin's summary is drawn when zoomed out.
 - **Clustering → "Cluster rows by score..."** — a track-menu action that
   reorders the rows by hierarchical clustering of the score matrix over the
   region in view, drawing a dendrogram in the sidebar. Cell types with similar

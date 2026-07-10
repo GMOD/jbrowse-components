@@ -532,9 +532,10 @@ Other `colorBy` types include `strand`, `pairOrientation`, `insertSize`, and
 }
 ```
 
-`defaultRendering` also accepts `multirowxy` (the default — one stacked row per
-signal), `multirowdensity`, and `multixyplot` (all signals overlaid in one
-plot).
+The
+[`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
+slot also accepts `multirowxy` (one stacked row per signal), `multirowdensity`,
+and `multixyplot` (all signals overlaid in one plot).
 
 ---
 

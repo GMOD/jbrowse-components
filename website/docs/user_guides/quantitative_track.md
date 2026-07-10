@@ -10,9 +10,11 @@ continuous tracks with several visual styles.
 
 ## Rendering types
 
-The **Rendering type** option offers four styles:
+The **Rendering type** option (the display's
+[`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
+slot) offers four styles:
 
-- **XY plot** (default) — filled bar chart; good for coverage and discrete peaks
+- **XY plot** — filled bar chart; good for coverage and discrete peaks
 - **Density** — a single-row heatmap where color intensity encodes the value;
   compact for browsing many tracks at once
 - **Line** — connects data points with a line; better for smooth signals and

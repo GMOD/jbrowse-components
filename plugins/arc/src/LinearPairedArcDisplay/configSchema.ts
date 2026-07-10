@@ -3,6 +3,10 @@ import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-vie
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+// default arc stroke width in px, shared by the config-slot default and the
+// track-menu slider's reset/is-default check so they can't drift
+export const defaultArcLineWidth = 3
+
 /**
  * #config LinearPairedArcDisplay
  *
@@ -43,6 +47,14 @@ export function configSchemaFactory() {
         description: 'the color of the arcs',
         defaultValue: 'jexl:defaultPairedArcColor(feature,alt)',
         contextVariable: ['feature', 'alt'],
+      },
+      /**
+       * #slot
+       */
+      lineWidth: {
+        type: 'number',
+        description: 'the stroke width of the arcs, in pixels',
+        defaultValue: defaultArcLineWidth,
       },
     },
     {

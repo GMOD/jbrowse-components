@@ -228,99 +228,27 @@ Here is an example array of MenuItems and the resulting menu:
 
 ## Root model Menu API
 
-Users can customize the top-level menu items using these functions that are
-available on the rootModel:
+The root model exposes actions for customizing the top-level menus at runtime —
+typically called from a plugin's `configure()`, guarded by
+`isAbstractMenuManager` as shown above. Each takes a `menuName`/`menuPath` and
+(for the `insert*` variants) a `position` that counts from the end when
+negative, and returns the new length of the affected menu. Their signatures and
+descriptions are auto-generated from the model, so see the
+[`RootAppMenuMixin` state model](/docs/models/rootappmenumixin) for the
+authoritative reference:
 
-### `appendMenu`
-
-Add a top-level menu
-
-#### Parameters
-
-| Name     | Description                 |
-| -------- | --------------------------- |
-| menuName | Name of the menu to insert. |
-
-#### Return Value
-
-The new length of the top-level menus array
-
-### `insertMenu`
-
-Insert a top-level menu
-
-#### Parameters
-
-| Name     | Description                                                                                                                                 |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| menuName | Name of the menu to insert.                                                                                                                 |
-| position | Position to insert menu. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
-
-#### Return Value
-
-The new length of the top-level menus array
-
-### `appendToMenu`
-
-Add a menu item to a top-level menu
-
-#### Parameters
-
-| Name     | Description                              |
-| -------- | ---------------------------------------- |
-| menuName | Name of the top-level menu to append to. |
-| menuItem | Menu item to append.                     |
-
-#### Return Value
-
-The new length of the menu
-
-### `insertInMenu`
-
-Insert a menu item into a top-level menu
-
-#### Parameters
-
-| Name     | Description                                                                                                                                                  |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| menuName | Name of the top-level menu to insert into.                                                                                                                   |
-| menuItem | Menu item to insert.                                                                                                                                         |
-| position | Position to insert menu item. If negative, counts from the end, e.g. `insertInMenu('My Menu', menuItem, -1)` will insert the item as the second-to-last one. |
-
-#### Return Value
-
-The new length of the menu
-
-### `appendToSubMenu`
-
-Add a menu item to a sub-menu
-
-#### Parameters
-
-| Name     | Description                                                                                   |
-| -------- | --------------------------------------------------------------------------------------------- |
-| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`). |
-| menuItem | Menu item to append.                                                                          |
-
-#### Return value
-
-The new length of the sub-menu
-
-### `insertInSubMenu`
-
-Insert a menu item into a sub-menu
-
-#### Parameters
-
-| Name     | Description                                                                                                                                                              |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`).                                                                            |
-| menuItem | Menu item to insert.                                                                                                                                                     |
-| position | Position to insert menu item. If negative, counts from the end, e.g. `insertInSubMenu(['File', 'Insert'], menuItem, -1)` will insert the item as the second-to-last one. |
-
-#### Return value
-
-The new length of the sub-menu
+- [`appendMenu`](/docs/models/rootappmenumixin/#action-appendmenu) — add a
+  top-level menu
+- [`insertMenu`](/docs/models/rootappmenumixin/#action-insertmenu) — insert a
+  top-level menu at a position
+- [`appendToMenu`](/docs/models/rootappmenumixin/#action-appendtomenu) — add an
+  item to a top-level menu
+- [`insertInMenu`](/docs/models/rootappmenumixin/#action-insertinmenu) — insert
+  an item into a top-level menu at a position
+- [`appendToSubMenu`](/docs/models/rootappmenumixin/#action-appendtosubmenu) —
+  add an item to a sub-menu
+- [`insertInSubMenu`](/docs/models/rootappmenumixin/#action-insertinsubmenu) —
+  insert an item into a sub-menu at a position
 
 ## See also
 

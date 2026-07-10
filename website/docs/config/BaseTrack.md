@@ -32,7 +32,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [category](#slot-category)                                                                      | `stringArray` | the category and sub-categories of a track                                                                                                            |
 | [metadata](#slot-metadata)                                                                      | `frozen`      | anything to add about this track                                                                                                                      |
 | [adapter](#slot-adapter)                                                                        |               |                                                                                                                                                       |
-| [textSearching.indexedAttributes](#slot-textsearchingindexedattributes)                         | `stringArray` | list of which feature attributes to index for text searching                                                                                          |
+| [textSearching.indexingAttributes](#slot-textsearchingindexingattributes)                       | `stringArray` | list of which feature attributes to index for text searching                                                                                          |
 | [textSearching.indexingFeatureTypesToExclude](#slot-textsearchingindexingfeaturetypestoexclude) | `stringArray` | list of feature types to exclude in text search index                                                                                                 |
 | [textSearching.textSearchAdapter](#slot-textsearchingtextsearchadapter)                         |               |                                                                                                                                                       |
 | [displays](#slot-displays)                                                                      |               | An **array** of full display configs, e.g. `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`.                                              |
@@ -99,7 +99,7 @@ default.
 pluginManager.pluggableConfigSchemaType('adapter')
 ```
 
-#### slot: textSearching.indexedAttributes
+#### slot: textSearching.indexingAttributes
 
 list of which feature attributes to index for text searching
 

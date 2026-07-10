@@ -52,8 +52,8 @@ chr2	2	NC_000002.12
 ```
 
 One column is the "primary" refName that must match the names in your
-FASTA/sequence adapter; the other columns become aliases. The primary column
-defaults to the first (index `0`).
+FASTA/sequence adapter; the other columns become aliases. By default the primary
+column is the first one; use `refNameColumn` (below) to pick a different column.
 
 ```json
 {
@@ -66,9 +66,9 @@ defaults to the first (index `0`).
 
 **Options:**
 
-- `refNameColumn` (number, default `0`) — zero-based index of the column that
-  matches your FASTA. In the example above, `0` means `chr1`/`chr2` must match
-  your FASTA.
+- [`refNameColumn`](/docs/config/refnamealiasadapter/#slot-refnamecolumn) —
+  zero-based index of the column that matches your FASTA. In the example above,
+  the first column (`chr1`/`chr2`) is the one that must match your FASTA.
 - `refNameColumnHeaderName` (string) — alternative to `refNameColumn`. If your
   file has a `#`-prefixed header line, select the primary column by its header
   name instead of by index. If the named column is not found, the adapter throws
@@ -108,8 +108,9 @@ back to `Sequence name`; all four columns become aliases for it.
 
 **Options:**
 
-- `useNameOverride` (boolean, default `true`) — controls which name is canonical
-  (displayed) when your FASTA does **not** use UCSC names:
+- [`useNameOverride`](/docs/config/ncbisequencereportaliasadapter/#slot-usenameoverride)
+  — controls which name is canonical (displayed) when your FASTA does **not**
+  use UCSC names:
   - **`true`** — show UCSC-style names (`chr1`) even though your FASTA uses
     RefSeq accessions (`NC_000001.11`). JBrowse displays `chr1` and still
     fetches reference bases from the FASTA under `NC_000001.11` behind the

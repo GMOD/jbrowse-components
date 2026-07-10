@@ -95,7 +95,7 @@ default.
 pluginManager.pluggableConfigSchemaType('adapter')
 ```
 
-#### slot: textSearching.indexedAttributes
+#### slot: textSearching.indexingAttributes
 
 list of which feature attributes to index for text searching
 

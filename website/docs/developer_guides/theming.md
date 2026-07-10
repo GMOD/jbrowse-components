@@ -26,20 +26,20 @@ These extend MUI's standard `primary`/`secondary`/`error`/etc:
 
 | Key               | Type           | Default                    | Used for                               |
 | ----------------- | -------------- | -------------------------- | -------------------------------------- |
-| `tertiary`        | PaletteColor   | `#135560` (forest)         | Accordion headers, some toolbar chrome |
-| `quaternary`      | PaletteColor   | `#FFB11D` (mandarin)       | FAB secondary background               |
-| `highlight`       | PaletteColor   | `#FFB11D` (mandarin)       | Selection highlights                   |
-| `coverage`        | `string`       | `grey[400]`                | Coverage track fill                    |
-| `insertion`       | `string`       | `#800080`                  | Insertion markers in alignments        |
-| `deletion`        | `string`       | `#808080`                  | Deletion markers in alignments         |
-| `softclip`        | `string`       | `#00f`                     | Soft-clipped bases                     |
-| `hardclip`        | `string`       | `#f00`                     | Hard-clipped bases                     |
-| `skip`            | `string`       | `#009a8a`                  | Skipped regions (introns)              |
-| `modificationFwd` | `string`       | `#c8c8c8`                  | Base modifications, forward strand     |
-| `modificationRev` | `string`       | `#c8dcc8`                  | Base modifications, reverse strand     |
-| `mutedSnpBase`    | `string`       | `#888`                     | Low-frequency SNP bases                |
-| `startCodon`      | `string`       | `#3e3`                     | Start codon in gene/CDS tracks         |
-| `stopCodon`       | `string`       | `#e22`                     | Stop codon in gene/CDS tracks          |
+| `tertiary`        | PaletteColor   | forest teal                | Accordion headers, some toolbar chrome |
+| `quaternary`      | PaletteColor   | mandarin gold              | FAB secondary background               |
+| `highlight`       | PaletteColor   | mandarin gold              | Selection highlights                   |
+| `coverage`        | `string`       | grey                       | Coverage track fill                    |
+| `insertion`       | `string`       | purple                     | Insertion markers in alignments        |
+| `deletion`        | `string`       | grey                       | Deletion markers in alignments         |
+| `softclip`        | `string`       | blue                       | Soft-clipped bases                     |
+| `hardclip`        | `string`       | red                        | Hard-clipped bases                     |
+| `skip`            | `string`       | teal                       | Skipped regions (introns)              |
+| `modificationFwd` | `string`       | light grey                 | Base modifications, forward strand     |
+| `modificationRev` | `string`       | pale green                 | Base modifications, reverse strand     |
+| `mutedSnpBase`    | `string`       | grey                       | Low-frequency SNP bases                |
+| `startCodon`      | `string`       | green                      | Start codon in gene/CDS tracks         |
+| `stopCodon`       | `string`       | red                        | Stop codon in gene/CDS tracks          |
 | `bases.A`         | PaletteColor   | green                      | Adenine                                |
 | `bases.C`         | PaletteColor   | blue                       | Cytosine                               |
 | `bases.G`         | PaletteColor   | orange                     | Guanine                                |
@@ -47,8 +47,11 @@ These extend MUI's standard `primary`/`secondary`/`error`/etc:
 | `frames[1..6]`    | PaletteColor[] | grey shades                | Reading frame coloring (non-CDS)       |
 | `framesCDS[1..6]` | PaletteColor[] | red/green/blue alternating | Reading frame coloring (CDS)           |
 
-The `string`-valued feature colors above render as the swatches below (generated
-from `theme.ts`, so the values never drift):
+The exact hex values for the `string`-valued feature colors are shown in the
+swatch table below, generated from the `#color`-tagged definitions in `theme.ts`
+so they never drift from the code (the `insertion`/`softclip`/`hardclip`
+indicators are tagged there too, under a separate `alignments-indicators`
+group):
 
 <!-- COLOR_TABLE theme-colors START -->
 

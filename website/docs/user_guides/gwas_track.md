@@ -81,8 +81,8 @@ track**.
 
 - _GWAS file_ — the `.bed.gz` or `.txt.gz`
 - _GWAS tabix index_ — omit if the index is at `<file>.tbi`
-- _Score column_ — column name for the -log₁₀(p) values (default:
-  `neg_log_pvalue`)
+- _Score column_ — column name for the -log₁₀(p) values (the
+  [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) slot)
 
 **LD coloring (optional)**
 

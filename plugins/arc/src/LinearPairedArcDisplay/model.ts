@@ -2,6 +2,7 @@ import type React from 'react'
 
 import {
   ConfigurationReference,
+  getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
@@ -13,6 +14,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { makeFeaturePair, pairKey } from './components/util.ts'
+import { makeLineWidthMenuItem } from './lineWidthMenu.tsx'
 import { currentRegionSignature } from '../shared/regionSignature.ts'
 
 import type {
@@ -93,6 +95,14 @@ export function stateModelFactory(
       get conf(): LinearPairedArcDisplayConfig {
         return self.configuration
       },
+      /**
+       * #getter
+       * arc stroke width in px, from the `lineWidth` slot (track-menu slider
+       * writes it); flat across all arcs
+       */
+      get lineWidth(): number {
+        return getConf(self, 'lineWidth')
+      },
     }))
     .views(self => ({
       /**
@@ -163,6 +173,13 @@ export function stateModelFactory(
       },
       /**
        * #action
+       * set arc stroke width; `undefined` resets to the config-slot default
+       */
+      setLineWidth(n?: number) {
+        self.configuration.setSlot('lineWidth', n)
+      },
+      /**
+       * #action
        * retry after an error: clearing `error` re-fires the (error-gated) fetch
        * autorun. The shared `DisplayErrorBar` retry calls this; the base
        * `reload` is a no-op, which would leave the display stuck on error.
@@ -195,6 +212,20 @@ export function stateModelFactory(
         return renderArcSvg(self as LinearPairedArcDisplayModel, opts)
       },
     }))
+    .views(self => {
+      const superMenuItems = self.trackMenuItems
+      return {
+        /**
+         * #method
+         */
+        trackMenuItems() {
+          return [
+            ...superMenuItems(),
+            makeLineWidthMenuItem(self),
+          ]
+        },
+      }
+    })
 }
 
 export type LinearPairedArcDisplayStateModel = ReturnType<

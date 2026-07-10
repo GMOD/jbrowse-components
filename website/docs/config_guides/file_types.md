@@ -115,8 +115,9 @@ GTF files have no spanning gene line and often no transcript line, so the GTF
 adapters build the gene model from the per-feature lines: lines sharing a
 `transcript_id` are grouped under a transcript (synthesized if absent, per the
 Cufflinks/StringTie convention), and transcripts are then grouped into a gene
-via the `aggregateField` (default `gene_name`). If your file keys genes on a
-different attribute (e.g. `gene_id`), set `aggregateField` accordingly:
+via the [`aggregateField`](/docs/config/gtftabixadapter/#slot-aggregatefield)
+slot. If your file keys genes on a different attribute (e.g. `gene_id`), set
+`aggregateField` accordingly:
 
 ```json
 {

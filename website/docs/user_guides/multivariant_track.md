@@ -36,10 +36,12 @@ homozygosity, and population structure become visible at a glance.
 ## Genotype coloring — allele dosage vs phased
 
 Both the regular and matrix displays color each genotype cell, and how they
-color it is set by the `renderingMode` display option.
+color it is set by the
+[`renderingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-renderingmode)
+display option.
 
-In the default **allele-dosage** mode (`renderingMode: 'alleleCount'`), one cell
-is drawn per sample and shaded by how many alternate alleles the call carries:
+In **allele-dosage** mode (`'alleleCount'`), one cell is drawn per sample and
+shaded by how many alternate alleles the call carries:
 
 - homozygous reference (`0/0`) → light grey
 - heterozygous (`0/1`) → a medium shade

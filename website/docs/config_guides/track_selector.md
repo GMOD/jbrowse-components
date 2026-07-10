@@ -7,21 +7,21 @@ guide_category: Other features
 By default, tracks appear in the order defined in config.json. The following
 options control sorting and default collapse behavior.
 
-- `hierarchical.sort.trackNames` - boolean - sort track names alphabetically.
-  default: false
+- [`hierarchical.sort.trackNames`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicalsorttracknames)
+  — sort track names alphabetically
 
-- `hierarchical.sort.categories` - boolean - sort categories alphabetically
-  (independent of track name sorting). default: false
+- [`hierarchical.sort.categories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicalsortcategories)
+  — sort categories alphabetically (independent of track name sorting)
 
-- `hierarchical.defaultCollapsed.categoryNames` - string array - category names
-  to collapse at startup. For nested categories, use a comma-joined path (e.g.
-  `"Wiggle,Wiggle Rendering Styles"`).
+- [`hierarchical.defaultCollapsed.categoryNames`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedcategorynames)
+  — category names to collapse at startup. For nested categories, use a
+  comma-joined path (e.g. `"Wiggle,Wiggle Rendering Styles"`)
 
-- `hierarchical.defaultCollapsed.topLevelCategories` - boolean - collapse all
-  top-level categories by default. default: false
+- [`hierarchical.defaultCollapsed.topLevelCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedtoplevelcategories)
+  — collapse all top-level categories at startup
 
-- `hierarchical.defaultCollapsed.subCategories` - boolean - collapse all
-  sub-categories by default. default: false
+- [`hierarchical.defaultCollapsed.subCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedsubcategories)
+  — collapse all sub-categories at startup
 
 <Figure caption="Example showing all the top-level categories collapsed" src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
 
@@ -58,10 +58,10 @@ Categories can be displayed in "folder mode", which collapses the entire
 category into a compact folder row. Clicking a folder opens a faceted track
 selector scoped to just the tracks in that category.
 
-- `hierarchical.defaultFolderCategories` - string array - categories to display
-  as folders by default. Use the category name for top-level categories, or a
-  comma-joined path for nested categories (e.g.
-  `"Wiggle,Wiggle Rendering Styles"`). default: `[]`
+- [`hierarchical.defaultFolderCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultfoldercategories)
+  — categories to display as folders at startup. Use the category name for
+  top-level categories, or a comma-joined path for nested categories (e.g.
+  `"Wiggle,Wiggle Rendering Styles"`)
 
 Users can also toggle any category between folder and normal mode at runtime via
 the category's context menu ("Collapse into folder" / "Expand to category").
@@ -86,7 +86,8 @@ For plugin developers: the category ID used internally is
 against in the `TrackSelector-folderDialog` extension point.
 
 See the [hierarchical config schema docs](/docs/config/hierarchicalconfigschema)
-for the full auto-generated reference.
+for the full auto-generated reference, including each slot's type and default
+value.
 
 ## Faceted track selector
 

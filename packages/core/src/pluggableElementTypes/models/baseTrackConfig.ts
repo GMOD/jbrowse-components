@@ -201,7 +201,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
 
       textSearching: ConfigurationSchema('textSearching', {
         /**
-         * #slot textSearching.indexedAttributes
+         * #slot textSearching.indexingAttributes
          */
         indexingAttributes: {
           type: 'stringArray',

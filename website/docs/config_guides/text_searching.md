@@ -65,9 +65,11 @@ A per-track config looks like this:
 The `textSearching` slots control what gets indexed when you run
 `jbrowse text-index` against this track:
 
-- `indexingAttributes` - feature attributes to index (default `["Name", "ID"]`)
-- `indexingFeatureTypesToExclude` - feature types to skip (e.g. `CDS`, `exon`),
-  so the index holds only the genes/transcripts users search for
+- [`indexingAttributes`](/docs/config/basetrack/#slot-textsearchingindexingattributes)
+  — feature attributes to index
+- [`indexingFeatureTypesToExclude`](/docs/config/basetrack/#slot-textsearchingindexingfeaturetypestoexclude)
+  — feature types to skip (e.g. `CDS`, `exon`), so the index holds only the
+  genes/transcripts users search for
 
 See [jbrowse text-index](/docs/cli#jbrowse-text-index) for generating indexes
 via the CLI. See the

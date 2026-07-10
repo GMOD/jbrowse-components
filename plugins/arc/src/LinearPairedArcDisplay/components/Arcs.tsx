@@ -23,12 +23,14 @@ const Arc = observer(function Arc({
   style,
   assembly,
   view,
+  lineWidth,
   exportSVG,
 }: {
   model: LinearPairedArcDisplayModel
   style: ArcStyle
   assembly: Assembly
   view: LGV
+  lineWidth: number
   exportSVG?: boolean
 }) {
   const [mouseOvered, setMouseOvered] = useState(false)
@@ -75,7 +77,7 @@ const Arc = observer(function Arc({
       <path
         d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
         {...getStrokeProps(col)}
-        strokeWidth={3}
+        strokeWidth={lineWidth}
         {...events}
         fill="none"
         pointerEvents="stroke"
@@ -83,7 +85,7 @@ const Arc = observer(function Arc({
       {k1.mateDirection ? (
         <line
           {...getStrokeProps(col)}
-          strokeWidth={3}
+          strokeWidth={lineWidth}
           {...events}
           x1={left}
           x2={left + k1.mateDirection * 20}
@@ -94,7 +96,7 @@ const Arc = observer(function Arc({
       {k2.mateDirection ? (
         <line
           {...getStrokeProps(col)}
-          strokeWidth={3}
+          strokeWidth={lineWidth}
           {...events}
           x1={right}
           x2={right + k2.mateDirection * 20}
@@ -120,7 +122,7 @@ const Arcs = observer(function Arcs({
 }) {
   const view = getContainingView(model) as LGV
   const { assemblyManager } = getSession(model)
-  const { arcStyles, height } = model
+  const { arcStyles, height, lineWidth } = model
   const assembly = assemblyManager.get(view.assemblyNames[0]!)
 
   if (!assembly) {
@@ -134,6 +136,7 @@ const Arcs = observer(function Arcs({
       style={style}
       view={view}
       assembly={assembly}
+      lineWidth={lineWidth}
       exportSVG={exportSVG}
     />
   ))

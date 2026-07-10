@@ -59,9 +59,10 @@ do not need to set `sequenceAdapter` manually. See the
 
 Display settings — `colorBy`, `height`, `featureHeight`, `filterBy`, and the
 coverage `autoscale`/`minScore`/`maxScore` — are slots on the
-`LinearAlignmentsDisplay`, not on the track. Reads are grey by default
-(`colorBy` is `{ "type": "normal" }`). To change a default, set it with the
-track's `displayDefaults` shorthand:
+`LinearAlignmentsDisplay`, not on the track. Reads are a solid grey until you
+pick a coloring scheme via the
+[`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby) slot. To change
+a default, set it with the track's `displayDefaults` shorthand:
 
 ```json
 {

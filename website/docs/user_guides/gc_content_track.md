@@ -29,11 +29,13 @@ FASTA — no new data is fetched beyond the sequence the browser already reads.
 
 ## GC content vs GC skew
 
-The track menu's **GC skew** checkbox toggles between the two calculations:
+The track menu's **GC skew** checkbox toggles between the two calculations (the
+adapter's initial mode is the
+[`gcMode`](/docs/config/gccontentadapter/#slot-gcmode) slot):
 
-- **GC content** (default) — the fraction of G+C bases in each window, a value
-  between 0 and 1. High values mark GC-rich regions; in vertebrate genomes these
-  track gene-dense isochores and CpG islands.
+- **GC content** — the fraction of G+C bases in each window, a value between 0
+  and 1. High values mark GC-rich regions; in vertebrate genomes these track
+  gene-dense isochores and CpG islands.
 - **GC skew** — `(G − C) / (G + C)`, which measures the strand imbalance between
   G and C. It swings positive and negative around zero, and in many bacterial
   genomes the sign flips at the replication origin and terminus, so a skew track
