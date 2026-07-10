@@ -211,6 +211,13 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'Human nanopore reads colored by base-modification (methylation) calls over a chr20 CpG island.',
       },
+      {
+        label: 'Bisulfite / EM-seq methylation (Arabidopsis, three contexts)',
+        spec: 'methylation/arabidopsis_wgbs_contexts',
+        guide: 'tutorials/bisulfite',
+        description:
+          'Arabidopsis WGBS colored per read by the bisulfite C→T signal (no MM/ML tags), with aggregate CpG/CHG/CHH methylation and gene annotation — CpG marks the gene body while all three plant contexts mark the silenced element.',
+      },
     ],
   },
   {
