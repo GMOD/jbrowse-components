@@ -38,7 +38,7 @@ const UcscQueryFields = observer(function UcscQueryFields({
         onChange={event => {
           query.setDb(event.target.value)
         }}
-        helperText="UCSC genome db id to query against (e.g. hg38)"
+        helperText="UCSC db or GenArk accession to query (e.g. hg38 or GCF_000001405.40)"
       />
       <TextField
         label={urlLabel}
