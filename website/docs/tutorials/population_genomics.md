@@ -12,6 +12,15 @@ groups) — are per-window statistics along the genome, the same form as a wiggl
 track. Once you compute them from a multi-sample VCF you can load them into
 JBrowse and read the peaks and troughs against genes.
 
+:::tip
+
+Working in a notebook? The
+[Jupyter selection-scan example](/docs/jbrowse_jupyter) runs this same
+compute-then-view loop in Python — a windowed Fst scan loaded straight from a
+DataFrame — and opens in Colab with one click.
+
+:::
+
 JBrowse does no population-genetic inference itself. It draws the windowed
 statistic your tool produced. This tutorial is a reproducible pipeline: every
 command below runs against publicly hosted _Drosophila melanogaster_ data on the

@@ -12,6 +12,15 @@ short-read and long-read RNA-seq differ. Every screenshot has a live link so you
 can open the same view yourself, using JBrowse's
 [session-spec URL format](/docs/urlparams#session-spec).
 
+:::tip
+
+Analyzing expression in a notebook? The
+[Jupyter differential-expression example](/docs/jbrowse_jupyter) takes a DE
+table straight to a gene track colored by call, and opens in Colab with one
+click.
+
+:::
+
 ## What RNA-seq looks like in the genome browser
 
 An RNA-seq BAM file over the ACTB gene. Each grey box is a **read**. The thin
