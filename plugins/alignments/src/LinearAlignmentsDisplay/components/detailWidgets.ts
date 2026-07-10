@@ -53,7 +53,6 @@ export function openCoverageWidget(
   position: number,
   refName: string,
   blockRpcData: PileupDataResult | undefined,
-  modType?: string,
 ) {
   // Coverage widget omits interbase — those are reached by clicking the
   // interbase histogram bars (openIndicatorWidget).
@@ -76,12 +75,8 @@ export function openCoverageWidget(
     featureData[`SNP ${base.toUpperCase()}`] =
       `${snpEntry.count}/${tooltipBin.depth} (${pct(snpEntry.count, tooltipBin.depth)}) (${snpEntry.fwd}(+) ${snpEntry.rev}(-))`
   }
-  const modifications =
-    modType && tooltipBin.modifications?.[modType]
-      ? { [modType]: tooltipBin.modifications[modType] }
-      : tooltipBin.modifications
-  if (modifications) {
-    for (const [, entry] of Object.entries(modifications)) {
+  if (tooltipBin.modifications) {
+    for (const entry of tooltipBin.modifications) {
       const avgProb = entry.count > 0 ? entry.probabilityTotal / entry.count : 0
       featureData[`modification ${entry.name}`] =
         `${entry.count}/${tooltipBin.depth} (${pct(entry.count, tooltipBin.depth)}) avg prob ${(avgProb * 100).toFixed(1)}% (${entry.fwd}(+) ${entry.rev}(-))`

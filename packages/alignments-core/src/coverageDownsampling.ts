@@ -428,17 +428,14 @@ export interface CoverageTooltipBin {
       topSeqCount?: number
     }
   >
-  modifications?: Record<
-    string,
-    {
-      count: number
-      fwd: number
-      rev: number
-      probabilityTotal: number
-      color: string
-      name: string
-    }
-  >
+  modifications?: {
+    count: number
+    fwd: number
+    rev: number
+    probabilityTotal: number
+    color: string
+    name: string
+  }[]
 }
 
 export interface MismatchArrays {

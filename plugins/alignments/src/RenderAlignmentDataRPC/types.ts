@@ -183,7 +183,7 @@ export interface PileupDataResult {
   indicatorPackedBuffer: ArrayBuffer
 
   // Modification tooltip data - only populated when colorBy is modifications/methylation
-  modTooltipData?: Record<number, Record<string, ModTooltipEntry>>
+  modTooltipData?: Record<number, ModTooltipEntry[]>
 
   // Tag color per read, packed ABGR u32 (0 = no tag color). The worker leaves
   // this empty — it is baked on the main thread (overlayReadTagColors) from

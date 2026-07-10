@@ -160,9 +160,7 @@ export function CoverageTooltipContents({
   const interbaseEntries = Object.entries(interbase)
   // Sort modifications by name for consistent display order
   const modEntries = modifications
-    ? Object.entries(modifications).sort((a, b) =>
-        a[1].name.localeCompare(b[1].name),
-      )
+    ? [...modifications].sort((a, b) => a.name.localeCompare(b.name))
     : []
   const hasModifications = modEntries.length > 0
   const hasTotalStrands = fwdDepth !== undefined && revDepth !== undefined
@@ -194,11 +192,11 @@ export function CoverageTooltipContents({
           )}
         </tr>
         {hasModifications
-          ? modEntries.map(([modKey, data]) => {
+          ? modEntries.map(data => {
               const avgProb =
                 data.count > 0 ? data.probabilityTotal / data.count : 0
               return (
-                <tr key={modKey}>
+                <tr key={`${data.name}-${data.color}`}>
                   <td>
                     <div
                       style={{

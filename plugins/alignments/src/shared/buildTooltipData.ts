@@ -16,19 +16,23 @@ export function buildModTooltipData({
     return undefined
   }
 
-  const result: Record<number, Record<string, ModTooltipEntry>> = {}
+  // Per-position dedup during aggregation is keyed on modType+noMod+color, but
+  // that key is synthetic and never read downstream — the tooltip/widget only
+  // need the list of aggregated entries. So aggregate through Maps and emit a
+  // plain array per position.
+  const byPosition = new Map<number, Map<string, ModTooltipEntry>>()
 
   for (const mod of modifications) {
     if (mod.position < regionStart) {
       continue
     }
-    let posEntry = result[mod.position]
+    let posEntry = byPosition.get(mod.position)
     if (!posEntry) {
-      posEntry = {}
-      result[mod.position] = posEntry
+      posEntry = new Map()
+      byPosition.set(mod.position, posEntry)
     }
     const modKey = `${mod.modType}_${mod.noMod ? 'nomod' : 'mod'}_${mod.color}`
-    let entry = posEntry[modKey]
+    let entry = posEntry.get(modKey)
     if (!entry) {
       entry = {
         count: 0,
@@ -42,7 +46,7 @@ export function buildModTooltipData({
           ? `Unmodified ${mod.base}`
           : getModificationName(mod.modType),
       }
-      posEntry[modKey] = entry
+      posEntry.set(modKey, entry)
     }
     entry.count++
     entry.probabilityTotal += mod.prob
@@ -53,5 +57,9 @@ export function buildModTooltipData({
     }
   }
 
+  const result: Record<number, ModTooltipEntry[]> = {}
+  for (const [position, posEntry] of byPosition) {
+    result[position] = [...posEntry.values()]
+  }
   return result
 }

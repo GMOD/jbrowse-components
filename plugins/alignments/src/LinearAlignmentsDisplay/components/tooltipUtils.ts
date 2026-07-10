@@ -285,8 +285,6 @@ export function getTooltipBin(
   }
 
   const modifications = blockRpcData.modTooltipData?.[position]
-    ? { ...blockRpcData.modTooltipData[position] }
-    : undefined
 
   const hasData =
     depth > 0 ||
