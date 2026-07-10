@@ -10,7 +10,7 @@ type DisplayMode = 'arc' | 'samplot' | 'cloud' | 'bezier' | 'stack'
 const MENU_PATHS: Record<DisplayMode, string[]> = {
   arc: ['Read connections', 'Show read arcs'],
   samplot: ['Read connections', 'Show read cloud'],
-  bezier: ['Read connections', 'Show read links as bezier curves'],
+  bezier: ['Read connections', 'Use curved connectors'],
   cloud: ['Read connections', 'View as pairs / link supplementary alignments'],
   stack: ['Read connections', 'View as pairs / link supplementary alignments'],
 }

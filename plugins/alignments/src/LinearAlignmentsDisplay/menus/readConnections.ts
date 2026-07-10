@@ -82,7 +82,7 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
     // Orthogonal to layout — the connection curves draw over an ordinary pileup
     // or a chain layout, so this is always offered.
     checkboxItem(
-      'Connect mates & split reads with curves',
+      'Use curved connectors',
       model.showBezierConnections,
       () => {
         model.setShowBezierConnections(!model.showBezierConnections)
