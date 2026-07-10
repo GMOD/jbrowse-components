@@ -1,5 +1,8 @@
 import type { Feature } from '@jbrowse/core/util'
-import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  TrackInit,
+  TrackLabelMode,
+} from '@jbrowse/plugin-linear-genome-view'
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
@@ -19,11 +22,9 @@ export interface ExportSvgOptions {
 export interface BreakpointSplitViewInitView {
   loc?: string
   assembly: string
-  // a track id, or a declarative {trackId, displaySnapshot} so per-view display
-  // settings (e.g. a shorter alignments height) can be specified
-  tracks?: (
-    string | { trackId: string; displaySnapshot?: Record<string, unknown> }
-  )[]
+  // a track id, or a declarative { trackId, ...displayOptions } so per-view
+  // display settings (e.g. a shorter alignments height) can be specified inline
+  tracks?: TrackInit[]
 }
 
 export type LayoutRecord = [number, number, number, number]

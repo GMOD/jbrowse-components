@@ -10,22 +10,22 @@ on — live in two places:
 
 - **Persistent defaults** in `config.json`, on the track's `displays` array.
   These apply every time the track opens, in every session.
-- **Per-session snapshots** via a `displaySnapshot` object in a session spec.
-  These set the track's _initial_ state when a particular link or embedded view
-  loads, and override the `config.json` defaults.
+- **Per-session settings** on a track entry in a session spec. These set the
+  track's _initial_ state when a particular link or embedded view loads, and
+  override the `config.json` defaults.
 
-Both use the same setting names — a `displaySnapshot` is just a per-session
-override of the fields you can bake in as defaults with `displays`. This
-tutorial shows the three places you set them.
+Both use the same setting names — the per-session settings are just a
+per-session override of the fields you can bake in as defaults with `displays`.
+This tutorial shows the three places you set them.
 
 ## Finding a setting's name
 
-The keys inside `displays` and `displaySnapshot` match the display model's own
-settings. Two ways to discover them:
+The per-session setting keys match the display model's own settings (the same
+names you'd put in a config `displays` entry). Two ways to discover them:
 
 - Configure the track interactively (height, color scheme, etc.), then use the
-  **Share** button to generate a session link — the spec it produces contains
-  the exact `displaySnapshot` keys for everything you changed.
+  **Share** button to generate a session link — the shared session records each
+  track's `displays` settings under those exact key names.
 - Look up the display in the auto-generated
   [config schema docs](/docs/config_guide) (e.g.
   [LinearWiggleDisplay](/docs/config/linearwiggledisplay),
@@ -62,9 +62,9 @@ array.
 
 ## In a URL (session spec)
 
-A `?session=spec-{...}` URL can open tracks with an initial `displaySnapshot`.
-Each entry in a view's `tracks` array is either a plain `trackId` string or an
-object carrying a snapshot:
+A `?session=spec-{...}` URL can open tracks with initial display settings. Each
+entry in a view's `tracks` array is either a plain `trackId` string or an object
+with `trackId` plus the display settings written directly alongside it:
 
 ```json
 {
@@ -76,12 +76,10 @@ object carrying a snapshot:
       "tracks": [
         {
           "trackId": "volvox_sv_cram",
-          "displaySnapshot": {
-            "height": 250,
-            "showSoftClipping": true,
-            "linkedReads": "normal",
-            "colorBy": { "type": "insertSizeAndOrientation" }
-          }
+          "height": 250,
+          "showSoftClipping": true,
+          "linkedReads": "normal",
+          "colorBy": { "type": "insertSizeAndOrientation" }
         }
       ]
     }
@@ -92,19 +90,24 @@ object carrying a snapshot:
 URL-encoded onto the end of a JBrowse link:
 
 ```
-?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"linkedReads":"normal","colorBy":{"type":"insertSizeAndOrientation"}}}]}]}
+?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","height":250,"showSoftClipping":true,"linkedReads":"normal","colorBy":{"type":"insertSizeAndOrientation"}}]}]}
 ```
 
-<Figure caption="What that link opens: the volvox-sv (cram) track at ctgA:1–10,000 with the displaySnapshot applied — a 250px-tall pileup, soft-clipping shown, and reads viewed as pairs, so each read links to its mate and is colored by insert size and orientation. The colored cluster at the left flags a structural variant, while concordant pairs stay grey." src="/img/display_settings_url_snapshot.png" />
+<Figure caption="What that link opens: the volvox-sv (cram) track at ctgA:1–10,000 — a 250px-tall pileup, soft-clipping shown, and reads viewed as pairs, so each read links to its mate and is colored by insert size and orientation. The colored cluster at the left flags a structural variant, while concordant pairs stay grey." src="/img/display_settings_url_snapshot.png" />
 
-See [URL parameters](/docs/urlparams) for the full session-spec format,
-including `trackSnapshot` and multi-view specs.
+The display settings can equivalently be nested under an explicit
+`displaySnapshot` key
+(`{ "trackId": "...", "displaySnapshot": { "height": 250 } }`); the inline form
+above is shorthand for it. Use the explicit form when you also need
+`trackSnapshot` to set track-config (not display) fields. See
+[URL parameters](/docs/urlparams) for the full session-spec format, including
+`trackSnapshot` and multi-view specs.
 
 ## In an embedded component
 
 The embedded React components take the same shape through
-`defaultSession.view.init.tracks`. Pass snapshot objects to set each track's
-startup state:
+`defaultSession.view.init.tracks`. Set each track's startup state with the same
+inline display settings:
 
 ```js
 import {
@@ -126,11 +129,9 @@ function GenomeBrowser() {
           tracks: [
             {
               trackId: 'volvox_microarray',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                defaultRendering: 'line',
-                height: 150,
-              },
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'line',
+              height: 150,
             },
           ],
         },
@@ -146,9 +147,9 @@ for the full embedded setup.
 
 ## Which wins?
 
-When both are present, the `displaySnapshot` overrides the `config.json`
+When both are present, the per-session settings override the `config.json`
 defaults for that session. Use `displays` for settings everyone should always
-get, and `displaySnapshot` for a link or embedded view that should open in a
+get, and per-session settings for a link or embedded view that should open in a
 specific state.
 
 ## See also

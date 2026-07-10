@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { normalizeTrackInit } from '@jbrowse/plugin-linear-genome-view'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
 import CropFreeIcon from '@mui/icons-material/CropFree'
@@ -723,15 +724,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     }
                     if (viewInit.tracks) {
                       for (const track of viewInit.tracks) {
-                        if (typeof track === 'string') {
-                          view.showTrack(track)
-                        } else {
-                          view.showTrack(
-                            track.trackId,
-                            track.trackSnapshot ?? {},
-                            track.displaySnapshot ?? {},
-                          )
-                        }
+                        const { trackId, trackSnapshot, displaySnapshot } =
+                          normalizeTrackInit(track)
+                        view.showTrack(trackId, trackSnapshot, displaySnapshot)
                       }
                     }
                     if (viewInit.trackLabels) {

@@ -151,6 +151,7 @@ export {
   type MultiLevelRubberbandModel,
 } from './MultiLevelRubberband/index.ts'
 export { fetchResults } from './searchUtils.ts'
+export { normalizeTrackInit } from './LinearGenomeView/normalizeTrackInit.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'
 export type {
   BpOffset,

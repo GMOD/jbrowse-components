@@ -405,6 +405,14 @@ Each track object supports the following properties:
   - Other display-specific settings
 - `trackSnapshot` (optional): Initial track state such as `pinned: true`
 
+The `displaySnapshot` fields can also be written directly on the track object as
+a shorthand —
+`{ "trackId": "my_bam_track", "type": "LinearAlignmentsDisplay", "height": 300 }`
+is equivalent to the `displaySnapshot` form above. Any key other than `trackId`
+and `trackSnapshot` is treated as a display setting. Use the explicit
+`displaySnapshot` form when you also pass `trackSnapshot`, so the two stay
+visually separated.
+
 #### Live example: alignments display settings
 
 `displaySnapshot` is not limited to overriding the display `type` — it can set

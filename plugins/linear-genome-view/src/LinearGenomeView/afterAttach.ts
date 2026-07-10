@@ -8,6 +8,7 @@ import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
+import { normalizeTrackInit } from './normalizeTrackInit.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { HighlightType, InitState } from './types.ts'
@@ -136,11 +137,8 @@ async function navigateInit(
 // (unresolved id, bad config, etc) as its own snackbar
 function showInitTracks(self: LinearGenomeViewModel, init: InitState) {
   for (const t of init.tracks ?? []) {
-    if (typeof t === 'string') {
-      self.showTrack(t)
-    } else {
-      self.showTrack(t.trackId, t.trackSnapshot ?? {}, t.displaySnapshot ?? {})
-    }
+    const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
+    self.showTrack(trackId, trackSnapshot, displaySnapshot)
   }
 }
 

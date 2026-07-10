@@ -55,8 +55,15 @@ export type TrackInit =
   | string
   | {
       trackId: string
-      displaySnapshot?: Record<string, unknown>
+      // rarely-needed escape hatches: `trackSnapshot` applies to the track
+      // config node, `displaySnapshot` explicitly to the display node. Any
+      // OTHER key on this object is treated as a display-snapshot prop, so the
+      // common case sets display options inline with no nesting:
+      // `{ trackId, showDescriptions: false }` rather than
+      // `{ trackId, displaySnapshot: { showDescriptions: false } }`.
       trackSnapshot?: Record<string, unknown>
+      displaySnapshot?: Record<string, unknown>
+      [key: string]: unknown
     }
 
 export interface InitState {
