@@ -1,4 +1,7 @@
+import { csToCigar } from '@jbrowse/cigar-utils'
 import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
+
+import SyntenyFeature from './SyntenyFeature/index.ts'
 
 import type { BareFeature } from './mcscanUtil.ts'
 import type {
@@ -134,4 +137,88 @@ export function parsePAFLine(line: string) {
     strand: parts[4] === '-' ? -1 : 1,
     extra,
   }
+}
+
+// A PIF row is a PAF row pre-oriented to the perspective it is indexed under:
+// columns 1-4 are always the indexed ("anchor") feature — column 1 carries a
+// tier-letter prefix (fine q/t, coarse Q/T) — and columns 6/8/9 are the mate
+// (no prefix). So the PAF "query" columns hold the anchor whichever perspective
+// was indexed, and the CIGAR is already swapped/flipped for it. This renames
+// parsePAFLine's q*/t* fields to the anchor/mate roles they actually play here,
+// which is why the indexed adapters need no read-time reorientation.
+export function parsePifLine(line: string) {
+  const r = parsePAFLine(line)
+  return {
+    indexedName: r.qname,
+    indexedStart: r.qstart,
+    indexedEnd: r.qend,
+    mateName: r.tname,
+    mateStart: r.tstart,
+    mateEnd: r.tend,
+    strand: r.strand,
+    extra: r.extra,
+  }
+}
+
+// The coarse (uppercase T/Q) tier is a no-CIGAR summary served when zoomed out;
+// the fine (lowercase t/q) tier carries per-row CIGARs. A file only has the
+// coarse tier if make-pif emitted it. In 'auto' mode it is used past the
+// bpPerPx threshold; a manual 'coarse' override forces it but still falls back
+// to fine when the tier is absent — the alternative would be returning no data.
+// Shared by the two indexed PIF adapters.
+export function resolveCoarseTier({
+  bpPerPx,
+  threshold,
+  hasCoarseTier,
+  lodMode = 'auto',
+}: {
+  bpPerPx: number | undefined
+  threshold: number
+  hasCoarseTier: boolean
+  lodMode?: BaseOptions['lodMode']
+}) {
+  const zoomedOut = bpPerPx !== undefined && bpPerPx >= threshold
+  return (
+    hasCoarseTier && (lodMode === 'coarse' || (lodMode === 'auto' && zoomedOut))
+  )
+}
+
+// Build a SyntenyFeature from a parsed PIF row. Unlike the in-memory adapters'
+// makeSyntenyFeature, no read-time reorientation happens: make-pif already
+// oriented the CIGAR/cs for the indexed perspective, so cg (or a hand-built cs)
+// passes straight through. The caller supplies refName and mate because those
+// differ per adapter (raw prefix-strip vs PanSN sample/contig split).
+export function makeIndexedSyntenyFeature({
+  line,
+  fileOffset,
+  assemblyName,
+  refName,
+  mate,
+}: {
+  line: ReturnType<typeof parsePifLine>
+  fileOffset: number
+  assemblyName: string
+  refName: string
+  mate: { start: number; end: number; refName: string; assemblyName: string }
+}) {
+  const { extra, strand, indexedStart, indexedEnd } = line
+  const { numMatches = 0, blockLen = 1, cg, cs, ...rest } = extra
+  const CIGAR = cg ?? (typeof cs === 'string' ? csToCigar(cs) : undefined)
+  return new SyntenyFeature({
+    uniqueId: fileOffset + assemblyName,
+    assemblyName,
+    start: indexedStart,
+    end: indexedEnd,
+    type: 'match',
+    refName,
+    strand,
+    ...rest,
+    CIGAR,
+    cs: typeof cs === 'string' ? cs : undefined,
+    syntenyId: fileOffset,
+    identity: pafIdentity(extra),
+    numMatches,
+    blockLen,
+    mate,
+  })
 }

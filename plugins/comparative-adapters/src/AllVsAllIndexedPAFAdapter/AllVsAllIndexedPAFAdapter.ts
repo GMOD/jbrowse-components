@@ -1,16 +1,15 @@
 import { TabixIndexedFile } from '@gmod/tabix'
-import { csToCigar } from '@jbrowse/cigar-utils'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { panSNContig, panSNSample } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
-  pafIdentity,
-  parsePAFLine,
+  makeIndexedSyntenyFeature,
+  parsePifLine,
+  resolveCoarseTier,
   resolvePanSNPrefix,
 } from '../util.ts'
 
@@ -20,27 +19,6 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 import type { FileLocation, Region } from '@jbrowse/core/util/types'
-
-// The coarse (uppercase T/Q) tier is a no-CIGAR summary used when zoomed out; the
-// fine (lowercase t/q) tier carries per-row CIGARs. A file only has the coarse
-// tier if make-pif emitted it. A manual 'coarse' override still falls back to
-// fine when the tier is absent — the alternative would be returning no data.
-function resolveCoarseTier({
-  bpPerPx,
-  threshold,
-  hasCoarseTier,
-  lodMode = 'auto',
-}: {
-  bpPerPx: number | undefined
-  threshold: number
-  hasCoarseTier: boolean
-  lodMode?: BaseOptions['lodMode']
-}) {
-  const zoomedOut = bpPerPx !== undefined && bpPerPx >= threshold
-  return (
-    hasCoarseTier && (lodMode === 'coarse' || (lodMode === 'auto' && zoomedOut))
-  )
-}
 
 export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<AllVsAllIndexedPAFAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -147,13 +125,11 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
             letters.map(letter =>
               this.pif.getLines(letter + seq, start, end, {
                 lineCallback: (line, fileOffset) => {
-                  // PIF pre-orients each row: columns 1-4 (qname/qstart/qend) are
-                  // the anchor (col 1 carries the tier letter + PanSN name),
-                  // columns 6/8/9 (tname/tstart/tend) are the mate (full PanSN,
-                  // no letter). CIGARs are pre-swapped per perspective.
-                  const r = parsePAFLine(line)
-                  const matePrefix = panSNSample(r.tname)
-                  const mateRefName = panSNContig(r.tname)
+                  // The mate (columns 6/8/9) is a full PanSN name, no tier
+                  // letter; split it into sample + contig.
+                  const parsed = parsePifLine(line)
+                  const matePrefix = panSNSample(parsed.mateName)
+                  const mateRefName = panSNContig(parsed.mateName)
 
                   // One-vs-all draws every mate, including same-sample paralogy:
                   // make-pif's double-emit already keys each locus on its own
@@ -172,40 +148,20 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
                     !(
                       matePrefix === anchorPrefix &&
                       mateRefName === qref &&
-                      r.tstart === r.qstart &&
-                      r.tend === r.qend
+                      parsed.mateStart === parsed.indexedStart &&
+                      parsed.mateEnd === parsed.indexedEnd
                     )
 
                   if (drawsHere) {
-                    const { extra, strand } = r
-                    const {
-                      numMatches = 0,
-                      blockLen = 1,
-                      cg,
-                      cs,
-                      ...rest
-                    } = extra
-                    const CIGAR =
-                      cg ?? (typeof cs === 'string' ? csToCigar(cs) : undefined)
                     observer.next(
-                      new SyntenyFeature({
-                        uniqueId: fileOffset + assemblyName,
+                      makeIndexedSyntenyFeature({
+                        line: parsed,
+                        fileOffset,
                         assemblyName,
-                        start: r.qstart,
-                        end: r.qend,
-                        type: 'match',
                         refName: qref,
-                        strand,
-                        ...rest,
-                        CIGAR,
-                        cs: typeof cs === 'string' ? cs : undefined,
-                        syntenyId: fileOffset,
-                        identity: pafIdentity(extra),
-                        numMatches,
-                        blockLen,
                         mate: {
-                          start: r.tstart,
-                          end: r.tend,
+                          start: parsed.mateStart,
+                          end: parsed.mateEnd,
                           refName: mateRefName,
                           assemblyName: asmByPrefix[matePrefix] ?? matePrefix,
                         },
