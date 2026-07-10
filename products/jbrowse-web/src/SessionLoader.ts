@@ -321,6 +321,12 @@ const SessionLoader = types
             type: 'snapshot',
             snapshot,
           }
+          // pluginsLoaded treats a 'snapshot' source as requiring
+          // sessionPlugins; a default/spec/hub session never loaded any, so
+          // without this `ready` would stay false (app stuck on Loading) if
+          // the same loader is ever re-activated after this dispose. The
+          // already-loaded records restore the snapshot as-is.
+          self.sessionPlugins ??= []
         }
         destroy(rootModel)
       }

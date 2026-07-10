@@ -49,7 +49,12 @@ export function checkPluginsAgainstStore(
 }
 
 export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
-  if (pluginsToCheck.length === 0) {
+  // Trusted-by-prefix plugins are accepted without consulting the store, so
+  // when every plugin is already trusted (the common case: an empty list, or
+  // jbrowse.org-hosted plugins) skip the network entirely. This keeps a
+  // plugin-store outage — or being offline — from blocking a config/session
+  // load that needed no verification (e.g. restoring your own local session).
+  if (pluginsToCheck.every(p => isTrustedUrl(pluginUrl(p)))) {
     return true
   }
   return checkPluginsAgainstStore(pluginsToCheck, await fetchPlugins())

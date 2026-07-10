@@ -1,4 +1,8 @@
-import { checkPluginsAgainstStore, fetchPlugins } from './checkPlugins.ts'
+import {
+  checkPlugins,
+  checkPluginsAgainstStore,
+  fetchPlugins,
+} from './checkPlugins.ts'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type { JBrowsePlugin } from '@jbrowse/core/util/types'
@@ -240,5 +244,30 @@ describe('checkPlugins with real plugin store', () => {
       },
     ]
     expect(checkPluginsAgainstStore(plugins, storePlugins)).toBe(false)
+  })
+
+  it('skips the store fetch for an empty plugin list', async () => {
+    await expect(checkPlugins([])).resolves.toBe(true)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('trusts prefix-trusted plugins without fetching the store', async () => {
+    const plugins: PluginDefinition[] = [
+      {
+        name: 'TrustedPlugin',
+        url: 'https://jbrowse.org/plugins/MyPlugin/dist/plugin.umd.js',
+      },
+    ]
+    await expect(checkPlugins(plugins)).resolves.toBe(true)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('fetches the store when a plugin is not trusted by prefix', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify({ plugins: [] }))
+    const plugins: PluginDefinition[] = [
+      { name: 'UntrustedPlugin', url: 'https://example.com/plugin.umd.js' },
+    ]
+    await expect(checkPlugins(plugins)).resolves.toBe(false)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 })
