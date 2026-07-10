@@ -4,11 +4,6 @@ import * as React from 'react'
 import * as mst from '@jbrowse/mobx-state-tree'
 import { alpha, createTheme, useTheme } from '@mui/material'
 import * as MUIUtils from '@mui/material/utils'
-import {
-  useGridApiContext,
-  useGridApiRef,
-  useGridRootProps,
-} from '@mui/x-data-grid'
 import * as mobx from 'mobx'
 import * as mxreact from 'mobx-react'
 import * as ReactJSXRuntime from 'react/jsx-runtime'
@@ -64,10 +59,13 @@ const libs = {
   'react-dom': ReactDom,
   'react-dom/client': ReactDomClient,
   'mobx-react': mxreact,
+  // Only lazy component entries are re-exported. The grid *hooks*
+  // (useGridApiContext/useGridApiRef/useGridRootProps) are intentionally left
+  // out: statically importing them here pulled the entire ~1.2 MB
+  // @mui/x-data-grid package into the eager first-paint graph, defeating the
+  // lazy import('@mui/x-data-grid') in MuiDataGridReExports. First-party code
+  // that needs the hooks imports them directly from '@mui/x-data-grid'.
   '@mui/x-data-grid': {
-    useGridApiContext,
-    useGridApiRef,
-    useGridRootProps,
     ...lazyMap(DataGridEntries),
   },
 
