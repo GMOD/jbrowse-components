@@ -53,7 +53,8 @@
       "displays": [
         {
           "type": "LinearPairedArcDisplay",
-          "displayId": "encode_gm12878_loops-LinearPairedArcDisplay"
+          "displayId": "encode_gm12878_loops-LinearPairedArcDisplay",
+          "lineWidth": 1
         }
       ]
     },
@@ -74,7 +75,8 @@
         {
           "type": "LinearPairedArcDisplay",
           "displayId": "encode_gm12878_re2g-LinearPairedArcDisplay",
-          "color": "jexl:get(feature,'score')>=500?'#8b1a1a':'rgba(0,0,0,0)'"
+          "color": "jexl:get(feature,'score')>=500?'#8b1a1a':'rgba(0,0,0,0)'",
+          "lineWidth": 1
         }
       ]
     },

@@ -4,66 +4,55 @@ description: Contact matrix display
 guide_category: Track types
 ---
 
-Hi-C captures genome-wide chromatin interaction frequencies by sequencing pairs
-of genomic regions that are physically co-located in the nucleus. JBrowse
-renders these as a triangular contact matrix where color intensity indicates
-contact frequency — brighter means more interactions.
-
-JBrowse reads `.hic` files produced by Juicer and compatible pipelines, via the
-hic-straw module.
+Hi-C measures how often pairs of genomic loci contact each other in the nucleus.
+JBrowse draws it as a triangular contact matrix under the ruler, with brighter
+color for more contacts. It reads `.hic` files (Juicer and compatible pipelines)
+through the hic-straw module.
 
 ## Loading a Hi-C track
 
 In the "Add a track" form, paste the URL to a `.hic` file (or open it from
-disk). JBrowse auto-detects the format and creates a Hi-C track. The track
-renders a triangular contact matrix below the chromosome ruler.
+disk). JBrowse detects the format and creates a Hi-C track that renders below
+the ruler.
 
 ## Reading the contact matrix
 
-<Figure caption="Hi-C contact matrix for a region of hg19 (chr8:50,000,000–51,000,000), zoomed in enough to also show gene labels on the annotation track above. The diagonal (brightest red strip) represents self-interactions." src="/img/hic_track.png" />
+<Figure caption="Hi-C contact matrix for hg19 chr8:50.4–61.3Mb, with the gene track above kept zoomed in enough to label genes. The bright strip along the top edge is the diagonal (self-interactions); the triangular sub-blocks hanging off it are TADs, and their off-diagonal corners are where loops appear." src="/img/hic_track.png" />
 
-Key features to interpret:
+Three cues carry most Hi-C reads:
 
-- **Diagonal** — always the brightest band; self-interactions within a region
-- **TAD boundaries** — sharp drops in signal that delimit the triangular blocks;
-  the corners of these blocks are where loop anchors often occur
-- **Loops** — punctate off-diagonal bright spots at specific locus pairs,
-  typically CTCF-anchored
-- **Compartments** — at low resolution, alternating plaid-like patterns (A/B
-  compartments) reflecting active vs repressed chromatin
+- **Diagonal** — the bright top edge; always the strongest signal
+- **Triangular blocks** — TADs, delimited by sharp drops in signal
+- **Off-diagonal spots** — point-to-point loops between specific loci
 
 ## Adjusting resolution and color scale
 
-JBrowse automatically selects a resolution that fits the current view width.
-Zoom in to increase resolution; zoom out to see larger-scale organization.
+JBrowse picks a resolution to fit the view width — zoom in for finer bins, out
+for larger-scale structure. For manual control, enable **Show resolution
+controls** from the track menu: finer/coarser buttons overlay the track and step
+through the binning levels stored in the file, disabling themselves at the
+finest and coarsest levels available. Stepping applies a persistent offset from
+the auto-selected level, so resolution still tracks your zoom, just shifted.
 
-For explicit control, enable **Show resolution controls** from the track menu.
-This overlays finer/coarser resolution buttons on the track that step through
-the binning levels stored in the `.hic` file; the buttons disable themselves at
-the finest and coarsest levels available. Stepping applies a persistent offset
-from the auto-selected level, so the resolution still tracks your zoom — just
-shifted one or more steps finer or coarser than the default.
-
-The color scale is configurable via the track's configuration — see
-[the Hi-C track config guide](/docs/config_guides/hic_track/) for available
-options.
+Pick the color ramp from the track menu — `juicebox`, `fall`, or `viridis`. See
+the [Hi-C track config guide](/docs/config_guides/hic_track/) for the color,
+log-scale, and normalization options.
 
 ## Overlaying loops and interactions as arcs
 
-The contact matrix shows every pairwise interaction at once, but many analyses
-distill it down to a discrete set of anchor-to-anchor calls — CTCF/cohesin loops
-from HiCCUPS, or enhancer–gene predictions from methods like ABC/EPIraction.
-These come as [BEDPE](/docs/config_guides/file_types/) files (two genomic
-endpoints per line) and render in a paired-arc display, where each arc connects
-the two anchors of one call. Stacking arc tracks above the matrix lets you read
-the called loops against the raw signal they were derived from.
+Loop and interaction calls — HiCCUPS loops, ABC/EPIraction enhancer–gene links —
+ship as [BEDPE](/docs/config_guides/file_types/) files with two endpoints per
+line. JBrowse renders them in a paired-arc display, one arc per call, so you can
+stack the called loops directly above the matrix they came from.
 
-<Figure src="/img/encode_hic_loops_arcs.png" caption="ENCODE GM12878 (hg38, chr1:202.9–203.8Mb). Top to bottom: NCBI RefSeq genes; HiCCUPS loop calls (ENCFF560LOS) as arcs; EPIraction enhancer–gene predictions (ENCFF266FGY) as arcs; and the intact Hi-C contact matrix (ENCFF484NFB). The sparse loop arcs mark punctate corner interactions, while the dense enhancer–gene arcs connect regulatory elements to their predicted target genes." />
+<Figure src="/img/encode_hic_loops_arcs.png" caption="ENCODE GM12878 (hg38, chr1:202.9–203.8Mb), top to bottom: RefSeq genes, HiCCUPS loop calls (ENCFF560LOS), EPIraction enhancer–gene predictions (ENCFF266FGY), and the intact Hi-C matrix (ENCFF484NFB). Each call is drawn as one thin arc between its two anchors; stroke width is set per track from the track menu." />
 
-Load a BEDPE file the same way as any other track (paste its URL into the "Add a
-track" form); JBrowse detects the format and offers a paired-arc display. The
-`.hic` matrix is a separate track — add it too, and reorder the tracks so the
-arcs sit above the matrix.
+Load a BEDPE file like any other track (paste its URL into "Add a track"), then
+add the `.hic` matrix as a separate track and reorder so the arcs sit above it.
+Arc thickness is adjustable from the track menu: open **Arc width** and drag the
+slider (this writes the `lineWidth` slot on the
+[paired-arc display](/docs/config/linearpairedarcdisplay), which you can also set
+in config).
 
 ## See also
 
