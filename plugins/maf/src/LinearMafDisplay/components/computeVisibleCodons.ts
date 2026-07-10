@@ -210,11 +210,6 @@ interface ComputeVisibleCodonsParams {
  * gathered in ascending genomic order — possibly across two blocks. */
 type CodonBytes = [number, number, number]
 
-// Case-insensitive equality of two alignment bytes (ASCII letter-case bit).
-function sameBase(a: number, b: number) {
-  return (a & ~LOWER_BIT) === (b & ~LOWER_BIT)
-}
-
 /** A reference position resolved to the block that holds it plus the alignment
  * column of that base within the block. */
 interface RefColLoc {
@@ -309,23 +304,26 @@ function rowCodonBytes(
 }
 
 /**
- * Classify a species' codon bytes against the reference codon bytes: `stop` if
- * it translates to a stop, `nonsyn` if its amino acid differs from `refAa`,
- * `same` if every base matches the reference, else `syn` (silent). Returns
- * undefined when the species' codon is gapped/non-standard (no residue to draw)
- * or when the reference codon has no amino acid (a gap/`N` in the reference):
- * syn vs nonsyn is undefined without a reference residue to compare against, so
- * the codon is left unclassified rather than guessed from nucleotides alone.
- * Shared by the codon overlay (`computeVisibleCodons`) and the hover lookup
- * (`findCodonAt`) so the colored cell and the tooltip can't disagree.
+ * Classify a species' codon against the reference codon — both given as oriented
+ * uppercase triplet strings (5'→3' in the gene direction, so `−`-strand codons
+ * are already reverse-complemented):
+ * - `stop`   — the species codon is a stop
+ * - `nonsyn` — its amino acid differs from the reference's (a coding change)
+ * - `same`   — the two codons are nucleotide-identical
+ * - `syn`    — silent: the nucleotides differ but the amino acid is unchanged
+ *
+ * Returns undefined when either codon has no amino acid (a non-standard triplet,
+ * e.g. one containing `N`): syn vs nonsyn is undefined without both residues, so
+ * the codon is left unclassified rather than guessed. Shared by the codon overlay
+ * (`computeVisibleCodons`) and the hover lookup (`findCodonAt`) so the colored
+ * cell and the tooltip can't disagree.
  */
 function classifyChange(
-  rowBytes: CodonBytes,
-  refBytes: CodonBytes,
-  strand: number,
-  refAa: string | undefined,
+  rowCodon: string,
+  refCodon: string,
 ): { aa: string; change: CodonChange } | undefined {
-  const aa = translateCodonBytes(rowBytes[0], rowBytes[1], rowBytes[2], strand)
+  const aa = codonTable[rowCodon]
+  const refAa = codonTable[refCodon]
   if (aa === undefined || refAa === undefined) {
     return undefined
   }
@@ -334,9 +332,7 @@ function classifyChange(
       ? 'stop'
       : aa !== refAa
         ? 'nonsyn'
-        : sameBase(rowBytes[0], refBytes[0]) &&
-            sameBase(rowBytes[1], refBytes[1]) &&
-            sameBase(rowBytes[2], refBytes[2])
+        : rowCodon === refCodon
           ? 'same'
           : 'syn'
   return { aa, change }
@@ -444,7 +440,7 @@ export function computeVisibleCodons(
         continue
       }
       const refBytes = refCodonBytes(locs, blocks)
-      const refAa = translateCodonBytes(
+      const refCodon = orientedTriplet(
         refBytes[0],
         refBytes[1],
         refBytes[2],
@@ -453,7 +449,7 @@ export function computeVisibleCodons(
       // A reference codon with a gap/`N` has no amino acid to compare against,
       // so no species codon can be classified here (mirrors the conservation
       // band, which skips the same codon) — draw nothing rather than guess.
-      if (refAa === undefined) {
+      if (refCodon === undefined || codonTable[refCodon] === undefined) {
         continue
       }
       const cells = codonCells(codon.positions, bpToPx)
@@ -467,7 +463,16 @@ export function computeVisibleCodons(
         if (!rowBytes) {
           continue
         }
-        const cls = classifyChange(rowBytes, refBytes, codon.strand, refAa)
+        const rowCodon = orientedTriplet(
+          rowBytes[0],
+          rowBytes[1],
+          rowBytes[2],
+          codon.strand,
+        )
+        if (rowCodon === undefined) {
+          continue
+        }
+        const cls = classifyChange(rowCodon, refCodon)
         if (!cls) {
           continue
         }
@@ -654,30 +659,32 @@ export function findCodonAt(params: FindCodonAtParams): CodonHit | undefined {
     return undefined
   }
   const refBytes = refCodonBytes(locs, blocks)
+  const rowBytes = rowCodonBytes(locs, rowMapsPerBlock, rowIndex)
+  if (!rowBytes) {
+    return undefined
+  }
   const refCodon = orientedTriplet(
     refBytes[0],
     refBytes[1],
     refBytes[2],
     codon.strand,
   )
-  const refAa = refCodon === undefined ? undefined : codonTable[refCodon]
-  const rowBytes = rowCodonBytes(locs, rowMapsPerBlock, rowIndex)
-  if (!rowBytes) {
-    return undefined
-  }
-  const cls = classifyChange(rowBytes, refBytes, codon.strand, refAa)
-  const codonTriplet = orientedTriplet(
+  const rowCodon = orientedTriplet(
     rowBytes[0],
     rowBytes[1],
     rowBytes[2],
     codon.strand,
   )
-  return cls && codonTriplet !== undefined
+  if (refCodon === undefined || rowCodon === undefined) {
+    return undefined
+  }
+  const cls = classifyChange(rowCodon, refCodon)
+  return cls
     ? {
-        codon: codonTriplet,
+        codon: rowCodon,
         aa: cls.aa,
         refCodon,
-        refAa,
+        refAa: codonTable[refCodon],
         change: cls.change,
       }
     : undefined
