@@ -99,7 +99,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   <text
                     dominant-baseline="middle"
                     fill="#996600"
-                    font-size="0.8rem"
+                    font-size="13"
                     font-weight="500"
                     letter-spacing="0.0075em"
                     text-anchor="middle"
@@ -121,7 +121,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                   <text
                     dominant-baseline="middle"
                     fill="#666600"
-                    font-size="0.8rem"
+                    font-size="13"
                     font-weight="500"
                     letter-spacing="0.0075em"
                     text-anchor="middle"

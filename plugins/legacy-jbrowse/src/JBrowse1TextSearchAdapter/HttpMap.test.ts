@@ -53,10 +53,10 @@ test('get bucket contents', async () => {
   const hashMap = new HttpMap({ url: rootTemplate })
 
   await hashMap.getBucket('apple')
-  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/0.json`, undefined)
+  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/0.json`)
 
   await hashMap.getBucket('apple3')
-  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/f.json`, undefined)
+  expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/f.json`)
 })
 
 test('url always has trailing slash', () => {

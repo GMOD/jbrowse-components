@@ -86,13 +86,17 @@ export function utilizeFetchMockForTest(
   getFile: (url: string) => GenericFilehandle = defaultGetFile,
 ) {
   beforeEach(() => {
-    jest
-      .spyOn(global, 'fetch')
-      .mockImplementation(async (url, args) =>
-        `${url}`.includes('jb2=true')
-          ? new Response('{}')
-          : handleRequest(() => getFile(`${url}`), args),
-      )
+    const realFetch = global.fetch
+    jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
+      // data: URIs (e.g. bgzf-filehandle's inlined WASM module) must reach the
+      // real fetch, not the file-serving mock
+      if (`${url}`.startsWith('data:')) {
+        return realFetch(url, args)
+      }
+      return `${url}`.includes('jb2=true')
+        ? new Response('{}')
+        : handleRequest(() => getFile(`${url}`), args)
+    })
   })
   afterEach(() => {
     localStorage.clear()
