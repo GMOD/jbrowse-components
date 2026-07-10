@@ -5,21 +5,23 @@ import { IconButton, Tooltip } from '@mui/material'
 export default function StarIcon({
   isFavorite,
   onClick,
+  size = 'small',
 }: {
   isFavorite: boolean
   onClick: () => void
+  size?: 'small' | 'medium'
 }) {
   const Icon = isFavorite ? Star : StarBorder
   return (
     <Tooltip title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}>
       <IconButton
-        size="small"
+        size={size}
         onClick={() => {
           onClick()
         }}
         style={{ color: isFavorite ? 'darkorange' : undefined }}
       >
-        <Icon fontSize="small" />
+        <Icon fontSize={size} />
       </IconButton>
     </Tooltip>
   )

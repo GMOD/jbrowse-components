@@ -105,6 +105,10 @@ export default function GenomesDataTable({
     setTypeOption(t)
     setFilterOption('all')
     setPageIndex(0)
+    // selection is keyed by row id; ids from the previous group don't exist in
+    // the new dataset, so carrying them over would leave "Go" enabled with a
+    // selection that launches nothing
+    setSelected(new Set())
   }
   const tableRef = useRef<HTMLDivElement>(null)
   useSearchHighlight(tableRef, searchQuery)
@@ -114,7 +118,14 @@ export default function GenomesDataTable({
     isLoading: categoriesLoading,
     error: categoriesError,
   } = useCategories()
-  const url = categories?.categories.find(f => f.key === typeOption)?.url
+  // A persisted group choice can reference a category that no longer exists in
+  // categories.json; fall back to the first available category so we resolve a
+  // real url instead of hanging forever on the loading skeleton.
+  const categoryList = categories?.categories
+  const activeCategory =
+    categoryList?.find(c => c.key === typeOption) ?? categoryList?.[0]
+  const activeTypeOption = activeCategory?.key ?? typeOption
+  const url = activeCategory?.url
   const { clades } = useTaxonomyClades()
   const cladeTaxonIds = clade ? clades?.get(clade) : undefined
 
@@ -141,7 +152,7 @@ export default function GenomesDataTable({
   const loadError = categoriesError ?? error
 
   const columns = getColumnDefinitions({
-    typeOption,
+    typeOption: activeTypeOption,
     favs,
     toggleFavorite,
     launch,
@@ -156,9 +167,14 @@ export default function GenomesDataTable({
     ? [...data].sort((a, b) => dir * defaultSort(a, b, sortingCol))
     : data
 
+  // Clamp during render so shrinking the result set (e.g. removing favorites,
+  // resetting the favorites list) can never leave us stranded on an empty page,
+  // independent of which handlers remember to reset pageIndex.
+  const pageCount = Math.max(1, Math.ceil(sortedData.length / pageSize))
+  const currentPage = Math.min(pageIndex, pageCount - 1)
   const pageRows = sortedData.slice(
-    pageIndex * pageSize,
-    pageIndex * pageSize + pageSize,
+    currentPage * pageSize,
+    currentPage * pageSize + pageSize,
   )
 
   const toggleSort = (colId: string) => {
@@ -205,7 +221,7 @@ export default function GenomesDataTable({
 
         <CategorySelector
           categories={categories}
-          typeOption={typeOption}
+          typeOption={activeTypeOption}
           categoriesLoading={categoriesLoading}
           categoriesError={categoriesError}
           onChange={setTypeOptionAndReset}
@@ -218,7 +234,7 @@ export default function GenomesDataTable({
         <CascadingMenuButton
           menuItems={() =>
             getTableMenuItems({
-              typeOption,
+              typeOption: activeTypeOption,
               multipleSelection,
               showOnlyFavs,
               showAllColumns,
@@ -264,7 +280,7 @@ export default function GenomesDataTable({
           />
 
           <TablePagination
-            pageIndex={pageIndex}
+            pageIndex={currentPage}
             pageSize={pageSize}
             totalRows={sortedData.length}
             onPageChange={setPageIndex}

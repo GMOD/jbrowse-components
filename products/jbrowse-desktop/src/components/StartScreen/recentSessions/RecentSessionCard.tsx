@@ -1,13 +1,14 @@
 import { useState } from 'react'
 
+import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
-import StarIcon from '@mui/icons-material/Star'
-import StarBorderIcon from '@mui/icons-material/StarBorder'
+import Star from '@mui/icons-material/Star'
+import StarBorder from '@mui/icons-material/StarBorder'
 import TextFieldsIcon from '@mui/icons-material/TextFields'
 import {
   Card,
@@ -15,16 +16,13 @@ import {
   CardActions,
   CardContent,
   CardMedia,
-  IconButton,
-  ListItemIcon,
-  Menu,
-  MenuItem,
   Tooltip,
   Typography,
 } from '@mui/material'
 
 import { defaultSessionScreenshot } from './defaultSessionScreenshot.ts'
 import { formatLastModified } from './formatLastModified.ts'
+import StarIcon from '../StarIcon.tsx'
 
 import type { RecentSessionData } from '../types.ts'
 
@@ -68,7 +66,6 @@ function RecentSessionCard({
   onToggleFavorite: () => void
 }) {
   const { classes } = useStyles()
-  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
   const [now] = useState(() => Date.now())
   const { name, path, updated } = sessionData
   const { label, tooltip } = formatLastModified(updated, now)
@@ -77,7 +74,8 @@ function RecentSessionCard({
     ['loadThumbnail', path],
     async () =>
       ((await ipcRenderer.invoke('loadThumbnail', path)) as
-        string | undefined) ?? defaultSessionScreenshot,
+        | string
+        | undefined) ?? defaultSessionScreenshot,
     {
       onError: e => {
         console.error(e)
@@ -86,121 +84,80 @@ function RecentSessionCard({
   )
 
   return (
-    <>
-      <Card className={classes.card}>
-        <CardActionArea
-          onClick={() => {
-            onClick()
-          }}
-        >
-          <CardMedia
-            className={classes.media}
-            image={screenshot ?? defaultSessionScreenshot}
-          />
-          <CardContent className={classes.content}>
-            <Tooltip title={name} enterDelay={300}>
-              <Typography variant="body2" noWrap>
-                {name}
-              </Typography>
-            </Tooltip>
-            <Tooltip title={tooltip ?? ''} enterDelay={300}>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                Last modified {label}
-              </Typography>
-            </Tooltip>
-          </CardContent>
-        </CardActionArea>
-        <CardActions className={classes.actions}>
-          <Tooltip
-            title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-          >
-            <IconButton
-              onClick={() => {
-                onToggleFavorite()
-              }}
-              style={{ color: isFavorite ? 'darkorange' : undefined }}
-            >
-              {isFavorite ? <StarIcon /> : <StarBorderIcon />}
-            </IconButton>
-          </Tooltip>
-          <IconButton
-            onClick={event => {
-              setMenuAnchorEl(event.currentTarget)
-            }}
-          >
-            <MoreVertIcon />
-          </IconButton>
-        </CardActions>
-      </Card>
-      <Menu
-        anchorEl={menuAnchorEl}
-        keepMounted
-        open={Boolean(menuAnchorEl)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        onClose={() => {
-          setMenuAnchorEl(null)
+    <Card className={classes.card}>
+      <CardActionArea
+        onClick={() => {
+          onClick()
         }}
       >
-        <MenuItem
+        <CardMedia
+          className={classes.media}
+          image={screenshot ?? defaultSessionScreenshot}
+        />
+        <CardContent className={classes.content}>
+          <Tooltip title={name} enterDelay={300}>
+            <Typography variant="body2" noWrap>
+              {name}
+            </Typography>
+          </Tooltip>
+          <Tooltip title={tooltip ?? ''} enterDelay={300}>
+            <Typography variant="body2" color="text.secondary" noWrap>
+              Last modified {label}
+            </Typography>
+          </Tooltip>
+        </CardContent>
+      </CardActionArea>
+      <CardActions className={classes.actions}>
+        <StarIcon
+          isFavorite={isFavorite}
+          size="medium"
           onClick={() => {
-            setMenuAnchorEl(null)
             onToggleFavorite()
           }}
+        />
+        <CascadingMenuButton
+          menuItems={[
+            {
+              label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+              icon: isFavorite ? Star : StarBorder,
+              onClick: () => {
+                onToggleFavorite()
+              },
+            },
+            {
+              label: 'Rename',
+              icon: TextFieldsIcon,
+              onClick: () => {
+                onRename(sessionData)
+              },
+            },
+            {
+              label: 'Delete',
+              icon: DeleteIcon,
+              onClick: () => {
+                onDelete(sessionData)
+              },
+            },
+            {
+              label: 'Add to quickstart list',
+              icon: PlaylistAddIcon,
+              onClick: async () => {
+                await onAddToQuickstartList(sessionData)
+              },
+            },
+            {
+              label: 'Show in folder',
+              icon: FolderOpenIcon,
+              onClick: () => {
+                ipcRenderer.invoke('showItemInFolder', path).catch(console.error)
+              },
+            },
+          ]}
         >
-          <ListItemIcon>
-            {isFavorite ? <StarIcon /> : <StarBorderIcon />}
-          </ListItemIcon>
-          <Typography variant="inherit">
-            {isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-          </Typography>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            setMenuAnchorEl(null)
-            onRename(sessionData)
-          }}
-        >
-          <ListItemIcon>
-            <TextFieldsIcon />
-          </ListItemIcon>
-          <Typography variant="inherit">Rename</Typography>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            onDelete(sessionData)
-            setMenuAnchorEl(null)
-          }}
-        >
-          <ListItemIcon>
-            <DeleteIcon />
-          </ListItemIcon>
-          <Typography variant="inherit">Delete</Typography>
-        </MenuItem>
-        <MenuItem
-          onClick={async () => {
-            await onAddToQuickstartList(sessionData)
-            setMenuAnchorEl(null)
-          }}
-        >
-          <ListItemIcon>
-            <PlaylistAddIcon />
-          </ListItemIcon>
-          <Typography variant="inherit">Add to quickstart list</Typography>
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            setMenuAnchorEl(null)
-            ipcRenderer.invoke('showItemInFolder', path).catch(console.error)
-          }}
-        >
-          <ListItemIcon>
-            <FolderOpenIcon />
-          </ListItemIcon>
-          <Typography variant="inherit">Show in folder</Typography>
-        </MenuItem>
-      </Menu>
-    </>
+          <MoreVertIcon />
+        </CascadingMenuButton>
+      </CardActions>
+    </Card>
   )
 }
 

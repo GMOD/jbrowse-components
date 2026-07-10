@@ -35,15 +35,17 @@ export default function GenomeNameCell({
     onClose()
   }
 
-  const handleMinimalLaunch = () => {
-    launch([{ jbrowseConfig: jbrowseMinimalConfig!, shortName }])
-    onClose()
-  }
+  const handleMinimalLaunch = jbrowseMinimalConfig
+    ? () => {
+        launch([{ jbrowseConfig: jbrowseMinimalConfig, shortName }])
+        onClose()
+      }
+    : undefined
 
   return (
     <div>
       {displayName} (<ActionLink onClick={handleLaunch}>launch</ActionLink>){' '}
-      {jbrowseMinimalConfig ? (
+      {handleMinimalLaunch ? (
         <>
           (<ActionLink onClick={handleMinimalLaunch}>minimal</ActionLink>){' '}
         </>
@@ -59,7 +61,7 @@ export default function GenomeNameCell({
             },
           },
           { label: 'Launch', onClick: handleLaunch },
-          ...(jbrowseMinimalConfig
+          ...(handleMinimalLaunch
             ? [{ label: 'Launch (minimal)', onClick: handleMinimalLaunch }]
             : []),
           {

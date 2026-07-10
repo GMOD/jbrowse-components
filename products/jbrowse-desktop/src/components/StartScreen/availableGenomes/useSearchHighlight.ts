@@ -28,6 +28,25 @@ function getTextNodes(root: Element): Text[] {
   return nodes
 }
 
+// Pure DOM scan: every non-overlapping, case-insensitive match of queryLower
+// within root becomes a Range. queryLower is assumed already lowercased and
+// non-empty (an empty needle would match at every offset and never advance).
+function collectMatchRanges(root: Element, queryLower: string): Range[] {
+  const ranges: Range[] = []
+  for (const textNode of getTextNodes(root)) {
+    const textLower = textNode.textContent.toLowerCase()
+    let idx = textLower.indexOf(queryLower)
+    while (idx !== -1) {
+      const range = new Range()
+      range.setStart(textNode, idx)
+      range.setEnd(textNode, idx + queryLower.length)
+      ranges.push(range)
+      idx = textLower.indexOf(queryLower, idx + queryLower.length)
+    }
+  }
+  return ranges
+}
+
 export function useSearchHighlight(
   containerRef: RefObject<HTMLElement | null>,
   query: string,
@@ -38,36 +57,23 @@ export function useSearchHighlight(
   // re-applies highlights to the new DOM content (Range objects detach on removal).
   useLayoutEffect(() => {
     // generally just jest test but maybe unsupported browser
-    if (typeof CSS === 'undefined') {
-      return
-    }
-    setHighlightStyle(alpha(theme.palette.textHighlight.main, 0.45))
-    const container = containerRef.current
-    if (container && query.trim()) {
-      const queryLower = query.toLowerCase().trim()
-      const highlight = new Highlight()
-      for (const textNode of getTextNodes(container)) {
-        const text = textNode.textContent
-        const textLower = text.toLowerCase()
-        let offset = 0
-        while (offset < textLower.length) {
-          const idx = textLower.indexOf(queryLower, offset)
-          if (idx === -1) {
-            break
-          }
-          const range = new Range()
-          range.setStart(textNode, idx)
-          range.setEnd(textNode, idx + queryLower.length)
+    if (typeof CSS !== 'undefined') {
+      setHighlightStyle(alpha(theme.palette.textHighlight.main, 0.45))
+      const container = containerRef.current
+      const queryLower = query.trim().toLowerCase()
+      if (container && queryLower) {
+        const highlight = new Highlight()
+        for (const range of collectMatchRanges(container, queryLower)) {
           highlight.add(range)
-          offset = idx + queryLower.length
         }
+        CSS.highlights.set(HIGHLIGHT_NAME, highlight)
+      } else {
+        CSS.highlights.delete(HIGHLIGHT_NAME)
       }
-      CSS.highlights.set(HIGHLIGHT_NAME, highlight)
-    } else {
-      CSS.highlights.delete(HIGHLIGHT_NAME)
+      return () => {
+        CSS.highlights.delete(HIGHLIGHT_NAME)
+      }
     }
-    return () => {
-      CSS.highlights.delete(HIGHLIGHT_NAME)
-    }
+    return undefined
   })
 }

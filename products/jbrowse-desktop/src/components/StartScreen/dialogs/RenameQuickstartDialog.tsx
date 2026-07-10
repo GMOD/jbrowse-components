@@ -17,7 +17,11 @@ export default function RenameQuickstartDialog({
   onClose: () => void
 }) {
   const [newName, setNewName] = useState(quickstartToRename)
-  const nameConflict = quickstartNames.includes(newName)
+  // exclude the current name: the dialog opens with newName === the name being
+  // renamed, which is (by definition) already in the list, so an unqualified
+  // includes() flags a spurious conflict the moment the dialog opens
+  const nameConflict =
+    newName !== quickstartToRename && quickstartNames.includes(newName)
   const { error, onSubmit } = useIpcAction(async () => {
     if (nameConflict) {
       throw new Error('A quickstart with this name already exists')

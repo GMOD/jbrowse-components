@@ -5,6 +5,7 @@ import { Button } from '@mui/material'
 
 import OpenSequenceDialog from '../../OpenSequenceDialog.tsx'
 import AvailableGenomesDialog from '../availableGenomes/AvailableGenomesDialog.tsx'
+import { newSessionName } from '../sessionName.ts'
 
 import type { Fav, JBrowseConfig, LaunchCallback } from '../types.ts'
 import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
@@ -62,7 +63,7 @@ export default function OpenSequencePanel({
                 tracks: [],
                 internetAccounts: [],
                 defaultSession: {
-                  name: `New session ${new Date().toLocaleString('en-US')}`,
+                  name: newSessionName(),
                 },
               })
             }

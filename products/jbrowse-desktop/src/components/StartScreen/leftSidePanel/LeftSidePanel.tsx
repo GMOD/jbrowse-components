@@ -10,6 +10,7 @@ import OpenSequencePanel from './OpenSequencePanel.tsx'
 import QuickstartPanel from './QuickstartPanel.tsx'
 import { useNotifyError } from '../../NotifyContext.ts'
 import defaultFavs from '../defaultFavs.ts'
+import { newSessionName } from '../sessionName.ts'
 import { addRelativeUris, loadPluginManager } from '../util.tsx'
 
 import type { Fav, JBrowseConfig } from '../types.ts'
@@ -78,7 +79,7 @@ export default function LeftSidePanel({
           await ipcRenderer.invoke('createInitialAutosaveFile', {
             ...merged,
             defaultSession: entries[0]?.defaultSession ?? {
-              name: `New session ${new Date().toLocaleString('en-US')}`,
+              name: newSessionName(),
             },
           }),
         ),

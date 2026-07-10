@@ -162,6 +162,13 @@ export default function RecentSessionPanel({
   const filteredSessions = sortedSessions.filter(
     f => !showFavoritesOnly || favs.has(f.path),
   )
+  // The grid doesn't re-emit its selection when a filter toggle hides rows, so
+  // selectedSessions can outlive the visible list. Intersect before acting so
+  // delete/quickstart never touch a session the user can no longer see.
+  const visiblePaths = new Set(filteredSessions.map(s => s.path))
+  const visibleSelection = selectedSessions.filter(s =>
+    visiblePaths.has(s.path),
+  )
 
   return (
     <div>
@@ -207,18 +214,18 @@ export default function RecentSessionPanel({
           <div style={{ display: 'flex' }}>
             <IconButtonWithTooltip
               title="Delete sessions"
-              disabled={!selectedSessions.length}
+              disabled={!visibleSelection.length}
               onClick={() => {
-                setSessionsToDelete(selectedSessions)
+                setSessionsToDelete(visibleSelection)
               }}
             >
               <DeleteIcon />
             </IconButtonWithTooltip>
             <IconButtonWithTooltip
               title="Add sessions to quickstart list"
-              disabled={!selectedSessions.length}
+              disabled={!visibleSelection.length}
               onClick={async () => {
-                await addToQuickstartList(selectedSessions)
+                await addToQuickstartList(visibleSelection)
               }}
             >
               <PlaylistAddIcon />

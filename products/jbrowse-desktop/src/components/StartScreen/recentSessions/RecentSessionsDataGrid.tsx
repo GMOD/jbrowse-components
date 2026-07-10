@@ -9,6 +9,7 @@ import { DataGrid } from '@mui/x-data-grid'
 import DateSinceLastUsed from './DateSinceLastUsed.tsx'
 import SessionNameCell from './SessionNameCell.tsx'
 import { formatLastModified } from './formatLastModified.ts'
+import { selectedFromModel } from './selectedFromModel.ts'
 import { useInnerDims } from '../availableGenomes/util.ts'
 
 import type { RecentSessionData } from '../types.ts'
@@ -113,7 +114,7 @@ function RecentSessionsDataGrid({
           disableRowSelectionOnClick
           getRowId={row => row.path}
           onRowSelectionModelChange={(model: GridRowSelectionModel) => {
-            setSelectedSessions(sessions.filter(s => model.ids.has(s.path)))
+            setSelectedSessions(selectedFromModel(model, sessions))
           }}
           rows={rows}
           rowHeight={25}
