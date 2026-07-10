@@ -169,15 +169,41 @@ ESLint rule was considered and rejected: only the compiled-output check truly
 discriminates (source heuristics both over- and under-match), zero current
 instances, and DisplayChrome already has a regression test.
 
-## Honest residual gap — not yet fully closed
+## Real-browser confirmation — the residual gap is now CLOSED
 
-The **only** claim still resting on inference rather than direct observation:
-"repros in a real browser." The argument is strong — jest runs the *identical*
-compiler output that webpack emits for the browser, and the failure is
-deterministic there — but nobody has loaded it in an actual browser and watched
-an update drop (an earlier browser-repro attempt was void: its config omitted the
-compiler plugin). Given that compiled-output reasoning misled this investigation
-twice before runtime corrected it (see the A–F correction above and the "ternary
-is a red herring" mis-step), treat the in-browser claim as high-confidence
-inference, not observed fact, until someone builds a real-browser repro with
-`babel-plugin-react-compiler` actually enabled.
+The one claim that had rested on inference ("repros in a real browser") is now
+**directly observed**. Built a standalone bundle — repro compiled through the
+real `babel.config.cjs` (compiler ON), bundled with esbuild, driven by puppeteer
+in headless **Chrome/150** (`scratchpad/_repro/`) — rendering the ternary form
+and the early-`return` form side by side, then flipping `canvasDrawn` by in-place
+mobx mutation:
+
+```
+BEFORE flip: { bug: "pending0", early: "pending0" }
+AFTER  flip: { bug: "pending0", early: "DONE0" }   // ternary DROPPED; early-return committed
+```
+
+No console errors. So the bug drops updates in a real browser and the
+early-`return` fix works there, exactly as the jest/compiled-output analysis
+predicted. (The earlier void browser attempt failed only because its bundler
+config omitted `babel-plugin-react-compiler`; this one enables it.)
+
+## Prior art — consistent with the ecosystem
+
+This is a known, documented mobx × React-Compiler class, which corroborates the
+"not upstreamable, use the escape hatch" verdict:
+
+- LogRocket, *"React Compiler memoization: what actually broke"* — lists **MobX**
+  among libraries that "need `'use no memo'` or a wrapper hook for now" (interior
+  mutability). https://blog.logrocket.com/react-compiler-memoization-what-actually-broke/
+- mobx#4586 — observer components dropped updates after React 19's stricter
+  `memo` handling (reordered lists); fixed by disabling the internal `memo`.
+  Same root family (React memoization vs mobx interior mutation), different
+  surface. https://github.com/mobxjs/mobx/discussions/4586
+- mikejohnson.dev, *"Mobx Memoizes Components (You don't need React Compiler)"* —
+  argues observer components don't need the compiler since mobx already
+  memoizes; supports an observer opt-out posture as reasonable.
+
+None of these documents the specific **memo-dependency coarsening** mechanism
+(`model.<scalar>` → `model` identity when the node is passed whole in a
+conditional block) — this writeup is more precise than the general advice.
