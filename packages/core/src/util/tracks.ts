@@ -14,6 +14,7 @@ import {
 import { getEnv, getSession, objectHash } from './mstUtils.ts'
 import { isConfigurationSlot, readConfObject } from '../configuration/index.ts'
 
+import type PluginManager from '../PluginManager.ts'
 import type {
   BlobLocation,
   FileHandleLocation,
@@ -378,6 +379,59 @@ export function guessTrackType(
     }
   }
   return 'FeatureTrack'
+}
+
+export interface LooseTrackInput {
+  uri: string
+  index?: string
+  [key: string]: unknown
+}
+
+/**
+ * Expand a loose track description — a bare data-file URI, or an object with
+ * `uri` (and optional `index`) plus any extra config keys — into a full track
+ * config, the same inference the "Add track" flow does: the adapter and track
+ * type are guessed from the file via the format plugins, a stable `trackId` and
+ * a `name` are derived from the filename, and the assembly is stamped on. Extra
+ * keys on the input (`name`, `category`, `displays`, ...) override the inferred
+ * defaults. Takes a `pluginManager` (not a model) so it runs headlessly — in a
+ * worker/Node export as well as the browser. Throws when no format matches, so
+ * the caller can ask for a full config instead.
+ */
+export function guessTrackConf(
+  input: string | LooseTrackInput,
+  pluginManager: PluginManager,
+  assemblyName?: string,
+) {
+  const { uri, index, ...extra } =
+    typeof input === 'string' ? { uri: input } : input
+  const file = { uri, locationType: 'UriLocation' } as const
+  const indexLocation = index
+    ? ({ uri: index, locationType: 'UriLocation' } as const)
+    : undefined
+  const adapterGuesser = pluginManager.evaluateExtensionPoint(
+    'Core-guessAdapterForLocation',
+    () => undefined,
+  ) as AdapterGuesser
+  const adapter = adapterGuesser(file, indexLocation, undefined)
+  if (!adapter || adapter.type === UNKNOWN) {
+    throw new Error(
+      `could not infer a track type from "${uri}"; pass a full track config instead`,
+    )
+  }
+  const trackTypeGuesser = pluginManager.evaluateExtensionPoint(
+    'Core-guessTrackTypeForLocation',
+    () => undefined,
+  ) as TrackTypeGuesser
+  const name = getFileName(file)
+  return {
+    trackId: `${name}-${objectHash(adapter).slice(0, 8)}`,
+    type: trackTypeGuesser(adapter.type, file) ?? 'FeatureTrack',
+    name,
+    assemblyNames: assemblyName ? [assemblyName] : [],
+    adapter,
+    ...extra,
+  }
 }
 
 function generateProblemTrackConf(
