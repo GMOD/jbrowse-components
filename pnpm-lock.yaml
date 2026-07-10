@@ -2025,6 +2025,24 @@ importers:
         specifier: ^4.45.0
         version: 4.45.0
 
+  products/jbrowse-embedded-linear-genome-view:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@jbrowse/react-linear-genome-view2':
+        specifier: workspace:^
+        version: link:../jbrowse-react-linear-genome-view
+      mobx:
+        specifier: ^6.16.1
+        version: 6.16.1
+      react:
+        specifier: '>=18.0.0'
+        version: 19.2.7
+      react-dom:
+        specifier: '>=18.0.0'
+        version: 19.2.7(react@19.2.7)
+
   products/jbrowse-img:
     dependencies:
       '@emotion/cache':
