@@ -58,8 +58,7 @@ export function addResultTrack({
     },
   })
   const view = session.views.find(
-    v =>
-      v.type === 'LinearGenomeView' && !!v.assemblyNames?.includes(assembly),
+    v => v.type === 'LinearGenomeView' && !!v.assemblyNames?.includes(assembly),
   )
   if (view && hasShowTrack(view)) {
     view.showTrack(trackId)

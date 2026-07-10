@@ -22,9 +22,7 @@ function sessionLabel(
   currentSessionId: string | undefined,
 ) {
   const suffix =
-    r.id === currentSessionId
-      ? 'current'
-      : formatRelativeTime(r.createdAt)
+    r.id === currentSessionId ? 'current' : formatRelativeTime(r.createdAt)
   return `${r.name} (${suffix})`
 }
 

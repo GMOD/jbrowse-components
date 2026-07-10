@@ -88,7 +88,14 @@ export const popgenSpecs: ScreenshotSpec[] = [
           assembly: 'dm6',
           // all six major arms in order, so 2L's elevated Fst reads against the
           // rest of the genome as background
-          displayedRegionNames: ['chr2L', 'chr2R', 'chr3L', 'chr3R', 'chr4', 'chrX'],
+          displayedRegionNames: [
+            'chr2L',
+            'chr2R',
+            'chr3L',
+            'chr3R',
+            'chr4',
+            'chrX',
+          ],
           tracks: [
             // inversion extent on top so the Fst block below reads against it
             {

@@ -30,10 +30,12 @@ describe('randomColor', () => {
 
   test('varies saturation/lightness across values, not just hue', () => {
     const samples = ['prfB', 'fliR', 'efp', 'psel', 'lysS', 'ompA', 'clpB']
-    const sls = new Set(samples.map(str => {
-      const { s, l } = parseHsl(randomColor(str))
-      return `${s},${l}`
-    }))
+    const sls = new Set(
+      samples.map(str => {
+        const { s, l } = parseHsl(randomColor(str))
+        return `${s},${l}`
+      }),
+    )
     // a fixed-S/L hash would collapse this to a single pair
     expect(sls.size).toBeGreaterThan(1)
   })

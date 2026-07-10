@@ -78,8 +78,7 @@ function syncJbrowseImgFromSource(rel: string, dest: string) {
     return
   }
   const srcMtime = fs.statSync(src).mtimeMs
-  const destFresh =
-    fs.existsSync(dest) && fs.statSync(dest).mtimeMs >= srcMtime
+  const destFresh = fs.existsSync(dest) && fs.statSync(dest).mtimeMs >= srcMtime
   if (!destFresh) {
     fs.mkdirSync(path.dirname(dest), { recursive: true })
     fs.copyFileSync(src, dest)

@@ -1,5 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema, readConfObject } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import {

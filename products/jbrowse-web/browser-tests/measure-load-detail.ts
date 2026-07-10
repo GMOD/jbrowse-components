@@ -23,7 +23,10 @@ async function main() {
   client.on('Network.loadingFinished', (e: any) => {
     const url = urlByReq.get(e.requestId) || ''
     if (url.endsWith('.js') || url.includes('.js?')) {
-      files.push({ url: url.split('/').pop()!, bytes: e.encodedDataLength || 0 })
+      files.push({
+        url: url.split('/').pop()!,
+        bytes: e.encodedDataLength || 0,
+      })
     }
   })
 

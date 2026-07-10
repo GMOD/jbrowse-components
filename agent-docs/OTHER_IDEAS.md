@@ -1650,3 +1650,16 @@ You already have layer/concat-like composition (stacked views, multi-level synte
 6. No sentinels in the serialized/public form
 
 Your own CLAUDE.md flags rowHeight === 0 = fit-to-height → effectiveRowHeight. A public schema must not leak that. Offer a getResolvedSession() that emits explicit resolved values — which is exactly what a portable, reproducible figure spec wants anyway. Keep sentinels internal.
+
+## Perf
+
+Where this leaves the perf story (all measured)
+
+- Interaction is main-thread-JS bound (frame time scales ~linearly with CPU throttle), not GPU and not MobX.
+- The cost is React re-render + MUI/Emotion CSS-in-JS, and CSS-in-JS is a per-render tax — so it's really the "too many components re-render per frame" problem wearing a styling-cost hat.
+- tss-react is already optimized (you fixed it) — no win there.
+- The tooltip wasn't the culprit. The remaining ~21ms/frame at 4× is the broader set of components that re-render on bpPerPx/offsetPx — the coverage/label/arc overlays and the LGV chrome.
+
+Honest next step
+
+The only thing that reduces that per-frame cost is cutting the number of components that re-render each zoom frame. Pinning down which ones needs a React-render-level measurement (React DevTools profiler or render counters), not a CPU flame graph — that's the right tool for "who re-rendered and why." I can wire that up next if you want to keep going, but I'd stop guessing and let that measurement pick the target. Given how much we've covered, this is a clean place to pause.

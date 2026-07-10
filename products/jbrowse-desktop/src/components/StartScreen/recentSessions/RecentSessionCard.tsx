@@ -74,8 +74,7 @@ function RecentSessionCard({
     ['loadThumbnail', path],
     async () =>
       ((await ipcRenderer.invoke('loadThumbnail', path)) as
-        | string
-        | undefined) ?? defaultSessionScreenshot,
+        string | undefined) ?? defaultSessionScreenshot,
     {
       onError: e => {
         console.error(e)
@@ -149,7 +148,9 @@ function RecentSessionCard({
               label: 'Show in folder',
               icon: FolderOpenIcon,
               onClick: () => {
-                ipcRenderer.invoke('showItemInFolder', path).catch(console.error)
+                ipcRenderer
+                  .invoke('showItemInFolder', path)
+                  .catch(console.error)
               },
             },
           ]}

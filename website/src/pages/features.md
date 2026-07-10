@@ -51,8 +51,8 @@ JBrowse 2 can do.
 ## View types
 
 Any number of these can be open at once and linked together, and plugins can add
-more. See the
-[user guide](https://jbrowse.org/jb2/docs/user_guide/) for full walkthroughs.
+more. See the [user guide](https://jbrowse.org/jb2/docs/user_guide/) for full
+walkthroughs.
 
 - **Linear genome view** - browse tracks along a reference, with split view for
   comparing regions side by side

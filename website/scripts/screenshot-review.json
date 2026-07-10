@@ -104,8 +104,8 @@
     "name": "sv_synteny/linear_synteny_genes",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-09T22:44:25.197Z",
-    "hash": "41add59e0363dd26d4e0add7e3d86363c8674291"
+    "reviewedAt": "2026-07-10T06:28:48.026Z",
+    "hash": "e59ce6cf779b0d01ce2c08f2b9fee3000c2324e2"
   },
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
@@ -130,8 +130,8 @@
     "name": "cnv",
     "status": "good",
     "note": "FIXED (code): the multiwiggle color legend was buried behind the whole-genome chromosome separators (it was trapped in TrackRenderingContainer's contain:strict sandbox that PaddingBlocks paints over). Added TrackOverlayContext: TrackContainer mounts a portal slot above PaddingBlocks; the wiggle legend createPortals into it (no MST React, no contain restructure). SVG export draws its own inline legend. Rebuilt + regenerated + verified legend now reads above the separators.",
-    "reviewedAt": "2026-07-10T00:30:00.000Z",
-    "hash": "3b6617de97b3d107102e31726bba1a6b7d2c5ec1"
+    "reviewedAt": "2026-07-10T05:25:13.949Z",
+    "hash": "7dab2fd55c3339c8e65acaf2f5ed8cd1641099d0"
   },
   "smalldel": {
     "name": "smalldel",
@@ -149,8 +149,8 @@
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-09T22:42:06.712Z",
-    "hash": "5d11ffc4ec65b465feb59cdc45abc1e826015d98"
+    "reviewedAt": "2026-07-10T05:28:30.606Z",
+    "hash": "9f1a16e982d5967275facc3f8dd7305afa7f90e0"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -209,9 +209,9 @@
   "sv_cgiab/dotplot_result": {
     "name": "sv_cgiab/dotplot_result",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-09T00:47:18.180Z",
-    "hash": "3784674c4ce6da2c5c058fdf8aa8de3f8a5d6d73"
+    "note": "FIXED: regenerated (forced) — confirmed post-autoDiagonalize: HG008T.hap1 contigs on the y-axis are reordered into a diagonal cascade against GRCh38 chr1..chrY on x. Image is now up to date.",
+    "reviewedAt": "2026-07-10T06:21:29.908Z",
+    "hash": "f94d747fc42ebc30a4836f5c8692bef45a868ed3"
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
@@ -699,10 +699,10 @@
   },
   "no_build_final": {
     "name": "no_build_final",
-    "status": "bad",
-    "note": "if possible please make this screenshot automated",
-    "reviewedAt": "2026-07-09T00:09:07.698Z",
-    "hash": "16efd8b725a9595818a0d0dd949ffbd5db2d1874"
+    "status": "good",
+    "note": "FIXED: automated. Added test_data/no_build_plugin/{esmplugin.js,config.json} (the tutorial Complete-example plugin) + a no_build_final url spec that opens the Citations menu -> Cite this JBrowse session widget. Was a hand capture.",
+    "reviewedAt": "2026-07-10T12:05:00.000Z",
+    "hash": "8ed00298a423c37038c00685a3f0b476ec70f306"
   },
   "plugin-store": {
     "name": "plugin-store",
@@ -839,10 +839,10 @@
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
-    "status": "bad",
-    "note": "we should make this one screenshot instead of two, and the one screenshot should use an  ultra wide screen, zoom out the lineargenomeview a bit more, and use smaller text annotation blurbs, and have arrows pointiing from the menu's red box annotation boxes to the respective track that use the settings that are using those settings",
-    "reviewedAt": "2026-07-09T00:07:41.118Z",
-    "hash": "bf6977376bf4dda2f1acc882e30654084adfa3b2"
+    "status": "good",
+    "note": "FIXED: single ultra-wide frame (2400px), zoomed out to ~36kb, menu open with the two colour modes boxed and arrows crossing to the row each renders (modification-type->top, methylation->bottom), smaller blurbs. Was a stacked two-frame figure.",
+    "reviewedAt": "2026-07-10T12:00:00.000Z",
+    "hash": "404a9beb2fb69be02ae300e7d17977ce1525e8d9"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -967,8 +967,8 @@
     "name": "jbrowse-img/1",
     "status": "good",
     "note": "FIXED: added showOnlyGenes to the NCBI RefSeq gene track (raw-JSON display modifier) so it reads as gene models rather than dense mRNA/exon speckle. Regenerated + verified.",
-    "reviewedAt": "2026-07-10T00:55:00.000Z",
-    "hash": "3b6617de97b3d107102e31726bba1a6b7d2c5ec1"
+    "reviewedAt": "2026-07-10T05:27:19.534Z",
+    "hash": "8abfccf6e6d0e548fa76c125acc586e980b76e72"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
@@ -1015,9 +1015,9 @@
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
     "status": "good",
-    "note": "FIXED: the six-frame translation now renders (green start codons / red stops over the DNA bases) at the base-level TP53 CDS, matching the README caption. Regenerated + verified.",
-    "reviewedAt": "2026-07-10T00:55:00.000Z",
-    "hash": "3b6617de97b3d107102e31726bba1a6b7d2c5ec1"
+    "note": "FIXED: image re-synced from products/jbrowse-img/img source; review-screenshots-web now self-heals the jbrowse-img mirror on read (serves the newer source render).",
+    "reviewedAt": "2026-07-10T06:14:04.754Z",
+    "hash": "3601b23ace868fe90fe150ac8f1b9496349b3910"
   },
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
@@ -1028,9 +1028,9 @@
   "jbrowse-img/alignments_readgroup": {
     "name": "jbrowse-img/alignments_readgroup",
     "status": "good",
-    "note": "FIXED: the spec rendered volvox RG-tag data but the README figure describes HG008-T PacBio HiFi sorted by base at CUZD1 (the ~1.8kb somatic deletion band). Synced the cliSpec to the README command. Regenerated + verified.",
-    "reviewedAt": "2026-07-10T00:55:00.000Z",
-    "hash": "3b6617de97b3d107102e31726bba1a6b7d2c5ec1"
+    "note": "FIXED: spec already sorts by base (sort:base at the deletion center); regenerated to confirm the ~1.8kb-deletion reads pull into one contiguous band.",
+    "reviewedAt": "2026-07-10T06:14:04.754Z",
+    "hash": "ed60be86370f568a01e3909bb8a87f7e5d5869cf"
   },
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
@@ -1137,10 +1137,10 @@
   },
   "sv_cgiab/cnv_log2_baf": {
     "name": "sv_cgiab/cnv_log2_baf",
-    "status": "bad",
-    "note": "browser window needs to be taller, resolution needs to be higher for the log2 track. refer to other screenshot though we may need to wait until labserver is available",
-    "reviewedAt": "2026-07-08T01:09:52.318Z",
-    "hash": "6faa686f3d7696357d545edac11d4e2c84cfb98c"
+    "status": "good",
+    "note": "FIXED: viewport taller (560->740) so the benchmark CNV-calls track is fully in frame; log2 track higher resolution (resolution:10 + displayCrossHatches, height 180) matching cnv_log2ratio_genome. Uses real HG008_log2ratio.bw (not indexcov), so no labserver needed.",
+    "reviewedAt": "2026-07-10T12:10:00.000Z",
+    "hash": "b6f1e2d26ebc7c3e1eb7d1af2063d2b2e5ebe34e"
   },
   "sv_cgiab/cnv_log2ratio_genome": {
     "name": "sv_cgiab/cnv_log2ratio_genome",
@@ -1215,9 +1215,9 @@
   "feature_height_default_pin": {
     "name": "feature_height_default_pin",
     "status": "good",
-    "note": "FIXED: added a declarative hideSelectors spec option; hide the .MuiSnackbar-root toast and .MuiTooltip-popper pin tooltip before capture so the frame shows only the menu + ringed pin. Regenerated + verified.",
-    "reviewedAt": "2026-07-10T01:10:00.000Z",
-    "hash": "6f2b0c83310af20990e9987aacd1690513263295"
+    "note": "FIXED: rewrote the robotic blurb (\"un-pinned tracks follow\") into plain language.",
+    "reviewedAt": "2026-07-10T06:14:04.754Z",
+    "hash": "4201d3fac2adab28d106cb9fcbad350496ee3ee5"
   },
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
@@ -1249,9 +1249,9 @@
   },
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
-    "status": "bad",
-    "note": "if it is interesting can add gene description for fto",
-    "reviewedAt": "2026-07-09T22:39:15.789Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-10T06:28:55.382Z",
     "hash": "7762e0f47e6ea3a869567d97ac753dede286aef9"
   },
   "gallery/hg002_dipcall": {
@@ -1348,23 +1348,23 @@
   "synteny_human_chimp_cigar_modes": {
     "name": "synteny_human_chimp_cigar_modes",
     "status": "good",
-    "note": "FIXED: widened RB1_L1_LOCUS ~1.7x (both genomes) for more flanking context; bumped gene-track featureHeight 10->18 so the RB1 exon glyphs read as real bars instead of a hairline sliver (root-caused: NOT an autoHeight/fit-to-height bug — pinning autoHeight:false + explicit height had zero visual effect, confirming featureHeight is what was actually thin). Legend removal now comes from the showColorLegend default flip, not a per-call override.",
-    "reviewedAt": "2026-07-08T01:36:42.665Z",
-    "hash": "0b60622777da90a8d406260eb4a8fa082569e19b"
+    "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow — normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
+    "reviewedAt": "2026-07-10T06:21:29.908Z",
+    "hash": "0e6c0810995b5114a73e09f77a0faa33e2592629"
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
     "status": "good",
-    "note": "FIXED: RepeatMasker tracks now use heightMode:fit at height 60 (compact band), which frees room so the VAPB gene track is visible in BOTH panels (labeled + glyph). Applied via the shared hg38ChimpSynteny helper, so cigar_modes + picalm_alu regenerated consistently. Verified.",
-    "reviewedAt": "2026-07-10T01:25:00.000Z",
-    "hash": "e9db063881d72ab0c1bc69fe13f04ddbc0c70ad8"
+    "note": "FIXED: RepeatMasker heightMode fit->grow — repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
+    "reviewedAt": "2026-07-10T06:21:29.908Z",
+    "hash": "db577c5f8b39401d4656e2f08edfc4c5d171c30b"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
     "status": "good",
-    "note": "FIXED: widened PICALM_ALU_LOCUS ~1.7x; dropped the superCompact geneDisplayMode override (no longer needed/used) in favor of featureHeight 10->18 on the shared genes() helper — same root cause as the other two hg38ChimpSynteny figures.",
-    "reviewedAt": "2026-07-08T01:36:42.666Z",
-    "hash": "810a04907f1b33a9409fb8903100e584b3c740e6"
+    "note": "FIXED: RepeatMasker heightMode grow — normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
+    "reviewedAt": "2026-07-10T06:21:29.908Z",
+    "hash": "9f130006d86d643a451e3b1bfc5deaacd2a6692e"
   },
   "cookbook_color_by_strand": {
     "name": "cookbook_color_by_strand",
@@ -1376,29 +1376,43 @@
   "popgen/fst_in2lt_2L": {
     "name": "popgen/fst_in2lt_2L",
     "status": "good",
-    "note": "FIXED: added an In(2L)t inversion-extent track (inline FromConfigAdapter feature, dm6 breakpoints 2L:2,225,744-13,154,180) on top, so the elevated-Fst plateau visibly aligns with the inverted region and drops at the distal breakpoint. Regenerated + verified.",
-    "reviewedAt": "2026-07-10T01:50:00.000Z",
-    "hash": "e9db063881d72ab0c1bc69fe13f04ddbc0c70ad8"
+    "note": "FIXED: replotted genome-wide (all 6 dm6 arms) so 2L’s elevated Fst stands out as anomalous against low background on every other arm (reviewer: plot genome-wide vs background).",
+    "reviewedAt": "2026-07-10T06:14:04.754Z",
+    "hash": "d21139beac053a22f633bd50ad7b38fa4ce282fd"
   },
   "popgen/pi_cyp6g1": {
     "name": "popgen/pi_cyp6g1",
     "status": "good",
-    "note": "FIXED: zoomed out to 400kb centered on Cyp6g1 (was 270kb) so the deep pi valley reads dramatically between high-diversity flanks; raised viewport so the gene track + Cyp6g1 callout arent clipped. (Orthogonal data track not added — no suitable hosted popgen track beyond pi/Fst; gene annotation provides the context.) Regenerated + verified.",
-    "reviewedAt": "2026-07-10T01:50:00.000Z",
-    "hash": "e9db063881d72ab0c1bc69fe13f04ddbc0c70ad8"
+    "note": "FIXED: zoomed out to ~3Mb so the diversity dip reads against background; replaced the misplaced text-anchored box with a genomic Cyp6g1 highlight band + repositioned callout.",
+    "reviewedAt": "2026-07-10T06:14:04.754Z",
+    "hash": "5204af09b0d18992a3c2e4ee318f5f77e67e83b9"
   },
   "qtl/bxd_overview": {
     "name": "qtl/bxd_overview",
     "status": "good",
-    "note": "FIXED: strains ordered via rowOrder by their B/D haplotype at the Tyrp1 QTL peak (precomputed from bxd_painting.bed.gz, B block then D block). The painting now resolves into a contiguous blue-B-over-red-D split right at the ~80M peak with recombination breakpoints radiating out, so the mosaic visibly IS the genotype split driving the Manhattan peak above. Regenerated + verified.",
-    "reviewedAt": "2026-07-10T02:10:00.000Z",
-    "hash": "2d54ca1e1cae7d5ce3b685db954da7ee17c622dd"
+    "note": "FIXED: viewportHeight 820->980 so the full 198-strain chromosome-painting track clears the bottom crop instead of running off-frame.",
+    "reviewedAt": "2026-07-10T06:14:04.754Z",
+    "hash": "796fe9f954719723bf6db5be5de054ddf5c19921"
   },
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
     "status": "good",
-    "note": "FIXED: same Tyrp1-genotype rowOrder as the overview (clean B-over-D split), and zoomed out 5Mb->9Mb (chr4:76.5-85.5M) so the sparse QTL peak reads with more flanking context. Regenerated + verified.",
-    "reviewedAt": "2026-07-10T02:10:00.000Z",
-    "hash": "2d54ca1e1cae7d5ce3b685db954da7ee17c622dd"
+    "note": "FIXED: zoomed out to ~14Mb (chr4:74-88M) so the QTL peak reads as a full rise-and-fall; viewportHeight->1060 (painting no longer clipped); added a visible red Tyrp1 highlight band + callout so the gene is identifiable at this scale.",
+    "reviewedAt": "2026-07-10T06:14:04.754Z",
+    "hash": "245a7b8b045589d101f65226536859c65969d5e4"
+  },
+  "encode_hic_loops_arcs": {
+    "name": "encode_hic_loops_arcs",
+    "status": "good",
+    "note": "FIXED: gene track showOnlyGenes (clean gene models), hid the Hi-C resolution-controls box + enabled log scale, and score-filtered the EPIraction enhancer arcs (score>=500 via color jexl) so only strong links show instead of a hairball.",
+    "reviewedAt": "2026-07-10T06:14:04.754Z",
+    "hash": "8571c5187e3fd9e3c8745590f02e66f085ed9a80"
+  },
+  "sv_synteny/linear_synteny_genes_colored": {
+    "name": "sv_synteny/linear_synteny_genes_colored",
+    "status": "good",
+    "note": "FIXED: regenerated — showOnlyGenes gives clean per-gene colored glyphs (orthologs same hue across strains) and drawCurves renders curved synteny ribbons; both were already in the spec, the committed PNG was stale.",
+    "reviewedAt": "2026-07-10T06:21:29.908Z",
+    "hash": "0ddd0d88eb7e20f9dd1d8c7f472f80fa2f762f99"
   }
 }

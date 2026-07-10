@@ -7,8 +7,8 @@ description:
 ---
 
 [JBrowseR](https://github.com/GMOD/JBrowseR) renders a JBrowse 2 linear genome
-view, drawn on the GPU, as an [htmlwidget](https://www.htmlwidgets.org/). Embed a
-full genome browser in an R Markdown document or Shiny app, or launch one from
+view, drawn on the GPU, as an [htmlwidget](https://www.htmlwidgets.org/). Embed
+a full genome browser in an R Markdown document or Shiny app, or launch one from
 the R console. It shares the same framework-agnostic view core as the
 [Python/Jupyter anywidget](/docs/jbrowse_jupyter), so both stay in step.
 
@@ -54,8 +54,8 @@ JBrowseR(
 ```
 
 R adds what a config can't express itself: `track_data_frame()` turns an
-in-memory data frame into a track (no file, no server), and `assembly()` writes a
-little assembly boilerplate from a FASTA URL. For full control, hand a whole
+in-memory data frame into a track (no file, no server), and `assembly()` writes
+a little assembly boilerplate from a FASTA URL. For full control, hand a whole
 JBrowse `config.json` to `JBrowseR(config = ...)`.
 
 ## Reacting to clicks in Shiny
@@ -66,7 +66,8 @@ Use `JBrowseROutput()` in the UI and `renderJBrowseR()` on the server.
 
 ## Run it in Colab
 
-A runnable [R-runtime Colab notebook](https://colab.research.google.com/github/GMOD/JBrowseR/blob/main/examples/JBrowseR_colab.ipynb)
+A runnable
+[R-runtime Colab notebook](https://colab.research.google.com/github/GMOD/JBrowseR/blob/main/examples/JBrowseR_colab.ipynb)
 walks through the one-line genome, alignments, an R data-frame track, and cancer
 structural variants.
 

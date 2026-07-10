@@ -13,13 +13,19 @@ export default class MyPlugin {
     const WidgetType = pluginManager.jbrequire(
       '@jbrowse/core/pluggableElementTypes/WidgetType',
     )
-    const { ElementId } = pluginManager.jbrequire('@jbrowse/core/util/types/mst')
+    const { ElementId } = pluginManager.jbrequire(
+      '@jbrowse/core/util/types/mst',
+    )
     const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 
     const React = pluginManager.jbrequire('react')
 
     const CiteWidget = () => {
-      const header = React.createElement('h1', null, 'Cite this JBrowse session')
+      const header = React.createElement(
+        'h1',
+        null,
+        'Cite this JBrowse session',
+      )
       const content = React.createElement(
         'p',
         null,

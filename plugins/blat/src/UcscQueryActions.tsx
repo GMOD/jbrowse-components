@@ -22,14 +22,23 @@ const UcscQueryActions = observer(function UcscQueryActions({
   const { loading, challenged } = query
   return (
     <DialogActions>
-      <Button variant="contained" onClick={() => { onCancel() }}>
+      <Button
+        variant="contained"
+        onClick={() => {
+          onCancel()
+        }}
+      >
         Cancel
       </Button>
       {challenged && isElectron ? (
         <Button
           variant="outlined"
           disabled={loading}
-          onClick={() => void query.solveChallenge(() => { onSubmit() })}
+          onClick={() =>
+            void query.solveChallenge(() => {
+              onSubmit()
+            })
+          }
         >
           Solve CAPTCHA
         </Button>
@@ -37,7 +46,9 @@ const UcscQueryActions = observer(function UcscQueryActions({
       <Button
         variant="contained"
         disabled={loading || submitDisabled}
-        onClick={() => { onSubmit() }}
+        onClick={() => {
+          onSubmit()
+        }}
       >
         {loading ? 'Searching…' : 'Submit'}
       </Button>

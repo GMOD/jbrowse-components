@@ -148,13 +148,13 @@ regions fade out.
 
 ### Coloring genes by ortholog
 
-The ribbons connect aligned _sequence_, but the gene tracks on each genome can be
-colored independently. On a gene track, the **Color by attribute** dialog (track
-menu) assigns each unique value of a feature attribute a distinct, deterministic
-color. Coloring every strain's gene track by the gene symbol (`gene` attribute,
-effectively the ortholog id in bacteria — NCBI uses standardized symbols across
-strains) makes orthologous genes share a color in every panel, so a gene's
-synteny is legible by color alone.
+The ribbons connect aligned _sequence_, but the gene tracks on each genome can
+be colored independently. On a gene track, the **Color by attribute** dialog
+(track menu) assigns each unique value of a feature attribute a distinct,
+deterministic color. Coloring every strain's gene track by the gene symbol
+(`gene` attribute, effectively the ortholog id in bacteria — NCBI uses
+standardized symbols across strains) makes orthologous genes share a color in
+every panel, so a gene's synteny is legible by color alone.
 
 <Figure caption="The same three-strain H. pylori stack with each gene track colored by gene symbol via Color by attribute (jexl:randomColor(get(feature,'gene'))). Orthologs share a color across strains — prfB (indigo), fliR (olive), efp (green), psel (magenta), lysS (red) — while strain-specific genes with no shared symbol take their own colors." src="/img/sv_synteny/linear_synteny_genes_colored.png" />
 

@@ -106,13 +106,13 @@ manually for local files or non-standard names.
 
 To load a batch of tracks in one step, click **Add multiple tracks** in the "Add
 a track" form (or **Add a single track instead** to switch back). Paste a list
-of file URLs — one per line — or drop a set of local files. JBrowse
-auto-detects each track's type from its extension and pairs index files (`.bai`,
-`.csi`, `.tbi`, `.crai`) with their data file automatically, so you can paste
-data and index URLs together without matching them up by hand. A preview table
-shows the detected type and guessed name for every row, which you can rename or
-remove before submitting. Pick one assembly that applies to all the tracks in
-the batch, then add them together.
+of file URLs — one per line — or drop a set of local files. JBrowse auto-detects
+each track's type from its extension and pairs index files (`.bai`, `.csi`,
+`.tbi`, `.crai`) with their data file automatically, so you can paste data and
+index URLs together without matching them up by hand. A preview table shows the
+detected type and guessed name for every row, which you can rename or remove
+before submitting. Pick one assembly that applies to all the tracks in the
+batch, then add them together.
 
 ## File format support
 

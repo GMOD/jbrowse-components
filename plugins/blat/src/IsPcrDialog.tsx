@@ -128,7 +128,9 @@ const IsPcrDialog = observer(function IsPcrDialog({
         query={query}
         submitDisabled={tooShort || !maxProductSizeValid || !db}
         onSubmit={() => void handleSubmit()}
-        onCancel={() => { handleClose() }}
+        onCancel={() => {
+          handleClose()
+        }}
       />
     </Dialog>
   )

@@ -73,11 +73,21 @@ MUI/Emotion CSS-in-JS per render**.
    only when a MUI component re-renders. So "reduce CSS-in-JS" ≡ **"reduce
    per-frame re-renders" (#1)**: each render you avoid avoids its MUI/emotion
    styling cost. Don't chase a styling-runtime rewrite; chase the re-renders.
-3. **DONE — tooltip cleared on zoom** (`ce1e168b71`). The hover tooltip (MUI
-   `BaseTooltip`) + hover highlight are removed from the per-frame path during a
-   zoom via a `bpPerPx` reaction that clears mouseover state. Also fixes
-   stale-position UX. Remaining MUI re-renderers on zoom are largely LGV *chrome*
-   (header zoom controls, ruler) — outside `plugins/alignments`.
+3. **DONE (UX, perf-neutral) — tooltip cleared on zoom** (`ce1e168b71`). A
+   `bpPerPx` reaction clears mouseover state on zoom. **Measured perf-neutral**
+   (hover+zoom 4×: 21.4ms baseline → 21.1ms fixed, within noise): the alignments
+   tooltip is an `observer` with stable deps, so during a stationary-cursor
+   (wheel) zoom it does not re-render anyway — activating a hover on the baseline
+   zoomed the same as no hover. Keep it as a UX fix (no stale, wrong-bp tooltip),
+   not a speed win. The `@mui/material/Tooltip` cost in the profiles is **chrome**
+   (`TrackHeightIndicator`'s `CascadingMenuButton`, LGV header controls), not the
+   hover tooltip.
+4. **The real remaining lever is unmeasured at the component level.** Interaction
+   is ~21ms/frame at 4× regardless of tooltip. To cut it, find which components
+   actually re-render each zoom frame (React DevTools profiler / render counters)
+   — the ones reading `view.bpPerPx`/`offsetPx`: the coverage axis / group-label
+   / arc overlays and the LGV chrome. Reducing those renders is the only thing
+   that reduces the MUI/Emotion styling cost, since that cost is per-render.
 
 Note: `VisibleLabelsOverlay` is a **canvas** (draws in a `useEffect`), so it does
 NOT contribute DOM churn; `model.visibleLabels` still recomputes on zoom but was

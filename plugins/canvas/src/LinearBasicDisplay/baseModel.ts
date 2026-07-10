@@ -2013,11 +2013,7 @@ export default function baseStateModelFactory(
           // reactively and never writes the slot, so without this the track would
           // snap to the stale slot default on switch. Done once at the deliberate
           // mode change (guarded on init so grownHeight's view reads are safe).
-          if (
-            self.autoHeight &&
-            mode !== 'grow' &&
-            getView(self).initialized
-          ) {
+          if (self.autoHeight && mode !== 'grow' && getView(self).initialized) {
             self.setHeight(self.grownHeight)
           }
           self.configuration.setSlot('heightMode', mode)
