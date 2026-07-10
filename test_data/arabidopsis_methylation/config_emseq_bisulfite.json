@@ -14,6 +14,51 @@
   ],
   "tracks": [
     {
+      "type": "FeatureTrack",
+      "trackId": "arabidopsis_genes",
+      "name": "Genes (TAIR10 / RefSeq)",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/bisulfite/arabidopsis_chr1_genes.gff.gz"
+      },
+      "assemblyNames": ["arabidopsis"]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "arabidopsis_methyldackel",
+      "name": "Aggregate methylation (MethylDackel)",
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "CpG",
+            "color": "#d62728",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/bisulfite/arabidopsis_wgbs_CpG.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHG",
+            "color": "#ff7f0e",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/bisulfite/arabidopsis_wgbs_CHG.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CHH",
+            "color": "#1f77b4",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/bisulfite/arabidopsis_wgbs_CHH.bw"
+            }
+          }
+        ]
+      },
+      "assemblyNames": ["arabidopsis"]
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "arabidopsis_wgbs",
       "name": "Arabidopsis WGBS (Col-0, DRR029742)",
@@ -25,7 +70,7 @@
     }
   ],
   "defaultSession": {
-    "name": "Arabidopsis WGBS bisulfite (CpG context)",
+    "name": "Arabidopsis WGBS bisulfite (three cytosine contexts)",
     "views": [
       {
         "type": "LinearGenomeView",
@@ -33,6 +78,12 @@
           "assembly": "arabidopsis",
           "loc": "NC_003070.9:4,398,000-4,412,000",
           "tracks": [
+            {
+              "trackId": "arabidopsis_genes"
+            },
+            {
+              "trackId": "arabidopsis_methyldackel"
+            },
             {
               "trackId": "arabidopsis_wgbs",
               "displaySnapshot": {

@@ -10,96 +10,68 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 const ARABIDOPSIS_WGBS_CONFIG =
   'test_data/arabidopsis_methylation/config_emseq_bisulfite.json'
 
-// One Arabidopsis WGBS pileup (Col-0 DRR029742, bwameth-aligned) over an
-// NC_003070.9:4.398-4.412Mb window that pairs two methylation regimes side by
-// side: the expressed ARM-repeat gene AT1G12930 (~4.398-4.406Mb) carries
-// gene-body CpG methylation only, while the silenced element at its right
-// (pseudogene AT1G12935 + unannotated repeat, ~4.406-4.410Mb) is methylated in
-// all three plant contexts. The bisulfite color mode reads C-vs-T against the
+// Arabidopsis WGBS (Col-0 DRR029742, bwameth-aligned) over
+// NC_003070.9:4,398,000-4,412,000, a window that pairs two methylation regimes:
+// the expressed ARM-repeat gene AT1G12930 (~4.398-4.406 Mb) carries gene-body
+// CpG methylation only, while the silenced element to its right (pseudogene
+// AT1G12935 + a repeat, ~4.406-4.410 Mb) is methylated in all three plant
+// contexts. Three tracks stack the story: the RefSeq gene annotation for
+// context, an aggregate MethylDackel track (per-position CpG/CHG/CHH fraction,
+// one colored row each) that makes the tri-context contrast quantitative, and
+// the per-read bisulfite pileup the tutorial demos — C-vs-T against the
 // reference (no MM/ML tags): methylated C = red, unmethylated (C->T) = blue.
-// Restricting the context to CpG / CHG / CHH re-scores the same reads, so the
-// gene body stays red only under CpG while the TE stays red under all three —
-// the tri-context signature that distinguishes plant heterochromatin from gene
-// bodies. One spec per context; the compose stacks them CpG/CHG/CHH.
-function arabidopsisBisulfite(
-  name: string,
-  colorBy: Record<string, unknown>,
-): ScreenshotSpec {
-  return {
+export const methylationSpecs: ScreenshotSpec[] = [
+  {
     mode: 'url',
-    name,
+    name: 'methylation/arabidopsis_wgbs_contexts',
     url: lgvSession(ARABIDOPSIS_WGBS_CONFIG, {
       assembly: 'arabidopsis',
       loc: 'NC_003070.9:4,398,000-4,412,000',
       tracks: [
+        { trackId: 'arabidopsis_genes' },
+        // aggregate CpG/CHG/CHH fraction, one colored row each: CpG high over
+        // gene body AND element, CHG/CHH confined to the element
+        { trackId: 'arabidopsis_methyldackel', height: 160 },
         {
           trackId: 'arabidopsis_wgbs',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            colorBy,
-            // tall enough that the whole ~30x pileup fits without the display's
-            // internal scroll clipping it mid-stack — a methylation-pattern
-            // overview reads best with the full column of reads at normal row
-            // height (taller marks are more legible; per-read detail is the
-            // boundary-zoom figure's job)
-            height: 320,
-          },
+          type: 'LinearAlignmentsDisplay',
+          colorBy: { type: 'bisulfite' },
+          // the pileup is supporting context in this overview, not the subject,
+          // so compact the reads to keep genes + aggregate in frame
+          heightMode: 'fixed',
+          featureHeight: 3,
+          featureSpacing: 0,
+          height: 160,
         },
       ],
     }),
     readyText: 'Arabidopsis WGBS',
-    // remote BAM over CDN, ~30x across 14kb: settles well under these caps
+    // remote CRAM over CDN + gene GFF + three bigWigs: settles under these caps
     readyTimeout: 90000,
     settleMs: 20000,
-    // ruler + coverage + the full compact pileup, trimmed so the stacked
-    // contexts aren't mostly whitespace (equal heights give a clean 3-panel stack)
-    viewportHeight: 470,
-  }
-}
-
-export const methylationSpecs: ScreenshotSpec[] = [
-  arabidopsisBisulfite('methylation/arabidopsis_wgbs_cpg', {
-    type: 'bisulfite',
-  }),
-  arabidopsisBisulfite('methylation/arabidopsis_wgbs_chg', {
-    type: 'bisulfite',
-    modifications: { cytosineContext: 'CHG' },
-  }),
-  arabidopsisBisulfite('methylation/arabidopsis_wgbs_chh', {
-    type: 'bisulfite',
-    modifications: { cytosineContext: 'CHH' },
-  }),
-  {
-    mode: 'compose',
-    name: 'methylation/arabidopsis_wgbs_contexts',
-    parts: [
-      'methylation/arabidopsis_wgbs_cpg',
-      'methylation/arabidopsis_wgbs_chg',
-      'methylation/arabidopsis_wgbs_chh',
-    ],
+    // room for genes + the three aggregate rows + the full compact pileup below
+    viewportHeight: 720,
   },
-  // Zoomed to ~800bp straddling the gene->TE boundary (methylation jumps from
-  // ~0% through 4,405,600 to ~90% at 4,406,000, MethylDackel-measured), colored
-  // by ALL cytosines so every C on every read is a mark — individual reads are
-  // now wide enough to read per-base: dense blue (unmethylated C->T) cytosines
-  // on the gene-body side resolve into dense red (methylated) cytosines once the
-  // reads cross into the silenced element, the boundary visible within single
-  // reads that span it.
+  // Zoomed to ~3 kb straddling the gene->element boundary at 4,405,669 (the
+  // AT1G12930 3' end, pinned by the gene track above), colored by ALL cytosines
+  // so every C on every read is a mark and reads are wide enough to read
+  // per-base: dense blue (unmethylated C->T) cytosines over the gene body
+  // resolve into dense red (methylated) cytosines as reads cross into the
+  // silenced element — the boundary visible within single reads that span it.
   {
     mode: 'url',
     name: 'methylation/arabidopsis_wgbs_boundary',
     url: lgvSession(ARABIDOPSIS_WGBS_CONFIG, {
       assembly: 'arabidopsis',
-      loc: 'NC_003070.9:4,405,500-4,406,300',
+      loc: 'NC_003070.9:4,404,500-4,407,500',
       tracks: [
+        { trackId: 'arabidopsis_genes' },
         {
           trackId: 'arabidopsis_wgbs',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            colorBy: {
-              type: 'bisulfite',
-              modifications: { cytosineContext: 'all' },
-            },
+          type: 'LinearAlignmentsDisplay',
+          colorBy: {
+            type: 'bisulfite',
+            modifications: { cytosineContext: 'all' },
           },
         },
       ],
@@ -141,23 +113,19 @@ export const methylationSpecs: ScreenshotSpec[] = [
         'cpgisland_ucsc_hg38',
         {
           trackId: 'COLO829_tumor.ht',
-          displaySnapshot: {
-            // one-color modifications rendering (only methylated calls
-            // colored) rather than the two-color methylation mode whose
-            // blue "unmethylated" signal has no counterpart in the
-            // bedmethyl track below
-            colorBy: { type: 'modifications' },
-          },
+          // one-color modifications rendering (only methylated calls
+          // colored) rather than the two-color methylation mode whose
+          // blue "unmethylated" signal has no counterpart in the
+          // bedmethyl track below
+          colorBy: { type: 'modifications' },
         },
         {
           trackId: 'COLO829_tumor.ht_modkit.bed_multi',
-          displaySnapshot: {
-            type: 'MultiLinearWiggleDisplay',
-            defaultRendering: 'multirowxy',
-            minScore: 0,
-            maxScore: 100,
-            height: 200,
-          },
+          type: 'MultiLinearWiggleDisplay',
+          defaultRendering: 'multirowxy',
+          minScore: 0,
+          maxScore: 100,
+          height: 200,
         },
       ],
     }),
@@ -166,46 +134,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // under these caps now that the empty-region loading hang is fixed)
     readyTimeout: 90000,
     settleMs: 30000,
-  },
-
-  // Same COLO829 chr20:21.5Mb CpG-island locus, but the reads are now GROUPED BY
-  // HAPLOTYPE (HP tag, straight from the wf-somatic-variation haplotagged .ht
-  // CRAM) while colored by modifications. Proves group-by-tag and per-read
-  // base-modification coloring compose: the single pileup splits into one
-  // 5mC-colored profile per haplotype (HP 1 / HP 2 / unphased), each with its
-  // own coverage row, so allele-resolved methylation is readable with no
-  // external tool. Compact rows keep all groups in frame. chr20:21.5Mb is used
-  // (not a canonical imprinted DMR) because COLO829 is a cancer line with LOH at
-  // H19/SNRPN/GNAS — those loci render a single unphased pileup, whereas 21.5Mb
-  // retains heterozygosity and phases into distinct HP groups.
-  {
-    mode: 'url',
-    name: 'methylation/colo829_haplotype_methylation',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr20:21,505,200-21,514,000',
-      tracks: [
-        'cpgisland_ucsc_hg38',
-        {
-          trackId: 'COLO829_tumor.ht',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            colorBy: { type: 'modifications' },
-            // the demo: stack the pileup into one section per HP tag value
-            groupBy: { type: 'tag', tag: 'HP' },
-            heightMode: 'fixed',
-            featureHeight: 3,
-            featureSpacing: 0,
-          },
-        },
-      ],
-    }),
-    readyText: 'COLO829',
-    readyTimeout: 90000,
-    settleMs: 30000,
-    // three stacked groups (HP1/HP2/unphased), each coverage + compact pileup;
-    // trimmed to just the content so the stacked groups aren't mostly whitespace
-    viewportHeight: 620,
   },
 
   // ONT HG002 fiber-seq (6mA) at the GAPDH promoter, modifications mode. The
@@ -239,48 +167,42 @@ export const methylationSpecs: ScreenshotSpec[] = [
             // same locus).
             {
               trackId: 'ncbi_refseq_109_hg38_latest',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                geneGlyphMode: 'longestCoding',
-              },
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
             },
             'gencode_promoter_hg38_ucsc',
             {
               trackId: 'PAY22766-nanopore',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                // this is a 6mA chromatin-accessibility assay; the basecaller
-                // also emits 5mC/5hmC calls on the same reads, but those
-                // aren't what this figure is about (reviewer: 6mA only). An
-                // allow-list (shownModifications: 6mA code 'a') keeps it
-                // 6mA-only regardless of what else the caller emitted.
-                colorBy: {
-                  type: 'modifications',
-                  modifications: { shownModifications: ['a'] },
-                },
-                // compact pileup: displayMode isn't a real slot on this
-                // display (that's the shared canvas base schema) — fixed
-                // heightMode + a small featureHeight/featureSpacing is the
-                // actual compact-row setting
-                heightMode: 'fixed',
-                featureHeight: 3,
-                featureSpacing: 0,
-                // reviewer: label the modification-type swatches (6mA calls)
-                showLegend: true,
+              type: 'LinearAlignmentsDisplay',
+              // this is a 6mA chromatin-accessibility assay; the basecaller
+              // also emits 5mC/5hmC calls on the same reads, but those
+              // aren't what this figure is about (reviewer: 6mA only). An
+              // allow-list (shownModifications: 6mA code 'a') keeps it
+              // 6mA-only regardless of what else the caller emitted.
+              colorBy: {
+                type: 'modifications',
+                modifications: { shownModifications: ['a'] },
               },
+              // compact pileup: displayMode isn't a real slot on this
+              // display (that's the shared canvas base schema) — fixed
+              // heightMode + a small featureHeight/featureSpacing is the
+              // actual compact-row setting
+              heightMode: 'fixed',
+              featureHeight: 3,
+              featureSpacing: 0,
+              // reviewer: label the modification-type swatches (6mA calls)
+              showLegend: true,
             },
             {
               trackId: 'PBA15131-nanopore',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                colorBy: {
-                  type: 'modifications',
-                  modifications: { shownModifications: ['a'] },
-                },
-                heightMode: 'fixed',
-                featureHeight: 3,
-                featureSpacing: 0,
+              type: 'LinearAlignmentsDisplay',
+              colorBy: {
+                type: 'modifications',
+                modifications: { shownModifications: ['a'] },
               },
+              heightMode: 'fixed',
+              featureHeight: 3,
+              featureSpacing: 0,
             },
           ],
         },
@@ -320,30 +242,24 @@ export const methylationSpecs: ScreenshotSpec[] = [
         // NCBI RefSeq gene track for SNRPN context
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
-          displaySnapshot: {
-            type: 'LinearBasicDisplay',
-            geneGlyphMode: 'longestCoding',
-          },
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
         },
         {
           trackId: 'HG002_snrpn_modkit_hp1',
-          displaySnapshot: {
-            type: 'MultiLinearWiggleDisplay',
-            defaultRendering: 'multirowxy',
-            minScore: 0,
-            maxScore: 100,
-            height: 120,
-          },
+          type: 'MultiLinearWiggleDisplay',
+          defaultRendering: 'multirowxy',
+          minScore: 0,
+          maxScore: 100,
+          height: 120,
         },
         {
           trackId: 'HG002_snrpn_modkit_hp2',
-          displaySnapshot: {
-            type: 'MultiLinearWiggleDisplay',
-            defaultRendering: 'multirowxy',
-            minScore: 0,
-            maxScore: 100,
-            height: 120,
-          },
+          type: 'MultiLinearWiggleDisplay',
+          defaultRendering: 'multirowxy',
+          minScore: 0,
+          maxScore: 100,
+          height: 120,
         },
       ],
     }),

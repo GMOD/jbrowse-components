@@ -79,9 +79,13 @@ three plant contexts:
 ```bash
 MethylDackel extract --CHG --CHH tair10.fa arabidopsis_wgbs.bam
 # -> *_CpG.bedGraph, *_CHG.bedGraph, *_CHH.bedGraph
+# convert each to bigWig (bedGraphToBigWig, UCSC tools) for fast random access
 ```
 
-Load these as a `MultiQuantitativeTrack` exactly as in the
+Group the three bigWigs into one `MultiQuantitativeTrack` (a subadapter per
+context, each with its own `name` and `color`) so they render as three labeled
+rows — the **Aggregate methylation** track in the figure below. This is the same
+mechanism as the
 [DNA methylation tutorial's aggregate section](/docs/tutorials/methylation#aggregate-methylation-with-modkit-bedmethyl).
 
 ## Coloring reads in JBrowse
@@ -96,26 +100,31 @@ The demo view opens on `NC_003070.9` (chromosome 1) around
 `4,398,000–4,412,000`, a window that places two methylation regimes side by
 side. On the left, the expressed ARM-repeat gene **AT1G12930** carries
 **gene-body methylation** — cytosines methylated only in the **CpG** context. On
-the right, a silenced element (the pseudogene **AT1G12935** and the unannotated
-repeat sequence beyond it, ~`4,406,000–4,410,000`) is methylated in **all
-three** contexts, the signature of transposon/heterochromatin silencing in
-plants.
+the right, a silenced element (the pseudogene **AT1G12935** and the repeat
+sequence beyond it) is methylated in **all three** contexts, the signature of
+transposon/heterochromatin silencing in plants.
 
-Switching the context re-scores the same reads. Under **CpG** both the gene body
-and the element read out red; under **CHG** and **CHH** only the element stays
-red while the gene body drops to blue — so the tri-context element separates
-cleanly from the CpG-only gene body.
+The figure below stacks three tracks over that window so the pattern reads at a
+glance: the **gene annotation** for context, the **aggregate methylation** track
+(one row per context, from MethylDackel — see the previous section), and the
+**per-read bisulfite pileup**. CpG methylation covers both the gene body and the
+silenced element, while CHG and CHH methylation is confined to the element — so
+the tri-context element separates cleanly from the CpG-only gene body.
 
-<Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="The same Arabidopsis WGBS pileup colored by bisulfite methylation in the CpG (top), CHG (middle), and CHH (bottom) contexts, over NC_003070.9:4,398,000–4,412,000. Red = methylated cytosine (retained C), blue = unmethylated (C→T). CpG methylation covers both the AT1G12930 gene body (left) and the silenced element (right, ~4,406–4,410 kb); CHG and CHH methylation is confined to the element, leaving the gene body blue. The gray track above each pileup is read coverage." links="CpG context=methylation/arabidopsis_wgbs_cpg,CHG context=methylation/arabidopsis_wgbs_chg,CHH context=methylation/arabidopsis_wgbs_chh" />
+<Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: the AT1G12930 gene and the AT1G12935 pseudogene. Middle: aggregate per-position methylation in the three plant contexts — CpG (red) covers both the gene body and the silenced element (right), while CHG (orange) and CHH (blue) are confined to the element. Bottom: the per-read bisulfite pileup the contexts are read from — red = methylated cytosine, blue = unmethylated." />
+
+Switching the pileup's context (**Color by → Advanced → Bisulfite / EM-seq**,
+then CpG / CHG / CHH / all) re-scores the same reads, so any one context can be
+isolated on the per-read pileup too.
 
 Because the call is per read, zooming in resolves the methylation on individual
-molecules. The figure below is the ~800 bp right at the gene→element boundary,
-colored by **all cytosines** so every C is marked: each read is a run of blue
-(unmethylated) cytosines on the gene-body side that turns red (methylated) as it
-crosses into the silenced element — the boundary is visible even within single
-reads that span it.
+molecules. The figure below is the gene→element boundary, colored by **all
+cytosines** so every C is marked: each read is a run of blue (unmethylated)
+cytosines on the gene-body side that turns red (methylated) as it crosses into
+the silenced element — the boundary is visible even within single reads that
+span it.
 
-<Figure src="/img/methylation/arabidopsis_wgbs_boundary.png" caption="NC_003070.9:4,405,500–4,406,300, bisulfite coloring in the all-cytosines context. Each read carries a per-base methylation call: blue (unmethylated, C→T) cytosines dominate the gene body on the left, and red (methylated) cytosines appear as reads cross into the silenced element on the right, where methylation rises from ~0% to ~90%." />
+<Figure src="/img/methylation/arabidopsis_wgbs_boundary.png" caption="The gene→element boundary (~3 kb). Every cytosine on every read is colored: blue (unmethylated, C→T) dominates the AT1G12930 gene body on the left, and reads turn red (methylated) as they cross into the silenced element on the right. The boundary is visible even within single reads that span it, and in the coverage histogram above." />
 
 ## See also
 

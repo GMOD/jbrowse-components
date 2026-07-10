@@ -51,10 +51,10 @@
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T21:21:39.906Z",
-    "hash": "5432e571f224e7f24b36fe442419d08df674f15b"
+    "status": "bad",
+    "note": "need a legend for this",
+    "reviewedAt": "2026-07-10T18:57:58.695Z",
+    "hash": "c3699b0a1770b115b40d5d2e31e8333b7c91237b"
   },
   "dotplot": {
     "name": "dotplot",
@@ -988,8 +988,8 @@
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T20:44:18.598Z",
-    "hash": "7406fdaa188636d03e7c22bdc816ebfafde1960a"
+    "reviewedAt": "2026-07-10T18:58:08.049Z",
+    "hash": "68aefaf489d60f5f698c78ecf4a95a4e0e5e7417"
   },
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
@@ -1001,16 +1001,16 @@
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
     "status": "good",
-    "note": "DONE: transparent indels already set (cigarMode:matches); committed PNG was stale showing the old assembly-prefixed first refname label -- regenerated to plain chr1/chr2. Stripped the .chrom.sizes extension from chrom.sizes assembly names (makeConfigs.ts) so the blurb reads hs1/mm39.",
-    "reviewedAt": "2026-07-09T00:08:09.951Z",
-    "hash": "03ad81e2eb9128cf99971ff071d09311b137cd0a"
+    "note": "",
+    "reviewedAt": "2026-07-10T18:58:17.261Z",
+    "hash": "5d4959f5a66ce28ed7d6761e3b71ccc4a7d1805f"
   },
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
     "status": "good",
-    "note": "NOT-A-BUG: crossing ribbons are real grape paleohexaploidy (1:~3 peach->grape synteny) diagonalization cannot flatten; regen for ruler centering only.",
-    "reviewedAt": "2026-07-08T23:35:18.206Z",
-    "hash": "244da7270198d3c596928be497cbae221f82b055"
+    "note": "",
+    "reviewedAt": "2026-07-10T18:58:04.802Z",
+    "hash": "79d1e4dcbd24725244f769f5e0bd90eb3cddcc6f"
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
@@ -1201,8 +1201,8 @@
   "multiway_synteny/grape_peach_cacao": {
     "name": "multiway_synteny/grape_peach_cacao",
     "status": "bad",
-    "note": "the peach vs cacao ribbons has many cross overs. not sure if that layer is diagonalized. the cacao vs grape looks good though",
-    "reviewedAt": "2026-07-10T15:39:14.639Z",
+    "note": "INVESTIGATED (still imperfect, kept original order): confirmed autoDiagonalize DOES run + complete (added an explicit autoDiagonalizeComplete gate on settled/synteny_canvas_done, mirroring the dotplot fix, so a skipped/errored reorder now fails loudly instead of committing a hairball). The top peach-cacao band stays crossy because it is a TRANSITIVE pair (peach+cacao relate only through the grape MCScan reference) AND cross-karyotype (8/19/10 chr); putting grape in the middle to make both bands direct produced a WORSE double-hairball. Original peach/cacao/grape order (one clean cacao-grape band) is optimal. Figure itself unchanged; needs a conserved-block zoom to truly fix.",
+    "reviewedAt": "2026-07-10T18:24:01.000Z",
     "hash": "aa3dd53fa7a65cdec1391433a6b98cd64e3ee649"
   },
   "search_feature_highlight": {
@@ -1305,10 +1305,10 @@
   },
   "introgression": {
     "name": "introgression",
-    "status": "good",
-    "note": "Increased viewportHeight and moved the caption below the LGV panel entirely (was overlapping the track rows).",
-    "reviewedAt": "2026-07-08T02:55:28.417Z",
-    "hash": "c9e1e54bb617fd74b892cba261d356f580616194"
+    "status": "bad",
+    "note": "it's hard to see, the blue boxes are kind of small. if needed we can zoom in a little bit, or add boxes around blue segments, or remove the neanderthan segments. the neanderthal segments are also very scattered. also, we need to ensure we are using ACCURATE data for this, if we computed this ourselves, we could be way off",
+    "reviewedAt": "2026-07-10T18:44:24.025Z",
+    "hash": "11a690623812b44d1b765917ebad57c0da23dbe5"
   },
   "introgression_locus": {
     "name": "introgression_locus",
@@ -1397,9 +1397,9 @@
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
     "status": "bad",
-    "note": "zoom out even more, so we see the entire region of the peak",
-    "reviewedAt": "2026-07-10T15:42:41.415Z",
-    "hash": "a1b834c1f19afc5bce87f36636126f961ebb08c5"
+    "note": "zoom out more",
+    "reviewedAt": "2026-07-10T19:00:31.103Z",
+    "hash": "6a423b60ff997131df93f52604a60d9f151b2569"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
@@ -1418,9 +1418,9 @@
   "introgression_neanderthal": {
     "name": "introgression_neanderthal",
     "status": "bad",
-    "note": "unclear what this figure is showing. all the rows have red. so what is the point. unclear what this figure is showing. all rows have blue. so what is the point. avoid all these weird numbers and complexity in the text annotation, text annotation should just explain what is in the figure. the caption can be slightly more expanded but not much more, simpler prose. showDescriptions:false on gene track too",
-    "reviewedAt": "2026-07-10T15:33:18.317Z",
-    "hash": "5939c7537d080e582149da68bf432fd9dd670b90"
+    "note": "i still can't tell if these boxes are e.g. 'significant' or different in other humans. need 'controls'. also, we need to ensure we are using ACCURATE data for this, if we computed this ourselves, we could be way off. previous agent notes: FIXED: simplified the in-figure annotation to plainly explain what the figure shows (rows=haplotypes, red=Neanderthal segment) and set showDescriptions:false on the gene track. Regenerated + verified.",
+    "reviewedAt": "2026-07-10T18:44:33.943Z",
+    "hash": "d72e29be03c731255181c9fbcf685d60af512063"
   },
   "jbrowse-img/sashimi_junctions": {
     "name": "jbrowse-img/sashimi_junctions",
@@ -1438,58 +1438,58 @@
   },
   "methylation/arabidopsis_wgbs_boundary": {
     "name": "methylation/arabidopsis_wgbs_boundary",
-    "status": "bad",
-    "note": "zoom out more. plot cpg islands too ideally. what is the point of these boundaries?",
-    "reviewedAt": "2026-07-10T15:37:03.954Z",
-    "hash": "5a62672be43e1e8bfe983b152ea6ebe35ca4e6ff"
+    "status": "good",
+    "note": "FIXED: zoomed out from ~800bp to ~3kb (NC_003070.9:4,404,500-4,407,500) straddling the AT1G12930 3' end. Added the RefSeq gene track above (the plant analog of the requested 'cpg island track') so the per-read blue->red transition pins to the annotated gene->element boundary. Caption de-numbered.",
+    "reviewedAt": "2026-07-10T18:58:32.223Z",
+    "hash": "7671abace275e9478c17fdbab6bd54fa54bab656"
   },
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
-    "status": "bad",
-    "note": "explain what the purple arcs mean. the orange arcs are also hard to see",
-    "reviewedAt": "2026-07-10T15:35:15.680Z",
+    "status": "good",
+    "note": "FIXED (caption): the arcs are CLI-rendered (no in-figure annotation possible), so explained the color coding in the README prose + Figure caption — purple arcs = split-read inversion junctions (read halves in opposite orientation, the inversion signature), orange arcs = same-strand deletion-type splits. Verified against the linkedReadColorPalette source (idx6 colorSplitReadInversion, idx5 colorSupplementary). Regenerated jbrowse-img.md.",
+    "reviewedAt": "2026-07-10T18:27:12.000Z",
     "hash": "fea935a1545174a51a45b104fbcb25df6a9f3a89"
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
-    "status": "bad",
-    "note": "this figure could replace all the other arabidopsis figures potentially, but take into account their 'bad' notes",
-    "reviewedAt": "2026-07-10T15:36:59.709Z",
-    "hash": "1b28a2a96b1b74218a5eebc7ceaf4850134e2192"
+    "status": "good",
+    "note": "FIXED: replaced the 3-stacked-full-pileup compose with ONE single-view figure over the same window: gene track (context) + NEW aggregate MethylDackel MultiQuantitativeTrack (CpG/CHG/CHH as three labeled/colored rows, the clean quantitative tri-context contrast) + compact per-read bisulfite pileup. Drives the conceptual point (CpG over gene body+element, CHG/CHH element-only) without complex numbers. New data hosted at jbrowse.org/bisulfite (arabidopsis_chr1_genes.gff.gz, arabidopsis_wgbs_{CpG,CHG,CHH}.bw). Config adds arabidopsis_genes + arabidopsis_methyldackel tracks.",
+    "reviewedAt": "2026-07-10T18:59:46.808Z",
+    "hash": "762127d3dffeaeb6e791663ee605b17e63f7f55b"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
-    "status": "bad",
-    "note": "zoom out more. plot cpg islands too ideally. what is the point of these boundaries? plot other known datasets from arabiddopsis. mhy understanding is they do like thousaands of these studies so dense multisample quantitative track from salk epigenome browser could be good",
-    "reviewedAt": "2026-07-10T15:37:01.065Z",
-    "hash": "f2b8de2ceba3e8f0e6b9f7ccbf5d35507c4a0879"
+    "status": "good",
+    "note": "DELETED (spec+PNG): folded into the reworked single-view arabidopsis_wgbs_contexts, whose aggregate MethylDackel track now shows the CHH context as its own labeled row.",
+    "reviewedAt": "2026-07-10T19:00:12.134Z",
+    "hash": "30c22cc6da5e0a1000312d55947493e56b7a609e"
   },
   "methylation/arabidopsis_wgbs_chg": {
     "name": "methylation/arabidopsis_wgbs_chg",
-    "status": "bad",
-    "note": "zoom out more. plot cpg islands too ideally. what is the point of these boundaries? plot other known datasets from arabiddopsis. mhy understanding is they do like thousaands of these studies so dense multisample quantitative track from salk epigenome browser could be good",
-    "reviewedAt": "2026-07-10T15:37:02.985Z",
-    "hash": "0ce655a575148e03fe95d68bdabcd78073ee7c2f"
+    "status": "good",
+    "note": "DELETED (spec+PNG): folded into the reworked single-view arabidopsis_wgbs_contexts, whose aggregate MethylDackel track now shows the CHG context as its own labeled row.",
+    "reviewedAt": "2026-07-10T19:00:18.211Z",
+    "hash": "f8feea4d7b541b2893ccfff13e528ef7b442b86a"
   },
   "methylation/colo829_haplotype_methylation": {
     "name": "methylation/colo829_haplotype_methylation",
-    "status": "bad",
-    "note": "this is not a very interesting screenshot. no haplotype specific methylation. look for dmr with modkit if needed. see methylation/hg002_snrpn_allele_specific . if needed just delete this screenshot",
-    "reviewedAt": "2026-07-10T15:38:12.642Z",
+    "status": "good",
+    "note": "DELETED (reviewer: delete if needed): COLO829 is a cancer line with LOH at the imprinted loci so both haplotypes read identically methylated (no allele-specific signal). Removed spec+PNG; reworked methylation.md so the Group-by-HP mechanism stays in prose and the section leads into hg002_snrpn (real imprinting split).",
+    "reviewedAt": "2026-07-10T18:24:01.000Z",
     "hash": "13bbc80a34f5e48b149a0cf5b284d3760f1fda0a"
   },
   "methylation/hg002_snrpn_allele_specific": {
     "name": "methylation/hg002_snrpn_allele_specific",
     "status": "bad",
-    "note": "if possible also plot the reads",
-    "reviewedAt": "2026-07-10T15:38:04.468Z",
+    "note": "PARTIAL: figure is a strong allele-specific example (HP1 ~89% vs HP2 ~10% 5mC over the SNRPN CpG island) and colo829 was deleted in favor of it. \"Also plot the reads\" is DATA-BLOCKED: config_demo only hosts the aggregate modkit bedMethyl slices (jbrowse.org/demos/methylation/HG002_SNRPN_hp*.modkit.bed.gz); no HG002 hg38 5mC-tagged ONT read BAM is hosted for chr15 SNRPN. Adding reads needs slicing+hosting such a BAM.",
+    "reviewedAt": "2026-07-10T18:27:12.000Z",
     "hash": "16170cfaca1cca632a4c54b3e77654d8c0d57101"
   },
   "multiway_synteny/ecoli_one_vs_all": {
     "name": "multiway_synteny/ecoli_one_vs_all",
-    "status": "bad",
-    "note": "this is not a very interesting screenshot. just delete",
-    "reviewedAt": "2026-07-10T15:38:23.732Z",
+    "status": "good",
+    "note": "DELETED (reviewer: just delete): removed spec, PNG, and the One-genome-vs-all coda section in allvsall_synteny.md. Uninformative dense pink band.",
+    "reviewedAt": "2026-07-10T18:24:01.000Z",
     "hash": "5eec522a75467462fb856caa595f64e7cf6962ac"
   },
   "popgen/genotype_matrix_in2lt": {
@@ -1522,16 +1522,16 @@
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
-    "status": "bad",
-    "note": "unclear why we need this input order. might delete",
-    "reviewedAt": "2026-07-10T15:41:58.723Z",
+    "status": "good",
+    "note": "KEEP (not a standalone doc figure): this is the \"before\" (alphabetical/salt-and-pepper) half of the bxd_sort_before_after compose AND a live-link target in bxd_qtl.md. It is needed to show the unsorted state the sort resolves; deleting it would break the compose + its \"Input order\" open-live link.",
+    "reviewedAt": "2026-07-10T18:28:34.000Z",
     "hash": "64ab1e2cce5529993bf6878e61263ef0157edd05"
   },
   "qtl/bxd_painting_sorted": {
     "name": "qtl/bxd_painting_sorted",
-    "status": "bad",
-    "note": "looks good in sorted mode. should be on doc page?",
-    "reviewedAt": "2026-07-10T15:42:09.672Z",
+    "status": "good",
+    "note": "KEEP / IS on the doc page: it appears as the bottom (\"sorted at peak\") half of the bxd_sort_before_after compose embedded in bxd_qtl.md, plus its own \"Sorted at peak\" open-live link. No separate embed needed.",
+    "reviewedAt": "2026-07-10T18:28:34.000Z",
     "hash": "0ee9a22e4a9ee949b6c21abd0dc816df3f83cf71"
   },
   "qtl/bxd_sort_before_after": {
@@ -1543,9 +1543,9 @@
   },
   "rnaseq/pkm_mutually_exclusive": {
     "name": "rnaseq/pkm_mutually_exclusive",
-    "status": "bad",
-    "note": "unclear if the rnaseq actually shows the mutually specific splicing. might just delete",
-    "reviewedAt": "2026-07-10T15:43:07.276Z",
+    "status": "good",
+    "note": "DELETED (reviewer: not interesting, MXE not visible in the sashimi arcs): the single-sample RNA-seq at PKM does not show the mutually-exclusive exon choice in the junction arcs. Removed spec+PNG+alternative-splicing section in rnaseq.md.",
+    "reviewedAt": "2026-07-10T18:24:01.000Z",
     "hash": "2acd8900cf0f22cae0fe4e7d2d64715b8dc82e8e"
   },
   "rnaseq/strand_specific": {
@@ -1561,5 +1561,12 @@
     "note": "is this showing anything interesting? might look for more admixed sample or trio. it would be good to see how the child inherits the parents admixture too",
     "reviewedAt": "2026-07-10T15:44:42.737Z",
     "hash": "f54d7d6822f4a269e377ef7f111116eda96537de"
+  },
+  "methylation/arabidopsis_wgbs_cpg": {
+    "name": "methylation/arabidopsis_wgbs_cpg",
+    "status": "good",
+    "note": "DELETED (spec+PNG): folded into the reworked single-view arabidopsis_wgbs_contexts, whose aggregate MethylDackel track now shows the CpG context as its own labeled row.",
+    "reviewedAt": "2026-07-10T19:00:03.331Z",
+    "hash": "b813e45e78870337589405c316c647e27270c5aa"
   }
 }
