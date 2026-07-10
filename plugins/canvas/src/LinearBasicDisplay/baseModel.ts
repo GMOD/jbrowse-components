@@ -205,13 +205,6 @@ const MIN_FIT_HEIGHT = 50
 // shrinking boxes to invisibility. See `fitMinScale`.
 const MIN_FIT_BOX_PX = 2
 
-// Largest feature-body height (px) the fit grow may reach. A sparse stack that
-// fits with room to spare is scaled up so its bodies fill the track instead of
-// leaving whitespace, but only until a body hits this height — past that the
-// surplus stays whitespace rather than ballooning a lone feature to fill a tall
-// track. See `fitMaxScale`.
-const MAX_FIT_BOX_PX = 30
-
 /**
  * #stateModel LinearCanvasBaseDisplay
  * #category display
@@ -1080,12 +1073,17 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * Ceiling on the fit grow: the largest vertical scale before a feature body
-         * exceeds `MAX_FIT_BOX_PX`. A sparse stack grows to fill the track only up
-         * to here; past it the surplus stays whitespace (see resolveFitLadder).
+         * exceeds the configured (normal-mode) `featureHeight`. A sparse stack
+         * grows to fill the track only until its bodies reach their normal height,
+         * so fit never makes a feature taller than it would be outside fit mode. In
+         * normal display mode fitBodyPx already is the normal height, pinning the
+         * scale at 1 (no grow, surplus stays whitespace); a compact mode (fitBodyPx
+         * below normal) may grow back up to — but not past — the normal height.
          */
         get fitMaxScale() {
+          const normalBodyPx = getConf(self, 'featureHeight')
           return this.fitBodyPx > 0
-            ? Math.max(1, MAX_FIT_BOX_PX / this.fitBodyPx)
+            ? Math.max(1, normalBodyPx / this.fitBodyPx)
             : 1
         },
       }))

@@ -356,27 +356,46 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.hasOverflow).toBe(false)
   })
 
-  // Fit grows a sparse stack so its bodies fill the track instead of stranding
-  // whitespace, capped so a lone feature can't balloon to fill a tall track.
-  it('grows the stack to fill spare vertical space, capped at fitMaxScale', () => {
+  // Fit never scales a feature body past its normal height: in the default
+  // (normal) display mode fitBodyPx already is the normal height, so the grow
+  // scale pins at 1 and a track taller than the content strands whitespace rather
+  // than ballooning the bodies (the resize-taller regression).
+  it('does not grow features past the normal feature height', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
     display.setRpcData(0, labeledStackedRegionData(3, 10), view.bpPerPx, ctgA)
     const fullH = maxBottom(display.baseLaidOutDataMap)
-    const maxScale = display.fitMaxScale
+    expect(display.fitMaxScale).toBe(1)
     display.setHeightMode('fit')
 
-    // A little taller than the content: grow to fill it exactly.
-    display.setHeight(Math.round(fullH * 1.5))
+    // Track far taller than the content: bodies keep their natural height and the
+    // surplus stays whitespace instead of scaling up.
+    display.setHeight(Math.round(fullH * 3))
     expect(display.fitStage.level).toBe('full')
-    expect(display.fitScale).toBeCloseTo(display.height / fullH)
-    expect(display.maxY).toBe(display.height)
+    expect(display.fitScale).toBe(1)
+    expect(display.maxY).toBe(fullH)
+    expect(display.maxY).toBeLessThan(display.height)
     expect(display.hasOverflow).toBe(false)
+  })
 
-    // Far taller than the content: grow is capped, surplus stays whitespace.
-    display.setHeight(Math.round(fullH * maxScale * 3))
-    expect(display.fitStage.level).toBe('full')
-    expect(display.fitScale).toBe(maxScale)
+  // In a compact mode the laid-out bodies start below the normal height, so a
+  // tall track may grow them to fill it — but the grow ceiling is the normal
+  // height (fitMaxScale = 1 / multiplier), never taller.
+  it('grows compact bodies only up to the normal feature height', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setDisplayMode('compact')
+    display.setRpcData(0, labeledStackedRegionData(3, 10), view.bpPerPx, ctgA)
+    // compact multiplier 0.6 → bodies start at 0.6× normal, so grow tops out at
+    // 1 / 0.6 to reach (not exceed) the normal height.
+    expect(display.fitMaxScale).toBeCloseTo(1 / 0.6)
+    const fullH = maxBottom(display.baseLaidOutDataMap)
+    display.setHeightMode('fit')
+
+    // Track far taller than the content: grow is capped at the normal height, so
+    // the surplus past that stays whitespace.
+    display.setHeight(Math.round(fullH * display.fitMaxScale * 3))
+    expect(display.fitScale).toBe(display.fitMaxScale)
     expect(display.maxY).toBeLessThan(display.height)
     expect(display.hasOverflow).toBe(false)
   })
