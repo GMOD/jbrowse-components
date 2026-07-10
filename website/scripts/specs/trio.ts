@@ -131,10 +131,13 @@ export const trioSpecs: ScreenshotSpec[] = [
     settleMs: 12000,
   },
 
-  // The same six haplotypes painted by continental ancestry (FLARE local
-  // ancestry vs a balanced AFR/EUR/EAS/SAS 1000 Genomes reference) instead of by
-  // parent-of-origin. A Kinh-Vietnamese trio, so the painting is essentially
-  // uniform East Asian (green).
+  // Six haplotypes of a 1000 Genomes African-American (ASW) trio painted by
+  // continental ancestry (FLARE local ancestry vs a balanced AFR/EUR/EAS/SAS
+  // reference). ASW is EUR/AFR two-way admixed — accurately paintable with
+  // 1000G references (unlike an AMR trio, where 1000G has no unadmixed Native
+  // American reference) — so each haplotype reads as an AFR (orange) / EUR
+  // (blue) mosaic and the child's two haplotypes visibly recombine the ancestry
+  // blocks it inherited from each parent. Built by scripts/build_asw_trio_ancestry.sh.
   {
     mode: 'url',
     name: 'trio-ancestry',
@@ -143,7 +146,7 @@ export const trioSpecs: ScreenshotSpec[] = [
       loc: 'chr1:1-248,956,422',
       tracks: [
         {
-          trackId: 'HG02024_VN049_KHVTrio.chr1.ancestry',
+          trackId: 'NA19828_ASW_trio.chr1.ancestry',
           type: 'LinearMultiRowFeatureDisplay',
           height: 160,
         },

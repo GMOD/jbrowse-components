@@ -97,7 +97,8 @@
         {
           "type": "LinearHicDisplay",
           "displayId": "encode_gm12878_hic-LinearHicDisplay",
-          "useLogScale": true,
+          "useColorPercentile": true,
+          "resolutionBias": 2,
           "showResolutionControls": false
         }
       ]
@@ -111,7 +112,7 @@
         "type": "LinearGenomeView",
         "init": {
           "assembly": "hg38",
-          "loc": "chr3:122,480,000-122,760,000",
+          "loc": "chr3:122,300,000-122,920,000",
           "tracks": [
             {
               "trackId": "ncbi_refseq_hg38",

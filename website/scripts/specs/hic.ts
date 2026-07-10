@@ -2,7 +2,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // ENCODE GM12878 chromatin interactions rendered as arcs over the intact Hi-C
 // contact matrix (test_data/encode_hic_loops.json). The config's own
-// defaultSession opens at chr3:122.48-122.76Mb, over the PARP9–DTX3L–PARP14
+// defaultSession opens at chr3:122.30-122.92Mb, over the PARP9–DTX3L–PARP14
 // interferon-stimulated gene cluster — a locus where the biology and the 3D
 // contacts line up: a strong HiCCUPS loop (ENCFF560LOS) brings the PARP9/DTX3L
 // promoter region into contact with PARP14 (co-regulated ISGs, active in this
@@ -24,7 +24,10 @@ export const hicSpecs: ScreenshotSpec[] = [
     url: '?config=test_data/encode_hic_loops.json',
     readySelector: '[data-testid="arc-display-done"]',
     readyTimeout: 90000,
-    settleMs: 20000,
+    // the intact Hi-C matrix issues many range requests and picks a coarser
+    // resolution at this ~620 kb window; give it long enough to fill the
+    // triangle (not just the diagonal) before capture
+    settleMs: 32000,
     viewportHeight: 950,
   },
 ]

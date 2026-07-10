@@ -178,28 +178,44 @@ two copies the child inherited there. Each place the block steps between the two
 blue rows is a **crossing-over point**. The two red rows work the same way for
 the **maternal** chromosome.
 
-## Coloring the trio by ancestry
+## Coloring an admixed trio by ancestry
 
-The same six haplotypes can be painted by **continental ancestry** instead of by
-parent-of-origin. [FLARE](https://github.com/browning-lab/flare) infers
-per-haplotype local ancestry by comparing each target haplotype against a
-labeled reference panel. Running it on the trio against a balanced
-AFR/EUR/EAS/SAS 1000 Genomes reference (100 samples per superpopulation, the
-trio's own KHV population and the admixed panels excluded) assigns every marker
-of every haplotype an inferred ancestry.
+Haplotypes can also be painted by **continental ancestry**. That is only
+informative for an _admixed_ individual, so this section switches to a 1000
+Genomes **African-American (ASW) trio** — child NA19828 with parents NA19818 and
+NA19819. African-American genomes are a two-way mosaic of **African** and
+**European** ancestry, and 1000 Genomes has clean reference panels for both. (The
+Latin-American populations are more visibly admixed, but their Native American
+ancestry has no unadmixed 1000 Genomes reference to paint against, so painting
+them with 1000-Genomes-only references would misassign it — ASW keeps the demo
+accurate.)
 
-FLARE writes its calls per marker in the `AN1`/`AN2` `FORMAT` fields of an
-output VCF. A short post-processing step collapses those per-marker calls into
-per-haplotype runs and writes one BED9 line per run, labeling rows
-`Child/Mother/Father hap1|hap2` and coloring each by ancestry via `itemRgb`.
-Load it as a second `LinearMultiRowFeatureDisplay`, partitioned this time by
-`sample`:
+[FLARE](https://github.com/browning-lab/flare) infers per-haplotype local
+ancestry by comparing each target haplotype against labeled reference samples.
+Give it the phased trio genotypes (`gt`), phased reference genotypes (`ref`) each
+tagged `AFR` or `EUR` in the `ref-panel` map, and a genetic map:
+
+```bash
+java -jar flare.jar \
+  ref=ref.vcf.gz ref-panel=ref_panel_map.txt gt=trio.vcf.gz \
+  map=plink.chr1.GRCh38.map out=asw_trio seed=42
+```
+
+FLARE writes per-marker calls in the `AN1`/`AN2` `FORMAT` fields of `asw_trio.anc.vcf.gz`.
+Collapse those into per-haplotype runs — one BED9 line per run, rows labeled
+`Child/Mother/Father hap1|hap2` and colored by ancestry via `itemRgb`. Selecting
+the reference panel, extracting the genotypes from the public 1000 Genomes phased
+panel, running FLARE, and writing the BED are one reproducible script:
+[`scripts/build_asw_trio_ancestry.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_asw_trio_ancestry.sh).
+
+Load the result as a `LinearMultiRowFeatureDisplay` partitioned by `sample`, so
+each haplotype gets its own row:
 
 ```json
 {
   "type": "FeatureTrack",
-  "trackId": "khv_trio_ancestry",
-  "name": "KHV trio local ancestry (FLARE, chr1)",
+  "trackId": "asw_trio_ancestry",
+  "name": "African-American (ASW) trio local ancestry (FLARE, chr1)",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
@@ -217,13 +233,13 @@ Load it as a second `LinearMultiRowFeatureDisplay`, partitioned this time by
       "sample",
       "ancestry"
     ],
-    "bedGzLocation": { "uri": "trio.ancestry.bed.gz" },
-    "index": { "location": { "uri": "trio.ancestry.bed.gz.tbi" } }
+    "bedGzLocation": { "uri": "asw_trio.ancestry.bed.gz" },
+    "index": { "location": { "uri": "asw_trio.ancestry.bed.gz.tbi" } }
   },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "displayId": "khv_trio_ancestry-LinearMultiRowFeatureDisplay",
+      "displayId": "asw_trio_ancestry-LinearMultiRowFeatureDisplay",
       "partitionField": "sample",
       "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
       "rowOrder": [
@@ -239,12 +255,13 @@ Load it as a second `LinearMultiRowFeatureDisplay`, partitioned this time by
 }
 ```
 
-This is a Kinh-Vietnamese family, so the painting is predominantly East Asian
-(green) across all six haplotypes, with a scattering of segments assigned to the
-neighboring South Asian reference (pink) and blank stretches where no marker
-passes FLARE's frequency thresholds (the centromere).
+Each of the six rows is one haplotype, painted as an African (orange) / European
+(blue) mosaic. The parents carry their own long ancestry blocks, and the child's
+two haplotypes recombine the blocks inherited from each parent — the same
+Mendelian transmission the parent-of-origin painting shows, seen here in terms of
+continental ancestry.
 
-<Figure caption="Per-haplotype FLARE ancestry calls for the trio, painted with the multi-row feature display. Each of the six rows is one haplotype (child, mother, father), colored by inferred continental ancestry: East Asian (green) and South Asian (pink), against an AFR/EUR/EAS/SAS reference. The painting is predominantly East Asian, matching the family's Kinh-Vietnamese origin." src="/img/trio-ancestry.png"/>
+<Figure caption="Per-haplotype FLARE local-ancestry calls for a 1000 Genomes African-American (ASW) trio along chromosome 1, painted with the multi-row feature display. Each of the six rows is one haplotype (child, mother, father), colored African (orange) or European (blue) against African + European 1000 Genomes reference panels. The African/European mosaic and its inheritance from parents to child are visible across the chromosome." src="/img/trio-ancestry.png"/>
 
 ## Relating the painting back to the genotypes
 

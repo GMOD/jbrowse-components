@@ -4580,8 +4580,8 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "HG02024_VN049_KHVTrio.chr1.ancestry",
-      "name": "KHV trio local ancestry (FLARE, chr1)",
+      "trackId": "NA19828_ASW_trio.chr1.ancestry",
+      "name": "African-American (ASW) trio local ancestry (FLARE, chr1)",
       "category": ["1000 Genomes"],
       "assemblyNames": ["hg38"],
       "adapter": {
@@ -4601,12 +4601,12 @@
           "ancestry"
         ],
         "bedGzLocation": {
-          "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.ancestry.bed.gz",
+          "uri": "https://jbrowse.org/demos/kgp-trio/NA19828_ASW_trio.chr1.ancestry.bed.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.ancestry.bed.gz.tbi",
+            "uri": "https://jbrowse.org/demos/kgp-trio/NA19828_ASW_trio.chr1.ancestry.bed.gz.tbi",
             "locationType": "UriLocation"
           }
         }
@@ -4614,7 +4614,7 @@
       "displays": [
         {
           "type": "LinearMultiRowFeatureDisplay",
-          "displayId": "HG02024_VN049_KHVTrio.chr1.ancestry-LinearMultiRowFeatureDisplay",
+          "displayId": "NA19828_ASW_trio.chr1.ancestry-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
           "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
           "rowOrder": [
