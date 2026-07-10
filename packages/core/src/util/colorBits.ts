@@ -8,6 +8,8 @@ import {
   parse,
 } from './color-bits/index.ts'
 
+import type { Color } from './color-bits/index.ts'
+
 export {
   alpha,
   blend,
@@ -35,23 +37,28 @@ export type { Color } from './color-bits/index.ts'
 // rest of the render.
 const INVALID_COLOR = newColor(255, 0, 255, 255)
 
-export function parseCssColor(color: string | undefined | null) {
-  if (typeof color !== 'string' || color.length === 0) {
-    return INVALID_COLOR
-  }
+// Resolve a CSS color string to a Color: honors named colors and `transparent`,
+// and returns `fallback` on malformed-but-nonempty input. `parse` throws on
+// e.g. a bare BED `itemRgb` "255,0,0" or an empty "rgb()"; callers pass a
+// fallback so one bad per-feature color can't crash a whole render/RPC.
+export function parseCssColorOr(color: string, fallback: Color): Color {
   const str = color.trim().toLowerCase()
   if (str === 'transparent') {
     return newColor(0, 0, 0, 0)
   }
-  // `parse` throws on malformed-but-nonempty input (e.g. a bare BED `itemRgb`
-  // "255,0,0", or an empty "rgb()"); honor the magenta-sentinel contract above
-  // so one bad per-feature color can't crash a whole render/RPC.
   try {
     const hex = namedColorToHex(str)
     return parse(hex ? hex : str)
   } catch {
+    return fallback
+  }
+}
+
+export function parseCssColor(color: string | undefined | null) {
+  if (typeof color !== 'string' || color.length === 0) {
     return INVALID_COLOR
   }
+  return parseCssColorOr(color, INVALID_COLOR)
 }
 
 export function cssColorToNormalizedRgb(
