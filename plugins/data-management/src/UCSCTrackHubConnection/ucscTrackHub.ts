@@ -19,11 +19,14 @@ function parentName(stanza: RaStanza | undefined) {
   return stanza?.data.parent?.split(' ')[0]
 }
 
-// the container stanzas above a track, root-first, for building its folder path
+// the container stanzas above a track, root-first, for building its folder path.
+// `seen` guards against a malformed hub whose parent links form a cycle
 function ancestorStanzas(trackDb: TrackDbFile, trackName: string) {
   const ancestors: RaStanza[] = []
+  const seen = new Set([trackName])
   let name = parentName(trackDb.data[trackName])
-  while (name) {
+  while (name && !seen.has(name)) {
+    seen.add(name)
     const stanza = trackDb.data[name]
     if (stanza) {
       ancestors.push(stanza)
@@ -66,7 +69,13 @@ export function generateTracks({
           p => p.data.shortLabel || p.data.group,
         ),
       ].filter((f): f is string => !!f),
-      ...makeTrackConfig({ track, trackDbLoc, trackDb }),
+      // trackDb.settings() resolves `type` inherited from any ancestor
+      // (compositeTrack -> view -> track), not just the direct parent
+      ...makeTrackConfig({
+        track,
+        trackDbLoc,
+        resolvedType: trackDb.settings(trackName).type || '',
+      }),
     }))
     .map(r => ({
       ...r,
@@ -140,23 +149,19 @@ function trackTypeAndAdapter({
 function makeTrackConfig({
   track,
   trackDbLoc,
-  trackDb,
+  resolvedType,
 }: {
   track: RaStanza
   trackDbLoc: HubLocation
-  trackDb: TrackDbFile
+  resolvedType: string
 }) {
   const { data } = track
   const bigDataUrl = data.bigDataUrl || ''
   const bigDataIdx = data.bigDataIndex || ''
-  // `parent` carries an optional visibility suffix (e.g. `myComposite on`); a
-  // child with no `type` of its own inherits it from the resolved container
-  const parent = parentName(track)
-  const rawType = data.type || trackDb.data[parent ?? '']?.data.type || ''
   const name =
     (data.shortLabel || '') + (bigDataUrl.includes('xeno') ? ' (xeno)' : '')
 
-  let baseType = rawType.split(' ')[0] || ''
+  let baseType = resolvedType.split(' ')[0] || ''
   if (baseType === 'bam' && bigDataUrl.toLowerCase().endsWith('cram')) {
     baseType = 'cram'
   }

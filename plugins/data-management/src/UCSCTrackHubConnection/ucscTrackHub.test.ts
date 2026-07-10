@@ -105,6 +105,41 @@ bigDataUrl child1.bb
   })
 })
 
+test('generateTracks inherits type across a composite -> view -> track chain', () => {
+  // UCSC multiView composites nest a `view` stanza between the composite and
+  // its leaves. The leaf's type lives two levels up on the composite, so
+  // single-level parent lookup would miss it and fall through to unknown.
+  const multiViewDb = new TrackDbFile(`track mycomposite
+compositeTrack on
+type bigWig
+shortLabel Composite
+longLabel A multiView composite
+
+track mycomposite_signal
+view Signal
+parent mycomposite
+shortLabel Signal view
+
+track child1
+parent mycomposite_signal on
+shortLabel Child 1
+longLabel A child bigWig
+bigDataUrl child1.bw
+`)
+  const tracks = generateTracks({
+    trackDb: multiViewDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+    baseUrl: 'https://x.org/hub.txt',
+  })
+  expect(tracks).toHaveLength(1)
+  expect(tracks[0]).toMatchObject({
+    type: 'QuantitativeTrack',
+    adapter: { type: 'BigWigAdapter' },
+    category: ['Composite', 'Signal view'],
+  })
+})
+
 test('generateTracks keeps remote locations remote', () => {
   const tracks = generateTracks({
     trackDb,
