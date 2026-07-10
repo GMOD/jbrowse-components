@@ -8,7 +8,7 @@ const ADORNMENT_RESERVE_PX = 100
 
 // MUI Autocomplete is not virtualized, so a broad query that returns thousands
 // of hits would render thousands of DOM nodes; cap the visible list instead
-const MAX_OPTIONS = 100
+export const MAX_OPTIONS = 100
 
 export interface Option {
   isLimit?: boolean

@@ -5,6 +5,7 @@ import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
+  MAX_OPTIONS,
   cap,
   coerceToResult,
   getDeduplicatedResult,
@@ -72,13 +73,19 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   )
 
   const width = getInputWidth(externalValue, minWidth, maxWidth)
-  const regionOptions: Option[] =
-    assembly?.regions?.map(region => ({
+  // assembly.regions can hold ~10^6 refnames. This is only the browse/pre-fetch
+  // fallback list (typed queries resolve through fetchResults), MUI is not
+  // virtualized, and the visible list is capped at MAX_OPTIONS anyway — so only
+  // materialize a bounded slice rather than a million option objects. Slicing
+  // one past the cap lets `cap` still render its "keep typing" hint.
+  const regionOptions: Option[] = (assembly?.regions ?? [])
+    .slice(0, MAX_OPTIONS + 1)
+    .map(region => ({
       result: new RefSequenceResult({
         refName: region.refName,
         label: region.refName,
       }),
-    })) ?? []
+    }))
 
   const hasSearchResults = !!searchOptions?.length
 

@@ -67,6 +67,29 @@ function setupWithChromosome() {
   return { model, session: getSession(model) }
 }
 
+function setupManyChromosomes(count: number) {
+  const session = createTestSession({ sessionSnapshot }) as any
+  session.addAssemblyConf({
+    name: 'volvox',
+    sequence: {
+      trackId: 'ref0',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: Array.from({ length: count }, (_, i) => ({
+          refName: `ctg${i}`,
+          uniqueId: `ctg${i}`,
+          start: 0,
+          end: 1,
+          seq: 'A',
+        })),
+      },
+    },
+  })
+  const model = session.views[0]
+  return { model, session: getSession(model) }
+}
+
 const patience = { timeout: 5000 }
 
 describe('RefNameAutocomplete', () => {
@@ -442,6 +465,28 @@ describe('RefNameAutocomplete', () => {
       expect(onSelect).toHaveBeenCalled()
       expect(input.value).toBe('ctgA:1-100')
     }, patience)
+  })
+
+  it('bounds the browse list for a huge assembly instead of rendering every refname', async () => {
+    const user = userEvent.setup()
+    const { session } = setupManyChromosomes(500)
+
+    render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        fetchResults={async () => []}
+      />,
+    )
+
+    const input = screen.getByPlaceholderText('Search for location')
+    await user.click(input)
+
+    await waitFor(() => {
+      expect(screen.getByText('keep typing for more results')).toBeTruthy()
+    }, patience)
+    // 100 capped rows + the single disabled "keep typing" hint
+    expect(screen.getAllByRole('option')).toHaveLength(101)
   })
 
   it('shows chromosome names when value is a locstring (regression: chromosomes were filtered out)', async () => {

@@ -31,6 +31,10 @@ declare module '@jbrowse/core/PluginManager' {
   }
 }
 
+// cap on refname suggestions surfaced from a query; the autocomplete only
+// displays a bounded list, so there's no point collecting more
+const MAX_REFNAME_HITS = 10
+
 // shared dispatch used by SearchBox.onSelect and the LGV ImportForm submit:
 // route a chosen result to a direct nav, a multi-result dialog, or a generic
 // locstring/refname resolution
@@ -196,21 +200,28 @@ export async function fetchResults({
   await assembly?.load()
 
   // resolve aliases (e.g. 'contigB') to the canonical refname ('ctgB') so
-  // the dropdown shows the name that matches the FASTA / displayed regions
+  // the dropdown shows the name that matches the FASTA / displayed regions.
+  // allRefNames can hold ~10^6 entries, so stop once we have enough unique
+  // canonical hits rather than lowercasing and scanning the entire list on
+  // every keystroke
   const q = queryString.toLowerCase()
-  const refNameResults = [
-    ...new Set(
-      assembly?.allRefNames
-        ?.filter(ref =>
-          searchType === 'exact'
-            ? ref.toLowerCase() === q
-            : ref.toLowerCase().startsWith(q),
-        )
-        .map(ref => assembly.getCanonicalRefName(ref) ?? ref),
-    ),
-  ]
-    .slice(0, 10)
-    .map(r => new RefSequenceResult({ label: r, refName: r }))
+  const allRefNames = assembly?.allRefNames
+  const canonicalHits = new Set<string>()
+  if (assembly && allRefNames) {
+    for (const ref of allRefNames) {
+      const lower = ref.toLowerCase()
+      const isMatch = searchType === 'exact' ? lower === q : lower.startsWith(q)
+      if (isMatch) {
+        canonicalHits.add(assembly.getCanonicalRefName(ref) ?? ref)
+        if (canonicalHits.size >= MAX_REFNAME_HITS) {
+          break
+        }
+      }
+    }
+  }
+  const refNameResults = [...canonicalHits].map(
+    r => new RefSequenceResult({ label: r, refName: r }),
+  )
 
   return dedupe([...refNameResults, ...(textSearchResults ?? [])], elt =>
     elt.getId(),
