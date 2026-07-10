@@ -102,6 +102,18 @@ For remote files, the index is inferred automatically when the filename follows
 standard conventions (e.g. `file.bam` → `file.bam.bai`), but must be supplied
 manually for local files or non-standard names.
 
+### Adding many tracks at once
+
+To load a batch of tracks in one step, click **Add multiple tracks** in the "Add
+a track" form (or **Add a single track instead** to switch back). Paste a list
+of file URLs — one per line — or drop a set of local files. JBrowse
+auto-detects each track's type from its extension and pairs index files (`.bai`,
+`.csi`, `.tbi`, `.crai`) with their data file automatically, so you can paste
+data and index URLs together without matching them up by hand. A preview table
+shows the detected type and guessed name for every row, which you can rename or
+remove before submitting. Pick one assembly that applies to all the tracks in
+the batch, then add them together.
+
 ## File format support
 
 The following file formats are supported in core JBrowse 2:
@@ -216,6 +228,23 @@ without modifying the underlying admin-owned track. Admin users editing in admin
 mode change the track config in place.
 
 <Figure caption="Opening Settings from the track menu's Track actions submenu to edit any track's configuration directly." src="/img/edit_track_settings.png" />
+
+The configuration editor has a filter box to search options by name, and tucks
+rarely-needed settings (performance thresholds, adapter internals, and the like)
+behind a **Show advanced settings** toggle. If a track has more than one display
+type, only the currently-active display's settings are expanded; the others
+collapse out of the way. Use **Reset track settings** in the track menu to clear
+your edits and revert to the underlying config.
+
+### Pinning a setting as your default
+
+Many track-menu settings — color-by scheme, feature height mode, soft-clipping,
+group-by, and more — carry a small **pin** next to them. Clicking the pin
+promotes that setting as the default for every track of the same type in your
+session, not just the one track. Pinned defaults ride along in the session, so
+they travel with a shared session link, and every track a default affects is
+badged in the track selector. Click the pin again (or **Follow default** on a
+track) to un-pin and revert to the underlying configuration.
 
 ## Rubberband selection
 
