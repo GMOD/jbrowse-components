@@ -47,11 +47,7 @@ export function makeLdEvaluator(
     // doesn't silently flatten insertion SVs into plain discs.
     evalGlyph(feature: Feature) {
       compute(feature)
-      return isIndex
-        ? GLYPH_INDEX
-        : isInsertion
-          ? GLYPH_INSERTION
-          : GLYPH_POINT
+      return isIndex ? GLYPH_INDEX : isInsertion ? GLYPH_INSERTION : GLYPH_POINT
     },
   }
 }

@@ -62,6 +62,7 @@ export default function SVGLinearGenomeView({
         contentTop={rulerHeight}
         tracksHeight={tracksHeight}
         showGridlines={showGridlines}
+        leftBuffer={exportMargin}
       />
       <g transform={`translate(${trackLabelOffset} ${rulerHeight})`}>
         <SvgClipRect id={clipId} width={view.width} height={tracksHeight}>

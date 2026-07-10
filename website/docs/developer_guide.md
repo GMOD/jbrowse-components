@@ -89,6 +89,7 @@ own via pull request.
 - [Custom widgets](/docs/developer_guides/creating_widget) - Add new drawer/panel UI components
 - [Drawer widgets](/docs/developer_guides/drawer_widgets) - Launching sidebar or popup widgets in the embedded LGV
 - [Top-level menu items](/docs/developer_guides/menus) - Add items to the top-level application menu bar
+- [Plotting features in a custom display](/docs/developer_guides/plotting_features) - Build a plugin that fetches features in a worker and plots them on the main thread with Canvas2D — no shaders required
 - [SVG export](/docs/developer_guides/svg_export) - How to implement renderSvg on a custom display type
 
 ### Advanced topics

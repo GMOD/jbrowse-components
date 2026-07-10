@@ -15,7 +15,14 @@ export interface MakeAssemblyOptions {
  * reference) still lines up.
  */
 export function makeAssembly(opts: MakeAssemblyOptions) {
-  const { name, fastaUri, faiUri, gziUri, aliases = [], refNameAliasesUri } = opts
+  const {
+    name,
+    fastaUri,
+    faiUri,
+    gziUri,
+    aliases = [],
+    refNameAliasesUri,
+  } = opts
   const bgzipped = fastaUri.endsWith('.gz')
   const adapter = {
     type: bgzipped ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',

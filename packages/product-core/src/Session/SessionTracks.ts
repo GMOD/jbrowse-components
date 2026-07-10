@@ -53,7 +53,9 @@ function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
 // config nodes (product-core, embedded react views); the delta math reads both
 // as plain track configs. Single site for that documented cast — per-node
 // normalization still happens in toPlainConfig.
-function baseTracks(self: { jbrowse: { tracks: unknown } }): PlainTrackConfig[] {
+function baseTracks(self: {
+  jbrowse: { tracks: unknown }
+}): PlainTrackConfig[] {
   return self.jbrowse.tracks as PlainTrackConfig[]
 }
 
@@ -218,9 +220,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         // a full-config sessionTracks entry shadowing the same-id admin track.
         // Convert those to deltas so the whole app uses one override mechanism.
         // Genuinely-added session tracks (no matching base) are left in place.
-        const configById = new Map(
-          baseTracks(self).map(t => [t.trackId, t]),
-        )
+        const configById = new Map(baseTracks(self).map(t => [t.trackId, t]))
         const legacy = self.sessionTracks.filter(t => configById.has(t.trackId))
         if (legacy.length > 0) {
           const deltas = { ...self.trackConfigDeltas }

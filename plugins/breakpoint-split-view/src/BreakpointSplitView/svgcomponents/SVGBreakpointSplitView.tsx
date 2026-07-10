@@ -34,9 +34,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // Minimized tracks are dropped (as the standalone LGV export does) so reserved
   // height, rendered bodies, label width, and overlay offsets stay in sync and a
   // collapsed track doesn't export as a full-height panel.
-  const visibleTracksByView = views.map(v =>
-    v.tracks.filter(t => !t.minimized),
-  )
+  const visibleTracksByView = views.map(v => v.tracks.filter(t => !t.minimized))
   const tracksHeights = visibleTracksByView.map(tracks =>
     totalHeight(tracks, textHeight, trackLabels),
   )

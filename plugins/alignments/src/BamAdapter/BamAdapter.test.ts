@@ -22,7 +22,12 @@ test('emits "Downloading index" on first fetch only, not once cached', async () 
       },
     }),
   )
-  const query = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 20000 }
+  const query = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
+  }
   const collect = async () => {
     const seen: string[] = []
     await firstValueFrom(

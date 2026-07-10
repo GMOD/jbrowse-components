@@ -17,8 +17,8 @@ pane — set the `--jbrowse-app-height` CSS custom property on any ancestor:
 </div>
 ```
 
-The variable feeds `height: var(--jbrowse-app-height, 100vh)` on the app root, so
-a value of `100%` makes the app fill its container. For a percentage to resolve,
-that container must have a definite height — here the flex child with
+The variable feeds `height: var(--jbrowse-app-height, 100vh)` on the app root,
+so a value of `100%` makes the app fill its container. For a percentage to
+resolve, that container must have a definite height — here the flex child with
 `minHeight: 0` fills the space left below the header. A fixed value like
 `--jbrowse-app-height: 600px` works too and needs no sized ancestor.

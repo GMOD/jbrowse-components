@@ -82,7 +82,9 @@ function fromHubConfig(hub: HubConfig): ResolvedAssembly {
   }
 }
 
-async function resolveAssembly(input: AssemblyInput): Promise<ResolvedAssembly> {
+async function resolveAssembly(
+  input: AssemblyInput,
+): Promise<ResolvedAssembly> {
   if (typeof input === 'string') {
     return fromHubConfig(await fetchHub(input))
   } else if ('assemblies' in input) {

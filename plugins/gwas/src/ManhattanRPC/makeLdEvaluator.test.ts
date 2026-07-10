@@ -49,9 +49,9 @@ test('glyph: index → diamond, insertion → triangle, others → point', () =>
 
 test('index takes precedence over insertion glyph', () => {
   const { evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
-  expect(
-    evalGlyph(feat({ name: 'rsIndex', start: 100, svtype: 'INS' })),
-  ).toBe(GLYPH_INDEX)
+  expect(evalGlyph(feat({ name: 'rsIndex', start: 100, svtype: 'INS' }))).toBe(
+    GLYPH_INDEX,
+  )
 })
 
 test('memoized lookup is independent of color/r² call order', () => {

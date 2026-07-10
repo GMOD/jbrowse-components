@@ -57,5 +57,8 @@ test('pos outside every feature leaves the original order', () => {
       ['a', 'b'],
     ),
   ]
-  expect(rowOrderByValueAt(['a', 'b'], regions, 'chr4', 500)).toEqual(['a', 'b'])
+  expect(rowOrderByValueAt(['a', 'b'], regions, 'chr4', 500)).toEqual([
+    'a',
+    'b',
+  ])
 })

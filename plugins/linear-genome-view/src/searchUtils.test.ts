@@ -39,7 +39,11 @@ describe('fetchResults refname matching', () => {
   it('caps the number of refname hits', async () => {
     const refs = Array.from({ length: 50 }, (_, i) => `chr${i}`)
     expect(
-      await labels({ queryString: 'chr', searchScope, assembly: fakeAssembly(refs) }),
+      await labels({
+        queryString: 'chr',
+        searchScope,
+        assembly: fakeAssembly(refs),
+      }),
     ).toHaveLength(10)
   })
 

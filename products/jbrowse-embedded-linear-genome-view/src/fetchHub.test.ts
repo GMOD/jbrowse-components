@@ -24,9 +24,7 @@ describe('fetchHub', () => {
     }
     jest
       .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(
-        new Response(JSON.stringify(config), { status: 200 }),
-      )
+      .mockResolvedValue(new Response(JSON.stringify(config), { status: 200 }))
 
     const out = await fetchHub('hg38')
     const url = 'https://jbrowse.org/ucsc/hg38/config.json'
@@ -41,9 +39,7 @@ describe('fetchHub', () => {
     }
     jest
       .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(
-        new Response(JSON.stringify(config), { status: 200 }),
-      )
+      .mockResolvedValue(new Response(JSON.stringify(config), { status: 200 }))
 
     const out = await fetchHub('hg38')
     const adapter = (out.assemblies?.[0] as { sequence: { adapter: unknown } })

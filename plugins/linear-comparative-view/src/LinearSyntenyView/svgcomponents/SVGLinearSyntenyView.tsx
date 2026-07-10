@@ -35,10 +35,14 @@ export async function renderToSvg(
   const themeVar = session.getActiveThemeOptions?.(themeName)
   const { width, views, levels } = model
 
-  // each view is a header (assembly label + ruler) stacked above its tracks
+  // each view is a header (assembly label + ruler) stacked above its tracks.
+  // Minimized tracks are dropped (as the standalone LGV export does) so the
+  // reserved height and the rendered bodies stay in sync and a collapsed track
+  // doesn't export as a full-height panel.
   const headerHeight = fontSize + rulerHeight
-  const tracksHeights = views.map(v =>
-    totalHeight(v.tracks, textHeight, trackLabels),
+  const visibleTracksByView = views.map(v => v.tracks.filter(t => !t.minimized))
+  const tracksHeights = visibleTracksByView.map(tracks =>
+    totalHeight(tracks, textHeight, trackLabels),
   )
 
   // each display's renderSvg owns its own readiness wait (LGV track displays
@@ -49,11 +53,11 @@ export async function renderToSvg(
   const [displayResults, renderings] = await Promise.all([
     Promise.all(
       views.map(
-        async view =>
+        async (view, i) =>
           ({
             view,
             data: await Promise.all(
-              view.tracks.map(async track => {
+              visibleTracksByView[i]!.map(async track => {
                 const d = track.displays[0]
                 return {
                   track,
@@ -79,11 +83,11 @@ export async function renderToSvg(
 
   const trackLabelMaxLen =
     max(
-      views.flatMap(view =>
-        view.tracks.map(track =>
+      visibleTracksByView
+        .flat()
+        .map(track =>
           measureText(getTrackName(track.configuration, session), fontSize),
         ),
-      ),
       0,
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0

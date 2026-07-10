@@ -73,7 +73,12 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
 test('emits "Downloading index" on first fetch only, not once cached', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
   adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
-  const query = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 20000 }
+  const query = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
+  }
   const collect = async () => {
     const seen: string[] = []
     await firstValueFrom(

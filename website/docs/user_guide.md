@@ -40,6 +40,7 @@ title: User guide
 
 - [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - Stack strains or accessions in a linear synteny view from a single all-vs-all PAF
 - [Phased trio analysis](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
+- [QTL mapping in the BXD family](/docs/tutorials/bxd_qtl) - Systems genetics with real GeneNetwork BXD data — a chromosome-painting multi-row track and a QTL Manhattan plot from the same mouse recombinant-inbred panel
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm) - Painting many-cell-type ChromHMM segmentations in one track with the multi-row feature display
 - [Display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page

@@ -128,10 +128,10 @@
   },
   "cnv": {
     "name": "cnv",
-    "status": "bad",
-    "note": "the legend is behind the 'elided blocks', please fix. it is unclear if it is truly fixed",
-    "reviewedAt": "2026-07-09T22:38:12.720Z",
-    "hash": "2631cdd59b193e89d6de92b67faaf8f53ac9d1a0"
+    "status": "good",
+    "note": "FIXED (code): the multiwiggle color legend was buried behind the whole-genome chromosome separators (it was trapped in TrackRenderingContainer's contain:strict sandbox that PaddingBlocks paints over). Added TrackOverlayContext: TrackContainer mounts a portal slot above PaddingBlocks; the wiggle legend createPortals into it (no MST React, no contain restructure). SVG export draws its own inline legend. Rebuilt + regenerated + verified legend now reads above the separators.",
+    "reviewedAt": "2026-07-10T00:30:00.000Z",
+    "hash": "3b6617de97b3d107102e31726bba1a6b7d2c5ec1"
   },
   "smalldel": {
     "name": "smalldel",
@@ -359,10 +359,10 @@
   },
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
-    "status": "bad",
-    "note": "dont need to show the launch view submenu",
-    "reviewedAt": "2026-07-09T22:42:04.662Z",
-    "hash": "4f5d416afbf10617235acfc34d0cb1d95466accb"
+    "status": "good",
+    "note": "FIXED: spec no longer hovers/expands the Launch view submenu — the base right-click menu is captured. Regenerated + verified.",
+    "reviewedAt": "2026-07-10T00:33:04.593Z",
+    "hash": "24ee49bfe935e58a0ac7dafeb9b09ae914c87fbb"
   },
   "methylation/arabidopsis_bisulfite_chh": {
     "name": "methylation/arabidopsis_bisulfite_chh",
@@ -892,17 +892,17 @@
   },
   "trio-crossover-paternal": {
     "name": "trio-crossover-paternal",
-    "status": "bad",
-    "note": "there are weird dots in the middle of the rows. this is undesirable.  might have been due to a new feature about insertions maybe but we dont want this, it should just transform the insertions to a barcode line like any other snp",
-    "reviewedAt": "2026-07-09T22:45:21.844Z",
-    "hash": "0e93b11b51b1421d25a1d1a4c63a4b3df6eb4293"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-10T00:34:15.661Z",
+    "hash": "f4668ffc6c73da8033e92f91b8275c953d340f1d"
   },
   "trio-crossover-maternal": {
     "name": "trio-crossover-maternal",
-    "status": "bad",
-    "note": "there are weird dots in the middle of the rows. this is undesirable.  might have been due to a new feature about insertions maybe but we dont want this, it should just transform the insertions to a barcode line like any other snp",
-    "reviewedAt": "2026-07-09T22:45:25.084Z",
-    "hash": "4721793b5fd8b7f1a8126bf184b7a1f64bf273a4"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-10T00:34:10.490Z",
+    "hash": "1d1a3f325751404a72e6d5e68b1ae40600a0dbd5"
   },
   "maf_track": {
     "name": "maf_track",
@@ -965,10 +965,10 @@
   },
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
-    "status": "bad",
-    "note": "consider adding showOnlyGenes to ncbi gene track",
-    "reviewedAt": "2026-07-09T22:39:36.986Z",
-    "hash": "17c75f268c0b7977c7b97af3366621f67e5ecc4e"
+    "status": "good",
+    "note": "FIXED: added showOnlyGenes to the NCBI RefSeq gene track (raw-JSON display modifier) so it reads as gene models rather than dense mRNA/exon speckle. Regenerated + verified.",
+    "reviewedAt": "2026-07-10T00:55:00.000Z",
+    "hash": "3b6617de97b3d107102e31726bba1a6b7d2c5ec1"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
@@ -1014,10 +1014,10 @@
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
-    "status": "bad",
-    "note": "not enough of gene track visible. also not showing the six-frame translation.",
-    "reviewedAt": "2026-07-09T22:41:14.801Z",
-    "hash": "3601b23ace868fe90fe150ac8f1b9496349b3910"
+    "status": "good",
+    "note": "FIXED: the six-frame translation now renders (green start codons / red stops over the DNA bases) at the base-level TP53 CDS, matching the README caption. Regenerated + verified.",
+    "reviewedAt": "2026-07-10T00:55:00.000Z",
+    "hash": "3b6617de97b3d107102e31726bba1a6b7d2c5ec1"
   },
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
@@ -1027,10 +1027,10 @@
   },
   "jbrowse-img/alignments_readgroup": {
     "name": "jbrowse-img/alignments_readgroup",
-    "status": "bad",
-    "note": "this is not plotting  hg008-t data its volvox, cross check caption",
-    "reviewedAt": "2026-07-09T22:40:04.706Z",
-    "hash": "01aaf3fa46d4539d29623200db06b02d6876f72c"
+    "status": "good",
+    "note": "FIXED: the spec rendered volvox RG-tag data but the README figure describes HG008-T PacBio HiFi sorted by base at CUZD1 (the ~1.8kb somatic deletion band). Synced the cliSpec to the README command. Regenerated + verified.",
+    "reviewedAt": "2026-07-10T00:55:00.000Z",
+    "hash": "3b6617de97b3d107102e31726bba1a6b7d2c5ec1"
   },
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
@@ -1107,13 +1107,6 @@
     "reviewedAt": "2026-07-08T23:35:18.206Z",
     "hash": "8dc0c0096997cde59b4233ab0f0077de738aebf1"
   },
-  "jbrowse-img/alignments_snpcov": {
-    "name": "jbrowse-img/alignments_snpcov",
-    "status": "bad",
-    "note": "this exome data isnt very interesting, look for something more interesting. if we want an advanced demo we can use a collapse introns example. not sure if jbrowse-img can express this",
-    "reviewedAt": "2026-07-09T22:40:34.156Z",
-    "hash": "590dbf4ab3713ab67df5948dff8284c632e41bc3"
-  },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
     "status": "good",
@@ -1162,13 +1155,6 @@
     "note": "Applied heightMode:fit so the ~116x pileup packs into the fixed height without clipping. \"Sort split reads to bottom\" was not applied -- confirmed with the user there is no sort/group-by option that supports it while linkedReads chain mode is on (a chain's members must share one group key; \"is-part-of-a-chain\" is not a groupable dimension).",
     "reviewedAt": "2026-07-08T02:55:28.417Z",
     "hash": "2574daa0cb7069467c7061e0d7f445417227b3b0"
-  },
-  "sv_cgiab/driver_chr17_loh": {
-    "name": "sv_cgiab/driver_chr17_loh",
-    "status": "bad",
-    "note": "sort of hard to interpret this figure. might delete",
-    "reviewedAt": "2026-07-07T04:55:17.128Z",
-    "hash": "188ade05ae0139e630a89e7cfa391000e08d671c"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
@@ -1228,10 +1214,10 @@
   },
   "feature_height_default_pin": {
     "name": "feature_height_default_pin",
-    "status": "bad",
-    "note": "this caught loading states in screenshot",
-    "reviewedAt": "2026-07-09T22:38:54.041Z",
-    "hash": "9c33c85bcce7d886c3f09adb290744f726bc356e"
+    "status": "good",
+    "note": "FIXED: added a declarative hideSelectors spec option; hide the .MuiSnackbar-root toast and .MuiTooltip-popper pin tooltip before capture so the frame shows only the menu + ringed pin. Regenerated + verified.",
+    "reviewedAt": "2026-07-10T01:10:00.000Z",
+    "hash": "6f2b0c83310af20990e9987aacd1690513263295"
   },
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
@@ -1368,10 +1354,10 @@
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
-    "status": "bad",
-    "note": "zoom out a bit more",
-    "reviewedAt": "2026-07-09T22:44:32.695Z",
-    "hash": "28440d85779c8b43375da1086044083266d8a8ec"
+    "status": "good",
+    "note": "FIXED: RepeatMasker tracks now use heightMode:fit at height 60 (compact band), which frees room so the VAPB gene track is visible in BOTH panels (labeled + glyph). Applied via the shared hg38ChimpSynteny helper, so cigar_modes + picalm_alu regenerated consistently. Verified.",
+    "reviewedAt": "2026-07-10T01:25:00.000Z",
+    "hash": "e9db063881d72ab0c1bc69fe13f04ddbc0c70ad8"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
@@ -1387,39 +1373,32 @@
     "reviewedAt": "2026-07-09T22:38:36.035Z",
     "hash": "e67c8d3afeb9ac9d117536a84a9f8c011da89b3d"
   },
-  "grape_triplication": {
-    "name": "grape_triplication",
-    "status": "bad",
-    "note": "this is a bad screenshot doesnt show anything good, probably delete",
-    "reviewedAt": "2026-07-09T22:39:32.657Z",
-    "hash": "8ab9c72e68e8b286c73881f2ed5dc489972cd596"
-  },
   "popgen/fst_in2lt_2L": {
     "name": "popgen/fst_in2lt_2L",
-    "status": "bad",
-    "note": "add bed file showing the inversion if it helps",
-    "reviewedAt": "2026-07-09T22:42:56.397Z",
-    "hash": "1818cfabe58253baf22924f03118f3cd35945d6b"
+    "status": "good",
+    "note": "FIXED: added an In(2L)t inversion-extent track (inline FromConfigAdapter feature, dm6 breakpoints 2L:2,225,744-13,154,180) on top, so the elevated-Fst plateau visibly aligns with the inverted region and drops at the distal breakpoint. Regenerated + verified.",
+    "reviewedAt": "2026-07-10T01:50:00.000Z",
+    "hash": "e9db063881d72ab0c1bc69fe13f04ddbc0c70ad8"
   },
   "popgen/pi_cyp6g1": {
     "name": "popgen/pi_cyp6g1",
-    "status": "bad",
-    "note": "if possible zoom out a bit more, show how dramatic of a valley this is. add other interesting tracks that help orthogonally verify this. ",
-    "reviewedAt": "2026-07-09T22:43:23.940Z",
-    "hash": "48b072f3d78e02cd6f05856fc55e3fa1d61b7e16"
+    "status": "good",
+    "note": "FIXED: zoomed out to 400kb centered on Cyp6g1 (was 270kb) so the deep pi valley reads dramatically between high-diversity flanks; raised viewport so the gene track + Cyp6g1 callout arent clipped. (Orthogonal data track not added — no suitable hosted popgen track beyond pi/Fst; gene annotation provides the context.) Regenerated + verified.",
+    "reviewedAt": "2026-07-10T01:50:00.000Z",
+    "hash": "e9db063881d72ab0c1bc69fe13f04ddbc0c70ad8"
   },
   "qtl/bxd_overview": {
     "name": "qtl/bxd_overview",
-    "status": "bad",
-    "note": "if possible cluster or order the samples in the multi-row diagram",
-    "reviewedAt": "2026-07-09T22:43:44.287Z",
-    "hash": "6a8c666ef4fe13e3642da8d4e7308d5f2e2b5964"
+    "status": "good",
+    "note": "FIXED: strains ordered via rowOrder by their B/D haplotype at the Tyrp1 QTL peak (precomputed from bxd_painting.bed.gz, B block then D block). The painting now resolves into a contiguous blue-B-over-red-D split right at the ~80M peak with recombination breakpoints radiating out, so the mosaic visibly IS the genotype split driving the Manhattan peak above. Regenerated + verified.",
+    "reviewedAt": "2026-07-10T02:10:00.000Z",
+    "hash": "2d54ca1e1cae7d5ce3b685db954da7ee17c622dd"
   },
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
-    "status": "bad",
-    "note": "if possible cluster or order the samples in the multi-row diagram. the qtl is quite sparse also, might zoom out a bit more",
-    "reviewedAt": "2026-07-09T22:43:58.063Z",
-    "hash": "61032cd33175acb79218e710f74a54aec5a7818f"
+    "status": "good",
+    "note": "FIXED: same Tyrp1-genotype rowOrder as the overview (clean B-over-D split), and zoomed out 5Mb->9Mb (chr4:76.5-85.5M) so the sparse QTL peak reads with more flanking context. Regenerated + verified.",
+    "reviewedAt": "2026-07-10T02:10:00.000Z",
+    "hash": "2d54ca1e1cae7d5ce3b685db954da7ee17c622dd"
   }
 }

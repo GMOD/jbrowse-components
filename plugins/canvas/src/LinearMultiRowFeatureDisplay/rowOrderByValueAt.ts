@@ -30,7 +30,10 @@ export function rowOrderByValueAt(
     for (let i = 0; i < r.featureStarts.length; i++) {
       if (r.featureStarts[i]! <= pos && pos < r.featureEnds[i]!) {
         // last covering feature wins, matching paint order
-        valueByRow.set(r.partitionValues[r.featurePartitionIndex[i]!]!, r.featureColors[i]!)
+        valueByRow.set(
+          r.partitionValues[r.featurePartitionIndex[i]!]!,
+          r.featureColors[i]!,
+        )
       }
     }
   }

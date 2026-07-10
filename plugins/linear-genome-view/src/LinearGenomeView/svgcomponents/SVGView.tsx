@@ -33,6 +33,7 @@ export default function SVGView({
   rulerHeight = contentTop,
   tracksHeight,
   showGridlines,
+  leftBuffer = 0,
 }: {
   view: LinearGenomeViewModel
   displayResults: DisplayResult[]
@@ -47,6 +48,10 @@ export default function SVGView({
   rulerHeight?: number
   tracksHeight: number
   showGridlines: boolean
+  // Left gutter the per-track clip should extend into, so left-of-zero content
+  // (a wiggle Y-scalebar) isn't clipped. Callers that translate the whole view
+  // by a margin pass that margin here.
+  leftBuffer?: number
 }) {
   const theme = useTheme()
   return (
@@ -83,6 +88,7 @@ export default function SVGView({
           model={view}
           displayResults={displayResults}
           trackLabelOffset={trackLabelOffset}
+          leftBuffer={leftBuffer}
         />
       </g>
     </>

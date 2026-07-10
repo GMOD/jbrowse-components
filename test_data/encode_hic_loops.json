@@ -2,9 +2,7 @@
   "assemblies": [
     {
       "name": "hg38",
-      "aliases": [
-        "GRCh38"
-      ],
+      "aliases": ["GRCh38"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "P6R5xbRqRr",
@@ -32,12 +30,8 @@
       "type": "FeatureTrack",
       "trackId": "ncbi_refseq_hg38",
       "name": "NCBI RefSeq genes",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Genes"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Genes"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/genomic.sorted.gff.gz"
@@ -47,16 +41,12 @@
       "type": "VariantTrack",
       "trackId": "encode_gm12878_loops",
       "name": "Hi-C loops \u2014 HiCCUPS (ENCFF560LOS)",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "ENCODE GM12878 (Rao/ENCODE4)"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["ENCODE GM12878 (Rao/ENCODE4)"],
       "adapter": {
         "type": "BedpeAdapter",
         "bedpeLocation": {
-          "uri": "https://encode-public.s3.amazonaws.com/2022/09/30/2aa6a9b3-4fbc-479c-b7e2-1d4df5a318c2/ENCFF560LOS.bedpe.gz",
+          "uri": "https://jbrowse.org/demos/hic/ENCFF560LOS.bedpe.gz",
           "locationType": "UriLocation"
         }
       },
@@ -71,16 +61,12 @@
       "type": "VariantTrack",
       "trackId": "encode_gm12878_re2g",
       "name": "Enhancer\u2013gene predictions \u2014 EPIraction (ENCFF266FGY)",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "ENCODE GM12878 (Rao/ENCODE4)"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["ENCODE GM12878 (Rao/ENCODE4)"],
       "adapter": {
         "type": "BedpeAdapter",
         "bedpeLocation": {
-          "uri": "https://encode-public.s3.amazonaws.com/2026/04/23/45d5f8ea-c26b-45fa-941f-5f4e0acbd204/ENCFF266FGY.bedpe.gz",
+          "uri": "https://jbrowse.org/demos/hic/ENCFF266FGY.bedpe.gz",
           "locationType": "UriLocation"
         }
       },
@@ -95,12 +81,8 @@
       "type": "HicTrack",
       "trackId": "encode_gm12878_hic",
       "name": "Intact Hi-C contact matrix (ENCFF484NFB)",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "ENCODE GM12878 (Rao/ENCODE4)"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["ENCODE GM12878 (Rao/ENCODE4)"],
       "adapter": {
         "type": "HicAdapter",
         "hicLocation": {

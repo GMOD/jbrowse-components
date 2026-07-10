@@ -544,7 +544,9 @@ export function showTrackGeneric(
     // unknown MST keys. Route the ones that are real slots onto the persistent
     // display config so they take effect and survive hide/retick (#5591). Runs
     // after the push so the display's config reference can resolve.
-    const display = track.displays[0] as { configuration: AnyConfigurationModel }
+    const display = track.displays[0] as {
+      configuration: AnyConfigurationModel
+    }
     for (const [key, value] of Object.entries(displayInitialSnapshot)) {
       if (key !== 'type' && isConfigurationSlot(display.configuration, key)) {
         display.configuration.setSlot(key, value)
