@@ -56,18 +56,6 @@ function modRgbForType(type: string) {
   return rgb
 }
 
-function methColorAndProb(
-  methP: number,
-  methylatedRgb: readonly [number, number, number],
-  unmethylatedRgb: readonly [number, number, number],
-) {
-  const isMeth = methP > 0.5
-  const [r, g, b] = isMeth ? methylatedRgb : unmethylatedRgb
-  // !isMeth → the no-modification bucket; prob becomes the confidence it is
-  // unmodified (1 - methP) so the bar/tooltip reflect that call.
-  return { r, g, b, prob: isMeth ? methP : 1 - methP, noMod: !isMeth }
-}
-
 export function extractModifications(
   feature: Feature,
   readIndex: number,
@@ -95,58 +83,57 @@ export function extractModifications(
   const modifications = getModPositions(mmTag, seq, fstrand)
   const probabilities = getModProbabilities(feature)
 
-  // Collect (strand, type) pairs; the caller resolves simplex globally once all
-  // reads are parsed (see detectSimplexModifications).
+  // One pass over the parsed MM types:
+  // - detectedModifications lists every type so the menu can offer all of them
+  //   (isolation filters what is *rendered*, not what is detected).
+  // - seenModTypes collects (strand, type) pairs; the caller resolves simplex
+  //   globally once all reads are parsed (see detectSimplexModifications).
+  // The per-refPos max-prob walk further down only paints marks, so it stays
+  // gated to modifications mode — methylation/bisulfite/normal never pay for it.
   for (const { strand: modStrand, type, base: modBase } of modifications) {
+    detectedModifications.add(type)
     const key = modStrand + type
     if (!seenModTypes.has(key)) {
       seenModTypes.set(key, { type, base: modBase, strand: modStrand })
     }
   }
 
-  const mods = getMaxProbModAtEachPosition(
-    modifications,
-    probabilities,
-    cigarOps,
-    fstrand,
-  )
-  const modThreshold = (colorBy?.modifications?.threshold ?? 10) / 100
-  const twoColor = colorBy?.modifications?.twoColor ?? false
-  mods.forEach(({ prob, type, base }, refPos) => {
-    // detectedModifications must list every type seen so the menu can offer all
-    // of them — isolation filters what is *rendered*, not what is detected.
-    detectedModifications.add(type)
-    const typeVisible = isModificationTypeVisible(colorBy?.modifications, type)
-    if (colorBy?.type === 'modifications' && typeVisible) {
-      const modRgb = modRgbForType(type)
-      // twoColor renders every call, painting low-confidence ones blue; the
-      // default mode hides calls below the probability threshold instead.
-      const shouldPush = twoColor || prob >= modThreshold
-      if (shouldPush) {
-        const {
-          r,
-          g,
-          b,
-          prob: alpha,
-          noMod,
-        } = twoColor
-          ? methColorAndProb(prob, modRgb, METH_5MC_UNMETHYLATED_RGB)
-          : { r: modRgb[0], g: modRgb[1], b: modRgb[2], prob, noMod: false }
+  if (colorBy?.type === 'modifications') {
+    const modStrand = strand === -1 ? -1 : 1
+    const modThreshold = (colorBy.modifications?.threshold ?? 10) / 100
+    const twoColor = colorBy.modifications?.twoColor ?? false
+    const mods = getMaxProbModAtEachPosition(
+      modifications,
+      probabilities,
+      cigarOps,
+      fstrand,
+    )
+    mods.forEach(({ prob, type, base }, refPos) => {
+      // twoColor renders every call, painting low-confidence ones in the
+      // unmethylated color (with prob = 1-prob = the unmodified confidence);
+      // default mode hides calls below the threshold and always paints the mod
+      // color at full prob. `isMeth` unifies both without an intermediate alloc.
+      if (
+        isModificationTypeVisible(colorBy.modifications, type) &&
+        (twoColor || prob >= modThreshold)
+      ) {
+        const isMeth = !twoColor || prob > 0.5
+        const rgb = isMeth ? modRgbForType(type) : METH_5MC_UNMETHYLATED_RGB
         modificationsData.push({
           readIndex,
           position: featureStart + refPos,
           base,
           modType: type,
-          strand: strand === -1 ? -1 : 1,
-          r,
-          g,
-          b,
-          prob: alpha,
-          noMod,
+          strand: modStrand,
+          r: rgb[0],
+          g: rgb[1],
+          b: rgb[2],
+          prob: isMeth ? prob : 1 - prob,
+          noMod: !isMeth,
         })
       }
-    }
-  })
+    })
+  }
   return {
     modifications,
     probabilities,
@@ -188,41 +175,27 @@ export function extractMethylation(
     const mProb = methBins[i] ? (methProbs[i] ?? 0) : 0
     const hProb = hydroxyMethBins[i] ? (hydroxyMethProbs[i] ?? 0) : 0
     const noModProb = Math.max(0, 1 - mProb - hProb)
-    const genomicPos = i + featureStart
 
-    const winner =
-      hProb > mProb && hProb > noModProb
-        ? {
-            modType: 'h',
-            rgb: METH_5HMC_METHYLATED_RGB,
-            prob: hProb,
-            noMod: false,
-          }
-        : mProb > noModProb
-          ? {
-              modType: 'm',
-              rgb: METH_5MC_METHYLATED_RGB,
-              prob: mProb,
-              noMod: false,
-            }
-          : {
-              modType: 'm',
-              rgb: METH_5MC_UNMETHYLATED_RGB,
-              prob: noModProb,
-              noMod: true,
-            }
-
+    // Winner selection, allocation-free: pick 5hmC, then 5mC, else the no-mod
+    // bucket. `rgb` references a module-level constant (no per-cytosine alloc).
+    const isHydroxy = hProb > mProb && hProb > noModProb
+    const isMeth = !isHydroxy && mProb > noModProb
+    const rgb = isHydroxy
+      ? METH_5HMC_METHYLATED_RGB
+      : isMeth
+        ? METH_5MC_METHYLATED_RGB
+        : METH_5MC_UNMETHYLATED_RGB
     modificationsData.push({
       readIndex,
-      position: genomicPos,
+      position: i + featureStart,
       base: 'C',
-      modType: winner.modType,
+      modType: isHydroxy ? 'h' : 'm',
       strand: methStrand,
-      r: winner.rgb[0],
-      g: winner.rgb[1],
-      b: winner.rgb[2],
-      prob: winner.prob,
-      noMod: winner.noMod,
+      r: rgb[0],
+      g: rgb[1],
+      b: rgb[2],
+      prob: isHydroxy ? hProb : isMeth ? mProb : noModProb,
+      noMod: !isHydroxy && !isMeth,
     })
   }
 }
@@ -289,22 +262,23 @@ export function extractBisulfite(
           const readBase = seq[readPos + j]?.toUpperCase()
           const methylated = readBase === methRead
           if (methylated || readBase === unmethRead) {
-            const { r, g, b, prob, noMod } = methColorAndProb(
-              methylated ? 1 : 0,
-              METH_5MC_METHYLATED_RGB,
-              METH_5MC_UNMETHYLATED_RGB,
-            )
+            // Bisulfite is a binary call (converted vs protected), not a
+            // likelihood — full confidence either way. Methylated paints the
+            // 5mC color, unmethylated the no-mod color.
+            const rgb = methylated
+              ? METH_5MC_METHYLATED_RGB
+              : METH_5MC_UNMETHYLATED_RGB
             modificationsData.push({
               readIndex,
               position: genomicPos,
               base: 'C',
               modType: 'm',
               strand: methStrand,
-              r,
-              g,
-              b,
-              prob,
-              noMod,
+              r: rgb[0],
+              g: rgb[1],
+              b: rgb[2],
+              prob: 1,
+              noMod: !methylated,
             })
           }
         }
