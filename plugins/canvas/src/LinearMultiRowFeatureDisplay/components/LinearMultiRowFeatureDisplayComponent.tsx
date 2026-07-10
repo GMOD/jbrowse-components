@@ -1,5 +1,6 @@
 import type React from 'react'
 
+import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
@@ -34,6 +35,22 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
       model.selectFeatureById(hit.id, hit.regionIndex)
     }
   }
+  function onContextMenu(e: React.MouseEvent<HTMLCanvasElement>) {
+    e.preventDefault()
+    const rect = e.currentTarget.getBoundingClientRect()
+    const px = e.clientX - rect.left
+    const p = view.pxToBp(px)
+    model.setHoveredFeature(undefined)
+    if (!p.oob) {
+      model.openContextMenu({
+        clientX: e.clientX,
+        clientY: e.clientY,
+        refName: p.refName,
+        pos: Math.floor(p.coord0),
+        hit: model.featureAt(px, e.clientY - rect.top),
+      })
+    }
+  }
   return (
     <>
       <canvas
@@ -48,8 +65,8 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         onClick={e => {
           onClick(e)
         }}
-        onContextMenu={() => {
-          model.setHoveredFeature(undefined)
+        onContextMenu={e => {
+          onContextMenu(e)
         }}
         style={{
           width: view.width,
@@ -81,6 +98,23 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
       ) : null}
       <TreeSidebar model={model} />
       <MultiRowTooltip model={model} />
+      {model.contextMenuInfo ? (
+        <Menu
+          open
+          onMenuItemClick={callback => {
+            callback()
+          }}
+          onClose={() => {
+            model.closeContextMenu()
+          }}
+          anchorReference="anchorPosition"
+          anchorPosition={{
+            top: model.contextMenuInfo.clientY,
+            left: model.contextMenuInfo.clientX,
+          }}
+          menuItems={model.contextMenuItems()}
+        />
+      ) : null}
     </>
   )
 })

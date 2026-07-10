@@ -24,6 +24,8 @@ import {
   buildSpatialIndex,
   clusterLayout,
 } from '@jbrowse/tree-sidebar'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { observable } from 'mobx'
 
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
@@ -31,6 +33,7 @@ import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelper
 import { MULTIROW_DEFAULT_COLOR } from '../MultiRowGetFeaturesRPC/multiRowColors.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
 import { resolveLocalRowIndices } from './rendering/resolveLocalRowIndices.ts'
+import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   buildEditableSources,
   buildSources,
@@ -47,6 +50,7 @@ import type {
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -107,6 +111,18 @@ export default function stateModelFactory(
          * it afterward so a saved session never re-triggers.
          */
         runClustering: types.maybe(types.boolean),
+        /**
+         * #property
+         * Transient declarative launch spec (like `runClustering`): set
+         * `{refName, pos}` to sort the rows once by the value each carries at
+         * that genomic position — the in-app, session-expressible equivalent of a
+         * hand-computed `rowOrder`. getMultiRowSortAutorun applies it (once the
+         * region is loaded) and clears it, so the resulting `layout` persists but
+         * the trigger never re-fires.
+         */
+        sortRowsBy: types.maybe(
+          types.frozen<{ refName: string; pos: number }>(),
+        ),
       }),
     )
     .volatile(() => ({
@@ -118,6 +134,20 @@ export default function stateModelFactory(
        * undefined when not hovering a block.
        */
       hoveredFeature: undefined as HoveredFeature | undefined,
+      /**
+       * #volatile
+       * Right-click context menu anchor + the genomic position clicked (and the
+       * feature there, if any). Undefined when the menu is closed.
+       */
+      contextMenuInfo: undefined as
+        | {
+            clientX: number
+            clientY: number
+            refName: string
+            pos: number
+            hit?: MultiRowHit
+          }
+        | undefined,
     }))
     .views(self => ({
       /**
@@ -443,6 +473,56 @@ export default function stateModelFactory(
       },
       /**
        * #action
+       * Trigger (or clear) a one-shot declarative row sort; consumed and reset by
+       * getMultiRowSortAutorun. The right-click menu calls `sortRowsByValueAt`
+       * directly (instant, data already loaded); this prop is the session-level
+       * entry point.
+       */
+      setSortRowsBy(arg?: { refName: string; pos: number }) {
+        self.sortRowsBy = arg
+      },
+      /**
+       * #action
+       * Reorder the rows by the value each carries at (refName, pos) — the
+       * feature covering that position on each row. Reads the already-loaded
+       * region data (no refetch/RPC) and writes the new order via `layout`.
+       */
+      sortRowsByValueAt(refName: string, pos: number) {
+        const regions = [...self.rpcDataMap.entries()].map(([index, data]) => ({
+          refName: self.loadedRegions.get(index)?.refName ?? '',
+          featureStarts: data.featureStarts,
+          featureEnds: data.featureEnds,
+          featureColors: data.featureColors,
+          partitionValues: data.partitionValues,
+          featurePartitionIndex: data.featurePartitionIndex,
+        }))
+        const byName = new Map(self.editableSources.map(s => [s.name, s]))
+        const order = rowOrderByValueAt(
+          self.editableSources.map(s => s.name),
+          regions,
+          refName,
+          pos,
+        )
+        self.setLayout(
+          order
+            .map(n => byName.get(n))
+            .filter((s): s is MultiRowSource => s !== undefined),
+        )
+      },
+      /**
+       * #action
+       */
+      openContextMenu(info: NonNullable<typeof self.contextMenuInfo>) {
+        self.contextMenuInfo = info
+      },
+      /**
+       * #action
+       */
+      closeContextMenu() {
+        self.contextMenuInfo = undefined
+      },
+      /**
+       * #action
        */
       setHoveredFeature(arg?: HoveredFeature) {
         self.hoveredFeature = arg
@@ -587,9 +667,63 @@ export default function stateModelFactory(
           } catch (e) {
             console.error(e)
           }
+
+          try {
+            const { getMultiRowSortAutorun } =
+              await import('./getMultiRowSortAutorun.ts')
+            if (isAlive(self)) {
+              getMultiRowSortAutorun(self)
+            }
+          } catch (e) {
+            console.error(e)
+          }
         },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       * Items for the right-click context menu, built from the clicked position
+       * (contextMenuInfo). "Sort rows by value here" is the interactive twin of
+       * the declarative `sortRowsBy`.
+       */
+      contextMenuItems(): MenuItem[] {
+        const info = self.contextMenuInfo
+        if (!info) {
+          return []
+        }
+        return [
+          {
+            label: 'Sort rows by value here',
+            icon: SwapVertIcon,
+            onClick: () => {
+              self.sortRowsByValueAt(info.refName, info.pos)
+            },
+          },
+          ...(info.hit
+            ? [
+                {
+                  label: 'Open feature details',
+                  icon: MenuOpenIcon,
+                  onClick: () => {
+                    self.selectFeatureById(info.hit!.id, info.hit!.regionIndex)
+                  },
+                },
+              ]
+            : []),
+          ...(self.layout.length
+            ? [
+                {
+                  label: 'Clear row sort',
+                  onClick: () => {
+                    self.clearLayout()
+                  },
+                },
+              ]
+            : []),
+        ]
+      },
+    }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
