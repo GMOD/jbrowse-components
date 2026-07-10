@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
@@ -89,6 +89,33 @@ test('renders all the different types of built-in slots', () => {
     </ThemeProvider>,
   )
   expect(container).toMatchSnapshot()
+})
+
+test('typing into a slot field writes through to the target config node', () => {
+  const TestSchema = ConfigurationSchema('TestThing', {
+    myName: {
+      name: 'myName',
+      description: 'a string slot',
+      type: 'string',
+      defaultValue: 'original',
+    },
+  })
+  const target = TestSchema.create(undefined, { pluginManager })
+
+  const { getByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor model={{ target }} />
+    </ThemeProvider>,
+  )
+
+  fireEvent.change(getByLabelText('myName'), {
+    target: { value: 'edited' },
+  })
+
+  // the rendered SlotEditor's makeSlotFacade().set() ran node.setSlot, so the
+  // live target reflects the edit — which is what the widget's debounced autorun
+  // then snapshots and persists (see ConfigurationEditorWidget model.ts)
+  expect(readConfObject(target, 'myName')).toBe('edited')
 })
 
 test('filters slots by name', () => {

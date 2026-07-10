@@ -222,7 +222,11 @@ export function createBaseTrackModel(
        * #action
        * Persist any config-schema mutation (quick track-menu edits calling
        * `setSlot` directly, or the full Settings dialog) back to the session,
-       * debounced, mirroring ConfigurationEditorWidget's own save. `reaction`
+       * debounced, mirroring ConfigurationEditorWidget's own save. Both savers
+       * intentionally coexist — this one covers direct setSlot edits on a shown
+       * track, the widget covers an unshown track edited from the selector (no
+       * BaseTrackModel). When both fire they compute an identical delta, deduped
+       * in updateTrackConfiguration; don't drop one to "simplify". `reaction`
        * (not `autorun`) on purpose: `self.configuration` is defined
        * immediately on attach, unlike ConfigurationEditorWidget's `target`
        * (which starts undefined), so an autorun's guaranteed first run would

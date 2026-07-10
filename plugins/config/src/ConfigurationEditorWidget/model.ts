@@ -47,6 +47,13 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
         // trackId (assembly/connection) degrades gracefully: updateTrackConfiguration
         // finds no base/session/connection home and the edit just applies to the
         // live MST node in memory for this session.
+        //
+        // BaseTrackModel's afterAttach runs a sibling debounced save (a reaction
+        // on the same config node) for direct setSlot quick-edits on a *shown*
+        // track. Both intentionally coexist: this widget also handles an unshown
+        // track edited from the selector, which has no BaseTrackModel. When both
+        // fire they compute an identical delta, deduped in updateTrackConfiguration
+        // — don't drop one to "simplify".
         addDisposer(
           self,
           autorun(() => {
