@@ -55,38 +55,29 @@ function HicSvgBody({
   height: number
   opts: ExportSvgDisplayOptions
 }) {
-  const {
-    rpcData,
-    useLogScale,
-    colorScheme,
-    showLegend,
-    yScalar,
-    colorMaxScore,
-  } = self
+  const { rpcData, colorScheme, showLegend, useLogScale, colorMaxScore } = self
+  const renderState = self.renderState
   // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
-  // this narrows the single nullable fetch blob for TS only — unreachable at
-  // runtime. An empty (numContacts === 0) result still paints an empty matrix.
-  if (!rpcData) {
+  // this narrows the nullable fetch blob / render state for TS only —
+  // unreachable at runtime. An empty (numContacts === 0) result still paints an
+  // empty matrix.
+  if (!rpcData || !renderState) {
     return null
   }
 
-  const { positions, counts, numContacts, binWidth } = rpcData
+  const { positions, counts, numContacts } = rpcData
   const visibleWidth = view.width
   const fillStyleLut = makeHicFillStyleLut(generateColorRamp(colorScheme))
 
-  // Reuse the model's renderTransform so SVG export aligns identically to
-  // the on-screen render (handles scrolled-left-of-genome and stale zoom).
-  const { scale: viewScale, viewOffsetX } = self.renderTransform
+  // Reuse the model's renderState so the export shares one source of truth for
+  // the transform, yScalar, and color params with the on-screen render (handles
+  // scrolled-left-of-genome and stale zoom). Canvas dims are the only
+  // export-specific override, and drawHicBlocks ignores them regardless.
   const matrixEl = paintLayer(visibleWidth, height, opts, ctx => {
     drawHicBlocks(ctx, { positions, counts, numContacts }, fillStyleLut, {
-      binWidth,
-      yScalar,
+      ...renderState,
       canvasWidth: visibleWidth,
       canvasHeight: height,
-      colorMaxScore,
-      useLogScale,
-      viewScale,
-      viewOffsetX,
     })
   })
 
@@ -106,6 +97,7 @@ function HicSvgBody({
           useLogScale={useLogScale}
           width={visibleWidth}
           legendAreaWidth={opts.legendWidth}
+          idSuffix={self.id}
         />
       ) : null}
     </>

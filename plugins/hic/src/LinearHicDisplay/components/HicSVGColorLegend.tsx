@@ -11,15 +11,19 @@ export default function HicSVGColorLegend({
   useLogScale,
   width,
   legendAreaWidth,
+  idSuffix,
 }: {
   maxScore: number
   colorScheme?: HicColorScheme
   useLogScale?: boolean
   width: number
   legendAreaWidth?: number
+  idSuffix: string
 }) {
   const resolvedScheme = colorScheme ?? DEFAULT_HIC_COLOR_SCHEME
-  const gradientId = `hic-gradient-${resolvedScheme}`
+  // idSuffix (the display id) keeps the gradient def unique when two Hi-C
+  // tracks export into one SVG document.
+  const gradientId = `hic-gradient-${resolvedScheme}-${idSuffix}`
   const stops = getLegendSvgStops(resolvedScheme)
   const { minLabel, maxLabel } = getHicScaleLabels(maxScore, useLogScale)
 
@@ -44,7 +48,7 @@ export default function HicSVGColorLegend({
               // eslint-disable-next-line @eslint-react/no-array-index-key -- static gradient stops from a fixed palette, never reordered
               key={idx}
               offset={stop.offset}
-              style={{ stopColor: stop.color, stopOpacity: 1 }}
+              style={{ stopColor: stop.color, stopOpacity: stop.opacity }}
             />
           ))}
         </linearGradient>

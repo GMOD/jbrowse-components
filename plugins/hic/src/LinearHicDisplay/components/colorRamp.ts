@@ -141,9 +141,13 @@ export function getLegendCssGradient(colorScheme: HicColorScheme | undefined) {
 
 export function getLegendSvgStops(colorScheme: HicColorScheme | undefined) {
   const stops = getLegendStops(colorScheme)
+  // Alpha goes in stop-opacity, not baked into an rgba() stop-color: SVG
+  // stop-color alpha is unevenly supported by exporters, so the juicebox
+  // scheme's transparent→opaque fade would otherwise flatten to solid color.
   return stops.map(s => ({
     offset: `${(s.offset * 100).toFixed(0)}%`,
-    color: rgbaCss(s.rgba),
+    color: `rgb(${s.rgba[0]},${s.rgba[1]},${s.rgba[2]})`,
+    opacity: s.rgba[3] / 255,
   }))
 }
 
