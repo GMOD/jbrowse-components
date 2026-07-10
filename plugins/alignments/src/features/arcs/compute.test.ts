@@ -2,6 +2,7 @@ import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
+  SAM_FLAG_SECONDARY,
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
@@ -298,6 +299,38 @@ describe('computeArcsFromPileupData', () => {
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([0]),
       readNames: ['readA'],
+    })
+
+    const rpcDataMap = new Map([[0, data]])
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
+    ]
+    const result = computeArcsFromPileupData(rpcDataMap, regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: true,
+      drawLongRange: true,
+    })
+
+    expect(result.arcs).toEqual([])
+    expect(result.lines).toEqual([])
+  })
+
+  test('lone on-screen secondary alignment draws no mate arc', () => {
+    // A secondary alignment (0x100) survives the default flag filter (1540 omits
+    // 0x100), so a multimapper whose primary + mate are off-screen can be the
+    // lone on-screen entry. It is an alternate mapping, not the read's true
+    // locus, and carries unset TLEN / orientation — no mate link should anchor
+    // at it, matching how every other path drops secondary alignments.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_SECONDARY]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([500]),
+      readPairOrientations: new Uint8Array([1]),
+      readNames: ['readA'],
+      readNextRefs: ['chr1'],
+      readNextPositions: new Uint32Array([2000]),
     })
 
     const rpcDataMap = new Map([[0, data]])

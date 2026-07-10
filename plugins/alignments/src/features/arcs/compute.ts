@@ -367,8 +367,12 @@ function computePairingInfo(rpcDataMap: ReadonlyMap<number, PileupDataResult>) {
   return { hasPaired, stats }
 }
 
-// A lone read whose mate is mapped elsewhere: connect its near endpoint to the
-// recorded mate position.
+// A lone read whose mate is mapped elsewhere: connect its 3' (read-trailing)
+// edge to the recorded mate position. Only PNEXT (the mate's leftmost/5' base)
+// is known off-screen — the mate's CIGAR/length isn't — so for a forward-strand
+// mate the endpoint lands at its 5' edge rather than its true 3' end (off by one
+// read length). Negligible at arc-view zoom; exact resolution would need the
+// off-screen mate's alignment.
 function mateArc(entry: ReadEntry): PendingArc {
   const { data, readIdx, refName } = entry
   const flags = data.readFlags[readIdx]!
@@ -536,10 +540,19 @@ function collectPendingArcs(
       if (drawLongRange) {
         const entry = entries[0]!
         const flags = entry.data.readFlags[entry.readIdx]!
-        if (!(flags & SAM_FLAG_MATE_UNMAPPED)) {
-          pendingArcs.push(mateArc(entry))
+        // Secondary alignments (0x100) are alternate mappings, not the read's
+        // true locus, and carry unset TLEN / pair-orientation — drop them here
+        // as every other path does (partitionReadGroup, unpairedReadChain)
+        // rather than anchoring a spurious mate link at the secondary locus.
+        // They survive the default flag filter (1540 omits 0x100), so a lone
+        // on-screen secondary (primary + mate off-screen, e.g. a multimapper)
+        // would otherwise reach mateArc.
+        if (!(flags & SAM_FLAG_SECONDARY)) {
+          if (!(flags & SAM_FLAG_MATE_UNMAPPED)) {
+            pendingArcs.push(mateArc(entry))
+          }
+          pendingArcs.push(...unpairedChainArcs(entries, drawLongRange))
         }
-        pendingArcs.push(...unpairedChainArcs(entries, drawLongRange))
       }
     } else {
       // ≥2 on-screen paired alignments sharing a name. Partition into first/
