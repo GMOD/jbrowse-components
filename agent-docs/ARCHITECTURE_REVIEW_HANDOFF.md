@@ -117,7 +117,7 @@ reference-identity guard (fresh `Error` per throw → cosmetic churn; harmless).
   contradiction.
 - **Stale paths** in adr-025/adr-026: `packages/core/src/util/useRenderingBackend.ts`
   (now a re-export shim) → `packages/render-core/src/useRenderingBackend.ts`;
-  `packages/core/src/gpu/RenderLifecycleMixin.ts` (gone) →
+  the old `gpu/RenderLifecycleMixin.ts` under `packages/core/src` (gone) →
   `packages/render-core/src/`.
 - **SvgCanvas clip-id carve-out** documented as the one sanctioned exception to
   the "scope clip ids by model.id" rule (module counter, safe, no model in

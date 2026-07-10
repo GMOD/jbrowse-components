@@ -115,10 +115,11 @@ Early-`return` fixes it by breaking (a): each literal `return` is its own memo
 scope, so the compiler emits `const t2 = …model.canvasDrawn…` unconditionally,
 mobx re-subscribes, and the `<div>` memo (dep `t2`) rebuilds. Verified in the
 compiled `DisplayChromeInner`: ternary → one memo gated on `[…, model, phase]`;
-early-return → `t2`/`t6` hoisted out. Runnable repro:
-`plugins/linear-genome-view/src/BaseLinearDisplay/components/MinimalRepro.test.tsx`
-(kept in a scratch copy; not committed — one case fails by design). Probe
-scripts: `scratchpad/compile.cjs`, `scratchpad/_probe_harness.cjs`.
+early-return → `t2`/`t6` hoisted out. Runnable repro: a scratch
+`MinimalRepro.test.tsx` (not committed — one case fails by design), kept next to
+`DisplayChrome.test.tsx` in
+`plugins/linear-genome-view/src/BaseLinearDisplay/components`. Probe scripts:
+`scratchpad/compile.cjs`, `scratchpad/_probe_harness.cjs`.
 
 **Correction to an earlier note in this file:** a first round of probes
 ("A–F") all *seemed* to commit and suggested "no single ingredient." That was an

@@ -447,7 +447,7 @@ how displays attach to a track type.
 
 Hit-testing is plugin-owned and runs on the main thread — it is not part of
 rendering. Build a spatial index (e.g.
-[`Flatbush`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/flatbush.ts))
+[`Flatbush`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/flatbush/index.ts))
 from `rpcDataMap` in a cached view, and query it from your React mouse handlers
 against the cursor's `(x, y)`. `plugins/gwas`'s `findManhattanHit.ts` is a
 worked example.
