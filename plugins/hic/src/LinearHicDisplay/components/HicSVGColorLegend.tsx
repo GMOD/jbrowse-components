@@ -1,3 +1,5 @@
+import { GRADIENT_LEGEND_WIDTH, SvgGradientLegend } from '@jbrowse/core/ui'
+
 import {
   DEFAULT_HIC_COLOR_SCHEME,
   type HicColorScheme,
@@ -10,84 +12,32 @@ export default function HicSVGColorLegend({
   colorScheme,
   useLogScale,
   width,
-  legendAreaWidth,
+  // when true, the legend sits in a dedicated area to the right of the plot;
+  // otherwise it floats over the top-right corner of the plot
+  positionOutside,
   idSuffix,
 }: {
   maxScore: number
   colorScheme?: HicColorScheme
   useLogScale?: boolean
   width: number
-  legendAreaWidth?: number
+  positionOutside?: boolean
   idSuffix: string
 }) {
   const resolvedScheme = colorScheme ?? DEFAULT_HIC_COLOR_SCHEME
-  // idSuffix (the display id) keeps the gradient def unique when two Hi-C
-  // tracks export into one SVG document.
-  const gradientId = `hic-gradient-${resolvedScheme}-${idSuffix}`
-  const stops = getLegendSvgStops(resolvedScheme)
   const { minLabel, maxLabel } = getHicScaleLabels(maxScore, useLogScale)
-
-  const legendWidth = 120
-  const legendHeight = 40
-  const barWidth = 100
-  const barHeight = 12
-  const padding = 8
-  const fontSize = 10
-
-  // Position legend to the right if legendAreaWidth is provided, otherwise top-right inside
-  const x =
-    legendAreaWidth !== undefined ? width + 10 : width - legendWidth - 10
-  const y = 10
-
   return (
-    <g transform={`translate(${x}, ${y})`}>
-      <defs>
-        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-          {stops.map((stop, idx) => (
-            <stop
-              // eslint-disable-next-line @eslint-react/no-array-index-key -- static gradient stops from a fixed palette, never reordered
-              key={idx}
-              offset={stop.offset}
-              style={{ stopColor: stop.color, stopOpacity: stop.opacity }}
-            />
-          ))}
-        </linearGradient>
-      </defs>
-      <rect
-        x={0}
-        y={0}
-        width={legendWidth}
-        height={legendHeight}
-        fill="rgba(255,255,255,0.9)"
-        stroke="#ccc"
-        strokeWidth={1}
-        rx={4}
-      />
-      <rect
-        x={padding}
-        y={padding}
-        width={barWidth}
-        height={barHeight}
-        fill={`url(#${gradientId})`}
-        rx={2}
-      />
-      <text
-        x={padding}
-        y={padding + barHeight + fontSize + 2}
-        fontSize={fontSize}
-        fill="black"
-      >
-        {minLabel}
-      </text>
-      <text
-        x={padding + barWidth}
-        y={padding + barHeight + fontSize + 2}
-        fontSize={fontSize}
-        fill="black"
-        textAnchor="end"
-      >
-        {maxLabel}
-      </text>
-    </g>
+    <SvgGradientLegend
+      // idSuffix (the display id) keeps the gradient def unique when two Hi-C
+      // tracks export into one SVG document.
+      gradientId={`hic-gradient-${resolvedScheme}-${idSuffix}`}
+      stops={getLegendSvgStops(resolvedScheme)}
+      labels={[
+        { text: minLabel, position: 'start' },
+        { text: maxLabel, position: 'end' },
+      ]}
+      x={positionOutside ? width + 10 : width - GRADIENT_LEGEND_WIDTH - 10}
+      y={10}
+    />
   )
 }

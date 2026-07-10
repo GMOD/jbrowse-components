@@ -159,7 +159,6 @@ const ManhattanBody = observer(function ManhattanBody({
       ) : null}
       {ldMode ? (
         <LdColorLegend
-          offsetTop={YSCALEBAR_LABEL_OFFSET}
           onDismiss={() => {
             model.setShowLdLegend(false)
           }}

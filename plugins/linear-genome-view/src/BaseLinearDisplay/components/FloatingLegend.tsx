@@ -25,6 +25,11 @@ const useStyles = makeStyles()(theme => ({
   withClose: {
     paddingRight: 20,
   },
+  topTitle: {
+    fontWeight: 'bold',
+    whiteSpace: 'nowrap',
+    marginBottom: 2,
+  },
   section: {
     '&:not(:last-child)': {
       marginBottom: 4,
@@ -131,16 +136,19 @@ const LegendItemList = observer(function LegendItemList({
 // `sections` to show several titled, individually-closable panels in one box
 // (e.g. genotype colors vs. sample-grouping colors on the multi-sample variant
 // display). Section titles + per-section close buttons only appear when there
-// is more than one section, so a single-scheme legend looks unchanged.
+// is more than one section, so a single-scheme legend looks unchanged. `title`
+// is a heading for the whole box, shown regardless of section count.
 const FloatingLegend = observer(function FloatingLegend({
   items,
   sections,
+  title,
   onDismiss,
   onDismissSection,
   maxItems = DEFAULT_MAX_ITEMS,
 }: {
   items?: LegendItem[]
   sections?: LegendSection[]
+  title?: string
   onDismiss?: () => void
   onDismissSection?: (id: string) => void
   maxItems?: number
@@ -168,6 +176,7 @@ const FloatingLegend = observer(function FloatingLegend({
           <CloseIcon fontSize="inherit" />
         </IconButton>
       ) : null}
+      {title ? <div className={classes.topTitle}>{title}</div> : null}
       {nonEmpty.map(section => (
         <div key={section.id} className={classes.section}>
           {multiSection && section.title ? (

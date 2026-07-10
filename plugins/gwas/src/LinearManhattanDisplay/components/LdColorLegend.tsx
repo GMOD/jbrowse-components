@@ -1,75 +1,22 @@
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import CloseIcon from '@mui/icons-material/Close'
-import IconButton from '@mui/material/IconButton'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import { LD_LEGEND, LD_LEGEND_SWATCH_PX, LD_LEGEND_TITLE } from '../ldBins.ts'
-
-const useStyles = makeStyles()({
-  container: {
-    position: 'absolute',
-    right: 4,
-    background: 'rgba(255,255,255,0.85)',
-    border: '1px solid #ccc',
-    borderRadius: 3,
-    padding: '2px 5px',
-    fontSize: 10,
-    lineHeight: 1.4,
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  title: {
-    fontWeight: 'bold',
-  },
-  row: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  swatch: {
-    display: 'inline-block',
-    width: LD_LEGEND_SWATCH_PX,
-    height: LD_LEGEND_SWATCH_PX,
-    marginRight: 4,
-    border: '1px solid rgba(0,0,0,0.2)',
-  },
-})
+import { LD_LEGEND, LD_LEGEND_TITLE } from '../ldBins.ts'
 
 // LocusZoom-style r² key, shown when the display colors points by LD to the
-// index SNP. Positioned top-right over the plot, like LocusZoom.
+// index SNP. Uses the shared FloatingLegend box (top-right overlay + close
+// button); the bins come from ldBins so the SVG-export legend can't drift.
 const LdColorLegend = observer(function LdColorLegend({
-  offsetTop,
   onDismiss,
 }: {
-  offsetTop: number
   onDismiss?: () => void
 }) {
-  const { classes } = useStyles()
   return (
-    <div className={classes.container} style={{ top: offsetTop + 2 }}>
-      <div className={classes.header}>
-        <div className={classes.title}>{LD_LEGEND_TITLE}</div>
-        {onDismiss ? (
-          <IconButton
-            size="small"
-            title="Hide legend"
-            onClick={() => {
-              onDismiss()
-            }}
-          >
-            <CloseIcon fontSize="inherit" />
-          </IconButton>
-        ) : null}
-      </div>
-      {LD_LEGEND.map(({ label, color }) => (
-        <div key={label} className={classes.row}>
-          <span className={classes.swatch} style={{ background: color }} />
-          {label}
-        </div>
-      ))}
-    </div>
+    <FloatingLegend
+      title={LD_LEGEND_TITLE}
+      items={LD_LEGEND}
+      onDismiss={onDismiss}
+    />
   )
 })
 

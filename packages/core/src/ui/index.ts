@@ -58,3 +58,12 @@ export {
   promotableToggleItem,
 } from './promotableMenuItems.tsx'
 export const VIEW_HEADER_HEIGHT = 28
+export {
+  GRADIENT_LEGEND_HEIGHT,
+  GRADIENT_LEGEND_WIDTH,
+  default as SvgGradientLegend,
+} from './SvgGradientLegend.tsx'
+export type {
+  GradientLabel,
+  GradientStop,
+} from './SvgGradientLegend.tsx'

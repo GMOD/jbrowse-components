@@ -67,4 +67,12 @@ describe('FloatingLegend', () => {
     expect(getByText('item0')).toBeTruthy()
     expect(queryByText('Genotypes')).toBeNull()
   })
+
+  it('shows a top-level title with a single item list', () => {
+    const { getByText } = render(
+      <FloatingLegend title="r² to index" items={items(2)} />,
+    )
+    expect(getByText('r² to index')).toBeTruthy()
+    expect(getByText('item0')).toBeTruthy()
+  })
 })

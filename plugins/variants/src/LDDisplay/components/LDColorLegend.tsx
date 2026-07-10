@@ -1,5 +1,9 @@
+import {
+  GRADIENT_LEGEND_HEIGHT,
+  GRADIENT_LEGEND_WIDTH,
+} from '@jbrowse/core/ui'
+
 import LDColorLegendContent from './LDColorLegendContent.tsx'
-import { LEGEND_HEIGHT, LEGEND_WIDTH } from './const.ts'
 
 export default function LDColorLegend({
   ldMetric,
@@ -14,8 +18,8 @@ export default function LDColorLegend({
         position: 'absolute',
         top: 4,
         right: 4,
-        width: LEGEND_WIDTH,
-        height: LEGEND_HEIGHT,
+        width: GRADIENT_LEGEND_WIDTH,
+        height: GRADIENT_LEGEND_HEIGHT,
         zIndex: 10,
         overflow: 'visible',
       }}

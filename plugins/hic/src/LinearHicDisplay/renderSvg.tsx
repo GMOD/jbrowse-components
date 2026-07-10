@@ -96,7 +96,7 @@ function HicSvgBody({
           colorScheme={colorScheme}
           useLogScale={useLogScale}
           width={visibleWidth}
-          legendAreaWidth={opts.legendWidth}
+          positionOutside={opts.legendWidth !== undefined}
           idSuffix={self.id}
         />
       ) : null}
