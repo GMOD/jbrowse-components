@@ -22,7 +22,7 @@ const rehypeCollectToc: Plugin<[], Root> = () => {
     const toc: TocItem[] = []
     visit(tree, 'element', (node: Element) => {
       const depth = HEADING_DEPTHS[node.tagName]
-      const id = node.properties.id as string | undefined
+      const id = node.properties.id
       if (depth && id) {
         toc.push({ depth, id, text: getText(node) })
       }
