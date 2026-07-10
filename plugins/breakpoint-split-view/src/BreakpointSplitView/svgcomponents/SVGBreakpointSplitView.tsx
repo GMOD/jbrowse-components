@@ -31,19 +31,25 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const theme = session.getActiveThemeOptions?.(themeName)
   const { width, views } = model
   const offset = headerHeight + rulerHeight
-  const tracksHeights = views.map(v =>
-    totalHeight(v.tracks, textHeight, trackLabels),
+  // Minimized tracks are dropped (as the standalone LGV export does) so reserved
+  // height, rendered bodies, label width, and overlay offsets stay in sync and a
+  // collapsed track doesn't export as a full-height panel.
+  const visibleTracksByView = views.map(v =>
+    v.tracks.filter(t => !t.minimized),
+  )
+  const tracksHeights = visibleTracksByView.map(tracks =>
+    totalHeight(tracks, textHeight, trackLabels),
   )
   const heights = tracksHeights.map(h => h + offset)
   const totalHeightSvg = sum(heights) + exportMargin
   const displayResults = await Promise.all(
     views.map(
-      async view =>
+      async (view, idx) =>
         ({
           view,
 
           data: await Promise.all(
-            view.tracks.map(async track => {
+            visibleTracksByView[idx]!.map(async track => {
               const d = track.displays[0]
               return { track, result: await d.renderSvg({ ...opts, theme }) }
             }),
@@ -52,12 +58,13 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     ),
   )
 
-  const trackLabelMaxLen = getTrackNameMaxLen(views, fontSize, session) + 40
+  const trackLabelMaxLen =
+    getTrackNameMaxLen(visibleTracksByView.flat(), fontSize, session) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const textOffset = trackLabels === 'offset' ? textHeight : 0
-  const trackOffsets = views.map((view, idx) =>
+  const trackOffsets = visibleTracksByView.map((tracks, idx) =>
     getTrackOffsets(
-      view,
+      tracks,
       textOffset,
       fontSize + sum(heights.slice(0, idx)) + offset,
     ),
@@ -91,6 +98,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
                 rulerHeight={rulerHeight}
                 tracksHeight={tracksHeights[idx]!}
                 showGridlines={showGridlines}
+                leftBuffer={exportMargin}
               />
             </g>
           )
@@ -110,17 +118,25 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           transform={`translate(${trackLabelOffset + exportMargin})`}
           clipPath={`url(#clip-bsv-${model.id})`}
         >
-          {model.matchedTracks.map(track => {
-            const id = track.configuration.trackId
-            return (
-              <Overlay
-                key={id}
-                model={model}
-                trackId={id}
-                yOffsetsOverride={trackOffsets.map(o => o[id]!)}
-              />
+          {model.matchedTracks
+            .filter(track =>
+              // skip tracks minimized in any view: they have no rendered body
+              // to anchor a ribbon to (getTrackOffsets omits them)
+              trackOffsets.every(
+                o => o[track.configuration.trackId] !== undefined,
+              ),
             )
-          })}
+            .map(track => {
+              const id = track.configuration.trackId
+              return (
+                <Overlay
+                  key={id}
+                  model={model}
+                  trackId={id}
+                  yOffsetsOverride={trackOffsets.map(o => o[id]!)}
+                />
+              )
+            })}
         </g>
       </>
     ),
