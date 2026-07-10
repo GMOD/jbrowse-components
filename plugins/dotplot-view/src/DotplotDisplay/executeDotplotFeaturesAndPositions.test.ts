@@ -14,7 +14,6 @@ function makeViewSnap(
   return {
     bpPerPx,
     displayedRegions: regions.map(r => ({ assemblyName: 'test', ...r })),
-    minimumBlockWidth: 3,
   }
 }
 

@@ -15,6 +15,7 @@ import { autorun, untracked } from 'mobx'
 
 import { createDotplotColorFunction } from './dotplotColors.ts'
 import { buildLineSegments } from './dotplotGeometry.ts'
+import { dotplotFetchKey } from './fetchKey.ts'
 
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
@@ -28,7 +29,6 @@ function makeViewSnap(view: Dotplot1DViewModel): BpIndexViewSnap {
   return {
     bpPerPx: view.bpPerPx,
     displayedRegions: view.displayedRegions,
-    minimumBlockWidth: view.minimumBlockWidth,
   }
 }
 
@@ -54,6 +54,10 @@ export function doAfterAttach(
         const { lodMode } = view
         const hViewSnap = makeViewSnap(view.hview)
         const vViewSnap = makeViewSnap(view.vview)
+        // Snapshot the fetch-input signature now, from the exact inputs this
+        // fetch uses, so the resulting rpcData is tagged with what it was
+        // fetched for even if the view changes again mid-RPC.
+        const fetchKey = dotplotFetchKey(lodMode, hViewSnap, vViewSnap)
 
         const { stopToken, isCurrent, statusCallback } = fetch.begin()
         self.setLoading(stopToken)
@@ -98,7 +102,7 @@ export function doAfterAttach(
           if (!isCurrent()) {
             return
           }
-          self.setRpcData(result)
+          self.setRpcData(result, fetchKey)
           self.setWarnings(
             result.skippedFeatureCount > 0
               ? [

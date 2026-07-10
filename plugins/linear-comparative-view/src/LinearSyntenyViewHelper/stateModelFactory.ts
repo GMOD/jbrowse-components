@@ -149,7 +149,12 @@ export function linearSyntenyViewHelperModelFactory(
       get settled() {
         return (
           self.canvasDrawn &&
-          this.linearSyntenyDisplays.every(d => !d.loading && !d.refetching)
+          this.linearSyntenyDisplays.every(
+            // dataCurrent guards the debounce gap: after a region/zoom change
+            // the held ribbons are stale yet no fetch is in flight for ~500ms,
+            // so loading/refetching alone would report done on the wrong data
+            d => !d.loading && !d.refetching && d.dataCurrent,
+          )
         )
       },
     }))

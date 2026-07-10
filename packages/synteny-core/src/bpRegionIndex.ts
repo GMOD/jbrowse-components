@@ -2,7 +2,6 @@ import type { Region } from '@jbrowse/core/util'
 
 export interface BpIndexViewSnap {
   bpPerPx: number
-  minimumBlockWidth: number
   displayedRegions: Region[]
 }
 

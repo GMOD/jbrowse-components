@@ -194,7 +194,9 @@ export function createLinearGenomeView(
       assembly: resolved.assembly,
       // only full configs seed the config catalog; loose specs need the
       // pluginManager the build creates, so they are resolved just below
-      tracks: tracks.filter((track): track is TrackConf => !isLooseTrack(track)),
+      tracks: tracks.filter(
+        (track): track is TrackConf => !isLooseTrack(track),
+      ),
       aggregateTextSearchAdapters: mergeSearchAdapters(
         resolved.aggregateTextSearchAdapters,
         opts.aggregateTextSearchAdapters,

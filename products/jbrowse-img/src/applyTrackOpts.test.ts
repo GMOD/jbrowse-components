@@ -84,9 +84,9 @@ describe('alignments modifiers', () => {
   })
 
   test('a non-numeric minmax bound rejects', () => {
-    expect(() =>
-      buildDisplaySnapshot('wiggle', ['minmax:lo:100']),
-    ).toThrow(/Invalid minmax/)
+    expect(() => buildDisplaySnapshot('wiggle', ['minmax:lo:100'])).toThrow(
+      /Invalid minmax/,
+    )
   })
 
   test('snpcov hides the pileup and fills coverage to the given height', () => {

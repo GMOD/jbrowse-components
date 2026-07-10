@@ -59,6 +59,22 @@ test('off-axis region returns undefined', () => {
   ).toBeUndefined()
 })
 
+test('settled gates on autoDiagonalize completion when requested', () => {
+  const model = setup()
+  model.markCanvasDrawn()
+  // nothing requested: settled once the canvas is drawn (no displays loading)
+  expect(model.settled).toBe(true)
+
+  // an init-time reorder is requested: the plot is NOT done until it completes,
+  // so a screenshot/browser-test can't capture the pre-diagonalize plot
+  model.setAutoDiagonalizeRequested(true)
+  expect(model.settled).toBe(false)
+
+  // reorder resolved successfully: settled is released
+  model.setAutoDiagonalizeComplete(true)
+  expect(model.settled).toBe(true)
+})
+
 test('highlight actions add/remove and toggle visibility', () => {
   const model = setup()
   const h = { refName: 'ctgA', start: 0, end: 10, assemblyName: 'volvox' }

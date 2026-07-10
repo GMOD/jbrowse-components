@@ -64,18 +64,29 @@ function getOptionalNumber(f: Feature, key: string) {
   return (f.get(key) as number | undefined) ?? -1
 }
 
-export interface SyntenyViewSnap {
+// Fields both axes supply: the cumBp index (bpPerPx + the whole concatenated
+// genome, spanning the full cumBp axis) plus the viewport-start offset the cull
+// converts against.
+interface SyntenyViewSnapBase {
   bpPerPx: number
-  minimumBlockWidth: number
-  width: number
   offsetPx: number
-  // The whole concatenated genome, spanning the full cumBp coordinate axis.
   displayedRegions: Region[]
+}
+
+// The query axis (v1) drives the scoped indexed fetch and supplies the viewport
+// width both views' culls size against (the two stacked LGVs share one width).
+export interface SyntenyQueryViewSnap extends SyntenyViewSnapBase {
+  width: number
   // The visible window + pan buffer, clamped to displayedRegions. The indexed
   // fetch is scoped to this (a superset of the worker's cull window) so a
   // whole-genome PAF zoomed to one locus fetches only the on-screen slice.
   fetchRegions: Region[]
 }
+
+// The target axis (v2) only contributes its cumBp index + cull geometry. The
+// fetch is single-axis (query only), so no fetchRegions/width here — carrying
+// them would ship dead bytes and pay a redundant refName rename per fetch.
+export type SyntenyTargetViewSnap = SyntenyViewSnapBase
 
 export interface SyntenyRpcResult extends SyntenyFeatureData {
   instanceData: SyntenyGeometry
@@ -101,8 +112,8 @@ export async function executeSyntenyFeaturesAndPositions({
   // already in the adapter's namespace — refName aliasing is resolved on the
   // main thread (the RPC worker has no assemblyManager), so the cumBp index and
   // the feature refNames line up directly. See LinearSyntenyDisplay/afterAttach.
-  queryView: SyntenyViewSnap
-  targetView: SyntenyViewSnap
+  queryView: SyntenyQueryViewSnap
+  targetView: SyntenyTargetViewSnap
   stopToken?: StopToken
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean

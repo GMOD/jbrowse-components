@@ -17,7 +17,6 @@ interface TestRegion {
 function makeView(regions: TestRegion[], { bpPerPx = 1, offsetPx = 0 } = {}) {
   const idx = buildBpRegionIndex({
     bpPerPx,
-    minimumBlockWidth: 3,
     displayedRegions: regions.map(r => ({ assemblyName: ASM, ...r })),
   })
   return {
@@ -160,8 +159,8 @@ describe('synteny coordinate → pixel offset (region index)', () => {
       bpPerPx: 1,
       width: 800,
       offsetPx,
-      displayedRegions: regions.map(r => ({ assemblyName: ASM, ...r })),
       minimumBlockWidth: 3,
+      displayedRegions: regions.map(r => ({ assemblyName: ASM, ...r })),
     })
     const chr5Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr5')
     expect(chr5Blocks.length).toBeGreaterThan(0)

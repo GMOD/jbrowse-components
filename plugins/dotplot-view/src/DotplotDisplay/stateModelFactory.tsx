@@ -1,12 +1,17 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { dotplotFetchKey } from './fetchKey.ts'
 import { renderSvg } from './renderSvg.tsx'
 
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
-import type { ExportSvgOptions } from '../DotplotView/model.ts'
+import type {
+  DotplotViewModel,
+  ExportSvgOptions,
+} from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -62,6 +67,10 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           geometry: undefined as DotplotGeometryData | undefined,
           fetchStopToken: undefined as StopToken | undefined,
           fetchWarnings: [] as { message: string; effect: string }[],
+          // Signature of the view inputs the current rpcData was fetched for
+          // (see fetchKey.ts). Compared against the live inputs in `dataCurrent`
+          // to detect data gone stale after a zoom or diagonalize reorder.
+          loadedFetchKey: undefined as string | undefined,
           // Set once at view load by a refName-comparison check, independent of
           // the per-render fetch. See afterAttach.
           assembliesSwapped: false,
@@ -73,6 +82,30 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       get isRefetching() {
         return self.fetchStopToken !== undefined && !!self.rpcData
+      },
+      /**
+       * #getter
+       * The fetch-input signature (see fetchKey.ts) for the view's current
+       * state. Reactive: recomputes when either axis's zoom or displayed-region
+       * order/orientation changes.
+       */
+      get currentFetchKey(): string {
+        const view = getContainingView(self) as DotplotViewModel
+        return dotplotFetchKey(view.lodMode, view.hview, view.vview)
+      },
+      /**
+       * #getter
+       * True when the rendered rpcData was fetched for the view's current
+       * inputs. Goes false the instant a zoom or diagonalize reorder changes the
+       * axes — before the debounced refetch begins and while stale geometry is
+       * still on screen — so the `settled` done-gate can't fire on it. The
+       * dotplot analog of LGV's `viewportWithinLoadedData`.
+       */
+      get dataCurrent(): boolean {
+        return (
+          self.loadedFetchKey !== undefined &&
+          self.loadedFetchKey === this.currentFetchKey
+        )
       },
       /**
        * #getter
@@ -96,11 +129,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Dotplot is non-rectangular (square canvas), so it keeps a bespoke
        * `SVGErrorBox` error UI instead of `SvgChrome`, but still exposes
        * `svgReady` + awaits it via the shared `awaitSvgReady` — no inlined
-       * `when()`. No `regionTooLarge` state. (Not stale-safe against
-       * `isRefetching` yet — a possible follow-up, like synteny's gate.)
+       * `when()`. No `regionTooLarge` state. Stale-safe via `dataCurrent`: an
+       * export fired right after a zoom/diagonalize reorder waits for geometry
+       * rebuilt from the fresh fetch instead of exporting the stale plot (the
+       * follow-up the synteny gate also now carries).
        */
       get svgReady() {
-        return !!self.geometry || !!self.error
+        return (!!self.geometry && this.dataCurrent) || !!self.error
       },
     }))
     .views(self => ({
@@ -122,8 +157,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setRpcData(data: DotplotRpcData) {
+      setRpcData(data: DotplotRpcData, fetchKey: string) {
         self.rpcData = data
+        self.loadedFetchKey = fetchKey
         self.fetchStopToken = undefined
         self.statusMessage = undefined
         self.statusProgress = undefined

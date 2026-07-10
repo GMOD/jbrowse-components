@@ -1,8 +1,9 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
 import type {
+  SyntenyQueryViewSnap,
   SyntenyRpcResult,
-  SyntenyViewSnap,
+  SyntenyTargetViewSnap,
 } from './executeSyntenyFeaturesAndPositions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { StatusCallback } from '@jbrowse/core/util'
@@ -12,8 +13,8 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   adapterConfig: Record<string, unknown>
   // The two adjacent genome views this synteny level connects, with refNames
   // already renamed into the adapter's namespace on the main thread.
-  queryView: SyntenyViewSnap
-  targetView: SyntenyViewSnap
+  queryView: SyntenyQueryViewSnap
+  targetView: SyntenyTargetViewSnap
   sessionId: string
   stopToken?: StopToken
   colorBy?: string

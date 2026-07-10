@@ -98,7 +98,6 @@ describe('clipLargeBlockToWindow window mapping', () => {
   const v1 = (...regions: Omit<Region, 'assemblyName'>[]) =>
     buildBpRegionIndex({
       bpPerPx: 1,
-      minimumBlockWidth: 0,
       displayedRegions: regions.map(r => ({ assemblyName: 'q', ...r })),
     })
 

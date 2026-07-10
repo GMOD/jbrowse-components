@@ -525,7 +525,9 @@ export function buildDisplaySnapshot(category: Category, opts: string[]) {
       apply(opt)
     }
   }
-  deferred.forEach(opt => { apply(opt) })
+  deferred.forEach(opt => {
+    apply(opt)
+  })
   return result
 }
 

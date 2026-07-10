@@ -275,6 +275,22 @@ export default function stateModelFactory(pm: PluginManager) {
          * Cancel can abort it; undefined when none is running.
          */
         diagonalizeStopToken: undefined as StopToken | undefined,
+        /**
+         * #volatile
+         * Set true as soon as an init-time autoDiagonalize is requested, before
+         * any render can paint. Gates `settled` (and thus the
+         * `dotplot_webgl_canvas_done` test-id) so a screenshot / browser-test
+         * can't capture the pre-reorder plot.
+         */
+        autoDiagonalizeRequested: false,
+        /**
+         * #volatile
+         * Set true only after the init-time DiagonalizeDotplot pass RESOLVES
+         * successfully. If the reorder is skipped or throws, this stays false so
+         * `settled` never reports done on an undiagonalized plot — the capture
+         * fails loudly (times out) instead of committing a hairball.
+         */
+        autoDiagonalizeComplete: false,
       }))
       .actions(self => ({
         /**
@@ -461,7 +477,17 @@ export default function stateModelFactory(pm: PluginManager) {
         get settled() {
           return (
             self.canvasDrawn &&
-            this.dotplotDisplays.every(d => !d.isLoading && !d.isRefetching)
+            this.dotplotDisplays.every(
+              // dataCurrent guards the debounce gap: after a zoom or diagonalize
+              // reorder the held rpcData is stale (drawn against the new axes)
+              // yet no fetch is in flight for ~1s, so isLoading/isRefetching
+              // alone would report done on the wrong plot
+              d => !d.isLoading && !d.isRefetching && d.dataCurrent,
+            ) &&
+            // if an init autoDiagonalize was requested, the plot isn't "done"
+            // until that reorder has actually completed — otherwise a
+            // skipped/errored reorder would settle on the undiagonalized plot
+            (!self.autoDiagonalizeRequested || self.autoDiagonalizeComplete)
           )
         },
         /**
@@ -671,6 +697,18 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setAwaitingAutoDiagonalize(arg: boolean) {
           self.awaitingAutoDiagonalize = arg
+        },
+        /**
+         * #action
+         */
+        setAutoDiagonalizeRequested(arg: boolean) {
+          self.autoDiagonalizeRequested = arg
+        },
+        /**
+         * #action
+         */
+        setAutoDiagonalizeComplete(arg: boolean) {
+          self.autoDiagonalizeComplete = arg
         },
         /**
          * #action

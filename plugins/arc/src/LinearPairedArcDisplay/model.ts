@@ -219,10 +219,7 @@ export function stateModelFactory(
          * #method
          */
         trackMenuItems() {
-          return [
-            ...superMenuItems(),
-            makeLineWidthMenuItem(self),
-          ]
+          return [...superMenuItems(), makeLineWidthMenuItem(self)]
         },
       }
     })

@@ -698,32 +698,40 @@ export default function sharedModelFactory(
         await self.runFetch(async ctx => {
           const { rpcManager } = getSession(self)
           const sessionId = getRpcSessionId(self)
-          const stats = await rpcManager.call(
-            sessionId,
-            'CoreGetFeatureDensityStats',
-            { regions: [...regions], adapterConfig },
-          )
-          if (ctx.isStale()) {
-            return
-          }
-          self.setFeatureDensityStats(stats)
-          // Compose the shared verdict/threshold/reason (AUTO_FORCE_LOAD_BP
-          // floor + bytes>limit precedence) rather than re-implementing it, so a
-          // future change to that precedence reaches LD too. LD is byte-only
-          // (no density axis), so it passes the resolved byteLimit and omits
-          // densityTooLarge — same "compose the pieces" shape as canvas.
-          const status = evaluateRegionTooLarge({
-            visibleBp,
-            bytes: stats.bytes,
-            byteLimit: resolveByteLimit({
-              userByteSizeLimit: self.userByteSizeLimit,
-              adapterFetchSizeLimit: stats.fetchSizeLimit,
-              configFetchSizeLimit: getConf(self, 'fetchSizeLimit'),
-            }),
-          })
-          self.setRegionTooLarge(status.tooLarge, status.reason)
-          if (status.tooLarge) {
-            return
+          // The feature-density byte-gate estimates fetch size via
+          // CoreGetFeatureDensityStats -> getFeatures, which only the
+          // VCF-computed path's feature adapter implements. Pre-computed LD
+          // adapters (PlinkLD*) aren't feature adapters and ship pre-thinned
+          // files, so skip the density probe (it would throw "Adapter does not
+          // support retrieving features") and render them directly.
+          if (!self.isPrecomputedLD) {
+            const stats = await rpcManager.call(
+              sessionId,
+              'CoreGetFeatureDensityStats',
+              { regions: [...regions], adapterConfig },
+            )
+            if (ctx.isStale()) {
+              return
+            }
+            self.setFeatureDensityStats(stats)
+            // Compose the shared verdict/threshold/reason (AUTO_FORCE_LOAD_BP
+            // floor + bytes>limit precedence) rather than re-implementing it, so
+            // a future change to that precedence reaches LD too. LD is byte-only
+            // (no density axis), so it passes the resolved byteLimit and omits
+            // densityTooLarge — same "compose the pieces" shape as canvas.
+            const status = evaluateRegionTooLarge({
+              visibleBp,
+              bytes: stats.bytes,
+              byteLimit: resolveByteLimit({
+                userByteSizeLimit: self.userByteSizeLimit,
+                adapterFetchSizeLimit: stats.fetchSizeLimit,
+                configFetchSizeLimit: getConf(self, 'fetchSizeLimit'),
+              }),
+            })
+            self.setRegionTooLarge(status.tooLarge, status.reason)
+            if (status.tooLarge) {
+              return
+            }
           }
 
           const result = await rpcManager.call(

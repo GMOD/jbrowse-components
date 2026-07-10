@@ -182,6 +182,13 @@ async function runAutoDiagonalize(self: DotplotViewModel) {
     )
     if (self.initialized && isAlive(self)) {
       await runDotplotDiagonalize(self, opts)
+      // only now is the plot truly diagonalized — release the `settled` gate.
+      // if runDotplotDiagonalize threw, withDiagonalizeProgress catches it and
+      // this line is skipped, so `settled` stays false and the capture times
+      // out loudly instead of committing an undiagonalized plot.
+      if (isAlive(self)) {
+        self.setAutoDiagonalizeComplete(true)
+      }
     }
   })
 }
@@ -223,6 +230,12 @@ function setupInitAutorun(self: DotplotViewModel) {
             )
           } else {
             const [target, query] = init.views.map(v => v.assembly)
+            // flag the pending reorder before any track render can paint, so
+            // `settled` (→ dotplot_webgl_canvas_done) can't fire on the
+            // pre-diagonalize plot
+            if (init.autoDiagonalize) {
+              self.setAutoDiagonalizeRequested(true)
+            }
             self.setAssemblyNames(target!, query!)
             applyInitTracks(self, init)
             applyInitDisplaySettings(self, init)

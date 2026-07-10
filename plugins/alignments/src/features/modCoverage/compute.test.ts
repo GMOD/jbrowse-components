@@ -33,7 +33,11 @@ function modEntry(over: Partial<ModificationEntry>): ModificationEntry {
 }
 
 const red = modEntry({ color: packAbgr(255, 0, 0, 255), prob: 1, noMod: false })
-const blue = modEntry({ color: packAbgr(0, 0, 255, 255), prob: 0.8, noMod: true })
+const blue = modEntry({
+  color: packAbgr(0, 0, 255, 255),
+  prob: 0.8,
+  noMod: true,
+})
 
 function run(mods: ModificationEntry[]) {
   return computeModificationCoverage(mods, baseCounts, 0, coverage, new Set())

@@ -159,6 +159,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       // data yet) from a refetch (stale data still on screen) so the two get
       // different overlays — see `loading`/`refetching`.
       fetching: false,
+      // Fetch-input signature the current featureData/instanceData was fetched
+      // for (see `currentFetchKey`). Compared against the live inputs in
+      // `dataCurrent` to detect data gone stale after a region/zoom change,
+      // including during the pre-refetch debounce gap where `fetching` is still
+      // false.
+      loadedFetchKey: undefined as string | undefined,
       // Set once at view load by a refName-comparison check, independent of the
       // per-render fetch. See afterAttach.
       assembliesSwapped: false,
@@ -172,9 +178,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setRpcData(
         featureData: SyntenyFeatureData | undefined,
         instanceData: SyntenyGeometry | undefined,
+        fetchKey?: string,
       ) {
         self.featureData = featureData
         self.instanceData = instanceData
+        self.loadedFetchKey = fetchKey
       },
       setFetching(arg: boolean) {
         self.fetching = arg
@@ -302,16 +310,67 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * Fetch-input signature (region set/order, snapped fetch window, zoom
+       * bucket, CIGAR/marker draw options, LOD tier) for the view's current
+       * state — the same tracked deps the fetch autorun refetches on. Reactive:
+       * flips the instant any of them changes. undefined until both connected
+       * views are ready.
+       */
+      get currentFetchKey(): string | undefined {
+        const connected = this.connectedViews
+        if (!connected) {
+          return undefined
+        }
+        const view = this.view
+        const regionSig = [connected.v0, connected.v1]
+          .map(v =>
+            v.displayedRegions
+              .map(
+                r => `${r.refName}:${r.start}:${r.end}:${r.reversed ? 1 : 0}`,
+              )
+              .join(','),
+          )
+          .join('_')
+        return [
+          this.fetchRegionsKey,
+          this.bpPerPxBucketKey,
+          regionSig,
+          view.drawCIGAR,
+          view.drawCIGARMatchesOnly,
+          view.drawLocationMarkers,
+          view.lodMode,
+        ].join('|')
+      },
+      /**
+       * #getter
+       * True when the rendered data was fetched for the view's current inputs.
+       * Goes false the instant a region/zoom/draw-option change makes the held
+       * ribbons stale — including during the pre-refetch debounce gap where
+       * `fetching` is still false so `refetching` alone can't catch it. The
+       * synteny analog of LGV's `viewportWithinLoadedData` and arc's
+       * `loadedRegionSignature === currentRegionSignature`.
+       */
+      get dataCurrent(): boolean {
+        return (
+          self.loadedFetchKey !== undefined &&
+          self.loadedFetchKey === this.currentFetchKey
+        )
+      },
+      /**
+       * #getter
        * Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady").
        * Synteny is not an LGV display — it composes only `BaseDisplay` with its
        * own fetch — so it has no `MultiRegionDisplayMixin`/`GlobalDataDisplayMixin`
-       * `svgReady`; this is the equivalent. Stale-safe: goes false during an
-       * in-place refetch (`refetching`) so an export fired right after a
-       * zoom/pan waits for fresh ribbons instead of capturing stale ones. No
-       * `regionTooLarge` state (synteny never gates on region size).
+       * `svgReady`; this is the equivalent. Stale-safe on both axes: `dataCurrent`
+       * closes the pre-refetch debounce gap (stale window before `fetching`
+       * flips) and `!refetching` covers the in-flight RPC, so an export fired
+       * right after a zoom/pan waits for fresh ribbons instead of capturing stale
+       * ones. No `regionTooLarge` state (synteny never gates on region size).
        */
       get svgReady() {
-        return (this.ready && !this.refetching) || !!self.error
+        return (
+          (this.ready && !this.refetching && this.dataCurrent) || !!self.error
+        )
       },
       /**
        * #getter

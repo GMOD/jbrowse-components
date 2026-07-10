@@ -16,6 +16,7 @@ import { syntenyFetchRegions } from '../LinearSyntenyRPC/syntenyFetchWindow.ts'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { Region } from '@jbrowse/core/util'
 
 // The stop-token rotation + staleness guard come from
 // `createStopTokenRotation` (shared with dotplot-view's fetch); only the
@@ -39,7 +40,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         if (!connected) {
           return
         }
-        const connectedViews = [connected.v0, connected.v1]
+        const { v0, v1 } = connected
+        const connectedViews = [v0, v1]
 
         // Tracked deps that SHOULD trigger refetch when changed:
         //   - displayedRegions (per view) — region set drives cumBp output
@@ -53,7 +55,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         //     to the whole (zoom-independent) region: without this, zooming out
         //     would not refetch and the worker's stale px cull would leave
         //     newly-visible features unemitted.
-        // Not tracked: raw `bpPerPx`, `offsetPx`, `width`, `minimumBlockWidth`.
+        // Not tracked: raw `bpPerPx`, `offsetPx`, `width`.
         // Sub-buffer scroll moves are absorbed by the worker's px buffer.
         for (const v of connectedViews) {
           void v.displayedRegions
@@ -67,28 +69,36 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           drawLocationMarkers,
           lodMode,
         } = view
-        // Untracked reads: values for the worker. Reading these inside
-        // `untracked` prevents them from registering as autorun deps, so
-        // scroll/zoom changes don't refire the fetch. The worker still
-        // sees the *current* offsetPx/bpPerPx for the cull at fetch time.
-        const rawSnaps = untracked(() =>
-          connectedViews.map(v => ({
-            bpPerPx: v.bpPerPx,
-            offsetPx: v.offsetPx,
-            displayedRegions: v.displayedRegions,
-            // Visible window + pan buffer the worker scopes its fetch to. Read
-            // untracked (like offsetPx) — fetchRegionsKey above is what decides
-            // when to refetch, so raw viewport churn never refires this autorun.
-            fetchRegions: syntenyFetchRegions({
-              visibleRegions: v.visibleRegions,
-              displayedRegions: v.displayedRegions,
-              width: v.width,
-              bpPerPx: v.bpPerPx,
-            }),
-            minimumBlockWidth: v.minimumBlockWidth,
-            width: v.width,
-          })),
-        )
+        // Snapshot the fetch-input signature now, from the same tracked inputs
+        // this fetch depends on, so the resulting data is tagged with what it
+        // was fetched for even if the view changes again mid-RPC.
+        const fetchKey = self.currentFetchKey
+        // Untracked reads: values for the worker's fetch-time cull. Reading
+        // these inside `untracked` prevents them from registering as autorun
+        // deps, so scroll/zoom changes don't refire the fetch (fetchRegionsKey/
+        // bpPerPxBucketKey above decide that); the worker still sees the
+        // *current* offsetPx/bpPerPx.
+        //
+        // Query axis (v0) drives the scoped single-axis fetch, so it alone
+        // carries the visible window + pan buffer and the cull width.
+        const rawQuery = untracked(() => ({
+          bpPerPx: v0.bpPerPx,
+          offsetPx: v0.offsetPx,
+          displayedRegions: v0.displayedRegions,
+          width: v0.width,
+          fetchRegions: syntenyFetchRegions({
+            visibleRegions: v0.visibleRegions,
+            displayedRegions: v0.displayedRegions,
+            width: v0.width,
+            bpPerPx: v0.bpPerPx,
+          }),
+        }))
+        // Target axis (v1) only supplies its cumBp index + cull geometry.
+        const rawTarget = untracked(() => ({
+          bpPerPx: v1.bpPerPx,
+          offsetPx: v1.offsetPx,
+          displayedRegions: v1.displayedRegions,
+        }))
 
         const { stopToken, isCurrent, statusCallback } = fetch.begin()
         // Clear any prior error as the new fetch begins, so a stale banner
@@ -105,30 +115,32 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           // synteny adapter's namespace, so the worker's getFeatures query, its
           // cumBp index, and the feature refNames it reads back all line up.
           const { assemblyManager } = getSession(self)
-          const renameSnap = async (snap: (typeof rawSnaps)[number]) => ({
-            ...snap,
-            displayedRegions: await renameRegionsForAdapter({
+          const renameRegions = (regions: Region[]) =>
+            renameRegionsForAdapter({
               assemblyManager,
               sessionId,
               adapterConfig,
-              regions: snap.displayedRegions,
-            }),
-            // fetchRegions queries the adapter too, so rename it into the same
-            // adapter namespace as displayedRegions.
-            fetchRegions: await renameRegionsForAdapter({
-              assemblyManager,
-              sessionId,
-              adapterConfig,
-              regions: snap.fetchRegions,
-            }),
-          })
+              regions,
+            })
+          // Query axis renames both its displayed regions and its scoped fetch
+          // window; the target axis has no fetch window (single-axis fetch), so
+          // only its displayed regions are renamed.
+          const queryView = {
+            ...rawQuery,
+            displayedRegions: await renameRegions(rawQuery.displayedRegions),
+            fetchRegions: await renameRegions(rawQuery.fetchRegions),
+          }
+          const targetView = {
+            ...rawTarget,
+            displayedRegions: await renameRegions(rawTarget.displayedRegions),
+          }
           const result = await getSession(self).rpcManager.call(
             sessionId,
             'SyntenyGetFeaturesAndPositions',
             {
               adapterConfig,
-              queryView: await renameSnap(rawSnaps[0]!),
-              targetView: await renameSnap(rawSnaps[1]!),
+              queryView,
+              targetView,
               stopToken,
               drawCIGAR,
               drawCIGARMatchesOnly,
@@ -141,7 +153,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             return
           }
           const { instanceData, ...featureData } = result
-          self.setRpcData(featureData, instanceData)
+          self.setRpcData(featureData, instanceData, fetchKey)
         } catch (e) {
           if (isCurrent() && !isAbortException(e)) {
             console.error(e)

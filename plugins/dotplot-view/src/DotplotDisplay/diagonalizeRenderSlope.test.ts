@@ -28,12 +28,10 @@ function renderedIsParallel(
 ) {
   const hIndex = buildBpRegionIndex({
     bpPerPx: 1,
-    minimumBlockWidth: 0,
     displayedRegions: refRegions,
   })
   const vIndex = buildBpRegionIndex({
     bpPerPx: 1,
-    minimumBlockWidth: 0,
     displayedRegions: queryRegions,
   })
   const f1s = aln.strand === -1 ? aln.refEnd : aln.refStart

@@ -41,9 +41,8 @@ const pifDelPath =
 // volvox_ins_coarse.pif.gz is `jbrowse make-pif` on volvox_ins.paf with the
 // default coarse tier, so it carries the uppercase T/Q no-CIGAR rows alongside
 // the fine tier.
-const pifInsCoarsePath = require.resolve(
-  '../../../../test_data/volvox/volvox_ins_coarse.pif.gz',
-)
+const pifInsCoarsePath =
+  require.resolve('../../../../test_data/volvox/volvox_ins_coarse.pif.gz')
 describe('PairwiseIndexedPAFAdapter', () => {
   describe('coordinate extraction from PIF format', () => {
     it('fetches features from query assembly perspective (q-lines)', async () => {

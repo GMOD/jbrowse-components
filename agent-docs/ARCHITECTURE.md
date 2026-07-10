@@ -1017,11 +1017,44 @@ still describe as open.
 **Multi-LGV synteny** is *non-LGV* (a `LinearSyntenyView` level composing only
 `BaseDisplay` with its own fetch — no MultiRegion/Global mixin) yet
 *rectangular*, so it keeps the shared `SvgChrome` + `awaitSvgReady` contract with
-its own `svgReady` getter: `(ready && !refetching) || error` (`ready` =
-`featureData !== undefined`; `refetching` makes it stale-safe, closing the same
-in-place-refetch gap as arc). It has no `regionTooLarge` state, so its
-`SvgChrome` is passed `error` only. **`SvgChrome` is not LGV-specific** — it is
-the terminal chrome for *any* rectangular display, and synteny is the proof.
+its own `svgReady` getter: `(ready && !refetching && dataCurrent) || error`
+(`ready` = `featureData !== undefined`). It needs BOTH freshness terms:
+`!refetching` covers the in-flight RPC, but a debounced fetch (500ms) leaves a
+*pre-refetch* window where a region/zoom change has invalidated the held data yet
+`fetching` hasn't flipped true — so `!refetching` alone still resolves on stale
+ribbons. `dataCurrent` (`loadedFetchKey === currentFetchKey`, the same
+region/zoom/draw-option signature the fetch autorun tracks) closes that window
+exactly as arc's `loadedRegionSignature` does — it flips the instant the inputs
+change, before the debounce. It has no `regionTooLarge` state, so its `SvgChrome`
+is passed `error` only. **`SvgChrome` is not LGV-specific** — it is the terminal
+chrome for *any* rectangular display, and synteny is the proof.
+
+### On-screen capture gate (`settled` → `*_canvas_done`)
+
+`svgReady` gates the *off-screen SVG export*; a separate gate, `settled`, gates
+the *on-screen GPU canvas* for screenshot capture and browser tests. Dotplot
+(`DotplotView.settled` → `dotplot_webgl_canvas_done`) and multi-LGV synteny
+(`LinearSyntenyViewHelper.settled` → `synteny_canvas_done`) each expose it: a
+testid the capturer waits on so it never snapshots a mid-render frame. It is
+`canvasDrawn && every display (!loading && !refetching && dataCurrent)` — the
+same `dataCurrent` freshness axis as `svgReady`, for the same reason. Without it,
+the debounce gap bites capture harder than export: dotplot's init-time
+*autoDiagonalize* reorders the query axis, and for ~1s afterward no fetch is in
+flight, so the stale rpcData (absolute-cumBp positions computed for the OLD
+order) gets redrawn against the NEW axes — a diagonal-looking hairball — and
+`settled` fired on it. This only reproduces on a **cold cache** (the refetch
+loses the race with capture); warm reruns hide it, which is why it read as
+"flaky per-environment." `dataCurrent` makes the gate honest: the capturer needs
+no knowledge of diagonalize/fetch internals, it just waits for `*_canvas_done`.
+`dotplotFetchKey` (lodMode + per-axis bpPerPx + displayed-region
+refName/start/end/reversed) is the dotplot signature; synteny composes its
+`currentFetchKey` from its existing tracked-dep getters (`fetchRegionsKey`,
+`bpPerPxBucketKey`, region order, CIGAR/marker opts, LOD). Dotplot additionally
+keeps an `autoDiagonalizeRequested`/`Complete` pair on the view: `dataCurrent`
+catches *reordered-but-stale-data*, but a *skipped/errored* diagonalize never
+reorders at all, so its (correctly-fetched, un-diagonalized) data is `dataCurrent`
+— that gate makes `settled` wait for the reorder to actually run, else the
+capture times out loudly rather than commit an un-diagonalized plot.
 
 **Bespoke error UI, shared gate — no `SvgChrome`.** The *non-rectangular* views
 keep their own error UI (they have no rectangular width/height axis to host a
