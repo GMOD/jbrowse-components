@@ -35,6 +35,10 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
     header: string
   }>
 
+  // true once the index has finished downloading; gates the status label so
+  // pan/zoom re-entry into configure() doesn't re-flash "Downloading index"
+  private configureReady = false
+
   private configureOnce() {
     if (!this.configured) {
       const gtfGzLocation = this.getConf('gtfGzLocation')
@@ -48,11 +52,14 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
       })
       this.configured = gtf
         .getHeader()
-        .then(header => ({
-          gtf,
-          dontRedispatchSet: new Set(dontRedispatch),
-          header,
-        }))
+        .then(header => {
+          this.configureReady = true
+          return {
+            gtf,
+            dontRedispatchSet: new Set(dontRedispatch),
+            header,
+          }
+        })
         .catch((e: unknown) => {
           this.configured = undefined
           throw e
@@ -61,10 +68,15 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
     return this.configured
   }
 
+  // Show "Downloading index" only while the index is genuinely downloading. Once
+  // configured, callers (every getFeatures/byte-estimate on pan/zoom) await the
+  // cached promise silently rather than re-flashing the label.
   async configure(opts?: BaseOptions) {
-    return updateStatus('Downloading index', opts?.statusCallback, () =>
-      this.configureOnce(),
-    )
+    return this.configureReady
+      ? this.configureOnce()
+      : updateStatus('Downloading index', opts?.statusCallback, () =>
+          this.configureOnce(),
+        )
   }
 
   public async getRefNames(opts: BaseOptions = {}) {

@@ -43,6 +43,10 @@ interface SetupData {
 export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   public setupP?: Promise<SetupData>
 
+  // true once the index has downloaded (set by lazyInit); gates the status label
+  // so pan/zoom re-entry into setup() doesn't re-flash "Downloading index"
+  public setupReady = false
+
   // utf-8 (default) tends to be faster than 'ascii' in modern engines.
   private decoder = new TextDecoder()
 
@@ -129,11 +133,14 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     return lazyInit(this, () => this.doSetup())
   }
 
+  // Show "Downloading index" only while the index is genuinely downloading. Once
+  // loaded, callers await the cached promise silently rather than re-flashing the
+  // label on pan/zoom.
   setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts ?? {}
-    return updateStatus('Downloading index', statusCallback, () =>
-      this.setupPre(),
-    )
+    return this.setupReady
+      ? this.setupPre()
+      : updateStatus('Downloading index', statusCallback, () => this.setupPre())
   }
 
   async doSetup(): Promise<SetupData> {

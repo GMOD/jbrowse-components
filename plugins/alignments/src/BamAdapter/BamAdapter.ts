@@ -42,6 +42,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
     bam: BamFile<BamSlightlyLazyFeature>
   }>
 
+  // true once the index has finished downloading; gates the status label so
+  // pan/zoom re-entry into setup() doesn't re-flash "Downloading index"
+  private setupDone = false
+
   protected configureResult?: { bam: BamFile<BamSlightlyLazyFeature> }
 
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
@@ -69,6 +73,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
 
   private clearCaches() {
     this.setupP = undefined
+    this.setupDone = false
     this.configureResult = undefined
   }
 
@@ -103,6 +108,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
         const { bam } = this.configure()
         const rawHeader = await bam.getHeader({ onProgress })
         this.samHeader = parseSamHeader(rawHeader ?? [])
+        this.setupDone = true
         return { samHeader: this.samHeader, bam }
       } catch (e) {
         this.clearCaches()
@@ -112,16 +118,18 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
     return this.setupP
   }
 
-  // downloadStatus wraps the memoized work *per caller*, so every concurrent
-  // caller gets the "Downloading index" status and waits on the shared promise.
-  // The first caller's onProgress drives the determinate bar; later callers
-  // still see the label (their onProgress no-ops against the cached download).
+  // While the index is genuinely downloading, downloadStatus wraps the memoized
+  // work *per caller*, so every concurrent caller gets the "Downloading index"
+  // status and waits on the shared promise; the first caller's onProgress drives
+  // the determinate bar. Once downloaded, later callers (every getFeatures on
+  // pan/zoom) await the cached promise silently rather than re-flashing the
+  // label.
   private async setup(opts?: BaseOptions) {
-    return downloadStatus(
-      'Downloading index',
-      opts?.statusCallback,
-      onProgress => this.setupOnce(onProgress),
-    )
+    return this.setupDone
+      ? this.setupOnce()
+      : downloadStatus('Downloading index', opts?.statusCallback, onProgress =>
+          this.setupOnce(onProgress),
+        )
   }
 
   async getRefNames(opts?: BaseOptions) {

@@ -23,6 +23,10 @@ export default class PlinkLDTabixAdapter
     header: PlinkLDHeader
   }>
 
+  // true once the index has finished downloading; gates the status label so
+  // pan/zoom re-entry into configure() doesn't re-flash "Downloading index"
+  private configureReady = false
+
   private async configurePre(_opts?: BaseOptions) {
     const ldLocation = this.getConf('ldLocation')
     const location = this.getConf(['index', 'location'])
@@ -43,18 +47,28 @@ export default class PlinkLDTabixAdapter
   }
 
   protected async configurePre2() {
-    this.configured ??= this.configurePre().catch((e: unknown) => {
-      this.configured = undefined
-      throw e
-    })
+    this.configured ??= this.configurePre()
+      .then(result => {
+        this.configureReady = true
+        return result
+      })
+      .catch((e: unknown) => {
+        this.configured = undefined
+        throw e
+      })
     return this.configured
   }
 
+  // Show "Downloading index" only while the index is genuinely downloading. Once
+  // configured, callers await the cached promise silently rather than
+  // re-flashing the label on pan/zoom.
   async configure(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts ?? {}
-    return updateStatus('Downloading index', statusCallback, () =>
-      this.configurePre2(),
-    )
+    return this.configureReady
+      ? this.configurePre2()
+      : updateStatus('Downloading index', statusCallback, () =>
+          this.configurePre2(),
+        )
   }
 
   public async getRefNames(opts: BaseOptions = {}) {

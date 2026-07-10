@@ -35,15 +35,22 @@ export async function loadSubAdapter<
  * Memoize an async setup step on `holder.setupP`. On failure the slot is
  * cleared so the next call retries instead of permanently caching the
  * rejection. All three MAF adapters need this exact pattern; capturing it
- * here keeps the catch-clear-rethrow invariant in one place.
+ * here keeps the catch-clear-rethrow invariant in one place. `holder.setupReady`
+ * flips true once the setup resolves, so callers can skip re-showing a
+ * "Downloading index" status on pan/zoom re-entry.
  */
 export function lazyInit<T>(
-  holder: { setupP?: Promise<T> },
+  holder: { setupP?: Promise<T>; setupReady?: boolean },
   factory: () => Promise<T>,
 ): Promise<T> {
-  holder.setupP ??= factory().catch((e: unknown) => {
-    holder.setupP = undefined
-    throw e
-  })
+  holder.setupP ??= factory()
+    .then(result => {
+      holder.setupReady = true
+      return result
+    })
+    .catch((e: unknown) => {
+      holder.setupP = undefined
+      throw e
+    })
   return holder.setupP
 }

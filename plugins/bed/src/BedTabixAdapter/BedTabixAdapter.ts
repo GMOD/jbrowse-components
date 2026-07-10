@@ -52,6 +52,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
 
   setupP?: Promise<Awaited<ReturnType<TabixIndexedFile['getMetadata']>>>
 
+  // true once the index metadata has downloaded; gates the status label so
+  // pan/zoom re-entry into getMetadata() doesn't re-flash "Downloading index"
+  private setupReady = false
+
   public constructor(
     config: BedTabixAdapterConfig,
     getSubAdapter?: getSubAdapterType,
@@ -93,18 +97,29 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   }
 
   private async configure() {
-    this.setupP ??= this.bed.getMetadata().catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
+    this.setupP ??= this.bed
+      .getMetadata()
+      .then(metadata => {
+        this.setupReady = true
+        return metadata
+      })
+      .catch((e: unknown) => {
+        this.setupP = undefined
+        throw e
+      })
     return this.setupP
   }
 
+  // Show "Downloading index" only while the index metadata is genuinely
+  // downloading. Once loaded, callers (every getFeatures on pan/zoom) await the
+  // cached promise silently rather than re-flashing the label.
   async getMetadata(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts ?? {}
-    return updateStatus('Downloading index', statusCallback, () =>
-      this.configure(),
-    )
+    return this.setupReady
+      ? this.configure()
+      : updateStatus('Downloading index', statusCallback, () =>
+          this.configure(),
+        )
   }
 
   async getNames() {

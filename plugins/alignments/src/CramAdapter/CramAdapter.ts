@@ -59,7 +59,14 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
     cram: IndexedCramFile
   }>
 
-  private configureResult?: { cram: IndexedCramFile }
+  // true once the header + .crai index have downloaded; gates the status label
+  // so pan/zoom re-entry into setup() doesn't re-flash "Downloading index"
+  private setupDone = false
+
+  // the CraiIndex is kept alongside `cram` because IndexedCramFile.index is
+  // typed as the minimal CramIndexLike (no getIndex); we need the concrete
+  // CraiIndex to pre-download the .crai with progress in setup()
+  private configureResult?: { cram: IndexedCramFile; index: CraiIndex }
 
   private sequenceAdapterP?: Promise<BaseSequenceAdapter>
 
@@ -119,28 +126,31 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
   }
 
   private configure() {
-    this.configureResult ??= {
-      cram: new IndexedCramFile({
+    if (!this.configureResult) {
+      const index = new CraiIndex({
+        filehandle: openLocation(
+          this.getConf('craiLocation'),
+          this.pluginManager,
+        ),
+      })
+      const cram = new IndexedCramFile({
         cramFilehandle: openLocation(
           this.getConf('cramLocation'),
           this.pluginManager,
         ),
-        index: new CraiIndex({
-          filehandle: openLocation(
-            this.getConf('craiLocation'),
-            this.pluginManager,
-          ),
-        }),
+        index,
         seqFetch: (seqId: number, start: number, end: number) =>
           this.seqFetch(seqId, start, end),
         checkSequenceMD5: false,
-      }),
+      })
+      this.configureResult = { cram, index }
     }
     return this.configureResult
   }
 
   private clearCaches() {
     this.setupP = undefined
+    this.setupDone = false
     this.configureResult = undefined
   }
 
@@ -163,19 +173,36 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
     return cram.cram.getHeaderText()
   }
 
-  private async setup(_opts?: BaseOptions) {
+  // The header read + .crai parse are memoized in setupP so they run exactly
+  // once. CraiIndex.getIndex memoizes its own parse too, so the later
+  // per-region getEntriesForRange calls reuse this download instead of pulling
+  // the index again.
+  private setupOnce(onProgress?: (bytes: number, total?: number) => void) {
     this.setupP ??= (async () => {
-      const { cram } = this.configure()
+      const { cram, index } = this.configure()
       const rawHeader = await cram.cram.getSamHeader()
-      const samHeader = parseSamHeader(rawHeader)
-      this.samHeader = samHeader
-      return { samHeader, cram }
+      this.samHeader = parseSamHeader(rawHeader)
+      await index.getIndex({ onProgress })
+      this.setupDone = true
+      return { samHeader: this.samHeader, cram }
     })().catch((e: unknown) => {
       this.clearCaches()
       throw e
     })
 
     return this.setupP
+  }
+
+  // Show "Downloading index" only while the header/index are genuinely
+  // downloading (the first fetch, typically during refname mapping). Once
+  // loaded, callers (every getFeatures on pan/zoom) await the cached promise
+  // silently rather than re-flashing the label. Mirrors BamAdapter.setup.
+  private async setup(opts?: BaseOptions) {
+    return this.setupDone
+      ? this.setupOnce()
+      : downloadStatus('Downloading index', opts?.statusCallback, onProgress =>
+          this.setupOnce(onProgress),
+        )
   }
 
   async getRefNames(opts?: BaseOptions) {
@@ -282,7 +309,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
    * query regions
    */
   private async bytesForRegions(regions: Region[]) {
-    const { cram } = this.configure()
+    const { cram } = await this.setup()
     const blockResults = await Promise.all(
       regions.map(region => {
         const { refName, start, end } = region

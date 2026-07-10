@@ -21,6 +21,10 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
     header: string
   }>
 
+  // true once the index has finished downloading; gates the status label so
+  // pan/zoom re-entry into configure() doesn't re-flash "Downloading index"
+  private configureReady = false
+
   private configureOnce() {
     if (!this.configured) {
       const vcfGzLocation = this.getConf('vcfGzLocation')
@@ -33,11 +37,14 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
       })
       this.configured = vcf
         .getHeader()
-        .then(header => ({
-          vcf,
-          parser: new VcfParser({ header }),
-          header,
-        }))
+        .then(header => {
+          this.configureReady = true
+          return {
+            vcf,
+            parser: new VcfParser({ header }),
+            header,
+          }
+        })
         .catch((e: unknown) => {
           this.configured = undefined
           throw e
@@ -46,10 +53,15 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
     return this.configured
   }
 
+  // Show "Downloading index" only while the index is genuinely downloading. Once
+  // configured, callers (every getFeatures/byte-estimate on pan/zoom) await the
+  // cached promise silently rather than re-flashing the label.
   async configure(opts?: BaseOptions) {
-    return updateStatus('Downloading index', opts?.statusCallback, () =>
-      this.configureOnce(),
-    )
+    return this.configureReady
+      ? this.configureOnce()
+      : updateStatus('Downloading index', opts?.statusCallback, () =>
+          this.configureOnce(),
+        )
   }
 
   // Index-only compressed-byte estimate (no feature download), used by the

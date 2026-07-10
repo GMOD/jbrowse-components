@@ -1,3 +1,4 @@
+import { statusMessageText } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -34,6 +35,38 @@ describe('adapter can fetch features from volvox.gff3', () => {
     expect(featuresArray.length).toBe(4)
     const featuresJsonArray = featuresArray.map(f => f.toJSON())
     expect(featuresJsonArray).toMatchSnapshot()
+  })
+
+  // Regression: a second fetch (e.g. after a small pan/zoom) reuses the cached
+  // index and must not re-flash "Downloading index" — it only downloads features
+  it('emits "Downloading index" on first fetch only, not once cached', async () => {
+    const query = {
+      refName: 'ctgB',
+      start: 0,
+      end: 200000,
+      assemblyName: 'volvox',
+    }
+    const collect = async () => {
+      const seen: string[] = []
+      await firstValueFrom(
+        adapter
+          .getFeatures(query, {
+            statusCallback: s => {
+              seen.push(statusMessageText(s) ?? '')
+            },
+          })
+          .pipe(toArray()),
+      )
+      return seen
+    }
+
+    const first = await collect()
+    const second = await collect()
+
+    expect(first).toContain('Downloading index')
+    expect(second).not.toContain('Downloading index')
+    // features are still downloaded on every fetch
+    expect(second).toContain('Downloading features')
   })
 })
 

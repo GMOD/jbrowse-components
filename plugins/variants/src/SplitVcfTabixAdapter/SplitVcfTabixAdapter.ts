@@ -20,6 +20,11 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     Promise<{ vcf: TabixIndexedFile; parser: VcfParser }>
   >()
 
+  // refNames whose per-contig index has finished downloading; gates the status
+  // label so pan/zoom re-entry into configure() doesn't re-flash "Downloading
+  // index" for a contig already loaded
+  private readyRefs = new Set<string>()
+
   private configureOnce(refName: string) {
     if (!this.configuredByRef.has(refName)) {
       const indexType = this.getConf('indexType')
@@ -40,10 +45,13 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
         refName,
         vcf
           .getHeader()
-          .then(header => ({
-            vcf,
-            parser: new VcfParser({ header }),
-          }))
+          .then(header => {
+            this.readyRefs.add(refName)
+            return {
+              vcf,
+              parser: new VcfParser({ header }),
+            }
+          })
           .catch((e: unknown) => {
             this.configuredByRef.delete(refName)
             throw e
@@ -53,10 +61,15 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     return this.configuredByRef.get(refName)!
   }
 
+  // Show "Downloading index" only while a contig's index is genuinely
+  // downloading. Once loaded, callers await the cached promise silently rather
+  // than re-flashing the label on pan/zoom.
   async configure(refName: string, opts?: BaseOptions) {
-    return updateStatus('Downloading index', opts?.statusCallback, () =>
-      this.configureOnce(refName),
-    )
+    return this.readyRefs.has(refName)
+      ? this.configureOnce(refName)
+      : updateStatus('Downloading index', opts?.statusCallback, () =>
+          this.configureOnce(refName),
+        )
   }
 
   public async getRefNames() {

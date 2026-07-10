@@ -18,6 +18,10 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
     columnNames: string[]
   }>
 
+  // true once the index has finished downloading; gates the status label so
+  // pan/zoom re-entry into configure() doesn't re-flash "Downloading index"
+  private configureReady = false
+
   private async configurePre() {
     const pm = this.pluginManager
     const bedGraphGzLocation = this.getConf('bedGraphGzLocation')
@@ -40,17 +44,27 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
   }
 
   private async configureOnce() {
-    this.configured ??= this.configurePre().catch((e: unknown) => {
-      this.configured = undefined
-      throw e
-    })
+    this.configured ??= this.configurePre()
+      .then(result => {
+        this.configureReady = true
+        return result
+      })
+      .catch((e: unknown) => {
+        this.configured = undefined
+        throw e
+      })
     return this.configured
   }
 
+  // Show "Downloading index" only while the index is genuinely downloading. Once
+  // configured, callers (every getFeatures/byte-estimate on pan/zoom) await the
+  // cached promise silently rather than re-flashing the label.
   protected async configure(opts?: BaseOptions) {
-    return updateStatus('Downloading index', opts?.statusCallback, () =>
-      this.configureOnce(),
-    )
+    return this.configureReady
+      ? this.configureOnce()
+      : updateStatus('Downloading index', opts?.statusCallback, () =>
+          this.configureOnce(),
+        )
   }
 
   async getNames() {
