@@ -43,6 +43,27 @@ describe('fetchResults refname matching', () => {
     ).toHaveLength(10)
   })
 
+  it('short-circuits instead of walking every refname once the cap is reached', async () => {
+    const refs = Array.from({ length: 1000 }, (_, i) => `chr${i}`)
+    const getCanonicalRefName = jest.fn((ref: string) => ref)
+    const assembly = {
+      load: async () => {},
+      allRefNames: refs,
+      getCanonicalRefName,
+    } as unknown as Assembly
+
+    const results = await fetchResults({
+      queryString: 'chr',
+      searchScope,
+      assembly,
+    })
+
+    expect(results).toHaveLength(10)
+    // resolution runs per match until the cap, so a 1000-entry all-matching
+    // list must not be walked in full — proves the loop breaks
+    expect(getCanonicalRefName).toHaveBeenCalledTimes(10)
+  })
+
   it('matches the whole name for an exact search', async () => {
     expect(
       await labels({
