@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { normalizeTrackInit } from '@jbrowse/plugin-linear-genome-view'
 import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
@@ -169,6 +169,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * watches an undiagonalized hairball flash before the reorder kicks in.
        */
       awaitingAutoDiagonalize: false,
+      /**
+       * #volatile
+       * Set true as soon as an init-time autoDiagonalize is requested, before
+       * any render can paint. Gates `settled` (and thus the
+       * `synteny_canvas_done` test-id) so a screenshot / browser-test can't
+       * capture the pre-reorder hairball during the view-building await window,
+       * before `awaitingAutoDiagonalize` flips.
+       */
+      autoDiagonalizeRequested: false,
+      /**
+       * #volatile
+       * Set true only after the init-time DiagonalizeSynteny pass RESOLVES
+       * successfully. If the reorder is skipped or throws, this stays false so
+       * `settled` never reports done on an undiagonalized view — the capture
+       * fails loudly (times out) instead of committing a hairball.
+       */
+      autoDiagonalizeComplete: false,
       /**
        * #volatile
        * Live status from the auto-diagonalize RPC (download %, parse, algorithm
@@ -400,6 +417,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setAwaitingAutoDiagonalize(arg: boolean) {
         self.awaitingAutoDiagonalize = arg
+      },
+      /**
+       * #action
+       */
+      setAutoDiagonalizeRequested(arg: boolean) {
+        self.autoDiagonalizeRequested = arg
+      },
+      /**
+       * #action
+       */
+      setAutoDiagonalizeComplete(arg: boolean) {
+        self.autoDiagonalizeComplete = arg
       },
       /**
        * #action
@@ -685,6 +714,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               const { assemblyManager } = session
 
               try {
+                // flag the pending reorder before any track render can paint,
+                // so `settled` (→ synteny_canvas_done) can't fire on the
+                // pre-diagonalize hairball during the view-building await window
+                // below (before awaitingAutoDiagonalize flips the canvas off)
+                if (init.autoDiagonalize) {
+                  self.setAutoDiagonalizeRequested(true)
+                }
                 const assemblies = await Promise.all(
                   init.views.map(async v => {
                     const asm = await assemblyManager.waitForAssembly(
@@ -762,6 +798,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     const { runDiagonalize } =
                       await import('./util/runDiagonalize.ts')
                     await runDiagonalize(self, opts)
+                    // only now is the view truly diagonalized — release the
+                    // `settled` gate. If runDiagonalize threw,
+                    // withDiagonalizeProgress catches it and this line is
+                    // skipped, so `settled` stays false and the capture times
+                    // out loudly instead of committing an undiagonalized view.
+                    if (isAlive(self)) {
+                      self.setAutoDiagonalizeComplete(true)
+                    }
                   })
                 }
 

@@ -23,6 +23,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 interface ParentViewDuck {
   views: LinearGenomeViewModel[]
   overdrawPx: number
+  autoDiagonalizeRequested: boolean
+  autoDiagonalizeComplete: boolean
 }
 
 /**
@@ -154,7 +156,12 @@ export function linearSyntenyViewHelperModelFactory(
             // the held ribbons are stale yet no fetch is in flight for ~500ms,
             // so loading/refetching alone would report done on the wrong data
             d => !d.loading && !d.refetching && d.dataCurrent,
-          )
+          ) &&
+          // if an init autoDiagonalize was requested, the view isn't "done"
+          // until that reorder has actually completed — otherwise a
+          // skipped/errored reorder would settle on the undiagonalized view
+          (!self.parentView.autoDiagonalizeRequested ||
+            self.parentView.autoDiagonalizeComplete)
         )
       },
     }))
