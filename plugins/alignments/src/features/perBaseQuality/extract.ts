@@ -12,9 +12,9 @@ export function extractPerBaseQuality(
   region: Region,
   out: PerBaseQualityEntry[],
 ) {
-  // CRAM yields number[] (record.qualityScores), BAM a Uint8Array — both index
-  // genomic-forward, so ArrayLike covers them without a lossy cast.
-  const scores = feature.get('NUMERIC_QUAL') as ArrayLike<number> | undefined
+  // Both adapters store scores as a genomic-forward Uint8Array (BAM: qual
+  // subarray, CRAM: record.qualityScores), null when quality is absent.
+  const scores = feature.get('NUMERIC_QUAL') as Uint8Array | null | undefined
   const cigarOps = feature.get('NUMERIC_CIGAR') as ArrayLike<number> | undefined
   if (scores && scores.length > 0 && cigarOps && cigarOps.length > 0) {
     const start = feature.get('start')
