@@ -3,7 +3,10 @@ import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_REVERSE,
 } from '@jbrowse/alignments-core'
-import { clipLengthAtStartOfReadNumeric } from '@jbrowse/cigar-utils'
+import {
+  clipLengthAtStartOfReadNumeric,
+  numericCigarToString,
+} from '@jbrowse/cigar-utils'
 
 import { readFeaturesToMismatches } from './readFeaturesToMismatches.ts'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
@@ -15,10 +18,6 @@ import type CramAdapter from './CramAdapter.ts'
 import type { CramRecord } from '@gmod/cram'
 import type { MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
-
-// Packed CIGAR op index (packed & 0xf) to op char, indices per BAM spec:
-// M=0 I=1 D=2 N=3 S=4 H=5 P=6 ==7 X=8
-const CIGAR_CHARS = 'MIDNSHP=X'
 
 export default class CramSlightlyLazyFeature implements Feature {
   // parameter properties auto-create the record/_store fields
@@ -131,15 +130,8 @@ export default class CramSlightlyLazyFeature implements Feature {
     return clipLengthAtStartOfReadNumeric(this.NUMERIC_CIGAR, this.strand)
   }
 
-  // generate a CIGAR string from NUMERIC_CIGAR
   get CIGAR() {
-    const numeric = this.NUMERIC_CIGAR
-    let result = ''
-    for (let i = 0, l = numeric.length; i < l; i++) {
-      const packed = numeric[i]!
-      result += (packed >> 4) + CIGAR_CHARS[packed & 0xf]!
-    }
-    return result
+    return numericCigarToString(this.NUMERIC_CIGAR)
   }
 
   id() {

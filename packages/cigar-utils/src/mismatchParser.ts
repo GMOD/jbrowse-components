@@ -186,6 +186,22 @@ export function getClip(cigar: string, strand: number) {
   }
 }
 
+// numeric analog of getClip: reads the start-clip length straight off a packed
+// NUMERIC_CIGAR (each entry = (length << 4) | opIndex) without serializing to a
+// CIGAR string. Reverse-strand reads clip at the CIGAR tail, forward at the head.
+export function clipLengthAtStartOfReadNumeric(
+  cigar: ArrayLike<number>,
+  strand: number,
+) {
+  const len = cigar.length
+  if (len === 0) {
+    return 0
+  }
+  const packed = strand === -1 ? cigar[len - 1]! : cigar[0]!
+  const op = packed & 0xf
+  return op === CIGAR_S || op === CIGAR_H ? packed >> 4 : 0
+}
+
 // produces a list of "feature-like" object from parsing supplementary
 // alignments in the SA tag
 //

@@ -1,6 +1,14 @@
+import { CIGAR_H, CIGAR_M, CIGAR_S } from './cigarConstants.ts'
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
 import { mdToMismatches2 } from './mdToMismatches2.ts'
-import { getClip, getMismatches, parseCigar2 } from './mismatchParser.ts'
+import {
+  clipLengthAtStartOfReadNumeric,
+  getClip,
+  getMismatches,
+  parseCigar2,
+} from './mismatchParser.ts'
+
+const ml = (len: number, op: number) => (len << 4) | op
 
 const seq =
   'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTT'
@@ -551,5 +559,38 @@ describe('getClip', () => {
   test('no clip returns 0', () => {
     expect(getClip('10M', 1)).toBe(0)
     expect(getClip('10M', -1)).toBe(0)
+  })
+})
+
+// numeric counterpart of getClip; must agree with getClip on the equivalent
+// serialized CIGAR since it's what the render path actually reads
+describe('clipLengthAtStartOfReadNumeric', () => {
+  test('soft clip at CIGAR start, forward strand', () => {
+    expect(
+      clipLengthAtStartOfReadNumeric([ml(5, CIGAR_S), ml(5, CIGAR_M)], 1),
+    ).toBe(5)
+  })
+  test('soft clip at CIGAR end is not the start of a forward-strand read', () => {
+    expect(
+      clipLengthAtStartOfReadNumeric([ml(5, CIGAR_M), ml(5, CIGAR_S)], 1),
+    ).toBe(0)
+  })
+  test('soft clip at CIGAR end, reverse strand', () => {
+    expect(
+      clipLengthAtStartOfReadNumeric([ml(5, CIGAR_M), ml(5, CIGAR_S)], -1),
+    ).toBe(5)
+  })
+  test('hard clip at CIGAR start, forward strand', () => {
+    expect(
+      clipLengthAtStartOfReadNumeric([ml(3, CIGAR_H), ml(5, CIGAR_M)], 1),
+    ).toBe(3)
+  })
+  test('empty cigar returns 0', () => {
+    expect(clipLengthAtStartOfReadNumeric([], 1)).toBe(0)
+    expect(clipLengthAtStartOfReadNumeric([], -1)).toBe(0)
+  })
+  test('no clip returns 0', () => {
+    expect(clipLengthAtStartOfReadNumeric([ml(10, CIGAR_M)], 1)).toBe(0)
+    expect(clipLengthAtStartOfReadNumeric([ml(10, CIGAR_M)], -1)).toBe(0)
   })
 })

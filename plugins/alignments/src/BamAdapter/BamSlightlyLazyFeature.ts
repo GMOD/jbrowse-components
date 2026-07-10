@@ -4,7 +4,10 @@ import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_REVERSE,
 } from '@jbrowse/alignments-core'
-import { CIGAR_H, CIGAR_S, forEachMismatchNumeric } from '@jbrowse/cigar-utils'
+import {
+  clipLengthAtStartOfReadNumeric,
+  forEachMismatchNumeric,
+} from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import { decodeSeq } from '../shared/decodeSeq.ts'
@@ -68,16 +71,7 @@ export default class BamSlightlyLazyFeature
   }
 
   get clipLengthAtStartOfRead() {
-    const cigar = this.NUMERIC_CIGAR
-    if (cigar.length === 0) {
-      return 0
-    }
-    const packed = this.strand === -1 ? cigar[cigar.length - 1]! : cigar[0]!
-    const op = packed & 0xf
-    if (op === CIGAR_S || op === CIGAR_H) {
-      return packed >> 4
-    }
-    return 0
+    return clipLengthAtStartOfReadNumeric(this.NUMERIC_CIGAR, this.strand)
   }
 
   get pair_orientation() {
