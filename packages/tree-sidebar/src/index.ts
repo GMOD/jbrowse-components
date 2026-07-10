@@ -15,8 +15,10 @@ export {
   parseClusterOrder,
   parseClusterTree,
   pruneNewickToLeaves,
+  reconcileLayout,
 } from './clusterUtils.ts'
 export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
+export type { RpcMethodCaller } from './rpcMethodCaller.ts'
 export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 export { treeBranchLengthMenuItem } from './treeMenuItems.ts'

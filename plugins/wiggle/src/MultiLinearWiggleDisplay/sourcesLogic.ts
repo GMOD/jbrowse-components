@@ -1,4 +1,5 @@
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
+import { reconcileLayout } from '@jbrowse/tree-sidebar'
 
 import type { EditableSource, Source, SourceInfo } from '../util.ts'
 
@@ -56,19 +57,9 @@ export function buildEditableSources(
   sourcesVolatile: SourceInfo[],
   layout: Source[],
 ): EditableSource[] {
-  if (!layout.length) {
-    return sourcesVolatile.map(withSourceAlias)
-  }
-  const adapterByName = new Map(sourcesVolatile.map(s => [s.name, s]))
-  const laidOut = layout.flatMap(s => {
-    const info = adapterByName.get(s.name)
-    return info ? [{ ...info, ...s }] : []
-  })
-  const inLayout = new Set(layout.map(s => s.name))
-  const appended = sourcesVolatile
-    .filter(s => !inLayout.has(s.name))
-    .map(withSourceAlias)
-  return [...laidOut, ...appended]
+  // Apply the `source` alias up front so the discovered rows are full
+  // EditableSources; the persisted layout is a partial per-row override.
+  return reconcileLayout(sourcesVolatile.map(withSourceAlias), layout)
 }
 
 // What the canvas/SVG renderers consume: editable sources after subtree

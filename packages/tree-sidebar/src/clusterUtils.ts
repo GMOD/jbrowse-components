@@ -127,6 +127,31 @@ export function parseClusterOrder(paste: string): number[] {
     .map(r => +r)
 }
 
+// Reconcile a persisted `layout` (user reorder/relabel/override) against the
+// rows currently discovered in the data: keep layout order, drop layout rows no
+// longer present, append newly-discovered rows in discovered order. Layout
+// fields win on merge (they are the user's overrides). Empty layout returns the
+// discovered array by reference, so callers can short-circuit on identity.
+// Shared by every multi-row display's `sources`/`editableSources` getter so the
+// membership rules can't drift. Layout entries are partial overrides keyed by
+// `name`, so the discovered row supplies every field a layout entry omits.
+export function reconcileLayout<D extends { name: string }>(
+  discovered: D[],
+  layout: (Partial<D> & { name: string })[],
+): D[] {
+  if (!layout.length) {
+    return discovered
+  }
+  const byName = new Map(discovered.map(s => [s.name, s]))
+  const laidOut = layout.flatMap(s => {
+    const info = byName.get(s.name)
+    return info ? [{ ...info, ...s }] : []
+  })
+  const inLayout = new Set(layout.map(s => s.name))
+  const appended = discovered.filter(s => !inLayout.has(s.name))
+  return [...laidOut, ...appended]
+}
+
 export function buildClusteredLayout<S extends { name: string }>(
   baseSources: S[],
   existingLayout: S[],

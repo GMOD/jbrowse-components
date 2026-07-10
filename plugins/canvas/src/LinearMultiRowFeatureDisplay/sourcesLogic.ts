@@ -1,5 +1,6 @@
 import { tagColorPalette } from '@jbrowse/core/ui/theme'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { reconcileLayout } from '@jbrowse/tree-sidebar'
 
 // A row in the painting. `name` is the partition value (the row identity, and
 // the tree leaf name); the rest are user arrangement overrides.
@@ -52,27 +53,15 @@ export function orderPartitionValues(
 
 /**
  * Reconcile the persisted `layout` (user reorder/relabel) against the rows
- * currently discovered in the data: keep layout order, drop rows no longer
- * present, append newly-seen rows in discovered order. Empty layout = discovered
- * order. Mirrors the multiwiggle `buildEditableSources` reconcile (minus the
- * wiggle-only `source` alias and palette synthesis — block colors come per
- * feature, not per row).
+ * currently discovered in the data via the shared `reconcileLayout`. Block
+ * colors come per feature, not per row, so no palette synthesis happens here
+ * (unlike the multiwiggle sources).
  */
 export function buildEditableSources(
   discovered: MultiRowSource[],
   layout: MultiRowSource[],
 ): MultiRowSource[] {
-  if (!layout.length) {
-    return discovered
-  }
-  const byName = new Map(discovered.map(s => [s.name, s]))
-  const laidOut = layout.flatMap(s => {
-    const info = byName.get(s.name)
-    return info ? [{ ...info, ...s }] : []
-  })
-  const inLayout = new Set(layout.map(s => s.name))
-  const appended = discovered.filter(s => !inLayout.has(s.name))
-  return [...laidOut, ...appended]
+  return reconcileLayout(discovered, layout)
 }
 
 /** Narrow the editable rows by the active subtree filter (tree-sidebar). */
