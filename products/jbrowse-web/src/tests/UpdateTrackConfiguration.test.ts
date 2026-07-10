@@ -345,6 +345,57 @@ test('a live setSlot edit persists as a delta via the reaction (non-admin)', () 
   }
 })
 
+test('a config-editor widget edit persists as a delta via its debounced autorun (non-admin)', () => {
+  // End-to-end for the widget's own save path (ConfigurationEditorWidget's
+  // afterCreate autorun) — distinct from BaseTrackModel's reaction, which is
+  // covered above. The track is deliberately NOT shown: with no BaseTrackModel
+  // instance, only the widget's autorun can persist, so this isolates it.
+  // editConfiguration hydrates a temp MST target from the frozen base config;
+  // mutating a slot re-runs the autorun, which snapshots the target and after a
+  // 400ms debounce calls updateTrackConfiguration.
+  jest.useFakeTimers()
+  try {
+    const { rootModel } = getPluginManager(undefined, false)
+    const session = rootModel.session as unknown as TestSession & {
+      editConfiguration: (config: PlainConfig) => void
+      getTrackConfigChanges: (
+        trackId: string,
+      ) => { path: string[]; from: unknown; to: unknown }[]
+      widgets: Map<
+        string,
+        {
+          type: string
+          target?: AnyConfigurationModel & {
+            setSlot: (slot: string, value: unknown) => void
+          }
+        }
+      >
+    }
+    const base = session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!
+
+    session.editConfiguration(base)
+    const widget = [...session.widgets.values()].find(
+      w => w.type === 'ConfigurationEditorWidget',
+    )!
+    widget.target!.setSlot('name', 'Edited via widget')
+    expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
+
+    jest.advanceTimersByTime(400)
+
+    // only the name is a real change; the temp target hydrates with injected
+    // {type, displayId} display stubs that ride along in the raw delta but are
+    // dropped by getTrackConfigChanges (they're not genuine overrides)
+    expect(session.isTrackOverride(TRACK_ID)).toBe(true)
+    expect(session.getTrackConfigChanges(TRACK_ID)).toEqual([
+      { path: ['name'], from: 'volvox filtered vcf', to: 'Edited via widget' },
+    ])
+    const resolved = session.tracks.find(t => t.trackId === TRACK_ID)!
+    expect(readConfObject(resolved, 'name')).toBe('Edited via widget')
+  } finally {
+    jest.useRealTimers()
+  }
+})
+
 test('hiding then re-showing a track keeps its edit (delta is the source of truth)', () => {
   const { rootModel } = getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession

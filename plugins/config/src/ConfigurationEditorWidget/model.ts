@@ -42,17 +42,17 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
         // them back to the session after a short delay via
         // updateTrackConfiguration, which routes admin edits to the jbrowse
         // config in place and everyone else's to a shareable per-track delta
-        // (trackConfigDeltas) against the admin base. It keys off trackId, so
-        // this widget is only safe to open on track configs (see
-        // editConfiguration, which enforces a trackId). Non-track configs
-        // (assembly/connection) have no trackId, so the save is a no-op and the
-        // editor just mutates the live MST node in place.
+        // (trackConfigDeltas) against the admin base. It keys off trackId; in
+        // practice the widget is only opened on track configs. A config with no
+        // trackId (assembly/connection) degrades gracefully: updateTrackConfiguration
+        // finds no base/session/connection home and the edit just applies to the
+        // live MST node in memory for this session.
         addDisposer(
           self,
           autorun(() => {
             if (self.target) {
-              // the widget only opens on track configs (see comment above), so
-              // the snapshot always carries a trackId
+              // track configs (the practical case) carry a trackId; a
+              // trackId-less snapshot degrades to an in-memory edit (see above)
               const snapshot = getSnapshot(self.target) as {
                 trackId: string
                 [key: string]: unknown
