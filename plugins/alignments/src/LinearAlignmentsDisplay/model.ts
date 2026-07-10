@@ -32,10 +32,12 @@ import {
   type FetchContext,
   GROW_MAX_HEIGHT,
   type HeightMode,
+  HeightModeMixin,
   type LinearGenomeViewModel,
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
   TrackHeightMixin,
+  bakeGrownHeightOnExit,
 } from '@jbrowse/plugin-linear-genome-view'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import { autorun, observable, reaction } from 'mobx'
@@ -302,6 +304,7 @@ export default function stateModelFactory(
         'LinearAlignmentsDisplay',
         BaseDisplay,
         TrackHeightMixin(),
+        HeightModeMixin(),
         MultiRegionDisplayMixin(),
         PromotableDefaultsMixin(),
         // Track-menu settings are config slots (read via getConf, written via
@@ -638,43 +641,6 @@ export default function stateModelFactory(
         get showLinkedReadLines() {
           return self.showBezierConnections && self.linkedReads === 'off'
         },
-
-        /**
-         * #getter
-         * "Fit to display height" mode: reads pack to fill the display without
-         * scrolling. Derived from the resolved `heightMode` getter (the single
-         * source of truth), so it flows through the same session-default cascade —
-         * track value, else session-wide default, else `fixed`. The
-         * `featureHeight`/`height` slots are never written, so they stay pure user
-         * intent. Mirrors the canvas display's getter.
-         */
-        get fitHeightToDisplay(): boolean {
-          return this.heightMode === 'fit'
-        },
-
-        /**
-         * #getter
-         * "Grow" mode: the track resizes to fit every read at the configured
-         * height (no scrolling), rather than scrolling (`fixed`) or shrinking
-         * reads to fit (`fit`). Derived from the same resolved `heightMode` getter.
-         * Shared vocabulary + getter name with the canvas display.
-         */
-        get autoHeight(): boolean {
-          return this.heightMode === 'grow'
-        },
-
-        /**
-         * #getter
-         * The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable
-         * sentinel slot: getConfResolved walks the pinned-track -> session-default
-         * -> `fixed` cascade and always returns a concrete mode, never `inherit`.
-         * The single source of truth `fitHeightToDisplay`/`autoHeight` derive from —
-         * like the canvas display's getter of the same name — so the "Track height"
-         * radio group can drive one exclusive choice off a single value.
-         */
-        get heightMode(): HeightMode {
-          return getConfResolved(self, 'heightMode')
-        },
       }))
       // Canonical ScoreScaleModel shape (shared with wiggle/manhattan) so the
       // coverage band reuses wiggle-core's score menu + SetMinMaxDialog with no
@@ -835,20 +801,6 @@ export default function stateModelFactory(
          */
         get maxHeight() {
           return getConf(self, 'maxHeight')
-        },
-
-        /**
-         * #getter
-         */
-        // The drag-resizable track height as stored in the config slot — the
-        // viewport budget the grouped layout fits rows into. Read by
-        // `laidOutByGroup` instead of the reactive `height` getter: in grow mode
-        // `height` returns the content-derived `grownHeight`, so routing the
-        // layout through `height` there would make `grownHeight` (which reads the
-        // layout) depend on itself (a MobX computed cycle). In fixed/fit mode this
-        // equals `height`, so layout behavior is unchanged.
-        get fitTargetHeight(): number {
-          return getConf(self, 'height')
         },
 
         /**
@@ -1135,7 +1087,7 @@ export default function stateModelFactory(
             // it, then scrolls); fixed/fit fit to the drag-resizable slot. Reads
             // the slot (fitTargetHeight), never the reactive `height` getter, so
             // grow's `height`→grownHeight→layout chain can't cycle.
-            height: self.autoHeight ? GROW_MAX_HEIGHT : this.fitTargetHeight,
+            height: self.autoHeight ? GROW_MAX_HEIGHT : self.fitTargetHeight,
             maxHeight: this.maxHeight,
             overhead: belowCoverageBandsGeometry(this.belowCoverageBandsInput)
               .bottom,
@@ -1606,7 +1558,7 @@ export default function stateModelFactory(
           const view = getContainingView(self) as LGV
           return self.autoHeight && view.initialized
             ? this.grownHeight
-            : (getConf(self, 'height') as number)
+            : self.fitTargetHeight
         },
 
         /**
@@ -2414,15 +2366,8 @@ export default function stateModelFactory(
            * the display/data change.
            */
           setHeightMode(mode: HeightMode) {
-            // Leaving grow: bake the current grown height into the slot so
-            // fixed/fit start from the height the user was seeing. Grow computes
-            // `height` reactively and never writes the slot, so without this the
-            // track would snap to the stale slot default on switch (mirrors
-            // canvas). Guarded on init so grownHeight's view reads are safe.
             const view = getContainingView(self) as LGV
-            if (self.autoHeight && mode !== 'grow' && view.initialized) {
-              self.setHeight(self.grownHeight)
-            }
+            bakeGrownHeightOnExit(self, mode, view.initialized)
             self.configuration.setSlot('heightMode', mode)
             if (mode !== 'fixed') {
               self.groupMaxHeightOverrides.clear()

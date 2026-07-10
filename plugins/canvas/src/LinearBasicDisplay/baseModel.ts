@@ -25,12 +25,13 @@ import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
   GROW_MAX_HEIGHT,
+  HeightModeMixin,
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
   TrackHeightMixin,
   autorunOnReadyView,
+  bakeGrownHeightOnExit,
   evaluateRegionTooLarge,
-  getHeightModeOptions,
   heightModeMenuItems,
   onDisplayedRegionsChange,
   resolveByteLimit,
@@ -120,11 +121,6 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-// HeightMode (fixed/grow/fit) is the shared track-height vocabulary — see
-// @jbrowse/plugin-linear-genome-view's heightMode module. Derived here from the
-// `autoHeight`/`fitHeightToDisplay` booleans so the "Track height" radio group
-// presents one exclusive choice.
-
 // Single source for the "Feature height" radio options and their labels, so a
 // fourth mode can't drift between the menu and the label lookup.
 export const displayModeOptions: { value: DisplayMode; label: string }[] = [
@@ -132,12 +128,6 @@ export const displayModeOptions: { value: DisplayMode; label: string }[] = [
   { value: 'compact', label: 'Compact' },
   { value: 'superCompact', label: 'Super-compact' },
 ]
-
-// "Track height" radio options for the feature displays, shared by the track
-// menu and the bottom-right track-height dropdown. The labels themselves live in
-// linear-genome-view's shared heightMode module so the canvas and alignments
-// displays present identical wording.
-export const heightModeOptions = getHeightModeOptions('features')
 
 // Persistent, declarative feature-highlight request (see featureHighlight.ts).
 // A plain span+name signature — never the adapter uniqueId — so it can be
@@ -242,6 +232,7 @@ export default function baseStateModelFactory(
         'LinearCanvasBaseDisplay',
         BaseDisplay,
         TrackHeightMixin(),
+        HeightModeMixin(),
         MultiRegionDisplayMixin(),
         PromotableDefaultsMixin(),
         types.model({
@@ -493,57 +484,12 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // The drag-resizable track height as stored in the config slot — the
-        // fit target the fit ladder scales content to fill. Read by fitStage /
-        // settledMaxY instead of the reactive `height` getter on purpose: in
-        // grow mode `height` returns the content-derived `grownHeight`, so
-        // routing the fit machinery through `height` there would make
-        // `grownHeight` depend on itself (a MobX computed cycle). In fixed/fit
-        // mode this equals `height`, so fit behavior is unchanged.
-        get fitTargetHeight(): number {
-          return getConf(self, 'height')
-        },
-
-        /**
-         * #getter
-         */
-        // Grow mode as a boolean, derived from the unified heightMode slot.
-        // Kept for the CanvasAutoHeight autorun and other consumers that read a
-        // plain flag.
-        get autoHeight() {
-          return this.heightMode === 'grow'
-        },
-
-        /**
-         * #getter
-         */
         // Feature height preset (normal/compact/superCompact). Promotable
         // sentinel enum (see baseConfigSchema.ts): getConfResolved walks the
         // pinned-track -> session-default -> `normal` cascade and always returns
         // a concrete preset, never the `inherit` sentinel.
         get displayMode(): DisplayMode {
           return getConfResolved(self, 'displayMode')
-        },
-
-        /**
-         * #getter
-         */
-        // The active track-height strategy. Promotable sentinel enum (see
-        // baseConfigSchema.ts): getConfResolved walks the pinned-track ->
-        // session-default -> `fixed` cascade and always returns a concrete mode,
-        // never the `inherit` sentinel. The single source of truth that
-        // autoHeight/fitHeightToDisplay derive from.
-        get heightMode(): HeightMode {
-          return getConfResolved(self, 'heightMode')
-        },
-
-        /**
-         * #getter
-         */
-        // Fit-to-height mode as a boolean, derived from the unified heightMode
-        // slot. Named to match the alignments display's getter. Read by fitScale.
-        get fitHeightToDisplay() {
-          return this.heightMode === 'fit'
         },
 
         /**
@@ -1389,7 +1335,7 @@ export default function baseStateModelFactory(
         get height(): number {
           return self.autoHeight && getView(self).initialized
             ? this.grownHeight
-            : (getConf(self, 'height') as number)
+            : self.fitTargetHeight
         },
 
         /**
@@ -2008,14 +1954,7 @@ export default function baseStateModelFactory(
         // mutual exclusion is inherent to the single enum. The `laidOutDataMap`
         // getter does the actual fit reactively.
         setHeightMode(mode: HeightMode) {
-          // Leaving grow: bake the current grown height into the slot so fixed/fit
-          // start from the height the user was seeing. Grow computes `height`
-          // reactively and never writes the slot, so without this the track would
-          // snap to the stale slot default on switch. Done once at the deliberate
-          // mode change (guarded on init so grownHeight's view reads are safe).
-          if (self.autoHeight && mode !== 'grow' && getView(self).initialized) {
-            self.setHeight(self.grownHeight)
-          }
+          bakeGrownHeightOnExit(self, mode, getView(self).initialized)
           self.configuration.setSlot('heightMode', mode)
           // Entering a non-fixed mode (grow/fit) resets a leftover scrollTop that
           // a reconfigured height contradicts: it can strand the sticky GPU canvas
@@ -2319,8 +2258,9 @@ export default function baseStateModelFactory(
           /**
            * #action
            * A manual drag-resize means the user wants a fixed height; leave grow
-           * mode first, otherwise the CanvasAutoHeight autorun snaps the height
-           * back on the next layout change and the drag appears to do nothing.
+           * mode first, otherwise the reactive `height` getter re-derives
+           * grownHeight on the next layout change and the drag appears to do
+           * nothing.
            */
           resizeHeight(distance: number) {
             if (self.autoHeight) {
@@ -2821,12 +2761,12 @@ export default function baseStateModelFactory(
                 ),
                 { type: 'divider' as const },
                 {
-                  // Each track-height mode carries its own pin, like the density
-                  // Each track-height mode carries its own pin: the radio sets the
-                  // mode for this track, the pin promotes it as the session-wide
-                  // default. heightMode is a sentinel promotable slot, so every
-                  // mode — `fixed` included — is pinnable back over another
-                  // session default. Shared builder with the alignments menu.
+                  // Each track-height mode carries its own pin: the radio sets
+                  // the mode for this track, the pin promotes it as the
+                  // session-wide default. heightMode is a sentinel promotable
+                  // slot, so every mode — `fixed` included — is pinnable back
+                  // over another session default. Shared builder with the
+                  // alignments menu.
                   label: 'Track height',
                   subMenu: heightModeMenuItems(self, 'features'),
                 },

@@ -20,9 +20,9 @@ describe('per-track scroll', () => {
   // The resizeHeight override is exercised against the real MST model in
   // ../fitToDisplayHeight.test.ts; the closures below isolate the arithmetic.
   describe('resizeHeight under auto-fit', () => {
-    // Models the interplay between the resizeHeight override and the
-    // CanvasAutoHeight autorun: a drag must turn auto-fit off, otherwise the
-    // autorun snaps the height back to fitHeight on the next layout change.
+    // Models the interplay between the resizeHeight override and grow mode's
+    // reactive `height` getter: a drag must turn auto-fit off, otherwise the
+    // getter re-derives fitHeight on the next layout change and the drag is lost.
     function makeModel() {
       const maxHeight = 1200
       const minDisplayHeight = 4
