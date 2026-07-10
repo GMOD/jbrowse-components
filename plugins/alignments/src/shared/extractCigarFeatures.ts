@@ -1,5 +1,6 @@
 import {
   DELETION_TYPE,
+  HARDCLIP_TYPE,
   INSERTION_TYPE,
   MISMATCH_TYPE,
   SKIP_TYPE,
@@ -120,7 +121,7 @@ export function extractCigarFeatures(
           feature,
           output.gaps,
         )
-      } else {
+      } else if (type === HARDCLIP_TYPE) {
         emitHardclip(start, cliplen!, readIndex, featureStart, output.hardclips)
       }
     },
