@@ -1,6 +1,7 @@
 import { createElement } from 'react'
 
-import { isFeature } from '@jbrowse/core/util'
+import { getEnv, isFeature } from '@jbrowse/core/util'
+import { guessTrackConf } from '@jbrowse/core/util/tracks'
 import {
   JBrowseLinearGenomeView,
   createViewState,
@@ -11,16 +12,40 @@ import { createRoot } from 'react-dom/client'
 import { fetchHub } from './fetchHub.ts'
 
 import type { HubConfig } from './fetchHub.ts'
+import type { LooseTrackInput } from '@jbrowse/core/util/tracks'
 import type {
   ViewModel,
   ViewStateOptions,
 } from '@jbrowse/react-linear-genome-view2'
 
 type Tracks = NonNullable<ViewStateOptions['tracks']>
-type TrackConf = Tracks[number]
+type TrackConf = Record<string, unknown>
+/** A full track config, a bare data-file URL, or `{ uri, index?, ...extra }` —
+ * the loose forms are expanded via core's guessTrackConf at mount time. */
+type TrackInput = string | TrackConf
 type AssemblyConfig = Record<string, unknown>
 type SearchAdapters = ViewStateOptions['aggregateTextSearchAdapters']
 type SessionSnapshot = ViewStateOptions['defaultSession']
+
+function isLooseTrack(track: TrackInput): track is string | LooseTrackInput {
+  return typeof track === 'string' || (!('adapter' in track) && 'uri' in track)
+}
+
+// Expand any loose entries (bare URL, or { uri, index? }) into full track
+// configs using core's guessTrackConf; full configs pass through unchanged. The
+// view model carries the pluginManager whose format plugins drive the guess.
+function resolveTracks(
+  tracks: TrackInput[],
+  viewState: ViewModel,
+  assemblyName?: string,
+): Tracks {
+  const { pluginManager } = getEnv(viewState)
+  return tracks.map(track =>
+    isLooseTrack(track)
+      ? guessTrackConf(track, pluginManager, assemblyName)
+      : track,
+  )
+}
 
 /**
  * The three shapes an assembly can take: a hub name (`'hg38'`, `'GCF_...'`) that
@@ -32,8 +57,9 @@ export type AssemblyInput = string | AssemblyConfig
 
 export interface CreateLinearGenomeViewOptions {
   assembly: AssemblyInput
-  /** track configs to open; a `defaultSession` owns display instead when given */
-  tracks?: Tracks
+  /** tracks to open (full configs, bare data-file URLs, or `{ uri, index? }`); a
+   * `defaultSession` owns display instead when given */
+  tracks?: TrackInput[]
   /** a serialized view; when present it owns the initial location and layout */
   defaultSession?: SessionSnapshot
   /** e.g. `chr1:1-1000` or a gene name; ignored when a `defaultSession` positions the view */
@@ -60,8 +86,8 @@ export interface LinearGenomeViewController {
   setAssembly(assembly: AssemblyInput): void
   /** load/clear a serialized session; rebuilds the engine */
   setSession(defaultSession: SessionSnapshot): void
-  setTracks(tracks: Tracks): void
-  addTrack(track: TrackConf): void
+  setTracks(tracks: TrackInput[]): void
+  addTrack(track: TrackInput): void
   removeTrack(trackId: string): void
   destroy(): void
 }
@@ -138,9 +164,11 @@ export function createLinearGenomeView(
   // desired state, kept across rebuilds and (re)applied at build time so calls
   // made before the async build resolves still land
   let assemblyInput = opts.assembly
-  let tracks = opts.tracks ?? []
+  let tracks: TrackInput[] = opts.tracks ?? []
   let defaultSession = opts.defaultSession
   let location = opts.location
+  // the resolved assembly name, stamped onto tracks guessed from a bare URL
+  let assemblyName: string | undefined
 
   const root = createRoot(el)
   let disposers: (() => void)[] = []
@@ -157,10 +185,16 @@ export function createLinearGenomeView(
     teardown()
     current = undefined
     const resolved = await resolveAssembly(assemblyInput)
+    assemblyName =
+      typeof resolved.assembly.name === 'string'
+        ? resolved.assembly.name
+        : undefined
     const hasSession = defaultSession !== undefined
     const viewState = createViewState({
       assembly: resolved.assembly,
-      tracks,
+      // only full configs seed the config catalog; loose specs need the
+      // pluginManager the build creates, so they are resolved just below
+      tracks: tracks.filter((track): track is TrackConf => !isLooseTrack(track)),
       aggregateTextSearchAdapters: mergeSearchAdapters(
         resolved.aggregateTextSearchAdapters,
         opts.aggregateTextSearchAdapters,
@@ -179,7 +213,7 @@ export function createLinearGenomeView(
     // a defaultSession owns the initial track layout; without one, open the
     // configured tracks so they actually display
     if (!hasSession) {
-      reconcileTracks(viewState, tracks)
+      reconcileTracks(viewState, resolveTracks(tracks, viewState, assemblyName))
     }
     if (onLocationChange) {
       disposers.push(
@@ -243,18 +277,21 @@ export function createLinearGenomeView(
     setTracks(next) {
       tracks = next
       if (current) {
-        reconcileTracks(current, next)
+        reconcileTracks(current, resolveTracks(next, current, assemblyName))
       }
     },
     addTrack(track) {
       tracks = [...tracks, track]
       if (current) {
-        current.session.addTrackConf(track)
-        current.session.view.showTrack(track.trackId)
+        const [conf] = resolveTracks([track], current, assemblyName)
+        current.session.addTrackConf(conf)
+        current.session.view.showTrack(conf.trackId)
       }
     },
     removeTrack(trackId) {
-      tracks = tracks.filter(t => t.trackId !== trackId)
+      // loose specs have no trackId until resolved; a full config matching the
+      // id is dropped, hideTrack closes it in the view regardless
+      tracks = tracks.filter(t => isLooseTrack(t) || t.trackId !== trackId)
       current?.session.view.hideTrack(trackId)
     },
     destroy() {
