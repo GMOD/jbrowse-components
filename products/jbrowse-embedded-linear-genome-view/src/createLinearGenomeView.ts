@@ -40,6 +40,7 @@ export interface CreateLinearGenomeViewOptions {
   location?: string
   /** merged with any search adapters the resolved hub already provides */
   aggregateTextSearchAdapters?: SearchAdapters
+  internetAccounts?: ViewStateOptions['internetAccounts']
   plugins?: ViewStateOptions['plugins']
   makeWorkerInstance?: ViewStateOptions['makeWorkerInstance']
   configuration?: ViewStateOptions['configuration']
@@ -164,6 +165,7 @@ export function createLinearGenomeView(
         resolved.aggregateTextSearchAdapters,
         opts.aggregateTextSearchAdapters,
       ),
+      internetAccounts: opts.internetAccounts,
       plugins: opts.plugins,
       makeWorkerInstance: opts.makeWorkerInstance,
       configuration: opts.configuration,
