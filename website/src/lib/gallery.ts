@@ -272,6 +272,13 @@ export const gallerySections: readonly GallerySection[] = [
           'A Hi-C contact matrix from a .hic file (Juicebox format) over ~11 Mb of chr8, with the RefSeq gene track above.',
       },
       {
+        label: 'Hi-C loops and enhancer–gene arcs (ENCODE GM12878)',
+        spec: 'encode_hic_loops_arcs',
+        guide: 'user_guides/hic_track',
+        description:
+          'ENCODE GM12878 HiCCUPS loop calls and EPIraction enhancer–gene predictions drawn as BEDPE paired-arc tracks stacked over the intact Hi-C contact matrix (hg38).',
+      },
+      {
         label: 'ChromHMM state painting (Roadmap)',
         spec: 'chromhmm',
         description:
