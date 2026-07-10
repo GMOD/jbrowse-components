@@ -532,6 +532,26 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 12000,
   },
 
+  // Same three-strain stack, but each gene track is palettized by gene symbol
+  // via the canvas "Color by attribute" mechanism. `gene` is the ortholog key:
+  // it's on both the gene and CDS lines and NCBI uses standardized symbols, so
+  // it's identical across strains — unlike `name`, which on the drawn CDS box
+  // is the strain-specific protein id. randomColor hashes the symbol
+  // deterministically, so orthologous genes render in the same color in every
+  // panel, letting you trace a gene by color across the synteny. The `|| name`
+  // fallback keeps symbol-less genes a valid (strain-specific) color rather
+  // than the magenta the renderer paints when the color jexl throws.
+  {
+    mode: 'url',
+    name: 'sv_synteny/linear_synteny_genes_colored',
+    url: hpyloriSyntenyWithGenes(
+      "jexl:randomColor(get(feature,'gene')||get(feature,'name'))",
+    ),
+    readyText: 'NC_018939.1',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+
   // ────────────────────────────────────────────────────────────────────────
   // Dotplot / synteny interactions
   // ────────────────────────────────────────────────────────────────────────

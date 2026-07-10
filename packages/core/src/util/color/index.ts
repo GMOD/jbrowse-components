@@ -79,7 +79,9 @@ export { isNamedColor, namedColorToHex } from './cssColorsLevel4.ts'
 
 /**
  * Generate a consistent random color for a given string.
- * The same string will always generate the same color.
+ * The same string will always generate the same color, with no shared palette
+ * state — so the same value (e.g. a gene symbol used as an ortholog id) gets the
+ * same color across independent tracks/panels.
  *
  * @param str - The string to generate a color from
  * @returns A CSS color string in HSL format
@@ -91,5 +93,19 @@ export function randomColor(str: string): string {
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) + hash) ^ str.charCodeAt(i)
   }
-  return `hsl(${Math.abs(hash) % 360}, 55%, 45%)`
+  const h = hash >>> 0
+  const hue = h % 360
+  // Vary saturation and lightness too, not just hue: a fixed S/L reads muddy
+  // because it collapses the palette to one perceptual dimension (blues and
+  // greens at the same S/L look alike). A separate xorshift-mixed hash (Math.imul
+  // for a real 32-bit multiply — a plain `*` overflows float precision and drops
+  // the low bits) picks the S/L tier independently of the hue. Tiers stay
+  // mid-range so every color reads under a black-or-white label (never near
+  // white/black).
+  const mix = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0
+  const s = mix % 3
+  const sat = s === 0 ? 68 : s === 1 ? 82 : 58
+  const l = (mix >>> 3) % 3
+  const light = l === 0 ? 46 : l === 1 ? 58 : 38
+  return `hsl(${hue}, ${sat}%, ${light}%)`
 }

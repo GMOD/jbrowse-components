@@ -405,7 +405,16 @@ export const HG38_470WAY_30 = [
 // Three H. pylori strains stacked top-to-bottom, with a synteny track between
 // each adjacent pair and a gene annotation track on each genome, used by the
 // synteny_visualization.md tutorial.
-export function hpyloriSyntenyWithGenes() {
+//
+// `geneColor` (optional) is a color slot applied to every gene track's canvas
+// display — pass a `jexl:randomColor(...)` expression to palettize genes by an
+// attribute. Because randomColor hashes deterministically, the same attribute
+// value gets the same hue in all three panels, so a shared key like the gene
+// symbol (Name, effectively the ortholog id in bacteria) makes orthologous
+// genes light up the same color across strains with no cross-track state.
+export function hpyloriSyntenyWithGenes(geneColor?: string) {
+  const geneTrack = (trackId: string) =>
+    geneColor ? { trackId, displaySnapshot: { color: geneColor } } : trackId
   return hpyloriUrl({
     views: [
       {
@@ -419,12 +428,12 @@ export function hpyloriSyntenyWithGenes() {
           {
             loc: 'NC_018939.1:177696-190329',
             assembly: 'hpylori_26695',
-            tracks: ['hpylori_26695.gff'],
+            tracks: [geneTrack('hpylori_26695.gff')],
           },
           {
             loc: 'NZ_AP026446.1:287157-299790',
             assembly: 'hpylori_chc155',
-            tracks: ['hpylori_chc155.gff'],
+            tracks: [geneTrack('hpylori_chc155.gff')],
           },
           {
             // j99 aligns to chc155 in inverted orientation, so the [rev]
@@ -432,7 +441,7 @@ export function hpyloriSyntenyWithGenes() {
             // straighten the level-1 ribbons — otherwise they cross in an X
             loc: 'NZ_CP011330.1:872350-884982[rev]',
             assembly: 'hpylori_j99',
-            tracks: ['hpylori_j99.gff'],
+            tracks: [geneTrack('hpylori_j99.gff')],
           },
         ],
       },
