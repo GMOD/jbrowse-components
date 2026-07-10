@@ -231,6 +231,32 @@ describe('canvas display fit-to-display-height', () => {
     display.setHeightMode('grow')
     expect(display.scrollTop).toBe(0)
   })
+
+  // A Y morph holds `maxY` at the taller of the old/new layout so rows animating
+  // up from a deeper row aren't clipped — that inflation belongs to the scroll
+  // extent, NOT to the grow-mode target height. `fitHeight`/`grownHeight` read
+  // the settled height so the track doesn't bounce to the old (taller) height for
+  // the morph's duration and then collapse.
+  it('grow height ignores the morph hold that maxY applies', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(0, stackedRegionData(6, 20), view.bpPerPx, ctgA)
+    display.setHeight(400)
+
+    const settled = display.settledMaxY
+    const fitHeightBefore = display.fitHeight
+    expect(settled).toBeGreaterThan(0)
+
+    // Simulate a morph animating up from a much deeper prior layout.
+    display.beginYMorph(new Map(), settled + 500)
+
+    // Scroll extent honors the taller in-flight layout...
+    expect(display.maxY).toBe(settled + 500)
+    expect(display.scrollableHeight).toBeGreaterThan(0)
+    // ...but the settled height and the grow target are unmoved.
+    expect(display.settledMaxY).toBe(settled)
+    expect(display.fitHeight).toBe(fitHeightBefore)
+  })
 })
 
 // The fit-to-height escalation ladder: rather than uniformly squeezing the

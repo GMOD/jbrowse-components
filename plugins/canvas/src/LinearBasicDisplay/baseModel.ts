@@ -12,6 +12,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { promotableRadioItem } from '@jbrowse/core/ui'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import {
+  clamp,
   getContainingTrack,
   getContainingView,
   getSession,
@@ -1274,24 +1275,36 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        get maxY() {
-          // Content height without re-walking the scaled map: fitStage carries
-          // the kept rung's unscaled height, and scaleLaidOutData multiplies
-          // every bottomPx by scale, so maxBottom(laidOutDataMap) is exactly
-          // keptRungHeight * scale.
+        // The settled laid-out content height, ignoring any in-flight Y morph.
+        // Content height without re-walking the scaled map: fitStage carries the
+        // kept rung's unscaled height, and scaleLaidOutData multiplies every
+        // bottomPx by scale, so maxBottom(laidOutDataMap) is exactly
+        // keptRungHeight * scale. This is what `grow` mode sizes the track to —
+        // it must NOT include the morph hold below, or the track would bounce to
+        // the taller of old/new content for the morph's duration and then
+        // collapse. Scroll-extent consumers read the morph-aware `maxY` instead.
+        get settledMaxY() {
           const { contentHeight: keptRungHeight, scale } = self.fitStage
           const raw = keptRungHeight * scale
           // Snap away a sub-pixel float-epsilon overflow while a fit scale (grow or
           // squeeze) is active, so a fitted track doesn't spuriously scroll (see
           // snapFittedContentHeight).
-          const max = snapFittedContentHeight(raw, self.height, scale !== 1)
+          return snapFittedContentHeight(raw, self.height, scale !== 1)
+        },
+
+        /**
+         * #getter
+         */
+        get maxY() {
           // During a Y morph hold the height at the taller of the old/new
           // layout so features animating up from a deeper row aren't clipped at
           // the bottom; it settles to the destination height when the morph
-          // ends. Constant across the morph, so no per-frame reflow.
+          // ends. Constant across the morph, so no per-frame reflow. Only the
+          // scroll-extent side reads this — grow-mode sizing reads settledMaxY so
+          // the track height doesn't bounce mid-morph.
           return self.morphFromTops === undefined
-            ? max
-            : Math.max(max, self.morphFromMaxY)
+            ? this.settledMaxY
+            : Math.max(this.settledMaxY, self.morphFromMaxY)
         },
 
         /**
@@ -1323,11 +1336,13 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Height that fits the laid-out content: the content height (maxY)
-        // clamped to MIN_FIT_HEIGHT (so a sparse track doesn't collapse) and the
-        // maxHeight cap. Feeds `grownHeight`, the grow-mode target (a tighter cap).
+        // Height that fits the laid-out content: the settled content height
+        // (settledMaxY, NOT the morph-inflated maxY — grow must target the
+        // destination height so it doesn't bounce during a zoom morph) clamped to
+        // MIN_FIT_HEIGHT (so a sparse track doesn't collapse) and the maxHeight
+        // cap. Feeds `grownHeight`, the grow-mode target (a tighter cap).
         get fitHeight() {
-          return Math.min(Math.max(this.maxY, MIN_FIT_HEIGHT), self.maxHeight)
+          return clamp(this.settledMaxY, MIN_FIT_HEIGHT, self.maxHeight)
         },
 
         /**
@@ -2281,10 +2296,16 @@ export default function baseStateModelFactory(
             superAfterAttach()
 
             // Auto-height (grow): snap height to fit the laid-out content,
-            // capped at GROW_MAX_HEIGHT via grownHeight. maxY derives from
+            // capped at GROW_MAX_HEIGHT via grownHeight. settledMaxY derives from
             // laidOutDataMap, which derives from raw fetch data + coarseBpPerPx
             // (debounced 500ms) + label visibility — so zoom and label toggles
             // both flow through here without extra plumbing.
+            // No feedback loop even though this writes self.height and grownHeight
+            // transitively reads it: grow pins the fit scale to 1 (minScale =
+            // maxScale = 1), and neither layoutInputs nor showLabels reads
+            // self.height, so grownHeight is independent of the height it sets. If
+            // a future layout input becomes viewport-height-relative, this
+            // invariant breaks and grow would oscillate — guard it there.
             addDisposer(
               self,
               autorun(
