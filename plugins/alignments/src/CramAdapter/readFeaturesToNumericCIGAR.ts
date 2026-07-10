@@ -49,7 +49,11 @@ export function readFeaturesToNumericCIGAR(
       }
 
       if (code === 'b') {
-        const addedLen = rf.data.split(',').length
+        // 'b' data is a decoded verbatim base string (e.g. "ACGT") aligned as
+        // matches, so its length in read/ref space is the character count.
+        // (Older cram-js encoded this as comma-separated char codes; it now
+        // returns the decoded string via decodeUtf8(bd.BB()).)
+        const addedLen = rf.data.length
         seqLen += addedLen
         lastPos += addedLen
         oplen += addedLen

@@ -3,7 +3,7 @@ import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_REVERSE,
 } from '@jbrowse/alignments-core'
-import { CIGAR_H, CIGAR_S } from '@jbrowse/cigar-utils'
+import { clipLengthAtStartOfReadNumeric } from '@jbrowse/cigar-utils'
 
 import { readFeaturesToMismatches } from './readFeaturesToMismatches.ts'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
@@ -21,14 +21,12 @@ import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 const CIGAR_CHARS = 'MIDNSHP=X'
 
 export default class CramSlightlyLazyFeature implements Feature {
-  private record: CramRecord
-  private _store: CramAdapter
-  // uses parameter properties to automatically create fields on the class
+  // parameter properties auto-create the record/_store fields
   // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
-  constructor(record: CramRecord, _store: CramAdapter) {
-    this.record = record
-    this._store = _store
-  }
+  constructor(
+    private record: CramRecord,
+    private _store: CramAdapter,
+  ) {}
 
   get name() {
     return this.record.readName
@@ -127,18 +125,10 @@ export default class CramSlightlyLazyFeature implements Feature {
     )
   }
 
-  // start-clip length in read coordinates, read straight off NUMERIC_CIGAR so
-  // the render path never builds/caches the full CIGAR string. Equivalent to
-  // getClip(CIGAR, strand) since CIGAR is just NUMERIC_CIGAR serialized.
+  // start-clip length off NUMERIC_CIGAR so the render path never builds the
+  // full CIGAR string. Equivalent to getClip(CIGAR, strand).
   get clipLengthAtStartOfRead() {
-    const cigar = this.NUMERIC_CIGAR
-    const len = cigar.length
-    if (len === 0) {
-      return 0
-    }
-    const packed = this.strand === -1 ? cigar[len - 1]! : cigar[0]!
-    const op = packed & 0xf
-    return op === CIGAR_S || op === CIGAR_H ? packed >> 4 : 0
+    return clipLengthAtStartOfReadNumeric(this.NUMERIC_CIGAR, this.strand)
   }
 
   // generate a CIGAR string from NUMERIC_CIGAR

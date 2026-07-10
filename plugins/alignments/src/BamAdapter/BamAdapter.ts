@@ -18,10 +18,15 @@ import type {
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-// Returns the [start, end) span of records that lack an MD tag and need
-// reference sequence for mismatch rendering, or null if none do.
+// The [start, end) reference span needed for mismatch rendering: the union of
+// every record lacking an MD tag, clamped to the queried viewport. null when
+// every record carries MD, so no reference fetch is needed at all. Clamping
+// here keeps a whole-chromosome contig alignment from fetching sequence outside
+// the visible slice (the mismatch walk is windowed to the same region).
 function seqFetchSpan(
   records: readonly { NUMERIC_MD: unknown; start: number; end: number }[],
+  regionStart: number,
+  regionEnd: number,
 ) {
   let start = Infinity
   let end = 0
@@ -31,7 +36,9 @@ function seqFetchSpan(
       end = Math.max(end, record.end)
     }
   }
-  return start !== Infinity ? { start, end } : null
+  return start !== Infinity
+    ? { start: Math.max(start, regionStart), end: Math.min(end, regionEnd) }
+    : null
 }
 
 export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig> {
@@ -165,19 +172,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
       checkStopToken(stopToken)
 
       const { readName, tagFilters } = filterBy ?? {}
-      // only reads lacking an MD tag need the reference; defer loading the
-      // sequence adapter (and the fetch) until we know at least one does.
-      // Clip to the viewport: a whole-chromosome assembly contig spans the
-      // entire ref, but only the visible slice is ever compared (the mismatch
-      // walk is windowed to [region.start, region.end]), so fetching the whole
-      // chromosome sequence per pan is pure waste.
-      const recordSpan = seqFetchSpan(records)
-      const span = recordSpan
-        ? {
-            start: Math.max(recordSpan.start, start),
-            end: Math.min(recordSpan.end, end),
-          }
-        : null
+      // only reads lacking an MD tag need the reference, so defer loading the
+      // sequence adapter (and the fetch) until we know at least one does
+      const span = seqFetchSpan(records, start, end)
       const sequenceAdapter = span ? await this.getSequenceAdapter() : undefined
       const regionSeq =
         sequenceAdapter && span

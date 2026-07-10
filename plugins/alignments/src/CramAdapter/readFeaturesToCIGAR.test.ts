@@ -29,6 +29,23 @@ test('cram read features to CIGAR', () => {
   ).toMatchSnapshot()
 })
 
+test("'b' verbatim bases align as matches (one M column per base)", () => {
+  // Documents 'b' semantics: data is a decoded base string ("ACGT" = 4 match
+  // columns), then a 2bp deletion, then 6 trailing matches to fill readLength.
+  expect(
+    numericCigarToString(
+      readFeaturesToNumericCIGAR(
+        [
+          { code: 'b', data: 'ACGT', pos: 1, refPos: 1 },
+          { code: 'D', data: 2, pos: 5, refPos: 5 },
+        ],
+        1,
+        10,
+      ),
+    ),
+  ).toBe('4M2D6M')
+})
+
 test('trailing single-base insertions are not dropped when remaining=0', () => {
   // 3M then two 'i' insertions consuming all readLen=5 bases → remaining=0
   // bug: original `if (remaining && insLen)` silently dropped the insertions

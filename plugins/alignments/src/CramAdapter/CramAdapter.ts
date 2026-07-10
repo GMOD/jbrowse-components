@@ -309,6 +309,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
    * query regions
    */
   private async bytesForRegions(regions: Region[]) {
+    // setup() (not just configure()) so samHeader is populated — refNameToId
+    // reads it, and without it every region resolves to 0 bytes, silently
+    // bypassing the fetchSizeLimit warning in a worker that hasn't yet loaded
+    // the header.
     const { cram } = await this.setup()
     const blockResults = await Promise.all(
       regions.map(region => {
