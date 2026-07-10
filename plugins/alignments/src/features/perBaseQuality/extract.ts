@@ -1,12 +1,4 @@
-import {
-  CIGAR_D,
-  CIGAR_EQ,
-  CIGAR_I,
-  CIGAR_M,
-  CIGAR_N,
-  CIGAR_S,
-  CIGAR_X,
-} from '@jbrowse/cigar-utils'
+import { forEachAlignedBaseInRegion } from '../alignedBaseWalk.ts'
 
 import type { PerBaseQualityEntry } from './types.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -20,41 +12,14 @@ export function extractPerBaseQuality(
   region: Region,
   out: PerBaseQualityEntry[],
 ) {
-  const { start: regionStart, end: regionEnd } = region
-  const scores = feature.get('NUMERIC_QUAL') as Uint8Array | undefined
+  // CRAM yields number[] (record.qualityScores), BAM a Uint8Array — both index
+  // genomic-forward, so ArrayLike covers them without a lossy cast.
+  const scores = feature.get('NUMERIC_QUAL') as ArrayLike<number> | undefined
   const cigarOps = feature.get('NUMERIC_CIGAR') as ArrayLike<number> | undefined
   if (scores && scores.length > 0 && cigarOps && cigarOps.length > 0) {
     const start = feature.get('start')
-    let soffset = 0
-    let roffset = 0
-    for (let i = 0, l = cigarOps.length; i < l; i++) {
-      const packed = cigarOps[i]!
-      const len = packed >> 4
-      const opIdx = packed & 0xf
-      if (opIdx === CIGAR_S || opIdx === CIGAR_I) {
-        soffset += len
-      } else if (opIdx === CIGAR_D || opIdx === CIGAR_N) {
-        roffset += len
-      } else if (opIdx === CIGAR_M || opIdx === CIGAR_X || opIdx === CIGAR_EQ) {
-        const opStart = start + roffset
-        if (opStart >= regionEnd) {
-          break
-        }
-        const opEnd = opStart + len
-        if (opEnd > regionStart) {
-          const visStart = Math.max(0, regionStart - opStart)
-          const visEnd = Math.min(len, regionEnd - opStart)
-          for (let m = visStart; m < visEnd; m++) {
-            out.push({
-              readIndex,
-              position: opStart + m,
-              score: scores[soffset + m]!,
-            })
-          }
-        }
-        soffset += len
-        roffset += len
-      }
-    }
+    forEachAlignedBaseInRegion(cigarOps, start, region, (position, q) => {
+      out.push({ readIndex, position, score: scores[q]! })
+    })
   }
 }
