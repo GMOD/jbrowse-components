@@ -41,9 +41,7 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
 export function buildChainFeatureData(feature: Feature): ChainFeatureData {
   return {
     ...buildBaseFeatureData(feature),
-    refName: feature.get('refName'),
     nextRef: feature.get('next_ref') as string | undefined,
-    pairOrientationStr: feature.get('pair_orientation') as string | undefined,
     templateLength: (feature.get('template_length') as number | undefined) ?? 0,
   }
 }

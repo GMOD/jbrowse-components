@@ -7,6 +7,7 @@ import {
   lgvSession,
   menuCascade,
   sessionSpec,
+  trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -60,10 +61,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox-long-reads-sv-bam',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            showSoftClipping: true,
-          },
+          type: 'LinearAlignmentsDisplay',
+          showSoftClipping: true,
         },
       ],
     }),
@@ -108,23 +107,28 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'volvox_sv_cram_linked',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                readConnections: 'samplot',
-                readConnectionsDown: true,
-                // color the cloud by both insert size and orientation:
-                // short-insert pairs always paint pink (overriding orientation,
-                // so the insertion-supporting cluster stands out from the grey
-                // normal background even though it's RR-oriented), while
-                // long-/normal-insert pairs paint by their pair type. The arc
-                // palette uses a saturated short-insert pink so the thin cloud
-                // lines stay visible.
-                arcColorByType: 'insertSizeAndOrientation',
-                coverageHeight: 100,
-                readConnectionsHeight: 100,
-                height: 600,
-                userByteSizeLimit: 500_000_000,
-              },
+              type: 'LinearAlignmentsDisplay',
+              readConnections: 'samplot',
+              readConnectionsDown: true,
+              // color the cloud by both insert size and orientation:
+              // short-insert pairs always paint pink (overriding orientation,
+              // so the insertion-supporting cluster stands out from the grey
+              // normal background even though it's RR-oriented), while
+              // long-/normal-insert pairs paint by their pair type. The arc
+              // palette uses a saturated short-insert pink so the thin cloud
+              // lines stay visible.
+              arcColorByType: 'insertSizeAndOrientation',
+              // color the pileup by the same scheme as the cloud so the
+              // built-in floating legend (showLegend) spells out what the
+              // colors mean — short-insert (pink, the insertion-supporting
+              // cluster) vs normal/oriented pairs — instead of leaving the
+              // reader to guess the samplot color code
+              colorBy: { type: 'insertSizeAndOrientation' },
+              showLegend: true,
+              coverageHeight: 100,
+              readConnectionsHeight: 100,
+              height: 600,
+              userByteSizeLimit: 500_000_000,
             },
           ],
         },
@@ -265,17 +269,15 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox_bam',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            sortedBy: {
-              // 0-based internal coordinate: the SNP displayed as ctgA:14,481
-              // (1-based) is position 14480 internally. Match the base the
-              // right-click sort lands on so both figure frames sort identically.
-              type: 'basePair',
-              pos: 14480,
-              refName: 'ctgA',
-              assemblyName: 'volvox',
-            },
+          type: 'LinearAlignmentsDisplay',
+          sortedBy: {
+            // 0-based internal coordinate: the SNP displayed as ctgA:14,481
+            // (1-based) is position 14480 internally. Match the base the
+            // right-click sort lands on so both figure frames sort identically.
+            type: 'basePair',
+            pos: 14480,
+            refName: 'ctgA',
+            assemblyName: 'volvox',
           },
         },
       ],
@@ -366,18 +368,17 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'ncbi_gff_hg19',
           // give the gene track room so the B2M model is clearly visible
           // above the sashimi arcs (gene track too short to see)
-          displaySnapshot: { type: 'LinearBasicDisplay', height: 120 },
+          type: 'LinearBasicDisplay',
+          height: 120,
         },
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           // flagship sashimi shot: label each junction arc with its supporting-
           // read count, and use 'auto' placement so arcs split above/below by
           // strand instead of all stacking upward
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            showSashimiLabels: true,
-            sashimiArcsMode: 'auto',
-          },
+          type: 'LinearAlignmentsDisplay',
+          showSashimiLabels: true,
+          sashimiArcsMode: 'auto',
         },
       ],
     }),
@@ -399,10 +400,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'ncbi_gff_hg19',
           // hide gene descriptions so the gene track stays compact next to
           // the Hi-C display
-          displaySnapshot: {
-            type: 'LinearBasicDisplay',
-            showDescriptions: false,
-          },
+          type: 'LinearBasicDisplay',
+          showDescriptions: false,
         },
         'hic',
       ],
@@ -474,20 +473,16 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             'cpgisland_ucsc_hg38',
             {
               trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram_modifications',
-              displaySnapshot: {
-                colorBy: { type: 'modifications' },
-                // lift the fetch-size gate so the CRAM auto-loads headless
-                // instead of sitting on the force-load prompt (same mechanism
-                // as the smalldel/multisv specs)
-                userByteSizeLimit: 500_000_000,
-              },
+              colorBy: { type: 'modifications' },
+              // lift the fetch-size gate so the CRAM auto-loads headless
+              // instead of sitting on the force-load prompt (same mechanism
+              // as the smalldel/multisv specs)
+              userByteSizeLimit: 500_000_000,
             },
             {
               trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram',
-              displaySnapshot: {
-                colorBy: { type: 'methylation' },
-                userByteSizeLimit: 500_000_000,
-              },
+              colorBy: { type: 'methylation' },
+              userByteSizeLimit: 500_000_000,
             },
           ],
         },
@@ -583,13 +578,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg002_nanopore_hp',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                height: 500,
-                userByteSizeLimit: 200_000_000,
-                groupBy: { type: 'tag', tag: 'HP' },
-                colorBy: { type: 'tag', tag: 'HP' },
-              },
+              type: 'LinearAlignmentsDisplay',
+              height: 500,
+              userByteSizeLimit: 200_000_000,
+              groupBy: { type: 'tag', tag: 'HP' },
+              colorBy: { type: 'tag', tag: 'HP' },
             },
           ],
         },
@@ -627,15 +620,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg002_nanopore_hp',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                height: 300,
-                userByteSizeLimit: 200_000_000,
-                // start ungrouped and uncolored: the figure demonstrates the
-                // group-by mechanic itself, so the reads are plain until the
-                // dialog is submitted (reviewer: initial state shouldn't already
-                // have the color-by/group-by settings applied)
-              },
+              type: 'LinearAlignmentsDisplay',
+              height: 300,
+              userByteSizeLimit: 200_000_000,
+              // start ungrouped and uncolored: the figure demonstrates the
+              // group-by mechanic itself, so the reads are plain until the
+              // dialog is submitted (reviewer: initial state shouldn't already
+              // have the color-by/group-by settings applied)
             },
           ],
         },
@@ -735,11 +726,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'illumina_hg002',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            featureHeight: 3,
-            featureSpacing: 0,
-          },
+          type: 'LinearAlignmentsDisplay',
+          featureHeight: 3,
+          featureSpacing: 0,
         },
       ],
     }),
@@ -808,13 +797,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'cpgisland_ucsc_hg38',
         {
           trackId: 'COLO829_tumor.ht',
-          displaySnapshot: {
-            colorBy: { type: 'modifications' },
-            // legend is opt-in now; this teaching figure explicitly shows
-            // the 5mC/5hmC color key
-            showLegend: true,
-            userByteSizeLimit: 100_000_000,
-          },
+          colorBy: { type: 'modifications' },
+          // legend is opt-in now; this teaching figure explicitly shows
+          // the 5mC/5hmC color key
+          showLegend: true,
+          userByteSizeLimit: 100_000_000,
         },
       ],
     }),
@@ -868,13 +855,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'ncbi_gff_hg19',
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            coverageHeight: 120,
-            height: 460,
-            maxHeight: 2000,
-            minSashimiScore: 3,
-          },
+          type: 'LinearAlignmentsDisplay',
+          coverageHeight: 120,
+          height: 460,
+          maxHeight: 2000,
+          minSashimiScore: 3,
         },
       ],
     }),
@@ -901,22 +886,20 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'ncbi_gff_hg19',
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            featureHeight: 3,
-            featureSpacing: 0,
-            maxHeight: 2000,
-            // taller SNPCoverage band + shorter pileup viewport + shorter
-            // browser: coverageHeight is the LinearAlignmentsDisplay
-            // coverage band, the pileup viewport = height - coverageHeight
-            coverageHeight: 120,
-            height: 420,
-            // ACTB's real minus-strand introns have 449/290/29/27/4 reads;
-            // the spurious forward-strand sashimi arcs are single-/2-read
-            // aligner noise (correct XS-tag strand, just low support). A
-            // min-support of 3 drops the noise, keeps the real junctions.
-            minSashimiScore: 3,
-          },
+          type: 'LinearAlignmentsDisplay',
+          featureHeight: 3,
+          featureSpacing: 0,
+          maxHeight: 2000,
+          // taller SNPCoverage band + shorter pileup viewport + shorter
+          // browser: coverageHeight is the LinearAlignmentsDisplay
+          // coverage band, the pileup viewport = height - coverageHeight
+          coverageHeight: 120,
+          height: 420,
+          // ACTB's real minus-strand introns have 449/290/29/27/4 reads;
+          // the spurious forward-strand sashimi arcs are single-/2-read
+          // aligner noise (correct XS-tag strand, just low support). A
+          // min-support of 3 drops the noise, keeps the real junctions.
+          minSashimiScore: 3,
         },
       ],
     }),
@@ -943,13 +926,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // LinearAlignmentsDisplay coverage-track height (default 45).
           // super-compact featureHeight=1 so every isoform read
           // stacks in view instead of hitting "Max layout height reached".
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            coverageHeight: 120,
-            height: 620,
-            featureHeight: 1,
-            featureSpacing: 0,
-          },
+          type: 'LinearAlignmentsDisplay',
+          coverageHeight: 120,
+          height: 620,
+          featureHeight: 1,
+          featureSpacing: 0,
         },
       ],
     }),
@@ -960,42 +941,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
   },
 
-  // Alternative splicing at PKM (pyruvate kinase M) — the Warburg-effect switch.
-  // PKM1 and PKM2 come from two mutually-exclusive exons: exon 10 (PKM2,
-  // chr15:72,494,795-72,494,961) and exon 9 (PKM1, 72,495,363-72,495,529). This
-  // proliferating cell line splices IN the PKM2 exon (mean depth ~99, sashimi
-  // arcs on both flanks) and SKIPS the PKM1 exon (depth ~0.3) — the arc jumps
-  // right over the empty PKM1 exon. Zoomed to ~8kb so both MXE exons + both
-  // flanking constitutive exons + the arcs are all in frame; at this zoom the
-  // gene track's geneGlyphMode:auto resolves to 'all', so every PKM isoform
-  // renders and the reader sees which annotated transcripts use which exon.
-  {
-    mode: 'url',
-    name: 'rnaseq/pkm_mutually_exclusive',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg19',
-      loc: 'chr15:72,492,600-72,499,300',
-      trackLabels: 'offset',
-      tracks: [
-        'ncbi_gff_hg19',
-        {
-          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            coverageHeight: 150,
-            height: 480,
-            maxHeight: 2000,
-            minSashimiScore: 3,
-          },
-        },
-      ],
-    }),
-    readyText: 'PKM',
-    readyTimeout: 60000,
-    settleMs: 15000,
-    viewportHeight: 720,
-  },
-
   // Strand-specific RNA-seq at the surfeit locus — the most tightly-packed gene
   // cluster in the vertebrate genome, with genes on alternating strands
   // (RPL7A +, SURF1 -, SURF2 +, SURF4 -) sharing bidirectional promoters.
@@ -1003,7 +948,12 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // the strongly-transcribed RPL7A reads are all one color even though SURF1
   // sits immediately downstream on the opposite strand — the per-read strand is
   // exactly what assigns each read to the correct gene when transcripts abut or
-  // overlap.
+  // overlap. The reads are already colored by firstOfPairStrand in the session
+  // (so the auto-appended live "Open in JBrowse" link opens the colored view —
+  // don't move this to a menu-click-only stage, which would leave the live link
+  // uncolored), and the track menu is opened over them along Color by... →
+  // Paired end → First of pair strand (boxed, and shown checked) so the one
+  // frame teaches both the menu path and its result.
   {
     mode: 'url',
     name: 'rnaseq/strand_specific',
@@ -1015,20 +965,28 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'ncbi_gff_hg19',
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            colorBy: { type: 'firstOfPairStrand' },
-            coverageHeight: 110,
-            height: 460,
-            maxHeight: 2000,
-            minSashimiScore: 3,
-          },
+          type: 'LinearAlignmentsDisplay',
+          colorBy: { type: 'firstOfPairStrand' },
+          coverageHeight: 110,
+          height: 460,
+          maxHeight: 2000,
+          minSashimiScore: 3,
         },
       ],
     }),
     readyText: 'RPL7A',
     readyTimeout: 60000,
     settleMs: 15000,
-    viewportHeight: 700,
+    viewportHeight: 760,
+    hideTooltip: true,
+    actions: [
+      trackMenuIcon('Pairend_StrandSpecific_51mer_Human_hg19'),
+      ...menuCascade(['Color by...', 'Paired end', 'First of pair strand']),
+    ],
+    annotations: cascadeBoxes([
+      'Color by...',
+      'Paired end',
+      'First of pair strand',
+    ]),
   },
 ]

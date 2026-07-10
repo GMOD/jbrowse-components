@@ -119,10 +119,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
         'Pd8Wh30ei9R',
         {
           trackId: 'ncbi_gff_hg19',
-          displaySnapshot: {
-            type: 'LinearBasicDisplay',
-            geneGlyphMode: 'longestCoding',
-          },
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
         },
       ],
     }),
@@ -176,10 +174,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
         'Pd8Wh30ei9R',
         {
           trackId: 'ncbi_gff_hg19',
-          displaySnapshot: {
-            type: 'LinearBasicDisplay',
-            geneGlyphMode: 'longestCoding',
-          },
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
         },
       ],
     }),
@@ -208,11 +204,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
         {
           trackId: 'ncbi_genes_enterovirus_d',
           // tall enough for the gene row + all 12 stacked mature peptides
-          displaySnapshot: {
-            type: 'LinearBasicDisplay',
-            height: 220,
-            subfeatureLabels: 'overlay',
-          },
+          type: 'LinearBasicDisplay',
+          height: 220,
+          subfeatureLabels: 'overlay',
         },
       ],
     }),
@@ -253,21 +247,17 @@ export const featuresSpecs: ScreenshotSpec[] = [
               // The collapse-introns dialog's "Show only this feature" (on by
               // default) isolates the reshaped view to PTEN, dropping the
               // neighboring KLLN fragment — no jexl filter needed.
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                geneGlyphMode: 'longestCoding',
-              },
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
             },
             {
               // PTEN-only sliced RNA-seq BAM (see PTEN_RNASEQ_ADAPTER): a tiny
               // deterministic download, so the sashimi arcs are reliably present
               // at capture. compact pileup so the reads pack tightly
               trackId: 'pten_directrna',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                featureHeight: 3,
-                featureSpacing: 0,
-              },
+              type: 'LinearAlignmentsDisplay',
+              featureHeight: 3,
+              featureSpacing: 0,
             },
           ],
         },
@@ -331,11 +321,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
-          displaySnapshot: {
-            type: 'LinearBasicDisplay',
-            geneGlyphMode: 'longestCoding',
-            height: 200,
-          },
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
+          height: 200,
         },
       ],
     }),
@@ -378,11 +366,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
-          displaySnapshot: {
-            type: 'LinearBasicDisplay',
-            geneGlyphMode: 'longestCoding',
-            height: 200,
-          },
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
+          height: 200,
         },
       ],
     }),
@@ -413,9 +399,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:17200-23200',
-      tracks: [
-        { trackId: 'gff3tabix_genes', displaySnapshot: { height: 300 } },
-      ],
+      tracks: [{ trackId: 'gff3tabix_genes', height: 300 }],
     }),
     readyText: 'ctgA',
     settleMs: 4000,
@@ -462,9 +446,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:17200-23200',
-      tracks: [
-        { trackId: 'gff3tabix_genes', displaySnapshot: { height: 300 } },
-      ],
+      tracks: [{ trackId: 'gff3tabix_genes', height: 300 }],
     }),
     readyText: 'ctgA',
     settleMs: 4000,

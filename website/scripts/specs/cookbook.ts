@@ -3,8 +3,8 @@ import { VOLVOX, lgvSession } from '../screenshot-spec-helpers.ts'
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // Figures that back the copy-paste recipes in docs/cookbook.md. Each spec
-// applies the exact recipe config to the volvox genes track via a per-track
-// displaySnapshot (the session-spec equivalent of the recipe's displayDefaults),
+// applies the exact recipe config to the volvox genes track via inline per-track
+// display options (the session-spec equivalent of the recipe's displayDefaults),
 // so if a recipe's syntax ever goes stale the rendered figure changes and
 // surfaces it — and every figure links to a live instance running that recipe.
 export const cookbookSpecs: ScreenshotSpec[] = [
@@ -19,10 +19,8 @@ export const cookbookSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'gff3tabix_genes',
-          displaySnapshot: {
-            height: 200,
-            color: "jexl:feature.strand==1?'#1f77b4':'#d62728'",
-          },
+          height: 200,
+          color: "jexl:feature.strand==1?'#1f77b4':'#d62728'",
         },
       ],
     }),

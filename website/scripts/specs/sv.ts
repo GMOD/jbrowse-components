@@ -2,6 +2,8 @@ import {
   DEMO_CONFIG,
   HG00151_ONT_1000G_ADAPTER,
   HG002_NANOPORE_ADAPTER,
+  HG008_BAF_TRACK,
+  HG008_LOG2RATIO_TRACK,
   VOLVOX,
   cgiabUrl,
   kgUrl,
@@ -111,10 +113,8 @@ export const svSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
-          displaySnapshot: {
-            type: 'LinearBasicDisplay',
-            geneGlyphMode: 'longestCoding',
-          },
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
         },
       ],
     }),
@@ -213,21 +213,19 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'colo829_cnv_coverage',
-              displaySnapshot: {
-                type: 'MultiLinearWiggleDisplay',
-                autoscale: 'localsd',
-                numStdDev: 3,
-                defaultRendering: 'multiscatter',
-                // even finer binning (basesPerSpan = bpPerPx/resolution) so the
-                // scatter resolves copy-number structure (even finer,
-                // then bumped again for slightly higher resolution — the BigWig
-                // zoom levels are discrete, so this has to cross a level to add
-                // detail)
-                resolution: 50,
-                // shrink scatter points (default 2px) so the dense CNV cloud
-                // reads as fine structure rather than blobs
-                scatterPointSize: 1,
-              },
+              type: 'MultiLinearWiggleDisplay',
+              autoscale: 'localsd',
+              numStdDev: 3,
+              defaultRendering: 'multiscatter',
+              // even finer binning (basesPerSpan = bpPerPx/resolution) so the
+              // scatter resolves copy-number structure (even finer,
+              // then bumped again for slightly higher resolution — the BigWig
+              // zoom levels are discrete, so this has to cross a level to add
+              // detail)
+              resolution: 50,
+              // shrink scatter points (default 2px) so the dense CNV cloud
+              // reads as fine structure rather than blobs
+              scatterPointSize: 1,
             },
           ],
         },
@@ -279,13 +277,11 @@ export const svSpecs: ScreenshotSpec[] = [
             'variants_hg002',
             {
               trackId: 'hg002_nanopore_hp',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                height: 400,
-                userByteSizeLimit: 200_000_000,
-                groupBy: { type: 'tag', tag: 'HP' },
-                colorBy: { type: 'tag', tag: 'HP' },
-              },
+              type: 'LinearAlignmentsDisplay',
+              height: 400,
+              userByteSizeLimit: 200_000_000,
+              groupBy: { type: 'tag', tag: 'HP' },
+              colorBy: { type: 'tag', tag: 'HP' },
             },
           ],
         },
@@ -316,12 +312,10 @@ export const svSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox-long-reads-sv-bam',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            // taller coverage band so the clip-indicator ticks above it are
-            // large enough to read (default coverageHeight is 45)
-            coverageHeight: 120,
-          },
+          type: 'LinearAlignmentsDisplay',
+          // taller coverage band so the clip-indicator ticks above it are
+          // large enough to read (default coverageHeight is 45)
+          coverageHeight: 120,
         },
       ],
     }),
@@ -354,21 +348,19 @@ export const svSpecs: ScreenshotSpec[] = [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
               trackId: 'HG02768.final',
-              displaySnapshot: {
-                linkedReads: 'normal',
-                readConnections: 'arc',
-                // arcs drawn below the coverage band (reviewer)
-                readConnectionsDown: true,
-                height: 1300,
-                coverageHeight: 120,
-                // taller reads so the minority green (same-orientation /
-                // inverted) pairs are legible instead of 3px slivers
-                featureHeight: 9,
-                colorBy: { type: 'pairOrientation' },
-                // legend is opt-in now; show the pair-orientation key so the
-                // inversion color signature is readable
-                showLegend: true,
-              },
+              linkedReads: 'normal',
+              readConnections: 'arc',
+              // arcs drawn below the coverage band (reviewer)
+              readConnectionsDown: true,
+              height: 1300,
+              coverageHeight: 120,
+              // taller reads so the minority green (same-orientation /
+              // inverted) pairs are legible instead of 3px slivers
+              featureHeight: 9,
+              colorBy: { type: 'pairOrientation' },
+              // legend is opt-in now; show the pair-orientation key so the
+              // inversion color signature is readable
+              showLegend: true,
             },
           ],
         },
@@ -456,24 +448,22 @@ export const svSpecs: ScreenshotSpec[] = [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
               trackId: 'HG02768.final',
-              displaySnapshot: {
-                showBezierConnections: true,
-                linkedReads: 'normal',
-                // hide the normally-paired reads so only the abnormal
-                // same-orientation (LL/RR) inverted-duplication pairs and their
-                // bezier curves remain, decluttering the view (reviewer)
-                drawProperPairs: false,
-                // also draw the coverage-band arcs, below the coverage (reviewer)
-                readConnections: 'arc',
-                readConnectionsDown: true,
-                // proper pairs hidden, so the abnormal-pair stack is short —
-                // sized to it instead of the old 1300px full-depth band
-                height: 650,
-                coverageHeight: 120,
-                featureHeight: 9,
-                colorBy: { type: 'pairOrientation' },
-                showLegend: true,
-              },
+              showBezierConnections: true,
+              linkedReads: 'normal',
+              // hide the normally-paired reads so only the abnormal
+              // same-orientation (LL/RR) inverted-duplication pairs and their
+              // bezier curves remain, decluttering the view (reviewer)
+              drawProperPairs: false,
+              // also draw the coverage-band arcs, below the coverage (reviewer)
+              readConnections: 'arc',
+              readConnectionsDown: true,
+              // proper pairs hidden, so the abnormal-pair stack is short —
+              // sized to it instead of the old 1300px full-depth band
+              height: 650,
+              coverageHeight: 120,
+              featureHeight: 9,
+              colorBy: { type: 'pairOrientation' },
+              showLegend: true,
             },
           ],
         },
@@ -528,18 +518,16 @@ export const svSpecs: ScreenshotSpec[] = [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
               trackId: 'HG00151_ONT_1000g',
-              displaySnapshot: {
-                // link supplementary alignments: chains each long read's split
-                // segments, so the reverse-strand piece of an inversion-spanning
-                // read paints the flipped-strand color (and the junction arcs
-                // magenta) instead of an uncolored plain pileup
-                linkedReads: 'normal',
-                readConnections: 'arc',
-                height: 560,
-                coverageHeight: 70,
-                colorBy: { type: 'pairOrientation' },
-                showLegend: true,
-              },
+              // link supplementary alignments: chains each long read's split
+              // segments, so the reverse-strand piece of an inversion-spanning
+              // read paints the flipped-strand color (and the junction arcs
+              // magenta) instead of an uncolored plain pileup
+              linkedReads: 'normal',
+              readConnections: 'arc',
+              height: 560,
+              coverageHeight: 70,
+              colorBy: { type: 'pairOrientation' },
+              showLegend: true,
             },
           ],
         },
@@ -659,12 +647,10 @@ export const svSpecs: ScreenshotSpec[] = [
                 {
                   trackId:
                     'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
-                  displaySnapshot: {
-                    featureHeight: 1,
-                    featureSpacing: 0,
-                    height: 250,
-                    userByteSizeLimit: 500_000_000,
-                  },
+                  featureHeight: 1,
+                  featureSpacing: 0,
+                  height: 250,
+                  userByteSizeLimit: 500_000_000,
                 },
               ],
             },
@@ -675,12 +661,10 @@ export const svSpecs: ScreenshotSpec[] = [
                 {
                   trackId:
                     'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
-                  displaySnapshot: {
-                    featureHeight: 1,
-                    featureSpacing: 0,
-                    height: 250,
-                    userByteSizeLimit: 500_000_000,
-                  },
+                  featureHeight: 1,
+                  featureSpacing: 0,
+                  height: 250,
+                  userByteSizeLimit: 500_000_000,
                 },
               ],
             },
@@ -905,17 +889,15 @@ export const svSpecs: ScreenshotSpec[] = [
               // compact pileup: the "Compact" feature-height preset
               // sets featureHeight=3, featureSpacing=0 (COMPACTNESS_PRESETS),
               // both flat config-override keys on LinearAlignmentsDisplay
-              displaySnapshot: {
-                height: 300,
-                featureHeight: 3,
-                featureSpacing: 0,
-                // sort reads by the base at the screen-center column
-                sortedBy: {
-                  type: 'basePair',
-                  pos: 122836434,
-                  refName: 'chr10',
-                  assemblyName: 'GRCh38_GIABv3',
-                },
+              height: 300,
+              featureHeight: 3,
+              featureSpacing: 0,
+              // sort reads by the base at the screen-center column
+              sortedBy: {
+                type: 'basePair',
+                pos: 122836434,
+                refName: 'chr10',
+                assemblyName: 'GRCh38_GIABv3',
               },
             },
           ],
@@ -976,15 +958,13 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg008_cnv_indexcov_chr5',
-              displaySnapshot: {
-                type: 'MultiLinearWiggleDisplay',
-                defaultRendering: 'multiscatter',
-                autoscale: 'localsd',
-                // finer binning (basesPerSpan = bpPerPx/resolution) so the
-                // whole-chromosome scatter resolves more CNV detail
-                resolution: 8,
-                height: 200,
-              },
+              type: 'MultiLinearWiggleDisplay',
+              defaultRendering: 'multiscatter',
+              autoscale: 'localsd',
+              // finer binning (basesPerSpan = bpPerPx/resolution) so the
+              // whole-chromosome scatter resolves more CNV detail
+              resolution: 8,
+              height: 200,
             },
             'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
           ],
@@ -1010,32 +990,8 @@ export const svSpecs: ScreenshotSpec[] = [
     name: 'sv_cgiab/cnv_log2ratio_genome',
     url: cgiabUrl({
       sessionTracks: [
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_log2ratio',
-          name: 'HG008 log2(tumor/normal) coverage ratio',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_baf',
-          name: 'HG008-T B-allele frequency (BAF)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
+        HG008_LOG2RATIO_TRACK,
+        HG008_BAF_TRACK,
         {
           type: 'MultiQuantitativeTrack',
           trackId: 'hg008_cnv_indexcov',
@@ -1075,55 +1031,49 @@ export const svSpecs: ScreenshotSpec[] = [
               // raw normalized coverage (median≈1 → copy number) for both
               // samples in one band, the signal log2(tumor/normal) is built from
               trackId: 'hg008_cnv_indexcov',
-              displaySnapshot: {
-                type: 'MultiLinearWiggleDisplay',
-                defaultRendering: 'multiscatter',
-                resolution: 10,
-                minScore: 0,
-                maxScore: 2.5,
-                height: 160,
-              },
+              type: 'MultiLinearWiggleDisplay',
+              defaultRendering: 'multiscatter',
+              resolution: 10,
+              minScore: 0,
+              maxScore: 2.5,
+              height: 160,
             },
             {
               trackId: 'hg008_log2ratio',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                // scatter of the per-bin average (not the default filled/whisker
-                // xyplot) reads copy-number gains/losses as a clean point band,
-                // the conventional CNV depth-ratio plot. useBicolor:false keeps it
-                // a single color: gains/losses read off the 0 line by position, so
-                // red/blue stays free to mean tumor/normal on the indexcov track
-                defaultRendering: 'scatter',
-                useBicolor: false,
-                summaryScoreMode: 'avg',
-                scatterPointSize: 1,
-                // request bigwig bins 10x finer than screen resolution so the
-                // whole-genome scatter resolves the per-bin CNV signal
-                resolution: 10,
-                minScore: -2,
-                maxScore: 2,
-                height: 160,
-                // horizontal gridlines behind the scatter so the log2=0 baseline
-                // and the ±1 copy-number steps are readable (reviewer)
-                displayCrossHatches: true,
-              },
+              type: 'LinearWiggleDisplay',
+              // scatter of the per-bin average (not the default filled/whisker
+              // xyplot) reads copy-number gains/losses as a clean point band,
+              // the conventional CNV depth-ratio plot. useBicolor:false keeps it
+              // a single color: gains/losses read off the 0 line by position, so
+              // red/blue stays free to mean tumor/normal on the indexcov track
+              defaultRendering: 'scatter',
+              useBicolor: false,
+              summaryScoreMode: 'avg',
+              scatterPointSize: 1,
+              // request bigwig bins 10x finer than screen resolution so the
+              // whole-genome scatter resolves the per-bin CNV signal
+              resolution: 10,
+              minScore: -2,
+              maxScore: 2,
+              height: 160,
+              // horizontal gridlines behind the scatter so the log2=0 baseline
+              // and the ±1 copy-number steps are readable (reviewer)
+              displayCrossHatches: true,
             },
             {
               trackId: 'hg008_baf',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                // raw 0..1 BAF as a fine-resolution scatter preserving the
-                // per-bin spread: LOH arms split into symmetric upper/lower
-                // bands off the central 0.5 het line, balanced regions stay a
-                // single 0.5 line. resolution:10 keeps bins small enough that
-                // the split survives at genome scale.
-                defaultRendering: 'scatter',
-                scatterPointSize: 1,
-                resolution: 10,
-                minScore: 0,
-                maxScore: 1,
-                height: 120,
-              },
+              type: 'LinearWiggleDisplay',
+              // raw 0..1 BAF as a fine-resolution scatter preserving the
+              // per-bin spread: LOH arms split into symmetric upper/lower
+              // bands off the central 0.5 het line, balanced regions stay a
+              // single 0.5 line. resolution:10 keeps bins small enough that
+              // the split survives at genome scale.
+              defaultRendering: 'scatter',
+              scatterPointSize: 1,
+              resolution: 10,
+              minScore: 0,
+              maxScore: 1,
+              height: 120,
             },
             'hg008_cnv_calls',
           ],
@@ -1147,34 +1097,7 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/cnv_log2_baf',
     url: cgiabUrl({
-      sessionTracks: [
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_log2ratio',
-          name: 'HG008 log2(tumor/normal) coverage ratio',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_baf',
-          name: 'HG008-T B-allele frequency (BAF)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      ],
+      sessionTracks: [HG008_LOG2RATIO_TRACK, HG008_BAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1183,40 +1106,36 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg008_log2ratio',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                // scatter of the per-bin average — the conventional CNV depth-
-                // ratio plot, styled to match cnv_log2ratio_genome. Single color
-                // (useBicolor:false); gains/losses read off the 0 line
-                defaultRendering: 'scatter',
-                useBicolor: false,
-                summaryScoreMode: 'avg',
-                scatterPointSize: 1,
-                // finer bins than screen resolution so the single-chromosome
-                // scatter resolves the per-bin signal (reviewer: higher res)
-                resolution: 10,
-                minScore: -2,
-                maxScore: 2,
-                height: 180,
-                // log2=0 baseline + ±1 copy-number steps behind the scatter
-                displayCrossHatches: true,
-              },
+              type: 'LinearWiggleDisplay',
+              // scatter of the per-bin average — the conventional CNV depth-
+              // ratio plot, styled to match cnv_log2ratio_genome. Single color
+              // (useBicolor:false); gains/losses read off the 0 line
+              defaultRendering: 'scatter',
+              useBicolor: false,
+              summaryScoreMode: 'avg',
+              scatterPointSize: 1,
+              // finer bins than screen resolution so the single-chromosome
+              // scatter resolves the per-bin signal (reviewer: higher res)
+              resolution: 10,
+              minScore: -2,
+              maxScore: 2,
+              height: 180,
+              // log2=0 baseline + ±1 copy-number steps behind the scatter
+              displayCrossHatches: true,
             },
             {
               trackId: 'hg008_baf',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                // raw 0..1 BAF scatter: the p-arm LOH splits het SNPs into an
-                // upper and lower band off the 0.5 het line, while the balanced
-                // q-arm stays a single 0.5 line. resolution:10 pulls finer
-                // bigwig bins so the band-split survives at chromosome scale.
-                defaultRendering: 'scatter',
-                scatterPointSize: 1,
-                resolution: 10,
-                minScore: 0,
-                maxScore: 1,
-                height: 140,
-              },
+              type: 'LinearWiggleDisplay',
+              // raw 0..1 BAF scatter: the p-arm LOH splits het SNPs into an
+              // upper and lower band off the 0.5 het line, while the balanced
+              // q-arm stays a single 0.5 line. resolution:10 pulls finer
+              // bigwig bins so the band-split survives at chromosome scale.
+              defaultRendering: 'scatter',
+              scatterPointSize: 1,
+              resolution: 10,
+              minScore: 0,
+              maxScore: 1,
+              height: 140,
             },
             'hg008_cnv_calls',
           ],
@@ -1310,19 +1229,15 @@ export const svSpecs: ScreenshotSpec[] = [
               // genes compact so the RefSeq isoforms collapse to a thin band
               // rather than dominating the figure
               trackId: 'hg38_ncbiRefSeq_ucsc',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                displayMode: 'compact',
-              },
+              type: 'LinearBasicDisplay',
+              displayMode: 'compact',
             },
             {
               trackId: 'hg008_t_coverage_finescale',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                minScore: 0,
-                maxScore: 100,
-                height: 200,
-              },
+              type: 'LinearWiggleDisplay',
+              minScore: 0,
+              maxScore: 100,
+              height: 200,
             },
             {
               // raw long-read pileup: the homozygous deletion is a
@@ -1336,15 +1251,13 @@ export const svSpecs: ScreenshotSpec[] = [
               // since a chain's members must share one group key and
               // "is-part-of-a-chain" isn't a groupable dimension; skipped.)
               trackId: 'hg008_t_reads_cdkn2a',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                linkedReads: 'normal',
-                // fit-to-display-height packs the ~116x pileup into the
-                // fixed 320px height without the fixed featureHeight/spacing
-                // clipping rows that don't fit
-                heightMode: 'fit',
-                height: 320,
-              },
+              type: 'LinearAlignmentsDisplay',
+              linkedReads: 'normal',
+              // fit-to-display-height packs the ~116x pileup into the
+              // fixed 320px height without the fixed featureHeight/spacing
+              // clipping rows that don't fit
+              heightMode: 'fit',
+              height: 320,
             },
             'hg008_cnv_calls',
           ],
@@ -1372,34 +1285,7 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/driver_kras_gain',
     url: cgiabUrl({
-      sessionTracks: [
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_log2ratio',
-          name: 'HG008 log2(tumor/normal) coverage ratio',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_baf',
-          name: 'HG008-T B-allele frequency (BAF)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      ],
+      sessionTracks: [HG008_LOG2RATIO_TRACK, HG008_BAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1412,44 +1298,38 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
-              displaySnapshot: {
-                // normal (not compact) height so the KRAS gene row + label read
-                // where they land under the highlight band (taller track)
-                type: 'LinearBasicDisplay',
-                height: 150,
-              },
+              // normal (not compact) height so the KRAS gene row + label read
+              // where they land under the highlight band (taller track)
+              type: 'LinearBasicDisplay',
+              height: 150,
             },
             {
               trackId: 'hg008_log2ratio',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                defaultRendering: 'scatter',
-                useBicolor: false,
-                summaryScoreMode: 'avg',
-                scatterPointSize: 3,
-                minScore: -2,
-                maxScore: 2,
-                height: 140,
-                // request bigwig bins 10x finer than screen resolution so the
-                // 500bp-binned log2 signal resolves at this window rather than
-                // being served as a coarse bigwig zoom level
-                resolution: 10,
-              },
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'scatter',
+              useBicolor: false,
+              summaryScoreMode: 'avg',
+              scatterPointSize: 3,
+              minScore: -2,
+              maxScore: 2,
+              height: 140,
+              // request bigwig bins 10x finer than screen resolution so the
+              // 500bp-binned log2 signal resolves at this window rather than
+              // being served as a coarse bigwig zoom level
+              resolution: 10,
             },
             {
               trackId: 'hg008_baf',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                // raw 0..1 BAF scatter with default whisker summary preserving the
-                // per-bin spread; resolution:10 makes it fine-grained so the 2+1
-                // gain's band-split is legible
-                defaultRendering: 'scatter',
-                scatterPointSize: 2,
-                resolution: 10,
-                minScore: 0,
-                maxScore: 1,
-                height: 140,
-              },
+              type: 'LinearWiggleDisplay',
+              // raw 0..1 BAF scatter with default whisker summary preserving the
+              // per-bin spread; resolution:10 makes it fine-grained so the 2+1
+              // gain's band-split is legible
+              defaultRendering: 'scatter',
+              scatterPointSize: 2,
+              resolution: 10,
+              minScore: 0,
+              maxScore: 1,
+              height: 140,
             },
             'hg008_cnv_calls',
           ],
@@ -1480,34 +1360,7 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/cnv_chr17_loh',
     url: cgiabUrl({
-      sessionTracks: [
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_log2ratio',
-          name: 'HG008 log2(tumor/normal) coverage ratio',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_baf',
-          name: 'HG008-T B-allele frequency (BAF)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      ],
+      sessionTracks: [HG008_LOG2RATIO_TRACK, HG008_BAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1518,34 +1371,30 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg008_log2ratio',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                defaultRendering: 'scatter',
-                useBicolor: false,
-                summaryScoreMode: 'avg',
-                scatterPointSize: 1,
-                minScore: -2,
-                maxScore: 2,
-                height: 140,
-                // finer bigwig bins so the 500bp-binned log2 shows across chr17
-                resolution: 10,
-              },
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'scatter',
+              useBicolor: false,
+              summaryScoreMode: 'avg',
+              scatterPointSize: 1,
+              minScore: -2,
+              maxScore: 2,
+              height: 140,
+              // finer bigwig bins so the 500bp-binned log2 shows across chr17
+              resolution: 10,
             },
             {
               trackId: 'hg008_baf',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                // raw 0..1 BAF scatter: BOTH arms split off the 0.5 het line — the
-                // p-arm (loss+LOH) and the q-arm (copy-neutral LOH) — which is the
-                // whole point of the figure. resolution:10 keeps bins fine enough
-                // that the split reads at chromosome scale.
-                defaultRendering: 'scatter',
-                scatterPointSize: 1,
-                resolution: 10,
-                minScore: 0,
-                maxScore: 1,
-                height: 140,
-              },
+              type: 'LinearWiggleDisplay',
+              // raw 0..1 BAF scatter: BOTH arms split off the 0.5 het line — the
+              // p-arm (loss+LOH) and the q-arm (copy-neutral LOH) — which is the
+              // whole point of the figure. resolution:10 keeps bins fine enough
+              // that the split reads at chromosome scale.
+              defaultRendering: 'scatter',
+              scatterPointSize: 1,
+              resolution: 10,
+              minScore: 0,
+              maxScore: 1,
+              height: 140,
             },
             'hg008_cnv_calls',
           ],
@@ -1568,34 +1417,7 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/driver_smad4_loh',
     url: cgiabUrl({
-      sessionTracks: [
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_log2ratio',
-          name: 'HG008 log2(tumor/normal) coverage ratio',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_baf',
-          name: 'HG008-T B-allele frequency (BAF)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      ],
+      sessionTracks: [HG008_LOG2RATIO_TRACK, HG008_BAF_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1607,34 +1429,30 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg008_log2ratio',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                defaultRendering: 'scatter',
-                useBicolor: false,
-                summaryScoreMode: 'avg',
-                scatterPointSize: 1,
-                minScore: -2,
-                maxScore: 2,
-                height: 140,
-                // pull finer bigwig bins than the default zoom level so the
-                // 500bp-binned log2 signal shows across this whole-chr18 view
-                resolution: 10,
-              },
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'scatter',
+              useBicolor: false,
+              summaryScoreMode: 'avg',
+              scatterPointSize: 1,
+              minScore: -2,
+              maxScore: 2,
+              height: 140,
+              // pull finer bigwig bins than the default zoom level so the
+              // 500bp-binned log2 signal shows across this whole-chr18 view
+              resolution: 10,
             },
             {
               trackId: 'hg008_baf',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                // raw 0..1 BAF scatter: the 18q LOH splits het SNPs into upper
-                // and lower bands off the 0.5 het line. resolution:10 keeps bins
-                // fine enough that the split reads at chromosome scale.
-                defaultRendering: 'scatter',
-                scatterPointSize: 1,
-                resolution: 10,
-                minScore: 0,
-                maxScore: 1,
-                height: 140,
-              },
+              type: 'LinearWiggleDisplay',
+              // raw 0..1 BAF scatter: the 18q LOH splits het SNPs into upper
+              // and lower bands off the 0.5 het line. resolution:10 keeps bins
+              // fine enough that the split reads at chromosome scale.
+              defaultRendering: 'scatter',
+              scatterPointSize: 1,
+              resolution: 10,
+              minScore: 0,
+              maxScore: 1,
+              height: 140,
             },
             'hg008_cnv_calls',
           ],

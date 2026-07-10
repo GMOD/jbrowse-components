@@ -75,24 +75,6 @@ boxes joined by a thin **teal** line across the skipped intron — a per-read
 connector distinct from the red/blue strand-colored arcs. Mouse over any read to
 inspect it.
 
-## Alternative splicing: one gene, more than one isoform
-
-The real payoff of splice arcs is showing which **isoform** a cell actually
-makes. A textbook case is **PKM** (pyruvate kinase M): its two isoforms, PKM1
-and PKM2, come from a pair of _mutually-exclusive exons_ — every transcript
-keeps exactly one of them. The choice matters biologically, because the PKM2
-isoform rewires metabolism toward the aerobic glycolysis (the "Warburg effect")
-that proliferating and cancer cells depend on.
-
-Zoom into those two exons and the RNA-seq settles the question directly:
-
-<Figure caption="PKM's mutually-exclusive exons. The coverage histogram peaks over the PKM2 exon (left) and a splice arc jumps straight over the adjacent PKM1 exon (right), which has no coverage — this proliferating cell line splices in PKM2. The gene model above shows both isoforms, so you can read off which annotated transcript the data supports." src="/img/rnaseq/pkm_mutually_exclusive.png" />
-
-Coverage is deep over the PKM2 exon and flat over the PKM1 exon right next to
-it, and the splice arc skips straight over the empty PKM1 exon to the following
-constitutive exon — a direct readout of which exon this cell splices in, without
-any assembly or quantification step.
-
 ## Strand-specific RNA-seq
 
 The strand colors on the arcs above are inferred from the splice-site motif, but

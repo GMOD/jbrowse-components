@@ -79,18 +79,14 @@ export const mafSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ce11_ncbi_refseq',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                displayMode: 'compact',
-              },
+              type: 'LinearBasicDisplay',
+              displayMode: 'compact',
             },
             {
               trackId: 'ce11.26way',
               // fit-to-display-height is the default; rows fill heightOverride
-              displaySnapshot: {
-                type: 'LinearMafDisplay',
-                heightOverride: 360,
-              },
+              type: 'LinearMafDisplay',
+              heightOverride: 360,
             },
           ],
         },
@@ -131,19 +127,15 @@ export const mafSpecs: ScreenshotSpec[] = [
             // without pushing the rows far down
             {
               trackId: 'ce11_ncbi_refseq',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                displayMode: 'compact',
-                geneGlyphMode: 'longestCoding',
-              },
+              type: 'LinearBasicDisplay',
+              displayMode: 'compact',
+              geneGlyphMode: 'longestCoding',
             },
             {
               trackId: 'ce11.26way',
-              displaySnapshot: {
-                type: 'LinearMafDisplay',
-                heightOverride: 470,
-                showTranslation: true,
-              },
+              type: 'LinearMafDisplay',
+              heightOverride: 470,
+              showTranslation: true,
             },
           ],
         },
@@ -183,11 +175,9 @@ export const mafSpecs: ScreenshotSpec[] = [
             'ce11_ncbi_refseq',
             {
               trackId: 'ce11.26way',
-              displaySnapshot: {
-                type: 'LinearMafDisplay',
-                heightOverride: 400,
-                colorByChromosome: true,
-              },
+              type: 'LinearMafDisplay',
+              heightOverride: 400,
+              colorByChromosome: true,
             },
           ],
         },
@@ -227,10 +217,8 @@ export const mafSpecs: ScreenshotSpec[] = [
             // (blue) coding bands in the heatmap below
             {
               trackId: 'ncbi_genes_hg38_ucsc',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                geneGlyphMode: 'longestCoding',
-              },
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
             },
             {
               trackId: 'hg38.multiz470way',
@@ -240,12 +228,10 @@ export const mafSpecs: ScreenshotSpec[] = [
               // sub-pixel but the conserved/divergent banding still reads as a
               // texture, and the whole phylogeny is visible at once instead of
               // scrolling off. The top-right legend names the red/blue ramp.
-              displaySnapshot: {
-                type: 'LinearMafDisplay',
-                height: 600,
-                rowIdentityMode: 'heatmap',
-                rowIdentityAutoZoom: false,
-              },
+              type: 'LinearMafDisplay',
+              height: 600,
+              rowIdentityMode: 'heatmap',
+              rowIdentityAutoZoom: false,
             },
           ],
         },
@@ -308,14 +294,12 @@ export const mafSpecs: ScreenshotSpec[] = [
               trackId: 'hg38.multiz470way',
               // fit-to-display-height: the ~30 filtered rows fill the track tall
               // enough to read the per-codon amino acids
-              displaySnapshot: {
-                type: 'LinearMafDisplay',
-                heightOverride: 560,
-                showTranslation: true,
-                showConservation: true,
-                conservationMode: 'codon',
-                subtreeFilter: HG38_470WAY_30,
-              },
+              type: 'LinearMafDisplay',
+              heightOverride: 560,
+              showTranslation: true,
+              showConservation: true,
+              conservationMode: 'codon',
+              subtreeFilter: HG38_470WAY_30,
             },
           ],
         },

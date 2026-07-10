@@ -22,7 +22,8 @@ export const gwasSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'gwas_track',
-          displaySnapshot: { type: 'LinearManhattanDisplay', height: 250 },
+          type: 'LinearManhattanDisplay',
+          height: 250,
         },
       ],
     }),
@@ -45,7 +46,8 @@ export const gwasSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'sle_gwas_ld',
-          displaySnapshot: { type: 'LinearManhattanDisplay', height: 200 },
+          type: 'LinearManhattanDisplay',
+          height: 200,
         },
       ],
     }),

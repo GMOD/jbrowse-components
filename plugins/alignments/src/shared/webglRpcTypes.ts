@@ -11,9 +11,7 @@ export interface FeatureData {
 }
 
 export interface ChainFeatureData extends FeatureData {
-  refName: string
   nextRef: string | undefined
-  pairOrientationStr: string | undefined
   templateLength: number
 }
 

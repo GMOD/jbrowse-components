@@ -139,6 +139,36 @@ export const HG38_GENCODE_PROMOTER_TRACK = {
   },
 }
 
+// HG008-T (CGIAB) copy-number session tracks reused across the sv_cgiab CNV
+// figures: the log2(tumor/normal) coverage ratio and the B-allele frequency,
+// both hosted BigWigs on jbrowse.org/demos/cgiab.
+export const HG008_LOG2RATIO_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'hg008_log2ratio',
+  name: 'HG008 log2(tumor/normal) coverage ratio',
+  assemblyNames: ['GRCh38_GIABv3'],
+  adapter: {
+    type: 'BigWigAdapter',
+    bigWigLocation: {
+      uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
+      locationType: 'UriLocation',
+    },
+  },
+}
+export const HG008_BAF_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'hg008_baf',
+  name: 'HG008-T B-allele frequency (BAF)',
+  assemblyNames: ['GRCh38_GIABv3'],
+  adapter: {
+    type: 'BigWigAdapter',
+    bigWigLocation: {
+      uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
+      locationType: 'UriLocation',
+    },
+  },
+}
+
 export function sessionSpec(config: string, session: object) {
   return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
@@ -419,9 +449,8 @@ export function hpyloriSyntenyWithGenes(geneColor?: string) {
   // the uncolored variant reads as a tidy row of genes rather than nested boxes
   const geneTrack = (trackId: string) => ({
     trackId,
-    displaySnapshot: geneColor
-      ? { showOnlyGenes: true, color: geneColor }
-      : { showOnlyGenes: true },
+    showOnlyGenes: true,
+    ...(geneColor ? { color: geneColor } : {}),
   })
   return hpyloriUrl({
     views: [
@@ -511,14 +540,12 @@ export function hg38ChimpSynteny(
   // the dense NCBI isoform stacks on both genomes (reviewer)
   const genes = (id: string) => ({
     trackId: id,
-    displaySnapshot: {
-      geneGlyphMode: 'longestCoding',
-      // default featureHeight (10px) reads as a bare sliver at this zoom —
-      // these loci have few, widely-spaced exons and no isoform stacking to
-      // fill a row, so there's nothing else shrinking them (verified
-      // autoHeight/height are not the cause: pinning both had no effect)
-      featureHeight: 18,
-    },
+    geneGlyphMode: 'longestCoding',
+    // default featureHeight (10px) reads as a bare sliver at this zoom —
+    // these loci have few, widely-spaced exons and no isoform stacking to
+    // fill a row, so there's nothing else shrinking them (verified
+    // autoHeight/height are not the cause: pinning both had no effect)
+    featureHeight: 18,
   })
   // RepeatMasker: 'grow' height mode — the track auto-sizes to exactly the few
   // rows of repeats at these TE loci, so it stays compact without crowding the
@@ -529,9 +556,7 @@ export function hg38ChimpSynteny(
   // 'fit' band.
   const rmsk = (id: string) => ({
     trackId: id,
-    displaySnapshot: {
-      heightMode: 'grow',
-    },
+    heightMode: 'grow',
   })
   return sessionSpec(HG38_PANTRO6_CONFIG, {
     views: [
@@ -901,7 +926,10 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // sized by junction read depth. Public strand-specific paired-end RNA-seq
   // (hg19) over B2M via --hub — the long first intron reads as one big arc, the
   // downstream exon junctions as smaller arcs. coverageHeight makes the
-  // coverage/sashimi band tall enough for the arcs to be legible.
+  // coverage/sashimi band tall enough for the arcs to be legible;
+  // featureHeight:super-compact packs the supporting reads into a thin band
+  // below so the exon-by-exon read coverage that feeds the junctions is visible
+  // without the pileup dominating the frame.
   cliSpec('sashimi_junctions', [
     '--hub',
     'hg19',
@@ -912,6 +940,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam',
     'sashimi:auto',
     'coverageHeight:170',
+    'featureHeight:super-compact',
     'height:420',
     '--loc',
     'B2M',
@@ -956,8 +985,12 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--multiwig',
     'data/scatac_catlas.json',
     'height:520',
+    // zoomed out to a ~300 kb window around GCG (not the bare gene body) so the
+    // alpha-cell peak reads as a localized, cell-type-specific spike against
+    // otherwise-quiet flanking chromatin, rather than an isolated close-up whose
+    // significance is impossible to judge
     '--loc',
-    'GCG',
+    'chr2:162,000,000-162,300,000',
     '--width',
     '1400',
   ]),

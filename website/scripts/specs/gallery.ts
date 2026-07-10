@@ -22,12 +22,10 @@ export const gallerySpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'pur_copynumber_1000g',
-          displaySnapshot: {
-            type: 'MultiLinearWiggleDisplay',
-            height: 420,
-            defaultRendering: 'multirowdensity',
-            showTree: false,
-          },
+          type: 'MultiLinearWiggleDisplay',
+          height: 420,
+          defaultRendering: 'multirowdensity',
+          showTree: false,
         },
       ],
     }),
@@ -110,37 +108,32 @@ export const gallerySpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ncbi_refseq_109_hg38_latest',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                geneGlyphMode: 'longestCoding',
-              },
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
             },
             {
               trackId: 'gencode_promoter_hg38_ucsc',
               // single-row promoter windows — a short lane is plenty
-              displaySnapshot: { type: 'LinearBasicDisplay', height: 50 },
+              type: 'LinearBasicDisplay',
+              height: 50,
             },
             {
               trackId: 'catlas_scatac_celltypes_hg38',
-              displaySnapshot: {
-                type: 'MultiLinearWiggleDisplay',
-                height: 150,
-              },
+              type: 'MultiLinearWiggleDisplay',
+              height: 150,
             },
             {
               trackId: 'PAY22766-nanopore',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                // fiber-seq is a 6mA (code 'a') assay — allow-list only 6mA so
-                // the incidental 5mC/5hmC calls the caller also emits are never
-                // drawn and the legend shows only 6mA
-                colorBy: {
-                  type: 'modifications',
-                  modifications: { shownModifications: ['a'] },
-                },
-                displayMode: 'compact',
-                showLegend: true,
+              type: 'LinearAlignmentsDisplay',
+              // fiber-seq is a 6mA (code 'a') assay — allow-list only 6mA so
+              // the incidental 5mC/5hmC calls the caller also emits are never
+              // drawn and the legend shows only 6mA
+              colorBy: {
+                type: 'modifications',
+                modifications: { shownModifications: ['a'] },
               },
+              displayMode: 'compact',
+              showLegend: true,
             },
           ],
         },
@@ -180,10 +173,8 @@ export const gallerySpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'catlas_scatac_celltypes_hg38',
-              displaySnapshot: {
-                type: 'MultiLinearWiggleDisplay',
-                height: 320,
-              },
+              type: 'MultiLinearWiggleDisplay',
+              height: 320,
             },
           ],
         },
@@ -268,15 +259,14 @@ export const gallerySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'pacbio_hg002_breakpoints',
-                  displaySnapshot: {
-                    type: 'LinearAlignmentsDisplay',
-                    height: 150,
-                  },
+                  type: 'LinearAlignmentsDisplay',
+                  height: 150,
                 },
                 {
                   trackId: 'pacbio_vcf',
                   // short variant lane — only the BND call sits here
-                  displaySnapshot: { type: 'LinearVariantDisplay', height: 90 },
+                  type: 'LinearVariantDisplay',
+                  height: 90,
                 },
               ],
             },
@@ -287,15 +277,14 @@ export const gallerySpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'pacbio_hg002_breakpoints',
-                  displaySnapshot: {
-                    type: 'LinearAlignmentsDisplay',
-                    height: 150,
-                  },
+                  type: 'LinearAlignmentsDisplay',
+                  height: 150,
                 },
                 {
                   trackId: 'pacbio_vcf',
                   // short variant lane — only the BND call sits here
-                  displaySnapshot: { type: 'LinearVariantDisplay', height: 90 },
+                  type: 'LinearVariantDisplay',
+                  height: 90,
                 },
               ],
             },

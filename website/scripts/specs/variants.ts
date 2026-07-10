@@ -28,7 +28,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
           trackId: 'volvox_filtered_vcf',
           // the variant track is a single row of features, so shrink its
           // band so it doesn't dominate the figure over the pileup
-          displaySnapshot: { height: 60 },
+          height: 60,
         },
         'volvox_cram_alignments',
       ],
@@ -64,11 +64,9 @@ export const variantsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: '1000g_chr1_snpeff_consequence',
-          displaySnapshot: {
-            type: 'LinearMultiSampleVariantDisplay',
-            height: 500,
-            runClustering: true,
-          },
+          type: 'LinearMultiSampleVariantDisplay',
+          height: 500,
+          runClustering: true,
         },
       ],
     }),
@@ -94,10 +92,8 @@ export const variantsSpecs: ScreenshotSpec[] = [
         {
           trackId:
             '1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf',
-          displaySnapshot: {
-            type: 'LinearMultiSampleVariantDisplay',
-            height: 500,
-          },
+          type: 'LinearMultiSampleVariantDisplay',
+          height: 500,
         },
       ],
     }),
@@ -171,10 +167,8 @@ export const variantsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox_test_vcf',
-          displaySnapshot: {
-            type: 'LinearMultiSampleVariantMatrixDisplay',
-            height: 400,
-          },
+          type: 'LinearMultiSampleVariantMatrixDisplay',
+          height: 400,
         },
       ],
     }),

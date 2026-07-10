@@ -167,8 +167,8 @@ export const uiSpecs: ScreenshotSpec[] = [
   },
 
   // display_settings.md: render the tutorial's own URL session-spec example so
-  // the reader sees what that displaySnapshot produces. Matches the doc's JSON
-  // verbatim (volvox_sv_cram at ctgA:1-10000, height 250, softclipping on,
+  // the reader sees what those inline display settings produce. Matches the
+  // doc's JSON (volvox_sv_cram at ctgA:1-10000, height 250, softclipping on,
   // viewed as pairs — which links each read to its mate and colors by insert
   // size + orientation).
   {
@@ -180,12 +180,10 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox_sv_cram',
-          displaySnapshot: {
-            height: 250,
-            showSoftClipping: true,
-            linkedReads: 'normal',
-            colorBy: { type: 'insertSizeAndOrientation' },
-          },
+          height: 250,
+          showSoftClipping: true,
+          linkedReads: 'normal',
+          colorBy: { type: 'insertSizeAndOrientation' },
         },
       ],
     }),
@@ -238,16 +236,17 @@ export const uiSpecs: ScreenshotSpec[] = [
           loc: '1:55,705,770-55,706,090',
           tracks: [
             'nstd175.GRCh37.variant_call.vcf',
-            { trackId: 'hg002_nanopore', displaySnapshot: { height: 200 } },
+            { trackId: 'hg002_nanopore', height: 200 },
             {
               trackId: 'hg002_pacbio_chr1_insertion_slice',
-              displaySnapshot: { height: 200 },
+              height: 200,
             },
             {
               trackId: 'illumina_hg002',
               // show soft clipping so the clipped bases flanking the insertion
               // are visible on the Illumina reads
-              displaySnapshot: { height: 250, showSoftClipping: true },
+              height: 250,
+              showSoftClipping: true,
             },
           ],
         },
@@ -281,12 +280,10 @@ export const uiSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-              displaySnapshot: {
-                type: 'LinearMultiSampleVariantDisplay',
-                userByteSizeLimit: 100_000_000,
-                // shorter multi-sample display (~400px)
-                height: 400,
-              },
+              type: 'LinearMultiSampleVariantDisplay',
+              userByteSizeLimit: 100_000_000,
+              // shorter multi-sample display (~400px)
+              height: 400,
             },
             // NCBI RefSeq gene track below the variant display.
             // showLabels:'on' forces gene names on (the default 'auto' hides
@@ -296,13 +293,11 @@ export const uiSpecs: ScreenshotSpec[] = [
             // track compact (gene symbols only, no description line — reviewer).
             {
               trackId: 'ncbi_refseq_109_hg38',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                height: 140,
-                showLabels: 'on',
-                showDescriptions: false,
-                showOnlyGenes: true,
-              },
+              type: 'LinearBasicDisplay',
+              height: 140,
+              showLabels: 'on',
+              showDescriptions: false,
+              showOnlyGenes: true,
             },
           ],
         },
@@ -413,15 +408,18 @@ export const uiSpecs: ScreenshotSpec[] = [
             // present (or absent) in child vs parents reads at a glance
             {
               trackId: 'HG02030_trio_slice',
-              displaySnapshot: { height: 180, readConnections: 'arc' },
+              height: 180,
+              readConnections: 'arc',
             },
             {
               trackId: 'HG02031_trio_slice',
-              displaySnapshot: { height: 180, readConnections: 'arc' },
+              height: 180,
+              readConnections: 'arc',
             },
             {
               trackId: 'HG02032_trio_slice',
-              displaySnapshot: { height: 180, readConnections: 'arc' },
+              height: 180,
+              readConnections: 'arc',
             },
           ],
         },
@@ -497,21 +495,19 @@ export const uiSpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'ngmlr_splitters_cram',
-                  displaySnapshot: { height: 140 },
+                  height: 140,
                 },
                 {
                   trackId: 'breast_cancer_sniffles_hg19',
                   // drop the megabase-scale inversion calls that span the whole
                   // window so only the junction breakends show
-                  displaySnapshot: {
-                    type: 'LinearVariantDisplay',
-                    // only a handful of junction breakends survive the filter, so
-                    // keep the variant lane short
-                    height: 90,
-                    jexlFiltersSetting: [
-                      "jexl:get(feature,'end')-get(feature,'start') < 100000",
-                    ],
-                  },
+                  type: 'LinearVariantDisplay',
+                  // only a handful of junction breakends survive the filter, so
+                  // keep the variant lane short
+                  height: 90,
+                  jexlFiltersSetting: [
+                    "jexl:get(feature,'end')-get(feature,'start') < 100000",
+                  ],
                 },
               ],
             },
@@ -523,17 +519,15 @@ export const uiSpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'breast_cancer_sniffles_hg19',
-                  displaySnapshot: {
-                    type: 'LinearVariantDisplay',
-                    height: 90,
-                    jexlFiltersSetting: [
-                      "jexl:get(feature,'end')-get(feature,'start') < 100000",
-                    ],
-                  },
+                  type: 'LinearVariantDisplay',
+                  height: 90,
+                  jexlFiltersSetting: [
+                    "jexl:get(feature,'end')-get(feature,'start') < 100000",
+                  ],
                 },
                 {
                   trackId: 'ngmlr_splitters_cram',
-                  displaySnapshot: { height: 140 },
+                  height: 140,
                 },
               ],
             },
@@ -1661,10 +1655,8 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'hgdp_archaic_introgression',
-          displaySnapshot: {
-            type: 'LinearMultiRowFeatureDisplay',
-            height: 320,
-          },
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 320,
         },
       ],
     }),
@@ -1725,10 +1717,8 @@ export const uiSpecs: ScreenshotSpec[] = [
         'ncbi_refseq_109_hg38',
         {
           trackId: 'hgdp_archaic_introgression',
-          displaySnapshot: {
-            type: 'LinearMultiRowFeatureDisplay',
-            height: 320,
-          },
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 320,
         },
       ],
     }),
@@ -1759,13 +1749,17 @@ export const uiSpecs: ScreenshotSpec[] = [
       assembly: 'hg38',
       loc: 'chr12:129,950,000-130,320,000',
       tracks: [
-        'ncbi_refseq_109_hg38',
+        {
+          trackId: 'ncbi_refseq_109_hg38',
+          // gene symbols only — the description lines just add noise on a
+          // context track (reviewer)
+          type: 'LinearBasicDisplay',
+          showDescriptions: false,
+        },
         {
           trackId: 'hgdp_archaic_introgression',
-          displaySnapshot: {
-            type: 'LinearMultiRowFeatureDisplay',
-            height: 220,
-          },
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 220,
         },
       ],
     }),
@@ -1776,10 +1770,10 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'text',
         x: 40,
-        y: 560,
+        y: 580,
         maxWidth: 1420,
         fontSize: 22,
-        text: 'The opposite pattern: a Neanderthal tract (red) over FZD10 at chr12:130 Mb appears in every sampled population — French, Han, Karitiana, Bougainville and PapuanHighlands. Neanderthal ancestry is shared by all non-Africans, whereas the Denisovan tracts above are largely restricted to Oceania.',
+        text: 'Each row is one haplotype; a red bar marks a Neanderthal-derived segment. Over FZD10 it appears in every sampled population — Neanderthal ancestry is shared across all non-Africans.',
       },
     ],
   },
@@ -1799,17 +1793,13 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           trackId: 'ncbi_gff_hg19',
           // descriptions add noise on the context gene track; names suffice here
-          displaySnapshot: {
-            type: 'LinearBasicDisplay',
-            showDescriptions: false,
-          },
+          type: 'LinearBasicDisplay',
+          showDescriptions: false,
         },
         {
           trackId: 'roadmap_chromhmm_multirow_hg19',
-          displaySnapshot: {
-            type: 'LinearMultiRowFeatureDisplay',
-            height: 480,
-          },
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 480,
         },
       ],
     }),

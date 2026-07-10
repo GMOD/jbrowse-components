@@ -32,15 +32,14 @@ const paintingSortPanel = (sorted: boolean) =>
     tracks: [
       {
         trackId: 'bxd_gwas_coatcolor_mm10',
-        displaySnapshot: { type: 'LinearManhattanDisplay', height: 140 },
+        type: 'LinearManhattanDisplay',
+        height: 140,
       },
       {
         trackId: 'bxd_chromosome_painting_mm10',
-        displaySnapshot: {
-          type: 'LinearMultiRowFeatureDisplay',
-          height: 420,
-          sortRowsBy: sorted ? TYRP1_PEAK : undefined,
-        },
+        type: 'LinearMultiRowFeatureDisplay',
+        height: 420,
+        sortRowsBy: sorted ? TYRP1_PEAK : undefined,
       },
     ],
   })
@@ -58,15 +57,14 @@ export const qtlSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'bxd_gwas_coatcolor_mm10',
-          displaySnapshot: { type: 'LinearManhattanDisplay', height: 220 },
+          type: 'LinearManhattanDisplay',
+          height: 220,
         },
         {
           trackId: 'bxd_chromosome_painting_mm10',
-          displaySnapshot: {
-            type: 'LinearMultiRowFeatureDisplay',
-            height: 500,
-            sortRowsBy: TYRP1_PEAK,
-          },
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 500,
+          sortRowsBy: TYRP1_PEAK,
         },
       ],
     }),
@@ -88,9 +86,13 @@ export const qtlSpecs: ScreenshotSpec[] = [
     name: 'qtl/bxd_tyrp1_locus',
     url: lgvSession('test_data/config_bxd.json', {
       assembly: 'mm10',
-      loc: 'chr4:74,000,000-88,000,000',
+      // ~48 Mb centered on Tyrp1 so the full width of the coat-color
+      // association peak is visible against more flanking background, while
+      // still resolving the individual B/D recombination breakpoints the
+      // whole-chromosome painting blurs together
+      loc: 'chr4:57,000,000-105,000,000',
       // colored band over the Tyrp1 gene + QTL-peak marker so the eye lands on
-      // it under the peak; 350 kb reads as a visible stripe at this ~14 Mb zoom
+      // it under the peak; 350 kb still reads as a visible stripe at this zoom
       // (the bare 30 kb gene body was a sub-pixel sliver)
       highlight: [
         {
@@ -105,25 +107,22 @@ export const qtlSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'bxd_gwas_coatcolor_mm10',
-          displaySnapshot: { type: 'LinearManhattanDisplay', height: 200 },
+          type: 'LinearManhattanDisplay',
+          height: 200,
         },
         {
           trackId: 'mm10_ncbi_refseq',
           // gene-glyph-only + short: a context strip at this wide zoom, not a
           // dense mRNA/exon band
-          displaySnapshot: {
-            type: 'LinearBasicDisplay',
-            height: 90,
-            showOnlyGenes: true,
-          },
+          type: 'LinearBasicDisplay',
+          height: 90,
+          showOnlyGenes: true,
         },
         {
           trackId: 'bxd_chromosome_painting_mm10',
-          displaySnapshot: {
-            type: 'LinearMultiRowFeatureDisplay',
-            height: 460,
-            sortRowsBy: TYRP1_PEAK,
-          },
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 460,
+          sortRowsBy: TYRP1_PEAK,
         },
       ],
     }),
@@ -144,7 +143,12 @@ export const qtlSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // "Before" panel of the sort proof: painting in default alphabetical order.
+  // "Before" panel of the sort proof: painting in default alphabetical order,
+  // with the painting's right-click context menu open over it to show HOW the
+  // sort is triggered — "Sort rows by value here" is the interactive twin of the
+  // declarative sortRowsBy the "after" panel bakes in (reviewer: show the
+  // context menu in the first screenshot). We only OPEN the menu (rightclick +
+  // wait); we never click the item, so the painting stays in input order.
   {
     mode: 'url',
     name: 'qtl/bxd_painting_input_order',
@@ -154,15 +158,25 @@ export const qtlSpecs: ScreenshotSpec[] = [
     // chrome + manhattan(140) + painting(420) clears the bottom crop
     viewportHeight: 840,
     settleMs: 16000,
+    hideTooltip: true,
+    actions: [
+      // right-click on the painting track (its 420px body sits well below the
+      // manhattan track), near the Tyrp1 peak x (~52% across whole chr4), so the
+      // menu appears at the column the sort would key on
+      { type: 'rightclick', from: { x: 776, y: 430 } },
+      { type: 'waitForText', text: 'Sort rows by value here' },
+      { type: 'delay', ms: 600 },
+    ],
     annotations: [
       {
         type: 'text',
-        x: 520,
+        x: 300,
         y: 60,
-        maxWidth: 400,
+        maxWidth: 440,
         fontSize: 15,
-        text: 'Strains in default (alphabetical) order — salt-and-pepper at the peak',
+        text: 'Default (alphabetical) order — right-click the painting to sort rows by genotype at that column',
       },
+      { type: 'box', anchor: { text: 'Sort rows by value here' } },
     ],
   },
 

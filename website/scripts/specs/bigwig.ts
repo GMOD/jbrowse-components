@@ -140,21 +140,19 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'colo_tumor',
-          displaySnapshot: {
-            type: 'LinearWiggleDisplay',
-            autoscale: 'localsd',
-            numStdDev: 3,
-            // scatter rendering reads copy-number gains/losses better than
-            // the filled XY plot across the whole genome
-            defaultRendering: 'scatter',
-            // finer binning (basesPerSpan = bpPerPx/resolution) so the
-            // whole-genome scatter resolves copy-number structure
-            resolution: 5,
-            // plot the per-bin average rather than the default whiskers
-            // (min/max/avg) — at whole-genome zoom the avg score reads the
-            // copy-number level cleanly without the noise band
-            summaryScoreMode: 'avg',
-          },
+          type: 'LinearWiggleDisplay',
+          autoscale: 'localsd',
+          numStdDev: 3,
+          // scatter rendering reads copy-number gains/losses better than
+          // the filled XY plot across the whole genome
+          defaultRendering: 'scatter',
+          // finer binning (basesPerSpan = bpPerPx/resolution) so the
+          // whole-genome scatter resolves copy-number structure
+          resolution: 5,
+          // plot the per-bin average rather than the default whiskers
+          // (min/max/avg) — at whole-genome zoom the avg score reads the
+          // copy-number level cleanly without the noise band
+          summaryScoreMode: 'avg',
         },
       ],
     }),
@@ -411,17 +409,15 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'pur_copynumber_1000g',
-          displaySnapshot: {
-            type: 'MultiLinearWiggleDisplay',
-            height: 420,
-            // multi-row density renderer: one colored density
-            // strip per individual; `defaultRendering` is a config slot, so
-            // this flat key routes into the display's configOverrides
-            defaultRendering: 'multirowdensity',
-            // hide the post-clustering dendrogram — the reordered rows are
-            // the point; a tree implies a phylogeny we don't mean
-            showTree: false,
-          },
+          type: 'MultiLinearWiggleDisplay',
+          height: 420,
+          // multi-row density renderer: one colored density
+          // strip per individual; `defaultRendering` is a config slot, so
+          // this flat key routes into the display's configOverrides
+          defaultRendering: 'multirowdensity',
+          // hide the post-clustering dendrogram — the reordered rows are
+          // the point; a tree implies a phylogeny we don't mean
+          showTree: false,
         },
       ],
     }),

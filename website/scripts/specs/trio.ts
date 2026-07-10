@@ -41,9 +41,7 @@ export const trioSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-          displaySnapshot: {
-            type: 'LinearMultiSampleVariantMatrixDisplay',
-          },
+          type: 'LinearMultiSampleVariantMatrixDisplay',
         },
       ],
     }),
@@ -75,10 +73,8 @@ export const trioSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-          displaySnapshot: {
-            type: 'LinearMultiSampleVariantMatrixDisplay',
-            renderingMode: 'phased',
-          },
+          type: 'LinearMultiSampleVariantMatrixDisplay',
+          renderingMode: 'phased',
         },
       ],
     }),
@@ -102,10 +98,8 @@ export const trioSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-          displaySnapshot: {
-            type: 'LinearMultiSampleVariantMatrixDisplay',
-            renderingMode: 'phased',
-          },
+          type: 'LinearMultiSampleVariantMatrixDisplay',
+          renderingMode: 'phased',
         },
       ],
     }),
@@ -127,10 +121,8 @@ export const trioSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.hapibd',
-          displaySnapshot: {
-            type: 'LinearMultiRowFeatureDisplay',
-            height: 120,
-          },
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 120,
         },
       ],
     }),
@@ -152,10 +144,8 @@ export const trioSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.ancestry',
-          displaySnapshot: {
-            type: 'LinearMultiRowFeatureDisplay',
-            height: 160,
-          },
+          type: 'LinearMultiRowFeatureDisplay',
+          height: 160,
         },
       ],
     }),
@@ -256,22 +246,18 @@ export const trioSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.hapibd',
-          displaySnapshot: {
-            type: 'LinearMultiRowFeatureDisplay',
-            // show only this parent's haplotype rows
-            subtreeFilter: paintingFilter,
-          },
+          type: 'LinearMultiRowFeatureDisplay',
+          // show only this parent's haplotype rows
+          subtreeFilter: paintingFilter,
         },
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-          displaySnapshot: {
-            type: 'LinearMultiSampleVariantDisplay',
-            renderingMode: 'phased',
-            height: TRIO_VCF_DISPLAY_H,
-            // relabel sidebar rows Child/Mother/Father hapN (keeps the
-            // canonical HG020xx HPn identity in `name`/`sampleName`)
-            layout: trioVcfLayout,
-          },
+          type: 'LinearMultiSampleVariantDisplay',
+          renderingMode: 'phased',
+          height: TRIO_VCF_DISPLAY_H,
+          // relabel sidebar rows Child/Mother/Father hapN (keeps the
+          // canonical HG020xx HPn identity in `name`/`sampleName`)
+          layout: trioVcfLayout,
         },
       ],
     }),

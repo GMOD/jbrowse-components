@@ -111,13 +111,14 @@
         "type": "LinearGenomeView",
         "init": {
           "assembly": "hg38",
-          "loc": "chr1:202,900,000-203,800,000",
+          "loc": "chr3:122,480,000-122,760,000",
           "tracks": [
             {
               "trackId": "ncbi_refseq_hg38",
               "displaySnapshot": {
                 "type": "LinearBasicDisplay",
-                "showOnlyGenes": true
+                "showOnlyGenes": true,
+                "showDescriptions": false
               }
             },
             "encode_gm12878_loops",

@@ -22,9 +22,7 @@ function feat(
     insertSize: 0,
     pairOrientation: 0,
     strand: 1,
-    refName: 'chr1',
     nextRef: undefined,
-    pairOrientationStr: undefined,
     templateLength: 0,
     ...partial,
   }

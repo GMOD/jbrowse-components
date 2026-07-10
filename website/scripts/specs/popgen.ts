@@ -218,15 +218,18 @@ export const popgenSpecs: ScreenshotSpec[] = [
             // inversion extent on top so the Fst block below reads against it
             {
               trackId: 'in2lt_inversion',
-              displaySnapshot: { type: 'LinearBasicDisplay', height: 40 },
+              type: 'LinearBasicDisplay',
+              height: 40,
             },
             {
               trackId: 'fst_in2lt',
-              displaySnapshot: { type: 'LinearWiggleDisplay', height: 200 },
+              type: 'LinearWiggleDisplay',
+              height: 200,
             },
             {
               trackId: 'pi_all',
-              displaySnapshot: { type: 'LinearWiggleDisplay', height: 150 },
+              type: 'LinearWiggleDisplay',
+              height: 150,
             },
           ],
         },
@@ -274,15 +277,14 @@ export const popgenSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'pi_all',
-              displaySnapshot: { type: 'LinearWiggleDisplay', height: 240 },
+              type: 'LinearWiggleDisplay',
+              height: 240,
             },
             {
               trackId: 'dm6-ncbiRefSeqCurated',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                height: 110,
-                showOnlyGenes: true,
-              },
+              type: 'LinearBasicDisplay',
+              height: 110,
+              showOnlyGenes: true,
             },
           ],
         },
@@ -331,11 +333,9 @@ export const popgenSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'dgrp_In2Lt_matrix',
-              displaySnapshot: {
-                type: 'LinearMultiSampleVariantMatrixDisplay',
-                height: 520,
-                runClustering: true,
-              },
+              type: 'LinearMultiSampleVariantMatrixDisplay',
+              height: 520,
+              runClustering: true,
             },
           ],
         },
@@ -377,19 +377,19 @@ export const popgenSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'tajd_all',
-              displaySnapshot: { type: 'LinearWiggleDisplay', height: 200 },
+              type: 'LinearWiggleDisplay',
+              height: 200,
             },
             {
               trackId: 'pi_all',
-              displaySnapshot: { type: 'LinearWiggleDisplay', height: 180 },
+              type: 'LinearWiggleDisplay',
+              height: 180,
             },
             {
               trackId: 'dm6-ncbiRefSeqCurated',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                height: 110,
-                showOnlyGenes: true,
-              },
+              type: 'LinearBasicDisplay',
+              height: 110,
+              showOnlyGenes: true,
             },
           ],
         },
@@ -424,7 +424,8 @@ export const popgenSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ld_decay_2R',
-              displaySnapshot: { type: 'LDTrackDisplay', height: 380 },
+              type: 'LDTrackDisplay',
+              height: 380,
             },
           ],
         },
@@ -471,23 +472,20 @@ export const popgenSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'dest_fst_afr_cosmo',
-              displaySnapshot: { type: 'LinearWiggleDisplay', height: 180 },
+              type: 'LinearWiggleDisplay',
+              height: 180,
             },
             {
               trackId: 'dest_diversity_afr_cosmo',
-              displaySnapshot: {
-                type: 'MultiLinearWiggleDisplay',
-                height: 200,
-                defaultRendering: 'multiline',
-              },
+              type: 'MultiLinearWiggleDisplay',
+              height: 200,
+              defaultRendering: 'multiline',
             },
             {
               trackId: 'dm6-ncbiRefSeqCurated',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                height: 90,
-                showOnlyGenes: true,
-              },
+              type: 'LinearBasicDisplay',
+              height: 90,
+              showOnlyGenes: true,
             },
           ],
         },

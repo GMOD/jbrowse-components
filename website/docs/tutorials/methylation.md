@@ -114,8 +114,8 @@ Because each long read is one DNA molecule, reads carrying an `HP` haplotype tag
 output) can be split by allele. **Group by** the `HP` tag from the track menu,
 leave coloring on modifications (or methylation), and the pileup stacks into one
 per-haplotype profile — computed live in the browser, no external tool.
-
-<Figure caption="The same COLO829 CRAM with modification coloring and grouped by the HP haplotype tag: the pileup splits into HP 1, HP 2, and unphased (HP: none) sections, each with its own coverage row, so 5mC calls can be read per allele. Comparing the haplotype bands is how allele-specific and imprinted methylation is spotted." src="/img/methylation/colo829_haplotype_methylation.png" />
+Allele-specific methylation then reads off as a difference between the haplotype
+bands, and is clearest at a germline imprinting center.
 
 `modkit pileup --partition-tag HP` writes the same split as an aggregate
 bedMethyl per haplotype (`wf-human-variation` emits these as its `.1`/`.2`
