@@ -83,6 +83,15 @@ describe('readColorCategory', () => {
         ColorScheme.insertSize,
       ),
     ).toBe('normalInsert')
+    // TLEN 0 = unset (single-end / unpaired read). Even in a mixed dataset where
+    // stats is defined, it must not read as "short insert" (would paint pink).
+    expect(
+      readColorCategory(
+        0,
+        makeData({ insertSize: 0 }, stats),
+        ColorScheme.insertSize,
+      ),
+    ).toBe('normalInsert')
   })
 
   test('pairOrientation scheme buckets by orientation code', () => {

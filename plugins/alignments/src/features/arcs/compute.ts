@@ -137,9 +137,11 @@ function orientationColor(pairOrientationNum: number) {
 
 function insertSizeColor(tlen: number, stats: InsertSizeStats | undefined) {
   const abs = Math.abs(tlen)
+  // abs 0 = unset TLEN (single-end / unpaired); don't classify it "short insert"
+  // (mirrors insertSizeCategory in colorUtils.ts / read.slang's `is > 0` guard).
   return stats && abs > stats.upper
     ? COLOR_LONG_INSERT
-    : stats && abs < stats.lower
+    : stats && abs > 0 && abs < stats.lower
       ? COLOR_SHORT_INSERT
       : COLOR_DEFAULT
 }

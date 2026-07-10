@@ -76,8 +76,10 @@ float3 strandColor(int s, Uniforms u) {
 }
 
 float3 insertSizeColor(float is, Uniforms u) {
+  // is is |TLEN|; 0 means unset (single-end / unpaired), so it must not read as
+  // "short insert". SYNC: `is > 0` mirrors insertSizeCategory in colorUtils.ts.
   if (is > u.insertUpper) { return unpackRGBA(u.colorLongInsert).xyz; }
-  if (is < u.insertLower) { return unpackRGBA(u.colorShortInsert).xyz; }
+  if (is > 0.0 && is < u.insertLower) { return unpackRGBA(u.colorShortInsert).xyz; }
   return unpackRGBA(u.colorPairLR).xyz;
 }
 
@@ -92,7 +94,8 @@ float3 insertSizeGradientColor(float is, Uniforms u) {
       float t = clamp((is - u.insertUpper) / span, 0.0, 1.0);
       return lerp(base, unpackRGBA(u.colorLongInsert).xyz, t);
     }
-    if (is < u.insertLower) {
+    // is 0 = unset TLEN (single-end / unpaired); leave it at the neutral base.
+    if (is > 0.0 && is < u.insertLower) {
       float t = clamp((u.insertLower - is) / span, 0.0, 1.0);
       return lerp(base, unpackRGBA(u.colorShortInsert).xyz, t);
     }
@@ -120,8 +123,8 @@ float3 pairOrientColor(uint po, Uniforms u) {
 float3 isAndOrientColor(float is, uint po, Uniforms u) {
   // Short-insert pairs always show pink, even with abnormal orientation;
   // otherwise orientation wins, falling back to long-/normal-insert. Mirrors
-  // readColorCategory in colorUtils.ts.
-  if (is < u.insertLower) { return unpackRGBA(u.colorShortInsert).xyz; }
+  // readColorCategory in colorUtils.ts. is 0 = unset TLEN (unpaired) → not short.
+  if (is > 0.0 && is < u.insertLower) { return unpackRGBA(u.colorShortInsert).xyz; }
   if (po == 2u) { return unpackRGBA(u.colorPairRL).xyz; }
   if (po == 3u) { return unpackRGBA(u.colorPairRR).xyz; }
   if (po == 4u) { return unpackRGBA(u.colorPairLL).xyz; }

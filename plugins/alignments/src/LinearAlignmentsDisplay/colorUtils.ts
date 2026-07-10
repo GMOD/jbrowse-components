@@ -75,9 +75,13 @@ function insertSizeCategory(
   insertSize: number,
   stats: { upper: number; lower: number } | undefined,
 ): ReadColorCategory {
+  // insertSize is |TLEN|; 0 means unset (single-end / unpaired read), so it must
+  // NOT read as "short insert" — otherwise an unpaired read in a mixed dataset
+  // (some proper pairs present, so stats is defined) paints pink. SYNC: the
+  // `is > 0` guard mirrors insertSizeColor / isAndOrientColor in read.slang.
   return stats && insertSize > stats.upper
     ? 'longInsert'
-    : stats && insertSize < stats.lower
+    : stats && insertSize > 0 && insertSize < stats.lower
       ? 'shortInsert'
       : 'normalInsert'
 }

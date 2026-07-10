@@ -99,7 +99,8 @@ function getPairTypeDescription(
     if (tlen > insertSizeStats.upper) {
       return 'Long insert size'
     }
-    if (tlen < insertSizeStats.lower) {
+    // tlen 0 = unset (single-end / unpaired); never label it "short insert".
+    if (tlen > 0 && tlen < insertSizeStats.lower) {
       return 'Short insert size'
     }
   }
