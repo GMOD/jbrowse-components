@@ -78,7 +78,12 @@ function LdSvgBody({
   }
 
   const { ldValues, boundaries, numCells, uniformW } = rpcData
-  const visibleWidth = view.width
+  // Match the live canvas: the matrix, recombination plot, connector lines, and
+  // legend all lay out across totalWidthPxWithoutBorders (the rounded,
+  // border-excluded content width), not the raw viewport width — otherwise the
+  // export's index-mode recomb plot and legend drift from the matrix when the
+  // genome doesn't fill the viewport or spans multiple regions.
+  const visibleWidth = view.totalWidthPxWithoutBorders
   const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
   const triangleHeight = height - effectiveLineZoneHeight
 

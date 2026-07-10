@@ -58,10 +58,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               scrollTop: self.scrollTop,
             }
           },
-          async renderSvg(opts?: ExportSvgDisplayOptions) {
-            const { renderSvg } = await import('./renderSvg.tsx')
-            return renderSvg(self, opts)
-          },
           showSubmenuItems() {
             return [
               ...superShowSubmenuItems(),
@@ -110,6 +106,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             }
           }
           return out
+        },
+      }))
+      // separate block so renderSvg's `self` sees perRegionCellMap/renderBlocks
+      .views(self => ({
+        async renderSvg(opts?: ExportSvgDisplayOptions) {
+          const { renderSvg } = await import('./renderSvg.tsx')
+          return renderSvg(self, opts)
         },
       }))
       .actions(self => ({

@@ -2,14 +2,16 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SvgChrome, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
-import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { drawVariantBlocks } from './components/Canvas2DVariantRenderer.ts'
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
-import type { VariantCellData } from './components/computeVariantCells.ts'
+import type {
+  VariantRenderBlock,
+  VariantUploadData,
+} from './components/variantRenderingBackendTypes.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
@@ -19,6 +21,8 @@ type LGV = LinearGenomeViewModel
 
 interface RenderSvgModel extends RenderSvgBaseModel {
   referenceDrawingMode: string
+  renderBlocks: VariantRenderBlock[]
+  perRegionCellMap: ReadonlyMap<number, VariantUploadData>
 }
 
 export async function renderSvg(
@@ -54,39 +58,27 @@ function VariantSvgBody({
   height: number
   opts: ExportSvgDisplayOptions | undefined
 }) {
-  const cellData = model.cellData as
-    { perRegionCellData: Record<number, VariantCellData> } | undefined
-  // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
-  // this narrows the single nullable fetch blob for TS only — unreachable at
-  // runtime. An empty (numCells === 0) region still paints nothing.
-  if (!cellData) {
-    return null
-  }
-
   const {
     effectiveRowHeight: rowHeight,
     scrollTop,
     availableHeight,
     referenceDrawingMode,
     canDisplayLabels,
+    // reuse the model's own getters so the export draws the exact block set and
+    // region map the live canvas does — no divergent rebuild here
+    renderBlocks,
+    perRegionCellMap,
   } = model
   // canvas spans the viewport (visibleRegions coords are viewport-relative and
   // clipped to view.width below), matching the on-screen canvas rather than the
   // full-genome totalWidthPx
   const canvasWidth = view.width
-  const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  const regions = new Map<number, VariantCellData>()
-  for (const [idxStr, data] of Object.entries(cellData.perRegionCellData)) {
-    if (data.numCells > 0) {
-      regions.set(Number(idxStr), data)
-    }
-  }
   const cellsNode = paintLayer(canvasWidth, availableHeight, opts, ctx => {
     if (referenceDrawingMode === 'skip') {
       ctx.fillStyle = REFERENCE_COLOR
       ctx.fillRect(0, 0, canvasWidth, availableHeight)
     }
-    drawVariantBlocks(ctx, regions, renderBlocks, {
+    drawVariantBlocks(ctx, perRegionCellMap, renderBlocks, {
       canvasWidth,
       canvasHeight: availableHeight,
       rowHeight,
