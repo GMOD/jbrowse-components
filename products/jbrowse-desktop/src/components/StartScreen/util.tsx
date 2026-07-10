@@ -9,6 +9,7 @@ import {
 import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
 
+import { resolveSessionName } from './sessionName.ts'
 import corePlugins from '../../corePlugins.ts'
 import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
 import sessionModelFactory from '../../sessionModel/sessionModel.ts'
@@ -121,7 +122,17 @@ export async function createPluginManager(
     writeGAAnalytics(rootModel, initialTimestamp)
   }
 
-  rootModel.setDefaultSession()
+  // Set the session preserving its existing name rather than calling
+  // setDefaultSession(), which re-appends a fresh timestamp every load and made
+  // names grow without bound (doubled on first launch, then one extra timestamp
+  // per reopen). See resolveSessionName.
+  const defaultSession = rootModel.jbrowse.defaultSession as {
+    name?: string
+  } & Record<string, unknown>
+  rootModel.setSession({
+    ...defaultSession,
+    name: resolveSessionName(defaultSession),
+  })
 
   return pluginManager
 }
