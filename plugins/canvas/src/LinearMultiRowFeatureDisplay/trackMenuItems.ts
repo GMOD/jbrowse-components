@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
+import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import HeightIcon from '@mui/icons-material/Height'
 
 import { radioSubMenu } from '../LinearBasicDisplay/baseModelHelpers.ts'
@@ -26,6 +27,9 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
   treeHasBranchLengths: boolean
   subtreeFilter?: readonly string[]
   editableSources: MultiRowSource[]
+  sourcesWithoutLayout: MultiRowSource[]
+  clusterTree?: string
+  runClustering?: boolean
   rowHeightSetting: number
   setShowTree: (f: boolean) => void
   setShowBranchLength: (f: boolean) => void
@@ -35,6 +39,7 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
   willClearTree: (s: MultiRowSource[]) => boolean
   setRowHeight: (n: number) => void
   setFitToHeight: () => void
+  setRunClustering: (arg?: boolean) => void
 }
 
 export function buildMultiRowTrackMenuItems(
@@ -89,6 +94,28 @@ export function buildMultiRowTrackMenuItems(
         ])
       },
     },
+    {
+      label: 'Cluster rows by similarity',
+      icon: AccountTreeIcon,
+      disabled: self.sourcesWithoutLayout.length < 2 || !!self.runClustering,
+      disabledHelpText:
+        self.sourcesWithoutLayout.length < 2
+          ? 'Needs at least two rows to cluster'
+          : 'Clustering…',
+      onClick: () => {
+        self.setRunClustering(true)
+      },
+    },
+    ...(self.clusterTree
+      ? [
+          {
+            label: 'Clear clustering (reset row order)',
+            onClick: () => {
+              self.clearLayout()
+            },
+          },
+        ]
+      : []),
     ...(self.subtreeFilter
       ? [
           {

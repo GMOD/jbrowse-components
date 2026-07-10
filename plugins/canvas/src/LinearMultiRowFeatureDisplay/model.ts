@@ -99,6 +99,14 @@ export default function stateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         * Transient declarative launch spec (like LinearGenomeView's `init`): set
+         * true — from the track menu or a saved session — to run row clustering
+         * once as soon as the display is ready; getMultiRowClusterAutorun clears
+         * it afterward so a saved session never re-triggers.
+         */
+        runClustering: types.maybe(types.boolean),
       }),
     )
     .volatile(() => ({
@@ -427,6 +435,14 @@ export default function stateModelFactory(
       },
       /**
        * #action
+       * Trigger (or clear) a one-shot row clustering run; consumed and reset by
+       * getMultiRowClusterAutorun.
+       */
+      setRunClustering(arg?: boolean) {
+        self.runClustering = arg
+      },
+      /**
+       * #action
        */
       setHoveredFeature(arg?: HoveredFeature) {
         self.hoveredFeature = arg
@@ -557,6 +573,16 @@ export default function stateModelFactory(
               await import('@jbrowse/tree-sidebar')
             if (isAlive(self)) {
               setupTreeDrawingAutorun(self)
+            }
+          } catch (e) {
+            console.error(e)
+          }
+
+          try {
+            const { getMultiRowClusterAutorun } =
+              await import('./getMultiRowClusterAutorun.ts')
+            if (isAlive(self)) {
+              getMultiRowClusterAutorun(self)
             }
           } catch (e) {
             console.error(e)

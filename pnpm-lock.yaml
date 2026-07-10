@@ -903,6 +903,9 @@ importers:
 
   plugins/canvas:
     dependencies:
+      '@gmod/hclust':
+        specifier: 3.0.14
+        version: 3.0.14
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

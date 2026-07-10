@@ -9,7 +9,7 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 // Resolve the (possibly jexl) `color` slot to a CSS string for one feature,
 // degrading to the default color on a bad expression or non-string result.
-function evalColorSlot(
+export function evalColorSlot(
   colorCfg: { color: string },
   feature: Feature,
   jexl: JexlInstance,
