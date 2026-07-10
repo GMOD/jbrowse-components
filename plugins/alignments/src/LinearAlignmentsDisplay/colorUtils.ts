@@ -1,9 +1,12 @@
 import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 
 import { ColorScheme } from './constants.ts'
+import { classifyInsertSize } from '../shared/insertSizeStats.ts'
+import { IS_GRADIENT_SPAN_FRAC } from './shaders/slang/read.iface.generated.ts'
 
 import type { LinkedReadsMode } from './constants.ts'
 import type { ColorPalette, RGBColor } from './shaders/colors.ts'
+import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 
 // Re-exports from core — kept for backwards-compat with call sites.
 export const rgb255 = normalizedRgbToCss
@@ -24,7 +27,7 @@ interface ReadColorData {
   readTagColors: Uint32Array
   readChainHasSupp?: Uint8Array
   readInterchrom: Uint8Array
-  insertSizeStats?: { upper: number; lower: number }
+  insertSizeStats?: InsertSizeBand
 }
 
 // The single classification of "what is this read" — one bucket per read that
@@ -71,19 +74,25 @@ function pairOrientationCategory(po: number): ReadColorCategory {
   return pairOrientationCategories[po] ?? 'noStrand'
 }
 
+// Map the shared insert-size class onto the render/legend category vocabulary.
+// The threshold rule (including the unset-TLEN guard) lives in classifyInsertSize
+// so this and the arc path (arcs/compute.ts) share one source; SYNC only the
+// class→category naming here with insertSizeColor / isAndOrientColor in
+// read.slang.
+const insertClassCategory: Record<
+  ReturnType<typeof classifyInsertSize>,
+  ReadColorCategory
+> = {
+  long: 'longInsert',
+  short: 'shortInsert',
+  normal: 'normalInsert',
+}
+
 function insertSizeCategory(
   insertSize: number,
-  stats: { upper: number; lower: number } | undefined,
+  stats: InsertSizeBand | undefined,
 ): ReadColorCategory {
-  // insertSize is |TLEN|; 0 means unset (single-end / unpaired read), so it must
-  // NOT read as "short insert" — otherwise an unpaired read in a mixed dataset
-  // (some proper pairs present, so stats is defined) paints pink. SYNC: the
-  // `is > 0` guard mirrors insertSizeColor / isAndOrientColor in read.slang.
-  return stats && insertSize > stats.upper
-    ? 'longInsert'
-    : stats && insertSize > 0 && insertSize < stats.lower
-      ? 'shortInsert'
-      : 'normalInsert'
+  return insertClassCategory[classifyInsertSize(insertSize, stats)]
 }
 
 // Schemes whose color depends on pair orientation/insert size, so an unmapped
@@ -245,15 +254,18 @@ export function readColorCategory(
 }
 
 // Gradient fill for the insert-size-gradient scheme: lerp from the neutral
-// (normal) color toward the long/short endpoint by outlier severity. Span = 6σ
-// (upper−lower), so the gradient saturates at ~9σ from the mean.
+// (normal) color toward the long/short endpoint by outlier severity. The ramp
+// reaches full color IS_GRADIENT_SPAN_FRAC of the 6σ band past the threshold
+// (≈3σ, i.e. center±6σ) so a moderate outlier already reads as clearly colored
+// rather than near-neutral. SYNC: IS_GRADIENT_SPAN_FRAC and this math mirror
+// insertSizeGradientColor in read.slang (the shader is the source of the const).
 function gradientInsertColor(
   cat: 'longInsert' | 'shortInsert',
   insertSize: number,
-  stats: { upper: number; lower: number } | undefined,
+  stats: InsertSizeBand | undefined,
   palette: ColorPalette,
 ) {
-  const span = stats ? stats.upper - stats.lower : 0
+  const span = stats ? (stats.upper - stats.lower) * IS_GRADIENT_SPAN_FRAC : 0
   if (stats && span > 0) {
     return cat === 'longInsert'
       ? lerpRgb255(

@@ -31,6 +31,8 @@ export const CHEVRON_DIRLESS_MIN_WIDTH_PX = 30
 
 export const PAIR_MIN_SPAN_PX = 10
 
+export const IS_GRADIENT_SPAN_FRAC = 0.5
+
 export const UNIFORMS_SIZE_BYTES = 336
 
 // Indices into a Float32Array / Uint32Array view over the uniform buffer.

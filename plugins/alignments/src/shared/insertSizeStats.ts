@@ -43,7 +43,43 @@ function medianAbsDevFromSorted(sorted: number[], med: number) {
   return n % 2 === 1 ? cur : (prev + cur) / 2
 }
 
-export function getInsertSizeStats(filtered: number[]) {
+// The insert-size band used for coloring: the two thresholds that classify a
+// read's |TLEN| as short/normal/long. A subset of getInsertSizeStats' output
+// (avg/sd are used only by the tooltip and the arc long-range gate), and the
+// exact shape serialized across the worker boundary (see RenderAlignmentData
+// PileupDataResult.insertSizeStats).
+export interface InsertSizeBand {
+  upper: number
+  lower: number
+}
+
+export interface InsertSizeStats extends InsertSizeBand {
+  avg: number
+  sd: number
+}
+
+export type InsertSizeClass = 'long' | 'short' | 'normal'
+
+// Single home of the short/normal/long threshold rule, shared by the read-fill
+// classifier (colorUtils.ts) and the arc/read-cloud classifier (arcs/compute.ts)
+// so the two can't drift. `absInsert` is |TLEN|; 0 means unset (single-end /
+// unpaired) and classifies as 'normal', never 'short' — otherwise an unpaired
+// read in a mixed dataset (stats defined) would paint as a short insert. The GPU
+// twin (insertSizeColor in read.slang) mirrors this via its `is > 0` guard.
+export function classifyInsertSize(
+  absInsert: number,
+  band: InsertSizeBand | undefined,
+): InsertSizeClass {
+  if (band && absInsert > band.upper) {
+    return 'long'
+  }
+  if (band && absInsert > 0 && absInsert < band.lower) {
+    return 'short'
+  }
+  return 'normal'
+}
+
+export function getInsertSizeStats(filtered: number[]): InsertSizeStats {
   const len = filtered.length
   const avg = sum(filtered) / len
   // Two-pass mean-subtracted variance. The single-pass sum-of-squares form

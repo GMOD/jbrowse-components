@@ -1,4 +1,4 @@
-import { getInsertSizeStats } from './insertSizeStats.ts'
+import { classifyInsertSize, getInsertSizeStats } from './insertSizeStats.ts'
 
 // Reference implementation of the exact quantity the O(n) MAD merge replaces:
 // median of |x − median(x)| via a straight sort. Kept local to the test so the
@@ -109,4 +109,29 @@ test('high coverage with large inserts stays finite and accurate', () => {
   expect(sd).toBeCloseTo(1000, 6)
   expect(upper).toBeCloseTo(1_004_447.8, 1)
   expect(lower).toBeCloseTo(995_552.2, 1)
+})
+
+describe('classifyInsertSize', () => {
+  const band = { lower: 200, upper: 500 }
+
+  test('buckets by threshold', () => {
+    expect(classifyInsertSize(100, band)).toBe('short')
+    expect(classifyInsertSize(350, band)).toBe('normal')
+    expect(classifyInsertSize(600, band)).toBe('long')
+  })
+
+  test('unset TLEN (0) is normal, never short', () => {
+    // an unpaired read in a mixed dataset (band defined) must not paint pink
+    expect(classifyInsertSize(0, band)).toBe('normal')
+  })
+
+  test('no stats → everything normal', () => {
+    expect(classifyInsertSize(100, undefined)).toBe('normal')
+    expect(classifyInsertSize(9999, undefined)).toBe('normal')
+  })
+
+  test('boundaries are exclusive (at threshold is normal)', () => {
+    expect(classifyInsertSize(200, band)).toBe('normal')
+    expect(classifyInsertSize(500, band)).toBe('normal')
+  })
 })

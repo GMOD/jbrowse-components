@@ -11,6 +11,7 @@ import {
   readTrailingBp,
 } from '@jbrowse/cigar-utils'
 
+import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import {
   connectionEndpoints,
   partitionReadGroup,
@@ -19,6 +20,7 @@ import {
 
 import type { ArcsUploadData } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ReadConnection } from '../../shared/readGroupConnections.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
 
@@ -69,18 +71,13 @@ interface ArcSettings {
 const LARGE_INSERT_THRESHOLD = 10_000
 const LONG_RANGE_STDDEV_THRESHOLD = 3
 
-interface InsertSizeStats {
-  upper: number
-  lower: number
-}
-
 // A pair is concordant FR (the modal, "normal" insert) when its tlen sits
 // inside the insert-size stats band AND it is LR orientation. Samplot drops
 // these to surface SV signals (mirrors samplot.py's --max_depth 1 default).
 function isConcordantFRPair(
   pairOrientationNum: number | undefined,
   tlen: number | undefined,
-  stats: InsertSizeStats | undefined,
+  stats: InsertSizeBand | undefined,
 ) {
   if (pairOrientationNum !== 1 || tlen === undefined || stats === undefined) {
     return false
@@ -135,15 +132,17 @@ function orientationColor(pairOrientationNum: number) {
   }
 }
 
-function insertSizeColor(tlen: number, stats: InsertSizeStats | undefined) {
-  const abs = Math.abs(tlen)
-  // abs 0 = unset TLEN (single-end / unpaired); don't classify it "short insert"
-  // (mirrors insertSizeCategory in colorUtils.ts / read.slang's `is > 0` guard).
-  return stats && abs > stats.upper
-    ? COLOR_LONG_INSERT
-    : stats && abs > 0 && abs < stats.lower
-      ? COLOR_SHORT_INSERT
-      : COLOR_DEFAULT
+// Map the shared insert-size class onto this palette's arc color slots. The
+// threshold rule (including the unset-TLEN guard) lives in classifyInsertSize,
+// shared with the read-fill path (colorUtils.ts).
+const insertClassArcColor = {
+  long: COLOR_LONG_INSERT,
+  short: COLOR_SHORT_INSERT,
+  normal: COLOR_DEFAULT,
+}
+
+function insertSizeColor(tlen: number, stats: InsertSizeBand | undefined) {
+  return insertClassArcColor[classifyInsertSize(Math.abs(tlen), stats)]
 }
 
 // Same-chromosome color classifier (interchromosomal ticks are colored
@@ -156,7 +155,7 @@ function getArcColorType(args: {
   hasPaired: boolean
   longRange: boolean
   largeInsert: boolean
-  stats: InsertSizeStats | undefined
+  stats: InsertSizeBand | undefined
 }) {
   const { arc, colorByType, hasPaired, longRange, largeInsert, stats } = args
 
@@ -350,7 +349,7 @@ function groupReadsByName(
 
 function computePairingInfo(rpcDataMap: ReadonlyMap<number, PileupDataResult>) {
   let hasPaired = false
-  let stats: InsertSizeStats | undefined
+  let stats: InsertSizeBand | undefined
   for (const data of rpcDataMap.values()) {
     if (!hasPaired) {
       for (let i = 0; i < data.readIds.length; i++) {

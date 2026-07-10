@@ -2,7 +2,7 @@
 // segment. Verts 0..5 draw the body rectangle; 6..8 draw a chevron tip
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
-//! export-consts: CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX
+//! export-consts: CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC
 
 import alignmentsUniforms;
 import colorPack;
@@ -41,6 +41,12 @@ static const float CHEVRON_DIRLESS_MIN_WIDTH_PX = 30.0;
 // below this many CSS px — when zoomed out the mates sit on top of each other and
 // the arrows are just clutter. Applies regardless of color scheme.
 static const float PAIR_MIN_SPAN_PX = 10.0;
+
+// insertSizeGradient ramp width, as a fraction of the 6σ stats band (upper−lower)
+// past the threshold. 0.5 → full color ~3σ beyond the threshold (center±6σ), so
+// a moderate outlier already reads as clearly colored instead of near-neutral.
+// Exported so colorUtils.ts (Canvas2D / SVG) shares the exact ramp.
+static const float IS_GRADIENT_SPAN_FRAC = 0.5;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -84,11 +90,12 @@ float3 insertSizeColor(float is, Uniforms u) {
 }
 
 float3 insertSizeGradientColor(float is, Uniforms u) {
-  // Normalize by the span (upper-lower = 6σ) so severity is measured in σ and
-  // saturates at ~9σ from the mean, independent of library insert-size scale.
-  // Must match insertSizeGradient in colorUtils.ts (Canvas2D / SVG export).
+  // Ramp reaches full color IS_GRADIENT_SPAN_FRAC of the 6σ band (upper−lower)
+  // past the threshold — ~3σ (center±6σ) at 0.5 — so a moderate outlier reads as
+  // clearly colored, independent of library insert-size scale. Must match
+  // insertSizeGradient in colorUtils.ts (Canvas2D / SVG export).
   float3 base = unpackRGBA(u.colorPairLR).xyz;
-  float span = u.insertUpper - u.insertLower;
+  float span = (u.insertUpper - u.insertLower) * IS_GRADIENT_SPAN_FRAC;
   if (span > 0.0) {
     if (is > u.insertUpper) {
       float t = clamp((is - u.insertUpper) / span, 0.0, 1.0);
