@@ -140,7 +140,7 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
         seq => panSNSample(seq) === anchorPrefix && panSNContig(seq) === qref,
       )
 
-      const label = `Downloading ${coarse ? 'coarse' : 'fine'} features`
+      const label = 'Downloading features'
       await updateStatus(label, statusCallback, () =>
         Promise.all(
           seqs.flatMap(seq =>

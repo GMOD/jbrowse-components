@@ -137,15 +137,10 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
         lodMode: opts.lodMode,
       })
 
-      // Surface the resolved tier in the download label so the user can see
-      // auto-fallback / coarse degradation in the status bar without needing to
-      // inspect network calls.
-      const isCoarse = letter === letter.toUpperCase()
-
       // The "other" assembly is the mate
       const mateAssemblyName = assemblyNames[flip ? 1 : 0]
 
-      const label = `Downloading ${isCoarse ? 'coarse' : 'fine'} features`
+      const label = 'Downloading features'
       await updateStatus(label, statusCallback, () =>
         this.pif.getLines(letter + query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
