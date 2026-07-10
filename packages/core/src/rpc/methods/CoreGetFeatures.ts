@@ -32,6 +32,7 @@ export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions {
       sessionId: string
       regions: Region[]
       adapterConfig: Record<string, unknown>
+      sequenceAdapter?: Record<string, unknown>
       statusCallback?: StatusCallback
       stopToken?: StopToken
       opts?: Record<string, unknown>
@@ -43,6 +44,7 @@ export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions {
       statusCallback,
       sessionId,
       adapterConfig,
+      sequenceAdapter,
       regions,
       opts,
     } = await this.deserializeArguments(args, rpcDriver)
@@ -51,6 +53,7 @@ export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions {
       pluginManager: this.pluginManager,
       sessionId,
       adapterConfig,
+      sequenceAdapter,
     })
 
     const r = await firstValueFrom(

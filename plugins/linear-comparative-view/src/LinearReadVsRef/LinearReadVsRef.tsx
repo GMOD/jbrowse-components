@@ -5,6 +5,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
   getTag,
 } from '@jbrowse/alignments-core'
+import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import { getConf } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage, NumberTextField } from '@jbrowse/core/ui'
 import { getContainingView, getSession, useFetch } from '@jbrowse/core/util'
@@ -38,12 +39,19 @@ async function fetchPrimaryAlignment(
   const SA = (getTag(preFeature, 'SA') as string | undefined) ?? ''
   const primaryAln = SA.split(';', 1)[0]!
   const [saRef, saStart] = primaryAln.split(',')
-  const { rpcManager } = getSession(track)
+  const session = getSession(track)
+  const { rpcManager } = session
   const adapterConfig = getConf(track, 'adapter')
   const sessionId = getRpcSessionId(track)
   const [asm] = getConf(track, 'assemblyNames') as string[]
+  // CRAM/BAM must decode the primary read's SEQ against the reference; the
+  // adapter config doesn't carry it, so pass the assembly's sequence adapter.
+  const sequenceAdapter = getSequenceAdapterConfig(
+    asm ? session.assemblyManager.get(asm) : undefined,
+  )
   const feats: Feature[] = await rpcManager.call(sessionId, 'CoreGetFeatures', {
     adapterConfig,
+    sequenceAdapter,
     regions: [
       {
         refName: saRef!,

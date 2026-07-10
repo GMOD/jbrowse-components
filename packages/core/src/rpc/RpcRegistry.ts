@@ -40,6 +40,7 @@ export interface RpcRegistry {
     args: {
       regions: RegionLike[]
       adapterConfig: Record<string, unknown>
+      sequenceAdapter?: Record<string, unknown>
       statusCallback?: StatusCallback
       stopToken?: StopToken
       opts?: Record<string, unknown>
