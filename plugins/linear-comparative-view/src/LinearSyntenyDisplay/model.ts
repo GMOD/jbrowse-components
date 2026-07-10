@@ -178,7 +178,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setRpcData(
         featureData: SyntenyFeatureData | undefined,
         instanceData: SyntenyGeometry | undefined,
-        fetchKey: string | undefined,
+        fetchKey: string,
       ) {
         self.featureData = featureData
         self.instanceData = instanceData
@@ -313,24 +313,26 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * Fetch-input signature (region set/order, snapped fetch window, zoom
        * bucket, CIGAR/marker draw options, LOD tier) for the view's current
        * state — the same tracked deps the fetch autorun refetches on. Reactive:
-       * flips the instant any of them changes. undefined until both connected
-       * views are ready.
+       * flips the instant any of them changes. Before both connected views are
+       * ready it collapses to a degenerate signature (empty region sig, no
+       * fetch-window/zoom keys) that no connected fetch can produce — a real
+       * fetch requires non-empty displayedRegions — so `dataCurrent` reads false
+       * until a real fetch lands. Non-nullable so it mirrors dotplot's.
        */
-      get currentFetchKey(): string | undefined {
+      get currentFetchKey(): string {
         const connected = this.connectedViews
-        if (!connected) {
-          return undefined
-        }
         const view = this.view
-        const regionSig = [connected.v0, connected.v1]
-          .map(v =>
-            v.displayedRegions
-              .map(
-                r => `${r.refName}:${r.start}:${r.end}:${r.reversed ? 1 : 0}`,
+        const regionSig = connected
+          ? [connected.v0, connected.v1]
+              .map(v =>
+                v.displayedRegions
+                  .map(
+                    r => `${r.refName}:${r.start}:${r.end}:${r.reversed ? 1 : 0}`,
+                  )
+                  .join(','),
               )
-              .join(','),
-          )
-          .join('_')
+              .join('_')
+          : ''
         return [
           this.fetchRegionsKey,
           this.bpPerPxBucketKey,
