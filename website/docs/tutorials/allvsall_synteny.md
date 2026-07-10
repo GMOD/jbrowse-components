@@ -174,3 +174,6 @@ most convenient source when you have it.
   the tabix-backed adapter for whole-genome pangenomes.
 - [PIF format](/docs/developer_guides/pif_format) — the indexed alignment format
   `make-pif` produces.
+- [Multi-way synteny in an embedded app](https://jbrowse.org/storybook/app/multiway-synteny-example/)
+  — the same stacked linear synteny view running live in `@jbrowse/react-app2`,
+  with the `views`/`tracks` init shown as React props.

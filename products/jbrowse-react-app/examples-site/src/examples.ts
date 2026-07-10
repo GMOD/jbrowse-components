@@ -98,6 +98,14 @@ export const examples: ExampleMeta[] = [
     group: 'View types',
   },
   {
+    slug: 'multiway-synteny-example',
+    name: 'MultiwaySyntenyExample',
+    title: 'Multi-way linear synteny view',
+    description:
+      'Stack three assemblies in one synteny view — each adjacent pair connected by its own PAF track.',
+    group: 'View types',
+  },
+  {
     slug: 'breakpoint-split-example',
     name: 'BreakpointSplitExample',
     title: 'Breakpoint split view',
