@@ -88,15 +88,22 @@ drop the flip. Confirmed at runtime (compiler 1.0.0, React 19.2, mobx-react
 | breaks (a): same, but no conditional at all | read hoisted to unconditional `const` | commits |
 | breaks (b): ternary, but child gets `model.other` not `model` whole | `if ($ !== model.canvasDrawn \|\| …)` — **fine** | commits |
 
-- **(a)** the `model.canvasDrawn` read must sit inside a conditional
-  **expression** (ternary). That stops the compiler hoisting it to an
-  unconditional per-render `const`; it stays inside a memoized block.
+- **(a)** the `model.canvasDrawn` read must sit inside a **conditional** so the
+  compiler can't hoist it to an unconditional per-render `const` — it stays in a
+  memoized block. This is **not** ternary-specific: `&&` short-circuit
+  (`{show && <div>{model.x}<Child model={model}/></div>}`) and a **nested**
+  ternary inside an otherwise-flat return **both reproduce it** (runtime-verified,
+  `scratchpad/AndRepro.test.tsx`). Only a fully unconditional read (early-`return`
+  or no conditional at all) is hoisted and safe.
 - **(b)** that same block must pass `model` as a **whole object** to a child.
   That coarsens the block's memo dependency from `model.canvasDrawn` down to
   `model` **identity**. Coarsening is sound for an immutable object — but mobx
   mutates `canvasDrawn` in place with `model` identity stable, so the block never
   re-evaluates, the read never re-runs (mobx unsubscribes), and stale JSX is
-  returned.
+  returned. Corollary: only a **stable-identity** carrier is at risk (MST
+  nodes: `model`/`view`/`display`/`session`…). A plain prop or local recreated
+  when its content changes gets a new identity, so the coarse gate fires and it
+  is safe — which is why the audit below finds no live bug.
 
 Early-`return` fixes it by breaking (a): each literal `return` is its own memo
 scope, so the compiler emits `const t2 = …model.canvasDrawn…` unconditionally,
@@ -132,28 +139,45 @@ memo'`." The times it *works* (fine-grained `.canvasDrawn` tracking) are
 
 ## Codebase prevalence audit — DisplayChrome is the only instance
 
-Before considering any repo-wide change, scanned all 1001 tracked `.tsx` files
-(`scratchpad/_scan.cjs`) for the source shape (an `observer` returning a ternary
-whose branch both reads `ID.<member>` and passes `ID` whole), then compiled every
-candidate through the real react-compiler and inspected the emitted memo gates
-(`scratchpad/_verify.cjs`) for the true stale signature (a bare-`ID` gate trapping
-an `ID.<member>` read that feeds JSX). Result:
+A first pass scanned only ternary source shapes and was **incomplete** — it
+missed the `&&`/nested trigger family entirely. Redone source-shape-independent
+(`scratchpad/_audit.cjs`): compile **every** one of the 431 tracked `.tsx`
+`observer` files through the real react-compiler and scan the emitted memo gates
+directly for the stale signature (a bare-`ID` gate trapping an `ID.<member>` read
+that feeds `_jsx`), regardless of whether the source used a ternary, `&&`, or a
+nested conditional. Result:
 
-- 45 source candidates → 3 with a genuinely coarsened compiled gate
-  (`SequenceBody.tsx` `sequence`, `LocationCell.tsx` `session`,
-  `VariantConsequenceDataGrid.tsx` `rows`).
-- **All 3 are plain `function` components, NOT `observer`s.** The bug can only
-  bite an `observer` (a non-observer never subscribes to mobx, so coarsening to
-  object identity is harmless — it re-renders on prop change regardless). Their
-  ids are also replaced-on-change values / stable actions, not in-place-mutated
-  observable scalars. All 3 are false positives.
+- 431 observer files → **14 coarsened reads**, across `AlignmentsTooltip`
+  (`band.*`, `deletions.*`, `classes.*`), `SashimiArcsSvg` (`arcs.map`),
+  `DropDownMenu` (`props.children`), `GroupByDialog` (`tagSet.join`),
+  `FeatureComponent`/`WiggleTooltip` (`classes.*`), `ExportToWebDialog`
+  (`nonPortable.*`).
+- **All 14 are benign.** Every coarsened `ID` is a **prop or local recreated on
+  change** (`band`/`deletions`/`arcs`/`nonPortable`/`tagSet` — new object/array
+  identity when content changes, so the coarse gate fires) or a **non-observable**
+  (`classes` from `useStyles`, `props.children`). None is a stable-identity MST
+  node mutated in place — the ingredient (b) corollary that makes DisplayChrome
+  uniquely vulnerable. Verified by reading each declaration/prop type.
 
 So **DisplayChrome was the sole real instance**, and it already ships the fixed
 early-`return` form guarded by `DisplayChrome.test.tsx`. No other production fix
 is warranted, and a repo-wide `compilationMode`/observer opt-out is NOT justified
 (it would disable the compiler across a mobx-everything codebase to fix zero live
-bugs). If this ever needs re-checking (e.g. after adding observer components with
-ternary returns), re-run the two scratchpad scripts. A custom ESLint rule was
-considered and rejected: high false-positive rate (the compiled-output check is
-what actually discriminates), zero current instances, and DisplayChrome already
-has a regression test.
+bugs). Re-run `scratchpad/_audit.cjs` after adding `observer` components that read
+an MST node's scalar inside a conditional while passing that node whole. A custom
+ESLint rule was considered and rejected: only the compiled-output check truly
+discriminates (source heuristics both over- and under-match), zero current
+instances, and DisplayChrome already has a regression test.
+
+## Honest residual gap — not yet fully closed
+
+The **only** claim still resting on inference rather than direct observation:
+"repros in a real browser." The argument is strong — jest runs the *identical*
+compiler output that webpack emits for the browser, and the failure is
+deterministic there — but nobody has loaded it in an actual browser and watched
+an update drop (an earlier browser-repro attempt was void: its config omitted the
+compiler plugin). Given that compiled-output reasoning misled this investigation
+twice before runtime corrected it (see the A–F correction above and the "ternary
+is a red herring" mis-step), treat the in-browser claim as high-confidence
+inference, not observed fact, until someone builds a real-browser repro with
+`babel-plugin-react-compiler` actually enabled.
