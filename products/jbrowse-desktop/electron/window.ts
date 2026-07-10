@@ -142,9 +142,12 @@ export function createChallengeWindow(url: string): Promise<boolean> {
         }
       }
     }
+    // scope the cookie lookup to the challenge host: cf_clearance is
+    // domain-bound, and an unfiltered lookup would match a cf_clearance left by
+    // any other Cloudflare site and finish(true) before the user solves this one
     const timer = setInterval(() => {
       win.webContents.session.cookies
-        .get({ name: 'cf_clearance' })
+        .get({ url, name: 'cf_clearance' })
         .then(cookies => {
           if (cookies.length) {
             finish(true)

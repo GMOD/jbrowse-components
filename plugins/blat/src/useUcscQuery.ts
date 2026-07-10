@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import { isElectron } from '@jbrowse/core/util'
+import {
+  isElectron,
+  localStorageGetItem,
+  localStorageSetItem,
+} from '@jbrowse/core/util'
 
 import { BlatChallengeError } from './blatQuery.ts'
 import { desktopBlatFetch, openBlatChallenge } from './desktopBlat.ts'
@@ -10,6 +14,10 @@ import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util'
+
+// the apiKey is a per-user UCSC account credential, not session state, so it's
+// persisted across dialog opens
+const API_KEY_STORAGE = 'ucsc-blat-apiKey'
 
 // Runs one UCSC query, routing through the desktop main process (to bypass the
 // renderer's CORS restriction and reuse a solved-challenge cookie) or a direct
@@ -69,10 +77,17 @@ export function useUcscQuery({
     resolveUcscDb(session, assemblyNames[0] ?? ''),
   )
   const [urlBase, setUrlBase] = useState(defaultUrl)
-  const [apiKey, setApiKey] = useState('')
+  const [apiKey, setApiKey] = useState(
+    () => localStorageGetItem(API_KEY_STORAGE) ?? '',
+  )
   const [loading, setLoading] = useState(false)
   const [challenged, setChallenged] = useState(false)
   const [error, setError] = useState<unknown>()
+
+  function changeApiKey(key: string) {
+    setApiKey(key)
+    localStorageSetItem(API_KEY_STORAGE, key)
+  }
 
   function changeAssembly(name: string) {
     setAssembly(name)
@@ -130,7 +145,7 @@ export function useUcscQuery({
     error,
     setDb,
     setUrlBase,
-    setApiKey,
+    changeApiKey,
     changeAssembly,
     runQuery,
     solveChallenge,

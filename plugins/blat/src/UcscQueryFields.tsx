@@ -1,5 +1,6 @@
 import { AssemblySelector } from '@jbrowse/core/ui'
-import { TextField } from '@mui/material'
+import { isElectron } from '@jbrowse/core/util'
+import { Alert, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { UcscQuery } from './useUcscQuery.ts'
@@ -19,6 +20,11 @@ const UcscQueryFields = observer(function UcscQueryFields({
   const { assembly, db, urlBase, apiKey } = query
   return (
     <>
+      <Alert severity="info">
+        {isElectron
+          ? 'UCSC now fronts BLAT and in-silico PCR with a Cloudflare Turnstile CAPTCHA. Enter a UCSC apiKey below to skip it; otherwise you will be asked to solve it in a popup window.'
+          : 'UCSC now fronts BLAT and in-silico PCR with a Cloudflare Turnstile CAPTCHA. Enter a UCSC apiKey below, or point the server URL at a proxy that injects one, to avoid it.'}
+      </Alert>
       <AssemblySelector
         session={session}
         selected={assembly}
@@ -46,7 +52,7 @@ const UcscQueryFields = observer(function UcscQueryFields({
         label="UCSC apiKey (optional)"
         value={apiKey}
         onChange={event => {
-          query.setApiKey(event.target.value)
+          query.changeApiKey(event.target.value)
         }}
         helperText="Bypasses the UCSC CAPTCHA. Generate one at a UCSC Genome Browser account → Hub Development → API key. Not needed when the server URL is a proxy that injects a key."
       />
