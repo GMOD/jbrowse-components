@@ -14,7 +14,7 @@ describe('readSessionFromDynamo', () => {
         'share-myId123',
         'pass',
       )
-      expect(fetch).toHaveBeenCalledWith(
+      expect(fetchMock).toHaveBeenCalledWith(
         'https://api.example.com/?sessionId=myId123',
         expect.anything(),
       )
@@ -27,7 +27,7 @@ describe('readSessionFromDynamo', () => {
         'share-id with spaces',
         'pass',
       )
-      expect(fetch).toHaveBeenCalledWith(
+      expect(fetchMock).toHaveBeenCalledWith(
         'https://api.example.com/?sessionId=id%20with%20spaces',
         expect.anything(),
       )
@@ -42,7 +42,7 @@ describe('readSessionFromDynamo', () => {
         'pass',
         controller.signal,
       )
-      expect(fetch).toHaveBeenCalledWith(
+      expect(fetchMock).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({ signal: controller.signal }),
       )

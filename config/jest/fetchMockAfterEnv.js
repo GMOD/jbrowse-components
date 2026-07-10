@@ -17,43 +17,37 @@ if (!isNodeEnvironment) {
   delete global.Headers
   delete global.Request
   delete global.Response
+  // enableMocks() installs global.fetch === global.fetchMock === the mock. We
+  // keep fetchMock as that mock (the single control/assertion surface: tests use
+  // fetchMock.mockResponse / expect(fetchMock)) and wrap only global.fetch below.
   jestFetchMock.enableMocks()
+  const mockFetch = jestFetchMock
 
+  // Decode data: URIs ourselves — the underlying real fetch rejects non-HTTP(S)
+  // protocols, and an ambient mockResponse would otherwise swallow them. This is
+  // the one thing global.fetch does that the mock can't; everything else is
+  // delegated straight through, so global.fetch stays a thin transport rather
+  // than a second mock object.
   function handleDataUri(urlStr) {
-    if (urlStr.startsWith('data:')) {
-      const match = urlStr.match(/^data:([^;,]*)(;base64)?,(.*)$/)
-      if (match) {
-        const [, mimeType, isBase64, data] = match
-        const bytes = isBase64
-          ? Uint8Array.from(atob(data), c => c.charCodeAt(0))
-          : new TextEncoder().encode(decodeURIComponent(data))
-        return new Response(bytes, {
-          headers: { 'Content-Type': mimeType || 'text/plain' },
-        })
-      }
+    const match = urlStr.startsWith('data:')
+      ? urlStr.match(/^data:([^;,]*)(;base64)?,(.*)$/)
+      : null
+    if (match) {
+      const [, mimeType, isBase64, data] = match
+      const bytes = isBase64
+        ? Uint8Array.from(atob(data), c => c.charCodeAt(0))
+        : new TextEncoder().encode(decodeURIComponent(data))
+      return new Response(bytes, {
+        headers: { 'Content-Type': mimeType || 'text/plain' },
+      })
     }
     return null
   }
 
+  // async so a decoded data: URI is still returned as a Promise (callers may
+  // use .then, not await)
   global.fetch = async (url, options) => {
     const urlStr = typeof url === 'string' ? url : url.toString()
-    const dataUriResponse = handleDataUri(urlStr)
-    if (dataUriResponse) {
-      return dataUriResponse
-    }
-    return jestFetchMock(url, options)
+    return handleDataUri(urlStr) ?? mockFetch(url, options)
   }
-
-  // Copy the mock helpers/state onto the wrapper so `fetch` itself reads as a
-  // mock (tests that assert `expect(fetch).toHaveBeenCalledWith(...)`).
-  Object.assign(global.fetch, jestFetchMock)
-
-  // But expose `fetchMock` as the raw jest-fetch-mock instance, not the wrapper.
-  // The wrapper delegates every non-data-URI request to it, so its `.mock` state
-  // is authoritative — and its identity survives `resetMocks()` (which replaces
-  // the underlying `.mock` object). The wrapper's Object.assign'd `.mock` copy,
-  // by contrast, goes stale after a reset, which is why count assertions on it
-  // previously needed a per-test enableMocks() to re-sync. See global.d.ts for
-  // the typing.
-  global.fetchMock = jestFetchMock
 }
