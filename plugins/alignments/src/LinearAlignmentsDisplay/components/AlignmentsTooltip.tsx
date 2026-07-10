@@ -1,5 +1,3 @@
-import { isValidElement } from 'react'
-
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
@@ -71,16 +69,8 @@ function formatLocation(refName?: string, position?: number) {
   return refName ? `${refName}:${pos}` : pos
 }
 
-function SimpleTooltipContents({
-  message,
-}: {
-  message: React.ReactNode | string
-}) {
-  return isValidElement(message) ? (
-    message
-  ) : message ? (
-    <SanitizedHTML html={message} />
-  ) : null
+function SimpleTooltipContents({ message }: { message: string }) {
+  return message ? <SanitizedHTML html={message} /> : null
 }
 
 function InterbaseTooltip({
@@ -253,7 +243,7 @@ export function CoverageTooltipContents({
               {pct(deletions.count, depth + deletions.count)})
             </td>
             {hasModifications && <td />}
-            <td />
+            {hasStrands && <td />}
           </tr>
         )}
         {interbaseEntries.map(([type, data]) => {
@@ -273,7 +263,7 @@ export function CoverageTooltipContents({
                 )
               </td>
               {hasModifications && <td />}
-              <td />
+              {hasStrands && <td />}
             </tr>
           )
         })}

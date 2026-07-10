@@ -84,7 +84,7 @@ export function openCoverageWidget(
     for (const [, entry] of Object.entries(modifications)) {
       const avgProb = entry.count > 0 ? entry.probabilityTotal / entry.count : 0
       featureData[`modification ${entry.name}`] =
-        `${entry.count}/${tooltipBin.depth} (${pct(entry.count, tooltipBin.depth)}) avg prob ${avgProb.toFixed(2)} (${entry.fwd}(+) ${entry.rev}(-))`
+        `${entry.count}/${tooltipBin.depth} (${pct(entry.count, tooltipBin.depth)}) avg prob ${(avgProb * 100).toFixed(1)}% (${entry.fwd}(+) ${entry.rev}(-))`
     }
   }
 
