@@ -85,7 +85,11 @@ import {
   computeStackedSections,
 } from './sectionLayout.ts'
 import { computeArcsRegionMap } from '../features/arcs/compute.ts'
-import { enumerateBezierPairs } from '../features/linkedReads/computeOverlay.ts'
+import {
+  bezierConnectionLegendItems,
+  enumerateBezierPairs,
+  isBezierArcPair,
+} from '../features/linkedReads/computeOverlay.ts'
 import { COLOR_SCHEMES, isModificationScheme } from '../shared/colorSchemes.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
@@ -1439,6 +1443,37 @@ export default function stateModelFactory(
                 pairs: enumerateBezierPairs(sec.laidOutPileupMap),
               }))
             : []
+        },
+
+        /**
+         * #getter
+         * Connection types (LINKED_READ_COLOR_*) actually drawn as bezier/line
+         * arcs in view, the input that lets the legend list only the connection
+         * colors present. Mirrors the overlay's skip rule (normal within-region
+         * pairs are drawn by the GPU pipeline, not as arcs) so the key matches the
+         * curves. Empty while the legend is hidden so the scan is skipped.
+         */
+        get bezierConnectionColorTypes(): Set<number> {
+          const present = new Set<number>()
+          if (self.showLegend) {
+            for (const sec of this.bezierPairSections) {
+              for (const pair of sec.pairs) {
+                if (isBezierArcPair(pair)) {
+                  present.add(pair.c.colorType)
+                }
+              }
+            }
+          }
+          return present
+        },
+
+        /**
+         * #method
+         * Legend swatches for the linked-read connection curves, empty unless the
+         * bezier overlay is on and at least one connection is in view.
+         */
+        bezierLegendItems() {
+          return bezierConnectionLegendItems(this.bezierConnectionColorTypes)
         },
 
         /**

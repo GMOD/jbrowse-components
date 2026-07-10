@@ -79,13 +79,17 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
       },
       sessionDefault: model.readCloudSessionDefault,
     }),
-    // Orthogonal to layout — bezier curves draw over an ordinary pileup or a
-    // chain layout, so this is always offered.
+    // Orthogonal to layout — the connection curves draw over an ordinary pileup
+    // or a chain layout, so this is always offered.
     checkboxItem(
-      'Show read links as bezier curves',
+      'Connect mates & split reads with curves',
       model.showBezierConnections,
       () => {
         model.setShowBezierConnections(!model.showBezierConnections)
+      },
+      {
+        helpText:
+          'draw a curve between a read and its mate or split-read segment; curve color marks the connection type (e.g. inversion, deletion, pair orientation — see the legend). Hover a curve to identify it.',
       },
     ),
     {

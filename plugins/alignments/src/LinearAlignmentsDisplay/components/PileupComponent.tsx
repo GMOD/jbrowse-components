@@ -608,13 +608,25 @@ const LegendHost = observer(function LegendHost({
   if (!model.showLegend) {
     return null
   }
-  return (
+  // When linked-read connection curves are on screen, split the key into a
+  // "Read colors" section (the fills) and a "Read connections" section (the
+  // curve colors) so the two color vocabularies read as distinct. With no
+  // connections in view it stays a single untitled list, unchanged.
+  const readItems = model.legendItems()
+  const connectionItems = model.bezierLegendItems()
+  const onDismiss = () => {
+    model.setShowLegend(false)
+  }
+  return connectionItems.length > 0 ? (
     <FloatingLegend
-      items={model.legendItems()}
-      onDismiss={() => {
-        model.setShowLegend(false)
-      }}
+      sections={[
+        { id: 'reads', title: 'Read colors', items: readItems },
+        { id: 'connections', title: 'Read connections', items: connectionItems },
+      ]}
+      onDismiss={onDismiss}
     />
+  ) : (
+    <FloatingLegend items={readItems} onDismiss={onDismiss} />
   )
 })
 

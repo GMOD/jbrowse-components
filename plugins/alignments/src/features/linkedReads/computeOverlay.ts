@@ -9,6 +9,7 @@ import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/pa
 
 import type { LinkedPair, ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // Cull by endpoint Y. A same-row connection is bowed up by a small fixed apex
 // (see bezierConnector), so a curve whose endpoints sit just off-screen can peek
@@ -34,6 +35,32 @@ export interface PileupArc {
 // sashimiArcKey).
 export function bezierArcKey(arc: Pick<PileupArc, 'id1' | 'id2'>) {
   return `${arc.id1}:${arc.id2}`
+}
+
+// A linked pair becomes an overlay arc unless it's a normal-orientation pair
+// wholly within one region — those straight connectors are drawn by the GPU /
+// Canvas2D pipeline, not here. The single gate shared by the arc emitter
+// (computePileupBezierArcs) and the legend (bezierConnectionColorTypes), so the
+// key can never list a connection color the overlay didn't draw.
+export function isBezierArcPair({ e1, e2, c }: LinkedPair): boolean {
+  return !(c.isNormal && e1.displayedRegionIndex === e2.displayedRegionIndex)
+}
+
+// Legend swatches for the connection types actually drawn as bezier/line arcs,
+// built from the same palette and labels the curves use (linkedReadColorPalette
+// + connectionLabel) so the on-screen key can never disagree with what's drawn.
+// `colorTypes` is the set of LINKED_READ_COLOR_* present in view; sorted so the
+// legend order is stable as reads stream in.
+export function bezierConnectionLegendItems(
+  colorTypes: Iterable<number>,
+): LegendItem[] {
+  const paletteLen = linkedReadColorPalette.length
+  return [...colorTypes]
+    .sort((a, b) => a - b)
+    .map(colorType => ({
+      color: rgb255(linkedReadColorPalette[colorType % paletteLen]!),
+      label: connectionLabel(colorType),
+    }))
 }
 
 // Enumerate the linked pairs of a laid-out region map: the scroll- and
@@ -87,10 +114,10 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
 
   const result: PileupArc[] = []
 
-  for (const { e1, e2, c } of pairs) {
-    const sameRegion = e1.displayedRegionIndex === e2.displayedRegionIndex
+  for (const pair of pairs) {
+    const { e1, e2, c } = pair
     // GPU + Canvas2D pipelines own normal-orientation within-region lines.
-    if (c.isNormal && sameRegion) {
+    if (!isBezierArcPair(pair)) {
       continue
     }
 
