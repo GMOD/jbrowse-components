@@ -165,33 +165,65 @@ shows the contrast — red appears in every population's rows:
 
 A locus view answers "who carries a tract _here_." To see the genome-wide
 _amount_ of archaic ancestry, aggregate the same calls into a signal: for each
-population and each fixed window, the fraction covered by a Denisovan segment.
-That is a wiggle, one signal per population, which a
+population and each 100 kb window, the fraction of the population's haplotypes
+called Denisovan. That is a wiggle, one signal per population, which a
 [multi-wiggle](/docs/user_guides/multiquantitative_track) track draws as one row
 each.
 
 <Figure src="/img/introgression_density.png" caption="Per-population Denisovan-ancestry frequency — the fraction of each population's haplotypes carrying a Denisovan segment in 100 kb windows — across all of chromosome 2, as a multi-wiggle heatmap. The two Oceanian populations (blue) carry Denisovan ancestry along the whole chromosome; the non-Oceanian populations (grey) carry far less. The genome-wide enrichment in one view."/>
 
-The published bigWigs aggregate every individual in each population from the
-full hmmix HGDP callset, so each window holds a true population frequency. The
-illustrative snippet below computes the single-file analog from the provided
-reshaped BED (one individual per population) with `bedtools`, then converts each
-population's bedGraph to BigWig — swap in the full callset and divide by each
-population's haplotype count for the population frequency:
+Compute it from the full hmmix HGDP callset
+([Zenodo 14136628](https://doi.org/10.5281/zenodo.14136628),
+`hg38_HGDP_segments.txt` — one row per called segment, with `pop` in column 3
+and the inferred source `ND_type` in column 9). For each population and window,
+sum the Denisovan-segment length over every haplotype and divide by
+`window length × haplotype count`; haplotypes with no Denisovan call still count
+in the denominator, so the result is a true population frequency in [0, 1]:
+
+```python
+# make_denisova_frequency.py — writes one bedGraph per population
+import sys
+from collections import defaultdict
+
+WINDOW = 100_000
+POPS = {"French", "Han", "Karitiana", "Bougainville", "PapuanHighlands"}
+segments_path, chrom_sizes_path = sys.argv[1], sys.argv[2]
+
+sizes = {}
+with open(chrom_sizes_path) as fh:
+    for line in fh:
+        chrom, size = line.split()
+        sizes[chrom] = int(size)
+
+overlap = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+haplotypes = defaultdict(set)
+with open(segments_path) as fh:
+    next(fh)  # header
+    for line in fh:
+        col = line.rstrip("\n").split("\t")
+        pop = col[2]
+        if pop in POPS:
+            haplotypes[pop].add((col[0], col[1]))  # (individual, haplotype)
+            if col[8] == "Denisova" and col[4] in sizes:
+                chrom, start, end = col[4], int(col[5]), int(col[6])
+                for w in range(start // WINDOW, (end - 1) // WINDOW + 1):
+                    ws, we = w * WINDOW, w * WINDOW + WINDOW
+                    overlap[pop][chrom][w] += min(end, we) - max(start, ws)
+
+for pop in sorted(POPS):
+    nhap = len(haplotypes[pop])
+    with open(f"introgression.denisova_density.{pop}.bedgraph", "w") as out:
+        for chrom in sorted(overlap[pop]):
+            for w in sorted(overlap[pop][chrom]):
+                ws, we = w * WINDOW, min(w * WINDOW + WINDOW, sizes[chrom])
+                freq = overlap[pop][chrom][w] / ((we - ws) * nhap)
+                out.write(f"{chrom}\t{ws}\t{we}\t{freq:.6f}\n")
+```
 
 ```bash
-# 100 kb windows over hg38
-cut -f1,2 hg38.fa.fai > hg38.chrom.sizes    # or fetchChromSizes hg38
-bedtools makewindows -g hg38.chrom.sizes -w 100000 | sort -k1,1 -k2,2n > windows.bed
-
-# cols in introgression.multirow.bed: 1 chrom 2 start 3 end 8 source 10 pop
+fetchChromSizes hg38 | grep -E '^chr([0-9]+|X|Y)\b' | grep -v _ > hg38.chrom.sizes
+python3 make_denisova_frequency.py hg38_HGDP_segments.txt hg38.chrom.sizes
 for pop in French Han Karitiana Bougainville PapuanHighlands; do
-  zcat introgression.multirow.bed.gz \
-    | awk -F'\t' -v p="$pop" '$8=="Denisova" && $10==p {print $1"\t"$2"\t"$3}' \
-    | sort -k1,1 -k2,2n > "$pop.den.bed"
-  bedtools coverage -a windows.bed -b "$pop.den.bed" \
-    | awk 'BEGIN{OFS="\t"} {print $1,$2,$3,$NF}' | sort -k1,1 -k2,2n \
-    > "introgression.denisova_density.$pop.bedgraph"
   bedGraphToBigWig "introgression.denisova_density.$pop.bedgraph" hg38.chrom.sizes \
     "introgression.denisova_density.$pop.bw"
 done
