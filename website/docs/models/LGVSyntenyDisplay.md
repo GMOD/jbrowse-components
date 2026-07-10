@@ -119,9 +119,6 @@ and docs.
 [softClippingSessionDefault](../linearalignmentsdisplay#getter-softclippingsessiondefault),
 [isChainMode](../linearalignmentsdisplay#getter-ischainmode),
 [showLinkedReadLines](../linearalignmentsdisplay#getter-showlinkedreadlines),
-[fitHeightToDisplay](../linearalignmentsdisplay#getter-fitheighttodisplay),
-[autoHeight](../linearalignmentsdisplay#getter-autoheight),
-[heightMode](../linearalignmentsdisplay#getter-heightmode),
 [scaleType](../linearalignmentsdisplay#getter-scaletype),
 [autoscaleType](../linearalignmentsdisplay#getter-autoscaletype),
 [minScore](../linearalignmentsdisplay#getter-minscore),
@@ -140,7 +137,6 @@ and docs.
 [featureHeight](../linearalignmentsdisplay#getter-featureheight),
 [featureSpacing](../linearalignmentsdisplay#getter-featurespacing),
 [maxHeight](../linearalignmentsdisplay#getter-maxheight),
-[fitTargetHeight](../linearalignmentsdisplay#getter-fittargetheight),
 [showSashimiLabels](../linearalignmentsdisplay#getter-showsashimilabels),
 [showSashimiLabelsSessionDefault](../linearalignmentsdisplay#getter-showsashimilabelssessiondefault),
 [chainIdMap](../linearalignmentsdisplay#getter-chainidmap),
@@ -180,6 +176,7 @@ and docs.
 [sections](../linearalignmentsdisplay#getter-sections),
 [renderSections](../linearalignmentsdisplay#getter-rendersections),
 [bezierPairSections](../linearalignmentsdisplay#getter-bezierpairsections),
+[bezierConnectionColorTypes](../linearalignmentsdisplay#getter-bezierconnectioncolortypes),
 [sashimiSections](../linearalignmentsdisplay#getter-sashimisections),
 [isGrouped](../linearalignmentsdisplay#getter-isgrouped),
 [scrollModel](../linearalignmentsdisplay#getter-scrollmodel),
@@ -207,6 +204,7 @@ and docs.
 [groupLaidOutMap](../linearalignmentsdisplay#method-grouplaidoutmap),
 [isGroupTruncated](../linearalignmentsdisplay#method-isgrouptruncated),
 [findFeatureInRpcData](../linearalignmentsdisplay#method-findfeatureinrpcdata),
+[bezierLegendItems](../linearalignmentsdisplay#method-bezierlegenditems),
 [searchFeatureByID](../linearalignmentsdisplay#method-searchfeaturebyid),
 [chainIdsForRead](../linearalignmentsdisplay#method-chainidsforread),
 [getFeatureInfoById](../linearalignmentsdisplay#method-getfeatureinfobyid),
@@ -329,6 +327,13 @@ and docs.
 **Actions:** [setScrollTop](../trackheightmixin#action-setscrolltop),
 [setHeight](../trackheightmixin#action-setheight),
 [resizeHeight](../trackheightmixin#action-resizeheight)
+
+### Available via [HeightModeMixin](../heightmodemixin)
+
+**Getters:** [heightMode](../heightmodemixin#getter-heightmode),
+[fitTargetHeight](../heightmodemixin#getter-fittargetheight),
+[autoHeight](../heightmodemixin#getter-autoheight),
+[fitHeightToDisplay](../heightmodemixin#getter-fitheighttodisplay)
 
 ### Available via [MultiRegionDisplayMixin](../multiregiondisplaymixin)
 

@@ -110,11 +110,7 @@ and docs.
 [renderState](../linearcanvasbasedisplay#getter-renderstate),
 [DisplayMessageComponent](../linearcanvasbasedisplay#getter-displaymessagecomponent),
 [maxHeight](../linearcanvasbasedisplay#getter-maxheight),
-[fitTargetHeight](../linearcanvasbasedisplay#getter-fittargetheight),
-[autoHeight](../linearcanvasbasedisplay#getter-autoheight),
 [displayMode](../linearcanvasbasedisplay#getter-displaymode),
-[heightMode](../linearcanvasbasedisplay#getter-heightmode),
-[fitHeightToDisplay](../linearcanvasbasedisplay#getter-fitheighttodisplay),
 [labelFontSize](../linearcanvasbasedisplay#getter-labelfontsize),
 [showLabelsMode](../linearcanvasbasedisplay#getter-showlabelsmode),
 [showLabels](../linearcanvasbasedisplay#getter-showlabels),
@@ -274,6 +270,13 @@ and docs.
 **Actions:** [setScrollTop](../trackheightmixin#action-setscrolltop),
 [setHeight](../trackheightmixin#action-setheight),
 [resizeHeight](../trackheightmixin#action-resizeheight)
+
+### Available via [HeightModeMixin](../heightmodemixin)
+
+**Getters:** [heightMode](../heightmodemixin#getter-heightmode),
+[fitTargetHeight](../heightmodemixin#getter-fittargetheight),
+[autoHeight](../heightmodemixin#getter-autoheight),
+[fitHeightToDisplay](../heightmodemixin#getter-fitheighttodisplay)
 
 ### Available via [MultiRegionDisplayMixin](../multiregiondisplaymixin)
 

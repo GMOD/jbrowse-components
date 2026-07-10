@@ -1088,7 +1088,7 @@ they never mix into the depth/SNP table. Returns undefined when the region has
 no fetched data or depth is zero.
 
 ```ts
-type coverageTooltipBin = (displayedRegionIndex: number, position: number, bpPerPx: number) => { identity: number; position: number; depth: number; fwdDepth?: number | undefined; revDepth?: number | undefined; ... 4 more ...; modifications?: Record<...> | undefined; } | undefined
+type coverageTooltipBin = (displayedRegionIndex: number, position: number, bpPerPx: number) => { identity: number; position: number; depth: number; fwdDepth?: number | undefined; revDepth?: number | undefined; ... 4 more ...; modifications?: { ...; }[] | undefined; } | undefined
 ```
 
 #### method: coverageInsertionHit

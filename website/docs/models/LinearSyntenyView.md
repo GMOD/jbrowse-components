@@ -50,6 +50,8 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [init](#property-init)                                                         | Properties | used for initializing the view from a session snapshot. tracks is 2D — outer index is the level (the gap between views[i] and views[i+1]), so a 3-way view has two entries. example: `json { views: [ { loc: "chr1:1-100", assembly: "hg38", tracks: ["genes"] }, { loc: "chr1:1-100", assembly: "mm39" }, { loc: "chr1:1-100", assembly: "rn7" } ], tracks: [["hg38_vs_mm39_synteny"], ["mm39_vs_rn7_synteny"]] } `                                       |
 | [importFormSyntenyTrackSelections](#volatile-importformsyntenytrackselections) | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | [awaitingAutoDiagonalize](#volatile-awaitingautodiagonalize)                   | Volatiles  | True while the init autorun is waiting for the first synteny RPC so it can diagonalize. Used to gate the canvas off — otherwise the user watches an undiagonalized hairball flash before the reorder kicks in.                                                                                                                                                                                                                                             |
+| [autoDiagonalizeRequested](#volatile-autodiagonalizerequested)                 | Volatiles  | Set true as soon as an init-time autoDiagonalize is requested, before any render can paint. Gates `settled` (and thus the `synteny_canvas_done` test-id) so a screenshot / browser-test can't capture the pre-reorder hairball during the view-building await window, before `awaitingAutoDiagonalize` flips.                                                                                                                                              |
+| [autoDiagonalizeComplete](#volatile-autodiagonalizecomplete)                   | Volatiles  | Set true only after the init-time DiagonalizeSynteny pass RESOLVES successfully. If the reorder is skipped or throws, this stays false so `settled` never reports done on an undiagonalized view — the capture fails loudly (times out) instead of committing a hairball.                                                                                                                                                                                  |
 | [diagonalizeStatus](#volatile-diagonalizestatus)                               | Volatiles  | Live status from the auto-diagonalize RPC (download %, parse, algorithm phase) shown on the reordering spinner; undefined outside that wait.                                                                                                                                                                                                                                                                                                               |
 | [diagonalizeStopToken](#volatile-diagonalizestoptoken)                         | Volatiles  | Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort it; undefined when none is running.                                                                                                                                                                                                                                                                                                                                       |
 | [hasSomethingToShow](#getter-hassomethingtoshow)                               | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
@@ -82,6 +84,8 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [showAllRegions](#action-showallregions)                                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | [setInit](#action-setinit)                                                     | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | [setAwaitingAutoDiagonalize](#action-setawaitingautodiagonalize)               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [setAutoDiagonalizeRequested](#action-setautodiagonalizerequested)             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [setAutoDiagonalizeComplete](#action-setautodiagonalizecomplete)               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | [setDiagonalizeStatus](#action-setdiagonalizestatus)                           | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | [setDiagonalizeStopToken](#action-setdiagonalizestoptoken)                     | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | [cancelAutoDiagonalize](#action-cancelautodiagonalize)                         | Actions    | Abort an in-flight auto-diagonalize; the runner's finally clears the wait flag, revealing the (undiagonalized) view.                                                                                                                                                                                                                                                                                                                                       |
@@ -342,6 +346,34 @@ undiagonalized hairball flash before the reorder kicks in.
 type awaitingAutoDiagonalize = false
 // code
 awaitingAutoDiagonalize: false
+```
+
+#### volatile: autoDiagonalizeRequested
+
+Set true as soon as an init-time autoDiagonalize is requested, before any render
+can paint. Gates `settled` (and thus the `synteny_canvas_done` test-id) so a
+screenshot / browser-test can't capture the pre-reorder hairball during the
+view-building await window, before `awaitingAutoDiagonalize` flips.
+
+```ts
+// type signature
+type autoDiagonalizeRequested = false
+// code
+autoDiagonalizeRequested: false
+```
+
+#### volatile: autoDiagonalizeComplete
+
+Set true only after the init-time DiagonalizeSynteny pass RESOLVES successfully.
+If the reorder is skipped or throws, this stays false so `settled` never reports
+done on an undiagonalized view — the capture fails loudly (times out) instead of
+committing a hairball.
+
+```ts
+// type signature
+type autoDiagonalizeComplete = false
+// code
+autoDiagonalizeComplete: false
 ```
 
 #### volatile: diagonalizeStatus
@@ -633,6 +665,18 @@ type setInit = (init?: LinearSyntenyViewInit | undefined) => void
 
 ```ts
 type setAwaitingAutoDiagonalize = (arg: boolean) => void
+```
+
+#### action: setAutoDiagonalizeRequested
+
+```ts
+type setAutoDiagonalizeRequested = (arg: boolean) => void
+```
+
+#### action: setAutoDiagonalizeComplete
+
+```ts
+type setAutoDiagonalizeComplete = (arg: boolean) => void
 ```
 
 #### action: setDiagonalizeStatus

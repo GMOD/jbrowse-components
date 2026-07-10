@@ -52,9 +52,9 @@
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
     "status": "bad",
-    "note": "need a legend for this",
-    "reviewedAt": "2026-07-10T18:57:58.695Z",
-    "hash": "c3699b0a1770b115b40d5d2e31e8333b7c91237b"
+    "note": "the short insert is light pink in legend but dark pink in figure. there is also a salmon color being plotted not in legend.",
+    "reviewedAt": "2026-07-10T21:08:30.191Z",
+    "hash": "8672fa596c474c5756dfd82b7d044318acbaf2b1"
   },
   "dotplot": {
     "name": "dotplot",
@@ -1397,16 +1397,16 @@
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
     "status": "bad",
-    "note": "zoom out more",
-    "reviewedAt": "2026-07-10T19:00:31.103Z",
-    "hash": "6a423b60ff997131df93f52604a60d9f151b2569"
+    "note": "not sure if possible to force Tyrp1 gene label to show",
+    "reviewedAt": "2026-07-10T21:12:12.461Z",
+    "hash": "dcc1688368bc7b0ab9d0a1cca25fd70b9fd76993"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
     "status": "bad",
-    "note": "can you look for another interesting region to plot.there is no correspondance between the hi-c loops and anything we are looking at. try to make it biologically interesting. also make showDescriptions:false on genes.  ",
-    "reviewedAt": "2026-07-10T15:31:54.482Z",
-    "hash": "e392c47a0292dd3634ec466fcb67590ccf0162f6"
+    "note": "i can't really tell what is going on here still. is this demonstrating anything biologically meaningful? we need it to be a real highlight. ",
+    "reviewedAt": "2026-07-10T21:09:11.590Z",
+    "hash": "743acf60a4d2dbad4e08c016b9f496916792c603"
   },
   "sv_synteny/linear_synteny_genes_colored": {
     "name": "sv_synteny/linear_synteny_genes_colored",
@@ -1424,24 +1424,24 @@
   },
   "jbrowse-img/sashimi_junctions": {
     "name": "jbrowse-img/sashimi_junctions",
-    "status": "bad",
-    "note": "may want to show the reads in super compact mode",
-    "reviewedAt": "2026-07-10T15:33:42.479Z",
-    "hash": "64fd11bbc9cc7cbff13d562ace847310df926e83"
+    "status": "good",
+    "note": "FIXED: added featureHeight:super-compact so the supporting reads pack into a thin band below the coverage/sashimi arcs — the exon-by-exon read coverage feeding the junctions is now visible without the pileup dominating.",
+    "reviewedAt": "2026-07-10T21:09:23.243Z",
+    "hash": "bac16fd559dfeddafebaef95b4d82bfa6bcd61ba"
   },
   "jbrowse-img/scatac_multiwiggle": {
     "name": "jbrowse-img/scatac_multiwiggle",
     "status": "bad",
-    "note": "while it might be biologically relevant that alpha is active, it is hard to tell how significant this is. we should present a zoomed out view maybe",
-    "reviewedAt": "2026-07-10T15:34:45.213Z",
-    "hash": "4c0cb47fb8962348ffe3c2e8c57d2dcaa6eb5db8"
+    "note": "decrease height of each multiwiggle row a bit. it is also somewhat not exciting because only one row shows activity, but if it is well known we can call this out",
+    "reviewedAt": "2026-07-10T21:10:02.029Z",
+    "hash": "87ef32bae679ffc65e105a08604072a7cc2bb8af"
   },
   "methylation/arabidopsis_wgbs_boundary": {
     "name": "methylation/arabidopsis_wgbs_boundary",
-    "status": "good",
-    "note": "FIXED: zoomed out from ~800bp to ~3kb (NC_003070.9:4,404,500-4,407,500) straddling the AT1G12930 3' end. Added the RefSeq gene track above (the plant analog of the requested 'cpg island track') so the per-read blue->red transition pins to the annotated gene->element boundary. Caption de-numbered.",
-    "reviewedAt": "2026-07-10T18:58:32.223Z",
-    "hash": "7671abace275e9478c17fdbab6bd54fa54bab656"
+    "status": "bad",
+    "note": "if it helps we can add a 'bedmethyl' type track too or bigwig of the methylation, smoothed",
+    "reviewedAt": "2026-07-10T21:10:43.646Z",
+    "hash": "af79c224dfdc10c4ad58c472a57455aa4f494027"
   },
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
@@ -1452,10 +1452,10 @@
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
-    "status": "good",
-    "note": "FIXED: replaced the 3-stacked-full-pileup compose with ONE single-view figure over the same window: gene track (context) + NEW aggregate MethylDackel MultiQuantitativeTrack (CpG/CHG/CHH as three labeled/colored rows, the clean quantitative tri-context contrast) + compact per-read bisulfite pileup. Drives the conceptual point (CpG over gene body+element, CHG/CHH element-only) without complex numbers. New data hosted at jbrowse.org/bisulfite (arabidopsis_chr1_genes.gff.gz, arabidopsis_wgbs_{CpG,CHG,CHH}.bw). Config adds arabidopsis_genes + arabidopsis_methyldackel tracks.",
-    "reviewedAt": "2026-07-10T18:59:46.808Z",
-    "hash": "762127d3dffeaeb6e791663ee605b17e63f7f55b"
+    "status": "bad",
+    "note": "this figure is a little confusing because only one modification mode is showing, but it is demonstrating 3 different methyldackyl modes",
+    "reviewedAt": "2026-07-10T21:11:23.017Z",
+    "hash": "91d29a51aea28de000535576e064565992e4b731"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
@@ -1536,10 +1536,10 @@
   },
   "qtl/bxd_sort_before_after": {
     "name": "qtl/bxd_sort_before_after",
-    "status": "bad",
-    "note": "if possible add the right click context menu in the first screenshot",
-    "reviewedAt": "2026-07-10T15:42:26.337Z",
-    "hash": "38797eb818f1504581ba0bd45a53aaa7a0147d0c"
+    "status": "good",
+    "note": "FIXED: the first (input-order) panel now opens the painting's right-click context menu with 'Sort rows by value here' boxed near the peak column, + a caption — the interactive twin of the declarative sortRowsBy the second panel bakes in. Only opens the menu (never clicks it) so the top panel stays in input order; the bottom panel shows the resulting B/D split.",
+    "reviewedAt": "2026-07-10T21:11:39.966Z",
+    "hash": "186dd0a4099c12ca840188bbe9f04e67c562d9ba"
   },
   "rnaseq/pkm_mutually_exclusive": {
     "name": "rnaseq/pkm_mutually_exclusive",
@@ -1551,16 +1551,16 @@
   "rnaseq/strand_specific": {
     "name": "rnaseq/strand_specific",
     "status": "bad",
-    "note": "show in screenshot how to select the strand specific rendering using trackmenu->color by first of pair",
-    "reviewedAt": "2026-07-10T15:43:43.991Z",
-    "hash": "eff9797c2d3cd776dd5171f82d826912910fb9c9"
+    "note": "we should maybe use the 'pin' icon for expressing making a setting the default? the text 'Make 'first of pair strand' the default for all alignments tracks' is a mouthful and makes menu large",
+    "reviewedAt": "2026-07-10T21:13:25.518Z",
+    "hash": "87e074baa90d83c40960951683d9428e0a51a0c5"
   },
   "trio-ancestry": {
     "name": "trio-ancestry",
-    "status": "bad",
-    "note": "is this showing anything interesting? might look for more admixed sample or trio. it would be good to see how the child inherits the parents admixture too",
-    "reviewedAt": "2026-07-10T15:44:42.737Z",
-    "hash": "f54d7d6822f4a269e377ef7f111116eda96537de"
+    "status": "good",
+    "note": "does this clean",
+    "reviewedAt": "2026-07-10T21:25:33.878Z",
+    "hash": "6c0345bde9ce8e2c7405b60c1df4d36c234a54fb"
   },
   "methylation/arabidopsis_wgbs_cpg": {
     "name": "methylation/arabidopsis_wgbs_cpg",

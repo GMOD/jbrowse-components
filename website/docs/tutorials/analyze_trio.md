@@ -184,16 +184,16 @@ Haplotypes can also be painted by **continental ancestry**. That is only
 informative for an _admixed_ individual, so this section switches to a 1000
 Genomes **African-American (ASW) trio** — child NA19828 with parents NA19818 and
 NA19819. African-American genomes are a two-way mosaic of **African** and
-**European** ancestry, and 1000 Genomes has clean reference panels for both. (The
-Latin-American populations are more visibly admixed, but their Native American
-ancestry has no unadmixed 1000 Genomes reference to paint against, so painting
-them with 1000-Genomes-only references would misassign it — ASW keeps the demo
-accurate.)
+**European** ancestry, and 1000 Genomes has clean reference panels for both.
+(The Latin-American populations are more visibly admixed, but their Native
+American ancestry has no unadmixed 1000 Genomes reference to paint against, so
+painting them with 1000-Genomes-only references would misassign it — ASW keeps
+the demo accurate.)
 
 [FLARE](https://github.com/browning-lab/flare) infers per-haplotype local
 ancestry by comparing each target haplotype against labeled reference samples.
-Give it the phased trio genotypes (`gt`), phased reference genotypes (`ref`) each
-tagged `AFR` or `EUR` in the `ref-panel` map, and a genetic map:
+Give it the phased trio genotypes (`gt`), phased reference genotypes (`ref`)
+each tagged `AFR` or `EUR` in the `ref-panel` map, and a genetic map:
 
 ```bash
 java -jar flare.jar \
@@ -201,11 +201,12 @@ java -jar flare.jar \
   map=plink.chr1.GRCh38.map out=asw_trio seed=42
 ```
 
-FLARE writes per-marker calls in the `AN1`/`AN2` `FORMAT` fields of `asw_trio.anc.vcf.gz`.
-Collapse those into per-haplotype runs — one BED9 line per run, rows labeled
-`Child/Mother/Father hap1|hap2` and colored by ancestry via `itemRgb`. Selecting
-the reference panel, extracting the genotypes from the public 1000 Genomes phased
-panel, running FLARE, and writing the BED are one reproducible script:
+FLARE writes per-marker calls in the `AN1`/`AN2` `FORMAT` fields of
+`asw_trio.anc.vcf.gz`. Collapse those into per-haplotype runs — one BED9 line
+per run, rows labeled `Child/Mother/Father hap1|hap2` and colored by ancestry
+via `itemRgb`. Selecting the reference panel, extracting the genotypes from the
+public 1000 Genomes phased panel, running FLARE, and writing the BED are one
+reproducible script:
 [`scripts/build_asw_trio_ancestry.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_asw_trio_ancestry.sh).
 
 Load the result as a `LinearMultiRowFeatureDisplay` partitioned by `sample`, so
@@ -258,8 +259,8 @@ each haplotype gets its own row:
 Each of the six rows is one haplotype, painted as an African (orange) / European
 (blue) mosaic. The parents carry their own long ancestry blocks, and the child's
 two haplotypes recombine the blocks inherited from each parent — the same
-Mendelian transmission the parent-of-origin painting shows, seen here in terms of
-continental ancestry.
+Mendelian transmission the parent-of-origin painting shows, seen here in terms
+of continental ancestry.
 
 <Figure caption="Per-haplotype FLARE local-ancestry calls for a 1000 Genomes African-American (ASW) trio along chromosome 1, painted with the multi-row feature display. Each of the six rows is one haplotype (child, mother, father), colored African (orange) or European (blue) against African + European 1000 Genomes reference panels. The African/European mosaic and its inheritance from parents to child are visible across the chromosome." src="/img/trio-ancestry.png"/>
 

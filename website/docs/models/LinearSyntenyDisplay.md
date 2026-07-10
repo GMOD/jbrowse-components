@@ -68,7 +68,7 @@ and the `renderParams` the view reads out.
 | [ready](#getter-ready)                               | Getters    | A fetch has completed (data is present, even if it mapped zero features). Not `numFeats > 0` — an empty-but-finished fetch is ready, otherwise an empty result spins the loading overlay forever.                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [loading](#getter-loading)                           | Getters    | First load: a fetch is running and no data has arrived yet. Excludes error so error UI and loading UI never show simultaneously. Drives the full striped LoadingOverlay.                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [refetching](#getter-refetching)                     | Getters    | Refetch in-flight: a new fetch is running but stale ribbons are still on screen (e.g. zoom-out across a log2 bucket, region change). Drives a subtle corner indicator instead of the full overlay so the visible ribbons aren't masked on every viewport change.                                                                                                                                                                                                                                                                                                                                  |
-| [currentFetchKey](#getter-currentfetchkey)           | Getters    | Fetch-input signature (region set/order, snapped fetch window, zoom bucket, CIGAR/marker draw options, LOD tier) for the view's current state — the same tracked deps the fetch autorun refetches on. Reactive: flips the instant any of them changes. undefined until both connected views are ready.                                                                                                                                                                                                                                                                                            |
+| [currentFetchKey](#getter-currentfetchkey)           | Getters    | Fetch-input signature (region set/order, snapped fetch window, zoom bucket, CIGAR/marker draw options, LOD tier) for the view's current state — the same tracked deps the fetch autorun refetches on. Reactive: flips the instant any of them changes. Before both connected views are ready it collapses to a degenerate signature (empty region sig, no fetch-window/zoom keys) that no connected fetch can produce — a real fetch requires non-empty displayedRegions — so `dataCurrent` reads false until a real fetch lands. Non-nullable so it mirrors dotplot's.                           |
 | [dataCurrent](#getter-datacurrent)                   | Getters    | True when the rendered data was fetched for the view's current inputs. Goes false the instant a region/zoom/draw-option change makes the held ribbons stale — including during the pre-refetch debounce gap where `fetching` is still false so `refetching` alone can't catch it. The synteny analog of LGV's `viewportWithinLoadedData` and arc's `loadedRegionSignature === currentRegionSignature`.                                                                                                                                                                                            |
 | [svgReady](#getter-svgready)                         | Getters    | Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady"). Synteny is not an LGV display — it composes only `BaseDisplay` with its own fetch — so it has no `MultiRegionDisplayMixin`/`GlobalDataDisplayMixin` `svgReady`; this is the equivalent. Stale-safe on both axes: `dataCurrent` closes the pre-refetch debounce gap (stale window before `fetching` flips) and `!refetching` covers the in-flight RPC, so an export fired right after a zoom/pan waits for fresh ribbons instead of capturing stale ones. No `regionTooLarge` state (synteny never gates on region size). |
 | [view](#getter-view)                                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
@@ -307,10 +307,14 @@ type refetching = boolean
 Fetch-input signature (region set/order, snapped fetch window, zoom bucket,
 CIGAR/marker draw options, LOD tier) for the view's current state — the same
 tracked deps the fetch autorun refetches on. Reactive: flips the instant any of
-them changes. undefined until both connected views are ready.
+them changes. Before both connected views are ready it collapses to a degenerate
+signature (empty region sig, no fetch-window/zoom keys) that no connected fetch
+can produce — a real fetch requires non-empty displayedRegions — so
+`dataCurrent` reads false until a real fetch lands. Non-nullable so it mirrors
+dotplot's.
 
 ```ts
-type currentFetchKey = string | undefined
+type currentFetchKey = string
 ```
 
 #### getter: dataCurrent
@@ -504,7 +508,7 @@ Set both feature and instance data in one MST action so downstream autoruns
 type setRpcData = (
   featureData: SyntenyFeatureData | undefined,
   instanceData: SyntenyGeometry | undefined,
-  fetchKey?: string | undefined,
+  fetchKey: string,
 ) => void
 ```
 
