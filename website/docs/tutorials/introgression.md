@@ -2,8 +2,7 @@
 title: Introgression tracts
 description:
   Painting per-haplotype archaic introgression segments as one labeled row per
-  haplotype with the multi-row feature display, plus a per-population
-  ancestry-frequency track
+  haplotype with the multi-row feature display
 guide_category: Tutorials
 ---
 
@@ -12,8 +11,7 @@ segments they call as Neanderthal- or Denisovan-derived. That output is a set of
 intervals with a per-haplotype label and a source, which is what the **multi-row
 feature display** is built to draw: one labeled row per haplotype, features
 colored by source. This tutorial takes a published callset, reshapes it into one
-BED, configures the display, and then aggregates the same calls into a
-per-population ancestry-frequency track. JBrowse does no inference. It draws the
+BED, and configures the display. JBrowse does no inference. It draws the
 segments the caller produced.
 
 <Figure src="/img/introgression.png" caption="hmmix archaic-segment calls as a multi-row feature track: one row per haplotype, features colored by inferred source — Neanderthal (red), Denisovan (blue), both (purple). Whole chr1 arm, five individuals × two haplotypes, grouped by region with the coloured spines at the left. The four Oceanian rows (blue spine) carry nearly all the Denisovan (blue) segments; Neanderthal (red) is spread across every population."/>
@@ -161,114 +159,6 @@ shows the contrast — red appears in every population's rows:
 
 <Figure src="/img/introgression_neanderthal.png" caption="chr12:129.95–130.32 Mb over FZD10. A Neanderthal segment (red) is called across French, Han, Karitiana, Bougainville and PapuanHighlands haplotypes alike — the signature of the Neanderthal ancestry shared by all non-Africans, unlike the Oceania-restricted Denisovan tracts above."/>
 
-## The whole picture: per-population ancestry frequency
-
-A locus view answers "who carries a tract _here_." To see the genome-wide
-_amount_ of archaic ancestry, aggregate the same calls into a signal: for each
-population and each 100 kb window, the fraction of the population's haplotypes
-called Denisovan. That is a wiggle, one signal per population, which a
-[multi-wiggle](/docs/user_guides/multiquantitative_track) track draws as one row
-each.
-
-<Figure src="/img/introgression_density.png" caption="Per-population Denisovan-ancestry frequency — the fraction of each population's haplotypes carrying a Denisovan segment in 100 kb windows — across all of chromosome 2, as a multi-wiggle heatmap. The two Oceanian populations (blue) carry Denisovan ancestry along the whole chromosome; the non-Oceanian populations (grey) carry far less. The genome-wide enrichment in one view."/>
-
-Compute it from the full hmmix HGDP callset
-([Zenodo 14136628](https://doi.org/10.5281/zenodo.14136628),
-`hg38_HGDP_segments.txt` — one row per called segment, with `pop` in column 3
-and the inferred source `ND_type` in column 9). For each population and window,
-sum the Denisovan-segment length over every haplotype and divide by
-`window length × haplotype count`; haplotypes with no Denisovan call still count
-in the denominator, so the result is a true population frequency in [0, 1]:
-
-```python
-# make_denisova_frequency.py — writes one bedGraph per population
-import sys
-from collections import defaultdict
-
-WINDOW = 100_000
-POPS = {"French", "Han", "Karitiana", "Bougainville", "PapuanHighlands"}
-segments_path, chrom_sizes_path = sys.argv[1], sys.argv[2]
-
-sizes = {}
-with open(chrom_sizes_path) as fh:
-    for line in fh:
-        chrom, size = line.split()
-        sizes[chrom] = int(size)
-
-overlap = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
-haplotypes = defaultdict(set)
-with open(segments_path) as fh:
-    next(fh)  # header
-    for line in fh:
-        col = line.rstrip("\n").split("\t")
-        pop = col[2]
-        if pop in POPS:
-            haplotypes[pop].add((col[0], col[1]))  # (individual, haplotype)
-            if col[8] == "Denisova" and col[4] in sizes:
-                chrom, start, end = col[4], int(col[5]), int(col[6])
-                for w in range(start // WINDOW, (end - 1) // WINDOW + 1):
-                    ws, we = w * WINDOW, w * WINDOW + WINDOW
-                    overlap[pop][chrom][w] += min(end, we) - max(start, ws)
-
-for pop in sorted(POPS):
-    nhap = len(haplotypes[pop])
-    with open(f"introgression.denisova_density.{pop}.bedgraph", "w") as out:
-        for chrom in sorted(overlap[pop]):
-            for w in sorted(overlap[pop][chrom]):
-                ws, we = w * WINDOW, min(w * WINDOW + WINDOW, sizes[chrom])
-                freq = overlap[pop][chrom][w] / ((we - ws) * nhap)
-                out.write(f"{chrom}\t{ws}\t{we}\t{freq:.6f}\n")
-```
-
-```bash
-fetchChromSizes hg38 | grep -E '^chr([0-9]+|X|Y)\b' | grep -v _ > hg38.chrom.sizes
-python3 make_denisova_frequency.py hg38_HGDP_segments.txt hg38.chrom.sizes
-for pop in French Han Karitiana Bougainville PapuanHighlands; do
-  bedGraphToBigWig "introgression.denisova_density.$pop.bedgraph" hg38.chrom.sizes \
-    "introgression.denisova_density.$pop.bw"
-done
-```
-
-Load the five BigWigs as one `MultiQuantitativeTrack`. `subadapters` names,
-colors, and groups each population; coloring the Oceanian populations blue and
-the rest grey reinforces the contrast. Denisovan frequencies are mostly well
-below 1, so `maxScore` caps the color ramp at 0.2 — otherwise the whole heatmap
-washes out to near-white; capping it lets the pervasive Oceanian windows read as
-saturated blue while the sparse rows stay faint:
-
-```json
-{
-  "type": "MultiQuantitativeTrack",
-  "trackId": "hgdp_denisova_density",
-  "name": "Denisovan-ancestry frequency per population (hmmix, 100kb windows)",
-  "category": ["1000 Genomes", "Introgression"],
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "MultiWiggleAdapter",
-    "subadapters": [
-      { "type": "BigWigAdapter", "name": "French", "group": "Rest of the world", "color": "#bdbdbd", "bigWigLocation": { "uri": "https://jbrowse.org/demos/introgression/introgression.denisova_density.French.bw", "locationType": "UriLocation" } },
-      { "type": "BigWigAdapter", "name": "Han", "group": "Rest of the world", "color": "#969696", "bigWigLocation": { "uri": "https://jbrowse.org/demos/introgression/introgression.denisova_density.Han.bw", "locationType": "UriLocation" } },
-      { "type": "BigWigAdapter", "name": "Karitiana", "group": "Rest of the world", "color": "#737373", "bigWigLocation": { "uri": "https://jbrowse.org/demos/introgression/introgression.denisova_density.Karitiana.bw", "locationType": "UriLocation" } },
-      { "type": "BigWigAdapter", "name": "Bougainville", "group": "Oceanian (Melanesian)", "color": "#2c7fb8", "bigWigLocation": { "uri": "https://jbrowse.org/demos/introgression/introgression.denisova_density.Bougainville.bw", "locationType": "UriLocation" } },
-      { "type": "BigWigAdapter", "name": "PapuanHighlands", "group": "Oceanian (Melanesian)", "color": "#2c7fb8", "bigWigLocation": { "uri": "https://jbrowse.org/demos/introgression/introgression.denisova_density.PapuanHighlands.bw", "locationType": "UriLocation" } }
-    ]
-  },
-  "displays": [
-    {
-      "type": "MultiLinearWiggleDisplay",
-      "displayId": "hgdp_denisova_density-MultiLinearWiggleDisplay",
-      "defaultRendering": "multirowdensity",
-      "minScore": 0,
-      "maxScore": 0.2
-    }
-  ]
-}
-```
-
-The same recipe fits continuous per-window scores from other callers (Sprime,
-windowed D / f-statistics) — those are already a signal, so skip the coverage
-step and write each sample's scores straight to bedGraph/BigWig.
-
 ## The same pattern, beyond humans
 
 Any caller that outputs per-individual segments loads the same way — swap the
@@ -281,9 +171,6 @@ assembly and the input file, the track config is unchanged.
   per-haplotype segments
 - [Phased trio analysis](/docs/tutorials/analyze_trio) — another multi-row
   painting technique, for hap-ibd inheritance blocks
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) — the
-  multi-wiggle track used above for the per-population frequency signal (and for
-  continuous per-sample scores like Sprime/D-statistics)
 - [jexl](/docs/config_guides/jexl) — the color callback syntax coloring features
   by inferred source
 

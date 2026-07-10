@@ -1784,47 +1784,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Genome-wide aggregate: per-population Denisovan-ancestry frequency (fraction
-  // of each population's haplotypes carrying a Denisovan segment, in 100 kb
-  // windows) as a multi-wiggle across all of chromosome 2. The two Oceanian
-  // populations (blue) carry Denisovan ancestry along the whole chromosome
-  // (peaks ~0.8-0.95); the non-Oceanian populations (grey) carry several-fold
-  // less. Realizes the tutorial's "windowed scores" section with real derived
-  // data.
-  {
-    mode: 'url',
-    name: 'introgression_density',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr2:1-242,193,529',
-      tracks: [
-        {
-          trackId: 'hgdp_denisova_density',
-          displaySnapshot: {
-            type: 'MultiLinearWiggleDisplay',
-            // heatmap (density) rows read far better than xyplot spikes at
-            // whole-chromosome scale — Oceanian rows fill with blue, the rest
-            // stay near-white
-            defaultRendering: 'multirowdensity',
-            height: 300,
-          },
-        },
-      ],
-    }),
-    readyText: 'Denisovan-ancestry frequency',
-    settleMs: 6000,
-    viewportHeight: 660,
-    annotations: [
-      {
-        type: 'text',
-        x: 40,
-        y: 522,
-        maxWidth: 1420,
-        fontSize: 22,
-        text: 'The same calls aggregated as a heatmap: per-population Denisovan-ancestry frequency — the fraction of each population’s haplotypes carrying a Denisovan segment, in 100 kb windows — across all of chromosome 2. Bougainville and PapuanHighlands carry Denisovan ancestry along the whole chromosome; French, Han and Karitiana carry far less. The genome-wide enrichment in one view.',
-      },
-    ],
-  },
   {
     mode: 'url',
     name: 'chromhmm',
