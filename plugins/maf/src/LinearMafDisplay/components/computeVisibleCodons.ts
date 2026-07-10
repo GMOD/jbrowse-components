@@ -312,7 +312,10 @@ function rowCodonBytes(
  * Classify a species' codon bytes against the reference codon bytes: `stop` if
  * it translates to a stop, `nonsyn` if its amino acid differs from `refAa`,
  * `same` if every base matches the reference, else `syn` (silent). Returns
- * undefined when the species' codon is gapped/non-standard (no residue to draw).
+ * undefined when the species' codon is gapped/non-standard (no residue to draw)
+ * or when the reference codon has no amino acid (a gap/`N` in the reference):
+ * syn vs nonsyn is undefined without a reference residue to compare against, so
+ * the codon is left unclassified rather than guessed from nucleotides alone.
  * Shared by the codon overlay (`computeVisibleCodons`) and the hover lookup
  * (`findCodonAt`) so the colored cell and the tooltip can't disagree.
  */
@@ -323,13 +326,13 @@ function classifyChange(
   refAa: string | undefined,
 ): { aa: string; change: CodonChange } | undefined {
   const aa = translateCodonBytes(rowBytes[0], rowBytes[1], rowBytes[2], strand)
-  if (aa === undefined) {
+  if (aa === undefined || refAa === undefined) {
     return undefined
   }
   const change: CodonChange =
     aa === '*'
       ? 'stop'
-      : refAa !== undefined && aa !== refAa
+      : aa !== refAa
         ? 'nonsyn'
         : sameBase(rowBytes[0], refBytes[0]) &&
             sameBase(rowBytes[1], refBytes[1]) &&
@@ -447,6 +450,12 @@ export function computeVisibleCodons(
         refBytes[2],
         codon.strand,
       )
+      // A reference codon with a gap/`N` has no amino acid to compare against,
+      // so no species codon can be classified here (mirrors the conservation
+      // band, which skips the same codon) — draw nothing rather than guess.
+      if (refAa === undefined) {
+        continue
+      }
       const cells = codonCells(codon.positions, bpToPx)
       const glyphIdx = widestCell(cells)
       // A species must appear in every block the codon spans to have a complete
