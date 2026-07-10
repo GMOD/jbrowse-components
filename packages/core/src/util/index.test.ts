@@ -3,6 +3,7 @@ import {
   compareLocStrings,
   mergeIntervals,
   parseLocString,
+  resolveSelectedIds,
   stringify,
   toLocale,
 } from './index.ts'
@@ -238,5 +239,21 @@ describe('toLocale', () => {
     expect(toLocale(-500)).toBe('-500')
     expect(toLocale(-1000)).toBe('-1,000')
     expect(toLocale(-1234567)).toBe('-1,234,567')
+  })
+})
+
+describe('resolveSelectedIds', () => {
+  const allIds = ['a', 'b', 'c']
+  test('include model returns the listed ids', () => {
+    const model = { type: 'include' as const, ids: new Set(['a', 'c']) }
+    expect([...resolveSelectedIds(model, allIds)]).toEqual(['a', 'c'])
+  })
+  test('empty exclude model (header select-all) returns everything', () => {
+    const model = { type: 'exclude' as const, ids: new Set<string>() }
+    expect([...resolveSelectedIds(model, allIds)]).toEqual(['a', 'b', 'c'])
+  })
+  test('exclude model returns everything except the excluded ids', () => {
+    const model = { type: 'exclude' as const, ids: new Set(['b']) }
+    expect([...resolveSelectedIds(model, allIds)]).toEqual(['a', 'c'])
   })
 })

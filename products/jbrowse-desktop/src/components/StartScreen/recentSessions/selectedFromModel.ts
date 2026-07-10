@@ -1,15 +1,18 @@
+import { resolveSelectedIds } from '@jbrowse/core/util'
+
 import type { RecentSessionData } from '../types.ts'
 import type { GridRowSelectionModel } from '@mui/x-data-grid'
 
-// The v9 selection model is either an explicit include-set or an exclude-set
-// (the header "select all" checkbox produces the latter, e.g. {type:'exclude',
-// ids:{}} meaning "everything is selected"). A bare ids.has() check silently
-// inverts the exclude case, so select-all would report zero rows selected.
+// Map a v9 selection model to the selected session rows. resolveSelectedIds
+// handles the include/exclude distinction (the header "select all" produces an
+// exclude-set) that a bare model.ids read would get wrong.
 export function selectedFromModel(
   model: GridRowSelectionModel,
   sessions: RecentSessionData[],
 ) {
-  return model.type === 'exclude'
-    ? sessions.filter(s => !model.ids.has(s.path))
-    : sessions.filter(s => model.ids.has(s.path))
+  const ids = resolveSelectedIds(
+    model,
+    sessions.map(s => s.path),
+  )
+  return sessions.filter(s => ids.has(s.path))
 }

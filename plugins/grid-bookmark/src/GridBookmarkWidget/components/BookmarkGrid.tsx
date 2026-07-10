@@ -1,5 +1,9 @@
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import { assembleLocString, getSession } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getSession,
+  resolveSelectedIds,
+} from '@jbrowse/core/util'
 import {
   DataGrid,
   GRID_CHECKBOX_SELECTION_COL_DEF,
@@ -118,8 +122,12 @@ const BookmarkGrid = observer(function BookmarkGrid({
         checkboxSelection
         onRowSelectionModelChange={newRowSelectionModel => {
           if (bookmarksWithValidAssemblies.length > 0) {
+            const ids = resolveSelectedIds(
+              newRowSelectionModel,
+              rows.map(r => r.id),
+            )
             model.setSelectedBookmarks(
-              [...newRowSelectionModel.ids].map(value => ({
+              [...ids].map(value => ({
                 ...rows[value as number]!,
               })),
             )

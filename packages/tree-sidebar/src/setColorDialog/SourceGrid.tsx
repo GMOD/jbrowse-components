@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { resolveSelectedIds } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox, FormControlLabel } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
@@ -114,7 +115,12 @@ export default function SourceGrid<S extends { name: string; color?: string }>({
           getRowId={row => row.name}
           checkboxSelection
           onRowSelectionModelChange={arg => {
-            setSelected([...arg.ids])
+            setSelected([
+              ...resolveSelectedIds(
+                arg,
+                rows.map(r => r.name),
+              ),
+            ])
           }}
           rows={rows}
           rowHeight={25}

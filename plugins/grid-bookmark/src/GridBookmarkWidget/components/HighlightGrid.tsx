@@ -1,7 +1,11 @@
 import { useState } from 'react'
 
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import { assembleLocString, getSession } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getSession,
+  resolveSelectedIds,
+} from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import {
   DataGrid,
@@ -135,8 +139,13 @@ const HighlightGrid = observer(function HighlightGrid({
           ),
         ]}
         checkboxSelection
-        onRowSelectionModelChange={({ ids }) => {
-          setSelectedIds(ids)
+        onRowSelectionModelChange={selectionModel => {
+          setSelectedIds(
+            resolveSelectedIds(
+              selectionModel,
+              rows.map(r => r.id),
+            ),
+          )
         }}
         rowSelectionModel={{ type: 'include', ids: selectedIds }}
         processRowUpdate={row => {

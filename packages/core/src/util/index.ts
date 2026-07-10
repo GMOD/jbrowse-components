@@ -12,6 +12,7 @@ import { storeBlobLocation } from './tracks.ts'
 import { isUriLocation } from './types/index.ts'
 
 import type { FileLocation } from './types/index.ts'
+import type { GridRowId, GridRowSelectionModel } from '@mui/x-data-grid'
 
 export * from './stringUtils.ts'
 export * from './svgColorProps.ts'
@@ -219,6 +220,28 @@ export function measureGridWidth(
       return Math.min(Math.max(n + padding, minWidth), maxWidth)
     }),
   )
+}
+
+// Resolve a @mui/x-data-grid v9 selection model into the concrete set of
+// selected row ids. The model is either an explicit include-set or an
+// exclude-set (the header "select all" checkbox produces the latter, e.g.
+// {type:'exclude', ids:{}} meaning "everything selected"), so reading model.ids
+// directly silently drops select-all and inverts a select-all-then-deselect.
+export function resolveSelectedIds(
+  model: GridRowSelectionModel,
+  allIds: Iterable<GridRowId>,
+): Set<GridRowId> {
+  if (model.type === 'exclude') {
+    const result = new Set<GridRowId>()
+    for (const id of allIds) {
+      if (!model.ids.has(id)) {
+        result.add(id)
+      }
+    }
+    return result
+  } else {
+    return new Set(model.ids)
+  }
 }
 
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {

@@ -5,6 +5,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
+  resolveSelectedIds,
 } from '@jbrowse/core/util'
 import { nanoid } from '@jbrowse/core/util/nanoid'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -101,6 +102,13 @@ const MultiWiggleAddTrackWorkflow = observer(
       setTracks(prev => [...prev, ...items.map(itemToRow)])
     }
 
+    // resolve here so the header "select all" (an exclude-type model) counts
+    // every track rather than reading as an empty selection
+    const selectedIds = resolveSelectedIds(
+      selection,
+      tracks.map(t => t.id),
+    )
+
     return (
       <Paper
         className={classes.paper}
@@ -158,9 +166,9 @@ const MultiWiggleAddTrackWorkflow = observer(
               variant="outlined"
               size="small"
               startIcon={<DeleteIcon />}
-              disabled={selection.ids.size === 0}
+              disabled={selectedIds.size === 0}
               onClick={() => {
-                setTracks(prev => prev.filter(t => !selection.ids.has(t.id)))
+                setTracks(prev => prev.filter(t => !selectedIds.has(t.id)))
                 setSelection({ type: 'include', ids: new Set() })
               }}
             >
