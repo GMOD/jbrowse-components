@@ -27,19 +27,38 @@ export function assemblyNameFromUri(uri: string) {
   return file.replace(SEQUENCE_EXT_RE, '')
 }
 
+// a `type` (not `interface`) so it keeps the implicit index signature that makes
+// it assignable to the caller's `Record<string, unknown>` assembly config
+type MakeAssemblyResult = {
+  name: string
+  aliases: string[]
+  uri?: string
+  sequence?: {
+    type: string
+    trackId: string
+    adapter: {
+      uri: string
+      faiLocation?: { uri: string }
+      gziLocation?: { uri: string }
+    }
+  }
+  refNameAliases?: { uri: string }
+}
+
 /**
  * Build an assembly config for a sequence file (indexed FASTA, bgzipped FASTA,
- * or `.2bit`) — the boilerplate you'd otherwise write by hand. The adapter is a
- * bare `uri` shorthand: jbrowse-core's assembly config picks the concrete
- * adapter type (`IndexedFastaAdapter`/`BgzipFastaAdapter`/`TwoBitAdapter`) from
- * the extension and derives the `.fai`/`.gzi` siblings at load time, so no
- * adapter-type knowledge lives here. A non-sibling index (`faiUri`/`gziUri`)
- * overrides those derived locations. `refNameAliasesUri` points at a
- * tab-separated aliases file (as UCSC publishes) so a track whose reference
- * names differ from the sequence (e.g. a BAM using `chr1` against a `1`-named
- * reference) still lines up.
+ * or `.2bit`) — the boilerplate you'd otherwise write by hand. In the common
+ * case it is the flat `{ name, uri }` shorthand: jbrowse-core's assembly config
+ * picks the concrete adapter type (`IndexedFastaAdapter`/`BgzipFastaAdapter`/
+ * `TwoBitAdapter`) from the extension, derives the `.fai`/`.gzi` siblings, and
+ * fills in the `ReferenceSequenceTrack` at load time, so no adapter-type
+ * knowledge lives here. A non-sibling index (`faiUri`/`gziUri`) widens `sequence`
+ * to its adapter form, the only shape with a slot for the override.
+ * `refNameAliasesUri` points at a tab-separated aliases file (as UCSC publishes)
+ * so a track whose reference names differ from the sequence (e.g. a BAM using
+ * `chr1` against a `1`-named reference) still lines up.
  */
-export function makeAssembly(opts: MakeAssemblyOptions) {
+export function makeAssembly(opts: MakeAssemblyOptions): MakeAssemblyResult {
   const {
     fastaUri,
     name = assemblyNameFromUri(fastaUri),
@@ -48,10 +67,9 @@ export function makeAssembly(opts: MakeAssemblyOptions) {
     aliases = [],
     refNameAliasesUri,
   } = opts
-  return {
-    name,
-    aliases,
-    sequence: {
+  const result: MakeAssemblyResult = { name, aliases }
+  if (faiUri || gziUri) {
+    result.sequence = {
       type: 'ReferenceSequenceTrack',
       trackId: `${name}-ReferenceSequenceTrack`,
       adapter: {
@@ -59,13 +77,12 @@ export function makeAssembly(opts: MakeAssemblyOptions) {
         ...(faiUri ? { faiLocation: { uri: faiUri } } : {}),
         ...(gziUri ? { gziLocation: { uri: gziUri } } : {}),
       },
-    },
-    ...(refNameAliasesUri
-      ? {
-          refNameAliases: {
-            adapter: { type: 'RefNameAliasAdapter', uri: refNameAliasesUri },
-          },
-        }
-      : {}),
+    }
+  } else {
+    result.uri = fastaUri
   }
+  if (refNameAliasesUri) {
+    result.refNameAliases = { uri: refNameAliasesUri }
+  }
+  return result
 }
