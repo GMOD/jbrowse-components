@@ -9,14 +9,14 @@ guide_category: Tutorials
 
 The [BXD family](https://www.genenetwork.org) is a panel of ~200 mouse
 recombinant-inbred (RI) strains bred from a cross of **C57BL/6J** (the "B"
-allele) and **DBA/2J** (the "D" allele). After many generations of inbreeding
+parent) and **DBA/2J** (the "D" parent). After many generations of inbreeding
 each strain's genome is a fixed **mosaic of B and D haplotype blocks** — and
 because the same strains have been phenotyped for thousands of traits at
 [GeneNetwork](https://www.genenetwork.org), the panel is a workhorse for
 _systems genetics_: map a trait to the genome by asking which haplotype blocks
 track with it.
 
-This tutorial builds two JBrowse tracks from the **same** BXD data, on mm10:
+This tutorial builds two JBrowse tracks from the **same BXD panel**, on mm10:
 
 - a **chromosome-painting** track (the
   [multi-row feature display](/docs/tutorials/chromhmm)) showing each strain's
@@ -25,11 +25,11 @@ This tutorial builds two JBrowse tracks from the **same** BXD data, on mm10:
   from a single-marker scan of a real BXD phenotype.
 
 Stacked in one view they show the core systems-genetics move: a trait peak, and
-the recombination structure that produced it.
+the recombination structure underneath it.
 
-<Figure src="/img/qtl/bxd_overview.png" caption="Whole-chromosome-4 view. Top: a QTL scan of BXD coat color, peaking near 80 Mb. Bottom: the BXD chromosome painting — one row per strain, blue = C57BL/6J (B), red = DBA/2J (D), grey = heterozygous, blank = unknown. The peak sits over the region where B/D ancestry best predicts the trait."/>
+<Figure src="/img/qtl/bxd_overview.png" caption="Whole chr4. Top: the BXD coat-color QTL scan, peaking at ~80 Mb. Bottom: the 198-strain painting (blue = B, red = D, grey = het, blank = unknown), rows sorted by each strain's genotype at the peak. Directly under the peak the strains split into a red block over a blue block — the B/D contrast the scan is scoring — and the split frays with distance as strains recombine."/>
 
-## The data: one genotype file
+## The data: BXD consensus genotypes
 
 GeneNetwork distributes the consensus BXD genotypes as a plain-text `.geno`
 file. Each row is a marker (with an mm10 `Mb` position); each column is a
@@ -106,14 +106,18 @@ block from its `itemRgb` field:
   painted with its genotype color straight from the file.
 - **`showTree: true`** adds a clustering sidebar that groups strains by genotype
   similarity — related substrains and F1s fall next to each other.
+- **`disableGeneHeuristic: true`** keeps the BED adapter from reading each block
+  as a gene — the `thickStart`/`thickEnd` columns would otherwise trip its BED12
+  transcript detection.
 
 ## Track 2: the QTL Manhattan
 
 To map a trait, score every marker for how well its B/D genotype predicts the
-phenotype. GeneNetwork uses a linear mixed model (GEMMA); the simplest form is a
-**single-marker regression** of the phenotype on the 0/1 (B/D) genotype across
-strains, converting each marker's t-statistic to a `-log10(p)`. Real BXD
-phenotypes (and the mm10 marker map) are available as the
+phenotype. GeneNetwork uses a mixed model (GEMMA); this demo uses a simpler
+**single-marker regression** of the phenotype on the 0/1 (B/D) genotype,
+converting each marker's t-statistic to a `-log10(p)`. Those are the same B/D
+calls the painting draws, so the peak and the painting come from one genotype
+matrix. Real BXD phenotypes and the mm10 marker map are in the
 [`rqtl/qtl2data/BXD`](https://github.com/rqtl/qtl2data/tree/master/BXD) dataset.
 
 Write the scan out as a tabix'd BED-like table with a `neg_log_pvalue` column:
@@ -123,11 +127,11 @@ Write the scan out as a tabix'd BED-like table with a `neg_log_pvalue` column:
 chr4    80750000  80750001  rs3708061   .     .      51.9
 ```
 
-A `GWASTrack` with a `GWASAdapter` reads that column and renders a Manhattan
-plot. `GWASAdapter` already defaults to a `neg_log_pvalue` column that it treats
-as pre-computed `-log10(p)`, so this file — whose column is named exactly that —
-needs no extra slots. For a file with a differently-named or raw-p-value column,
-set [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) and
+A `GWASTrack`/`GWASAdapter` reads that column and renders the Manhattan plot.
+Its default [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) is
+`neg_log_pvalue`, read as a pre-computed `-log10(p)`, so a file whose column is
+named that needs no extra slots. For a differently-named or raw-p-value column,
+set `scoreColumn` and
 [`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform); see the
 [GWAS track guide](/docs/config_guides/gwas_track).
 
@@ -160,15 +164,14 @@ set [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) and
 ## Reading the result
 
 Scanning ~7,300 markers against BXD **coat color** puts the tallest peak on
-chromosome 4 — right over **_Tyrp1_**, the classic brown-coat-color gene.
-Zooming in, the QTL apex lines up with the gene, and the painting below shows
-the strain-by-strain recombination breakpoints that flip B↔D through the locus.
+chr4, over **_Tyrp1_** (the coat-color gene). The painting is sorted by genotype
+at that peak, so the clean B/D split directly beneath it is exactly the contrast
+the scan scores — and it breaks up into a recombinant mosaic away from the
+locus.
 
-<Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The Tyrp1 locus (chr4 ~80 Mb). The coat-color QTL peak sits over the Tyrp1 gene, and the painting shows where individual strains recombine between the B and D haplotypes across the region."/>
+<Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="Zoomed to the Tyrp1 locus (chr4 ~80 Mb, red band). Tyrp1 sits under the top of the association, and the painting resolves the individual B↔D recombination breakpoints that the whole-chromosome view blurs together."/>
 
-A second bundled scan maps **brain weight** to a subtler, real QTL on chromosome
-19 — a reminder that most quantitative traits map far less dramatically than a
-near-Mendelian pigment gene.
+A second bundled scan maps **brain weight** to a subtler QTL on chr19.
 
 Open the whole demo live in the
 [JBrowse BXD demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_bxd.json),

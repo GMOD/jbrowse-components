@@ -51,12 +51,11 @@ export const qtlSpecs: ScreenshotSpec[] = [
     settleMs: 16000,
   },
 
-  // Zoomed out to a ~14 Mb window centered on Tyrp1: the QTL peak reads as a
-  // clean rise-and-fall triangle whose apex sits over the highlighted Tyrp1
-  // locus (the classic brown coat-color gene), with the strain-by-strain
-  // recombination breakpoints visible in the painting below. A genomic
-  // highlight band marks Tyrp1 so it's identifiable even though the gene is a
-  // sliver at this scale.
+  // Zoomed to a ~14 Mb window on Tyrp1. At this scale the association is a broad
+  // plateau (RI-panel LD extends for many Mb), so the gene sits under the
+  // *region*, not a razor apex — the figure's real payload is the gene position
+  // plus the strain-by-strain recombination breakpoints resolved in the painting
+  // below. A genomic highlight band marks Tyrp1, a sub-pixel sliver at this zoom.
   {
     mode: 'url',
     name: 'qtl/bxd_tyrp1_locus',
@@ -113,7 +112,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
         y: 66,
         maxWidth: 360,
         fontSize: 15,
-        text: 'The QTL peak apex sits right over Tyrp1 (red band) — the classic brown coat-color gene',
+        text: 'Tyrp1 (red band): the coat-color gene, sitting under the QTL',
       },
     ],
   },
