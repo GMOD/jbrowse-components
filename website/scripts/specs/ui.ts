@@ -1646,10 +1646,12 @@ export const uiSpecs: ScreenshotSpec[] = [
 
   // Archaic introgression tracts (tutorials/introgression.md): per-haplotype
   // hmmix segments from the HGDP callset drawn as a multi-row feature track,
-  // colored by source. The two Oceanian rows (Bougainville, PapuanHighlands)
-  // carry the blue Denisovan segments the European/Asian/American rows lack —
-  // the Denisovan-in-Oceania signal. Wide chr1 window so the per-row population
-  // contrast reads at a glance.
+  // colored by source. The four Oceanian rows (Bougainville + PapuanHighlands,
+  // two haplotypes each) carry most of the blue Denisovan segments — the
+  // Denisovan-in-Oceania signal. Two coloured spines at the left edge bracket
+  // the two row groups (grey = rest of the world, blue = Oceanian) so the
+  // population contrast reads without needing to know the geography. Wide chr1
+  // window so the contrast reads at a glance.
   {
     mode: 'url',
     name: 'introgression',
@@ -1671,35 +1673,54 @@ export const uiSpecs: ScreenshotSpec[] = [
     // extra height below the track so the caption sits clear of the data
     // instead of overlapping the rows
     viewportHeight: 580,
-    // orient the reader: each row is one population haplotype's archaic-ancestry
-    // segments, colored by source. Placed below the view (not overlapping the
-    // track rows it's describing).
+    // Group spines + caption placed below the view (not overlapping the rows).
+    // Row band measured from the render: 20px rows, French hap1 top ~y=193, so
+    // the six non-Oceanian rows span y=193..313 and the four Oceanian rows
+    // y=313..393.
     annotations: [
+      {
+        type: 'box',
+        x: 2,
+        y: 193,
+        width: 11,
+        height: 120,
+        color: '#616161',
+        fillOpacity: 1,
+        strokeWidth: 0,
+      },
+      {
+        type: 'box',
+        x: 2,
+        y: 313,
+        width: 11,
+        height: 80,
+        color: '#2c7fb8',
+        fillOpacity: 1,
+        strokeWidth: 0,
+      },
       {
         type: 'text',
         x: 40,
-        y: 475,
+        y: 470,
         maxWidth: 1420,
         fontSize: 22,
-        text: 'Each row is one population haplotype. Blue = Denisovan segments — carried only by the two Oceanian rows (Bougainville, PapuanHighlands); red = Neanderthal, shared across all populations.',
+        text: 'Rows are grouped by region (left spines). Top six (grey): French, Han, Karitiana. Bottom four (blue): Bougainville and PapuanHighlands — the Oceanian/Melanesian haplotypes. Blue = Denisovan segments, concentrated in the four Oceanian haplotypes; red = Neanderthal, shared across all populations.',
       },
     ],
   },
 
-  // Zoomed payoff for the introgression tutorial: a single ~150 kb Denisovan
-  // haplotype on chr13 carried by all four Oceanian haplotypes (Bougainville +
+  // Zoomed payoff for the introgression tutorial: a ~370 kb Denisovan haplotype
+  // on chr2 carried by all four Oceanian haplotypes (Bougainville +
   // PapuanHighlands, blue) and absent from the other six rows, shown against
-  // NCBI RefSeq genes for genomic context. The base-pair counterpart to the
-  // whole-arm population view above. Zoomed out further than the original
-  // 600kb crop so the tract reads in its surrounding genomic context rather
-  // than filling the whole width; caption trimmed and given a citation for the
-  // Melanesian-Denisovan finding instead of just describing the picture.
+  // NCBI RefSeq genes for genomic context. Unlike the old intergenic chr13
+  // locus, this tract sits directly over a real protein-coding gene cluster
+  // (CNNM4 / CNNM3 / SEMA4C), so the gene track earns its place.
   {
     mode: 'url',
     name: 'introgression_locus',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr13:104,200,000-105,400,000',
+      loc: 'chr2:96,550,000-97,150,000',
       tracks: [
         'ncbi_refseq_109_hg38',
         {
@@ -1715,9 +1736,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     // extra height below the track so the caption sits clear of the data
     viewportHeight: 640,
-    // explain the payoff — why it's interesting (Melanesians carry the most
-    // Denisovan ancestry of any population) with a citation — placed below
-    // the view rather than boxed over the track rows
     annotations: [
       {
         type: 'text',
@@ -1725,7 +1743,85 @@ export const uiSpecs: ScreenshotSpec[] = [
         y: 495,
         maxWidth: 1420,
         fontSize: 22,
-        text: 'Melanesians (Bougainville, PapuanHighlands) carry the most Denisovan ancestry of any population — up to ~4–6% of their genome, from ancient interbreeding in Asia/Oceania. This ~150 kb tract is present in all four sampled haplotypes but absent elsewhere. (Vernot et al. 2016, Science)',
+        text: 'Melanesians (Bougainville, PapuanHighlands) carry the most Denisovan ancestry of any population — up to ~4–6% of their genome, from ancient interbreeding in Asia/Oceania. This shared ~370 kb Denisovan tract sits over the CNNM4/CNNM3/SEMA4C genes and is present in all four Oceanian haplotypes but absent from the six others, so their rows drop out. (Vernot et al. 2016, Science)',
+      },
+    ],
+  },
+
+  // Contrast figure: a Neanderthal tract at chr12:130 Mb (over FZD10) shared
+  // across ALL five populations — the direct foil to the Oceania-restricted
+  // Denisovan tracts. Red appears in every population's rows, illustrating that
+  // Neanderthal ancestry is pan-non-African while Denisovan ancestry is not.
+  {
+    mode: 'url',
+    name: 'introgression_neanderthal',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr12:129,950,000-130,320,000',
+      tracks: [
+        'ncbi_refseq_109_hg38',
+        {
+          trackId: 'hgdp_archaic_introgression',
+          displaySnapshot: {
+            type: 'LinearMultiRowFeatureDisplay',
+            height: 220,
+          },
+        },
+      ],
+    }),
+    readyText: 'Archaic introgression',
+    settleMs: 6000,
+    viewportHeight: 700,
+    annotations: [
+      {
+        type: 'text',
+        x: 40,
+        y: 560,
+        maxWidth: 1420,
+        fontSize: 22,
+        text: 'The opposite pattern: a Neanderthal tract (red) over FZD10 at chr12:130 Mb appears in every sampled population — French, Han, Karitiana, Bougainville and PapuanHighlands. Neanderthal ancestry is shared by all non-Africans, whereas the Denisovan tracts above are largely restricted to Oceania.',
+      },
+    ],
+  },
+
+  // Genome-wide aggregate: per-population Denisovan-ancestry frequency (fraction
+  // of each population's haplotypes carrying a Denisovan segment, in 100 kb
+  // windows) as a multi-wiggle across all of chromosome 2. The two Oceanian
+  // populations (blue) carry Denisovan ancestry along the whole chromosome
+  // (peaks ~0.8-0.95); the non-Oceanian populations (grey) carry several-fold
+  // less. Realizes the tutorial's "windowed scores" section with real derived
+  // data.
+  {
+    mode: 'url',
+    name: 'introgression_density',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr2:1-242,193,529',
+      tracks: [
+        {
+          trackId: 'hgdp_denisova_density',
+          displaySnapshot: {
+            type: 'MultiLinearWiggleDisplay',
+            // heatmap (density) rows read far better than xyplot spikes at
+            // whole-chromosome scale — Oceanian rows fill with blue, the rest
+            // stay near-white
+            defaultRendering: 'multirowdensity',
+            height: 300,
+          },
+        },
+      ],
+    }),
+    readyText: 'Denisovan-ancestry frequency',
+    settleMs: 6000,
+    viewportHeight: 660,
+    annotations: [
+      {
+        type: 'text',
+        x: 40,
+        y: 522,
+        maxWidth: 1420,
+        fontSize: 22,
+        text: 'The same calls aggregated as a heatmap: per-population Denisovan-ancestry frequency — the fraction of each population’s haplotypes carrying a Denisovan segment, in 100 kb windows — across all of chromosome 2. Bougainville and PapuanHighlands carry Denisovan ancestry along the whole chromosome; French, Han and Karitiana carry far less. The genome-wide enrichment in one view.',
       },
     ],
   },
