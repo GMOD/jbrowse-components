@@ -37,10 +37,15 @@ const IsPcrDialog = observer(function IsPcrDialog({
   const { db, urlBase, apiKey } = query
   const [forwardPrimer, setForwardPrimer] = useState('')
   const [reversePrimer, setReversePrimer] = useState('')
-  const [maxProductSize, setMaxProductSize] = useState(DEFAULT_MAX_PRODUCT_SIZE)
+  const [maxProductSize, setMaxProductSize] = useState(
+    String(DEFAULT_MAX_PRODUCT_SIZE),
+  )
 
   const fwd = cleanPrimer(forwardPrimer)
   const rev = cleanPrimer(reversePrimer)
+  const maxProductSizeNum = Number(maxProductSize)
+  const maxProductSizeValid =
+    Number.isFinite(maxProductSizeNum) && maxProductSizeNum > 0
   const tooShort =
     fwd.length < MINIMUM_PRIMER_LENGTH || rev.length < MINIMUM_PRIMER_LENGTH
 
@@ -53,7 +58,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
             db,
             forwardPrimer: fwd,
             reversePrimer: rev,
-            maxProductSize,
+            maxProductSize: maxProductSizeNum,
             apiKey,
           }),
           parse: parseIsPcrResponse,
@@ -107,11 +112,10 @@ const IsPcrDialog = observer(function IsPcrDialog({
           type="number"
           value={maxProductSize}
           onChange={event => {
-            const n = Number(event.target.value)
-            if (Number.isFinite(n) && n > 0) {
-              setMaxProductSize(n)
-            }
+            setMaxProductSize(event.target.value)
           }}
+          error={!maxProductSizeValid}
+          helperText={maxProductSizeValid ? '' : 'Enter a positive number'}
         />
         {tooShort && (fwd || rev) ? (
           <Typography color="error">
@@ -122,7 +126,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
       </DialogContent>
       <UcscQueryActions
         query={query}
-        submitDisabled={tooShort || !db}
+        submitDisabled={tooShort || !maxProductSizeValid || !db}
         onSubmit={() => void handleSubmit()}
         onCancel={() => { handleClose() }}
       />

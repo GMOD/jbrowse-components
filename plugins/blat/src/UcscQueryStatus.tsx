@@ -1,3 +1,4 @@
+import { ErrorMessage } from '@jbrowse/core/ui'
 import { isElectron } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -15,7 +16,7 @@ const UcscQueryStatus = observer(function UcscQueryStatus({
   const { error, challenged } = query
   return (
     <>
-      {error ? <Typography color="error">{`${error}`}</Typography> : null}
+      {error && !challenged ? <ErrorMessage error={error} /> : null}
       {challenged ? (
         <Typography>
           {isElectron
