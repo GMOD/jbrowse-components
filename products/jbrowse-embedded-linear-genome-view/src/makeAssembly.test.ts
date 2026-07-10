@@ -47,8 +47,11 @@ describe('makeAssembly', () => {
 
   it('derives the name from the uri when omitted', () => {
     const a = makeAssembly({ fastaUri: 'https://x.test/data/hg38.fa.gz?t=1' })
-    expect(a.name).toBe('hg38')
-    expect(a.uri).toBe('https://x.test/data/hg38.fa.gz?t=1')
+    expect(a).toEqual({
+      name: 'hg38',
+      aliases: [],
+      uri: 'https://x.test/data/hg38.fa.gz?t=1',
+    })
   })
 
   it('passes a .2bit through as a flat uri', () => {

@@ -27,24 +27,6 @@ export function assemblyNameFromUri(uri: string) {
   return file.replace(SEQUENCE_EXT_RE, '')
 }
 
-// a `type` (not `interface`) so it keeps the implicit index signature that makes
-// it assignable to the caller's `Record<string, unknown>` assembly config
-type MakeAssemblyResult = {
-  name: string
-  aliases: string[]
-  uri?: string
-  sequence?: {
-    type: string
-    trackId: string
-    adapter: {
-      uri: string
-      faiLocation?: { uri: string }
-      gziLocation?: { uri: string }
-    }
-  }
-  refNameAliases?: { uri: string }
-}
-
 /**
  * Build an assembly config for a sequence file (indexed FASTA, bgzipped FASTA,
  * or `.2bit`) — the boilerplate you'd otherwise write by hand. In the common
@@ -58,7 +40,7 @@ type MakeAssemblyResult = {
  * so a track whose reference names differ from the sequence (e.g. a BAM using
  * `chr1` against a `1`-named reference) still lines up.
  */
-export function makeAssembly(opts: MakeAssemblyOptions): MakeAssemblyResult {
+export function makeAssembly(opts: MakeAssemblyOptions) {
   const {
     fastaUri,
     name = assemblyNameFromUri(fastaUri),
@@ -67,22 +49,26 @@ export function makeAssembly(opts: MakeAssemblyOptions): MakeAssemblyResult {
     aliases = [],
     refNameAliasesUri,
   } = opts
-  const result: MakeAssemblyResult = { name, aliases }
-  if (faiUri || gziUri) {
-    result.sequence = {
-      type: 'ReferenceSequenceTrack',
-      trackId: `${name}-ReferenceSequenceTrack`,
-      adapter: {
-        uri: fastaUri,
-        ...(faiUri ? { faiLocation: { uri: faiUri } } : {}),
-        ...(gziUri ? { gziLocation: { uri: gziUri } } : {}),
-      },
-    }
-  } else {
-    result.uri = fastaUri
+  return {
+    name,
+    aliases,
+    // flat { name, uri } shorthand; a non-sibling index has no home there, so it
+    // widens to the sequence.adapter form (the bare uri still infers the type)
+    ...(faiUri || gziUri
+      ? {
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: `${name}-ReferenceSequenceTrack`,
+            adapter: {
+              uri: fastaUri,
+              ...(faiUri ? { faiLocation: { uri: faiUri } } : {}),
+              ...(gziUri ? { gziLocation: { uri: gziUri } } : {}),
+            },
+          },
+        }
+      : { uri: fastaUri }),
+    ...(refNameAliasesUri
+      ? { refNameAliases: { uri: refNameAliasesUri } }
+      : {}),
   }
-  if (refNameAliasesUri) {
-    result.refNameAliases = { uri: refNameAliasesUri }
-  }
-  return result
 }
