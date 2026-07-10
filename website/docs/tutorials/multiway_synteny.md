@@ -107,10 +107,19 @@ The `blockAssemblies` slot names every column in order (column 0 first), and
 }
 ```
 
-Stack the three genomes, reference that single track from each band, and drop
-the whole view snapshot into the config's `defaultSession` — the declarative way
-JBrowse opens a view on load, with no clicks or imperative setup. This demo
-stacks them peach – cacao – grape:
+## Stacking the three genomes
+
+With the track in your config, open the stack either from the UI or
+declaratively. In the UI, add a linear synteny view (**Add → Linear synteny
+view**), open **Quick start from a synteny track**, and pick
+`grape_peach_cacao_blocks`: because it lists all three assemblies, each becomes
+a row and the one track is wired to back every adjacent band. The
+[all-vs-all tutorial](/docs/tutorials/allvsall_synteny#from-the-ui) walks
+through this same quick start step by step.
+
+To open the stack automatically on load, drop the view snapshot into the
+config's `defaultSession` — the declarative way JBrowse opens a view, with no
+clicks or imperative setup. This demo stacks them peach – cacao – grape:
 
 ```json
 {
