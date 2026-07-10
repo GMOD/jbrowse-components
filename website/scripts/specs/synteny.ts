@@ -279,6 +279,44 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // One-vs-all in a plain LGV for allvsall_synteny.md's "One genome vs all the
+  // others" section. K-12 alone in a LinearGenomeView: with no targetAssemblyName
+  // (plain LGV), AllVsAllPAFAdapter draws K-12 against EVERY other strain at once,
+  // rendered as alignment reads over the K-12 coordinate by LGVSyntenyDisplay.
+  // Continuous coverage = backbone shared with the other strains; a gap where
+  // nothing aligns is a K-12-specific island. Loads the hosted demo config.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_one_vs_all',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'K12',
+            // whole K-12 chromosome: the continuous coverage band is the backbone
+            // shared with the other strains; the several stark white gaps are
+            // K-12-specific islands where no other strain aligns
+            loc: 'chr',
+            tracks: [
+              {
+                trackId: 'ecoli_ava',
+                displaySnapshot: { type: 'LGVSyntenyDisplay', height: 200 },
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 420,
+  },
+
   // For the gallery: load the exact curated share session the reviewer wants
   // captured verbatim (peach Pp05 vs grape chr2 with the per-gene MCScan
   // connections + the red/blue inverted-vs-non-inverted synteny blocks). The

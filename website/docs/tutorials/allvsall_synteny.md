@@ -12,8 +12,8 @@ related — strains or accessions of one species — the most convenient source 
 single **all-vs-all** PAF, with every genome aligned to every other. This
 tutorial builds a four-strain _E. coli_ pangenome view from one such file.
 
-Open the finished demo:
-[E. coli 4-strain pangenome](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json).
+Every figure below links to the live session that produced it — open the
+finished stacked view from its caption to explore it yourself.
 
 For cross-species comparisons built from gene-level ortholog tables instead, see
 [Synteny from ortholog tables](/docs/tutorials/multiway_synteny).
@@ -114,7 +114,7 @@ You can still build the stack manually — **Add row** adds a strain, and the
 connector button between each pair picks its synteny track — but for an
 all-vs-all track Quick start does it in one step.
 
-<Figure caption="Stacking all four strains from the UI with the all-vs-all quick start. (1) Open 'Quick start from a synteny track' and pick the ecoli_ava track. (2) Every assembly it lists becomes a row, and the one track backs every band. (3) Launch the stacked view." src="/img/multiway_synteny/ecoli_import_form.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json" />
+<Figure caption="Stacking all four strains from the UI with the all-vs-all quick start. (1) Open 'Quick start from a synteny track' and pick the ecoli_ava track. (2) Every assembly it lists becomes a row, and the one track backs every band. (3) Launch the stacked view." src="/img/multiway_synteny/ecoli_import_form.png" />
 
 ### Declaratively with defaultSession
 
@@ -155,12 +155,43 @@ load settings (row order, tracks, `drawCurves`, `minAlignmentLength`) go under
 `init`. See the [ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for
 a fuller walk-through of the `defaultSession` structure.
 
-<Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from a single minimap2 all-vs-all PAF, with short alignments filtered out (minAlignmentLength). Every adjacent band is a direct alignment because an all-vs-all file is a complete graph, and the ribbons trace the shared chromosomal backbone with strain-specific rearrangements." src="/img/multiway_synteny/ecoli_pangenome.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json" />
+<Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all four strains; the gaps are strain-specific islands — Sakai's prophage S-loops carrying the Shiga-toxin genes, CFT073's pathogenicity islands — and they sit at different positions in each pathogen, the signature of independently acquired virulence." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
 Unlike a reference-anchored `.blocks` table, an all-vs-all file is a **complete
 graph** — every adjacent band is a real, direct alignment, so you can stack the
 genomes in any order without worrying about transitive links. This makes it the
 most convenient source when you have it.
+
+## Backbone and islands
+
+The stacked view is a landmark comparative-genomics result in miniature. The
+four strains share a ~4 Mb collinear **backbone** — the continuous ribbons —
+and each carries its own **islands** in the gaps: in Sakai the prophage S-loops
+that carry the Shiga-toxin genes
+([Hayashi et al. 2001](https://academic.oup.com/dnaresearch/article/8/1/11/466363)).
+Because the two pathogens' islands sit at _different_ backbone positions, they
+acquired virulence independently rather than from a shared ancestor
+([Welch et al. 2002](https://www.pnas.org/doi/10.1073/pnas.252529799)).
+
+## One genome vs all the others
+
+Drop the same track into a plain **linear genome view** on one strain (say K-12)
+and it renders as an [`LGVSyntenyDisplay`](/docs/config/lgvsyntenydisplay): the
+adapter aligns K-12 against _every_ other strain at once. The islands become
+unmissable — a K-12 region every strain covers is backbone; a gap where nothing
+aligns is a K-12-specific island. In the UI just turn the track on;
+declaratively it's the track added to a `LinearGenomeView` with the synteny
+display:
+
+```json
+{
+  "type": "SyntenyTrack",
+  "configuration": "ecoli_ava",
+  "displays": [{ "type": "LGVSyntenyDisplay" }]
+}
+```
+
+<Figure caption="K-12 alone in a plain linear genome view (LGVSyntenyDisplay): the all-vs-all track draws K-12 against every other strain at once. The continuous coverage band is the backbone shared with the other three strains; each white gap is a K-12-specific island — sequence no other strain aligns to, such as one of K-12's cryptic prophages." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
 ## See also
 
@@ -172,6 +203,8 @@ most convenient source when you have it.
   the un-indexed adapter used above.
 - [AllVsAllIndexedPAFAdapter config](/docs/config/allvsallindexedpafadapter) —
   the tabix-backed adapter for whole-genome pangenomes.
+- [LGVSyntenyDisplay config](/docs/config/lgvsyntenydisplay) — the display that
+  draws the one-vs-all view in a plain linear genome view.
 - [PIF format](/docs/developer_guides/pif_format) — the indexed alignment format
   `make-pif` produces.
 - [Multi-way synteny in an embedded app](https://jbrowse.org/storybook/app/multiway-synteny-example/)

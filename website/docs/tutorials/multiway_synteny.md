@@ -16,8 +16,8 @@ For closely related genomes — strains or accessions of one species — a
 whole-genome all-vs-all PAF is usually a better source. See
 [Synteny all-vs-all](/docs/tutorials/allvsall_synteny).
 
-Open the finished demo:
-[Grape / peach / cacao 3-way synteny](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/grape_peach_cacao/config.json).
+Every figure below links to the live session that produced it — open the
+finished stacked view from its caption to explore it yourself.
 
 ## What a `.blocks` file is
 
@@ -167,31 +167,18 @@ one genome both bands touch — so a cacao chromosome keeps a single color as it
 orthologs trace up into peach and down into grape. The view's **Color by** menu
 offers the other modes (`query`, `strand`, `identity`, …).
 
-<Figure caption="Three genomes stacked peach – cacao – grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal. Color by → Reference anchors both bands on the shared middle row (cacao), so a cacao chromosome keeps one color as its orthologs are traced up into peach and down into grape." src="/img/multiway_synteny/grape_peach_cacao.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/grape_peach_cacao/config.json" />
+<Figure caption="Three genomes stacked peach – cacao – grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal. Color by → Reference anchors both bands on the shared middle row (cacao), so a cacao chromosome keeps one color as its orthologs are traced up into peach and down into grape." src="/img/multiway_synteny/grape_peach_cacao.png" />
 
-## Direct vs transitive pairs, and row order
+## Direct vs transitive pairs
 
 Because a `.blocks` table is reference-anchored on grape (column 0), only pairs
-that **include** grape are direct synteny relationships. The adapter can still
-serve a pair where _neither_ side is the reference — e.g. peach–cacao, the top
-band above — by joining the two columns on their shared grape gene. That link
-means "both are orthologous to the same grape gene": a **transitive** ortholog
-relationship, not a direct alignment.
-
-So row order is a choice. Grape has more chromosomes (19) than peach (8) or
-cacao (10), a consequence of an ancestral genome triplication, so any band
-_containing_ grape fans out into a busy many-to-one ribbon tangle. Peach and
-cacao have similar chromosome counts and align close to one-to-one. Stacking
-peach – cacao – grape therefore puts the most legible band on top, at the cost
-of making it a transitive link (peach and cacao joined through their shared
-grape ortholog, not directly aligned). When no genome dominates like this, put
-the reference in the **middle** — peach – grape – cacao — so _every_ band is a
-direct comparison.
-
-That triplication is easiest to see one chromosome at a time: restrict a
-peach-vs-grape dotplot to a single peach chromosome and it resolves into three
-diagonal blocks — the three grape paralogs of that region, the same 1:3 mapping
-that makes a whole-genome grape/peach synteny show crossing ribbons.
+that **include** grape are direct alignments. The adapter still serves a pair
+where neither side is the reference — e.g. peach–cacao above — by joining the
+two columns on their shared grape gene: a **transitive** ortholog link, not a
+direct alignment. So row order is a choice — when one genome dominates (grape's
+19 chromosomes vs peach's 8 / cacao's 10) put the cleaner pair on top; otherwise
+put the reference in the **middle** (peach – grape – cacao) so every band is
+direct.
 
 ## See also
 
