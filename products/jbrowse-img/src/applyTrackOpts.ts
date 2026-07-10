@@ -239,6 +239,17 @@ const displayTypeAliases: Record<string, string> = {
   multivariantmatrix: 'LinearMultiSampleVariantMatrixDisplay',
 }
 
+// Parse a modifier's numeric argument, failing loudly on a typo instead of
+// writing NaN into the snapshot (which renders as a blank/broken track). Mirrors
+// the validation featureHeight/heightMode already do for their numeric args.
+function parseNum(prefix: string, val: string) {
+  const n = +val
+  if (Number.isNaN(n)) {
+    throw new Error(`Invalid ${prefix} value "${val}". Expected a number.`)
+  }
+  return n
+}
+
 // Fold one `prefix:val1:val2` modifier into the display snapshot. Gated by
 // category so a modifier only writes keys valid for that display type (an
 // out-of-category key would be an invalid snapshot).
@@ -256,7 +267,7 @@ function applyModifier(
   switch (prefix) {
     case 'height': {
       if (val1) {
-        snap.height = +val1
+        snap.height = parseNum('height', val1)
       }
       break
     }
@@ -327,19 +338,22 @@ function applyModifier(
     }
     case 'coverageHeight': {
       if (isAlignments && val1) {
-        snap.coverageHeight = +val1
+        snap.coverageHeight = parseNum('coverageHeight', val1)
       }
       break
     }
     case 'readConnectionsHeight': {
       if (isAlignments && val1) {
-        snap.readConnectionsHeight = +val1
+        snap.readConnectionsHeight = parseNum('readConnectionsHeight', val1)
       }
       break
     }
     case 'readConnectionsLineWidth': {
       if (isAlignments && val1) {
-        snap.readConnectionsLineWidth = +val1
+        snap.readConnectionsLineWidth = parseNum(
+          'readConnectionsLineWidth',
+          val1,
+        )
       }
       break
     }
@@ -368,7 +382,7 @@ function applyModifier(
     }
     case 'featureSpacing': {
       if (val1 && hasFeatureSize) {
-        snap.featureSpacing = +val1
+        snap.featureSpacing = parseNum('featureSpacing', val1)
       }
       break
     }
@@ -429,10 +443,10 @@ function applyModifier(
     case 'minmax': {
       if (isScore) {
         if (val1) {
-          snap.minScore = +val1
+          snap.minScore = parseNum('minmax', val1)
         }
         if (val2) {
-          snap.maxScore = +val2
+          snap.maxScore = parseNum('minmax', val2)
         }
       }
       break
@@ -495,6 +509,10 @@ function applyModifier(
 // caller to resolve against the view.
 export function buildDisplaySnapshot(category: Category, opts: string[]) {
   const result: BuildResult = { snap: {}, force: false }
+  const apply = (opt: string) => {
+    const [prefix = '', val1 = '', val2] = opt.split(':')
+    applyModifier(result, category, prefix, val1, val2)
+  }
   const deferred: string[] = []
   for (const opt of opts) {
     if (opt.startsWith('{')) {
@@ -503,14 +521,10 @@ export function buildDisplaySnapshot(category: Category, opts: string[]) {
     } else if (opt.startsWith('snpcov')) {
       deferred.push(opt)
     } else {
-      const [prefix = '', val1 = '', val2] = opt.split(':')
-      applyModifier(result, category, prefix, val1, val2)
+      apply(opt)
     }
   }
-  for (const opt of deferred) {
-    const [prefix = '', val1 = '', val2] = opt.split(':')
-    applyModifier(result, category, prefix, val1, val2)
-  }
+  deferred.forEach(opt => { apply(opt) })
   return result
 }
 

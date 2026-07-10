@@ -9,6 +9,10 @@ export interface OptionDef {
   default?: number | boolean | string
 }
 
+// Default output width in pixels, shared by the --width help default, the CLI
+// (main.ts), and the renderRegion library default so they can't drift.
+export const DEFAULT_WIDTH = 1500
+
 export const optionDefs: OptionDef[] = [
   { name: 'fasta', description: 'Path to indexed FASTA file' },
   {
@@ -36,7 +40,11 @@ export const optionDefs: OptionDef[] = [
       'Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)',
   },
   { name: 'out', description: 'Output file path (SVG or PNG)' },
-  { name: 'width', description: 'Width of output in pixels', default: 1500 },
+  {
+    name: 'width',
+    description: 'Width of output in pixels',
+    default: DEFAULT_WIDTH,
+  },
   {
     name: 'noRasterize',
     description: 'Disable rasterization of pileup/coverage',

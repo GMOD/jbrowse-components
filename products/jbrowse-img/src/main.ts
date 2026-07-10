@@ -12,6 +12,7 @@ import {
 import { runList } from './list.ts'
 import { modeDescriptors, subcommandMode, subcommandTokens } from './modes.ts'
 import {
+  DEFAULT_WIDTH,
   buildHelp,
   comparativeOptionNames,
   getBoolean,
@@ -107,7 +108,7 @@ async function main() {
       )
     }
 
-    const width = getNumber(rest, 'width', 1500)
+    const width = getNumber(rest, 'width', DEFAULT_WIDTH)
     const result = await renderRegion({
       fasta: getString(rest, 'fasta'),
       aliases: getString(rest, 'aliases'),

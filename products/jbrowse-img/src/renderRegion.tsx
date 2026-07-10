@@ -16,6 +16,7 @@ import {
   configTrackCategory,
   resolveTrackId,
 } from './applyTrackOpts.ts'
+import { DEFAULT_WIDTH } from './options.ts'
 import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
 import { initFromSpec, parseSpec, specMode } from './spec.ts'
@@ -107,6 +108,17 @@ interface ModeContext {
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string>
 
+// The renderToSvg options every mode shares. `rasterizeLayers` is single-sourced
+// here so the `--noRasterize` inversion isn't repeated per renderer; linear and
+// synteny spread this and add their trackLabels/showGridlines on top.
+function baseSvgOpts(opts: Opts) {
+  return {
+    rasterizeLayers: !opts.noRasterize,
+    themeName: opts.themeName,
+    fontFamily: opts.fontFamily,
+  }
+}
+
 // Errors reported through the session that must be fatal in the headless tool
 // rather than producing a blank render. Two sources:
 //  - session.notifyError (bad track config, navigation failure, a comparative
@@ -128,10 +140,14 @@ function firstRenderError(session: RenderErrorSources): unknown {
   )
 }
 
+function toError(error: unknown) {
+  return error instanceof Error ? error : new Error(String(error))
+}
+
 function throwOnRenderError(session: RenderErrorSources) {
   const error = firstRenderError(session)
   if (error !== undefined) {
-    throw error instanceof Error ? error : new Error(String(error))
+    throw toError(error)
   }
 }
 
@@ -142,7 +158,7 @@ function throwOnRenderError(session: RenderErrorSources) {
 function throwOnDisplayError(displays: { error?: unknown }[]) {
   for (const { error } of displays) {
     if (error) {
-      throw error instanceof Error ? error : new Error(String(error))
+      throw toError(error)
     }
   }
 }
@@ -205,7 +221,6 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
     showTracks = [],
     session: sessionParam,
     defaultSession,
-    themeName,
     showGridlines,
     trackLabels,
     refseq,
@@ -281,11 +296,9 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
   }
 
   const svg = await renderLinearToSvg(view, {
-    rasterizeLayers: !opts.noRasterize,
+    ...baseSvgOpts(opts),
     createCanvas: (w: number, h: number) =>
       createCanvas(w, h) as unknown as HTMLCanvasElement,
-    themeName,
-    fontFamily: opts.fontFamily,
     showGridlines,
     trackLabels,
   })
@@ -350,11 +363,7 @@ const renderDotplot: ModeRenderer = async ctx => {
         ...(ctx.opts.showColorLegend ? { showColorLegend: true } : {}),
       }
   const view = await addInitView<DotplotViewModel>(ctx, 'DotplotView', init)
-  const svg = await renderDotplotToSvg(view, {
-    rasterizeLayers: !ctx.opts.noRasterize,
-    themeName: ctx.opts.themeName,
-    fontFamily: ctx.opts.fontFamily,
-  })
+  const svg = await renderDotplotToSvg(view, baseSvgOpts(ctx.opts))
   throwOnDisplayError(view.tracks.flatMap(t => t.displays))
   return svg
 }
@@ -398,9 +407,7 @@ const renderSynteny: ModeRenderer = async ctx => {
     init,
   )
   const svg = await renderSyntenyToSvg(view, {
-    rasterizeLayers: !ctx.opts.noRasterize,
-    themeName: ctx.opts.themeName,
-    fontFamily: ctx.opts.fontFamily,
+    ...baseSvgOpts(ctx.opts),
     trackLabels: ctx.opts.trackLabels,
     showGridlines: ctx.opts.showGridlines,
   })
@@ -419,11 +426,7 @@ const renderCircular: ModeRenderer = async ctx => {
     ? initFromSpec(ctx.spec)
     : { assembly: ctx.data.assembly.name, tracks: trackIds }
   const view = await addInitView<CircularViewModel>(ctx, 'CircularView', init)
-  const svg = await renderCircularToSvg(view, {
-    rasterizeLayers: !ctx.opts.noRasterize,
-    themeName: ctx.opts.themeName,
-    fontFamily: ctx.opts.fontFamily,
-  })
+  const svg = await renderCircularToSvg(view, baseSvgOpts(ctx.opts))
   throwOnDisplayError(view.tracks.flatMap(t => t.displays))
   return svg
 }
@@ -457,7 +460,7 @@ export async function renderRegion(opts: Opts) {
       model,
       data,
       opts,
-      width: opts.width ?? 1500,
+      width: opts.width ?? DEFAULT_WIDTH,
       spec,
     })
     // a failure reported to the session during the render (a bad track config,

@@ -74,6 +74,21 @@ describe('alignments modifiers', () => {
     ).toThrow(/Invalid featureHeight/)
   })
 
+  test('a non-numeric height rejects instead of writing NaN', () => {
+    expect(() => buildDisplaySnapshot('alignments', ['height:8o'])).toThrow(
+      /Invalid height/,
+    )
+    expect(() =>
+      buildDisplaySnapshot('alignments', ['coverageHeight:x']),
+    ).toThrow(/Invalid coverageHeight/)
+  })
+
+  test('a non-numeric minmax bound rejects', () => {
+    expect(() =>
+      buildDisplaySnapshot('wiggle', ['minmax:lo:100']),
+    ).toThrow(/Invalid minmax/)
+  })
+
   test('snpcov hides the pileup and fills coverage to the given height', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
       'snpcov',
