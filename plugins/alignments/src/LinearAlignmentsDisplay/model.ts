@@ -2918,13 +2918,27 @@ export default function stateModelFactory(
           // `fittedFeatureHeight` ignores featureHeight, so caching it (which the
           // featureHeight getter then reads) can't loop. In its own trailing
           // actions block so `self.setFittedHeightPx` (an earlier block) is typed.
+          //
+          // Why this stays an autorun (unlike grow mode, which is a pure reactive
+          // `height` getter): fit's output is `featureHeight`, an EARLY getter that
+          // `laidOutByGroup`/`sections` depend on, but its fitted value is computed
+          // from the LATE `fittedFeatureHeight` (which reads `self.height`, the
+          // group layout, and the coverage band — all defined after featureHeight).
+          // That forward dependency can't be a direct getter read without a big
+          // model reorder; the volatile `fittedHeightPx` bridges it, and this
+          // autorun fills it. Grow has no such gap — its `height` output is
+          // consumed late — so it needed no bridge. Don't "simplify" this to a
+          // getter.
           addDisposer(
             self,
-            autorun(() => {
-              if (self.fitHeightToDisplay) {
-                self.setFittedHeightPx(self.fittedFeatureHeight)
-              }
-            }),
+            autorun(
+              () => {
+                if (self.fitHeightToDisplay) {
+                  self.setFittedHeightPx(self.fittedFeatureHeight)
+                }
+              },
+              { name: 'AlignmentsFitHeight' },
+            ),
           )
           // Grow mode no longer needs an autorun: the `height` getter returns
           // `grownHeight` reactively (see the getter above), so consumers
@@ -2939,11 +2953,14 @@ export default function stateModelFactory(
           // means individual actions never have to remember to do it.
           addDisposer(
             self,
-            autorun(() => {
-              if (self.scrollTop > self.scrollableHeight) {
-                self.setScrollTop(self.scrollableHeight)
-              }
-            }),
+            autorun(
+              () => {
+                if (self.scrollTop > self.scrollableHeight) {
+                  self.setScrollTop(self.scrollableHeight)
+                }
+              },
+              { name: 'AlignmentsClampScroll' },
+            ),
           )
 
           // Drop a lingering hover tooltip/highlight when the view zooms. A
