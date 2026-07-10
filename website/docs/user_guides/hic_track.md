@@ -48,8 +48,22 @@ The color scale is configurable via the track's configuration — see
 [the Hi-C track config guide](/docs/config_guides/hic_track/) for available
 options.
 
-[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-xS8Eg67AFS&password=jPzH5)
-— Hi-C contact matrix with gene annotations
+## Overlaying loops and interactions as arcs
+
+The contact matrix shows every pairwise interaction at once, but many analyses
+distill it down to a discrete set of anchor-to-anchor calls — CTCF/cohesin loops
+from HiCCUPS, or enhancer–gene predictions from methods like ABC/EPIraction.
+These come as [BEDPE](/docs/config_guides/file_types/) files (two genomic
+endpoints per line) and render in a paired-arc display, where each arc connects
+the two anchors of one call. Stacking arc tracks above the matrix lets you read
+the called loops against the raw signal they were derived from.
+
+<Figure src="/img/encode_hic_loops_arcs.png" caption="ENCODE GM12878 (hg38, chr1:202.9–203.8Mb). Top to bottom: NCBI RefSeq genes; HiCCUPS loop calls (ENCFF560LOS) as arcs; EPIraction enhancer–gene predictions (ENCFF266FGY) as arcs; and the intact Hi-C contact matrix (ENCFF484NFB). The sparse loop arcs mark punctate corner interactions, while the dense enhancer–gene arcs connect regulatory elements to their predicted target genes." />
+
+Load a BEDPE file the same way as any other track (paste its URL into the "Add a
+track" form); JBrowse detects the format and offers a paired-arc display. The
+`.hic` matrix is a separate track — add it too, and reorder the tracks so the
+arcs sit above the matrix.
 
 ## See also
 
