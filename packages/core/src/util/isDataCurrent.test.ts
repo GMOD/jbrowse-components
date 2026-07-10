@@ -1,4 +1,4 @@
-import { isDataCurrent } from './fetchKeyFreshness.ts'
+import { isDataCurrent } from './isDataCurrent.ts'
 
 test('matching keys are current', () => {
   expect(isDataCurrent('a|b', 'a|b')).toBe(true)

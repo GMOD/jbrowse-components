@@ -47,14 +47,15 @@ the retry button dead.
 
 ## Readiness / testid
 
-`svgReady` (features present **and**
-`loadedRegionSignature === currentRegionSignature(self)`, or error, or
-too-large) is arc's first-paint flag — the SVG-export terminal gate and the
+`svgReady`
+(`isDataCurrent(loadedRegionSignature, currentRegionSignature(self))`, or error,
+or too-large) is arc's first-paint flag — the SVG-export terminal gate and the
 `arc-display${svgReady ? '-done' : ''}` testid browser tests wait on. It's the
 SVG analogue of GPU `canvasDrawn`. The `loadedRegionSignature` compare (a
 region-key string, the single-array analog of `loadedRegions`) is the staleness
 signal: an export fired right after a pan/zoom waits for fresh arcs instead of
-capturing stale ones.
+capturing stale ones. `isDataCurrent` (`@jbrowse/core/util`) is the shared
+freshness predicate — dotplot + synteny gate on the same rule.
 
 ## Too-large gating
 

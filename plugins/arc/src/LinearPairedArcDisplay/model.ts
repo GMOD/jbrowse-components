@@ -6,7 +6,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { dedupe, openFeatureWidget } from '@jbrowse/core/util'
+import { dedupe, isDataCurrent, openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   RegionTooLargeMixin,
@@ -117,13 +117,17 @@ export function stateModelFactory(
        * this, so they don't flip on refetch (see BaseDisplayComponent).
        */
       get svgReady() {
-        // `features` defined implies `loadedRegionSignature` is set (both from
-        // one `setFeatures`), so it's the "have we loaded" guard; the signature
-        // compare then rejects a stale in-flight refetch
-        const fresh =
-          self.features !== undefined &&
-          self.loadedRegionSignature === currentRegionSignature(self)
-        return fresh || !!self.error || self.regionTooLarge
+        // a set `loadedRegionSignature` is the "have we loaded" guard (it and
+        // `features` are set together in one `setFeatures`); the signature
+        // compare inside `isDataCurrent` then rejects a stale in-flight refetch
+        return (
+          isDataCurrent(
+            self.loadedRegionSignature,
+            currentRegionSignature(self),
+          ) ||
+          !!self.error ||
+          self.regionTooLarge
+        )
       },
       /**
        * #getter

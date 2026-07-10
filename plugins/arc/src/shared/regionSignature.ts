@@ -8,8 +8,10 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // `assembly:refName:start:end`, so the signature changes exactly when arc would
 // refetch — panning/zooming past a static-block boundary — and NOT on mere
 // scroll within the loaded blocks. `setFeatures` records the signature of the
-// blocks it fetched; `svgReady` compares it to the current one so an export
-// fired mid-refetch waits for fresh arcs instead of capturing stale ones.
+// blocks it fetched; `svgReady` compares it to the current one (via the shared
+// `isDataCurrent` predicate in `@jbrowse/core/util`, the same freshness rule
+// dotplot + synteny use) so an export fired mid-refetch waits for fresh arcs
+// instead of capturing stale ones.
 export function regionSignature(blocks: { key: string }[]) {
   return blocks.map(b => b.key).join(',')
 }

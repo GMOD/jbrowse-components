@@ -331,6 +331,7 @@ export {
   type ActiveFetch,
   createStopTokenRotation,
 } from './createStopTokenRotation.ts'
+export { isDataCurrent } from './isDataCurrent.ts'
 export * from './aborting.ts'
 export * from './linkify.ts'
 export * from './locString.ts'

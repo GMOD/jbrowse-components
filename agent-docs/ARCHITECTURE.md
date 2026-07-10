@@ -1006,13 +1006,24 @@ than inheriting a mixin's — they don't track `loadedRegions`/`displayPhase` th
 same way. Arc / paired-arc are still LGV track displays, so they keep the full
 contract (own `svgReady` getter + `awaitSvgReady` + `SvgChrome`/`SVGErrorBox`): drawing
 all features into a single array (gated by `RegionTooLargeMixin`), their
-`svgReady` is `(features !== undefined &&
-loadedRegionSignature === currentRegionSignature(self)) || error ||
-regionTooLarge`. The `loadedRegionSignature` freshness compare (a region-key
-string, the single-array analog of `loadedRegions`) is what makes an export
-fired right after a pan/zoom wait for fresh arcs instead of capturing stale ones
-— closing the in-place-refetch gap earlier writeups (and `plugins/arc/CLAUDE.md`)
-still describe as open.
+`svgReady` is `isDataCurrent(loadedRegionSignature, currentRegionSignature(self))
+|| error || regionTooLarge`. The `loadedRegionSignature` freshness compare (a
+region-key string, the single-array analog of `loadedRegions`) is what makes an
+export fired right after a pan/zoom wait for fresh arcs instead of capturing
+stale ones — closing the in-place-refetch gap earlier writeups (and
+`plugins/arc/CLAUDE.md`) still describe as open.
+
+**The signature-freshness predicate is shared: `isDataCurrent(loadedSignature,
+currentSignature)`** (`@jbrowse/core/util`, `loaded !== undefined &&
+loaded === current`). It is the one freshness rule for every display whose data
+liveness is a single signature string rather than a spatial-coverage map — arc /
+paired-arc (region-key signature), dotplot + linear-comparative synteny
+(fetch-input signature) — so the "is the held data current" test can't drift
+across the four. It is the signature-based analog of the LGV mixins' spatial
+`viewportWithinLoadedData` and the global mixins' `viewportMatchesLastDrawn`; the
+view-specific part (how each builds its signature) stays per-display, only the
+final compare is shared. It gates both `svgReady` (off-screen export) and
+`settled` (on-screen capture).
 
 **Multi-LGV synteny** is *non-LGV* (a `LinearSyntenyView` level composing only
 `BaseDisplay` with its own fetch — no MultiRegion/Global mixin) yet
