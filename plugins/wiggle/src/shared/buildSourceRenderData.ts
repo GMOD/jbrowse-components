@@ -77,8 +77,9 @@ function sourceLayers({
 // The shape of `model.gpuProps` — single source of truth for "settings that
 // affect the per-instance GPU buffer encoding". buildSourceRenderData
 // consumes this exact type, so TS forces gpuProps and the encoder to stay
-// in sync. The framework reads `self.gpuProps` as getUploadInvalidationToken
-// so a change re-uploads without an RPC roundtrip.
+// in sync. installPerRegionLifecycle's encode step reads `self.gpuProps()`, so
+// a change re-fires every per-region autorun and re-uploads without an RPC
+// roundtrip.
 export interface WiggleGpuProps {
   sources: { name: string; color?: string }[]
   posColor: string

@@ -31,8 +31,9 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
 }) {
   // The model owns the upload/render autorun and the GPU backend lifecycle —
   // see startRenderingBackend / stopRenderingBackend / renderNow on
-  // the MultiLinearWiggleDisplay model. Sources changes trigger a full
-  // re-upload via the lifecycle's `getUploadInvalidationToken`.
+  // the MultiLinearWiggleDisplay model. Sources changes are picked up because
+  // installPerRegionLifecycle's encode step reads `self.gpuProps()`, so a
+  // gpuProps change re-fires every per-region autorun and re-uploads.
   const view = getContainingView(model) as LGV
   const totalWidth = view.trackWidthPx
   const height = model.height

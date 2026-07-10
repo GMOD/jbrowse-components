@@ -2,11 +2,7 @@ import { lazy } from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  getContainingView,
-  getSession,
-  openFeatureWidget,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -14,7 +10,6 @@ import {
   TrackHeightMixin,
   fetchEachRegion,
 } from '@jbrowse/plugin-linear-genome-view'
-import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   TreeSidebarMixin,
   buildSpatialIndex,
@@ -36,12 +31,11 @@ import {
   withSourceAlias,
 } from './sourcesLogic.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
-import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
+import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
 import {
   getRowHeight,
   isOverlayMode,
   makeRenderState,
-  wiggleFeatureWidgetData,
 } from '../shared/wiggleComponentUtils.ts'
 import {
   makePointSizeMenuItems,
@@ -52,12 +46,7 @@ import {
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERINGS } from '../util.ts'
 
-import type {
-  Source,
-  SourceInfo,
-  WiggleDataResult,
-  WiggleFeatureUnderMouse,
-} from '../util.ts'
+import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
@@ -121,7 +110,6 @@ export default function stateModelFactory(
     )
     .volatile(() => ({
       sourcesVolatile: [] as SourceInfo[],
-      featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined,
     }))
     .views(self => ({
       get DisplayMessageComponent() {
@@ -304,22 +292,7 @@ export default function stateModelFactory(
         },
 
         startRenderingBackend(backend: WiggleRenderingBackend) {
-          installPerRegionLifecycle(
-            self,
-            self.rpcDataMap,
-            backend,
-            data => buildSourceRenderData(data, self.gpuProps()),
-            (b, encoded) => {
-              // size === 0 gates first paint until data lands (keep the loading
-              // overlay up); once loaded, renderState is always a real-or-stub
-              // state, so an uncovered region paints a cleared canvas.
-              if (self.rpcDataMap.size === 0) {
-                return false
-              }
-              b.renderBlocks(self.renderBlocks, encoded, self.renderState)
-              return true
-            },
-          )
+          installWiggleRenderingBackend(self, backend)
         },
 
         setShowTree(arg: boolean) {
@@ -332,14 +305,6 @@ export default function stateModelFactory(
 
         setShowRowSeparators(arg: boolean) {
           self.configuration.setSlot('showRowSeparators', arg)
-        },
-
-        setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {
-          self.featureUnderMouse = feat
-        },
-
-        selectFeature(feat: NonNullable<typeof self.featureUnderMouse>) {
-          openFeatureWidget(self, wiggleFeatureWidgetData(feat))
         },
 
         setRunClustering(arg?: boolean) {

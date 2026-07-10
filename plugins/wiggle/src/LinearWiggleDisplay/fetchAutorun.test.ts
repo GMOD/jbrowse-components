@@ -211,7 +211,7 @@ afterEach(() => {
 
 // Architecture under test:
 //   rpcProps changes → SettingsInvalidate clears RPC data → fetch re-runs
-//   gpuProps changes → framework's getUploadInvalidationToken re-uploads
+//   gpuProps changes → per-region encode autoruns re-fire, re-uploading
 //                      the GPU buffer (no RPC roundtrip)
 //   renderState-only changes → render autorun re-runs (no upload, no fetch)
 describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
@@ -255,9 +255,9 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
   })
 
-  // gpuProps fields (color, summaryScoreMode, renderingType, ...) flow
-  // through getUploadInvalidationToken → re-upload only. The worker output
-  // doesn't change, so no refetch should happen.
+  // gpuProps fields (color, summaryScoreMode, renderingType, ...) re-fire the
+  // per-region encode autoruns → re-upload only. The worker output doesn't
+  // change, so no refetch should happen.
   it('does NOT refetch when summaryScoreMode changes (gpuProps re-uploads)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyWiggleData())

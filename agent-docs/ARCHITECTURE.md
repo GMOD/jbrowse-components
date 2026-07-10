@@ -683,7 +683,7 @@ the data shape, not the one your neighbour copied:
 
 | Pattern | Upload methods | Render | Use when | Examples |
 |---|---|---|---|---|
-| **Per-region streamed** | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, state)` | each region's data is independent across regions, reactive per-region updates | canvas, wiggle, multi-wiggle, **MAF**, manhattan, multi-variant |
+| **Per-region streamed** | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, regions, state)` | each region's data is independent across regions, reactive per-region updates | canvas, wiggle, multi-wiggle, **MAF**, manhattan, multi-variant |
 | **Whole-map synced** | `sync(sources)` | `renderBlocks(blocks, state)` | per-region streams must rebuild coherently (e.g. main-thread cross-region Y layout), or encoder settings drive packing | alignments, multi-LGV synteny |
 | **Monolithic** (base class `GlobalRenderingBackend` / `GpuGlobalRenderingBackend`) | `uploadX(data)` | `render(state)` (no blocks) | display has no region partitioning (heatmaps spanning the whole view) | HiC, LD (both `GlobalDataDisplayMixin`); multi-variant matrix (monolithic backend but `MultiRegionDisplayMixin` fetch); dotplot (view-level `RenderLifecycleMixin`) |
 

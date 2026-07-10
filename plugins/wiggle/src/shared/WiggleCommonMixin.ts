@@ -1,10 +1,11 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, openFeatureWidget } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 
 import { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
+import { wiggleFeatureWidgetData } from './wiggleComponentUtils.ts'
 import { computeAutoscaleDomain, getNiceDomain } from '../util.ts'
 
-import type { WiggleDataResult } from '../util.ts'
+import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -23,6 +24,10 @@ export function WiggleCommonMixin() {
        * #volatile
        */
       rpcDataMap: observable.map<number, WiggleDataResult>(),
+      /**
+       * #volatile
+       */
+      featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined,
     }))
     .views(() => ({
       /**
@@ -96,6 +101,18 @@ export function WiggleCommonMixin() {
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
         self.setLoadedBpPerPx(undefined)
+      },
+      /**
+       * #action
+       */
+      setFeatureUnderMouse(feat?: WiggleFeatureUnderMouse) {
+        self.featureUnderMouse = feat
+      },
+      /**
+       * #action
+       */
+      selectFeature(feat: WiggleFeatureUnderMouse) {
+        openFeatureWidget(self, wiggleFeatureWidgetData(feat))
       },
     }))
 }

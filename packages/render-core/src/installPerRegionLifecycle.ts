@@ -5,7 +5,7 @@ import type { RenderingBackendCallbacks } from './RenderLifecycleMixin.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ObservableMap } from 'mobx'
 
-interface LifecycleHost extends IAnyStateTreeNode {
+export interface LifecycleHost extends IAnyStateTreeNode {
   attachRenderingBackend: <B>(b: B, cbs: RenderingBackendCallbacks<B>) => void
   renderNow: () => void
   currentRenderingBackend: unknown
