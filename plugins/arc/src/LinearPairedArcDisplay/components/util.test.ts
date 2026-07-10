@@ -46,6 +46,31 @@ test('distinct connections get distinct keys', () => {
   expect(pairKey(a1, a2)).not.toBe(pairKey(b1, b2))
 })
 
+// Reciprocal VCF BNDs are two separate records with distinct ALT strings that
+// point at each other. They describe one physical junction and must fold to one
+// arc, so their canonical key must not depend on the (differing) ALT string.
+test('reciprocal BNDs collapse to one arc', () => {
+  const w = new SimpleFeature({
+    uniqueId: 'bnd_W',
+    refName: 'chr2',
+    start: 321680,
+    end: 321681,
+    ALT: ['G]chr17:198982]'],
+  })
+  const y = new SimpleFeature({
+    uniqueId: 'bnd_Y',
+    refName: 'chr17',
+    start: 198981,
+    end: 198982,
+    ALT: ['A]chr2:321681]'],
+  })
+  const styles = [w, y].map(feature => {
+    const alt = (feature.get('ALT') as string[])[0]
+    return { alt, ...makeFeaturePair(feature, alt) }
+  })
+  expect(dedupe(styles, s => pairKey(s.k1, s.k2))).toHaveLength(1)
+})
+
 test('dedupe collapses the mirrored pair to one arc', () => {
   const feats = [
     new SimpleFeature({

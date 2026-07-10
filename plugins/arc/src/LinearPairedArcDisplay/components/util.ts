@@ -43,11 +43,13 @@ interface Endpoint {
 // emitted from both endpoints' interval trees (flip r1/r2), and reciprocal VCF
 // BNDs are two records pointing at each other, so the same physical connection
 // arrives twice with the endpoints swapped. Sorting the two endpoint locstrings
-// collapses those to one key so the arc is drawn once.
-export function pairKey(k1: Endpoint, k2: Endpoint, alt?: string) {
+// collapses those to one key so the arc is drawn once. The key is deliberately
+// ALT-independent: reciprocal BNDs carry distinct ALT strings for the same
+// junction, so folding them requires keying on the endpoints alone.
+export function pairKey(k1: Endpoint, k2: Endpoint) {
   const a = `${k1.refName}:${k1.start}-${k1.end}`
   const b = `${k2.refName}:${k2.start}-${k2.end}`
-  return [...[a, b].sort(), alt ?? ''].join('|')
+  return [a, b].sort().join('|')
 }
 
 export function makeSummary(feature: Feature, alt?: string) {

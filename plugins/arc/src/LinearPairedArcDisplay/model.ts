@@ -135,7 +135,7 @@ export function stateModelFactory(
           })
           return alts?.length ? alts.map(alt => make(alt)) : [make(undefined)]
         })
-        return styles && dedupe(styles, s => pairKey(s.k1, s.k2, s.alt))
+        return styles && dedupe(styles, s => pairKey(s.k1, s.k2))
       },
     }))
 
