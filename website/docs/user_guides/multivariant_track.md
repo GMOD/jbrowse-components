@@ -201,3 +201,5 @@ have the full field reference.
   options
 - [Customizing feature colors](/docs/config_guides/customizing_feature_colors) —
   the featureColor/Jexl mechanism behind the impactColor example above
+- [Gallery: variants and populations](/gallery/#variants) — live multi-sample
+  trio and cohort examples to open and explore

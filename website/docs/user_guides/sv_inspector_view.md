@@ -78,3 +78,5 @@ appear automatically.
   end-to-end workflow on real tumor/normal data
 - [Multi-sample SVs (1000 Genomes) tutorial](/docs/tutorials/sv_multisamples) —
   population-scale SV genotypes
+- [Gallery: structural variant examples](/gallery/#sv) — the live SV inspector,
+  breakpoint split view, and inversion sessions to open and explore

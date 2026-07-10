@@ -408,3 +408,5 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
   per-sample genotype table
 - [Alignments track configuration](/docs/config_guides/alignments_track) —
   config-file options for color and filter defaults
+- [Gallery: structural variant examples](/gallery/#sv) — live breakpoint split
+  views, read-vs-reference insertions, and inversions to open and explore

@@ -118,3 +118,5 @@ See `jbrowse add-connection --help` or the
   adapter types
 - [Text searching configuration](/docs/config_guides/text_searching) — indexing
   feature names for the search box
+- [Live demos: full instances and hubs](/demos/#instances) — a UCSC GenArk hub
+  imported live in the app, plus a full multi-track demo instance

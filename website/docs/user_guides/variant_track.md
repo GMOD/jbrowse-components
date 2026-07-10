@@ -45,3 +45,5 @@ full walkthrough of the regular and matrix multi-sample displays.
   index SNP, the same linkage concept behind variant LD displays
 - [Variant track configuration](/docs/config_guides/variant_track) — SVTYPE
   coloring, multi-sample display defaults, and LD displays
+- [Gallery: variants and populations](/gallery/#variants) — live trio,
+  diploid-assembly, and GWAS LD examples to open and explore

@@ -139,3 +139,5 @@ the display's full config reference.
   as signal
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
   — config-file options
+- [Gallery: coverage, copy number, and epigenomics](/gallery/#quantitative) —
+  live CNV tumor/normal and clustered copy-number examples to open and explore

@@ -141,3 +141,5 @@ for installation and connected-view examples.
   introns with spliced alignments
 - [Track configuration](/docs/config_guides/tracks) — config-file options for
   tracks and displays
+- [Gallery: genes and proteins](/gallery/#genes) — live polyprotein,
+  selenoprotein, and flipped-view examples to open and explore

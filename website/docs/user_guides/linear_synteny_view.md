@@ -82,3 +82,5 @@ short Alu look the same way at different scales:
   example of the "Add assembly row" 3+-genome workflow
 - [MAF track](/docs/user_guides/maf_track) — multi-species alignment against one
   reference, complementary to this pairwise view
+- [Gallery: synteny examples](/gallery/#synteny) — live grape-vs-peach,
+  human-vs-mouse, and multi-way synteny views to open and explore

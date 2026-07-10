@@ -128,3 +128,5 @@ strand-specific BigWig produced by your aligner), load it separately as a
   precomputed coverage signal such as a strand-specific BigWig
 - [Gene tracks](/docs/user_guides/gene_track) — displaying the reference gene
   annotations that RNA-seq reads are compared against
+- [Gallery: alignments and long reads](/gallery/#alignments) — the RNA-seq
+  splice-junction example alongside other long-read alignment views
