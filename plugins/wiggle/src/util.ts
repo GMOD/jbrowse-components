@@ -6,6 +6,7 @@ export {
   getOrigin,
   getScale,
   makeScoreNormalizer,
+  toP,
 } from '@jbrowse/wiggle-core'
 export type {
   Dataset,
@@ -87,10 +88,6 @@ export interface WiggleFeatureUnderMouse {
   start: number
   end: number
   rows: WiggleTooltipRow[]
-}
-
-export function toP(s = 0) {
-  return +s.toPrecision(6)
 }
 
 // Single-source synthetic name for LinearWiggleDisplay's worker output. Multi

@@ -1,5 +1,6 @@
 export { getNiceDomain, getNiceScale, getOrigin, getScale } from './scale.ts'
 export type { ScaleOpts } from './scale.ts'
+export { toP } from './formatNumber.ts'
 
 export {
   SCALE_TYPE_LINEAR,

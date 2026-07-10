@@ -109,7 +109,7 @@ const WiggleTooltip = observer(function WiggleTooltip({
   return featureUnderMouse && offsetMouseCoord[0] >= minLeft ? (
     <>
       <BaseTooltip
-        clientPoint={{ x: clientMouseCoord[0] + 5, y: clientMouseCoord[1] }}
+        clientPoint={{ x: clientMouseCoord[0] + 10, y: clientMouseCoord[1] }}
       >
         <TooltipContents feature={featureUnderMouse} />
       </BaseTooltip>
