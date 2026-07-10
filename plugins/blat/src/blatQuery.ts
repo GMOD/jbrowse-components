@@ -11,8 +11,8 @@ interface BlatJsonResponse {
 
 // PSL packs the per-block coordinates as comma-separated lists with a trailing
 // comma, e.g. "31,101,13,"
-function parseCommaList(value: string | number) {
-  return String(value).split(',').filter(Boolean).map(Number)
+function parseCommaList(value: string) {
+  return value.split(',').filter(Boolean).map(Number)
 }
 
 function pslRowToFeature(
@@ -20,19 +20,20 @@ function pslRowToFeature(
   col: Record<string, number>,
   featureIndex: number,
 ): SimpleFeatureSerialized {
-  const get = (name: string): string | number => row[col[name]!] ?? ''
-  const refName = String(get('tName'))
-  const start = Number(get('tStart'))
-  const end = Number(get('tEnd'))
-  const strand = String(get('strand')).startsWith('-') ? -1 : 1
-  const qName = String(get('qName'))
-  const matches = Number(get('matches'))
-  const misMatches = Number(get('misMatches'))
-  const repMatches = Number(get('repMatches'))
-  const qNumInsert = Number(get('qNumInsert'))
-  const tNumInsert = Number(get('tNumInsert'))
-  const blockSizes = parseCommaList(get('blockSizes'))
-  const tStarts = parseCommaList(get('tStarts'))
+  const str = (name: string) => String(row[col[name]!] ?? '')
+  const num = (name: string) => Number(row[col[name]!] ?? 0)
+  const refName = str('tName')
+  const start = num('tStart')
+  const end = num('tEnd')
+  const strand = str('strand').startsWith('-') ? -1 : 1
+  const qName = str('qName')
+  const matches = num('matches')
+  const misMatches = num('misMatches')
+  const repMatches = num('repMatches')
+  const qNumInsert = num('qNumInsert')
+  const tNumInsert = num('tNumInsert')
+  const blockSizes = parseCommaList(str('blockSizes'))
+  const tStarts = parseCommaList(str('tStarts'))
 
   // UCSC's simplified pslScore
   const score = matches + repMatches - misMatches - qNumInsert - tNumInsert
@@ -108,17 +109,30 @@ export class BlatChallengeError extends Error {
   name = 'BlatChallengeError'
 }
 
+// markers on a Cloudflare Turnstile challenge page; cf[-_]chl is kept specific
+// (not a bare cf-) so incidental "cf-" markup on a real result page isn't
+// mistaken for a challenge
+const CHALLENGE_MARKERS = /turnstile|cf[-_]chl|captcha|challenge/i
+
+export function isChallengePage(text: string) {
+  return CHALLENGE_MARKERS.test(text)
+}
+
+export function challengeError() {
+  return new BlatChallengeError(
+    'The UCSC server returned a CAPTCHA challenge instead of results. ' +
+      'Solve it in the window, or supply a UCSC apiKey (Genome Browser ' +
+      'account → Hub Development → API key) to avoid it.',
+  )
+}
+
 // hgBlat returns text/html content-type with a JSON body, and both non-match
 // errors and the Cloudflare Turnstile challenge come back as HTML pages, so we
 // parse the text ourselves and give a readable error if it isn't JSON
 export function parseBlatResponse(text: string): SimpleFeatureSerialized[] {
   if (text.trimStart().startsWith('<')) {
-    if (/turnstile|challenge|captcha|cf-/i.test(text)) {
-      throw new BlatChallengeError(
-        'The BLAT server returned a CAPTCHA challenge instead of results. ' +
-          'Solve it in the window, or supply a UCSC apiKey (Genome Browser ' +
-          'account → Hub Development → API key) to avoid it.',
-      )
+    if (isChallengePage(text)) {
+      throw challengeError()
     }
     throw new Error(
       'BLAT server returned an unexpected HTML response instead of JSON',
@@ -129,34 +143,3 @@ export function parseBlatResponse(text: string): SimpleFeatureSerialized[] {
 }
 
 export const DEFAULT_BLAT_URL = 'https://genome.ucsc.edu/cgi-bin/hgBlat'
-
-export async function runBlat({
-  db,
-  seq,
-  urlBase = DEFAULT_BLAT_URL,
-  apiKey,
-}: {
-  db: string
-  seq: string
-  urlBase?: string
-  apiKey?: string
-}) {
-  // a browser fetch straight to genome.ucsc.edu is CORS-blocked and surfaces as
-  // an opaque TypeError; rethrow with the proxy requirement spelled out
-  const response = await fetch(urlBase, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: buildBlatBody({ db, seq, apiKey }),
-  }).catch((e: unknown) => {
-    throw new Error(
-      `Could not reach the BLAT server at ${urlBase}. In the browser this must ` +
-        `be a CORS-enabled proxy, not genome.ucsc.edu directly (${e}).`,
-    )
-  })
-  if (!response.ok) {
-    throw new Error(
-      `hgBlat request failed (${response.status}): ${await response.text()}`,
-    )
-  }
-  return parseBlatResponse(await response.text())
-}

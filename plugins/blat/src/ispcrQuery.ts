@@ -1,4 +1,4 @@
-import { BlatChallengeError } from './blatQuery.ts'
+import { challengeError, isChallengePage } from './blatQuery.ts'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
@@ -76,12 +76,8 @@ export function parseIsPcrResponse(text: string): SimpleFeatureSerialized[] {
       ],
     })
   }
-  if (!features.length && /turnstile|cf[-_]chl|captcha/i.test(decoded)) {
-    throw new BlatChallengeError(
-      'The UCSC server returned a CAPTCHA challenge instead of results. ' +
-        'Solve it in the window, or supply a UCSC apiKey (Genome Browser ' +
-        'account → Hub Development → API key) to avoid it.',
-    )
+  if (!features.length && isChallengePage(decoded)) {
+    throw challengeError()
   }
   return features
 }
@@ -114,43 +110,4 @@ export function buildIsPcrBody({
     params.set('apiKey', apiKey)
   }
   return params.toString()
-}
-
-export async function runIsPcr({
-  db,
-  forwardPrimer,
-  reversePrimer,
-  urlBase = DEFAULT_ISPCR_URL,
-  maxProductSize,
-  apiKey,
-}: {
-  db: string
-  forwardPrimer: string
-  reversePrimer: string
-  urlBase?: string
-  maxProductSize?: number
-  apiKey?: string
-}) {
-  const response = await fetch(urlBase, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: buildIsPcrBody({
-      db,
-      forwardPrimer,
-      reversePrimer,
-      maxProductSize,
-      apiKey,
-    }),
-  }).catch((e: unknown) => {
-    throw new Error(
-      `Could not reach the in-silico PCR server at ${urlBase}. In the browser ` +
-        `this must be a CORS-enabled proxy, not genome.ucsc.edu directly (${e}).`,
-    )
-  })
-  if (!response.ok) {
-    throw new Error(
-      `hgPcr request failed (${response.status}): ${await response.text()}`,
-    )
-  }
-  return parseIsPcrResponse(await response.text())
 }

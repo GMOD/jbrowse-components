@@ -1,24 +1,18 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
-import { isElectron } from '@jbrowse/core/util'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { DialogContent, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import UcscQueryActions from './UcscQueryActions.tsx'
 import UcscQueryFields from './UcscQueryFields.tsx'
+import UcscQueryStatus from './UcscQueryStatus.tsx'
 import {
   DEFAULT_BLAT_URL,
   MAXIMUM_BLAT_LENGTH,
   MINIMUM_BLAT_LENGTH,
   buildBlatBody,
   parseBlatResponse,
-  runBlat,
 } from './blatQuery.ts'
 import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
@@ -44,7 +38,7 @@ const BlatDialog = observer(function BlatDialog({
     handleClose,
     defaultUrl: DEFAULT_BLAT_URL,
   })
-  const { db, urlBase, apiKey, loading, challenged, error } = query
+  const { db, urlBase, apiKey } = query
   const [seq, setSeq] = useState('')
 
   const cleanSeq = stripFasta(seq)
@@ -56,9 +50,8 @@ const BlatDialog = observer(function BlatDialog({
       fetchFeatures: () =>
         runUcscFetch({
           urlBase,
-          buildBody: () => buildBlatBody({ db, seq: cleanSeq, apiKey }),
+          body: buildBlatBody({ db, seq: cleanSeq, apiKey }),
           parse: parseBlatResponse,
-          runDirect: () => runBlat({ db, seq: cleanSeq, urlBase, apiKey }),
         }),
       trackIdPrefix: 'blat',
       trackName: `BLAT ${new Date().toLocaleTimeString()}`,
@@ -108,41 +101,14 @@ const BlatDialog = observer(function BlatDialog({
             {`Sequence is ${cleanSeq.length.toLocaleString()} bp; UCSC BLAT is limited to ${MAXIMUM_BLAT_LENGTH.toLocaleString()} bp`}
           </Typography>
         ) : null}
-        {error ? <Typography color="error">{`${error}`}</Typography> : null}
-        {challenged ? (
-          <Typography>
-            The UCSC BLAT server requires solving a CAPTCHA. Either paste a UCSC
-            apiKey above to avoid it, or click "Solve CAPTCHA", complete it in
-            the window that opens, and the search will retry automatically.
-          </Typography>
-        ) : null}
+        <UcscQueryStatus query={query} />
       </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-        {challenged && isElectron ? (
-          <Button
-            variant="outlined"
-            disabled={loading}
-            onClick={() => void query.solveChallenge(() => void handleSubmit())}
-          >
-            Solve CAPTCHA
-          </Button>
-        ) : null}
-        <Button
-          variant="contained"
-          disabled={loading || tooShort || tooLong || !db}
-          onClick={() => void handleSubmit()}
-        >
-          {loading ? 'Searching…' : 'Submit'}
-        </Button>
-      </DialogActions>
+      <UcscQueryActions
+        query={query}
+        submitDisabled={tooShort || tooLong || !db}
+        onSubmit={() => void handleSubmit()}
+        onCancel={() => { handleClose() }}
+      />
     </Dialog>
   )
 })

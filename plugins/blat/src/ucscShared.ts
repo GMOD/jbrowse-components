@@ -5,13 +5,16 @@ import { assemblyToUcscDb } from './ucscDbMap.ts'
 
 import type {
   AbstractSessionModel,
+  AbstractViewModel,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util'
 
-interface ViewWithTracks {
-  type: string
-  assemblyNames?: string[]
-  showTrack?: (trackId: string) => void
+interface ViewWithShowTrack extends AbstractViewModel {
+  showTrack: (trackId: string) => void
+}
+
+function hasShowTrack(view: AbstractViewModel): view is ViewWithShowTrack {
+  return 'showTrack' in view && typeof view.showTrack === 'function'
 }
 
 // jb2hubs stamps the UCSC db on the assembly's sequence.metadata; prefer that
@@ -55,12 +58,12 @@ export function addResultTrack({
     },
   })
   const view = session.views.find(
-    (v): v is typeof v & ViewWithTracks =>
-      (v as ViewWithTracks).type === 'LinearGenomeView' &&
-      !!(v as ViewWithTracks).assemblyNames?.includes(assembly),
+    v =>
+      v.type === 'LinearGenomeView' && !!v.assemblyNames?.includes(assembly),
   )
-  view?.showTrack?.(trackId)
-  if (!view) {
+  if (view && hasShowTrack(view)) {
+    view.showTrack(trackId)
+  } else {
     session.notify(
       `Added track "${trackId}" but no open view displays ${assembly}`,
       'warning',

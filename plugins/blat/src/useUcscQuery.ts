@@ -14,29 +14,41 @@ import type {
 // Runs one UCSC query, routing through the desktop main process (to bypass the
 // renderer's CORS restriction and reuse a solved-challenge cookie) or a direct
 // browser fetch that expects a CORS-enabled proxy. The mode-specific pieces are
-// the POST body, the response parser, and the browser-path runner.
+// just the POST body and the response parser.
 export async function runUcscFetch({
   urlBase,
-  buildBody,
+  body,
   parse,
-  runDirect,
 }: {
   urlBase: string
-  buildBody: () => string
+  body: string
   parse: (text: string) => SimpleFeatureSerialized[]
-  runDirect: () => Promise<SimpleFeatureSerialized[]>
 }) {
   if (isElectron) {
-    const { ok, status, text } = await desktopBlatFetch({
-      url: urlBase,
-      body: buildBody(),
-    })
+    const { ok, status, text } = await desktopBlatFetch({ url: urlBase, body })
     if (!ok) {
       throw new Error(`UCSC request failed (${status})`)
     }
     return parse(text)
   }
-  return runDirect()
+  // a browser fetch straight to genome.ucsc.edu is CORS-blocked and surfaces as
+  // an opaque TypeError; rethrow with the proxy requirement spelled out
+  const response = await fetch(urlBase, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  }).catch((e: unknown) => {
+    throw new Error(
+      `Could not reach the UCSC server at ${urlBase}. In the browser this must ` +
+        `be a CORS-enabled proxy, not genome.ucsc.edu directly (${e}).`,
+    )
+  })
+  if (!response.ok) {
+    throw new Error(
+      `UCSC request failed (${response.status}): ${await response.text()}`,
+    )
+  }
+  return parse(await response.text())
 }
 
 // Shared state and lifecycle for the BLAT and in-silico PCR dialogs: the UCSC

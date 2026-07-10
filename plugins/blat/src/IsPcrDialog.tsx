@@ -1,24 +1,18 @@
 import { useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
-import { isElectron } from '@jbrowse/core/util'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { DialogContent, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import UcscQueryActions from './UcscQueryActions.tsx'
 import UcscQueryFields from './UcscQueryFields.tsx'
+import UcscQueryStatus from './UcscQueryStatus.tsx'
 import {
   DEFAULT_ISPCR_URL,
   DEFAULT_MAX_PRODUCT_SIZE,
   MINIMUM_PRIMER_LENGTH,
   buildIsPcrBody,
   parseIsPcrResponse,
-  runIsPcr,
 } from './ispcrQuery.ts'
 import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
@@ -40,7 +34,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
     handleClose,
     defaultUrl: DEFAULT_ISPCR_URL,
   })
-  const { db, urlBase, apiKey, loading, challenged, error } = query
+  const { db, urlBase, apiKey } = query
   const [forwardPrimer, setForwardPrimer] = useState('')
   const [reversePrimer, setReversePrimer] = useState('')
   const [maxProductSize, setMaxProductSize] = useState(DEFAULT_MAX_PRODUCT_SIZE)
@@ -55,24 +49,14 @@ const IsPcrDialog = observer(function IsPcrDialog({
       fetchFeatures: () =>
         runUcscFetch({
           urlBase,
-          buildBody: () =>
-            buildIsPcrBody({
-              db,
-              forwardPrimer: fwd,
-              reversePrimer: rev,
-              maxProductSize,
-              apiKey,
-            }),
+          body: buildIsPcrBody({
+            db,
+            forwardPrimer: fwd,
+            reversePrimer: rev,
+            maxProductSize,
+            apiKey,
+          }),
           parse: parseIsPcrResponse,
-          runDirect: () =>
-            runIsPcr({
-              db,
-              forwardPrimer: fwd,
-              reversePrimer: rev,
-              urlBase,
-              maxProductSize,
-              apiKey,
-            }),
         }),
       trackIdPrefix: 'ispcr',
       trackName: `In-silico PCR ${new Date().toLocaleTimeString()}`,
@@ -134,41 +118,14 @@ const IsPcrDialog = observer(function IsPcrDialog({
             {`Primers must be at least ${MINIMUM_PRIMER_LENGTH} bp`}
           </Typography>
         ) : null}
-        {error ? <Typography color="error">{`${error}`}</Typography> : null}
-        {challenged ? (
-          <Typography>
-            The UCSC server requires solving a CAPTCHA. Either paste a UCSC
-            apiKey above to avoid it, or click "Solve CAPTCHA", complete it in
-            the window that opens, and the search will retry automatically.
-          </Typography>
-        ) : null}
+        <UcscQueryStatus query={query} />
       </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-        {challenged && isElectron ? (
-          <Button
-            variant="outlined"
-            disabled={loading}
-            onClick={() => void query.solveChallenge(() => void handleSubmit())}
-          >
-            Solve CAPTCHA
-          </Button>
-        ) : null}
-        <Button
-          variant="contained"
-          disabled={loading || tooShort || !db}
-          onClick={() => void handleSubmit()}
-        >
-          {loading ? 'Searching…' : 'Submit'}
-        </Button>
-      </DialogActions>
+      <UcscQueryActions
+        query={query}
+        submitDisabled={tooShort || !db}
+        onSubmit={() => void handleSubmit()}
+        onCancel={() => { handleClose() }}
+      />
     </Dialog>
   )
 })
