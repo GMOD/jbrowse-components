@@ -74,41 +74,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   {
     mode: 'url',
-    name: 'grape_triplication',
-    // The ancestral eudicot gamma triplication, made visible in one dotplot. The
-    // x-axis is a single peach chromosome (Pp01); the y-axis is the whole grape
-    // genome. Pp01 aligns as three diagonal segments landing on THREE grape
-    // chromosomes — chr1, chr5, chr18 — with near-equal aligned length
-    // (509/458/458 kb): the three paralogous copies grape retains from the
-    // whole-genome triplication in the eudicot ancestor (peach kept one copy).
-    // The rest of the grape axis is empty, showing the mapping is specific
-    // (three places), not scattered — this is why whole-genome grape/peach
-    // synteny looks like "crossing ribbons everywhere": the crossings ARE the
-    // triplication, not a diagonalization failure. Whole-genome peach_grape PAF.
-    url: sessionSpec(DOTPLOT_CONFIG, {
-      views: [
-        {
-          type: 'DotplotView',
-          // explicit coords: navAxisToLoc only restricts an axis when the loc
-          // carries a start+end (a bare 'Pp01' is a no-op)
-          views: [
-            { assembly: 'peach', loc: 'Pp01:1-47,851,208' },
-            { assembly: 'grape' },
-          ],
-          // MCScan gene-anchor blocks, not the raw PAF: curated collinear blocks
-          // give three clean diagonal segments instead of short-hit speckle
-          tracks: ['grape_peach_synteny_mcscan'],
-        },
-      ],
-    }),
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
-    readyTimeout: 60000,
-    settleMs: 10000,
-    viewportHeight: 700,
-  },
-
-  {
-    mode: 'url',
     name: 'linear_synteny',
     // Whole-genome grape vs peach MCScan synteny as an explicit controlled
     // session (was a reviewer share link whose mismatched per-panel zoom fanned

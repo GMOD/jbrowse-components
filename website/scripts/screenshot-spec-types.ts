@@ -105,6 +105,12 @@ export interface CommonSpecFields {
   // suppress the hover/right-click BaseTooltip (which lingers while a context
   // menu is open) so it doesn't clutter the capture
   hideTooltip?: boolean
+  // CSS selectors for transient chrome to hide just before capture (e.g. a MUI
+  // snackbar toast or the hover tooltip left over from driving a menu):
+  // `['.MuiSnackbar-root', '.MuiTooltip-popper']`. Each matched element is
+  // `display:none`'d. Use for UI that a click sequence necessarily triggers but
+  // shouldn't appear in the final frame.
+  hideSelectors?: string[]
   // render this spec with the Firefox backend instead of Chrome. Headless
   // Chrome's swiftshader rasterizes some WebGL/molstar content (e.g. the
   // protein3d structure canvas) as a featureless blob with no visible

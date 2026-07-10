@@ -39,6 +39,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
     // enough that the menu geometry is stable before the click sequence
     settleMs: 14000,
     hideTooltip: true,
+    // the pin click fires a "Pinned as the default…" snackbar and leaves the
+    // pin's MUI hover tooltip up; hide both so the frame shows just the menu
+    hideSelectors: ['.MuiSnackbar-root', '.MuiTooltip-popper'],
     // The Compact row's pin does both jobs at once (promotableRadioItem: pinning
     // an unpinned value selects it first) and stopPropagation keeps the submenu
     // open, so one click both compacts this track and promotes Compact — the
@@ -51,7 +54,12 @@ export const featuresSpecs: ScreenshotSpec[] = [
         type: 'click',
         selector: '[aria-label="make Compact the default for all tracks"]',
       },
-      { type: 'delay', ms: 800 },
+      // pinning Compact re-lays-out both tracks; the old fixed 800ms delay
+      // sometimes captured a mid-render "Loading" panel. Let the re-render kick
+      // in, then wait for the in-track loading indicators to clear before capture.
+      { type: 'delay', ms: 1000 },
+      { type: 'waitForText', text: 'Loading', hidden: true },
+      { type: 'delay', ms: 500 },
     ],
     annotations: [
       {

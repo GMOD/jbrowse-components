@@ -205,8 +205,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'rightclick', from: { x: 400, y: 250 } },
       { type: 'waitForText', text: 'Open feature details' },
-      { type: 'hover', text: 'Launch view' },
-      { type: 'waitForText', text: 'Linear read vs ref' },
       { type: 'delay', ms: 800 },
     ],
     // clarify the action (it's unclear this menu comes from

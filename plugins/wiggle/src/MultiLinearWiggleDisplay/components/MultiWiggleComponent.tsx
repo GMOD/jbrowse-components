@@ -5,6 +5,7 @@ import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
+import MultiWiggleLegendOverlay from './MultiWiggleLegendOverlay.tsx'
 import { findOverlayHit, findRowHit } from './findHit.ts'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
@@ -204,6 +205,9 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
       </svg>
 
       <TreeSidebar model={model} />
+
+      {/* portals the overlay color legend above the inter-region masks */}
+      <MultiWiggleLegendOverlay model={model} />
 
       <WiggleTooltip
         model={model}

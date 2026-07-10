@@ -770,8 +770,6 @@ jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
   snpcov height:200 --loc ctgA:1-20000 --width 1200 --out snpcov.png
 ```
 
-<Figure src="/img/jbrowse-img/alignments_snpcov.png" caption="Coverage-only render of an alignments track (snpcov), the SNP-coverage histogram filling the whole track with no read pileup" />
-
 ## Parameters
 
 ### Assembly params

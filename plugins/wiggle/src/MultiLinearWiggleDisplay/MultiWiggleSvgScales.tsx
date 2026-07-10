@@ -1,16 +1,18 @@
 import { SvgRowLabels } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
-import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
-// Source-row labels (or overlay color legend) plus the Y-scale legend, shared
-// by the live MultiWiggleComponent and the SVG export path so the two can't
-// drift. Callers pass their own `canvasWidth`/`scalebarLeft`/`labelOffset`
-// (CSS-pixel track width on screen vs view width on export, etc.).
+// Row labels (non-overlay mode) plus the Y-scale legend, shared by the live
+// MultiWiggleComponent and the SVG export path so the two can't drift. The
+// overlay-mode color legend is NOT here: it's composed by each path directly —
+// on screen via the hoisted MultiWiggleLegendOverlay (which paints above the
+// inter-region separators), in export inline in renderSvg. Callers pass their
+// own `canvasWidth`/`scalebarLeft`/`labelOffset` (CSS-pixel track width on
+// screen vs view width on export, etc.).
 interface ScaleModel {
   sources: {
     name: string
@@ -20,7 +22,6 @@ interface ScaleModel {
     group?: string
   }[]
   isOverlay: boolean
-  posColor: string
   rowHeight: number
   isDensityMode: boolean
   domain: [number, number] | undefined
@@ -44,7 +45,6 @@ export default function MultiWiggleSvgScales({
   const {
     sources,
     isOverlay,
-    posColor,
     rowHeight,
     isDensityMode,
     domain,
@@ -55,20 +55,12 @@ export default function MultiWiggleSvgScales({
   } = model
 
   const labels =
-    sources.length > 1 ? (
-      isOverlay ? (
-        <OverlayColorLegend
-          sources={sources}
-          fallbackColor={posColor}
-          canvasWidth={canvasWidth}
-        />
-      ) : (
-        <SvgRowLabels
-          sources={sources}
-          rowHeight={rowHeight}
-          labelOffset={labelOffset}
-        />
-      )
+    sources.length > 1 && !isOverlay ? (
+      <SvgRowLabels
+        sources={sources}
+        rowHeight={rowHeight}
+        labelOffset={labelOffset}
+      />
     ) : null
 
   const scoreLegend = domain ? (

@@ -320,6 +320,15 @@ async function shoot(
   if (spec.hideTooltip) {
     await hideLingeringTooltip(page)
   }
+  if (spec.hideSelectors && spec.hideSelectors.length > 0) {
+    await page.evaluate(selectors => {
+      for (const sel of selectors) {
+        for (const el of document.querySelectorAll<HTMLElement>(sel)) {
+          el.style.display = 'none'
+        }
+      }
+    }, spec.hideSelectors)
+  }
   if (annotations && annotations.length > 0) {
     await drawAnnotations(page, annotations)
   } else {

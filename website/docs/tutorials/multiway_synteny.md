@@ -191,11 +191,10 @@ grape ortholog, not directly aligned). When no genome dominates like this, put
 the reference in the **middle** — peach – grape – cacao — so _every_ band is a
 direct comparison.
 
-That triplication is easiest to see one chromosome at a time. Restrict a
+That triplication is easiest to see one chromosome at a time: restrict a
 peach-vs-grape dotplot to a single peach chromosome and it resolves into three
-diagonal blocks — the three grape paralogs of that region:
-
-<Figure caption="Peach chromosome Pp01 (x-axis) against the whole grape genome (y-axis), MCScan anchor blocks. Pp01 aligns as three diagonal segments onto three different grape chromosomes — the paralogous copies grape retains from an ancestral genome triplication. This 1:3 mapping, repeated for every peach chromosome, is why a whole-genome grape/peach synteny shows crossing ribbons: the crossings reflect the extra grape copies, not a bad diagonalization." src="/img/grape_triplication.png" />
+diagonal blocks — the three grape paralogs of that region, the same 1:3 mapping
+that makes a whole-genome grape/peach synteny show crossing ribbons.
 
 ## See also
 

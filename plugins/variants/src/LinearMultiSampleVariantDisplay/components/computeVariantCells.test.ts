@@ -51,13 +51,13 @@ describe('computeVariantCells phased genotypes', () => {
   })
 })
 
-describe('computeVariantCells insertion hit bounds', () => {
+describe('computeVariantCells insertion bounds', () => {
   const sources: ProcessedSource[] = [{ name: 'S1', sampleName: 'S1', HP: 0 }]
 
-  // An insertion's drawn down-triangle spans [start, renderEnd]; the flatbush
-  // hit/highlight bounds must match that rendered extent (not the ~1bp VCF end)
-  // so the whole triangle is mouse-overable.
-  test('flatbush end spans the alt-allele width', () => {
+  // Insertions render as a plain barcode line like SNPs — drawn at [start, end],
+  // never widened to the alt-allele / SVLEN span (that used to feed a distinct
+  // down-triangle glyph, since removed).
+  test('insertion draws at [start, end] regardless of alt-allele width', () => {
     const feature = makeFeature({
       genotypes: { S1: '1' },
       ALT: ['ACGTACGTAC'], // 10bp insertion
@@ -76,10 +76,10 @@ describe('computeVariantCells insertion hit bounds', () => {
       genotypesCache: new Map(),
     })
     expect(result.cellPositions[0]).toBe(100)
-    expect(result.cellPositions[1]).toBe(110)
+    expect(result.cellPositions[1]).toBe(101)
   })
 
-  test('flatbush end spans SVLEN for symbolic insertions', () => {
+  test('symbolic insertion draws at [start, end] regardless of SVLEN', () => {
     const feature = makeFeature({
       genotypes: { S1: '1' },
       ALT: ['<INS>'],
@@ -99,30 +99,6 @@ describe('computeVariantCells insertion hit bounds', () => {
       genotypesCache: new Map(),
     })
     expect(result.cellPositions[0]).toBe(100)
-    expect(result.cellPositions[1]).toBe(350)
-  })
-
-  test('symbolic insertion without SVLEN stays a point (ignores <INS> string length)', () => {
-    const feature = makeFeature({
-      genotypes: { S1: '1' },
-      ALT: ['<INS>'],
-      REF: 'A',
-      INFO: {},
-      name: 'ins3',
-      description: '',
-      type: 'insertion',
-      start: 100,
-      end: 101,
-    })
-    const result = computeVariantCells({
-      mafs: [{ feature, mostFrequentAlt: '1' }],
-      sources,
-      renderingMode: 'allele',
-      referenceDrawingMode: 'skip',
-      genotypesCache: new Map(),
-    })
-    expect(result.cellPositions[0]).toBe(100)
-    // end-start (1bp), not the length of the literal "<INS>" string (5)
     expect(result.cellPositions[1]).toBe(101)
   })
 })

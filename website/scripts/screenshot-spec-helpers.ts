@@ -461,8 +461,10 @@ export const RB1_L1_LOCUS = {
 // chimp interval runs AluSz6 -> UCON33 with no SVA (zero SVA anywhere in chimp
 // VAPB). RepeatMasker names it SVA_F at the insertion.
 export const VAPB_SVA_LOCUS = {
-  hg38: 'chr20:58,408,000-58,420,000',
-  panTro6: 'chr20:58,045,500-58,055,000',
+  // zoomed out ~1.6x from the tight 12 kb / 9.5 kb windows so the SVA insertion
+  // reads with more flanking context (reviewer)
+  hg38: 'chr20:58,404,000-58,424,000',
+  panTro6: 'chr20:58,043,000-58,058,000',
 }
 
 // PICALM (Alzheimer's-associated): a ~0.3 kb AluYb8 — a young, human-specific Alu
@@ -498,6 +500,16 @@ export function hg38ChimpSynteny(
       featureHeight: 18,
     },
   })
+  // RepeatMasker: 'fit' height mode squeezes every element into a short band so
+  // the elements stay visible without the dense rmsk stack crowding out the gene
+  // track below/above it (reviewer)
+  const rmsk = (id: string) => ({
+    trackId: id,
+    displaySnapshot: {
+      heightMode: 'fit',
+      height: 60,
+    },
+  })
   return sessionSpec(HG38_PANTRO6_CONFIG, {
     views: [
       {
@@ -511,14 +523,14 @@ export function hg38ChimpSynteny(
             loc: locus.hg38,
             // RepeatMasker last so it sits against the synteny band, where its
             // elements line up with the indels
-            tracks: [genes('hg38-genes'), 'hg38-rmsk'],
+            tracks: [genes('hg38-genes'), rmsk('hg38-rmsk')],
             trackLabels: 'offset',
           },
           {
             assembly: 'panTro6',
             loc: locus.panTro6,
             // RepeatMasker first so it sits against the synteny band above it
-            tracks: ['panTro6-rmsk', genes('panTro6-genes')],
+            tracks: [rmsk('panTro6-rmsk'), genes('panTro6-genes')],
             trackLabels: 'offset',
           },
         ],
@@ -548,6 +560,9 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'https://jbrowse.org/genomes/hg19/hg19_aliases.txt',
     '--gffgz',
     'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz',
+    // reduced-representation gene view (drop mRNA/exon/CDS speckle, keep gene
+    // glyphs) so the RefSeq track reads cleanly at this multi-gene zoom
+    '{"showOnlyGenes":true}',
     '--bigbed',
     'https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb',
     '--bigwig',
@@ -754,42 +769,22 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
-  // snpcov collapses the alignments display to coverage-only by sizing the
-  // coverage band to fill the whole track (no read pileup below). Real human
-  // data (reviewer ask): NA12878 1000-Genomes exome CRAM (hg38) over the full
-  // PTEN span — a clean single-canonical-transcript gene (unlike BRCA1's isoform
-  // thicket). The hosted NCBI RefSeq gene track on top (--hub, reviewer ask)
-  // shows the exome capture's coverage humps landing one-per-exon against the
-  // gene model, with flat intronic gaps between — the defining exome pattern.
-  // --hub hg38 supplies the assembly (with its own refName aliases) plus the
-  // pre-configured hg38-ncbiRefSeqCurated track, so no raw --gffgz (whose
-  // RefSeqGene `match`/`region` features render as bare-UUID full-width bars).
-  cliSpec('alignments_snpcov', [
+  // sort:base — HG008-T PacBio HiFi reads over CUZD1 sorted by the base at the
+  // center position, so every read carrying the ~1.8 kb somatic deletion pulls
+  // into one contiguous band (matches the README "sort:base" example; the
+  // legacy `alignments_readgroup` filename is kept for the doc image URL).
+  cliSpec('alignments_readgroup', [
     '--hub',
     'hg38',
     '--track',
     'hg38-ncbiRefSeqCurated',
-    '--cram',
-    'https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
-    'snpcov',
-    'height:200',
-    '--loc',
-    'chr10:87,863,438-87,971,930',
-    '--width',
-    '1200',
-  ]),
-
-  // Reads colored and sorted by their read-group (RG) tag.
-  cliSpec('alignments_readgroup', [
-    '--fasta',
-    'data/volvox/volvox.fa',
+    'height:55',
     '--bam',
-    'data/volvox/volvox-rg.bam',
-    'color:tag:RG',
-    'sort:tag:RG',
-    'height:300',
+    'https://jbrowse.org/demos/cgiab/HG008-T_chr10_CUZD1_deletion.bam',
+    'sort:base',
+    'height:420',
     '--loc',
-    'ctgA:1000-2000',
+    'chr10:122,830,900-122,840,000',
     '--width',
     '1200',
   ]),

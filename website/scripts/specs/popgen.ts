@@ -42,6 +42,31 @@ const PI_TRACK = {
   },
 }
 
+// The In(2L)t inversion extent as a single annotation feature (published dm6
+// breakpoints 2L:2,225,744–13,154,180), so the reader can see the elevated-Fst
+// plateau lines up with the inverted region. An inline FromConfigAdapter rather
+// than a hosted BED — one feature needs no file.
+const IN2LT_INVERSION_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'in2lt_inversion',
+  name: 'In(2L)t inversion',
+  assemblyNames: ['dm6'],
+  adapter: {
+    type: 'FromConfigAdapter',
+    adapterId: 'in2lt',
+    features: [
+      {
+        uniqueId: 'in2lt',
+        refName: 'chr2L',
+        start: 2225744,
+        end: 13154180,
+        name: 'In(2L)t',
+        type: 'inversion',
+      },
+    ],
+  },
+}
+
 export const popgenSpecs: ScreenshotSpec[] = [
   // Whole chromosome arm 2L: the In(2L)t Fst track (top) rises into an elevated
   // plateau across the inversion (~2.2–13.2 Mb) with breakpoint peaks — the
@@ -54,13 +79,18 @@ export const popgenSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'popgen/fst_in2lt_2L',
     url: `${DM6_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [FST_TRACK, PI_TRACK],
+      sessionTracks: [IN2LT_INVERSION_TRACK, FST_TRACK, PI_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'dm6',
           loc: 'chr2L',
           tracks: [
+            // inversion extent on top so the Fst plateau below reads against it
+            {
+              trackId: 'in2lt_inversion',
+              displaySnapshot: { type: 'LinearBasicDisplay', height: 40 },
+            },
             {
               trackId: 'fst_in2lt',
               displaySnapshot: { type: 'LinearWiggleDisplay', height: 180 },
@@ -76,8 +106,8 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="wiggle-display-done"]',
     readyText: 'π (whole panel)',
     readyTimeout: 90000,
-    // both 180px tracks plus headers clear the crop
-    viewportHeight: 560,
+    // inversion track (40) + two 180px wiggles + headers clear the crop
+    viewportHeight: 620,
     settleMs: 12000,
   },
 
@@ -97,7 +127,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'dm6',
-          loc: 'chr2R:12,050,000-12,320,000',
+          loc: 'chr2R:11,985,000-12,385,000',
           tracks: [
             {
               trackId: 'pi_all',
@@ -113,7 +143,9 @@ export const popgenSpecs: ScreenshotSpec[] = [
     // present before capture
     readyText: 'Cyp6g1',
     readyTimeout: 90000,
-    viewportHeight: 560,
+    // taller so the wider-zoom gene track's lower rows (Cyp6g1 sits in one) and
+    // its callout aren't clipped at the bottom edge
+    viewportHeight: 720,
     settleMs: 12000,
     annotations: [
       { type: 'box', anchor: { text: 'Cyp6g1' } },

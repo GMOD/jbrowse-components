@@ -1,6 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { SHAPE_RECT, SHAPE_TRI_DOWN, SHAPE_TRI_LEFT } from './variantShape.ts'
+import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 import { BLACK_ABGR, REFERENCE_COLOR } from '../../shared/constants.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import {
@@ -19,7 +19,7 @@ import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 export type FeatureGenotypeInfo = VariantFeatureGenotypes
 
 export interface VariantCellData {
-  // Absolute genomic positions in uint32 (start, renderEnd) interleaved.
+  // Absolute genomic positions in uint32 (start, end) interleaved.
   // The renderer + shader split via hpSplitUint against the per-block
   // bpRangeX; no region origin is shipped separately. Hit-testing reads the
   // same array (the flatbush boxes are built from it), so no parallel
@@ -42,35 +42,11 @@ function getShapeType(featureType: string) {
   if (featureType === 'inversion') {
     return SHAPE_TRI_LEFT
   }
-  if (featureType === 'insertion') {
-    return SHAPE_TRI_DOWN
-  }
+  // Insertions render as a plain barcode line at their locus, identical to
+  // SNPs — the same full-height cell every other genotype cell draws. (They
+  // used to get a distinct down-triangle/dot glyph, but that collapsed to a
+  // hard-to-read locus-centered dot when zoomed out.)
   return SHAPE_RECT
-}
-
-function getInsertionRenderEnd(
-  start: number,
-  end: number,
-  alt: string[],
-  feature: Feature,
-) {
-  let maxLen = end - start
-  for (const a of alt) {
-    // Symbolic alts (<INS>, <INS:ME>, …) carry no sequence, so their string
-    // length is meaningless — a symbolic insertion's span comes from SVLEN
-    // below (or stays a point/line when absent). Only literal-sequence alts
-    // contribute their length.
-    if (!a.startsWith('<')) {
-      maxLen = Math.max(maxLen, a.length)
-    }
-  }
-  const info = feature.get('INFO') as Record<string, unknown[]> | undefined
-  if (Array.isArray(info?.SVLEN)) {
-    for (const sv of info.SVLEN as number[]) {
-      maxLen = Math.max(maxLen, Math.abs(sv))
-    }
-  }
-  return start + maxLen
 }
 
 export function computeVariantCells({
@@ -112,7 +88,7 @@ export function computeVariantCells({
 
   function addCell(
     genomicStart: number,
-    renderEnd: number,
+    genomicEnd: number,
     rowIndex: number,
     colorAbgr: number,
     shape: number,
@@ -121,13 +97,10 @@ export function computeVariantCells({
   ) {
     const ci = cellCount
     // Absolute uint32 genomic positions — the shader hp-splits these against the
-    // per-block bpRangeX (no region origin in the uniform). renderEnd, not the
-    // true VCF end, is stored so it doubles as the hit-test/highlight bound: an
-    // insertion's down-triangle is drawn across [start, renderEnd] (centered), so
-    // bounding by `end` (~start for a point insertion) would leave the whole
-    // triangle unhoverable. renderEnd === end for every non-insertion shape.
+    // per-block bpRangeX (no region origin in the uniform). This same array
+    // doubles as the hit-test/highlight bound (the flatbush boxes read it).
     positions[ci * 2] = genomicStart
-    positions[ci * 2 + 1] = renderEnd
+    positions[ci * 2 + 1] = genomicEnd
     rowIndices[ci] = rowIndex
     colors[ci] = colorAbgr
     shapeTypes[ci] = shape
@@ -153,10 +126,6 @@ export function computeVariantCells({
     const featureName = feature.get('name')!
     const description = feature.get('description') as string
     const renderedGenotypes: Record<string, string> = {}
-    const renderEnd =
-      shape === SHAPE_TRI_DOWN
-        ? getInsertionRenderEnd(start, end, alt, feature)
-        : end
     // Per-variant override color, resolved once per feature (not per cell);
     // undefined when no override is set, so normal genotype coloring runs.
     const overrideColor = featureColor?.(feature)
@@ -212,7 +181,7 @@ export function computeVariantCells({
               overrideColor !== undefined && !isRefCell ? overrideColor : c
             addCell(
               start,
-              renderEnd,
+              end,
               j,
               getCachedABGR(cellColor),
               shape,
@@ -222,7 +191,7 @@ export function computeVariantCells({
             renderedGenotypes[sampleName] = genotype
           }
         } else {
-          addCell(start, renderEnd, j, BLACK_ABGR, shape, false, featureIdx)
+          addCell(start, end, j, BLACK_ABGR, shape, false, featureIdx)
           renderedGenotypes[sampleName] = genotype
         }
       }
@@ -247,7 +216,7 @@ export function computeVariantCells({
           if (c) {
             addCell(
               start,
-              renderEnd,
+              end,
               j,
               getCachedABGR(c),
               shape,

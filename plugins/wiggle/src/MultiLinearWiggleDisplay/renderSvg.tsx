@@ -13,6 +13,7 @@ import { SvgTreePath } from '@jbrowse/tree-sidebar'
 
 import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
+import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
@@ -67,9 +68,9 @@ function MultiWiggleSvgBody({
   // autoscale resolves), so an empty region paints an empty plot; the per-source
   // scales draw only where a real domain exists (MultiWiggleSvgScales).
   // Wiggle can't use the shared SvgTreeSidebar: its row labels live in
-  // MultiWiggleSvgScales (shared with the on-screen path, alongside the scalebars
-  // and overlay color legend). So keep the split, but derive the label offset and
-  // the tree from one `treeShowing` so a blank gutter can't appear.
+  // MultiWiggleSvgScales (shared with the on-screen path, alongside the
+  // scalebars). So keep the split, but derive the label offset and the tree from
+  // one `treeShowing` so a blank gutter can't appear.
   const { hierarchy, showTree, treeAreaWidth } = model
   const treeShowing = showTree && !!hierarchy
   const scalesEl = (
@@ -80,6 +81,18 @@ function MultiWiggleSvgBody({
       labelOffset={treeShowing ? treeAreaWidth : 0}
     />
   )
+
+  // Overlay-mode color legend, drawn inline here (no inter-region masks in the
+  // flat export SVG). On screen this same legend is the hoisted
+  // MultiWiggleLegendOverlay instead.
+  const legendEl =
+    model.isOverlay && model.sources.length > 1 ? (
+      <OverlayColorLegend
+        sources={model.sources}
+        fallbackColor={model.posColor}
+        canvasWidth={view.width}
+      />
+    ) : null
 
   const treeEl = treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null
 
@@ -113,6 +126,7 @@ function MultiWiggleSvgBody({
         {wiggleNode}
       </SvgClipRect>
       {scalesEl}
+      {legendEl}
       {treeEl}
     </>
   )

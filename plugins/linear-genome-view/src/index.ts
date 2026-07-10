@@ -172,6 +172,7 @@ export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHi
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'
 export { default as ConnectedHoverHighlight } from './LinearGenomeView/components/ConnectedHoverHighlight.tsx'
 export { default as HoverPositionHighlight } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
+export { TrackOverlayContext } from './LinearGenomeView/TrackOverlayContext.ts'
 export type { HoverHighlightPosition } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
 export {
   SVGErrorBox,

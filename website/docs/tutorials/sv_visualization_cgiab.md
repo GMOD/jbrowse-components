@@ -555,8 +555,6 @@ the whole chromosome with the log2 ratio above the BAF:
 The q-arm event is invisible to depth alone. Only the BAF reveals it, which is
 why the two signals are read together.
 
-<Figure caption="Chromosome 17: log2 ratio (top) over BAF (middle) over the CNV calls (bottom). Each call is labeled CN total (hap1|hap2) from the copy-number columns of the BED, so the call itself states the interpretation. The p-arm (left, over TP53) is a single-copy loss with LOH — negative log2, a BAF split, and CN 1 (1|0). The q-arm (right) is copy-neutral LOH — the log2 ratio is flat at 0 (total copy number is still 2) yet the BAF splits away from 0.5 and the call reads CN 2 (2|0), so it would be missed by a depth-only analysis." src="/img/sv_cgiab/driver_chr17_loh.png" />
-
 The log2 × BAF combinations read as a compact decision table:
 
 | log2 ratio | BAF            | Interpretation            |
