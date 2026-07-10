@@ -72,6 +72,18 @@ jq -r '[to_entries[]|select(.value.status=="bad")]|.[]|"\(.value.name)\t\(.value
 
 ## Session 2026-07-10 (webgl-poc) — 8 resolved, 27→19 bad, + a synteny code fix
 
+**Commit status:** `120bc90a4c` (ecoli deletion + sv_read_arcs caption + grape
+comment + this handoff) and `fac25b4e0a` (the synteny autoDiagonalize gate) are
+committed (path-limited, on top of the concurrently-landed spec-format refactor
+`cc09b99869`/`dd4edc598e`). STILL UNCOMMITTED because the spec files carry
+another agent's in-progress flat-format *conversion* on top of my edits:
+introgression fix (`specs/ui.ts` + PNG), tyrp1 fix (`specs/qtl.ts` + PNG),
+colo829 delete (`specs/methylation.ts` + `methylation.md` + PNG), pkm delete
+(`specs/alignments.ts` + `rnaseq.md` + PNG), and `galleryLinks.generated.ts`.
+Commit these once that conversion lands (their diffs will then show only my
+edits) — the review-log statuses + PNGs are already updated on disk.
+
+
 NOTE: specs now live in `website/scripts/specs/*.ts` (aggregated by
 `screenshot-specs.ts`), not inline in `screenshot-specs.ts`. jbrowse-img
 CliSpecs are in `screenshot-spec-helpers.ts`.
