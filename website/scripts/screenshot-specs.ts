@@ -9,6 +9,7 @@ import { embeddedSpecs } from './specs/embedded.ts'
 import { featuresSpecs } from './specs/features.ts'
 import { gallerySpecs } from './specs/gallery.ts'
 import { gwasSpecs } from './specs/gwas.ts'
+import { hicSpecs } from './specs/hic.ts'
 import { mafSpecs } from './specs/maf.ts'
 import { methylationSpecs } from './specs/methylation.ts'
 import { popgenSpecs } from './specs/popgen.ts'
@@ -32,6 +33,7 @@ export const specs: ScreenshotSpec[] = [
   ...popgenSpecs,
   ...svSpecs,
   ...gwasSpecs,
+  ...hicSpecs,
   ...qtlSpecs,
   ...trioSpecs,
   ...gallerySpecs,
