@@ -44,7 +44,7 @@ export function processFeaturesToFasta({
   samples: Sample[]
   showAllLetters?: boolean
   includeInsertions?: boolean
-  features: Map<string, Feature>
+  features: Iterable<Feature>
 }): FastaResult {
   const region = regions[0]!
   const sampleToRowMap = new Map(samples.map((s, i) => [s.id, i]))
@@ -58,7 +58,7 @@ export function processFeaturesToFasta({
   // Key is the reference position (0-based relative to region), value is array of insertions
   const insertionsAtPosition = new Map<number, InsertionInfo[]>()
 
-  for (const feature of features.values()) {
+  for (const feature of features) {
     const leftCoord = feature.get('start')
     const vals = feature.get('alignments') as Record<string, AlignmentRecord>
     const seq = feature.get('seq') as string

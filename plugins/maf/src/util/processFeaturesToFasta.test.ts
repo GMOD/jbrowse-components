@@ -2,11 +2,6 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { processFeaturesToFasta } from './processFeaturesToFasta.ts'
 
-import type { Feature } from '@jbrowse/core/util'
-
-function makeMap(features: Feature[]) {
-  return new Map(features.map(f => [f.id(), f]))
-}
 const mockFeature = new SimpleFeature({
   uniqueId: '123',
   refName: 'abc',
@@ -30,7 +25,7 @@ const mockFeature = new SimpleFeature({
 })
 test('no showAllLetters', () => {
   const result = processFeaturesToFasta({
-    features: makeMap([mockFeature]),
+    features: [mockFeature],
     samples: [
       { id: 'assembly1', label: 'assembly1' },
       { id: 'assembly2', label: 'assembly2' },
@@ -52,7 +47,7 @@ test('no showAllLetters', () => {
 
 test('showAllLetters', () => {
   const result = processFeaturesToFasta({
-    features: makeMap([mockFeature]),
+    features: [mockFeature],
     samples: [
       { id: 'assembly1', label: 'assembly1' },
       { id: 'assembly2', label: 'assembly2' },
@@ -94,7 +89,7 @@ test('gap in assembly1', () => {
   })
 
   const result = processFeaturesToFasta({
-    features: makeMap([mockFeature]),
+    features: [mockFeature],
     samples: [
       { id: 'assembly1', label: 'assembly1' },
       { id: 'assembly2', label: 'assembly2' },
@@ -139,7 +134,7 @@ test('includeInsertions - single insertion in one sample', () => {
   })
 
   const result = processFeaturesToFasta({
-    features: makeMap([mockFeature]),
+    features: [mockFeature],
     samples: [
       { id: 'assembly1', label: 'assembly1' },
       { id: 'assembly2', label: 'assembly2' },
@@ -188,7 +183,7 @@ test('includeInsertions - insertions in multiple samples with different lengths'
   })
 
   const result = processFeaturesToFasta({
-    features: makeMap([mockFeature]),
+    features: [mockFeature],
     samples: [
       { id: 'assembly1', label: 'assembly1' },
       { id: 'assembly2', label: 'assembly2' },
@@ -237,7 +232,7 @@ test('includeInsertions - insertions at multiple positions', () => {
   })
 
   const result = processFeaturesToFasta({
-    features: makeMap([mockFeature]),
+    features: [mockFeature],
     samples: [
       { id: 'assembly1', label: 'assembly1' },
       { id: 'assembly2', label: 'assembly2' },
@@ -280,7 +275,7 @@ test('includeInsertions=false ignores insertions', () => {
   })
 
   const result = processFeaturesToFasta({
-    features: makeMap([mockFeature]),
+    features: [mockFeature],
     samples: [
       { id: 'assembly1', label: 'assembly1' },
       { id: 'assembly2', label: 'assembly2' },
@@ -305,7 +300,7 @@ test('includeInsertions=false ignores insertions', () => {
 test('includeInsertions with no insertions present', () => {
   // No gaps in reference = no insertions
   const result = processFeaturesToFasta({
-    features: makeMap([mockFeature]),
+    features: [mockFeature],
     samples: [
       { id: 'assembly1', label: 'assembly1' },
       { id: 'assembly2', label: 'assembly2' },
@@ -367,7 +362,7 @@ test('includeInsertions - insertion only in non-visible sample should not add ga
 
   // Only include assembly1 and assembly2, NOT assembly3
   const result = processFeaturesToFasta({
-    features: makeMap([mockFeature]),
+    features: [mockFeature],
     samples: [
       { id: 'assembly1', label: 'assembly1' },
       { id: 'assembly2', label: 'assembly2' },
@@ -432,7 +427,7 @@ test('includeInsertions - mixed visible/non-visible insertions', () => {
 
   // Only include assembly1 and assembly2, NOT assembly3
   const result = processFeaturesToFasta({
-    features: makeMap([mockFeature]),
+    features: [mockFeature],
     samples: [
       { id: 'assembly1', label: 'assembly1' },
       { id: 'assembly2', label: 'assembly2' },
@@ -483,7 +478,7 @@ test('includeInsertions - insertion trailing the last reference base', () => {
   })
 
   const result = processFeaturesToFasta({
-    features: makeMap([mockFeature]),
+    features: [mockFeature],
     samples: [
       { id: 'assembly1', label: 'assembly1' },
       { id: 'assembly2', label: 'assembly2' },

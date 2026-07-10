@@ -51,7 +51,7 @@ export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRe
       deserializedArgs,
     )
     return processFeaturesToFasta({
-      features: new Map(features.map(f => [f.id(), f])),
+      features,
       samples,
       regions,
       showAllLetters,

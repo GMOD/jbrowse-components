@@ -32,14 +32,6 @@ interface ComputeVisibleAnnotationsParams {
 }
 
 /**
- * Positioned per-species CDS frame markers for the annotation overlay: one
- * frame-colored strip per `mafFrames` row, on the row of its `src` species,
- * spanning the row's reference extent. The strip is a thin band at the bottom
- * of each row rather than the full band, so it annotates the CDS structure
- * without hiding the base/SNP coloring drawn underneath at base level. Mirrors
- * `computeVisibleSummaryBars`' `src`→row mapping and compositing.
- */
-/**
  * The CDS frame record covering reference position `pos` (0-based, half-open
  * `[start, end)`) on display `rowIndex`, matched to its species via
  * `rowIndexBySrc` — the same projection the overlay draws with. Returns the
@@ -57,6 +49,14 @@ export function findFrameAt(
   )
 }
 
+/**
+ * Positioned per-species CDS frame markers for the annotation overlay: one
+ * frame-colored strip per `mafFrames` row, on the row of its `src` species,
+ * spanning the row's reference extent. The strip is a thin band at the bottom
+ * of each row rather than the full band, so it annotates the CDS structure
+ * without hiding the base/SNP coloring drawn underneath at base level. Mirrors
+ * `computeVisibleSummaryBars`' `src`→row mapping and compositing.
+ */
 export function computeVisibleAnnotations(
   params: ComputeVisibleAnnotationsParams,
 ): FrameMarker[] {
