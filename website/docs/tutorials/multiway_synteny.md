@@ -72,7 +72,9 @@ python -m jcvi.formats.base join grape.peach.i1.blocks grape.cacao.i1.blocks \
   --noheader | cut -f1,2,4 > grape.blocks
 ```
 
-You now have `grape.blocks` plus `grape.bed`, `peach.bed`, and `cacao.bed`.
+You now have `grape.blocks` plus `grape.bed`, `peach.bed`, and `cacao.bed`. The
+adapter reads them plain or gzipped, so `gzip grape.blocks *.bed` to match the
+`.gz` paths used below.
 
 ## Loading it in JBrowse with MCScanBlocksAdapter
 
@@ -105,41 +107,10 @@ The `blockAssemblies` slot names every column in order (column 0 first), and
 }
 ```
 
-Stack the three genomes and reference that single track from each band. This
-demo stacks them peach – cacao – grape:
-
-```json
-{
-  "type": "LinearSyntenyView",
-  "init": {
-    "views": [
-      { "assembly": "peach" },
-      { "assembly": "cacao" },
-      { "assembly": "grape" }
-    ],
-    "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
-    "drawCurves": true,
-    "autoDiagonalize": true
-  }
-}
-```
-
-`tracks` is one entry per band: `tracks[0]` connects rows 0–1 (peach–cacao) and
-`tracks[1]` connects rows 1–2 (cacao–grape) — both served by the same track,
-which lists all three genomes in `assemblyNames` so it can back any pair.
-
-`autoDiagonalize` reorders and flips each row's chromosomes on load so the
-ribbons run along the diagonal instead of crossing into a hairball. It sweeps
-top-down: the top row stays put, the middle row is reordered to follow it, then
-the bottom row is reordered to follow the _reordered_ middle row — so the
-diagonal cascades down the whole stack.
-
-That view snapshot goes straight into the config's `defaultSession`, which is
-how JBrowse opens a view declaratively on load — no clicks, no imperative setup.
-The session is a `views` array of the same snapshots. Sibling fields like
-`displayName` and `showColorLegend` are ordinary view properties, while the
-one-time load settings (row order, tracks, `colorBy`, `autoDiagonalize`) go
-under `init`:
+Stack the three genomes, reference that single track from each band, and drop
+the whole view snapshot into the config's `defaultSession` — the declarative way
+JBrowse opens a view on load, with no clicks or imperative setup. This demo
+stacks them peach – cacao – grape:
 
 ```json
 {
@@ -160,8 +131,7 @@ under `init`:
             ["grape_peach_cacao_blocks"],
             ["grape_peach_cacao_blocks"]
           ],
-          "drawCurves": true,
-          "colorBy": "query",
+          "colorBy": "reference",
           "autoDiagonalize": true
         }
       }
@@ -170,7 +140,25 @@ under `init`:
 }
 ```
 
-<Figure caption="Three genomes stacked peach – cacao – grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal. Color by → Reference paints both bands by the max-adjacency middle row (cacao), so a cacao chromosome keeps one consistent color as its orthologs are traced up into peach and down into grape." src="/img/multiway_synteny/grape_peach_cacao.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/grape_peach_cacao/config.json" />
+`tracks` is one entry per band: `tracks[0]` connects rows 0–1 (peach–cacao) and
+`tracks[1]` connects rows 1–2 (cacao–grape) — both served by the same track,
+which lists all three genomes in `assemblyNames` so it can back any pair.
+`displayName` and `showColorLegend` are ordinary view properties and sit beside
+`type`; the one-time load settings (row order, tracks, `colorBy`,
+`autoDiagonalize`) go under `init`.
+
+`autoDiagonalize` reorders and flips each row's chromosomes on load so the
+ribbons run along the diagonal instead of crossing into a hairball. It sweeps
+top-down: the top row stays put, the middle row is reordered to follow it, then
+the bottom row is reordered to follow the _reordered_ middle row — so the
+diagonal cascades down the whole stack.
+
+`colorBy: "reference"` anchors every band on the shared middle row — cacao, the
+one genome both bands touch — so a cacao chromosome keeps a single color as its
+orthologs trace up into peach and down into grape. The view's **Color by** menu
+offers the other modes (`query`, `strand`, `identity`, …).
+
+<Figure caption="Three genomes stacked peach – cacao – grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal. Color by → Reference anchors both bands on the shared middle row (cacao), so a cacao chromosome keeps one color as its orthologs are traced up into peach and down into grape." src="/img/multiway_synteny/grape_peach_cacao.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/grape_peach_cacao/config.json" />
 
 ## Direct vs transitive pairs, and row order
 

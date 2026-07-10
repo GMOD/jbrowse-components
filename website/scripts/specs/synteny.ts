@@ -116,15 +116,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/grape_peach_cacao',
-    // Rows peach / cacao / grape. colorBy:'reference' anchors every level on the
-    // max-adjacency middle row (cacao, shared by both bands) so a cacao
-    // chromosome carries ONE color as it's traced up into peach and down into
-    // grape. The top peach-cacao band is a transitive ortholog link (grape is
-    // the MCScan reference, so only grape-adjacent pairs are direct); the
-    // grape-cacao band is direct. autoDiagonalize reorders/flips each lower axis
-    // to follow the one above, so the ribbons run near-diagonal instead of
-    // crossing into a hairball. Mirrors the hosted config's defaultSession init
-    // otherwise.
+    // Rows peach / cacao / grape. One grape_peach_cacao_blocks track (listing
+    // all three assemblies) backs both bands — the view tells the adapter which
+    // pair each band draws. colorBy:'reference' anchors every level on the
+    // middle row (cacao, shared by both bands) so a cacao chromosome carries ONE
+    // color as it's traced up into peach and down into grape. The top
+    // peach-cacao band is a transitive ortholog link (grape is the MCScan
+    // reference, so only grape-adjacent pairs are direct); the grape-cacao band
+    // is direct. autoDiagonalize reorders/flips each lower axis to follow the
+    // one above, so the ribbons run near-diagonal instead of crossing into a
+    // hairball. Mirrors the hosted config's defaultSession init otherwise.
     url: sessionSpec(
       encodeURIComponent(
         'https://jbrowse.org/demos/grape_peach_cacao/config.json',
@@ -138,8 +139,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
               { assembly: 'cacao' },
               { assembly: 'grape' },
             ],
-            tracks: [['peach_cacao_blocks'], ['grape_cacao_blocks']],
-            drawCurves: false,
+            tracks: [
+              ['grape_peach_cacao_blocks'],
+              ['grape_peach_cacao_blocks'],
+            ],
             colorBy: 'reference',
             autoDiagonalize: true,
           },
