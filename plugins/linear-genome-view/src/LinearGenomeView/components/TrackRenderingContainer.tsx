@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 
 import { MINIMIZED_TRACK_HEIGHT } from '../consts.ts'
 
+import type { LinearDisplayModel } from '../../BaseLinearDisplay/types.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -47,7 +48,9 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   track: BaseTrackModel
 }) {
   const { classes } = useStyles()
-  const display = track.displays[0]
+  // an LGV track always holds at least one linear display (activeDisplay =
+  // displays[0]); narrow to the linear shape for height/RenderingComponent
+  const display = track.activeDisplay as LinearDisplayModel
   const { height, RenderingComponent, DisplayBlurb } = display
   const { trackRefs, showTrackOutlines } = model
   const trackId = track.trackId

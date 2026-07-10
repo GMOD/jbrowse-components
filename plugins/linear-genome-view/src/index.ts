@@ -75,6 +75,7 @@ export type {
   LayoutRecord,
   LegendItem,
   LegendSection,
+  LinearDisplayModel,
 } from './BaseLinearDisplay/index.ts'
 
 export {

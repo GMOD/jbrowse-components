@@ -1,9 +1,50 @@
 # Spike: typing the erased `displays` array element on `BaseTrackModel`
 
+> **STATUS: DONE.** Landed — see **Resolution** below. The rest of this doc is
+> the original spike write-up kept for rationale. The dedicated-PR plan turned
+> out cheaper than feared because core already exports a composed
+> `BaseDisplayModel`; the blocker (no composed base-linear type) was solved with
+> a small intersection type, and the retype surfaced a genuine runtime-signature
+> bug (`onHorizontalScroll`).
+
 Handoff from a `product-core` / core type & MST-composition audit. Two rounds of
 safe cleanups already landed (see **Context** below). This documents the one
 remaining *substantive* type-safety improvement, why it was deferred, and the
 measured data that de-risks a future dedicated PR.
+
+## Resolution (what actually landed)
+
+- **`packages/core/.../BaseDisplayModel.tsx`** — added and exported
+  `interface DisplayModel extends BaseDisplayModel` with the universal
+  `configuration: AnyConfigurationModel & { displayId: string }` and optional
+  `getPortableSettings?`. Reused the *already-exported* composed
+  `BaseDisplayModel` (`Instance<typeof BaseDisplay>`) rather than hand-rolling a
+  slice — it already carries `RenderingComponent`, `DisplayBlurb`,
+  `viewMenuActions`, `trackMenuItems`, so those reads resolve for free.
+- **`BaseTrackModel.ts`** — retyped the array element via a single local cast
+  `pluggableMstType(...) as unknown as IType<unknown, unknown, DisplayModel>`
+  (create/snapshot left `unknown`: the union's snapshot shape is genuinely
+  dynamic and `replaceDisplay` writes a partial). Dropped the compensating
+  `as MenuItem[]` at `trackMenuItems`. `pluggableMstType`'s default is
+  unchanged, so every other caller keeps its current `any` element — zero
+  blast radius outside this call site.
+- **`plugins/linear-genome-view/.../BaseLinearDisplay/types.ts`** — added and
+  exported `type LinearDisplayModel = DisplayModel &
+  Instance<ReturnType<typeof TrackHeightMixin>> & { prefersOffset?: boolean }`.
+  Used an **intersection**, not `interface extends`, to sidestep "interface can
+  only extend an object type with statically known members" on the MST
+  `Instance<>`. This is the composed base-linear-display type the plan called
+  for.
+- **The two LGV consumers** now read `track.activeDisplay as LinearDisplayModel`
+  (the getter is `displays[0]!`, so this fixes the possibly-undefined reads and
+  narrows to the linear shape in one move).
+- **Real bug surfaced by the retype:** core's `RenderingComponent` type declared
+  `onHorizontalScroll?: () => void`, but the value passed is
+  `model.horizontalScroll(distance: number)`. `any` hid the arity mismatch;
+  corrected the core type to `(distance: number) => void`.
+- **Gates:** full `pnpm typecheck` clean (the only remaining errors are a
+  pre-existing missing `@gmod/hclust` module, untouched here); `pnpm lint`
+  clean; LGV `TrackContainer` + `LinearGenomeView` render tests pass.
 
 ## The finding
 

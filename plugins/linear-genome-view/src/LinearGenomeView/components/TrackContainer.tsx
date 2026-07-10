@@ -12,6 +12,7 @@ import TrackLabel from './TrackLabel.tsx'
 import TrackRenderingContainer from './TrackRenderingContainer.tsx'
 import { TrackOverlayContext } from '../TrackOverlayContext.ts'
 
+import type { LinearDisplayModel } from '../../BaseLinearDisplay/types.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -61,7 +62,9 @@ const TrackContainer = observer(function TrackContainer({
   track: BaseTrackModel
 }) {
   const { classes } = useStyles()
-  const display = track.displays[0]
+  // an LGV track always holds at least one linear display (activeDisplay =
+  // displays[0]); narrow to the linear shape for prefersOffset/resizeHeight
+  const display = track.activeDisplay as LinearDisplayModel
   const { showTrackOutlines } = model
   // element state (not a ref) so consumers re-render once the portal target
   // mounts and the context value flips from null to the node

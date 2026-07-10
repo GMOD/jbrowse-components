@@ -6,6 +6,7 @@ export { BaseDisplay } from './BaseDisplayModel.tsx'
 export type {
   BaseDisplayModel,
   BaseDisplayStateModel,
+  DisplayModel,
 } from './BaseDisplayModel.tsx'
 export { InternetAccount } from './InternetAccountModel.ts'
 export type {

@@ -13,6 +13,7 @@ import { getContainingView, getEnv, getSession } from '../../util/index.ts'
 import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
 import { ElementId } from '../../util/types/mst.ts'
 
+import type { DisplayModel } from './BaseDisplayModel.tsx'
 import type PluginManager from '../../PluginManager.ts'
 import type { FileTypeExporter } from './saveTrackFileTypes/types.ts'
 import type {
@@ -20,7 +21,11 @@ import type {
   AnyConfigurationSchemaType,
 } from '../../configuration/index.ts'
 import type { MenuItem } from '../../ui/index.ts'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IType,
+  Instance,
+} from '@jbrowse/mobx-state-tree'
 
 const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData.tsx'))
 
@@ -83,8 +88,20 @@ export function createBaseTrackModel(
       pinned: types.stripDefault(types.boolean, false),
       /**
        * #property
+       * The runtime plugin union (`pluggableMstType`) is typed only as
+       * `IAnyType`, erasing the element to `any`. Assert the concrete
+       * `DisplayModel` instance every registered display satisfies so reads
+       * (`activeDisplay`, `viewMenuActions`, `trackMenuItems`) are checked;
+       * create/snapshot stay `unknown` since the union's snapshot shape is
+       * genuinely dynamic (`replaceDisplay` writes a partial snapshot).
        */
-      displays: types.array(pm.pluggableMstType('display', 'stateModel')),
+      displays: types.array(
+        pm.pluggableMstType('display', 'stateModel') as unknown as IType<
+          unknown,
+          unknown,
+          DisplayModel
+        >,
+      ),
     })
     .views(self => ({
       /**
@@ -301,9 +318,7 @@ export function createBaseTrackModel(
        * #method
        */
       trackMenuItems(): MenuItem[] {
-        const menuItems = self.displays.flatMap(
-          d => d.trackMenuItems() as MenuItem[],
-        )
+        const menuItems = self.displays.flatMap(d => d.trackMenuItems())
         const shownId = self.activeDisplay.configuration.displayId
         const compatDisp = getCompatibleDisplays(self)
 

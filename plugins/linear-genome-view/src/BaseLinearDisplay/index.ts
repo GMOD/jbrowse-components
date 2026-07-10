@@ -1,5 +1,9 @@
 export { default as baseLinearDisplayConfigSchema } from './models/configSchema.ts'
-export type { ExportSvgDisplayOptions, LayoutRecord } from './types.ts'
+export type {
+  ExportSvgDisplayOptions,
+  LayoutRecord,
+  LinearDisplayModel,
+} from './types.ts'
 
 export {
   BlockMsg,

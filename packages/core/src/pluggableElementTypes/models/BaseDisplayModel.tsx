@@ -11,6 +11,7 @@ import {
 } from '../../util/index.ts'
 import { ElementId } from '../../util/types/mst.ts'
 
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { MenuItem } from '../../ui/index.ts'
 import type { RpcStatus } from '../../util/progress.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -88,14 +89,14 @@ function stateModelFactory() {
        */
       get RenderingComponent(): React.FC<{
         model: typeof self
-        onHorizontalScroll?: () => void
+        onHorizontalScroll?: (distance: number) => void
         blockState?: Record<string, unknown>
       }> {
         const { pluginManager } = getEnv(self)
         return pluginManager.getDisplayType(self.type)
           .ReactComponent as React.FC<{
           model: typeof self
-          onHorizontalScroll?: () => void
+          onHorizontalScroll?: (distance: number) => void
           blockState?: Record<string, unknown>
         }>
       },
@@ -219,3 +220,19 @@ function stateModelFactory() {
 export const BaseDisplay = stateModelFactory()
 export type BaseDisplayStateModel = typeof BaseDisplay
 export type BaseDisplayModel = Instance<BaseDisplayStateModel>
+
+/**
+ * The shape every display instance held in a track's `displays` array
+ * satisfies: the composed `BaseDisplay` state model (RenderingComponent,
+ * DisplayBlurb, viewMenuActions, trackMenuItems, ...) plus the `configuration`
+ * reference every display gains at instantiation. `getPortableSettings` is
+ * optional — only display types that support switching type via the track menu
+ * implement it. This is the concrete element type behind
+ * `BaseTrackModel.displays`, which the runtime plugin union erases to `any`.
+ */
+export interface DisplayModel extends BaseDisplayModel {
+  configuration: AnyConfigurationModel & { displayId: string }
+  getPortableSettings?: (
+    newDisplayId?: string,
+  ) => Record<string, unknown> | undefined
+}
