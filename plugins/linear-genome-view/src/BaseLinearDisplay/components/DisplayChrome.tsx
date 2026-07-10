@@ -57,11 +57,25 @@ interface CanvasHandle {
 //
 //   1. The terminal UI must be a literal early-`return`, NOT a branch of a
 //      single ternary `return`. The two produce an identical React element
-//      tree, yet under React 19 + mobx-react + jsdom the ternary form fails to
-//      *commit* the banner subtree — `TooLargeMessage`'s body never runs and it
-//      never reaches the DOM (the test times out). The early-`return` commits
-//      reliably. (This is the previously-"unconfirmed" reconciliation hazard;
-//      the symptom is real even if the React-internal cause isn't pinned down.)
+//      tree, yet the ternary form makes a mobx-driven re-render fail to *commit*
+//      (the `tooLarge → ready` transition and the `canvasDrawn → -done` flip):
+//      the observer re-renders but React skips the commit. The cause is pinned:
+//      `babel-plugin-react-compiler` memoizes a block whose dependency set omits
+//      the in-place-mutated observable (`model` keeps stable identity), so a
+//      referential memo never invalidates. It is NOT a jsdom artifact — toggling
+//      only the compiler flips it, and the compiler emits the same JS for the
+//      browser, so this drops updates in production too. Two ingredients are
+//      BOTH required (verified at runtime + in compiled output, minimal repro in
+//      `agent-docs/COMPILER_TERNARY_FINDING.md`): (a) `model.canvasDrawn` read
+//      inside the ternary *expression* — this stops the compiler hoisting it to
+//      an unconditional per-render `const`, so it stays in a memoized block; and
+//      (b) `model` passed WHOLE to a child in that same block (here
+//      `<DisplayErrorBar model={model}/>` / `<DisplayLoadingOverlay
+//      model={model}/>`), which coarsens the block's memo dep from
+//      `model.canvasDrawn` down to `model` IDENTITY — stable under mobx in-place
+//      mutation, so it never re-evaluates. The early-`return` breaks (a): each
+//      literal return is its own scope and the read hoists out as an
+//      unconditional `const`, so mobx re-subscribes and the memo rebuilds.
 //
 //   2. `displayPhase`'s loading term is evaluated lazily (a thunk in
 //      `computeDisplayPhase`) so that when a terminal flag is set this observer
@@ -106,11 +120,12 @@ function DisplayChromeInner<B extends { dispose(): void }>({
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
   const { canvas, canvasRef, retry } = useRenderingBackend(factory, model)
   const phase = model.displayPhase
-  // Terminal states are literal early-`return`s, NOT ternary branches of a
-  // single return — empirically the two are NOT interchangeable here (identical
-  // element tree, but the ternary form fails to commit the banner subtree in
-  // React 19 + mobx-react + jsdom; StatsEstimation.test catches it). See the
-  // comment block above for the full rule.
+  // WARNING — DO NOT rewrite these as a ternary. Terminal states MUST be literal
+  // early-`return`s: the ternary form makes a mobx-driven re-render skip its
+  // commit under babel-plugin-react-compiler (real in-browser, not a jsdom
+  // artifact). Full rule in the comment block above; analysis + minimal repro in
+  // agent-docs/COMPILER_TERNARY_FINDING.md (keep in sync with babel.config.cjs +
+  // ARCHITECTURE.md §1a).
   if (phase === 'renderError') {
     return (
       <DisplayRenderErrorOverlay

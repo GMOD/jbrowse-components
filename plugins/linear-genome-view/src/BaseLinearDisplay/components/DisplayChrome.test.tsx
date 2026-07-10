@@ -25,7 +25,10 @@ import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 //     `chrome-done` / `probe-canvas` never reach the DOM. This reproduces the
 //     production hazard at the unit level — crucially on the mobx-driven
 //     re-render, not on initial mount (the first-paint banner cases still commit
-//     under the ternary, which is why only the transition/flip cases bite).
+//     under the ternary, which is why only the transition/flip cases bite). Root
+//     cause is `babel-plugin-react-compiler`, not jsdom: toggling only the
+//     compiler flips it, and it emits the same JS for the browser (so this is a
+//     real production hazard). See `agent-docs/COMPILER_TERNARY_FINDING.md`.
 //
 //   - Rule 1b (evaluate the `loading` term eagerly so the observer subscribes to
 //     the churning loading observable while a terminal flag is set): fails

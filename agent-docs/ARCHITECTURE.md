@@ -207,19 +207,48 @@ out. Instrumenting every site shows why: `DisplayChrome` re-renders with
 into the `<TooLargeMessage>` element** — its component body never runs (verified
 with a `console` probe inside `TooLargeMessage`: 0 calls when nested, 2 when
 returned as a root). Returning the banner as a fresh top-level root mounts it
-reliably. The exact React-internal reason a memo/observer child in this position
-is skipped is unconfirmed, and the repro is jsdom + React 19 + `act()`; the
-**rule** — terminal UI is its own `return`, never a nested child — is what's
-load-bearing.
+reliably. The cause is now pinned (see 1a): **`babel-plugin-react-compiler`**
+memoization, not a jsdom artifact — it emits identical JS for browser builds, so
+the **rule** — terminal UI is its own `return`, never a nested child — is
+load-bearing in a real browser, not just under test.
 
-**1a. A literal `return`, not a ternary branch.** Surprisingly, even returning
-the banner from a *single-`return` ternary*
-(`return phase === 'tooLarge' ? <TooLargeMessage/> : <div>…</div>`) reproduces
-the same 0-commit failure, despite producing an element tree identical to the
-early-`return` form. Only literal `if (phase === 'tooLarge') return …` statements
-commit reliably. This was confirmed the same way (probe inside `TooLargeMessage`:
-0 vs 2 calls). So the rule is specifically *early-`return` statements*, and it
-overrides the repo's usual "prefer ternaries over early return" style here.
+**1a. A literal `return`, not a ternary branch — and the reason is the React
+Compiler.** Rewriting the two `if (phase === …) return`s as a single ternary
+`return` (`return phase === 'tooLarge' ? <TooLargeMessage/> : <div>…</div>`)
+reproduces the failure despite producing an identical element tree. A controlled
+experiment isolated the cause (see `agent-docs/COMPILER_TERNARY_FINDING.md`):
+holding jsdom constant and toggling only `babel-plugin-react-compiler` (enabled
+globally in `babel.config.cjs`), the ternary form fails **only with the compiler
+on** and passes with a temporary `'use no memo'` probe. jsdom is therefore *not*
+the variable. The symptom is a mobx-driven **re-render that never commits** — the
+`tooLarge → ready` transition and the ready-branch `canvasDrawn → -done` flip: the
+observer body runs and returns updated elements, but React skips the commit
+because the compiler cached a JSX block whose dependency set omits the
+in-place-mutated observable (`model` keeps stable identity, so a referential
+memo never invalidates and mobx-react never re-tracks `canvasDrawn`). First-paint
+banner cases still commit under the ternary; only re-render-driven cases bite.
+Since the compiler emits the same JS for browser bundles, this drops updates
+in-browser too. So the rule is specifically *early-`return` statements*, and it
+overrides the repo's usual "prefer ternaries over early return" style **here** —
+but narrowly: a minimal ternary `observer` reading an observable in the taken
+branch commits fine under the compiler, so the house prefer-ternary style is not
+broadly unsafe. The mechanism, confirmed at runtime and in the compiled output
+(minimal repro + truth table in `agent-docs/COMPILER_TERNARY_FINDING.md`),
+requires **two** ingredients together: **(a)** the `model.canvasDrawn` read sits
+inside the ternary *expression*, which stops the compiler hoisting it to an
+unconditional per-render `const` — it stays in a memoized block; and **(b)** the
+same block passes `model` as a **whole object** to a child
+(`<DisplayErrorBar model={model}/>` / `<DisplayLoadingOverlay model={model}/>`),
+which coarsens that block's memo dependency from `model.canvasDrawn` down to
+`model` **identity**. Coarsening to `model` is sound for an immutable object, but
+mobx mutates `canvasDrawn` in place with `model` identity stable, so the block
+never re-evaluates and the read goes stale (mobx even unsubscribes). The
+early-`return` form breaks (a): each literal `return` is its own scope, so the
+compiler hoists the read out as an unconditional `const t2 = …model.canvasDrawn…`,
+mobx re-subscribes, and the enclosing `<div>` memo (which depends on `t2`)
+rebuilds on the flip. Removing either ingredient — early-`return`, or not passing
+`model` whole in that branch — fixes it; that is why the minimal single-`div`
+probes commit.
 
 **1b. `displayPhase`'s loading term must be lazy.** `computeDisplayPhase(self,
 loading)` takes `loading` as a **thunk** and only calls it after ruling out the
