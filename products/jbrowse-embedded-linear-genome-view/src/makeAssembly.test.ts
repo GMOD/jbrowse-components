@@ -5,7 +5,10 @@ import {
 } from './makeAssembly.ts'
 
 describe('makeAssembly', () => {
-  it('uses IndexedFastaAdapter and a default .fai for a plain FASTA', () => {
+  // makeAssembly emits the bare `uri` shorthand; core's assembly config picks
+  // the concrete adapter type (Indexed/Bgzip/TwoBit) and derives the .fai/.gzi
+  // siblings at load time (covered by the sequence plugin's guesser tests).
+  it('emits a uri-shorthand sequence adapter for a plain FASTA', () => {
     const a = makeAssembly({ name: 'volvox', fastaUri: 'volvox.fa' })
     expect(a).toMatchObject({
       name: 'volvox',
@@ -13,24 +16,17 @@ describe('makeAssembly', () => {
       sequence: {
         type: 'ReferenceSequenceTrack',
         trackId: 'volvox-ReferenceSequenceTrack',
-        adapter: {
-          type: 'IndexedFastaAdapter',
-          uri: 'volvox.fa',
-          faiLocation: { uri: 'volvox.fa.fai' },
-        },
+        adapter: { uri: 'volvox.fa' },
       },
     })
-    expect('gziLocation' in a.sequence.adapter).toBe(false)
+    // no adapter type is baked in here — that is core's job
+    expect('type' in a.sequence.adapter).toBe(false)
     expect('refNameAliases' in a).toBe(false)
   })
 
-  it('uses BgzipFastaAdapter and a default .gzi for a bgzipped FASTA', () => {
+  it('passes a bgzipped FASTA through as a bare uri too', () => {
     const a = makeAssembly({ name: 'hg38', fastaUri: 'hg38.fa.gz' })
-    expect(a.sequence.adapter).toMatchObject({
-      type: 'BgzipFastaAdapter',
-      faiLocation: { uri: 'hg38.fa.gz.fai' },
-      gziLocation: { uri: 'hg38.fa.gz.gzi' },
-    })
+    expect(a.sequence.adapter).toEqual({ uri: 'hg38.fa.gz' })
   })
 
   it('honors explicit index uris and refName aliases', () => {
@@ -41,7 +37,10 @@ describe('makeAssembly', () => {
       aliases: ['GRCh38'],
       refNameAliasesUri: 'aliases.txt',
     })
-    expect(a.sequence.adapter).toMatchObject({
+    // a non-sibling faiLocation rides on the shorthand and overrides the
+    // guessed sibling once core infers the type
+    expect(a.sequence.adapter).toEqual({
+      uri: 'hg38.fa',
       faiLocation: { uri: 'elsewhere.fai' },
     })
     expect(a.aliases).toEqual(['GRCh38'])
@@ -56,13 +55,10 @@ describe('makeAssembly', () => {
     expect(a.sequence.trackId).toBe('hg38-ReferenceSequenceTrack')
   })
 
-  it('uses TwoBitAdapter for a .2bit file', () => {
+  it('passes a .2bit through as a bare uri', () => {
     const a = makeAssembly({ fastaUri: 'hg38.2bit' })
     expect(a.name).toBe('hg38')
-    expect(a.sequence.adapter).toEqual({
-      type: 'TwoBitAdapter',
-      uri: 'hg38.2bit',
-    })
+    expect(a.sequence.adapter).toEqual({ uri: 'hg38.2bit' })
   })
 })
 

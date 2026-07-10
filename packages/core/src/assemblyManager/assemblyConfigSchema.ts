@@ -1,7 +1,10 @@
+import { expandAssemblySequenceAdapter } from './expandAssemblyConfigShorthand.ts'
 import { ConfigurationSchema } from '../configuration/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+export { expandAssemblySequenceAdapter } from './expandAssemblyConfigShorthand.ts'
 
 /**
  * #config BaseAssembly
@@ -29,19 +32,31 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * }
  * ```
  *
- * #example shorthand-sequence
- * `sequence.type` and `sequence.trackId` are boilerplate that can be omitted —
- * they're always `'ReferenceSequenceTrack'` and a name derived from the
- * assembly's `name`, respectively — leaving just the adapter:
+ * #example shorthand-flat
+ * The flattest form: an assembly is just a `name` and a sequence-file `uri`.
+ * jbrowse-core picks the adapter (`Bgzip`/`Indexed`/`TwoBit`) from the
+ * extension, derives the `.fai`/`.gzi` siblings, and fills in the
+ * `ReferenceSequenceTrack`. `refNameAliases`/`cytobands` take the same bare
+ * `{ uri }` shorthand. (Keep the `uri` *key* rather than a bare string so
+ * relative URIs still resolve against the config's location.)
  * ```js
  * {
  *   name: 'hg38',
- *   sequence: {
- *     adapter: {
- *       type: 'BgzipFastaAdapter',
- *       uri: 'https://example.com/hg38.fa.gz',
- *     },
- *   },
+ *   uri: 'https://example.com/hg38.fa.gz',
+ *   refNameAliases: { uri: 'https://example.com/hg38.aliases.txt' },
+ *   cytobands: { uri: 'https://example.com/hg38.cytoBand.txt' },
+ * }
+ * ```
+ *
+ * #example shorthand-sequence
+ * `sequence.type`/`sequence.trackId` are boilerplate that can be omitted —
+ * they're always `'ReferenceSequenceTrack'` and a name derived from the
+ * assembly `name` — leaving just the adapter (whose own `uri` shorthand still
+ * infers the adapter type and index siblings):
+ * ```js
+ * {
+ *   name: 'hg38',
+ *   sequence: { adapter: { uri: 'https://example.com/hg38.fa.gz' } },
  * }
  * ```
  *
@@ -180,16 +195,25 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
         {
-          preProcessSnapshot: snap => {
-            // allow refNameAliases to be unspecified
-            return !snap.adapter
-              ? {
+          // the alias file is always a RefNameAliasAdapter, so both its type
+          // and the `adapter` nesting are boilerplate: allow a bare
+          // `refNameAliases: { uri: 'aliases.txt' }` (baseUri, stamped next to
+          // the uri key by addRelativeUris, rides along). An explicit `adapter`
+          // passes through untouched; absent, the empty default is filled in.
+          preProcessSnapshot: snap =>
+            snap.adapter
+              ? snap
+              : {
                   adapter: {
                     type: 'RefNameAliasAdapter',
+                    ...(snap.uri
+                      ? {
+                          uri: snap.uri,
+                          ...(snap.baseUri ? { baseUri: snap.baseUri } : {}),
+                        }
+                      : {}),
                   },
-                }
-              : snap
-          },
+                },
         },
       ),
       cytobands: ConfigurationSchema(
@@ -203,16 +227,23 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
         {
-          preProcessSnapshot: snap => {
-            // allow cytoBand to be unspecified
-            return !snap.adapter
-              ? {
+          // same shorthand as refNameAliases: `cytobands: { uri: 'cytoBand.txt' }`
+          // fills in the CytobandAdapter; an explicit `adapter` passes through,
+          // absent it defaults to the empty adapter.
+          preProcessSnapshot: snap =>
+            snap.adapter
+              ? snap
+              : {
                   adapter: {
                     type: 'CytobandAdapter',
+                    ...(snap.uri
+                      ? {
+                          uri: snap.uri,
+                          ...(snap.baseUri ? { baseUri: snap.baseUri } : {}),
+                        }
+                      : {}),
                   },
-                }
-              : snap
-          },
+                },
         },
       ),
 
@@ -235,19 +266,34 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
        */
       explicitIdentifier: 'name',
       preProcessSnapshot: snap => {
-        const { sequence, name } = snap
-        // allow sequence.type/trackId to be omitted, since they are always
+        const { name, uri, baseUri, ...rest } = snap
+        // flattest shorthand: `{ name, uri: 'genome.fa.gz' }` describes an
+        // assembly by its sequence file alone. baseUri, stamped next to the
+        // `uri` key by addRelativeUris (hub/relative configs), rides down onto
+        // the adapter so the sequence resolves against the config's location.
+        const rawSequence =
+          rest.sequence ??
+          (typeof uri === 'string'
+            ? { adapter: { uri, ...(baseUri ? { baseUri } : {}) } }
+            : undefined)
+        // infer sequence.adapter.type from its uri when omitted, so a config can
+        // give just `sequence: { adapter: { uri: 'genome.fa.gz' } }` and core
+        // picks the adapter (Bgzip/Indexed/TwoBit) — no adapter table in hosts
+        const seq = expandAssemblySequenceAdapter(rawSequence, pluginManager)
+        // then allow sequence.type/trackId to be omitted, since they are always
         // 'ReferenceSequenceTrack' and a name derived from the assembly name
-        return sequence && typeof sequence === 'object' && !('type' in sequence)
-          ? {
-              ...snap,
-              sequence: {
+        const sequence =
+          seq && typeof seq === 'object' && !('type' in seq)
+            ? {
                 type: 'ReferenceSequenceTrack',
                 trackId: `${name}-ReferenceSequenceTrack`,
-                ...sequence,
-              },
-            }
-          : snap
+                ...seq,
+              }
+            : seq
+        // preserve the identity-unchanged case so nothing rebuilds needlessly
+        return sequence === snap.sequence
+          ? snap
+          : { ...rest, name, sequence }
       },
     },
   )

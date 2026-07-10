@@ -27,27 +27,17 @@ export function assemblyNameFromUri(uri: string) {
   return file.replace(SEQUENCE_EXT_RE, '')
 }
 
-function sequenceAdapter(fastaUri: string, faiUri?: string, gziUri?: string) {
-  const clean = cleanUri(fastaUri)
-  if (/\.2bit$/i.test(clean)) {
-    return { type: 'TwoBitAdapter', uri: fastaUri }
-  }
-  const bgzipped = /\.b?gz$/i.test(clean)
-  return {
-    type: bgzipped ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
-    uri: fastaUri,
-    faiLocation: { uri: faiUri ?? `${fastaUri}.fai` },
-    ...(bgzipped ? { gziLocation: { uri: gziUri ?? `${fastaUri}.gzi` } } : {}),
-  }
-}
-
 /**
  * Build an assembly config for a sequence file (indexed FASTA, bgzipped FASTA,
- * or `.2bit`) — the boilerplate you'd otherwise write by hand. The adapter is
- * chosen from the extension, mirroring core's own sequence guesser.
- * `refNameAliasesUri` points at a tab-separated aliases file (as UCSC publishes)
- * so a track whose reference names differ from the sequence (e.g. a BAM using
- * `chr1` against a `1`-named reference) still lines up.
+ * or `.2bit`) — the boilerplate you'd otherwise write by hand. The adapter is a
+ * bare `uri` shorthand: jbrowse-core's assembly config picks the concrete
+ * adapter type (`IndexedFastaAdapter`/`BgzipFastaAdapter`/`TwoBitAdapter`) from
+ * the extension and derives the `.fai`/`.gzi` siblings at load time, so no
+ * adapter-type knowledge lives here. A non-sibling index (`faiUri`/`gziUri`)
+ * overrides those derived locations. `refNameAliasesUri` points at a
+ * tab-separated aliases file (as UCSC publishes) so a track whose reference
+ * names differ from the sequence (e.g. a BAM using `chr1` against a `1`-named
+ * reference) still lines up.
  */
 export function makeAssembly(opts: MakeAssemblyOptions) {
   const {
@@ -64,7 +54,11 @@ export function makeAssembly(opts: MakeAssemblyOptions) {
     sequence: {
       type: 'ReferenceSequenceTrack',
       trackId: `${name}-ReferenceSequenceTrack`,
-      adapter: sequenceAdapter(fastaUri, faiUri, gziUri),
+      adapter: {
+        uri: fastaUri,
+        ...(faiUri ? { faiLocation: { uri: faiUri } } : {}),
+        ...(gziUri ? { gziLocation: { uri: gziUri } } : {}),
+      },
     },
     ...(refNameAliasesUri
       ? {

@@ -33,21 +33,35 @@ mitochondrial contig with the vertebrate mitochondrial code (NCBI table 2):
 }
 ```
 
-### Example: shorthand-sequence
+### Example: shorthand-flat
 
-`sequence.type` and `sequence.trackId` are boilerplate that can be omitted —
-they're always `'ReferenceSequenceTrack'` and a name derived from the assembly's
-`name`, respectively — leaving just the adapter:
+The flattest form: an assembly is just a `name` and a sequence-file `uri`.
+jbrowse-core picks the adapter (`Bgzip`/`Indexed`/`TwoBit`) from the extension,
+derives the `.fai`/`.gzi` siblings, and fills in the `ReferenceSequenceTrack`.
+`refNameAliases`/`cytobands` take the same bare `{ uri }` shorthand. (Keep the
+`uri` _key_ rather than a bare string so relative URIs still resolve against the
+config's location.)
 
 ```js
 {
   name: 'hg38',
-  sequence: {
-    adapter: {
-      type: 'BgzipFastaAdapter',
-      uri: 'https://example.com/hg38.fa.gz',
-    },
-  },
+  uri: 'https://example.com/hg38.fa.gz',
+  refNameAliases: { uri: 'https://example.com/hg38.aliases.txt' },
+  cytobands: { uri: 'https://example.com/hg38.cytoBand.txt' },
+}
+```
+
+### Example: shorthand-sequence
+
+`sequence.type`/`sequence.trackId` are boilerplate that can be omitted — they're
+always `'ReferenceSequenceTrack'` and a name derived from the assembly `name` —
+leaving just the adapter (whose own `uri` shorthand still infers the adapter
+type and index siblings):
+
+```js
+{
+  name: 'hg38',
+  sequence: { adapter: { uri: 'https://example.com/hg38.fa.gz' } },
 }
 ```
 

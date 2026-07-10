@@ -270,6 +270,9 @@ export function makeIndex(location: FileLocation, suffix: string) {
     return {
       uri: location.uri + suffix,
       locationType: 'UriLocation',
+      // carry the parent's baseUri so a derived sibling index resolves against
+      // the same config location as the file it indexes
+      ...(location.baseUri ? { baseUri: location.baseUri } : {}),
     }
   } else if ('localPath' in location) {
     return {
