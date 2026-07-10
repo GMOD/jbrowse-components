@@ -1,6 +1,9 @@
 import { abgrBlue, abgrRed, packAbgr } from '@jbrowse/core/util/colorBits'
 
-import { computeModificationCoverage } from './compute.ts'
+import {
+  computeBisulfiteCoverage,
+  computeModificationCoverage,
+} from './compute.ts'
 
 import type { StrandBaseCounts } from '../../shared/calculateModificationCounts.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
@@ -108,4 +111,30 @@ test('simplex modification uses a reduced (examined-strand) denominator', () => 
   )
   expect(simplex.heights[0]).toBeCloseTo(0.5) // 5/10
   expect(duplex.heights[0]).toBeCloseTo(1 / 3) // 5/15
+})
+
+test('bisulfite splits the whole bar by methylation level, ignoring base counts', () => {
+  // 9 methylated + 1 unmethylated call at POS. Bisulfite takes no base-count
+  // denominator, so the two segments fill the WHOLE bar: red (methylated) 9/10
+  // at the bottom, blue (unmethylated) 1/10 on top. This is the fix — the modBAM
+  // C/G denominator would cap red near 0.5 because unmethylated reads are T.
+  const meth = Array.from({ length: 9 }, () =>
+    modEntry({ color: packAbgr(255, 0, 0, 255), prob: 1, noMod: false }),
+  )
+  const unmeth = modEntry({
+    color: packAbgr(0, 0, 255, 255),
+    prob: 1,
+    noMod: true,
+  })
+  const out = computeBisulfiteCoverage([...meth, unmeth], 0, coverage)
+
+  expect(out.count).toBe(2)
+  expect(out.yOffsets[0]).toBe(0)
+  expect(out.heights[0]).toBeCloseTo(0.9)
+  expect(abgrRed(out.colors[0]!)).toBe(255)
+  expect(out.yOffsets[1]).toBeCloseTo(0.9)
+  expect(out.heights[1]).toBeCloseTo(0.1)
+  expect(abgrBlue(out.colors[1]!)).toBe(255)
+  // The two states cover the whole bar (no callable-fraction shrink).
+  expect(out.heights[0]! + out.heights[1]!).toBeCloseTo(1)
 })

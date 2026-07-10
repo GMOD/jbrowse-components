@@ -1,9 +1,15 @@
+import { packAbgr } from '@jbrowse/core/util/colorBits'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { runCoveragePipeline } from './runCoveragePipeline.ts'
 
 import type { StrandBaseCounts } from './calculateModificationCounts.ts'
-import type { FeatureData, GapData, InsertionData } from './webglRpcTypes.ts'
+import type {
+  FeatureData,
+  GapData,
+  InsertionData,
+  ModificationEntry,
+} from './webglRpcTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 
 // 40 reads spanning the whole region → depth 40 everywhere. A mismatch shared by
@@ -48,6 +54,7 @@ const baseArgs = {
   modifications: [],
   modBaseCounts: new Map<number, StrandBaseCounts>(),
   simplexModifications: new Set<string>(),
+  bisulfite: false,
   region,
   mismatchArrays,
   interbaseArrays,
@@ -95,5 +102,47 @@ describe('runCoveragePipeline coverage-band gate', () => {
     expect(Array.from(noBand.gapFrequencies)).toEqual(
       Array.from(withBand.gapFrequencies),
     )
+  })
+})
+
+describe('runCoveragePipeline bisulfite mod coverage', () => {
+  // 30 methylated + 10 unmethylated C->T calls at one position, and NO base-count
+  // pileup (baseArgs.modBaseCounts is empty). The bisulfite path must fill the
+  // whole bar 0.75/0.25 from the calls alone — the modBAM path would need the
+  // base counts and would cap the methylated share near 0.5.
+  function bisulfiteCalls(pos: number) {
+    const at = (noMod: boolean, count: number, color: number) =>
+      Array.from(
+        { length: count },
+        (_, readIndex): ModificationEntry => ({
+          readIndex,
+          position: pos,
+          base: 'C',
+          modType: 'm',
+          strand: 1,
+          color,
+          prob: 1,
+          noMod,
+        }),
+      )
+    return [
+      ...at(false, 30, packAbgr(255, 0, 0, 255)),
+      ...at(true, 10, packAbgr(0, 0, 255, 255)),
+    ]
+  }
+
+  test('bisulfite=true fills the whole coverage bar from C->T calls alone', async () => {
+    const out = await runCoveragePipeline({
+      ...baseArgs,
+      modifications: bisulfiteCalls(MISMATCH_POS),
+      showCoverage: true,
+      trackStrands: true,
+      bisulfite: true,
+    })
+    expect(out.modCoverage?.count).toBe(2)
+    const heights = Array.from(out.modCoverage!.heights)
+    expect(heights[0]).toBeCloseTo(0.75) // methylated, bottom
+    expect(heights[1]).toBeCloseTo(0.25) // unmethylated, top
+    expect(heights[0]! + heights[1]!).toBeCloseTo(1)
   })
 })

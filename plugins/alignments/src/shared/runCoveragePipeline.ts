@@ -9,7 +9,10 @@ import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { buildModTooltipData } from './buildTooltipData.ts'
 import { computeFrequenciesAndThresholds } from './computeFrequenciesAndThresholds.ts'
 import { packCoverageAreaForGpu } from './packCoverageArea.ts'
-import { computeModificationCoverage } from '../features/modCoverage/compute.ts'
+import {
+  computeBisulfiteCoverage,
+  computeModificationCoverage,
+} from '../features/modCoverage/compute.ts'
 import { computeSashimiJunctions } from '../features/sashimi/compute.ts'
 
 import type { StrandBaseCounts } from './calculateModificationCounts.ts'
@@ -50,6 +53,7 @@ export async function runCoveragePipeline({
   gapArrays,
   showCoverage,
   trackStrands,
+  bisulfite,
   statusCallback,
   stopTokenCheck,
 }: {
@@ -67,6 +71,7 @@ export async function runCoveragePipeline({
   gapArrays: Parameters<typeof computeFrequenciesAndThresholds>[2]
   showCoverage: boolean
   trackStrands?: boolean
+  bisulfite: boolean
   statusCallback: StatusCallback
   stopTokenCheck: StopTokenChecker
 }) {
@@ -116,6 +121,7 @@ export async function runCoveragePipeline({
         simplexModifications,
         regionStart,
         trackStrands,
+        bisulfite,
       })
     : emptyCoverageBand()
 
@@ -153,6 +159,7 @@ function computeCoverageBand({
   simplexModifications,
   regionStart,
   trackStrands,
+  bisulfite,
 }: {
   coverage: ReturnType<typeof computeCoverage>
   mismatchArrays: Parameters<typeof computeFrequenciesAndThresholds>[0]
@@ -165,6 +172,7 @@ function computeCoverageBand({
   simplexModifications: ReadonlySet<string>
   regionStart: number
   trackStrands?: boolean
+  bisulfite: boolean
 }) {
   const snpCoverage = computeSNPCoverage(
     mismatchArrays.mismatchPositions,
@@ -180,13 +188,15 @@ function computeCoverageBand({
   )
 
   const modCoverage = trackStrands
-    ? computeModificationCoverage(
-        modifications,
-        modBaseCounts,
-        regionStart,
-        coverage,
-        simplexModifications,
-      )
+    ? bisulfite
+      ? computeBisulfiteCoverage(modifications, regionStart, coverage)
+      : computeModificationCoverage(
+          modifications,
+          modBaseCounts,
+          regionStart,
+          coverage,
+          simplexModifications,
+        )
     : undefined
 
   const modTooltipData = buildModTooltipData({ modifications, regionStart })

@@ -221,6 +221,9 @@ interface GroupContext {
   effShowSoftClipping: boolean
   showCoverage: boolean
   trackStrands: boolean
+  // Bisulfite mode splits the coverage bar by C->T-derived methylation level
+  // rather than the modBAM base-pileup denominator (see computeModificationCoverage).
+  bisulfite: boolean
   detectedSimplexModifications: ReadonlySet<string>
   // Shared insert-size color scale, pooled across every group of the fetch so
   // all stacked sections color long/short inserts on one comparable scale.
@@ -264,6 +267,7 @@ async function buildGroupResult(
     effShowSoftClipping,
     showCoverage,
     trackStrands,
+    bisulfite,
     detectedSimplexModifications,
     insertSizeStats,
     statusCallback,
@@ -314,14 +318,16 @@ async function buildGroupResult(
   checkStopToken2(stopTokenCheck)
 
   // IGV-style per-strand read-base pileup at the modified columns, computed from
-  // the reads themselves — the mod-coverage denominator, no reference needed.
-  // Only the modification color modes (trackStrands) draw mod coverage.
-  const modBaseCounts = trackStrands
-    ? computeReadBaseCounts(
-        rawFeatures,
-        new Set(modifications.map(m => m.position)),
-      )
-    : new Map<number, StrandBaseCounts>()
+  // the reads themselves — the modBAM mod-coverage denominator, no reference
+  // needed. Bisulfite derives its bar from the C->T calls alone (see
+  // computeBisulfiteCoverage), so it skips this pileup entirely.
+  const modBaseCounts =
+    trackStrands && !bisulfite
+      ? computeReadBaseCounts(
+          rawFeatures,
+          new Set(modifications.map(m => m.position)),
+        )
+      : new Map<number, StrandBaseCounts>()
 
   const pipeline = await runCoveragePipeline({
     features,
@@ -338,6 +344,7 @@ async function buildGroupResult(
     gapArrays,
     showCoverage,
     trackStrands,
+    bisulfite,
     statusCallback,
     stopTokenCheck,
   })
@@ -544,6 +551,7 @@ export async function executeRenderAlignmentData({
   // strands; chain omits them so runCoveragePipeline skips mod-coverage.
   const trackStrands =
     !isChain && !!colorBy && isModificationScheme(colorBy.type)
+  const bisulfite = !isChain && colorBy?.type === 'bisulfite'
 
   const ctx: GroupContext = {
     isChain,
@@ -551,6 +559,7 @@ export async function executeRenderAlignmentData({
     effShowSoftClipping,
     showCoverage,
     trackStrands,
+    bisulfite,
     detectedSimplexModifications,
     insertSizeStats: sharedInsertSizeStats,
     statusCallback,

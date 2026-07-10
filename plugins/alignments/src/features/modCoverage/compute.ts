@@ -14,6 +14,25 @@ interface ModificationColorEntry {
   noMod: boolean
 }
 
+// One stacked rectangle of a position's coverage bar. yOffset/height are
+// fractions of THIS position's bar (per-position semantics); relDepth =
+// depthAtPos / maxDepth sets the bar's own height at draw time. Same contract as
+// computeSNPCoverage.
+interface CoverageSegment {
+  position: number
+  yOffset: number
+  height: number
+  relDepth: number
+  color: number // packed ABGR (opaque)
+  alpha: number
+}
+
+interface Coverage {
+  depths: Float32Array
+  maxDepth: number
+  startPos: number
+}
+
 // Fixed stack order so a position's segments never swap between frames (they
 // otherwise stacked in read-arrival order). Mirrors IGV's modificationRankOrder
 // but renders modified calls BELOW the no-modification bucket, so e.g. red 5mC
@@ -51,43 +70,20 @@ function compareModEntries(
           : 0
 }
 
-export function computeModificationCoverage(
+// Group calls by genomic position, then by (modType, noMod) within a position,
+// summing each bin's probability count/total. Both coverage models build from
+// this and differ only in how a bin's bar height is derived.
+function groupByPosition(
   modifications: ModificationEntry[],
-  // Per-strand read-base pileup at modified positions (computeReadBaseCounts) —
-  // the modifiable/detectable denominator, counted from the reads' own bases,
-  // not a reference sequence. Mirrors IGV's DenseAlignmentCounts.
-  baseCounts: ReadonlyMap<number, StrandBaseCounts>,
   regionStart: number,
-  coverage: {
-    depths: Float32Array
-    maxDepth: number
-    startPos: number
-  },
-  simplexModifications: ReadonlySet<string>,
 ) {
-  const {
-    depths,
-    maxDepth: regionMaxDepth,
-    startPos: depthStartOffset,
-  } = coverage
-  if (modifications.length === 0) {
-    return {
-      positions: new Uint32Array(0),
-      yOffsets: new Float32Array(0),
-      heights: new Float32Array(0),
-      colors: new Uint32Array(0),
-      relDepths: new Float32Array(0),
-      count: 0,
-    }
-  }
-
   const byPosition = new Map<number, Map<number, ModificationColorEntry>>()
 
   // Stable small integer id per modType, so each stacked segment can be keyed by
   // its modification identity with a numeric (fast, allocation-free) Map key
   // rather than a per-mod template string. Distinguishing by type — not color —
   // keeps two distinct types that happen to share an RGB (possible for numeric
-  // ChEBI codes) from merging into one base/denominator below, matching
+  // ChEBI codes) from merging into one base/denominator, matching
   // buildModTooltipData's grouping.
   const modTypeIds = new Map<string, number>()
   const modKey = (mod: ModificationEntry) => {
@@ -100,102 +96,71 @@ export function computeModificationCoverage(
   }
 
   for (const mod of modifications) {
-    if (mod.position < regionStart) {
-      continue
-    }
-    let colorMap = byPosition.get(mod.position)
-    if (!colorMap) {
-      colorMap = new Map()
-      byPosition.set(mod.position, colorMap)
-    }
-    const key = modKey(mod)
-    let entry = colorMap.get(key)
-    if (!entry) {
-      entry = {
-        color: mod.color,
-        probabilityTotal: 0,
-        probabilityCount: 0,
-        base: mod.base,
-        modType: mod.modType,
-        noMod: mod.noMod ?? false,
+    if (mod.position >= regionStart) {
+      let colorMap = byPosition.get(mod.position)
+      if (!colorMap) {
+        colorMap = new Map()
+        byPosition.set(mod.position, colorMap)
       }
-      colorMap.set(key, entry)
+      const key = modKey(mod)
+      let entry = colorMap.get(key)
+      if (!entry) {
+        entry = {
+          color: mod.color,
+          probabilityTotal: 0,
+          probabilityCount: 0,
+          base: mod.base,
+          modType: mod.modType,
+          noMod: mod.noMod ?? false,
+        }
+        colorMap.set(key, entry)
+      }
+      entry.probabilityTotal += mod.prob
+      entry.probabilityCount++
     }
-    entry.probabilityTotal += mod.prob
-    entry.probabilityCount++
   }
+  return byPosition
+}
 
-  // yOffset/height are fractions of THIS position's coverage bar (per-position
-  // semantics). relDepth = depthAtPos / regionMaxDepth feeds bar height at draw
-  // time. See computeSNPCoverage for the same contract.
-  const segments: {
-    position: number
-    yOffset: number
-    height: number
-    relDepth: number
-    color: number // packed ABGR (opaque)
-    alpha: number
-  }[] = []
-
-  for (const [position, colorMap] of byPosition) {
-    const binIdx = Math.floor(position - depthStartOffset)
-    const depthAtPosition = depths[binIdx] ?? 0
-    if (depthAtPosition === 0) {
-      continue
-    }
-
-    // Per-strand counts of the actual read bases at this position — the
-    // modifiable/detectable denominator, straight from the reads (no reference).
-    const strandBaseCounts = baseCounts.get(position) ?? {}
-
-    let yOffset = 0
-    const orderedEntries = [...colorMap.values()].sort(compareModEntries)
-    for (const entry of orderedEntries) {
-      const { modifiable, detectable } = calculateModificationCounts({
-        base: entry.base,
-        isSimplex: simplexModifications.has(entry.modType),
-        strandBaseCounts,
-      })
-
-      if (detectable === 0) {
-        continue
-      }
-
-      // This modification's share of the position's coverage bar, mirroring
-      // IGV's BaseModificationCoverageRenderer: (modifiable/depth) scales the
-      // count of above-threshold reads down to the reads that even carry the
-      // base, and dividing by `detectable` (not `depth`) corrects for simplex
-      // data, where only the examined strand was basecalled so half the reads
-      // could never show the modification. For duplex `detectable === modifiable`
-      // and this collapses to `probabilityCount / depth`. The bar height is a
-      // plain read COUNT, not a probability-weighted sum — IGV weights each
-      // qualifying read as 1; likelihood only feeds the color/alpha below
-      // (averageLikelihood). Bounded to [0,1]: modifiable <= depth and
-      // probabilityCount <= detectable (every modified read is detectable).
-      const height =
-        (modifiable / depthAtPosition) * (entry.probabilityCount / detectable)
-
-      const avgProbability = entry.probabilityTotal / entry.probabilityCount
-
-      segments.push({
+// Stacked segments for one position, bottom-up. `heightOf` gives each bin its
+// fraction of the bar; a zero-height bin emits nothing. Segment alpha is the
+// bin's average call likelihood (bisulfite calls are prob 1 → fully opaque).
+function stackBar(
+  colorMap: Map<number, ModificationColorEntry>,
+  position: number,
+  relDepth: number,
+  heightOf: (entry: ModificationColorEntry) => number,
+) {
+  const out: CoverageSegment[] = []
+  let yOffset = 0
+  for (const entry of [...colorMap.values()].sort(compareModEntries)) {
+    const height = heightOf(entry)
+    if (height > 0) {
+      out.push({
         position,
         yOffset,
         height,
-        relDepth: depthAtPosition / regionMaxDepth,
+        relDepth,
         color: entry.color,
-        alpha: Math.round(avgProbability * 255),
+        alpha: Math.round(
+          (entry.probabilityTotal / entry.probabilityCount) * 255,
+        ),
       })
       yOffset += height
     }
   }
+  return out
+}
 
+// Pack the accumulated segments into the GPU typed-array layout. An empty list
+// yields empty arrays, so neither caller needs an empty-input special case.
+function packSegments(segments: CoverageSegment[]) {
   const positions = new Uint32Array(segments.length)
   const yOffsets = new Float32Array(segments.length)
   const heights = new Float32Array(segments.length)
   // Packed ABGR u32 per segment (alpha byte = seg.alpha, 0..255).
   const colors = new Uint32Array(segments.length)
   const relDepths = new Float32Array(segments.length)
-
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i]!
     positions[i] = seg.position
@@ -204,7 +169,6 @@ export function computeModificationCoverage(
     colors[i] = withAbgrAlpha(seg.color, seg.alpha)
     relDepths[i] = seg.relDepth
   }
-
   return {
     positions,
     yOffsets,
@@ -213,4 +177,92 @@ export function computeModificationCoverage(
     relDepths,
     count: segments.length,
   }
+}
+
+/**
+ * modBAM base-modification coverage (colorBy modifications/methylation). Each
+ * mod's bar height mirrors IGV's BaseModificationCoverageRenderer:
+ * `(modifiable/depth)` scales the above-threshold read count down to the reads
+ * that even carry the base, and dividing by `detectable` (not `depth`) corrects
+ * for simplex data, where only the examined strand was basecalled so half the
+ * reads could never show the mod. Duplex → `detectable === modifiable`,
+ * collapsing to `probabilityCount/depth`. Height is a plain read COUNT (each
+ * qualifying read weighs 1); likelihood feeds only the segment alpha.
+ * `baseCounts` is the IGV-style per-strand read-base pileup
+ * (computeReadBaseCounts) — no reference sequence needed.
+ */
+export function computeModificationCoverage(
+  modifications: ModificationEntry[],
+  baseCounts: ReadonlyMap<number, StrandBaseCounts>,
+  regionStart: number,
+  coverage: Coverage,
+  simplexModifications: ReadonlySet<string>,
+) {
+  const { depths, maxDepth, startPos } = coverage
+  const segments: CoverageSegment[] = []
+  for (const [position, colorMap] of groupByPosition(
+    modifications,
+    regionStart,
+  )) {
+    const depthAtPosition = depths[Math.floor(position - startPos)] ?? 0
+    if (depthAtPosition > 0) {
+      const strandBaseCounts = baseCounts.get(position) ?? {}
+      segments.push(
+        ...stackBar(colorMap, position, depthAtPosition / maxDepth, entry => {
+          const { modifiable, detectable } = calculateModificationCounts({
+            base: entry.base,
+            isSimplex: simplexModifications.has(entry.modType),
+            strandBaseCounts,
+          })
+          return detectable === 0
+            ? 0
+            : (modifiable / depthAtPosition) *
+                (entry.probabilityCount / detectable)
+        }),
+      )
+    }
+  }
+  return packSegments(segments)
+}
+
+/**
+ * Bisulfite/EM-seq methylation coverage (colorBy bisulfite). A cytosine reads as
+ * a binary C-vs-T call, so the informative reads at a position are exactly the
+ * methylated + unmethylated calls emitted there (the two `noMod` bins). The bar
+ * is a per-position methylation level: each state takes its share of those calls
+ * and they fill the WHOLE bar (meth + unmeth = 1), like a mini methylation track
+ * — matching IGV's BisulfiteCounts.
+ *
+ * It deliberately takes no read-base pileup: an unmethylated cytosine reads as T
+ * (C->T converted), so the C/G base count the modBAM path divides by would
+ * exclude it and cap the methylated fraction near 0.5 (the half-height bar bug).
+ */
+export function computeBisulfiteCoverage(
+  modifications: ModificationEntry[],
+  regionStart: number,
+  coverage: Coverage,
+) {
+  const { depths, maxDepth, startPos } = coverage
+  const segments: CoverageSegment[] = []
+  for (const [position, colorMap] of groupByPosition(
+    modifications,
+    regionStart,
+  )) {
+    const depthAtPosition = depths[Math.floor(position - startPos)] ?? 0
+    if (depthAtPosition > 0) {
+      const totalCalls = [...colorMap.values()].reduce(
+        (sum, e) => sum + e.probabilityCount,
+        0,
+      )
+      segments.push(
+        ...stackBar(
+          colorMap,
+          position,
+          depthAtPosition / maxDepth,
+          entry => entry.probabilityCount / totalCalls,
+        ),
+      )
+    }
+  }
+  return packSegments(segments)
 }
