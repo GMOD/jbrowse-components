@@ -5171,6 +5171,57 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "HG02024_VN049_KHVTrio.chr1.ancestry",
+      "name": "KHV trio local ancestry (FLARE, chr1)",
+      "category": ["1000 Genomes"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample",
+          "ancestry"
+        ],
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.ancestry.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.ancestry.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "HG02024_VN049_KHVTrio.chr1.ancestry-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+          "rowOrder": [
+            "Child hap1",
+            "Child hap2",
+            "Mother hap1",
+            "Mother hap2",
+            "Father hap1",
+            "Father hap2"
+          ],
+          "rowHeight": 20
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "hgdp_archaic_introgression",
       "name": "Archaic introgression (hmmix, HGDP selected individuals)",
       "category": ["1000 Genomes", "Introgression"],

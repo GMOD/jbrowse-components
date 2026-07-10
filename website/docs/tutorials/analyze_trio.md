@@ -178,6 +178,73 @@ two copies the child inherited there. Each place the block steps between the two
 blue rows is a **crossing-over point**. The two red rows work the same way for
 the **maternal** chromosome.
 
+## Coloring the trio by ancestry
+
+The same six haplotypes can be painted by **continental ancestry** instead of by
+parent-of-origin. [FLARE](https://github.com/browning-lab/flare) infers
+per-haplotype local ancestry by comparing each target haplotype against a
+labeled reference panel. Running it on the trio against a balanced
+AFR/EUR/EAS/SAS 1000 Genomes reference (100 samples per superpopulation, the
+trio's own KHV population and the admixed panels excluded) assigns every marker
+of every haplotype an inferred ancestry.
+
+FLARE writes its calls per marker in the `AN1`/`AN2` `FORMAT` fields of an output
+VCF. A short post-processing step collapses those per-marker calls into
+per-haplotype runs and writes one BED9 line per run, labeling rows
+`Child/Mother/Father hap1|hap2` and coloring each by ancestry via `itemRgb`. Load
+it as a second `LinearMultiRowFeatureDisplay`, partitioned this time by `sample`:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "khv_trio_ancestry",
+  "name": "KHV trio local ancestry (FLARE, chr1)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "disableGeneHeuristic": true,
+    "columnNames": [
+      "chrom",
+      "chromStart",
+      "chromEnd",
+      "name",
+      "score",
+      "strand",
+      "thickStart",
+      "thickEnd",
+      "itemRgb",
+      "sample",
+      "ancestry"
+    ],
+    "bedGzLocation": { "uri": "trio.ancestry.bed.gz" },
+    "index": { "location": { "uri": "trio.ancestry.bed.gz.tbi" } }
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "displayId": "khv_trio_ancestry-LinearMultiRowFeatureDisplay",
+      "partitionField": "sample",
+      "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+      "rowOrder": [
+        "Child hap1",
+        "Child hap2",
+        "Mother hap1",
+        "Mother hap2",
+        "Father hap1",
+        "Father hap2"
+      ]
+    }
+  ]
+}
+```
+
+This is a Kinh-Vietnamese family, so the painting is predominantly East Asian
+(green) across all six haplotypes, with a scattering of segments assigned to the
+neighboring South Asian reference (pink) and blank stretches where no marker
+passes FLARE's frequency thresholds (the centromere).
+
+<Figure caption="Per-haplotype FLARE ancestry calls for the trio, painted with the multi-row feature display. Each of the six rows is one haplotype (child, mother, father), colored by inferred continental ancestry: East Asian (green) and South Asian (pink), against an AFR/EUR/EAS/SAS reference. The painting is predominantly East Asian, matching the family's Kinh-Vietnamese origin." src="/img/trio-ancestry.png"/>
+
 ## Relating the painting back to the genotypes
 
 Stacking the painting directly above the same VCF in the **phased multi-sample

@@ -139,6 +139,31 @@ export const trioSpecs: ScreenshotSpec[] = [
     settleMs: 12000,
   },
 
+  // The same six haplotypes painted by continental ancestry (FLARE local
+  // ancestry vs a balanced AFR/EUR/EAS/SAS 1000 Genomes reference) instead of by
+  // parent-of-origin. A Kinh-Vietnamese trio, so the painting is essentially
+  // uniform East Asian (green).
+  {
+    mode: 'url',
+    name: 'trio-ancestry',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr1:1-248,956,422',
+      tracks: [
+        {
+          trackId: 'HG02024_VN049_KHVTrio.chr1.ancestry',
+          displaySnapshot: {
+            type: 'LinearMultiRowFeatureDisplay',
+            height: 160,
+          },
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readyTimeout: 60000,
+    settleMs: 12000,
+  },
+
   // The hap-ibd painting stacked above the same trio VCF in the phased
   // multi-sample variant display, zoomed to a single ~400 kb window around one
   // genotype-corroborated crossover so the painting block-step is crisp and the
