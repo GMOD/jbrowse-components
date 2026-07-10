@@ -196,11 +196,10 @@ describe('checkPluginsAgainstStore', () => {
 })
 
 describe('checkPlugins with real plugin store', () => {
+  // fetch is mocked globally (config/jest/fetchMockAfterEnv.js); just clear
+  // queued responses and call history before each test so the fetch-count
+  // assertions below start clean.
   beforeEach(() => {
-    fetchMock.enableMocks()
-  })
-
-  afterEach(() => {
     fetchMock.resetMocks()
   })
 

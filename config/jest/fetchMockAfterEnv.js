@@ -44,10 +44,16 @@ if (!isNodeEnvironment) {
     return jestFetchMock(url, options)
   }
 
+  // Copy the mock helpers/state onto the wrapper so `fetch` itself reads as a
+  // mock (tests that assert `expect(fetch).toHaveBeenCalledWith(...)`).
   Object.assign(global.fetch, jestFetchMock)
 
-  // Expose the same mock under `fetchMock` so tests can call the helpers
-  // (.mockResponse/.resetMocks/etc.) with a properly typed global. See
-  // global.d.ts.
-  global.fetchMock = global.fetch
+  // But expose `fetchMock` as the raw jest-fetch-mock instance, not the wrapper.
+  // The wrapper delegates every non-data-URI request to it, so its `.mock` state
+  // is authoritative — and its identity survives `resetMocks()` (which replaces
+  // the underlying `.mock` object). The wrapper's Object.assign'd `.mock` copy,
+  // by contrast, goes stale after a reset, which is why count assertions on it
+  // previously needed a per-test enableMocks() to re-sync. See global.d.ts for
+  // the typing.
+  global.fetchMock = jestFetchMock
 }
