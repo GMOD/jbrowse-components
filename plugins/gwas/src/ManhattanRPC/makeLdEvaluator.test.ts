@@ -1,5 +1,6 @@
 import { feat, testLd as ld } from './ldTestHelpers.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
+import { GLYPH_INDEX, GLYPH_INSERTION, GLYPH_POINT } from './rpcTypes.ts'
 import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 
 test('index SNP (by name): index color, r²=1', () => {
@@ -35,6 +36,22 @@ test('SNP absent from the LD data: grey color, NaN r²', () => {
   const f = feat({ name: 'rsUnknown', start: 999 })
   expect(evalColor(f)).toBe(ldBinColor(undefined))
   expect(evalR2(f)).toBeNaN()
+})
+
+test('glyph: index → diamond, insertion → triangle, others → point', () => {
+  const { evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  expect(evalGlyph(feat({ name: 'rsIndex', start: 100 }))).toBe(GLYPH_INDEX)
+  expect(evalGlyph(feat({ name: 'rsB', start: 500, svtype: 'INS' }))).toBe(
+    GLYPH_INSERTION,
+  )
+  expect(evalGlyph(feat({ name: 'rsB', start: 500 }))).toBe(GLYPH_POINT)
+})
+
+test('index takes precedence over insertion glyph', () => {
+  const { evalGlyph } = makeLdEvaluator(ld, 'rsIndex', 'chr1')
+  expect(
+    evalGlyph(feat({ name: 'rsIndex', start: 100, svtype: 'INS' })),
+  ).toBe(GLYPH_INDEX)
 })
 
 test('memoized lookup is independent of color/r² call order', () => {
