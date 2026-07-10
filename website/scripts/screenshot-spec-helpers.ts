@@ -519,14 +519,17 @@ export function hg38ChimpSynteny(
       featureHeight: 18,
     },
   })
-  // RepeatMasker: 'fit' height mode squeezes every element into a short band so
-  // the elements stay visible without the dense rmsk stack crowding out the gene
-  // track below/above it (reviewer)
+  // RepeatMasker: 'grow' height mode — the track auto-sizes to exactly the few
+  // rows of repeats at these TE loci, so it stays compact without crowding the
+  // gene track, while every element keeps its NORMAL feature height (no fit-mode
+  // scaling that inflates the boxes) and every name is drawn (no fit-ladder label
+  // decimation). Reviewer: repeats should be normal-height and compact but still
+  // labeled (SVA_F, L1HS, AluY… at the insertions) — not the tall, label-dropping
+  // 'fit' band.
   const rmsk = (id: string) => ({
     trackId: id,
     displaySnapshot: {
-      heightMode: 'fit',
-      height: 60,
+      heightMode: 'grow',
     },
   })
   return sessionSpec(HG38_PANTRO6_CONFIG, {

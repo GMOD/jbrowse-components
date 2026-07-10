@@ -75,7 +75,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
         y: 34,
         maxWidth: 480,
         fontSize: 15,
-        text: 'Each height has a pin — click it to make that height the default for all alignments tracks; un-pinned tracks follow',
+        text: 'Click a height’s pin to make it the default for every alignments track. Any track you haven’t set by hand picks up the new default automatically.',
       },
     ],
   },

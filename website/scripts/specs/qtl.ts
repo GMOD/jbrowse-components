@@ -45,19 +45,37 @@ export const qtlSpecs: ScreenshotSpec[] = [
     }),
     readySelector: '[data-testid="manhattan-display-done"]',
     readyTimeout: 90000,
-    viewportHeight: 820,
+    // tall enough that the full 500px painting track clears the bottom crop
+    // (198 strain rows) instead of running off the frame
+    viewportHeight: 980,
     settleMs: 16000,
   },
 
-  // Zoomed to the Tyrp1 locus: the QTL peak apex sits directly over the Tyrp1
-  // gene (the classic brown coat-color locus), with the strain-by-strain
-  // recombination breakpoints visible in the painting below.
+  // Zoomed out to a ~14 Mb window centered on Tyrp1: the QTL peak reads as a
+  // clean rise-and-fall triangle whose apex sits over the highlighted Tyrp1
+  // locus (the classic brown coat-color gene), with the strain-by-strain
+  // recombination breakpoints visible in the painting below. A genomic
+  // highlight band marks Tyrp1 so it's identifiable even though the gene is a
+  // sliver at this scale.
   {
     mode: 'url',
     name: 'qtl/bxd_tyrp1_locus',
     url: lgvSession('test_data/config_bxd.json', {
       assembly: 'mm10',
-      loc: 'chr4:76,500,000-85,500,000',
+      loc: 'chr4:74,000,000-88,000,000',
+      // colored band over the Tyrp1 gene + QTL-peak marker so the eye lands on
+      // it under the peak; 350 kb reads as a visible stripe at this ~14 Mb zoom
+      // (the bare 30 kb gene body was a sub-pixel sliver)
+      highlight: [
+        {
+          refName: 'chr4',
+          start: 80_700_000,
+          end: 81_050_000,
+          assemblyName: 'mm10',
+          label: 'Tyrp1',
+          color: 'rgba(214,40,40,0.16)',
+        },
+      ],
       tracks: [
         {
           trackId: 'bxd_gwas_coatcolor_mm10',
@@ -65,7 +83,13 @@ export const qtlSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'mm10_ncbi_refseq',
-          displaySnapshot: { type: 'LinearBasicDisplay', height: 120 },
+          // gene-glyph-only + short: a context strip at this wide zoom, not a
+          // dense mRNA/exon band
+          displaySnapshot: {
+            type: 'LinearBasicDisplay',
+            height: 90,
+            showOnlyGenes: true,
+          },
         },
         {
           trackId: 'bxd_chromosome_painting_mm10',
@@ -79,7 +103,18 @@ export const qtlSpecs: ScreenshotSpec[] = [
     }),
     readySelector: '[data-testid="manhattan-display-done"]',
     readyTimeout: 90000,
-    viewportHeight: 860,
+    // manhattan(200) + gene strip(90) + full painting(460) + headers clear crop
+    viewportHeight: 1060,
     settleMs: 16000,
+    annotations: [
+      {
+        type: 'text',
+        x: 560,
+        y: 66,
+        maxWidth: 360,
+        fontSize: 15,
+        text: 'The QTL peak apex sits right over Tyrp1 (red band) — the classic brown coat-color gene',
+      },
+    ],
   },
 ]

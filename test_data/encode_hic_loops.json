@@ -73,7 +73,8 @@
       "displays": [
         {
           "type": "LinearPairedArcDisplay",
-          "displayId": "encode_gm12878_re2g-LinearPairedArcDisplay"
+          "displayId": "encode_gm12878_re2g-LinearPairedArcDisplay",
+          "color": "jexl:get(feature,'score')>=500?'#8b1a1a':'rgba(0,0,0,0)'"
         }
       ]
     },
@@ -89,7 +90,15 @@
           "uri": "https://encode-public.s3.amazonaws.com/2025/08/26/a288ee45-d729-4cda-9a21-aec93c2bd353/ENCFF484NFB.hic",
           "locationType": "UriLocation"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearHicDisplay",
+          "displayId": "encode_gm12878_hic-LinearHicDisplay",
+          "useLogScale": true,
+          "showResolutionControls": false
+        }
+      ]
     }
   ],
   "defaultSession": {
@@ -102,7 +111,13 @@
           "assembly": "hg38",
           "loc": "chr1:202,900,000-203,800,000",
           "tracks": [
-            "ncbi_refseq_hg38",
+            {
+              "trackId": "ncbi_refseq_hg38",
+              "displaySnapshot": {
+                "type": "LinearBasicDisplay",
+                "showOnlyGenes": true
+              }
+            },
             "encode_gm12878_loops",
             "encode_gm12878_re2g",
             "encode_gm12878_hic"

@@ -277,20 +277,21 @@ arrangements is stronger in the Fst scan than in within-group π.
 
 ## Reading the signals
 
-Navigate to chromosome arm **`2L`**. The `In(2L)t` Fst track rises across the
-whole inverted region — roughly `2L:2,200,000–13,200,000` — and peaks near the
-breakpoints, so the differentiation forms a broad plateau rather than a single
-peak. (The inversion suppresses recombination between arrangements across this
-span.)
+Zoom out to the **whole genome** (all six arms). The `In(2L)t` Fst track rises
+into a tall block of differentiation across the entire left arm of chromosome 2
+— roughly `2L:2,200,000–13,200,000`, the inverted region — while every other arm
+sits at low background Fst. Seeing all the arms at once is what makes the signal
+read as genuinely elevated rather than a baseline with nothing to compare it to.
+(The inversion suppresses recombination between arrangements across this span.)
 
-<Figure src="/img/popgen/fst_in2lt_2L.png" caption="Two quantitative tracks over the whole 2L arm, each auto-scaled to its own data. Top: Fst between In(2L)t-inverted and standard-arrangement lines — an elevated plateau across the inverted region (~2.2–13.2 Mb) that drops back to background past the distal breakpoint. Bottom: whole-panel nucleotide diversity (π). Output from this tutorial's pipeline, hosted at jbrowse.org/demos/popgen."/>
+<Figure src="/img/popgen/fst_in2lt_2L.png" caption="Genome-wide view of all six dm6 arms, each track auto-scaled to its own data. Top: the In(2L)t inversion extent. Middle: Fst between In(2L)t-inverted and standard-arrangement lines — a tall elevated block across the whole left arm of chromosome 2 (the inverted region, ~2.2–13.2 Mb) that stands out against low background Fst on every other arm. Bottom: whole-panel nucleotide diversity (π), near-uniform across arms — the expected contrast to the localized Fst spike. Output from this tutorial's pipeline, hosted at jbrowse.org/demos/popgen."/>
 
 Then use the search box to jump to **`Cyp6g1`** (on `2R`) and inspect its window
 in the π track. π over the locus drops well below the surrounding windows, to
 under a tenth of the arm-wide average. The reduced diversity is consistent with
 a selective sweep at this insecticide-resistance gene.
 
-<Figure src="/img/popgen/pi_cyp6g1.png" caption="Whole-panel π zoomed to the Cyp6g1 locus on 2R, over the NCBI RefSeq gene track. π over the boxed Cyp6g1 window drops to under a tenth of the arm-wide average, between higher-diversity flanking windows. The reduction is consistent with a selective sweep at this insecticide-resistance gene."/>
+<Figure src="/img/popgen/pi_cyp6g1.png" caption="Whole-panel π across a ~3 Mb window of 2R centered on Cyp6g1 (highlighted band), over the NCBI RefSeq gene track. π over the Cyp6g1 window collapses to under a tenth of the arm-wide background — a sharp, localized dip between higher-diversity flanks. The reduction is consistent with a selective sweep at this insecticide-resistance gene."/>
 
 Other resistance and selection loci can be examined the same way, reading the
 signal against the gene:

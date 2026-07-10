@@ -57,10 +57,42 @@ const contentTypes: Record<string, string> = {
   '.svg': 'image/svg+xml',
 }
 
+// jb2export writes its renders to products/jbrowse-img/img (the README/npm
+// copy); the website mirror at static/img/jbrowse-img is only refreshed by a
+// `pnpm screenshots` (captureCliSpec) or `pnpm autogen` run. So a fresh
+// jb2export the reviewer just produced can leave the review UI showing the stale
+// mirror. Self-heal on read: for a `jbrowse-img/<name>` request, if the source
+// render is newer than (or absent from) the mirror, copy it over before serving.
+const jbrowseImgSrcDir = path.resolve(
+  websiteRoot,
+  '..',
+  'products',
+  'jbrowse-img',
+  'img',
+)
+
+function syncJbrowseImgFromSource(rel: string, dest: string) {
+  const name = rel.slice('jbrowse-img/'.length)
+  const src = path.resolve(jbrowseImgSrcDir, name)
+  if (!src.startsWith(jbrowseImgSrcDir + path.sep) || !fs.existsSync(src)) {
+    return
+  }
+  const srcMtime = fs.statSync(src).mtimeMs
+  const destFresh =
+    fs.existsSync(dest) && fs.statSync(dest).mtimeMs >= srcMtime
+  if (!destFresh) {
+    fs.mkdirSync(path.dirname(dest), { recursive: true })
+    fs.copyFileSync(src, dest)
+  }
+}
+
 // Serve /img/<name>.png, guarding against path traversal outside imgDir
 function serveImage(res: http.ServerResponse, urlPath: string) {
   const rel = decodeURIComponent(urlPath.slice('/img/'.length))
   const full = path.resolve(imgDir, rel)
+  if (full.startsWith(imgDir + path.sep) && rel.startsWith('jbrowse-img/')) {
+    syncJbrowseImgFromSource(rel, full)
+  }
   if (!full.startsWith(imgDir + path.sep) || !fs.existsSync(full)) {
     res.writeHead(404)
     res.end('not found')
