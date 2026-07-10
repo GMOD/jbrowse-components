@@ -263,6 +263,35 @@ jb2export \
 
 <Figure src="/img/jbrowse-img/methylation.png" caption="COLO829 nanopore reads colored by per-base CpG methylation over a CpG island" />
 
+`sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
+number of reads spanning each junction — the standard RNA-seq splice view.
+`coverageHeight:` makes the coverage/sashimi band tall so the arcs are legible.
+This strand-specific paired-end RNA-seq (hg19, public) over `B2M` shows the long
+first intron as one big arc and the closely-spaced downstream exons as smaller
+arcs, with the spliced read pairs (green mate lines) below:
+
+```bash
+jb2export --hub hg19 --track hg19-ncbiRefSeqCurated height:90 \
+  --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverageHeight:170 height:420 \
+  --loc B2M --width 1400 --out sashimi.png
+```
+
+<Figure src="/img/jbrowse-img/sashimi_junctions.png" caption="RNA-seq sashimi plot over B2M: splice-junction arcs on the coverage band sized by junction read depth, over the spliced read pileup" />
+
+`arcs:up` draws read-connection arcs above the pileup, linking the split-read
+breakpoints that flag a structural variant. This 1000 Genomes ONT sample
+(HG00151, long reads streamed from the 1000G-ONT S3) over a ~1.2 kb inversion on
+chr1 shows the two breakpoints as clipped-read columns with the connecting arcs
+between them:
+
+```bash
+jb2export --hub hg38 \
+  --bam https://1000g-ont.s3.amazonaws.com/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/HG00151-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam arcs:up coverageHeight:80 height:440 \
+  --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_arcs.png
+```
+
+<Figure src="/img/jbrowse-img/sv_read_arcs.png" caption="HG00151 ONT long reads over a ~1.2 kb chr1 inversion: read-connection arcs link the two split-read breakpoints" />
+
 More alignment recipes (see [Track modifiers](#track-modifiers) for all
 options):
 
@@ -283,14 +312,8 @@ jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc ch
 jb2export --fasta ref.fa --bam reads.bam arcs:samplot coverageHeight:300 \
   readConnectionsLineWidth:2 height:600 --loc chr1:1-50000
 
-## read-connection arcs above reads
-jb2export --fasta ref.fa --bam reads.bam arcs:up --loc chr1:1-10000
-
 ## 10x linked-read chains (bezier mode)
 jb2export --fasta ref.fa --bam linked.bam linkedReads:bezier --loc chr1:1-50000
-
-## sashimi splice-junction arcs over an RNA-seq pileup
-jb2export --fasta ref.fa --bam rnaseq.bam sashimi:up --loc chr1:1-50000
 ```
 
 ### BigWig / quantitative tracks
@@ -320,6 +343,39 @@ jb2export --loc all \
   --assembly hg19 \
   --config data/config.json
 ```
+
+### MultiWiggle (many BigWigs in one track)
+
+`--multiwig` aggregates many BigWig files into a single multi-row
+`MultiQuantitativeTrack`, where each subtrack shares one autoscale so the rows
+are directly comparable. Its argument is either a comma-separated list of BigWig
+URLs, or a `.json` file holding an array — of plain BigWig URLs, or of
+_subadapter_ objects that give each row its own `name`, `color`, and `group`:
+
+```bash
+## quick shorthand: a comma-separated URL list, one row per file
+jb2export --hub hg38 --multiwig a.bw,b.bw,c.bw height:300 --loc GAPDH --out multi.png
+
+## curated rows: a JSON sources file (name/color/group per subtrack)
+jb2export --hub hg38 --multiwig sources.json height:520 --loc GCG --out multi.png
+```
+
+This example renders the CATlas single-cell ATAC accessibility-by-cell-type data
+(Zhang et al 2021) — 16 human cell types, each a BigWig, wired up with per-row
+labels/colors/groups in
+[`data/scatac_catlas.json`](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img/data/scatac_catlas.json)
+— over the `GCG` (glucagon) locus. The **Alpha (glucagon)** row — the pancreatic
+cell type that expresses GCG — shows strong open chromatin across the gene while
+the other 15 cell types stay quiet on the shared scale, a clean readout of
+cell-type-specific chromatin accessibility at a marker gene:
+
+```bash
+jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:60 \
+  --multiwig data/scatac_catlas.json height:520 \
+  --loc GCG --width 1400 --out scatac.png
+```
+
+<Figure src="/img/jbrowse-img/scatac_multiwiggle.png" caption="CATlas single-cell ATAC accessibility across 16 cell types over the GCG locus, with the Alpha (glucagon) row showing cell-type-specific open chromatin" />
 
 ### Variant tracks
 
@@ -791,6 +847,11 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
 - `--bam`
 - `--cram`
 - `--bigwig`
+- `--multiwig` — many BigWigs as one multi-row `MultiQuantitativeTrack`; its
+  argument is a comma-separated BigWig URL list or a `.json` sources file (an
+  array of BigWig URLs, or of subadapter objects carrying per-row
+  `name`/`color`/`group`) — see
+  [MultiWiggle](#multiwiggle-many-bigwigs-in-one-track)
 - `--vcfgz`
 - `--gffgz`
 - `--bigbed`
@@ -882,7 +943,7 @@ Examples:
   jb2export --fasta ref.fa.gz --cytobands cytobands.bed --bigwig signal.bw --loc chr1 --out out.svg
       Render BigWig with cytobands
 
-Track options: --bam, --cram, --bigwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz
+Track options: --bam, --cram, --bigwig, --multiwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz
 
 Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circular
 

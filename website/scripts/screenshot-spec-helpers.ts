@@ -75,11 +75,12 @@ export const PTEN_RNASEQ_ADAPTER = {
 export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 export const DEMO_CONFIG = 'test_data/config_demo.json'
-// hg38 + NCBI RefSeq + ClinVar, loading the Protein3d plugin pinned to a
-// specific published version on jsDelivr (not the drifting jbrowse.org `latest/`
-// path, which the protein-feature data-testid clicks below depend on). Rendered
-// against the *local* build (bare ?config=), which has the workspaces split API
-// (setPendingMove) the side-by-side launch needs.
+// hg38 + NCBI RefSeq + ClinVar, loading the Protein3d plugin from the
+// version-agnostic jbrowse.org plugin-store `latest/` path (served no-cache), so
+// there's no pinned version to bump on a protein3d release. The protein-feature
+// data-testid clicks in the spec below need protein3d >= v0.4.14, which `latest/`
+// satisfies. Rendered against the *local* build (bare ?config=), which has the
+// workspaces split API (setPendingMove) the side-by-side launch needs.
 export const PROTEIN3D_CONFIG = 'test_data/protein3d_config.json'
 // Load the remote demo configs against the *local* build (a bare ?config= url
 // that the generator prefixes with localhost), so unreleased display settings
@@ -894,6 +895,71 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'chr11:5,246,000-5,251,000',
     '--width',
     '1200',
+  ]),
+
+  // Sashimi: sashimi:auto overlays splice-junction arcs on the coverage band,
+  // sized by junction read depth. Public strand-specific paired-end RNA-seq
+  // (hg19) over B2M via --hub — the long first intron reads as one big arc, the
+  // downstream exon junctions as smaller arcs. coverageHeight makes the
+  // coverage/sashimi band tall enough for the arcs to be legible.
+  cliSpec('sashimi_junctions', [
+    '--hub',
+    'hg19',
+    '--track',
+    'hg19-ncbiRefSeqCurated',
+    'height:90',
+    '--bam',
+    'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam',
+    'sashimi:auto',
+    'coverageHeight:170',
+    'height:420',
+    '--loc',
+    'B2M',
+    '--width',
+    '1400',
+  ]),
+
+  // SV read-connection arcs: arcs:up links the split-read breakpoints of a
+  // structural variant above the pileup. HG00151 ONT long reads (1000G-ONT S3,
+  // the MINIMAP2_ALIGNED_BAMS file that keeps the SA-tag split alignments) over
+  // a ~1.2 kb chr1 inversion — the two breakpoints show as clipped-read columns
+  // with the connecting arcs between them. (No color:pairOrientation: that's a
+  // paired-end concept, meaningless on long reads; the arcs are the SV signal.)
+  cliSpec('sv_read_arcs', [
+    '--hub',
+    'hg38',
+    '--bam',
+    HG00151_ONT_1000G_BAM,
+    'arcs:up',
+    'coverageHeight:80',
+    'height:440',
+    '--loc',
+    'chr1:197,786,900-197,789,700',
+    '--width',
+    '1400',
+  ]),
+
+  // MultiWiggle: --multiwig aggregates many BigWigs into one multi-row
+  // quantitative track. The sources JSON (data/scatac_catlas.json, 16 curated
+  // subadapters carrying per-row name/color/group) is the CATlas single-cell
+  // ATAC accessibility-by-cell-type data (Zhang et al 2021), rendered over GCG
+  // (glucagon) via --hub hg38 + the RefSeq gene track. Alpha (glucagon) cells —
+  // the pancreatic cell type that expresses GCG — show strong accessibility
+  // across the locus while the other 15 cell types stay quiet on the shared
+  // autoscale: cell-type-specific chromatin accessibility at a marker gene.
+  cliSpec('scatac_multiwiggle', [
+    '--hub',
+    'hg38',
+    '--track',
+    'hg38-ncbiRefSeqCurated',
+    'height:60',
+    '--multiwig',
+    'data/scatac_catlas.json',
+    'height:520',
+    '--loc',
+    'GCG',
+    '--width',
+    '1400',
   ]),
 
   // SKBR3 cell-line whole-genome coverage (hg19, --loc all), log scale — the

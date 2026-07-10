@@ -14,6 +14,7 @@ const trackTypeMap: Record<string, string> = {
   bam: 'AlignmentsTrack',
   cram: 'AlignmentsTrack',
   bigwig: 'QuantitativeTrack',
+  multiwig: 'MultiQuantitativeTrack',
   vcfgz: 'VariantTrack',
   gffgz: 'FeatureTrack',
   hic: 'HicTrack',
@@ -234,6 +235,29 @@ export function makeChromSizesAssembly(
     aliases,
     cytobands,
   )
+}
+
+// Build a MultiQuantitativeTrack from a `--multiwig` sources list: a plain array
+// of BigWig URL strings maps to the adapter's `bigWigs` shorthand (subtrack name
+// derived from the filename), while an array of subadapter objects (each a
+// BigWigAdapter config carrying its own name/color/group) maps to `subadapters`,
+// so a curated multi-sample track keeps its per-row labels, colors, and grouping.
+export function makeMultiWiggleTrackConfig(
+  sources: unknown[],
+  file: string,
+  assembly: Assembly,
+): Track {
+  const allStrings = sources.every(s => typeof s === 'string')
+  return {
+    type: 'MultiQuantitativeTrack',
+    trackId: path.basename(file),
+    name: path.basename(file),
+    assemblyNames: [assembly.name],
+    adapter: {
+      type: 'MultiWiggleAdapter',
+      ...(allStrings ? { bigWigs: sources } : { subadapters: sources }),
+    },
+  }
 }
 
 export function makeTrackConfig(

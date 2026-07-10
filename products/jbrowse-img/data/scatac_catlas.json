@@ -1,0 +1,146 @@
+[
+  {
+    "type": "BigWigAdapter",
+    "name": "Alpha (glucagon)",
+    "group": "Pancreatic islet",
+    "color": "#e6194b",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Alpha_1.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Beta (insulin)",
+    "group": "Pancreatic islet",
+    "color": "#f58231",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Beta_1.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Delta/Gamma",
+    "group": "Pancreatic islet",
+    "color": "#ffb000",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Delta%2BGamma.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Acinar",
+    "group": "Pancreatic exocrine",
+    "color": "#d9a05b",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Acinar.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Ductal",
+    "group": "Pancreatic exocrine",
+    "color": "#b15928",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Ductal.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "CD8 T cell",
+    "group": "Immune",
+    "color": "#4363d8",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/T_Lymphocyte_1_CD8%2B.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "CD4 T cell",
+    "group": "Immune",
+    "color": "#4682b4",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/T_lymphocyte_2_CD4%2B.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "NK T cell",
+    "group": "Immune",
+    "color": "#17becf",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Natural_Killer_T.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Macrophage",
+    "group": "Immune",
+    "color": "#1f78b4",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Macrophage_General.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Plasma B cell",
+    "group": "Immune",
+    "color": "#2166ac",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Plasma_B.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Astrocyte",
+    "group": "Brain",
+    "color": "#3cb44b",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Astrocyte_1.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Oligodendrocyte",
+    "group": "Brain",
+    "color": "#33a02c",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Oligodendrocyte.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Hepatocyte",
+    "group": "Other tissues",
+    "color": "#911eb4",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Hepatocyte.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Cardiomyocyte (atrial)",
+    "group": "Other tissues",
+    "color": "#a6761d",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/A_Cardiomyocyte.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Adipocyte",
+    "group": "Other tissues",
+    "color": "#e377c2",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Adipocyte.bw"
+    }
+  },
+  {
+    "type": "BigWigAdapter",
+    "name": "Enterocyte",
+    "group": "Other tissues",
+    "color": "#8c564b",
+    "bigWigLocation": {
+      "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Enterocyte.bw"
+    }
+  }
+]

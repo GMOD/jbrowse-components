@@ -37,6 +37,7 @@ const categoryByType: Record<string, Category> = {
   bam: 'alignments',
   cram: 'alignments',
   bigwig: 'wiggle',
+  multiwig: 'wiggle',
   vcfgz: 'variant',
   gffgz: 'feature',
   bigbed: 'feature',

@@ -1,6 +1,7 @@
 import {
   makeChromSizesAssembly,
   makeFastaAssembly,
+  makeMultiWiggleTrackConfig,
   makeSyntenyTrackConfig,
 } from './makeConfigs.ts'
 
@@ -127,5 +128,45 @@ describe('makeChromSizesAssembly', () => {
     expect(a.cytobands?.adapter).toMatchObject({
       location: { localPath: 'cyto.bed' },
     })
+  })
+})
+
+describe('makeMultiWiggleTrackConfig', () => {
+  const asm = makeFastaAssembly('hg38.fa', undefined, undefined, 'rs')
+
+  // A plain URL array is the `bigWigs` shorthand — one row per file, name
+  // derived from the filename by the adapter.
+  test('string sources → bigWigs shorthand', () => {
+    const t = makeMultiWiggleTrackConfig(
+      ['https://e.com/a.bw', 'https://e.com/b.bw'],
+      'sources.json',
+      asm,
+    )
+    expect(t.type).toBe('MultiQuantitativeTrack')
+    expect(t.trackId).toBe('sources.json')
+    expect(t.assemblyNames).toEqual([asm.name])
+    expect(t.adapter).toEqual({
+      type: 'MultiWiggleAdapter',
+      bigWigs: ['https://e.com/a.bw', 'https://e.com/b.bw'],
+    })
+  })
+
+  // Subadapter objects (name/color/group per row) pass through as `subadapters`,
+  // so a curated track keeps its per-row metadata.
+  test('object sources → subadapters', () => {
+    const subs = [
+      {
+        type: 'BigWigAdapter',
+        name: 'Alpha',
+        color: '#e6194b',
+        bigWigLocation: { uri: 'https://e.com/alpha.bw' },
+      },
+    ]
+    const t = makeMultiWiggleTrackConfig(subs, 'catlas.json', asm)
+    expect(t.adapter).toEqual({
+      type: 'MultiWiggleAdapter',
+      subadapters: subs,
+    })
+    expect(t.adapter?.bigWigs).toBeUndefined()
   })
 })

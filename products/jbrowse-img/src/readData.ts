@@ -4,6 +4,7 @@ import path from 'node:path'
 import { buildComparative, hasComparativeArgs } from './comparativeArgs.ts'
 import {
   makeFastaAssembly,
+  makeMultiWiggleTrackConfig,
   makeTrackConfig,
   syntenyTrackTypes,
 } from './makeConfigs.ts'
@@ -19,6 +20,32 @@ function read(file: string): unknown {
       { cause: e },
     )
   }
+}
+
+// The `--multiwig` argument is either a path/URL list (comma-separated BigWig
+// URLs → the `bigWigs` shorthand) or a `.json` file holding an array of BigWig
+// URLs or full subadapter objects. A JSON file's `localPath`s resolve relative
+// to that file, matching how --tracks/--config paths resolve.
+function readMultiWiggleSources(file: string): unknown[] {
+  if (!file.toLowerCase().endsWith('.json')) {
+    return file
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+  }
+  let data: unknown
+  try {
+    data = JSON.parse(fs.readFileSync(file, 'utf8'))
+  } catch (e) {
+    throw new Error(`Failed to parse ${file} as JSON`, { cause: e })
+  }
+  if (!Array.isArray(data)) {
+    throw new Error(
+      `${file}: expected a JSON array of BigWig URLs or subadapter objects`,
+    )
+  }
+  resolveLocalPaths(data, path.dirname(path.resolve(file)))
+  return data
 }
 
 // Resolve every `localPath` nested anywhere in `value` relative to `baseDir`,
@@ -154,6 +181,14 @@ export function readData(
       continue
     } else if (!file) {
       throw new Error('no file specified')
+    } else if (type === 'multiwig') {
+      configData.tracks.push(
+        makeMultiWiggleTrackConfig(
+          readMultiWiggleSources(file),
+          file,
+          configData.assembly,
+        ),
+      )
     } else {
       const trackConfig = makeTrackConfig(
         type,
