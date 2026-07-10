@@ -1162,7 +1162,12 @@ export default function baseStateModelFactory(
                 self.fitMinScale,
                 self.fitMaxScale,
               )
-            : { level: 'full', layout: base, scale: 1 }
+            : {
+                level: 'full',
+                layout: base,
+                scale: 1,
+                contentHeight: maxBottom(base),
+              }
         },
       }))
       .views(self => ({
@@ -1271,15 +1276,16 @@ export default function baseStateModelFactory(
          * #getter
          */
         get maxY() {
-          const raw = maxBottom(self.laidOutDataMap)
+          // Content height without re-walking the scaled map: fitStage carries
+          // the kept rung's unscaled height, and scaleLaidOutData multiplies
+          // every bottomPx by scale, so maxBottom(laidOutDataMap) is exactly
+          // keptRungHeight * scale.
+          const { contentHeight: keptRungHeight, scale } = self.fitStage
+          const raw = keptRungHeight * scale
           // Snap away a sub-pixel float-epsilon overflow while a fit scale (grow or
           // squeeze) is active, so a fitted track doesn't spuriously scroll (see
           // snapFittedContentHeight).
-          const max = snapFittedContentHeight(
-            raw,
-            self.height,
-            self.fitScale !== 1,
-          )
+          const max = snapFittedContentHeight(raw, self.height, scale !== 1)
           // During a Y morph hold the height at the taller of the old/new
           // layout so features animating up from a deeper row aren't clipped at
           // the bottom; it settles to the destination height when the morph
@@ -2444,7 +2450,11 @@ export default function baseStateModelFactory(
                 // past the content bottom. This happens on same-scale repacks
                 // (zoom-in de-stacking rows) AND on mode/label changes (compact
                 // mode shrinks every row) — so it must run before the branch
-                // below, not only in the same-scale path.
+                // below, not only in the same-scale path. Clamp to the incoming
+                // layout's own bottom, NOT self.scrollableHeight/maxY: mid-morph
+                // those are held at the taller of old/new (morphFromMaxY,
+                // anti-clip), so reusing them here would skip clamping to the
+                // shorter incoming content until the morph settles.
                 const maxScroll = Math.max(0, maxBottom(current) - height)
                 if (scrollTop > maxScroll) {
                   self.setScrollTop(maxScroll)

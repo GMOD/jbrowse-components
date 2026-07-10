@@ -17,15 +17,19 @@ export interface FitRung {
   layout: () => Map<number, FeatureDataResult>
 }
 
-// The resolved fit outcome, bundled so its three parts can't disagree: which
-// rung's `layout` won, its `level`, and the uniform vertical `scale`. `scale`
-// is two-directional: > 1 grows a stack that fits with room to spare so bodies
-// fill the track (capped at `maxScale`), < 1 squeezes the last rung when even it
-// overflows (floored at `minScale`), and 1 when it lands exactly.
+// The resolved fit outcome, bundled so its parts can't disagree: which rung's
+// `layout` won, its `level`, the uniform vertical `scale`, and the kept rung's
+// `contentHeight` (unscaled `maxBottom` of `layout`). `scale` is two-directional:
+// > 1 grows a stack that fits with room to spare so bodies fill the track (capped
+// at `maxScale`), < 1 squeezes the last rung when even it overflows (floored at
+// `minScale`), and 1 when it lands exactly. `contentHeight` lets callers derive
+// the fitted height as `contentHeight * scale` — exactly `maxBottom` of the
+// scaled `laidOutDataMap` — without re-walking the scaled map (see `maxY`).
 export interface FitStage {
   level: FitLevel
   layout: Map<number, FeatureDataResult>
   scale: number
+  contentHeight: number
 }
 
 // Uniform vertical scale that makes a `contentHeight` stack fill exactly
@@ -85,6 +89,7 @@ export function resolveFitLadder(
       ? {
           level,
           layout,
+          contentHeight,
           scale:
             contentHeight > 0
               ? fitScaleToFill(contentHeight, trackHeight, minScale, maxScale)
