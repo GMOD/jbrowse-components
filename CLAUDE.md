@@ -36,6 +36,26 @@ regionStart-relative arithmetic crosses the worker boundary. See
 - In React, use `autorun` inside `useEffect` to track observables (prefer over
   `reaction`); `untracked` for untracked code.
 
+## React Compiler × MobX
+
+`babel-plugin-react-compiler` runs globally. It memoizes and invalidates by
+**object identity**, but MobX mutates observables **in place** (identity stays
+stable), so a compiler-memoized read of a MobX value can go **stale — the UI
+silently stops updating**. Guardrails that keep this a non-issue:
+
+- **Write observers inline** (`observer(function Foo(){…})` / `observer(()=>…)`).
+  The compiler does **not** compile that form, so MobX reactivity is untouched.
+  The separate-declaration form (`function Foo(){}; observer(Foo)`) **does** get
+  compiled and is the only shape at risk — `DisplayChrome` is the sole instance
+  (it needs early-`return`, not a ternary; its comment explains).
+- **Derive lists/values through computed `views` getters**, not inline over a raw
+  `types.array` in a component. A view returns a fresh array when it recomputes
+  (safe); a raw array mutated in place keeps its identity (a compiled read of it
+  goes stale).
+- Dropping manual `useMemo`/`useCallback` is correctness-safe (an observer
+  recomputes each render anyway). Full analysis + repro:
+  `agent-docs/COMPILER_TERNARY_FINDING.md`.
+
 ## Tooling
 
 - Run `pnpm test <directory>`, not the full suite.
