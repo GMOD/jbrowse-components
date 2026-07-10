@@ -33,6 +33,10 @@ interface Coverage {
   startPos: number
 }
 
+// A bin's height as a fraction of its position's coverage bar. The two coverage
+// models differ only in this function; everything else is shared.
+type BinHeight = (entry: ModificationColorEntry) => number
+
 // Fixed stack order so a position's segments never swap between frames (they
 // otherwise stacked in read-arrival order). Mirrors IGV's modificationRankOrder
 // but renders modified calls BELOW the no-modification bucket, so e.g. red 5mC
@@ -83,8 +87,9 @@ function groupByPosition(
   // its modification identity with a numeric (fast, allocation-free) Map key
   // rather than a per-mod template string. Distinguishing by type — not color —
   // keeps two distinct types that happen to share an RGB (possible for numeric
-  // ChEBI codes) from merging into one base/denominator, matching
-  // buildModTooltipData's grouping.
+  // ChEBI codes) from merging into one base/denominator. buildModTooltipData
+  // keys on type AND color, so this grouping is strictly coarser but consistent
+  // (a given modType resolves to one color).
   const modTypeIds = new Map<string, number>()
   const modKey = (mod: ModificationEntry) => {
     let id = modTypeIds.get(mod.modType)
@@ -129,7 +134,7 @@ function stackBar(
   colorMap: Map<number, ModificationColorEntry>,
   position: number,
   relDepth: number,
-  heightOf: (entry: ModificationColorEntry) => number,
+  heightOf: BinHeight,
 ) {
   const out: CoverageSegment[] = []
   let yOffset = 0
@@ -179,6 +184,43 @@ function packSegments(segments: CoverageSegment[]) {
   }
 }
 
+// Group the calls, then stack a bar at every position that has read depth. A
+// coverage model supplies only `heightForPosition`: given a position's context
+// it returns that position's per-bin height function (so per-position setup like
+// a denominator is computed once, not per bin). The iteration, depth gate,
+// bar-height scaling, and GPU packing are shared here so the two models can't
+// drift.
+function stackCoverageBars(
+  modifications: ModificationEntry[],
+  regionStart: number,
+  coverage: Coverage,
+  heightForPosition: (ctx: {
+    position: number
+    colorMap: Map<number, ModificationColorEntry>
+    depthAtPosition: number
+  }) => BinHeight,
+) {
+  const { depths, maxDepth, startPos } = coverage
+  const segments: CoverageSegment[] = []
+  for (const [position, colorMap] of groupByPosition(
+    modifications,
+    regionStart,
+  )) {
+    const depthAtPosition = depths[position - startPos] ?? 0
+    if (depthAtPosition > 0) {
+      segments.push(
+        ...stackBar(
+          colorMap,
+          position,
+          depthAtPosition / maxDepth,
+          heightForPosition({ position, colorMap, depthAtPosition }),
+        ),
+      )
+    }
+  }
+  return packSegments(segments)
+}
+
 /**
  * modBAM base-modification coverage (colorBy modifications/methylation). Each
  * mod's bar height mirrors IGV's BaseModificationCoverageRenderer:
@@ -198,31 +240,25 @@ export function computeModificationCoverage(
   coverage: Coverage,
   simplexModifications: ReadonlySet<string>,
 ) {
-  const { depths, maxDepth, startPos } = coverage
-  const segments: CoverageSegment[] = []
-  for (const [position, colorMap] of groupByPosition(
+  return stackCoverageBars(
     modifications,
     regionStart,
-  )) {
-    const depthAtPosition = depths[Math.floor(position - startPos)] ?? 0
-    if (depthAtPosition > 0) {
+    coverage,
+    ({ position, depthAtPosition }) => {
       const strandBaseCounts = baseCounts.get(position) ?? {}
-      segments.push(
-        ...stackBar(colorMap, position, depthAtPosition / maxDepth, entry => {
-          const { modifiable, detectable } = calculateModificationCounts({
-            base: entry.base,
-            isSimplex: simplexModifications.has(entry.modType),
-            strandBaseCounts,
-          })
-          return detectable === 0
-            ? 0
-            : (modifiable / depthAtPosition) *
-                (entry.probabilityCount / detectable)
-        }),
-      )
-    }
-  }
-  return packSegments(segments)
+      return entry => {
+        const { modifiable, detectable } = calculateModificationCounts({
+          base: entry.base,
+          isSimplex: simplexModifications.has(entry.modType),
+          strandBaseCounts,
+        })
+        return detectable === 0
+          ? 0
+          : (modifiable / depthAtPosition) *
+              (entry.probabilityCount / detectable)
+      }
+    },
+  )
 }
 
 /**
@@ -242,27 +278,16 @@ export function computeBisulfiteCoverage(
   regionStart: number,
   coverage: Coverage,
 ) {
-  const { depths, maxDepth, startPos } = coverage
-  const segments: CoverageSegment[] = []
-  for (const [position, colorMap] of groupByPosition(
+  return stackCoverageBars(
     modifications,
     regionStart,
-  )) {
-    const depthAtPosition = depths[Math.floor(position - startPos)] ?? 0
-    if (depthAtPosition > 0) {
+    coverage,
+    ({ colorMap }) => {
       const totalCalls = [...colorMap.values()].reduce(
         (sum, e) => sum + e.probabilityCount,
         0,
       )
-      segments.push(
-        ...stackBar(
-          colorMap,
-          position,
-          depthAtPosition / maxDepth,
-          entry => entry.probabilityCount / totalCalls,
-        ),
-      )
-    }
-  }
-  return packSegments(segments)
+      return entry => entry.probabilityCount / totalCalls
+    },
+  )
 }
