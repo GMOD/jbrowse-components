@@ -38,7 +38,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
-import { autorun, observable } from 'mobx'
+import { autorun, observable, reaction } from 'mobx'
 
 import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
 import { readColorCategory } from './colorUtils.ts'
@@ -2999,6 +2999,27 @@ export default function stateModelFactory(
                 self.setScrollTop(self.scrollableHeight)
               }
             }),
+          )
+
+          // Drop a lingering hover tooltip/highlight when the view zooms. A
+          // wheel-zoom leaves the cursor stationary (no mousemove to refresh
+          // it), so the tooltip would pin to a now-wrong bp and re-render every
+          // zoom frame. `reaction` tracks only bpPerPx; its effect is untracked
+          // by construction, so reading the hover state to guard the clear can't
+          // couple it back (setting a hover never self-clears).
+          addDisposer(
+            self,
+            reaction(
+              () => (getContainingView(self) as LGV).bpPerPx,
+              () => {
+                if (
+                  self.featureIdUnderMouse !== undefined ||
+                  self.mouseoverExtraInformation !== undefined
+                ) {
+                  self.clearMouseoverState()
+                }
+              },
+            ),
           )
         },
       }))
