@@ -1,3 +1,5 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+
 import { createTestEnvironment } from './testEnv.ts'
 import { maxBottom } from './yMorph.ts'
 import {
@@ -206,8 +208,59 @@ describe('canvas display fit-to-display-height', () => {
     expect(display.fitHeight).toBe(50)
   })
 
-  // A manual drag-resize leaves grow mode, otherwise the CanvasAutoHeight
-  // autorun snaps the height straight back and the drag appears to do nothing.
+  // Grow drives `height` from the laid-out content reactively — via the `height`
+  // getter, NOT by writing the height config slot. So a settled zoom in grow mode
+  // never mutates the persisted session (no autosave churn) nor bakes a momentary
+  // height into a saved snapshot.
+  it('grow mode drives height from content without writing the height slot', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    const slotBefore = readConfObject(display.configuration, 'height')
+    expect(slotBefore).toBe(100)
+
+    display.setHeightMode('grow')
+    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+
+    // height tracks the grown content (taller than the 100px slot default)...
+    expect(display.height).toBe(display.grownHeight)
+    expect(display.height).toBeGreaterThan(slotBefore)
+    // ...but the persisted config slot is untouched.
+    expect(readConfObject(display.configuration, 'height')).toBe(slotBefore)
+  })
+
+  // The reactive path recomputes as content changes — no autorun needed.
+  it('grow height grows as more content stacks', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setHeightMode('grow')
+    display.setRpcData(0, stackedRegionData(3, 20), view.bpPerPx, ctgA)
+    const small = display.height
+    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    expect(display.height).toBeGreaterThan(small)
+  })
+
+  // Leaving grow bakes the height the user was seeing into the slot — one
+  // deliberate write at the mode switch, so fixed/fit don't snap to the stale
+  // slot default. After the switch the height stops tracking content.
+  it('leaving grow mode bakes the grown height into the slot', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setHeightMode('grow')
+    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    const grown = display.grownHeight
+    expect(display.height).toBe(grown)
+
+    display.setHeightMode('fixed')
+    expect(readConfObject(display.configuration, 'height')).toBe(grown)
+    expect(display.height).toBe(grown)
+
+    // Fixed no longer tracks content: more rows don't change the height.
+    display.setRpcData(0, stackedRegionData(30, 20), view.bpPerPx, ctgA)
+    expect(display.height).toBe(grown)
+  })
+
+  // A manual drag-resize leaves grow mode; the bake-on-exit keeps the height the
+  // user was seeing, then the drag delta applies on top of it.
   it('a manual drag-resize leaves grow mode so the height sticks', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()

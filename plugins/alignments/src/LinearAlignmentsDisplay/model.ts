@@ -839,6 +839,20 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         */
+        // The drag-resizable track height as stored in the config slot — the
+        // viewport budget the grouped layout fits rows into. Read by
+        // `laidOutByGroup` instead of the reactive `height` getter: in grow mode
+        // `height` returns the content-derived `grownHeight`, so routing the
+        // layout through `height` there would make `grownHeight` (which reads the
+        // layout) depend on itself (a MobX computed cycle). In fixed/fit mode this
+        // equals `height`, so layout behavior is unchanged.
+        get fitTargetHeight(): number {
+          return getConf(self, 'height')
+        },
+
+        /**
+         * #getter
          * Whether to draw the supporting-read count on each sashimi arc.
          * Resolved through the promotable-slot tiers (getConfResolved): a track
          * configured `true` pins labels on; otherwise it follows the
@@ -1117,7 +1131,11 @@ export default function stateModelFactory(
         get laidOutByGroup() {
           return layoutGroupsToViewport(this.groupLayoutContext, {
             rowHeight: this.featureHeight + this.featureSpacing,
-            height: self.height,
+            // Grow fits rows to the grow ceiling (content grows the track up to
+            // it, then scrolls); fixed/fit fit to the drag-resizable slot. Reads
+            // the slot (fitTargetHeight), never the reactive `height` getter, so
+            // grow's `height`→grownHeight→layout chain can't cycle.
+            height: self.autoHeight ? GROW_MAX_HEIGHT : this.fitTargetHeight,
             maxHeight: this.maxHeight,
             overhead: belowCoverageBandsGeometry(this.belowCoverageBandsInput)
               .bottom,
@@ -1566,6 +1584,29 @@ export default function stateModelFactory(
          */
         get grownHeight() {
           return Math.min(this.sections.contentHeight, GROW_MAX_HEIGHT)
+        },
+
+        /**
+         * #getter
+         */
+        // In grow mode the track height follows the laid-out content
+        // (`grownHeight`) reactively — no autorun writes the height config slot,
+        // so a settled relayout never churns the persisted session nor bakes a
+        // momentary height. Fixed/fit read the slot (fit shrinks features to fill
+        // it via the fittedHeightPx autorun). `grownHeight` is height-independent
+        // in grow mode because `laidOutByGroup` fits to GROW_MAX_HEIGHT there (not
+        // the reactive `height`) and featureHeight is the configured value (not the
+        // fitted pitch), so returning it here can't cycle. Guarded on
+        // `view.initialized`: grownHeight transitively reads view-geometry getters
+        // that throw before the view is measured, and unlike the former autorun
+        // (whose MobX error-boundary swallowed the pre-init throw) a getter would
+        // propagate it into render/hydration. Overrides TrackHeightMixin.height
+        // (mirrors canvas).
+        get height(): number {
+          const view = getContainingView(self) as LGV
+          return self.autoHeight && view.initialized
+            ? this.grownHeight
+            : (getConf(self, 'height') as number)
         },
 
         /**
@@ -2373,6 +2414,15 @@ export default function stateModelFactory(
            * the display/data change.
            */
           setHeightMode(mode: HeightMode) {
+            // Leaving grow: bake the current grown height into the slot so
+            // fixed/fit start from the height the user was seeing. Grow computes
+            // `height` reactively and never writes the slot, so without this the
+            // track would snap to the stale slot default on switch (mirrors
+            // canvas). Guarded on init so grownHeight's view reads are safe.
+            const view = getContainingView(self) as LGV
+            if (self.autoHeight && mode !== 'grow' && view.initialized) {
+              self.setHeight(self.grownHeight)
+            }
             self.configuration.setSlot('heightMode', mode)
             if (mode !== 'fixed') {
               self.groupMaxHeightOverrides.clear()
@@ -2931,19 +2981,11 @@ export default function stateModelFactory(
               }
             }),
           )
-          // Grow mode: resize the track to fit all reads (at the configured
-          // height, capped at GROW_MAX_HEIGHT). `grownHeight` reads the laid-out
-          // content height, which in grow mode is independent of `self.height`,
-          // so writing it back can't loop. Mirrors the canvas CanvasAutoHeight
-          // autorun.
-          addDisposer(
-            self,
-            autorun(() => {
-              if (self.autoHeight) {
-                self.setHeight(self.grownHeight)
-              }
-            }),
-          )
+          // Grow mode no longer needs an autorun: the `height` getter returns
+          // `grownHeight` reactively (see the getter above), so consumers
+          // recompute when the laid-out content changes without ever writing the
+          // height config slot.
+
           // Keep scrollTop inside the content by construction. Any geometry
           // change — band resize, group collapse/expand/drag, show/hide
           // coverage or pileup, read-connection mode, fit — can shrink

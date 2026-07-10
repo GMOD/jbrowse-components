@@ -493,6 +493,20 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // The drag-resizable track height as stored in the config slot — the
+        // fit target the fit ladder scales content to fill. Read by fitStage /
+        // settledMaxY instead of the reactive `height` getter on purpose: in
+        // grow mode `height` returns the content-derived `grownHeight`, so
+        // routing the fit machinery through `height` there would make
+        // `grownHeight` depend on itself (a MobX computed cycle). In fixed/fit
+        // mode this equals `height`, so fit behavior is unchanged.
+        get fitTargetHeight(): number {
+          return getConf(self, 'height')
+        },
+
+        /**
+         * #getter
+         */
         // Grow mode as a boolean, derived from the unified heightMode slot.
         // Kept for the CanvasAutoHeight autorun and other consumers that read a
         // plain flag.
@@ -1164,7 +1178,7 @@ export default function baseStateModelFactory(
                   { level: 'bodies', layout: () => self.fitBodiesOnlyLayout },
                 ]
               : [{ level: 'full', layout: () => base }],
-            self.height,
+            self.fitTargetHeight,
             fit ? self.fitMinScale : 1,
             fit ? self.fitMaxScale : 1,
           )
@@ -1288,8 +1302,10 @@ export default function baseStateModelFactory(
           const raw = keptRungHeight * scale
           // Snap away a sub-pixel float-epsilon overflow while a fit scale (grow or
           // squeeze) is active, so a fitted track doesn't spuriously scroll (see
-          // snapFittedContentHeight).
-          return snapFittedContentHeight(raw, self.height, scale !== 1)
+          // snapFittedContentHeight). Reads the config-slot height (fitTargetHeight),
+          // not the reactive `height` getter, so grow mode's `height`→grownHeight→
+          // settledMaxY chain can't cycle back on itself.
+          return snapFittedContentHeight(raw, self.fitTargetHeight, scale !== 1)
         },
 
         /**
@@ -1351,9 +1367,29 @@ export default function baseStateModelFactory(
         // Target track height for the persistent `grow` mode: `fitHeight` capped
         // at GROW_MAX_HEIGHT so a dense track doesn't grow to thousands of px
         // (content past the cap scrolls). Shared cap + `grownHeight` getter name
-        // with the alignments display.
+        // with the alignments display. Height-independent (fitHeight reads the
+        // config-slot `fitTargetHeight`, not the reactive `height` getter), so the
+        // `height` getter below can return it in grow mode without cycling.
         get grownHeight() {
           return Math.min(this.fitHeight, GROW_MAX_HEIGHT)
+        },
+
+        /**
+         * #getter
+         */
+        // In grow mode the track height follows the laid-out content
+        // (`grownHeight`) reactively — no autorun writes the height config slot,
+        // so a settled zoom never churns the persisted session nor bakes a
+        // momentary height. Fixed/fit read the slot directly (fit scales content
+        // to fill it). Guarded on `view.initialized`: `grownHeight` transitively
+        // reads view-geometry getters that throw before the view is measured, and
+        // unlike the former autorun (whose MobX error-boundary swallowed the
+        // pre-init throw) a getter would propagate it into render/hydration — so
+        // pre-init we fall back to the slot. Overrides TrackHeightMixin.height.
+        get height(): number {
+          return self.autoHeight && getView(self).initialized
+            ? this.grownHeight
+            : (getConf(self, 'height') as number)
         },
 
         /**
@@ -1972,6 +2008,18 @@ export default function baseStateModelFactory(
         // mutual exclusion is inherent to the single enum. The `laidOutDataMap`
         // getter does the actual fit reactively.
         setHeightMode(mode: HeightMode) {
+          // Leaving grow: bake the current grown height into the slot so fixed/fit
+          // start from the height the user was seeing. Grow computes `height`
+          // reactively and never writes the slot, so without this the track would
+          // snap to the stale slot default on switch. Done once at the deliberate
+          // mode change (guarded on init so grownHeight's view reads are safe).
+          if (
+            self.autoHeight &&
+            mode !== 'grow' &&
+            getView(self).initialized
+          ) {
+            self.setHeight(self.grownHeight)
+          }
           self.configuration.setSlot('heightMode', mode)
           // Entering a non-fixed mode (grow/fit) resets a leftover scrollTop that
           // a reconfigured height contradicts: it can strand the sticky GPU canvas
@@ -2295,28 +2343,10 @@ export default function baseStateModelFactory(
           afterAttach() {
             superAfterAttach()
 
-            // Auto-height (grow): snap height to fit the laid-out content,
-            // capped at GROW_MAX_HEIGHT via grownHeight. settledMaxY derives from
-            // laidOutDataMap, which derives from raw fetch data + coarseBpPerPx
-            // (debounced 500ms) + label visibility — so zoom and label toggles
-            // both flow through here without extra plumbing.
-            // No feedback loop even though this writes self.height and grownHeight
-            // transitively reads it: grow pins the fit scale to 1 (minScale =
-            // maxScale = 1), and neither layoutInputs nor showLabels reads
-            // self.height, so grownHeight is independent of the height it sets. If
-            // a future layout input becomes viewport-height-relative, this
-            // invariant breaks and grow would oscillate — guard it there.
-            addDisposer(
-              self,
-              autorun(
-                () => {
-                  if (self.autoHeight) {
-                    self.setHeight(self.grownHeight)
-                  }
-                },
-                { name: 'CanvasAutoHeight' },
-              ),
-            )
+            // Grow mode no longer needs an autorun: the `height` getter returns
+            // `grownHeight` reactively (see the getter above), so consumers
+            // recompute when the laid-out content changes without ever writing
+            // the height config slot.
 
             // Keep scrollTop within the content whenever the scroll extent
             // shrinks. The morph autorun already clamps on a layout change, but
