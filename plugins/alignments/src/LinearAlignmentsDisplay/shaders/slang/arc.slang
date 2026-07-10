@@ -54,6 +54,10 @@ struct VsOut {
   float4 color    : COLOR0;
   float  dist     : COLOR1;
   float  dashed   : COLOR2;
+  // Screen x in CSS px (interpolated) — drives the dash pattern. Deliberately
+  // NOT fragIn.position.x (physical px), which would halve the dash period on a
+  // dpr=2 display and diverge from the Canvas2D setLineDash([3,3]) mirror.
+  float  screenPx : COLOR3;
 };
 
 // arcColorByIndex is shared from alignmentsUniforms (also used by arcLine).
@@ -149,6 +153,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float lw = u.lineWidthPx;
   float hw = lw * 0.5 + 1.0;
   float2 off = pos + normal * hw * side;
+  o.screenPx = off.x;
   float clipX = (off.x / u.canvasW) * 2.0 - 1.0;
   float clipY = 1.0 - ((off.y + u.covOffset) / u.canvasH) * 2.0;
   o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
@@ -173,7 +178,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   // Split-read flat arcs render dashed (samplot.py's dotted style).
-  if (fragIn.dashed > 0.5 && frac(fragIn.position.x / 6.0) > 0.5) { discard; }
+  if (fragIn.dashed > 0.5 && frac(fragIn.screenPx / 6.0) > 0.5) { discard; }
   float hw = u.lineWidthPx * 0.5;
   float d = abs(fragIn.dist);
   float aa = fwidth(fragIn.dist);
