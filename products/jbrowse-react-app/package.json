@@ -59,6 +59,7 @@
     "@jbrowse/plugin-gff3": "workspace:^",
     "@jbrowse/plugin-grid-bookmark": "workspace:^",
     "@jbrowse/plugin-gtf": "workspace:^",
+    "@jbrowse/plugin-gwas": "workspace:^",
     "@jbrowse/plugin-hic": "workspace:^",
     "@jbrowse/plugin-legacy-jbrowse": "workspace:^",
     "@jbrowse/plugin-linear-comparative-view": "workspace:^",
