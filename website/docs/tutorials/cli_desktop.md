@@ -67,7 +67,8 @@ After the commands above, `myproject/` holds `config.json` next to
 
 ## Open it in JBrowse Desktop
 
-In JBrowse Desktop, choose **File → Open session…** and pick
+In JBrowse Desktop, choose **File → Open session or config…** (or the **Open
+session or config file** button on the start screen) and pick
 `myproject/config.json`. Desktop resolves each relative path against the
 config's own folder, loading the copied files straight from local disk — no web
 server, no re-adding tracks through the UI.
