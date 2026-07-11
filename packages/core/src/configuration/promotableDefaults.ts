@@ -141,9 +141,9 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
 }
 
 /**
- * #api core/configuration
  * Whether this track pins the slot (holds a non-default value) rather than
- * inheriting the session-wide promoted default.
+ * inheriting the session-wide promoted default. Module-internal (exercised by
+ * promotableDefaults.test.ts); not part of the public barrel.
  */
 export function isSlotPinned(self: PromotableDisplay, slot: string): boolean {
   return resolveSlot(self, slot).pinned
@@ -187,9 +187,8 @@ export function resolvePromotableConfigSnapshot(
 }
 
 /**
- * #api core/configuration
  * true when every listed slot's resolved value already equals its session-wide
- * promoted default — drives the track-menu "make default" checkbox.
+ * promoted default. Module-internal — backs `makeCurrentValueSessionDefaultControl`.
  */
 export function areSlotsAtSessionDefault(
   self: PromotableDisplay,
@@ -202,13 +201,13 @@ export function areSlotsAtSessionDefault(
 }
 
 /**
- * #api core/configuration
  * Explicit setter for a group of slots' session-wide default: `promote` stores
  * each slot's current resolved value as the default for this display type;
  * `!promote` clears it so sibling tracks fall back to their own config. The
  * caller decides direction — pass `!areSlotsAtSessionDefault(...)` to toggle at
  * the point of use. Grouping (e.g. featureHeight + featureSpacing) keeps a
- * multi-slot setting behind one "make default" item.
+ * multi-slot setting behind one "make default" item. Module-internal — backs
+ * `makeCurrentValueSessionDefaultControl`.
  */
 export function setSlotsSessionDefault(
   self: PromotableDisplay,
@@ -226,12 +225,12 @@ export function setSlotsSessionDefault(
 }
 
 /**
- * #api core/configuration
  * Whether a *specific* value is the session-wide promoted default for this slot,
- * independent of the track's current value. Use for an always-visible "make this
- * the default for all tracks" control whose meaning is "promote this on-value"
- * (e.g. a per-mode toggle), rather than the value-dependent
- * `areSlotsAtSessionDefault` used by "promote whatever is current" controls.
+ * independent of the track's current value. Backs the always-visible per-value
+ * "make this the default" controls (`makeSessionDefaultControl` /
+ * `makeSlotsValueSessionDefaultControl`), whose meaning is "promote this
+ * on-value" rather than the value-dependent `areSlotsAtSessionDefault` used by
+ * "promote whatever is current" controls. Module-internal.
  */
 export function isSlotValueSessionDefault(
   self: PromotableDisplay,
@@ -242,9 +241,9 @@ export function isSlotValueSessionDefault(
 }
 
 /**
- * #api core/configuration
  * Promote a specific value as the session-wide default for this slot (`on`), or
  * clear the default (`!on`). Pair with `isSlotValueSessionDefault`.
+ * Module-internal — backs the per-value `make*Control` factories.
  */
 export function setSlotValueSessionDefault(
   self: PromotableDisplay,

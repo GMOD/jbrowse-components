@@ -8,13 +8,11 @@ import {
 import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import {
   ConfigurationReference,
-  areSlotsAtSessionDefault,
   getConf,
   getConfResolved,
   makeCurrentValueSessionDefaultControl,
   makeSessionDefaultControl,
   makeSlotsValueSessionDefaultControl,
-  setSlotsSessionDefault,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -747,12 +745,6 @@ export default function stateModelFactory(
         // cascade.
         get colorBy(): ColorBy {
           return getConfResolved<ColorBy>(self, 'colorBy')
-        },
-
-        // true when the current color scheme already equals the session-wide
-        // default (drives the "use as default" checkbox in the Color by menu)
-        get isColorByDefault(): boolean {
-          return areSlotsAtSessionDefault(self, ['colorBy'])
         },
 
         /**
@@ -2141,17 +2133,6 @@ export default function stateModelFactory(
               self.colorTagMap = {}
             }
             self.configuration.setSlot('colorBy', colorBy)
-          },
-
-          /**
-           * #action
-           */
-          // Promote (or clear) the current color scheme as the session-wide
-          // default for this display type. Every alignments track that hasn't
-          // pinned a scheme picks it up through the colorBy getter (a tier-1
-          // change: the un-pinned tracks refetch).
-          setColorByDefault(promote: boolean) {
-            setSlotsSessionDefault(self, ['colorBy'], promote)
           },
 
           /**

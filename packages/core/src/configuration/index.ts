@@ -23,18 +23,13 @@ export {
 } from './slotFacade.ts'
 export type { SlotFacade } from './slotFacade.ts'
 export {
-  areSlotsAtSessionDefault,
   clearDisplaySessionDefaults,
   displaySessionDefaultChanges,
   getConfResolved,
-  isSlotPinned,
-  isSlotValueSessionDefault,
   makeCurrentValueSessionDefaultControl,
   makeSessionDefaultControl,
   makeSlotsValueSessionDefaultControl,
   resolvePromotableConfigSnapshot,
-  setSlotValueSessionDefault,
-  setSlotsSessionDefault,
 } from './promotableDefaults.ts'
 export type {
   PromotableDisplay,

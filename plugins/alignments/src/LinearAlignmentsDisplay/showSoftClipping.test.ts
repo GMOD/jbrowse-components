@@ -784,7 +784,6 @@ describe('alignments colorBy session default', () => {
   it('resolves to normal by default with no config and no session default', () => {
     const { display } = createDisplay()
     expect(display.colorBy).toEqual({ type: 'normal' })
-    expect(display.isColorByDefault).toBe(false)
   })
 
   it('follows a session-wide scheme when the track is not pinned', () => {
@@ -795,7 +794,6 @@ describe('alignments colorBy session default', () => {
       methylation,
     )
     expect(display.colorBy).toEqual(methylation)
-    expect(display.isColorByDefault).toBe(true)
     expect(display.sessionDefaultChanges()).toEqual([
       { path: ['colorBy'], from: { type: 'normal' }, to: methylation },
     ])
@@ -868,30 +866,6 @@ describe('alignments colorBy session default', () => {
     })
     expect(display.colorBy).toEqual({ type: 'normal' })
     expect(display.sessionDefaultChanges()).toEqual([])
-  })
-
-  describe('setColorByDefault', () => {
-    it('promotes the current scheme to the session default', () => {
-      const { session, display } = createDisplay({ colorBy: methylation })
-      expect(display.isColorByDefault).toBe(false)
-
-      display.setColorByDefault(true)
-      expect(
-        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'colorBy'),
-      ).toEqual(methylation)
-      expect(display.isColorByDefault).toBe(true)
-    })
-
-    it('clears the session default when promote is false', () => {
-      const { session, display } = createDisplay({ colorBy: methylation })
-      display.setColorByDefault(true)
-      expect(display.isColorByDefault).toBe(true)
-
-      display.setColorByDefault(false)
-      expect(
-        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'colorBy'),
-      ).toBeUndefined()
-    })
   })
 })
 
