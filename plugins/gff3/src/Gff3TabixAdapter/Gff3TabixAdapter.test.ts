@@ -70,6 +70,42 @@ describe('adapter can fetch features from volvox.gff3', () => {
   })
 })
 
+describe('redispatch when features extend beyond the query', () => {
+  it('assembles a full gene when the query lands inside it', async () => {
+    const adapter = new Gff3TabixAdapter(
+      configSchema.create({
+        gffGzLocation: {
+          localPath: require.resolve('../test_data/volvox.sort.gff3.gz'),
+        },
+        index: {
+          location: {
+            localPath: require.resolve('../test_data/volvox.sort.gff3.gz.tbi'),
+          },
+        },
+      }),
+    )
+    // a narrow window near the 3' end of the EDEN gene (ctgA:1050-9000); its 5'
+    // CDS segments fall outside the window and are only recovered because the
+    // spanning gene line triggers a single redispatch to the gene's full bounds
+    const features = adapter.getFeatures({
+      refName: 'ctgA',
+      start: 7000,
+      end: 7100,
+      assemblyName: 'volvox',
+    })
+    const featuresArray = await firstValueFrom(features.pipe(toArray()))
+    const eden = featuresArray.map(f => f.toJSON()).find(f => f.name === 'EDEN')
+    expect(eden).toBeDefined()
+    const mrna1 = eden!.subfeatures!.find(f => f.name === 'EDEN.1')!
+    const cdsStarts = mrna1.subfeatures!
+      .filter(f => f.type === 'CDS')
+      .map(f => f.start)
+    // includes the 5' CDS at interbase 1200, far outside the [7000, 7100] query
+    expect(Math.min(...cdsStarts)).toBeLessThan(7000)
+    expect(cdsStarts).toContain(1200)
+  })
+})
+
 describe('discontinuous feature parsing', () => {
   it('keeps every segment of a CDS that shares one ID across lines', async () => {
     const adapter = new Gff3TabixAdapter(

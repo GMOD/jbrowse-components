@@ -8,13 +8,13 @@ import {
 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { extractType, parseRecords } from 'gff-nostream'
+import { readTabixLines } from '@jbrowse/core/util/tabix'
+import { parseRecords } from 'gff-nostream'
 
 import type { Gff3TabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
-import type { LineRecord } from 'gff-nostream'
 
 export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAdapterConfig> {
   private configured?: Promise<{
@@ -92,7 +92,14 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
     return ObservableCreate<Feature>(async observer => {
       try {
         const { gff, dontRedispatchSet } = await this.configure(opts)
-        const fetchLines = (region: Region) => readLines(gff, region, opts)
+        const fetchLines = (region: Region) =>
+          readTabixLines(
+            gff,
+            region.refName,
+            region.start,
+            region.end,
+            opts.statusCallback,
+          )
 
         let lines = await fetchLines(query)
 
@@ -134,35 +141,4 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
       }
     }, opts.stopToken)
   }
-}
-
-// The parser only reads `line`; the extra fields are ours. `offset` (the tabix
-// byte offset) mints a stable per-feature id, and start/end/type feed the
-// redispatch calculation that runs before any line is parsed.
-interface GffLine extends LineRecord {
-  offset: number
-  start: number
-  end: number
-  type: string
-}
-
-function readLines(gff: TabixIndexedFile, query: Region, opts: BaseOptions) {
-  const lines: GffLine[] = []
-  return downloadStatus(
-    'Downloading features',
-    opts.statusCallback,
-    onProgress =>
-      gff.getLines(query.refName, query.start, query.end, {
-        lineCallback: (line, fileOffset, start, end) => {
-          lines.push({
-            line,
-            offset: fileOffset,
-            start,
-            end,
-            type: extractType(line),
-          })
-        },
-        onProgress,
-      }),
-  ).then(() => lines)
 }
