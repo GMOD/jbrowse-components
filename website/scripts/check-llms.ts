@@ -71,7 +71,30 @@ if (deadLinks.length > 0) {
   )
 }
 
+// Every doc page advertises its raw markdown via <link rel="alternate"
+// type="text/markdown" href="…/docs/<slug>.md"> (BaseLayout). Confirm each of
+// those hrefs resolves to an emitted file.
+const BASE = process.env.SITE_BASE_PATH || '/jb2'
+const ALTERNATE =
+  /<link\b[^>]*rel="alternate"[^>]*type="text\/markdown"[^>]*href="([^"]+)"/g
+const badAlternates = walkFiles(distDir, name => name.endsWith('.html')).flatMap(
+  html =>
+    [...readFileSync(html, 'utf8').matchAll(ALTERNATE)]
+      .map(match => match[1]!.replace(/^https?:\/\/[^/]+/, ''))
+      .filter(href => href.startsWith(`${BASE}/`))
+      .map(href => href.slice(BASE.length))
+      .filter(docsPath => !isFile(join(distDir, docsPath)))
+      .map(docsPath => ({ html: html.slice(distDir.length + 1), docsPath })),
+)
+if (badAlternates.length > 0) {
+  problems.push(
+    `${badAlternates.length} <link rel="alternate"> href(s) do not resolve:`,
+    ...badAlternates.map(({ html, docsPath }) => `  ${html} → ${docsPath}`),
+    '',
+  )
+}
+
 reportProblems(
   problems,
-  `All ${expectedSlugs.length} docs emitted as raw markdown; llms.txt links resolve.`,
+  `All ${expectedSlugs.length} docs emitted as raw markdown; llms.txt and rel=alternate links resolve.`,
 )

@@ -6,7 +6,7 @@ import CopyMarkdown from '../components/CopyMarkdown.astro'
 import SidebarItem from '../components/SidebarItem.astro'
 import TableOfContents from '../components/TableOfContents.astro'
 import { baseUrl } from '../lib/base-url.ts'
-import { buildSidebar } from '../lib/docs-sidebar.ts'
+import { buildSidebar, entrySlug } from '../lib/docs-sidebar.ts'
 
 import type { TocItem } from '../lib/rehype-collect-toc.ts'
 
@@ -28,6 +28,13 @@ const {
 
 const allDocs = await getCollection('docs')
 const sidebar = buildSidebar(allDocs, baseUrl)
+// Raw-Markdown alternate emitted by emit-raw-markdown.ts (introduction, whose
+// slug is "", lives at index.md). Only real doc-collection pages get one — a
+// landing page reusing this layout (e.g. /docs/tutorials/) has no emitted .md.
+const isRealDoc = allDocs.some(doc => entrySlug(doc.id) === currentSlug)
+const mdHref = isRealDoc
+  ? `${baseUrl}/docs/${currentSlug || 'index'}.md`
+  : undefined
 ---
 
 <SidebarLayout
@@ -35,6 +42,7 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   description={description}
   toggleLabel="Contents"
   navLabel="Documentation navigation"
+  mdHref={mdHref}
 >
   <ul slot="nav">
     {sidebar.map(item => <SidebarItem item={item} currentSlug={currentSlug} />)}

@@ -6,12 +6,13 @@ interface Props {
   description?: string
   toggleLabel: string
   navLabel: string
+  mdHref?: string
 }
 
-const { title, description, toggleLabel, navLabel } = Astro.props
+const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} mdHref={mdHref}>
   <div class="sidebar-layout">
     <button
       class="sidebar-toggle"

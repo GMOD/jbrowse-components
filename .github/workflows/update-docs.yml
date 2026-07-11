@@ -42,5 +42,10 @@ jobs:
       - name: Upload to S3 and invalidate CloudFront cache
         run: |
           rclone --config rclone.conf sync disthash: s3:jbrowse.org/jb2 --checksum --fast-list
-          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/jb2/*"
+          # Also publish llms.txt at the domain root — the location AI tools
+          # look for it (llmstxt.org). Its links are already absolute /jb2 URLs,
+          # so the same file works verbatim at the apex.
+          aws s3 cp dist/llms.txt s3://jbrowse.org/llms.txt \
+            --region us-east-1 --content-type "text/plain; charset=utf-8"
+          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/jb2/*" "/llms.txt"
         working-directory: website

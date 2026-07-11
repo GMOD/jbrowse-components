@@ -8,10 +8,17 @@ import { navLinks } from '../lib/nav.ts'
 interface Props {
   title?: string
   description?: string
+  // When set, advertises a raw-Markdown alternate of this page (for LLMs) via
+  // a <link rel="alternate" type="text/markdown">.
+  mdHref?: string
 }
 const DEFAULT_DESCRIPTION =
   'JBrowse is a pluggable, open-source platform for genome visualization — linear, circular, dotplot, and synteny views, structural variant inspection, and alignments, running on the web, on desktop, or embedded in your own app.'
-const { title = 'JBrowse', description = DEFAULT_DESCRIPTION } = Astro.props
+const {
+  title = 'JBrowse',
+  description = DEFAULT_DESCRIPTION,
+  mdHref,
+} = Astro.props
 const pathname = Astro.url.pathname
 const ogImage = new URL(`${baseUrl}/img/jbrowse-og.png`, Astro.site).href
 
@@ -43,6 +50,11 @@ const navActive = styles.navActive!
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <link rel="canonical" href={Astro.url.href} />
+    {
+      mdHref && (
+        <link rel="alternate" type="text/markdown" href={mdHref} title="Markdown" />
+      )
+    }
     <link rel="sitemap" href={`${baseUrl}/sitemap.xml`} />
     <link
       rel="alternate"
