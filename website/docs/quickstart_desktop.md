@@ -31,7 +31,7 @@ to Applications.
 Download the latest Linux AppImage release (`.AppImage`) and start it in one of
 two ways.
 
-**In the terminal** — make the file executable, then run it:
+In the terminal — make the file executable, then run it:
 
 ```sh
 # Make the AppImage file executable, only need to do this once
@@ -40,7 +40,7 @@ chmod a+x jbrowse-desktop-*-linux.AppImage
 ./jbrowse-desktop-*-linux.AppImage
 ```
 
-**In your file explorer** — right-click the AppImage, open "Properties", go to
+In your file explorer — right-click the AppImage, open "Properties", go to
 the "Permissions" tab, and check "Allow executing file as program" (steps may
 vary by distribution). You can now double-click the AppImage to launch JBrowse.
 

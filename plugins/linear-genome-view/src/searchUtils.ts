@@ -5,6 +5,7 @@ import {
   getEnv,
   getSession,
 } from '@jbrowse/core/util'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { parseLocStrings } from './LinearGenomeView/util.ts'
 
@@ -69,7 +70,11 @@ export async function navToOption({
   option: BaseResult
   assemblyName: string
 }) {
-  const location = option.getLocation() ?? option.getLabel()
+  // getLocation() can be an empty string when a result reports hasLocation()
+  // but carries no coordinates; treat that as "no location" and fall back to
+  // the label rather than forwarding '' into an empty, view-blanking parse
+  const rawLocation = option.getLocation()
+  const location = rawLocation ? rawLocation : option.getLabel()
   const trackId = option.getTrackId()
   const session = getSession(model)
   const { assemblyManager } = session
@@ -80,7 +85,7 @@ export async function navToOption({
     assemblyName,
     0.2,
   )
-  if (trackId) {
+  if (trackId && isAlive(model)) {
     model.showTrack(trackId)
   }
 
@@ -139,6 +144,10 @@ export async function handleSelectedRegion({
       assembly,
     })
 
+    // the view may have been closed/detached while the text-search RPC ran
+    if (!isAlive(model)) {
+      return
+    }
     if (results.length > 1) {
       model.setSearchResults(results, input.toLowerCase(), assemblyName)
     } else if (results.length === 1) {

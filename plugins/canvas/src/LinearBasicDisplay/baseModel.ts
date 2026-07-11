@@ -335,13 +335,6 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
-        // Region index of the hovered feature, captured from the hit test so a
-        // click/right-click acts on it directly instead of re-resolving the
-        // feature's region from featureItemMap. Set/cleared with the hover ids.
-        hoveredRegionIndex: undefined as number | undefined,
-        /**
-         * #volatile
-         */
         mouseoverExtraInformation: undefined as string | undefined,
         /**
          * #volatile
@@ -1629,12 +1622,10 @@ export default function baseStateModelFactory(
           featureId: string | null,
           subfeatureId: string | null,
           tooltip: string | undefined,
-          displayedRegionIndex: number,
         ) {
           self.featureIdUnderMouse = featureId
           self.subfeatureIdUnderMouse = subfeatureId
           self.mouseoverExtraInformation = tooltip
-          self.hoveredRegionIndex = displayedRegionIndex
         },
 
         /**
@@ -1644,7 +1635,6 @@ export default function baseStateModelFactory(
           self.featureIdUnderMouse = null
           self.subfeatureIdUnderMouse = null
           self.mouseoverExtraInformation = undefined
-          self.hoveredRegionIndex = undefined
         },
 
         /**
@@ -1936,7 +1926,6 @@ export default function baseStateModelFactory(
             // overlap the menu. closeContextMenu clears all of this again.
             self.featureIdUnderMouse = featureInfo.featureId
             self.subfeatureIdUnderMouse = null
-            self.hoveredRegionIndex = displayedRegionIndex
             self.mouseoverExtraInformation = undefined
           },
         }

@@ -199,7 +199,12 @@ export function performMultiRegionHitDetection(
         }
 
         if (indexes.feature) {
-          const idx = indexes.feature.search(bpPos, yPos, bpPos, yPos)[0]
+          // Like subfeatures: features' hit boxes are padded by label width and
+          // can overlap a neighbor's box, so pick the topmost (last-painted =
+          // largest index) rather than whatever Flatbush yields first.
+          const idx = topmostMatch(
+            indexes.feature.search(bpPos, yPos, bpPos, yPos),
+          )
           if (idx !== undefined) {
             return {
               feature: data.flatbushItems[idx]!,

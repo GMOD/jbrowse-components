@@ -4,8 +4,8 @@ description: Learn how to show BAM and CRAM files
 guide_category: Track types
 ---
 
-An alignments track shows BAM/CRAM reads two ways at once: a **coverage**
-histogram on top (read depth at each position) and a **pileup** below (one box
+An alignments track shows BAM/CRAM reads two ways at once: a coverage
+histogram on top (read depth at each position) and a pileup below (one box
 per read). Open a track, zoom to base level, and most of what you need is
 already on screen — the sections below cover the track-menu options you'll reach
 for most often.

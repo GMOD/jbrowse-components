@@ -378,6 +378,52 @@ test('maxBpPerPx never drops below minBpPerPx for tiny regions', () => {
   expect(model.maxBpPerPx).toBe(model.minBpPerPx)
 })
 
+test.each([['empty', ''], ['whitespace', '   ']])(
+  'navToLocString(%s) does not blank a populated view',
+  async (_name, input) => {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        id: `no-blank-${_name}`,
+        type: 'LinearGenomeView',
+        tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+    ])
+    const before = model.displayedRegions.length
+
+    await model.navToLocString(input)
+
+    expect(model.displayedRegions.length).toBe(before)
+    expect(model.displayedRegions[0]!.refName).toBe('ctgA')
+  },
+)
+
+test('navToLocations([]) is a no-op and does not blank the view', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'no-blank-empty-locations',
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+  ])
+
+  await model.navToLocations([])
+
+  expect(model.displayedRegions.length).toBe(1)
+  expect(model.displayedRegions[0]!.refName).toBe('ctgA')
+})
+
 test('can instantiate a model that has multiple displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({

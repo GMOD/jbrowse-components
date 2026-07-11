@@ -4,29 +4,14 @@ import { SimpleFeature, downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { calculateRedispatchRange } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { readTabixLines } from '@jbrowse/core/util/tabix'
 
-import {
-  aggregateGtfFeatures,
-  extractType,
-  parseGtfToFeatures,
-} from '../util.ts'
+import { aggregateGtfFeatures, parseGtfToFeatures } from '../util.ts'
 
-import type { GtfLineRecord } from '../util.ts'
 import type { GtfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-
-// The parser only reads `line`; the extra fields are ours. `offset` (the tabix
-// byte offset) mints a stable per-feature id that survives redispatch and
-// panning, and start/end/type feed the redispatch calculation that runs before
-// any line is parsed.
-interface GtfLine extends GtfLineRecord {
-  offset: number
-  start: number
-  end: number
-  type: string
-}
 
 export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdapterConfig> {
   private configured?: Promise<{
@@ -105,7 +90,14 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
     return ObservableCreate<Feature>(async observer => {
       try {
         const { gtf, dontRedispatchSet } = await this.configure(opts)
-        const fetchLines = (region: Region) => readLines(gtf, region, opts)
+        const fetchLines = (region: Region) =>
+          readTabixLines(
+            gtf,
+            region.refName,
+            region.start,
+            region.end,
+            opts.statusCallback,
+          )
 
         let lines = await fetchLines(query)
 
@@ -147,25 +139,4 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
       }
     }, opts.stopToken)
   }
-}
-
-function readLines(gtf: TabixIndexedFile, query: Region, opts: BaseOptions) {
-  const lines: GtfLine[] = []
-  return downloadStatus(
-    'Downloading features',
-    opts.statusCallback,
-    onProgress =>
-      gtf.getLines(query.refName, query.start, query.end, {
-        lineCallback: (line, fileOffset, start, end) => {
-          lines.push({
-            line,
-            offset: fileOffset,
-            start,
-            end,
-            type: extractType(line),
-          })
-        },
-        onProgress,
-      }),
-  ).then(() => lines)
 }

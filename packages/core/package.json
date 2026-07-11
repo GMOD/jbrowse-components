@@ -143,6 +143,7 @@
     "./util/simpleFeature": "./src/util/simpleFeature.ts",
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
+    "./util/tabix": "./src/util/tabix.ts",
     "./util/tracks": "./src/util/tracks.ts",
     "./util/tss-react": "./src/util/tss-react/index.ts",
     "./util/tss-react/types": "./src/util/tss-react/types.ts",
@@ -696,6 +697,10 @@
         "types": "./esm/util/stopToken.d.ts",
         "import": "./esm/util/stopToken.js"
       },
+      "./util/tabix": {
+        "types": "./esm/util/tabix.d.ts",
+        "import": "./esm/util/tabix.js"
+      },
       "./util/tracks": {
         "types": "./esm/util/tracks.d.ts",
         "import": "./esm/util/tracks.js"
@@ -1107,6 +1112,9 @@
         ],
         "util/stopToken": [
           "esm/util/stopToken.d.ts"
+        ],
+        "util/tabix": [
+          "esm/util/tabix.d.ts"
         ],
         "util/tracks": [
           "esm/util/tracks.d.ts"

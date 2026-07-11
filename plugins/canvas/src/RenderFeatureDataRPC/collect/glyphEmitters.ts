@@ -93,6 +93,7 @@ function processTranscriptLayout(
   transcript: FeatureLayout,
   transcriptTopPx: number,
   parentFeature: Feature,
+  isRoot: boolean,
   flatbushIdx: number,
   ctx: RenderContext,
   collector: Collector,
@@ -111,37 +112,43 @@ function processTranscriptLayout(
 
   emitExonRects(transcript, transcriptTopPx, ctx, flatbushIdx, collector)
 
-  // Transcript metadata: subfeature hit info + floating label
-  const transcriptStart = transcriptFeature.get('start')
-  const transcriptEnd = transcriptFeature.get('end')
-  const transcriptType = transcriptFeature.get('type')
-  const transcriptName = getFeatureName(transcriptFeature)
+  // Transcript metadata: subfeature hit info + floating label. Skipped when the
+  // transcript is itself the top-level feature (a standalone mRNA with no gene
+  // wrapper) — it already has its own flatbush entry and name label from
+  // processFeatureRecord, so self-registering would double-draw the label and
+  // shadow the feature's own mouseover tooltip. Mirrors emitBox's isRoot guard.
+  if (!isRoot) {
+    const transcriptStart = transcriptFeature.get('start')
+    const transcriptEnd = transcriptFeature.get('end')
+    const transcriptType = transcriptFeature.get('type')
+    const transcriptName = getFeatureName(transcriptFeature)
 
-  collector.subfeatureInfos.push({
-    kind: 'subfeature',
-    featureId: transcriptFeature.id(),
-    parentFeatureId: parentFeature.id(),
-    type: transcriptType,
-    startBp: transcriptStart,
-    endBp: transcriptEnd,
-    topPx: transcriptTopPx,
-    bottomPx: transcriptTopPx + transcript.totalLayoutHeight,
-    displayLabel: transcriptName,
-  })
-
-  emitSubfeatureLabel(
-    {
+    collector.subfeatureInfos.push({
+      kind: 'subfeature',
       featureId: transcriptFeature.id(),
-      displayLabel: transcriptName,
-      featureHeight: transcript.height,
-      minX: transcriptStart,
-      maxX: transcriptEnd,
-      topY: transcriptTopPx,
       parentFeatureId: parentFeature.id(),
-    },
-    ctx,
-    collector,
-  )
+      type: transcriptType,
+      startBp: transcriptStart,
+      endBp: transcriptEnd,
+      topPx: transcriptTopPx,
+      bottomPx: transcriptTopPx + transcript.totalLayoutHeight,
+      displayLabel: transcriptName,
+    })
+
+    emitSubfeatureLabel(
+      {
+        featureId: transcriptFeature.id(),
+        displayLabel: transcriptName,
+        featureHeight: transcript.height,
+        minX: transcriptStart,
+        maxX: transcriptEnd,
+        topY: transcriptTopPx,
+        parentFeatureId: parentFeature.id(),
+      },
+      ctx,
+      collector,
+    )
+  }
 
   emitStrandArrow(
     transcriptFeature,
@@ -544,6 +551,7 @@ function emitGlyph(
         layout,
         baseTopPx,
         parentFeature,
+        isRoot,
         flatbushIdx,
         ctx,
         collector,

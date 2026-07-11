@@ -4,7 +4,7 @@ import {
   localStorageSetItem,
   parseLocString,
 } from '@jbrowse/core/util'
-import { addDisposer } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
@@ -231,6 +231,12 @@ async function applyInit(self: LinearGenomeViewModel, init: InitState) {
     await openTracklist(self, session)
   }
   await navigateInit(self, session, init)
+  // the view may have been removed while the assembly/navigation resolved;
+  // the mutations below (and setInit in the caller's finally) would throw on a
+  // detached node
+  if (!isAlive(self)) {
+    return
+  }
   showInitTracks(self, init)
   if (init.nav !== undefined) {
     self.setHideHeader(!init.nav)
@@ -275,8 +281,11 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
           await applyInit(self, init)
         } finally {
           // always clear init (even on a thrown apply) so a re-entrant run
-          // early-returns, and release the guard for any future setInit
-          self.setInit(undefined)
+          // early-returns, and release the guard for any future setInit;
+          // guard isAlive since the apply may have detached the view
+          if (isAlive(self)) {
+            self.setInit(undefined)
+          }
           applyingInit = false
         }
       },

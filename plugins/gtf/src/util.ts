@@ -240,14 +240,6 @@ export function parseGtfToFeatures<R extends GtfLineRecord>(
   )
 }
 
-/** Read the feature type (column 3) from a raw GTF line without a full split. */
-export function extractType(line: string) {
-  const t1 = line.indexOf('\t')
-  const t2 = line.indexOf('\t', t1 + 1)
-  const t3 = line.indexOf('\t', t2 + 1)
-  return line.slice(t2 + 1, t3)
-}
-
 /**
  * GTF has no spanning gene line, so a gene is synthesized by grouping transcript
  * features that share `aggregateField` (e.g. gene_name) and spanning them. Any

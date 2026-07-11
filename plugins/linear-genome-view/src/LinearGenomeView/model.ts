@@ -35,7 +35,13 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  cast,
+  getParent,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import { when } from 'mobx'
 
@@ -1946,6 +1952,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (assemblyName) {
           await assemblyManager.waitForAssembly(assemblyName)
         }
+        if (!isAlive(self)) {
+          return
+        }
         await handleSelectedRegion({
           input,
           assemblyName,
@@ -1970,6 +1979,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         assemblyName?: string,
         grow?: number,
       ) {
+        // an empty parse (e.g. blank/whitespace locstring) must not fall
+        // through to the multi-region branch below, which would call
+        // setDisplayedRegions([]) and blank the view
+        if (regions.length === 0) {
+          return
+        }
         const { assemblyManager } = getSession(self)
         await when(() => self.volatileWidth !== undefined)
 
@@ -1980,6 +1995,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
           assemblyName,
           grow,
         })
+
+        // the view may have been closed/detached while the assembly loaded
+        if (!isAlive(self)) {
+          return
+        }
+        if (locations.length === 0) {
+          return
+        }
 
         // Handle single location case
         if (locations.length === 1) {

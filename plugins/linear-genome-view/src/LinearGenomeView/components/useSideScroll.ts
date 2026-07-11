@@ -8,6 +8,7 @@ export function useSideScroll(model: LinearGenomeViewModel) {
   // refs are to store these variables to avoid repeated rerenders associated
   // with useState/setState
   const scheduledRef = useRef(false)
+  const rafRef = useRef<number | null>(null)
 
   const prevXRef = useRef(0)
 
@@ -20,7 +21,8 @@ export function useSideScroll(model: LinearGenomeViewModel) {
       // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
       if (distance && !scheduledRef.current) {
         scheduledRef.current = true
-        window.requestAnimationFrame(() => {
+        rafRef.current = window.requestAnimationFrame(() => {
+          rafRef.current = null
           model.horizontalScroll(-distance)
           scheduledRef.current = false
           prevXRef.current = currX
@@ -41,6 +43,13 @@ export function useSideScroll(model: LinearGenomeViewModel) {
       return () => {
         window.removeEventListener('mousemove', globalMouseMove, true)
         window.removeEventListener('mouseup', globalMouseUp, true)
+        // drop a frame queued mid-drag so it can't fire a stray scroll after
+        // release/unmount (matches useWheelScroll's cleanup)
+        if (rafRef.current !== null) {
+          window.cancelAnimationFrame(rafRef.current)
+          rafRef.current = null
+        }
+        scheduledRef.current = false
       }
     }
     return undefined

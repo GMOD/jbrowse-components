@@ -243,9 +243,9 @@ export function emitSubfeatureLabel(
       parentFeatureId: args.parentFeatureId,
       theme: ctx.theme,
     })
-    // Merge, don't replace: a standalone top-level transcript already has a
-    // name/description entry under this same id from processFeatureRecord, and
-    // FeatureLabelData carries name/description and subfeature labels together.
+    // Merge, don't replace: FeatureLabelData carries name/description and
+    // subfeature labels together, so preserve any name/description entry already
+    // recorded for this id rather than clobbering it.
     collector.floatingLabelsData[featureId] = {
       ...collector.floatingLabelsData[featureId],
       featureId,

@@ -75,7 +75,6 @@ export interface LinearBasicDisplayModel {
   highlightedFeatureIds: string[]
   featureIdUnderMouse: string | null
   subfeatureIdUnderMouse: string | null
-  hoveredRegionIndex: number | undefined
   hoveredFeature: FlatbushItem | null
   hoveredSubfeature: SubfeatureInfo | null
   flatbushIndexes: ReadonlyMap<number, FlatbushRegionIndexes>
@@ -105,7 +104,6 @@ export interface LinearBasicDisplayModel {
     featureId: string | null,
     subfeatureId: string | null,
     tooltip: string | undefined,
-    displayedRegionIndex: number,
   ) => void
   selectFeatureById: (
     featureId: string,
@@ -457,7 +455,6 @@ const FeatureBody = observer(function FeatureBody({
         result.feature.featureId,
         result.subfeature?.featureId ?? null,
         hoverTooltip(result),
-        result.displayedRegionIndex,
       )
     } else {
       model.clearHover()
@@ -512,7 +509,7 @@ const FeatureBody = observer(function FeatureBody({
   const onLabelMouseOver = useCallback(
     (item: FlatbushItem, displayedRegionIndex: number, e: React.MouseEvent) => {
       setClientXY([e.clientX, e.clientY])
-      model.setHover(item.featureId, null, item.tooltip, displayedRegionIndex)
+      model.setHover(item.featureId, null, item.tooltip)
     },
     [model],
   )

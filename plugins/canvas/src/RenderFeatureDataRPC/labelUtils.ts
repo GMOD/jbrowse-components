@@ -16,7 +16,7 @@ function toLabelString(value: unknown) {
     return undefined
   }
   const text = Array.isArray(value) ? value.join(',') : String(value)
-  return text || undefined
+  return text.length > 0 ? text : undefined
 }
 
 export function getFeatureName(feature: Feature): string | undefined {

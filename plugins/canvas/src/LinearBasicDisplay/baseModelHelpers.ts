@@ -98,7 +98,9 @@ export interface RegionDensityStats {
 // genomic span, and the current bpPerPx. Used by the derived regionTooLarge
 // banner and by force-load to sample observed density.
 export function screenDensity(ds: RegionDensityStats, bpPerPx: number) {
-  return (ds.featureCount / ds.regionWidthBp) * bpPerPx
+  return ds.regionWidthBp > 0
+    ? (ds.featureCount / ds.regionWidthBp) * bpPerPx
+    : 0
 }
 
 // First-wins index from per-region arrays. Spanning features can appear in
