@@ -19,9 +19,10 @@ const SCATTER_POINT_SIZE_DEFAULT = 2
 const LINE_WIDTH_DEFAULT = 1
 
 // Shared "Show" submenu: single and multi wiggle both group their visibility
-// toggles here, and both drop the whole submenu when no toggle applies (e.g.
-// density mode removes cross hatches). Kept as one helper so the two displays
-// can't drift on the label/icon or the empty-omit behavior.
+// toggles and rendering-specific size sliders (point size / line width) here,
+// and both drop the whole submenu when nothing applies (e.g. density mode with
+// no cross hatches or size slider). Kept as one helper so the two displays can't
+// drift on the label/icon or the empty-omit behavior.
 export function makeShowSubMenu(items: MenuItem[]): MenuItem[] {
   return items.length
     ? [{ label: 'Show', icon: VisibilityIcon, subMenu: items }]
@@ -43,9 +44,10 @@ export function makeRenderingTypeSubMenu(
   })
 }
 
-// Top-level track-menu item (not nested under Plot type, for discoverability),
-// present only in scatter variants ('scatter'/'multirowscatter'/'multiscatter')
-// where point size applies. Uses the shared inline-slider submenu.
+// Point-size row for the Show submenu, present only in scatter variants
+// ('scatter'/'multirowscatter'/'multiscatter') where point size applies. The
+// shared makeSizeMenu renders it as a single inline slider row with a promotable
+// "default for all tracks of this type" pin.
 export function makePointSizeMenuItems(
   self: {
     renderingType: string
@@ -64,8 +66,10 @@ export function makePointSizeMenuItems(
   ]
 }
 
-// Top-level track-menu item present only in line variants ('line'/'multirowline'
-// /'multiline') where stroke thickness applies. Uses the shared inline slider.
+// Line-width row for the Show submenu, present only in line variants
+// ('line'/'multirowline'/'multiline') where stroke thickness applies. The shared
+// makeSizeMenu renders it as a single inline slider row with a promotable
+// "default for all tracks of this type" pin.
 export function makeLineWidthMenuItems(
   self: {
     renderingType: string
@@ -88,7 +92,9 @@ export function makeLineWidthMenuItems(
       onReset: () => {
         self.setLineWidth(undefined)
       },
-      sessionDefault: makeCurrentValueSessionDefaultControl(self, ['lineWidth']),
+      sessionDefault: makeCurrentValueSessionDefaultControl(self, [
+        'lineWidth',
+      ]),
     }),
   ]
 }
