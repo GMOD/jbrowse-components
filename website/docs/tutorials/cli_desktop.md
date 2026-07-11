@@ -7,40 +7,63 @@ guide_category: Tutorials
 tutorial_category: Getting started
 ---
 
-The [`@jbrowse/cli`](/docs/cli) builds a `config.json` — assemblies plus tracks
-— in a directory, copying (or symlinking) your data files in next to it. That
-one directory then works two ways:
+The [`@jbrowse/cli`](/docs/cli) lets you build a JBrowse configuration from the
+command line instead of clicking through the **Add track** form. You run a few
+commands and end up with one folder — a `config.json` sitting next to your data
+files — that you can **open directly in JBrowse Desktop** _or_ **serve on the
+web**, unchanged.
 
-- **JBrowse Desktop** opens the `config.json` straight off disk, and
-- a **web** JBrowse serves the same directory over HTTP.
-
-Because the CLI writes each track's location as a path **relative** to
-`config.json`, the files resolve either way — against the config's folder on
-Desktop, or against the served config URL on the web. So you get one scriptable,
-reproducible setup instead of clicking through the **Add track** form, and it is
-portable between the two apps.
+It works in both places because the CLI records each file by a path _relative_
+to `config.json`: Desktop resolves those paths against the folder on disk, and a
+web server resolves them against the served config's URL. So one scriptable,
+reproducible setup is portable across both apps.
 
 ## Install the CLI
+
+The CLI needs [Node.js](https://nodejs.org/) 20 or newer.
 
 ```bash
 npm install -g @jbrowse/cli
 jbrowse --version
 ```
 
-## Build the config directory
+## Prepare your files first
 
-Point every command at the same output directory with `--out`. The first
-`add-assembly` creates `myproject/config.json` if it doesn't exist yet; each
-later command edits it in place.
+The CLI references and copies your data — it does **not** compress or index it,
+and JBrowse reads only indexed, compressed formats. So get each input into a
+JBrowse-ready form first, using [samtools](http://www.htslib.org/) / htslib:
 
 ```bash
-# assembly: copies the FASTA and its .fai/.gzi index into myproject/
+# reference FASTA: bgzip-compress, then index -> .fa.gz + .fa.gz.fai + .fa.gz.gzi
+bgzip GRCh38.fa
+samtools faidx GRCh38.fa.gz
+
+# alignments: sort, then index -> sample.bam + sample.bam.bai
+samtools sort reads.bam -o sample.bam
+samtools index sample.bam
+
+# variants: bgzip, then index -> variants.vcf.gz + variants.vcf.gz.tbi
+bgzip variants.vcf
+tabix -p vcf variants.vcf.gz
+```
+
+## Build the config directory
+
+Point every command at the same output directory with `--out` (it is created if
+it doesn't exist). The first `add-assembly` writes `myproject/config.json`; each
+later command edits that same file in place.
+
+```bash
+# assembly: copies GRCh38.fa.gz and its .fai/.gzi index into myproject/
 jbrowse add-assembly GRCh38.fa.gz --name hg38 --load copy --out myproject
 
 # tracks: each copies the data file AND its index (.bai/.tbi/.csi) alongside
 jbrowse add-track sample.bam --load copy --out myproject --name "My reads"
 jbrowse add-track variants.vcf.gz --load copy --out myproject --name "My variants"
 ```
+
+`--name hg38` is the assembly name you'll type into the location box; `--name`
+on a track is its label in the track list.
 
 `--load` says how the CLI places a **local** file relative to the config (omit
 it for a remote URL, which is referenced in place):
@@ -53,9 +76,18 @@ it for a remote URL, which is referenced in place):
 | `inPlace` | Reference a file already staged in the directory; no file ops.      |
 | _(omit)_  | For a remote `https://…` URL — referenced directly, nothing copied. |
 
-After the commands above, `myproject/` holds `config.json` next to
-`GRCh38.fa.gz` (+ index), `sample.bam` (+ `.bai`), and `variants.vcf.gz` (+
-`.tbi`). The track entries reference them by bare relative name, e.g.:
+Now `myproject/` is self-contained — the config next to every file it needs:
+
+```
+myproject/
+├── config.json
+├── GRCh38.fa.gz  (+ .fa.gz.fai, .fa.gz.gzi)
+├── sample.bam    (+ .bam.bai)
+└── variants.vcf.gz  (+ .vcf.gz.tbi)
+```
+
+Inside `config.json`, the CLI referenced each file by its bare relative name
+(you don't need to edit this — it's just what the CLI wrote):
 
 ```json
 "adapter": {
@@ -77,18 +109,20 @@ server, no re-adding tracks through the UI.
 this CLI route shines when you want a scripted, repeatable setup, or the same
 config on both Desktop and the web.)
 
-## Serve the same directory on the web
+## Also use it on the web
 
-The identical directory works unmodified in JBrowse Web — the relative paths now
-resolve against the served config's URL:
+The same config and data work on the web too — the relative paths just resolve
+against the served config's URL instead of a local folder. JBrowse Web is a
+separate app, though, so serving `myproject/` on its own only hosts the files;
+you still need the browser app. Two ways to get there:
 
-```bash
-npx serve myproject
-# then open your web JBrowse at ?config=http://localhost:3000/config.json
-```
-
-or copy `myproject/` into your web server's document root and point `?config=`
-at it. See the [web quickstart](/docs/quickstart_web) for a full deployment.
+- **Build into a JBrowse Web install.** Run `jbrowse create jbrowse2` first and
+  pass `--out jbrowse2` on the commands above, so the app and your config live
+  in one served folder. This is exactly the
+  [web quickstart](/docs/quickstart_web).
+- **Point an existing deployment at your config.** Host `myproject/` anywhere
+  (e.g. `npx serve myproject`) and open your JBrowse Web instance with its URL
+  appended: `https://your-jbrowse/?config=http://localhost:3000/config.json`.
 
 ## Index gene names for search
 
