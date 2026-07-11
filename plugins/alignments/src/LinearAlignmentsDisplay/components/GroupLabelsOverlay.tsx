@@ -6,6 +6,13 @@ import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import { observer } from 'mobx-react'
 
 import { bandOnScreen, bandScreenTop, sectionKey } from './sectionScreen.ts'
+import {
+  GROUP_LABEL_BG_OPACITY,
+  GROUP_LABEL_FONT_SIZE,
+  GROUP_LABEL_PADDING_X,
+  GROUP_LABEL_RADIUS,
+  groupSectionLabel,
+} from '../groupLabelStyle.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 
@@ -13,13 +20,13 @@ const useStyles = makeStyles()(theme => {
   const chip = {
     display: 'flex',
     alignItems: 'center',
-    padding: '0 4px',
-    fontSize: 11,
+    padding: `0 ${GROUP_LABEL_PADDING_X}px`,
+    fontSize: GROUP_LABEL_FONT_SIZE,
     lineHeight: '14px',
     color: theme.palette.text.secondary,
     background: theme.palette.background.paper,
-    opacity: 0.85,
-    borderRadius: 3,
+    opacity: GROUP_LABEL_BG_OPACITY,
+    borderRadius: GROUP_LABEL_RADIUS,
     whiteSpace: 'nowrap' as const,
     userSelect: 'none' as const,
   }
@@ -82,7 +89,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         if (!bandOnScreen(top, section.coverageHeight, scroll)) {
           return null
         }
-        const label = section.label || 'ungrouped'
+        const label = groupSectionLabel(section.label)
         const collapsed = model.isGroupCollapsed(section.groupKey)
         const hasOverride = model.hasGroupHeightOverride(section.groupKey)
         const truncated = model.isGroupTruncated(section.groupKey)

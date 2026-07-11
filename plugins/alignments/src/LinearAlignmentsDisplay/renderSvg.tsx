@@ -19,6 +19,7 @@ import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { sectionKey } from './components/sectionScreen.ts'
+import { groupSectionLabel } from './groupLabelStyle.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import { buildSectionRenders } from './sectionLayout.ts'
 import GroupLabelBox from './svgcomponents/GroupLabelBox.tsx'
@@ -235,7 +236,7 @@ function GroupLabelBoxes({
           key={sectionKey(section.groupKey)}
           x={left + 4}
           y={section.coverageTop + 1}
-          text={section.label || 'ungrouped'}
+          text={groupSectionLabel(section.label)}
           theme={theme}
         />
       ))}

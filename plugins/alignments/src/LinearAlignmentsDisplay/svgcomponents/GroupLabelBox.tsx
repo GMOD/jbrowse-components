@@ -1,5 +1,12 @@
 import { measureText } from '@jbrowse/core/util'
 
+import {
+  GROUP_LABEL_BG_OPACITY,
+  GROUP_LABEL_FONT_SIZE,
+  GROUP_LABEL_PADDING_X,
+  GROUP_LABEL_RADIUS,
+} from '../groupLabelStyle.ts'
+
 import type { Theme } from '@mui/material'
 
 // Static equivalent of the on-screen GroupLabelsOverlay chip (no
@@ -17,8 +24,8 @@ export default function GroupLabelBox({
   text: string
   theme: Theme
 }) {
-  const fontSize = 11
-  const paddingX = 4
+  const fontSize = GROUP_LABEL_FONT_SIZE
+  const paddingX = GROUP_LABEL_PADDING_X
   const height = 16
   const width = measureText(text, fontSize) + paddingX * 2
   return (
@@ -28,9 +35,9 @@ export default function GroupLabelBox({
         y={y}
         width={width}
         height={height}
-        rx={3}
+        rx={GROUP_LABEL_RADIUS}
         fill={theme.palette.background.paper}
-        fillOpacity={0.85}
+        fillOpacity={GROUP_LABEL_BG_OPACITY}
       />
       <text
         x={x + paddingX}
