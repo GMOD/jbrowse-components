@@ -19,14 +19,35 @@ export interface LabelMetrics {
   textWidth: number
 }
 
-// Left-aligns the label to its feature's left edge, pushing it right to the
-// screen/region edge if the feature starts off-screen, but never past the
-// feature's right edge. That right-edge clamp wins, so when a feature's right
-// edge sits within textWidth of the screen left the label ends at that right
-// edge and its start may fall left of screen. A label wider than the feature
-// pins to the feature's left edge unclamped. Same math drives the DOM overlay
-// (useOverlayElements) and the SVG export (renderSvg), so any tweak here is
-// reflected on both paths.
+// The screen x of a label's left edge.
+//
+// A label wider than its feature can't fit inside the box, so it pins to the
+// feature's left edge and overhangs rightward (the packer reserved that
+// overhang). A label that fits starts at the feature's left edge, but two
+// clamps bracket that: `visibleStart` pushes it right so it doesn't begin
+// off-screen when the feature runs off the left, while `rightEdgeLimit` stops
+// it sliding so far right that its end passes the feature's right edge. The
+// right-edge limit wins the `Math.min`, so a feature whose right edge sits
+// within textWidth of the screen left keeps the label anchored to that right
+// edge even though its start then falls left of screen.
+function computeLabelLeftPx(
+  textWidth: number,
+  featureLeftPx: number,
+  featureRightPx: number,
+  screenStartPx: number,
+) {
+  const fitsInFeature = textWidth <= featureRightPx - featureLeftPx
+  const visibleStart = Math.max(screenStartPx, featureLeftPx, 0)
+  const rightEdgeLimit = featureRightPx - textWidth
+  return fitsInFeature
+    ? Math.min(visibleStart, rightEdgeLimit)
+    : featureLeftPx
+}
+
+// Places a label under its feature. The vertical position stacks name over
+// description over subfeature via each label's relativeY + padding. Same math
+// drives the DOM overlay (useOverlayElements) and the SVG export (renderSvg),
+// so any tweak here is reflected on both paths.
 export function computeLabelPosition(
   label: LabelMetrics,
   padding: number,
@@ -34,16 +55,15 @@ export function computeLabelPosition(
 ) {
   const { featureLeftPx, featureRightPx, featureBottomPx, screenStartPx } =
     bounds
-  const featureWidth = featureRightPx - featureLeftPx
-  const labelY = featureBottomPx + label.relativeY + padding
-  const labelX =
-    label.textWidth > featureWidth
-      ? featureLeftPx
-      : Math.min(
-          Math.max(screenStartPx, featureLeftPx, 0),
-          featureRightPx - label.textWidth,
-        )
-  return { labelX, labelY }
+  return {
+    labelX: computeLabelLeftPx(
+      label.textWidth,
+      featureLeftPx,
+      featureRightPx,
+      screenStartPx,
+    ),
+    labelY: featureBottomPx + label.relativeY + padding,
+  }
 }
 
 export interface ResolvedLabel {
