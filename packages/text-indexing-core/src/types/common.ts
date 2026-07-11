@@ -217,7 +217,9 @@ const windowsReservedName = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i
 // \ / : * ? " < > |, drops trailing dots/spaces (Windows silently strips them),
 // and escapes reserved device names
 export function sanitizeForFilename(name: string) {
-  const cleaned = name.replaceAll(/[\\/:*?"<>|]/g, '_').replace(/[. ]+$/, '')
+  const cleaned = name
+    .replaceAll(/[\\/:*?"<>|]/g, '_')
+    .replace(/(?<![. ])[. ]+$/, '')
   return windowsReservedName.test(cleaned) ? `_${cleaned}` : cleaned
 }
 

@@ -21,7 +21,7 @@ export function localStorageGetJSON<T>(key: string, defaultVal: T): T {
     try {
       return JSON.parse(stored) as T
     } catch (e) {
-      console.warn(`Invalid localStorage value for ${key}: ${stored}`, e)
+      console.warn(`Invalid localStorage value for ${key}:`, stored, e)
     }
   }
   return defaultVal
