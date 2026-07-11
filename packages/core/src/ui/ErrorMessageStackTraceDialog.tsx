@@ -16,6 +16,7 @@ import {
   availableRenderers,
   preferredRenderer,
 } from './getGraphicsCapabilities.ts'
+import { stripStackTraceMessage } from './stripStackTraceMessage.ts'
 import { useGraphicsCapabilities } from './useGraphicsCapabilities.ts'
 import { readConfObject } from '../configuration/index.ts'
 import { hasSharedArrayBuffer } from '../util/stopToken.ts'
@@ -114,14 +115,6 @@ async function mapStackTrace(stack: string) {
 
 const MAX_ERR_LEN = 10_000
 
-// Chrome prepends the error message to the stack trace; Firefox doesn't.
-// Strip it to avoid duplication (the message is already shown above the trace).
-// The message is the stringified error, e.g. "TypeError: foo" for any Error
-// subclass, so compare against it rather than a hardcoded "Error:" prefix.
-function stripMessage(trace: string, message: string) {
-  return message && trace.startsWith(message) ? trace.slice(message.length) : trace
-}
-
 function getStackTrace(error: unknown) {
   return typeof error === 'object' && error !== null && 'stack' in error
     ? `${error.stack}`
@@ -139,7 +132,7 @@ export default function ErrorMessageStackTraceDialog({
 }) {
   const graphicsCapabilities = useGraphicsCapabilities()
   const errorText = error ? `${error}` : ''
-  const stackTrace = stripMessage(getStackTrace(error), errorText)
+  const stackTrace = stripStackTraceMessage(getStackTrace(error), errorText)
 
   const {
     data: mappedStackTrace,

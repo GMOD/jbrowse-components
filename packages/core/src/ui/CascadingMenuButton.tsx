@@ -13,14 +13,25 @@ import type { PopoverOrigin } from '@mui/material'
 const dropdownAnchorOrigin = { vertical: 'bottom', horizontal: 'left' } as const
 const dropdownTransformOrigin = { vertical: 'top', horizontal: 'left' } as const
 
+// A disabled button has pointer-events:none, so a Tooltip placed directly on it
+// never fires; wrap it in a span (per MUI guidance) to restore the hover. The
+// wrapper is only added when disabled, so enabled buttons keep their layout.
 function MaybeTooltip({
   title,
+  disabled,
   children,
 }: {
   title?: string
+  disabled?: boolean
   children: React.ReactElement
 }) {
-  return title ? <Tooltip title={title}>{children}</Tooltip> : children
+  return title ? (
+    <Tooltip title={title}>
+      {disabled ? <span>{children}</span> : children}
+    </Tooltip>
+  ) : (
+    children
+  )
 }
 
 function CascadingMenuButton({
@@ -67,7 +78,7 @@ function CascadingMenuButton({
 
   return (
     <>
-      <MaybeTooltip title={tooltip}>
+      <MaybeTooltip title={tooltip} disabled={isDisabled}>
         <ButtonComponent
           aria-label={tooltip}
           onClick={event => {
