@@ -5,19 +5,20 @@ import { paintLayer } from '@jbrowse/core/util/paintLayer'
 
 import { drawDotplotInstances } from './drawDotplot.ts'
 
+import type { DotplotRenderState } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRenderModel } from './types.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 
 // Minimal structural view type instead of DotplotViewModel: this file is in
 // the display model's return-type inference path, so importing the view model
 // (which references the display model) forms a cycle that collapses the whole
-// model type to `any`. Keep it structural.
+// model type to `any`. Keep it structural. `dotplotRenderState` is the same
+// transform the on-screen canvas/GPU path consumes, so SVG export can't drift
+// from what's on screen.
 interface RenderSvgView {
   viewWidth: number
   viewHeight: number
-  lineWidth: number
-  hview: { offsetPx: number; bpPerPx: number }
-  vview: { offsetPx: number; bpPerPx: number }
+  dotplotRenderState: DotplotRenderState | undefined
 }
 
 export async function renderSvg(
@@ -26,24 +27,24 @@ export async function renderSvg(
 ) {
   await awaitSvgReady(model)
   const view = getContainingView(model) as unknown as RenderSvgView
-  const { viewWidth, viewHeight, hview, vview, lineWidth } = view
+  const { viewWidth, viewHeight, dotplotRenderState } = view
   if (model.error) {
     return (
       <SVGErrorBox error={model.error} width={viewWidth} height={viewHeight} />
     )
   }
   const { geometry } = model
-  if (!geometry) {
+  if (!geometry || !dotplotRenderState) {
     return null
   }
-  const viewBpH = hview.offsetPx * hview.bpPerPx
-  const viewBpV = vview.offsetPx * vview.bpPerPx
+  const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, lineWidth } =
+    dotplotRenderState
   return paintLayer(viewWidth, viewHeight, opts, ctx => {
     drawDotplotInstances(ctx, geometry, {
       viewBpH,
-      bpPerPxHInv: 1 / hview.bpPerPx,
+      bpPerPxHInv,
       viewBpV,
-      bpPerPxVInv: 1 / vview.bpPerPx,
+      bpPerPxVInv,
       viewHeight,
       lineWidth,
     })

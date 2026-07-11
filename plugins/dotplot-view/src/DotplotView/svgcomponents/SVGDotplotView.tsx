@@ -29,8 +29,8 @@ export async function renderToSvg(
       : undefined
   const displayResults = await Promise.all(
     tracks.map(async track => {
-      const display = track.displays[0]
-      return { track, result: await display.renderSvg({ ...opts, theme }) }
+      const trackDisplay = track.displays[0]
+      return { track, result: await trackDisplay.renderSvg({ ...opts, theme }) }
     }),
   )
 
