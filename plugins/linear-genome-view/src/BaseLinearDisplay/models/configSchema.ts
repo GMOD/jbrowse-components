@@ -47,7 +47,10 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
     mouseover: {
       type: 'string',
       description: 'text to display when the cursor hovers over a feature',
-      defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')`,
+      // `function` (INSDC/GFF3 qualifier) before the id fallback so hovering a
+      // feature with no name — e.g. an NCBI viral `stem_loop` — surfaces its
+      // descriptor rather than a bare id. get() since `function` is reserved.
+      defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
       contextVariable: ['feature'],
     },
     /**

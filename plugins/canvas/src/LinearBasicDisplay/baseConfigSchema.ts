@@ -260,7 +260,12 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         description: {
           type: 'string',
           description: 'the text description to show',
-          defaultValue: `jexl:get(feature,'note') || get(feature,'description')`,
+          // `function` (the INSDC/GFF3 qualifier, kept lowercase by the GFF
+          // adapter) is the only human-readable text on structural/regulatory
+          // features that carry no note — e.g. an NCBI viral `stem_loop`
+          // ("Coronavirus frameshifting stimulation element stem-loop 1").
+          // Read via get() since `function` is a reserved word in the grammar.
+          defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
           contextVariable: ['feature'],
         },
       }),
