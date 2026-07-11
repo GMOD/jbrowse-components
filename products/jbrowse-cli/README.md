@@ -73,6 +73,7 @@ Use "jbrowse <command> --help" for more information about a command.
 
 ```
 
+
 ## jbrowse create
 
 ```
@@ -116,6 +117,7 @@ $ jbrowse create /path/to/new/installation --tag v1.0.0
 # List available versions
 $ jbrowse create --listVersions
 ```
+
 
 ## jbrowse add-assembly
 
@@ -221,6 +223,7 @@ $ jbrowse add-assembly https://example.com/data/sample.2bit
 $ jbrowse add-assembly myfile.fa.gz --load copy
 ```
 
+
 ## jbrowse add-track
 
 ```
@@ -252,6 +255,15 @@ Options:
 
       --config               Any extra config settings to add to a track
 
+      --color                Track color: a plain CSS color or a jexl callback.
+                             Merged into displayDefaults
+
+      --height               Track display height in pixels. Merged into
+                             displayDefaults
+
+      --displayDefaults      Inline JSON merged into the track displayDefaults
+                             (labels, mouseover, jexlFilters, etc.)
+
       --target               Path to config file in JB2 installation to write
                              out to
 
@@ -278,15 +290,21 @@ Options:
 Notes:
 
 --load controls how the data file is placed relative to config.json: copy, move,
-or symlink it into the install directory, or inPlace to reference it where it
-already sits (use inPlace for URLs or pre-staged files). The matching index
-(.bai/.csi/.tbi/.fai) is inferred from the data file name; pass --indexFile when
-it differs.
+or symlink it into the install directory, or inPlace to reference a pre-staged
+local file where it already sits. Omit --load entirely for URLs. The matching
+index (.bai/.csi/.tbi/.fai) is inferred from the data file name; pass
+--indexFile when it differs.
 
 --config takes inline JSON (not a file path) that is merged into the generated
 track config, so you can set fields the dedicated flags do not cover, e.g.
 --config '{"metadata":{"skipTextIndex":true}}' to exclude the track from jbrowse
 text-index.
+
+--color and --height set the two most common appearance settings without writing
+JSON. Wrap the value in single quotes and use double quotes inside a jexl
+callback so nothing needs escaping, e.g. --color
+'jexl:feature.strand==1?"blue":"red"'. --displayDefaults takes inline JSON for
+any other appearance setting (labels, mouseover, jexlFilters).
 
 For synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target — the
 reverse of the minimap2/nucmer input order.
@@ -310,7 +328,11 @@ $ jbrowse add-track https://mywebsite.com/my.bam
 
 # --load inPlace adds a track without doing file operations
 $ jbrowse add-track /url/relative/path.bam --load inPlace
+
+# color a track by strand and set its height (no escaping: single-quote the value, double-quote inside the jexl)
+$ jbrowse add-track genes.gff3.gz --load copy --color 'jexl:feature.strand==1?"blue":"red"' --height 200
 ```
+
 
 ## jbrowse text-index
 
@@ -402,6 +424,7 @@ $ jbrowse text-index -a hg19 --force
 $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
 
+
 ## jbrowse admin-server
 
 ```
@@ -440,6 +463,7 @@ $ jbrowse admin-server --root /path/to/jb2/
 # raise the body size limit for very large config updates
 $ jbrowse admin-server --bodySizeLimit 100mb
 ```
+
 
 ## jbrowse upgrade
 
@@ -487,6 +511,7 @@ $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 # Get nightly release from main branch
 $ jbrowse upgrade --nightly
 ```
+
 
 ## jbrowse make-pif
 
@@ -539,6 +564,7 @@ $ jbrowse make-pif input.paf --coarse 0
 $ jbrowse make-pif input.paf --no-coarse
 ```
 
+
 ## jbrowse sort-gff
 
 ```
@@ -565,6 +591,7 @@ $ jbrowse sort-gff input.gtf | bgzip > sorted.gtf.gz
 $ tabix -p gff sorted.gtf.gz
 ```
 
+
 ## jbrowse sort-bed
 
 ```
@@ -585,6 +612,7 @@ $ tabix sorted.bed.gz
 
 # OR pipe data via stdin: cat file.bed | jbrowse sort-bed | bgzip > sorted.bed.gz
 ```
+
 
 ## jbrowse add-connection
 
@@ -641,6 +669,7 @@ $ jbrowse add-connection https://mysite.com/path/to/custom --type custom --confi
 $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json
 ```
 
+
 ## jbrowse add-track-json
 
 ```
@@ -675,6 +704,7 @@ $ jbrowse add-track-json '{"type":"FeatureTrack","trackId":"genes","assemblyName
 $ jbrowse add-track-json track.json --out /path/to/jb2/
 ```
 
+
 ## jbrowse remove-track
 
 ```
@@ -702,6 +732,7 @@ $ jbrowse remove-track my_track_id --out /path/to/jb2/
 # remove a track from a specific config file
 $ jbrowse remove-track my_track_id --target /path/to/jb2/config.json
 ```
+
 
 ## jbrowse set-default-session
 
@@ -747,3 +778,5 @@ $ jbrowse set-default-session --currentSession
 # remove the existing default session
 $ jbrowse set-default-session --delete
 ```
+
+
