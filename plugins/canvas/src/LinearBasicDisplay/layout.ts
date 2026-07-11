@@ -178,6 +178,7 @@ export function computeLaidOutData(
     displayMode,
     pinnedFeatureIds,
     labelDecimation = 'all',
+    labelRoomFactor = 1,
   } = inputs
   const heightMultiplier = HEIGHT_MULTIPLIERS[displayMode]
   const labelFontPx = labelFontSize(displayMode)
@@ -214,6 +215,7 @@ export function computeLaidOutData(
       reversedRegions,
       pinnedFeatureIds,
       labelDecimation,
+      labelRoomFactor,
       heightMultiplier,
       labelFontPx,
       rowPadding,
@@ -232,6 +234,7 @@ interface GroupCache {
   showLabels: boolean
   showDescriptions: boolean
   labelDecimation: LabelDecimation
+  labelRoomFactor: number
   displayMode: DisplayMode
   // The MobX-computed pinned set; a stable reference until pins change, so a
   // reference compare in groupUnchanged detects a pin toggle.
@@ -257,12 +260,14 @@ function groupUnchanged(
     displayMode,
     pinnedFeatureIds,
     labelDecimation = 'all',
+    labelRoomFactor = 1,
   } = inputs
   const paramsSame =
     prev.bpPerPx === bpPerPx &&
     prev.showLabels === showLabels &&
     prev.showDescriptions === showDescriptions &&
     prev.labelDecimation === labelDecimation &&
+    prev.labelRoomFactor === labelRoomFactor &&
     prev.displayMode === displayMode &&
     prev.pinnedFeatureIds === pinnedFeatureIds &&
     prev.members.size === members.size
@@ -345,6 +350,7 @@ export function createIncrementalLayout() {
           showLabels: inputs.showLabels,
           showDescriptions: inputs.showDescriptions,
           labelDecimation: inputs.labelDecimation ?? 'all',
+          labelRoomFactor: inputs.labelRoomFactor ?? 1,
           displayMode: inputs.displayMode,
           pinnedFeatureIds: inputs.pinnedFeatureIds,
           members: new Map(members),
@@ -541,8 +547,11 @@ function packRef(
   // decimation.
   pinnedFeatureIds: ReadonlySet<string>,
   // Name-decimation policy (see keepFeatureLabel). `all` at every rung except the
-  // `decimated` fit rung, which passes `fitWidth`.
+  // `decimated` fit rungs, which pass `fitWidth`.
   labelDecimation: LabelDecimation,
+  // Whitespace multiplier for `fitWidth` decimation (see keepFeatureLabel). 1 at
+  // the first decimated rung; the tighter rungs raise it to shed more names.
+  labelRoomFactor: number,
   // compact/superCompact scale factor (1 in normal mode), used to shrink the
   // row-quantization grid (pitchY) with the feature body.
   heightMultiplier: number,
@@ -700,6 +709,7 @@ function packRef(
         availableRoomPx,
         labelInfo.maxLabelWidthPx,
         pinnedFeatureIds.has(id),
+        labelRoomFactor,
       )
     // A feature that had a name but didn't keep it is decimated away, and
     // applyLayoutToRegion deletes its WHOLE floatingLabelsData entry (the

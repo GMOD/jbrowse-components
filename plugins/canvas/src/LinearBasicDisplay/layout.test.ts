@@ -234,6 +234,68 @@ describe('fitWidth label decimation', () => {
     expect(kept[0]).toBe(false)
   })
 
+  // labelRoomFactor is the fit ladder's gradual knob: a higher factor demands
+  // proportionally more overhang room, so the tighter decimated rungs keep fewer
+  // names. `probe` has exactly 46px of room — enough at factor 1 (needs 46) and
+  // factor 2 would need 92, so it sheds — while a name with 100px of room
+  // survives factor 2 but not factor 4 (needs 184).
+  it('keeps fewer names as labelRoomFactor rises', () => {
+    const decimateAt = (factor: number, gap: number) =>
+      'probe' in
+      computeLaidOutData(
+        new Map([
+          [
+            0,
+            labeledFeatureData([
+              { featureId: 'probe', startBp: 100, endBp: 110, height: 20 },
+              {
+                featureId: 'next',
+                startBp: 100 + gap,
+                endBp: 110 + gap,
+                height: 20,
+              },
+            ]),
+          ],
+        ]),
+        {
+          bpPerPx: 1,
+          regionKeys: keys,
+          showLabels: true,
+          showDescriptions: false,
+          reversedRegions: new Set<number>(),
+          displayMode: 'normal',
+          pinnedFeatureIds: new Set<string>(),
+          labelDecimation: 'fitWidth',
+          labelRoomFactor: factor,
+        },
+      ).get(0)!.floatingLabelsData
+    expect(decimateAt(1, 46)).toBe(true)
+    expect(decimateAt(2, 46)).toBe(false)
+    expect(decimateAt(2, 100)).toBe(true)
+    expect(decimateAt(4, 100)).toBe(false)
+    // Sub-1 factors keep MORE names: a name with 30px room (< its 46px width) is
+    // dropped at factor 1 but kept at 0.5 (needs 23) and 0.25 (needs ~11.5) —
+    // the rungs that fill spare vertical space with crowded names.
+    expect(decimateAt(1, 30)).toBe(false)
+    expect(decimateAt(0.5, 30)).toBe(true)
+    expect(decimateAt(0.25, 30)).toBe(true)
+  })
+
+  it('keeps a pinned name at any labelRoomFactor', () => {
+    const labels = computeLaidOutData(new Map([[0, mixed()]]), {
+      bpPerPx: 1,
+      regionKeys: keys,
+      showLabels: true,
+      showDescriptions: false,
+      reversedRegions: new Set<number>(),
+      displayMode: 'normal',
+      pinnedFeatureIds: new Set(['crowded']),
+      labelDecimation: 'fitWidth',
+      labelRoomFactor: 4,
+    }).get(0)!.floatingLabelsData
+    expect(labels.crowded).toBeDefined()
+  })
+
   // Reversed regions overhang the name leftward (toward lower bp; see the
   // layoutStartBp reservation), so room is measured to the left neighbor's right
   // edge. Mirrors the forward case.

@@ -384,10 +384,31 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
-        // Fit-mode `decimated` rung memo: names reserved only for wide/pinned
-        // features (labelDecimation 'fitWidth'), descriptions dropped. Own memo
-        // instance so it keeps stable per-group references like the others.
+        // Fit-mode `decimated` rung memos: names reserved only for features with
+        // enough neighbor whitespace (labelDecimation 'fitWidth'), descriptions
+        // dropped. One per whitespace factor (0.25x/0.5x/1x/2x/4x) so the ladder
+        // thins names gradually: the sub-1 factors keep MORE names (crowded ones
+        // pushed to lower rows, filling vertical space) to bridge `labels`↔`×1`;
+        // the >1 factors keep fewer, bridging `×1`↔`bodies`. Each has its own memo
+        // instance so it keeps stable per-group references like the others (a
+        // shared instance caches only one factor at a time).
+        incrementalLayoutDecimatedQuarter: createIncrementalLayout(),
+        /**
+         * #volatile
+         */
+        incrementalLayoutDecimatedHalf: createIncrementalLayout(),
+        /**
+         * #volatile
+         */
         incrementalLayoutDecimated: createIncrementalLayout(),
+        /**
+         * #volatile
+         */
+        incrementalLayoutDecimated2: createIncrementalLayout(),
+        /**
+         * #volatile
+         */
+        incrementalLayoutDecimated4: createIncrementalLayout(),
         /**
          * #volatile
          */
@@ -983,6 +1004,7 @@ export default function baseStateModelFactory(
           showLabels: boolean,
           showDescriptions: boolean,
           labelDecimation: LabelDecimation = 'all',
+          labelRoomFactor = 1,
         ): Map<number, FeatureDataResult> {
           const view = getView(self)
           return self.regionTooLarge ||
@@ -994,6 +1016,7 @@ export default function baseStateModelFactory(
                 showLabels,
                 showDescriptions,
                 labelDecimation,
+                labelRoomFactor,
               })
         },
       }))
@@ -1027,12 +1050,75 @@ export default function baseStateModelFactory(
          * `decimated` stage's stack. Shorter than `labels` (fewer name rows) but
          * still informative, the intermediate between "every name" and "no name".
          */
+        /**
+         * #getter
+         * The loosest decimated rung: keeps a name unless its neighbor gap is
+         * under a quarter of the label width, so only the most crowded names shed.
+         * The rung nearest `labels` (all names), letting the ladder fill spare
+         * vertical space with labels instead of dropping straight to the sparse
+         * wide-only set.
+         */
+        get fitDecimatedLayoutQuarter(): Map<number, FeatureDataResult> {
+          return self.fitLayoutAt(
+            self.incrementalLayoutDecimatedQuarter,
+            self.showLabels,
+            false,
+            'fitWidth',
+            0.25,
+          )
+        },
+        /**
+         * #getter
+         * A name is kept when its neighbor gap is at least half the label width —
+         * the middle rung between `fitDecimatedLayoutQuarter` (almost all names)
+         * and `fitDecimatedLayout` (only names with full overhang room).
+         */
+        get fitDecimatedLayoutHalf(): Map<number, FeatureDataResult> {
+          return self.fitLayoutAt(
+            self.incrementalLayoutDecimatedHalf,
+            self.showLabels,
+            false,
+            'fitWidth',
+            0.5,
+          )
+        },
         get fitDecimatedLayout(): Map<number, FeatureDataResult> {
           return self.fitLayoutAt(
             self.incrementalLayoutDecimated,
             self.showLabels,
             false,
             'fitWidth',
+          )
+        },
+        /**
+         * #getter
+         * As `fitDecimatedLayout` but demanding 2x the overhang whitespace, so it
+         * keeps fewer names — the middle decimated rung between "wide-enough" and
+         * "no names", so the ladder thins names gradually rather than dropping all
+         * at once.
+         */
+        get fitDecimatedLayout2(): Map<number, FeatureDataResult> {
+          return self.fitLayoutAt(
+            self.incrementalLayoutDecimated2,
+            self.showLabels,
+            false,
+            'fitWidth',
+            2,
+          )
+        },
+        /**
+         * #getter
+         * The tightest decimated rung: 4x the overhang whitespace, keeping only
+         * the most isolated (and pinned/highlighted) names before the ladder falls
+         * to `bodies` and hides names entirely.
+         */
+        get fitDecimatedLayout4(): Map<number, FeatureDataResult> {
+          return self.fitLayoutAt(
+            self.incrementalLayoutDecimated4,
+            self.showLabels,
+            false,
+            'fitWidth',
+            4,
           )
         },
         /**
@@ -1093,8 +1179,11 @@ export default function baseStateModelFactory(
          * unscaled `layout`, and the vertical `scale` to fill the track — bundled
          * so the three can never disagree. The ladder keeps the least reduction
          * whose *unscaled* stack fits the track height: `full` (names +
-         * descriptions), else `labels` (drop descriptions), else `decimated` (keep
-         * names only on wide/pinned features), else `bodies` (drop names too, pack
+         * descriptions), else `labels` (drop descriptions), else five `decimated`
+         * rungs keeping names only on features with 0.25x/0.5x/1x/2x/4x their label
+         * width in neighbor whitespace (plus pinned/highlighted) — thinning names
+         * gradually, the sub-1 rungs filling spare vertical space with the crowded
+         * names `labels` couldn't quite fit — else `bodies` (drop names too, pack
          * tight). The kept rung is then scaled to fill the track: grown up to
          * `fitMaxScale` when it fits with room to spare, but never past the normal
          * feature height — so in normal display mode grow is pinned at 1 and spare
@@ -1118,7 +1207,17 @@ export default function baseStateModelFactory(
               ? [
                   { level: 'full', layout: () => base },
                   { level: 'labels', layout: () => self.fitLabelsOnlyLayout },
+                  {
+                    level: 'decimated',
+                    layout: () => self.fitDecimatedLayoutQuarter,
+                  },
+                  {
+                    level: 'decimated',
+                    layout: () => self.fitDecimatedLayoutHalf,
+                  },
                   { level: 'decimated', layout: () => self.fitDecimatedLayout },
+                  { level: 'decimated', layout: () => self.fitDecimatedLayout2 },
+                  { level: 'decimated', layout: () => self.fitDecimatedLayout4 },
                   { level: 'bodies', layout: () => self.fitBodiesOnlyLayout },
                 ]
               : [{ level: 'full', layout: () => base }],
