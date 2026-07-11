@@ -6,6 +6,19 @@ import { hasVisibleText, truncateLabel, truncateToWidth } from './util.ts'
 import type { LabelItem } from './rpcTypes.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 
+// Single constructor for a LabelItem so textWidth is always the measured width
+// of `text` at LABEL_FONT_SIZE — the invariant the layout/hit-test reservations
+// rely on (see maxLabelTextWidth). relativeY defaults to 0; the main thread
+// (labelPositioning) sets the final name→description gap.
+function labelItem(text: string, color: string, relativeY = 0): LabelItem {
+  return {
+    text,
+    relativeY,
+    color,
+    textWidth: measureText(text, LABEL_FONT_SIZE),
+  }
+}
+
 export function createFeatureFloatingLabels({
   name: rawName,
   description: rawDescription,
@@ -25,25 +38,14 @@ export function createFeatureFloatingLabels({
   const shouldShowLabel = hasVisibleText(name)
   const shouldShowDescription = hasVisibleText(description)
 
-  const nameLabel: LabelItem | undefined = shouldShowLabel
-    ? {
-        text: name,
-        relativeY: 0,
-        color: theme.palette.text.primary,
-        textWidth: measureText(name, LABEL_FONT_SIZE),
-      }
+  // The name→description gap depends on the display mode's label font size,
+  // which only the main thread knows, so relativeY stays 0 here and is set in
+  // labelPositioning.resolveFeatureLabels.
+  const nameLabel = shouldShowLabel
+    ? labelItem(name, theme.palette.text.primary)
     : undefined
-
-  const descriptionLabel: LabelItem | undefined = shouldShowDescription
-    ? {
-        text: description,
-        // The name→description gap depends on the display mode's label font
-        // size, which only the main thread knows, so it's positioned there
-        // (labelPositioning.resolveFeatureLabels), not baked in here.
-        relativeY: 0,
-        color: theme.palette.featureDescription,
-        textWidth: measureText(description, LABEL_FONT_SIZE),
-      }
+  const descriptionLabel = shouldShowDescription
+    ? labelItem(description, theme.palette.featureDescription)
     : undefined
 
   return { nameLabel, descriptionLabel }

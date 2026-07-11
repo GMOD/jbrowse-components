@@ -7,6 +7,9 @@ import type {
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
+// Gap (px) between a feature's bottom and its floating name/description row.
+const LABEL_TOP_GAP_PX = 2
+
 export interface FeatureBoundsPx {
   featureLeftPx: number
   featureRightPx: number
@@ -103,34 +106,28 @@ function resolveFeatureLabels(
   }
   const { nameLabel, descriptionLabel, subfeatureLabel } = labelData
   const out: ResolvedLabel[] = []
+  const add = (
+    label: LabelItem & { isOverlay?: boolean },
+    padding: number,
+    kind: ResolvedLabel['kind'],
+  ) => {
+    out.push({ label, ...computeLabelPosition(label, padding, bounds), kind })
+  }
   if (showLabels && nameLabel) {
-    out.push({
-      label: nameLabel,
-      ...computeLabelPosition(nameLabel, 2, bounds),
-      kind: 'name',
-    })
+    add(nameLabel, LABEL_TOP_GAP_PX, 'name')
   }
   if (showDescriptions && descriptionLabel) {
     // The description sits one label-line (fontSize) below the name; when the
     // name is hidden it collapses up to fill the vacated row. Derived from the
     // mode's fontSize here (not the RPC-baked relativeY) so the gap tracks the
     // compact-shrunk text.
-    const desc = {
-      ...descriptionLabel,
-      relativeY: showLabels && nameLabel ? fontSize : 0,
-    }
-    out.push({
-      label: desc,
-      ...computeLabelPosition(desc, 2, bounds),
-      kind: 'desc',
-    })
+    const relativeY = showLabels && nameLabel ? fontSize : 0
+    add({ ...descriptionLabel, relativeY }, LABEL_TOP_GAP_PX, 'desc')
   }
   if (subfeatureLabel) {
-    out.push({
-      label: subfeatureLabel,
-      ...computeLabelPosition(subfeatureLabel, 0, bounds),
-      kind: 'sub',
-    })
+    // Overlay subfeature labels sit directly on the feature body (relativeY
+    // already lifts them), so they take no extra top gap.
+    add(subfeatureLabel, 0, 'sub')
   }
   return out
 }
