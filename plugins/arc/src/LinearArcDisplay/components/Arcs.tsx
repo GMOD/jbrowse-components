@@ -16,9 +16,11 @@ const ArcTooltip = lazy(() => import('../../ArcTooltip.tsx'))
 type LGV = LinearGenomeViewModel
 type ArcStyle = NonNullable<LinearArcDisplayModel['arcStyles']>[number]
 
-// semicircle dipping down from (left,0) to (right,0); SVG arc sweep-flag 0
+// semicircle dipping down from (left,0) to (right,0); SVG arc sweep-flag 0.
+// `Math.abs` keeps the radius (and label y) positive when a reversed region
+// puts `left` past `right`, matching the paired-arc convention.
 function getSemicirclePath(left: number, right: number) {
-  const radius = (right - left) / 2
+  const radius = Math.abs(right - left) / 2
   return {
     d: `M ${left} 0 A ${radius} ${radius} 0 0 0 ${right} 0`,
     textYCoord: radius,
@@ -64,8 +66,13 @@ const Arc = observer(function Arc({
   const left = l - view.offsetPx
   const right = r - view.offsetPx
   // on-screen arcs are clipped by the container; skip ones entirely off-screen.
-  // export keeps everything so the full region is captured.
-  if (!exportSVG && (right < 0 || left > view.width)) {
+  // min/max (not left/right directly) so a reversed region — where `left` lands
+  // past `right` — isn't wrongly culled. export keeps everything so the full
+  // region is captured.
+  if (
+    !exportSVG &&
+    (Math.max(left, right) < 0 || Math.min(left, right) > view.width)
+  ) {
     return null
   }
 
