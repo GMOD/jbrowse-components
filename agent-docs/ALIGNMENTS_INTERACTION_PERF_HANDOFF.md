@@ -82,12 +82,37 @@ MUI/Emotion CSS-in-JS per render**.
    not a speed win. The `@mui/material/Tooltip` cost in the profiles is **chrome**
    (`TrackHeightIndicator`'s `CascadingMenuButton`, LGV header controls), not the
    hover tooltip.
-4. **The real remaining lever is unmeasured at the component level.** Interaction
-   is ~21ms/frame at 4× regardless of tooltip. To cut it, find which components
-   actually re-render each zoom frame (React DevTools profiler / render counters)
-   — the ones reading `view.bpPerPx`/`offsetPx`: the coverage axis / group-label
-   / arc overlays and the LGV chrome. Reducing those renders is the only thing
-   that reduces the MUI/Emotion styling cost, since that cost is per-render.
+4. **MEASURED (2026-07-11): it's the LGV coordinate ruler, NOT the alignments
+   overlays.** A `MutationObserver` attributing every DOM mutation during a 5×
+   zoom over `volvox_cram_alignments` to its nearest `data-testid` subtree (real
+   GPU, headed) found, of ~2056 mutations:
+
+   | kind | subtree | count |
+   |---|---|---:|
+   | **struct** (node add/remove) | `rubberband_controls` (the ScaleBar) | **719** |
+   | attr (style) | `rubberband_controls` | 439 |
+   | attr | `view-container` | 416 |
+   | attr | `tracksContainer` | 296 |
+   | **struct** | `pileup-display-done` (alignments overlays) | **2** |
+
+   The alignments display overlays are **already zoom-invariant** — 2 of 2056
+   mutations. Their MobX getter chains (`highlightBoxes` short-circuits to `[]`
+   when nothing hovered; `renderSections`/`sections`/`groupLaidOutMap` read only
+   vertical layout, never `offsetPx`/`bpPerPx`; sashimi/bezier are default-off) do
+   not depend on horizontal zoom. **Do not chase the overlays.**
+
+   The churn is `ScalebarCoordinateLabels` (`plugins/linear-genome-view/.../
+   ScalebarCoordinateLabels.tsx`): it creates/destroys ~144 tick `<div>` nodes
+   **per zoom click**. Its `key`-by-base reuse works for *pan* (same bases scroll
+   across) but not *zoom* — the scale changes, so the tick-coordinate set and its
+   keys change every frame, forcing React to tear down + rebuild the whole tick
+   list, each new node paying the emotion/tss `tickLabel` styling cost (the
+   profile's per-render MUI/Emotion self-time). Fix, lowest-risk first: **pool the
+   tick `<div>`s** (fixed pool, reposition+relabel, no add/remove) → kills the 719
+   structural churn, keeps accessible DOM text; or a **canvas ruler** (bigger win,
+   loses selectable text, visible on every view); or **coarsen ticks off
+   `coarseBpPerPx` during the zoom spring**, snap exact on settle. Repro tool:
+   `website/scripts/measure-zoom-churn.ts` (throwaway, uncommitted).
 
 Note: `VisibleLabelsOverlay` is a **canvas** (draws in a `useEffect`), so it does
 NOT contribute DOM churn; `model.visibleLabels` still recomputes on zoom but was
