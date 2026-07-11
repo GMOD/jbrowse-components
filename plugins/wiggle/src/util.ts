@@ -74,7 +74,9 @@ export type WiggleTooltipRow = {
   source?: string
   color?: string
   score: number
-} & ({ summary?: false } | { summary: true; minScore: number; maxScore: number })
+} & (
+  { summary?: false } | { summary: true; minScore: number; maxScore: number }
+)
 
 // Feature(s) hovered under the mouse, shared by single- and multi-wiggle.
 // `start`/`end` is the feature interval for single-wiggle and multi-wiggle row

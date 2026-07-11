@@ -397,7 +397,9 @@ function applyModifier(
       // Legacy boolean: true → 0px spacing, false → 2px spacing (the value the
       // pre-unification override branch baked in for noSpacing=false).
       if (hasFeatureSize) {
-        snap.featureSpacing = getBooleanValue(val1 || 'true', 'noSpacing') ? 0 : 2
+        snap.featureSpacing = getBooleanValue(val1 || 'true', 'noSpacing')
+          ? 0
+          : 2
       }
       break
     }

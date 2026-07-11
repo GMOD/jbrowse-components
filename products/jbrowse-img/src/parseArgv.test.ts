@@ -36,12 +36,12 @@ test('--key=value is equivalent to --key value', () => {
 })
 
 test('--key=value seeds the entry, later tokens still accumulate', () => {
-  expect(parseArgv('--bam=reads.bam color:red --out out.svg'.split(' '))).toEqual(
-    [
-      ['bam', ['reads.bam', 'color:red']],
-      ['out', ['out.svg']],
-    ],
-  )
+  expect(
+    parseArgv('--bam=reads.bam color:red --out out.svg'.split(' ')),
+  ).toEqual([
+    ['bam', ['reads.bam', 'color:red']],
+    ['out', ['out.svg']],
+  ])
 })
 
 test('featureHeight options are parsed as track options', () => {

@@ -101,7 +101,10 @@ function MultiWiggleSvgBody({
           paint={ctx => {
             drawWiggleToCtx(
               ctx,
-              { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
+              {
+                rpcDataMap,
+                encode: data => buildSourceRenderData(data, props),
+              },
               renderBlocks,
               state,
             )
