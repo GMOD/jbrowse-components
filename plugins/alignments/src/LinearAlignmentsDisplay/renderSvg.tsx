@@ -195,8 +195,10 @@ function CoverageScaleBars({
 }
 
 // Insert-size (TLEN) scale bar, samplot mode only. Down mode puts it on the
-// left (matches PileupComponent), up mode on the right; 45/50 match the
-// on-screen SVG axis width.
+// left, up mode on the right, mirroring PileupComponent's InsertSizeAxisHost.
+// Down mode nests only the axis (left-orientation labels grow leftward from
+// x=40) so the TLEN label stays at x=11 to the left of them, matching on-screen;
+// wrapping the label in the axis translate would push it to the wrong side.
 function InsertSizeScaleBar({
   ticks,
   down,
@@ -206,14 +208,17 @@ function InsertSizeScaleBar({
   down: boolean
   canvasWidth: number
 }) {
-  return (
-    <g transform={`translate(${down ? 45 : canvasWidth - 50})`}>
-      <YScaleBar ticks={ticks} orientation={down ? 'left' : 'right'} />
-      <TlenAxisLabel
-        yTop={ticks.yTop}
-        yBottom={ticks.yBottom}
-        x={down ? 11 : undefined}
-      />
+  return down ? (
+    <g>
+      <g transform="translate(40, 0)">
+        <YScaleBar ticks={ticks} orientation="left" />
+      </g>
+      <TlenAxisLabel yTop={ticks.yTop} yBottom={ticks.yBottom} x={11} />
+    </g>
+  ) : (
+    <g transform={`translate(${canvasWidth - 50})`}>
+      <YScaleBar ticks={ticks} orientation="right" />
+      <TlenAxisLabel yTop={ticks.yTop} yBottom={ticks.yBottom} />
     </g>
   )
 }
