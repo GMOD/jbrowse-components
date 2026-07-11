@@ -108,6 +108,10 @@ The `blockAssemblies` slot names every column in order (column 0 first), and
 }
 ```
 
+`bedLocations` is a per-column array and `blockAssemblies` names those columns —
+neither is expressible through `jbrowse add-track` flags, so this adapter is
+configured directly in `config.json` as shown rather than from the CLI.
+
 ## Stacking the three genomes
 
 With the track in your config, open the stack either from the UI or
