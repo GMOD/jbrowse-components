@@ -8,6 +8,7 @@ import {
   isSequenceType,
   loadOrCreateConfig,
   resolveTargetPath,
+  validateSequenceType,
 } from './utils.ts'
 import { debug, printHelp, requirePositional } from '../../utils.ts'
 import { loadFiles } from '../add-track-utils/file-operations.ts'
@@ -59,7 +60,6 @@ export async function run(args?: string[]) {
       description:
         'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either a JSON file location or inline JSON that defines a custom sequence adapter',
       choices: ['aliases', 'custom'],
-      dependsOn: ['refNameAliases'],
     },
     refNameColors: {
       type: 'string',
@@ -140,6 +140,7 @@ export async function run(args?: string[]) {
   }
 
   validateLoadOption(runFlags.load)
+  validateSequenceType(runFlags.type)
 
   const argsSequence = positionals[0]
   requirePositional(argsSequence, 'sequence', usage)
@@ -152,11 +153,15 @@ export async function run(args?: string[]) {
   debug(`Sequence location is: ${argsSequence}`)
 
   const target = await resolveTargetPath(output)
-  const { assembly: baseAssembly, filesToLoad } = await getAssembly({
-    runFlags: flags,
-    argsSequence,
-  })
-  const assembly = await enhanceAssembly(baseAssembly, flags)
+  const { assembly: baseAssembly, filesToLoad: sequenceFiles } =
+    await getAssembly({
+      runFlags: flags,
+      argsSequence,
+    })
+  const { assembly, filesToLoad: aliasFiles } = await enhanceAssembly(
+    baseAssembly,
+    flags,
+  )
 
   const configContents = await loadOrCreateConfig(target)
   const { config: updatedConfig, wasOverwritten } = await addAssemblyToConfig({
@@ -166,7 +171,7 @@ export async function run(args?: string[]) {
   })
 
   await loadFiles({
-    files: filesToLoad,
+    files: [...sequenceFiles, ...aliasFiles],
     destDir: path.dirname(target),
     mode: flags.load,
     force: flags.force,

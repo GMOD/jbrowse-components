@@ -92,6 +92,18 @@ test('fails if trying to add an assembly with a name that already exists', async
     expect(error?.message).toMatchSnapshot()
   })
 })
+test('fails on an unrecognized --type value', async () => {
+  const { error } = await runCommand([
+    'add-assembly',
+    dataDir('simple.fasta'),
+    '--type',
+    'indexedfasta',
+    '--load',
+    'copy',
+  ])
+  expect(error?.message).toMatchSnapshot()
+})
+
 test('fails if it cannot guess the sequence type', async () => {
   const { error } = await runCommand([
     'add-assembly',
@@ -313,6 +325,9 @@ test('can specify a refNameAliases file', async () => {
     ])
 
     expect(readConf(ctx)).toMatchSnapshot()
+    // --load copy rewrites the aliases location to a bare basename, so the
+    // file itself must be copied into the config dir
+    expect(fs.existsSync(ctxDir(ctx, 'simple.aliases'))).toBe(true)
   })
 })
 

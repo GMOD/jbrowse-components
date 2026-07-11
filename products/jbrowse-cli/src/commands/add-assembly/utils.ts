@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { isURL } from '../../types/common.ts'
 import {
   debug,
   ignoreNotFound,
@@ -27,6 +28,15 @@ const sequenceTypes = new Set<SequenceType>([
 
 export function isSequenceType(t: string | undefined): t is SequenceType {
   return sequenceTypes.has(t as SequenceType)
+}
+
+// parseArgs does not enforce the `choices` declared on --type, so an
+// unrecognized value would otherwise be silently dropped and the type guessed
+// from the file extension, masking a user typo
+export function validateSequenceType(type?: string): void {
+  if (type !== undefined && !isSequenceType(type)) {
+    throw new Error(`--type must be one of: ${[...sequenceTypes].join(', ')}`)
+  }
 }
 
 interface AssemblyFlags {
@@ -225,17 +235,31 @@ async function resolveRefNameAliasAdapter(runFlags: AssemblyFlags) {
 export async function enhanceAssembly(
   assembly: Assembly,
   runFlags: AssemblyFlags,
-): Promise<Assembly> {
+): Promise<{ assembly: Assembly; filesToLoad: string[] }> {
+  const { refNameAliases, refNameAliasesType } = runFlags
+
+  // a non-custom refNameAliases points at a local aliases file whose location
+  // is rewritten to a bare basename by mapLocationForFiles, so the file itself
+  // must be loaded into the config dir alongside the sequence. Custom aliases
+  // are embedded inline (no file), and URLs are referenced in place.
+  const filesToLoad =
+    refNameAliases && refNameAliasesType !== 'custom' && !isURL(refNameAliases)
+      ? [refNameAliases]
+      : []
+
   return {
-    ...assembly,
-    ...(runFlags.alias?.length && { aliases: runFlags.alias }),
-    ...(runFlags.refNameColors && {
-      refNameColors: parseCommaSeparatedString(runFlags.refNameColors),
-    }),
-    ...(runFlags.displayName && { displayName: runFlags.displayName }),
-    ...(runFlags.refNameAliases && {
-      refNameAliases: { adapter: await resolveRefNameAliasAdapter(runFlags) },
-    }),
+    assembly: {
+      ...assembly,
+      ...(runFlags.alias?.length && { aliases: runFlags.alias }),
+      ...(runFlags.refNameColors && {
+        refNameColors: parseCommaSeparatedString(runFlags.refNameColors),
+      }),
+      ...(runFlags.displayName && { displayName: runFlags.displayName }),
+      ...(refNameAliases && {
+        refNameAliases: { adapter: await resolveRefNameAliasAdapter(runFlags) },
+      }),
+    },
+    filesToLoad,
   }
 }
 

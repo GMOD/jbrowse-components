@@ -532,6 +532,8 @@ exports[`fails if using inline JSON sequence custom with no --name 1`] = `"Error
 
 exports[`fails if using invalid inline JSON 1`] = `"Error: Error: ENOENT: no such file or directory, open 'notValidJSON'"`;
 
+exports[`fails on an unrecognized --type value 1`] = `"Error: --type must be one of: indexedFasta, bgzipFasta, twoBit, chromSizes, custom"`;
+
 exports[`fails on invalid --load value 1`] = `"Error: --load must be one of: copy, symlink, move, inPlace"`;
 
 exports[`relative path 1`] = `
