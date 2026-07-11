@@ -1,28 +1,19 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { ResizeHandle } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import {
-  getContainingView,
-  getSession,
-  getStrokeProps,
-} from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha, useTheme } from '@mui/material'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { mirrorColumnIndex } from './variantMatrixRenderingBackendTypes.ts'
-import { pointToSegmentDist, svgMousePoint } from '../../util.ts'
+import {
+  ConnectorLine,
+  ConnectorLineField,
+  ConnectorResizeHandle,
+} from '../../shared/ConnectorLines.tsx'
 
+import type { ConnectorCoord } from '../../shared/ConnectorLines.tsx'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-const useStyles = makeStyles()({
-  resizeHandle: {
-    height: 5,
-    boxSizing: 'border-box',
-  },
-})
 
 interface MinimalModel {
   setLineZoneHeight: (arg: number) => number
@@ -70,33 +61,8 @@ function getLineGeometry(model: MinimalModel) {
   }
 }
 
-// The red matrix→genome connector line (hovered column + crosshair column).
-function ConnectorLine({
-  mx,
-  gx,
-  lineZoneHeight,
-}: {
-  mx: number
-  gx: number
-  lineZoneHeight: number
-}) {
-  return (
-    <line
-      stroke="#f00c"
-      strokeWidth={2}
-      style={{ pointerEvents: 'none' }}
-      x1={mx}
-      x2={gx}
-      y1={lineZoneHeight}
-      y2={0}
-    />
-  )
-}
-
-interface HoveredLine {
+interface HoveredLine extends ConnectorCoord {
   feature: Feature
-  mx: number
-  genomicX: number
 }
 
 const Wrapper = observer(function Wrapper({
@@ -135,7 +101,6 @@ const AllLines = observer(function AllLines({
   model: MinimalModel
   onHover: (arg: HoveredLine | undefined) => void
 }) {
-  const theme = useTheme()
   const { view, assembly, featuresVolatile, n, w, flipped, offsetAdj } =
     getLineGeometry(model)
   const { lineZoneHeight } = model
@@ -151,71 +116,19 @@ const AllLines = observer(function AllLines({
     }))
   }, [assembly, featuresVolatile, n, w, flipped, view, offsetAdj])
 
-  const pathD = useMemo(
-    () =>
-      lineCoords
-        .map(({ mx, gx }) => `M${mx} ${lineZoneHeight}L${gx} 0`)
-        .join(''),
-    [lineCoords, lineZoneHeight],
-  )
-
-  const onMouseMove = useCallback(
-    (event: React.MouseEvent<SVGElement>) => {
-      const pt = svgMousePoint(event)
-      if (!pt) {
-        onHover(undefined)
-        return
-      }
-      let minDist = 10
-      let found: (typeof lineCoords)[0] | undefined
-      for (const coord of lineCoords) {
-        const dist = pointToSegmentDist(
-          pt.x,
-          pt.y,
-          coord.mx,
-          lineZoneHeight,
-          coord.gx,
-          0,
-        )
-        if (dist < minDist) {
-          minDist = dist
-          found = coord
-        }
-      }
-      onHover(
-        found
-          ? { feature: found.feature, mx: found.mx, genomicX: found.gx }
-          : undefined,
-      )
-    },
-    [lineCoords, lineZoneHeight, onHover],
-  )
-
   if (!assembly || n === 0) {
     return null
   }
 
   return (
-    <>
-      <rect
-        x={0}
-        y={0}
-        width="100%"
-        height={lineZoneHeight}
-        fill="transparent"
-        onMouseMove={onMouseMove}
-        onMouseLeave={() => {
-          onHover(undefined)
-        }}
-      />
-      <path
-        d={pathD}
-        {...getStrokeProps(alpha(theme.palette.text.primary, 0.4))}
-        strokeWidth={0.5}
-        fill="none"
-        style={{ pointerEvents: 'none' }}
-      />
-    </>
+    <ConnectorLineField
+      lineCoords={lineCoords}
+      lineZoneHeight={lineZoneHeight}
+      strokeWidth={0.5}
+      onHoverIndex={i => {
+        onHover(i === undefined ? undefined : lineCoords[i])
+      }}
+    />
   )
 })
 
@@ -262,7 +175,6 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     exportSVG?: boolean
     crosshairX?: number
   }) {
-    const { classes } = useStyles()
     const { lineZoneHeight, featuresVolatile } = model
     const [hovered, setHovered] = useState<HoveredLine>()
     const { n } = getLineGeometry(model)
@@ -279,7 +191,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
             <>
               <ConnectorLine
                 mx={hovered.mx}
-                gx={hovered.genomicX}
+                gx={hovered.gx}
                 lineZoneHeight={lineZoneHeight}
               />
               {hovered.feature.get('name') ? (
@@ -292,13 +204,11 @@ const LinesConnectingMatrixToGenomicPosition = observer(
           ) : null}
         </Wrapper>
         {!exportSVG ? (
-          <ResizeHandle
-            style={{ position: 'absolute', top: lineZoneHeight - 4 }}
-            onDrag={d => {
+          <ConnectorResizeHandle
+            lineZoneHeight={lineZoneHeight}
+            onResize={d => {
               model.setLineZoneHeight(lineZoneHeight + d)
-              return undefined
             }}
-            className={classes.resizeHandle}
           />
         ) : null}
       </>

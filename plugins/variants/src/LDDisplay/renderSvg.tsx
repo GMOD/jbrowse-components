@@ -86,6 +86,13 @@ function LdSvgBody({
   const visibleWidth = view.totalWidthPxWithoutBorders
   const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
   const triangleHeight = height - effectiveLineZoneHeight
+  // svgReady gates on a fresh viewport, so viewScale === 1 and viewOffsetX ===
+  // max(0, -offsetPx) — the left gap when the region doesn't reach the viewport
+  // edge. Paint the triangle with the same transform the connector lines and
+  // VariantLabels use so all three stay aligned when offsetPx < 0 (a no-op
+  // otherwise, since viewOffsetX is then 0).
+  const { scale: exportViewScale, viewOffsetX: exportViewOffsetX } =
+    self.renderTransform
 
   // Match the live overlay's layout: genomic-positions mode places the
   // recombination plot at the top spanning effectiveLineZoneHeight; index
@@ -113,8 +120,8 @@ function LdSvgBody({
                 canvasWidth: visibleWidth,
                 canvasHeight: triangleHeight,
                 signedLD,
-                viewScale: 1,
-                viewOffsetX: 0,
+                viewScale: exportViewScale,
+                viewOffsetX: exportViewOffsetX,
                 uniformW,
               })
             }}
