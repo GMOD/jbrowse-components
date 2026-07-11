@@ -49,6 +49,13 @@ images that actually changed — it logs `≈ kept` vs `✓ updated` per spec. P
 `pnpm build` in `products/jbrowse-web` first (the generator renders the built
 bundle, not source).
 
+**Keep captions and gallery descriptions concise.** Name the tracks and the one
+visual takeaway (e.g. "the loop arc reappears as the matrix corner dot"). Don't
+write extended biological background — the figure should make the biology
+obvious. If a caption needs a paragraph of gene/pathway prose to be
+intelligible, the figure itself isn't a clear enough highlight; fix the figure
+(zoom, labels, in-view highlights), not the caption.
+
 **Many of these PNGs are too large to analyze directly — downscale first.**
 Capture is 1500px-wide at `deviceScaleFactor: 2`, so most images are ~3000px
 wide and the Read tool rejects them (oversized). Before reading one for visual

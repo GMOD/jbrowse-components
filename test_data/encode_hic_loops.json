@@ -97,8 +97,10 @@
         {
           "type": "LinearHicDisplay",
           "displayId": "encode_gm12878_hic-LinearHicDisplay",
+          "height": 480,
+          "useLogScale": true,
           "useColorPercentile": true,
-          "resolutionBias": 2,
+          "resolutionBias": 3,
           "showResolutionControls": false
         }
       ]
@@ -112,7 +114,25 @@
         "type": "LinearGenomeView",
         "init": {
           "assembly": "hg38",
-          "loc": "chr3:122,300,000-122,920,000",
+          "loc": "chr3:122,475,000-122,775,000",
+          "highlight": [
+            {
+              "assemblyName": "hg38",
+              "refName": "chr3",
+              "start": 122550000,
+              "end": 122575000,
+              "color": "rgba(30,132,132,0.13)",
+              "label": "PARP9/DTX3L"
+            },
+            {
+              "assemblyName": "hg38",
+              "refName": "chr3",
+              "start": 122675000,
+              "end": 122700000,
+              "color": "rgba(30,132,132,0.13)",
+              "label": "PARP14"
+            }
+          ],
           "tracks": [
             {
               "trackId": "ncbi_refseq_hg38",

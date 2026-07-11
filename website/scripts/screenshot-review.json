@@ -1403,10 +1403,10 @@
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
-    "status": "bad",
-    "note": "i can't really tell what is going on here still. is this demonstrating anything biologically meaningful? we need it to be a real highlight. ",
-    "reviewedAt": "2026-07-10T21:09:11.590Z",
-    "hash": "743acf60a4d2dbad4e08c016b9f496916792c603"
+    "status": "good",
+    "note": "FIXED: made it a legible highlight. Tightened window 620kb->300kb onto the one strong HiCCUPS loop (PARP9/DTX3L promoter <-> PARP14 promoter, ~125kb), added two init.highlight bands labeling the anchors so the arc, the labeled promoters, and the matrix corner dot line up. Matrix now useLogScale + resolutionBias:3 so the off-diagonal loop dot reads clearly below the arc apex. Same contact shown three ways (arc + dot). Concise caption per website/CLAUDE.md (no extended biology prose).",
+    "reviewedAt": "2026-07-11T03:10:00.000Z",
+    "hash": "6a3abd1f5f978828fa51ef070b48978b2da20ea3"
   },
   "sv_synteny/linear_synteny_genes_colored": {
     "name": "sv_synteny/linear_synteny_genes_colored",

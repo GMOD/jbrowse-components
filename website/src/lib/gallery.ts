@@ -291,7 +291,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'encode_hic_loops_arcs',
         guide: 'user_guides/hic_track',
         description:
-          'ENCODE GM12878 HiCCUPS loop calls and EPIraction enhancer–gene predictions drawn as BEDPE paired-arc tracks stacked over the intact Hi-C contact matrix (hg38).',
+          'ENCODE GM12878 HiCCUPS loop calls and EPIraction enhancer–gene predictions as BEDPE paired-arc tracks over the intact Hi-C contact matrix (hg38); the loop arc reappears as the matrix corner dot below it.',
       },
       {
         label: 'ChromHMM state painting (Roadmap)',
