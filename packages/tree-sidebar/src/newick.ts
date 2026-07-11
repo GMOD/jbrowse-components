@@ -58,7 +58,7 @@ export default function parseNewick(s: string): NewickNode {
           // standard phylo Newick puts a name there. Disambiguate with a
           // regex so tokens like `1.50` or `1e-3` (which fail a String(n)
           // round-trip) still parse as length.
-          if (NUMERIC_TOKEN.test(token.trim())) {
+          if (NUMERIC_TOKEN.test(token)) {
             tree.length = Number.parseFloat(token)
           } else {
             tree.name = token

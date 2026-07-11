@@ -61,7 +61,7 @@ export default function SourceGrid<S extends { name: string; color?: string }>({
   reservedExtra?: ReadonlySet<string>
 }) {
   const { classes } = useStyles()
-  const [selected, setSelected] = useState([] as GridRowId[])
+  const [selected, setSelected] = useState<GridRowId[]>([])
   const [showAdvanced, setShowAdvanced] = useState(false)
   const onSortModelChange = useSourceSort(rows, onChange)
 

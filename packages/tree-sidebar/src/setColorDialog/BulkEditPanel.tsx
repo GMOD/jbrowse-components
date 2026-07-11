@@ -47,8 +47,7 @@ export default function BulkEditPanel<S extends { name: string }>({
   })()
 
   const parseError = parsed instanceof Error ? parsed : undefined
-  const byName =
-    parsed !== undefined && !(parsed instanceof Error) ? parsed : undefined
+  const byName = parsed instanceof Error ? undefined : parsed
   const unmatched = byName ? unmatchedNames(currLayout, byName) : []
 
   const apply = (replace: boolean) => {

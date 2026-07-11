@@ -53,11 +53,11 @@ export function buildSourceColumns<S extends { name: string; color?: string }>({
           field,
           renderCell: ({ value }) => (
             <div className={cellClassName}>
-              <SanitizedHTML html={getStr(value)} />
+              <SanitizedHTML html={getStr(value ?? '')} />
             </div>
           ),
           width: measureGridWidth(
-            rows.map(r => `${(r as Record<string, unknown>)[field] ?? ''}`),
+            rows.map(r => getStr((r as Record<string, unknown>)[field] ?? '')),
           ),
         }) satisfies GridColDef<S>,
     ),

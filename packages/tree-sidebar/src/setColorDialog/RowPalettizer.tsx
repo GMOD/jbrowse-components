@@ -25,12 +25,12 @@ export default function RowPalettizer<
   setCurrLayout: (arg: S[]) => void
   excludedFields?: ReadonlySet<string>
 }) {
-  const excluded = new Set([...ALWAYS_EXCLUDED, ...(excludedFields ?? [])])
-  const fields = extraColumns(currLayout, excluded)
-
   if (!currLayout.length) {
     return null
   }
+
+  const excluded = new Set([...ALWAYS_EXCLUDED, ...(excludedFields ?? [])])
+  const fields = extraColumns(currLayout, excluded)
 
   return (
     <div>
