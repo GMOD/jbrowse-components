@@ -157,9 +157,6 @@ state** categories.
 
 ## See also
 
-- [Introgression tracts](/docs/tutorials/introgression) — the same multi-row
-  feature display technique, painting per-haplotype segments instead of
-  per-cell-type states
 - [Phased trio analysis](/docs/tutorials/analyze_trio) — another multi-row
   feature display use case, painting hap-ibd inheritance blocks
 - [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk) — the

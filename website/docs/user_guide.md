@@ -47,7 +47,6 @@ sidebar_label: Overview
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm) - Painting many-cell-type ChromHMM segmentations in one track with the multi-row feature display
 - [Display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
-- [Introgression tracts](/docs/tutorials/introgression) - Painting per-haplotype archaic introgression segments as one labeled row per haplotype with the multi-row feature display
 - [DNA methylation](/docs/tutorials/methylation) - Per-read, aggregate, allele-specific, and chromatin-accessibility (6mA) methylation from ONT/PacBio long reads and modkit
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes in a linear synteny view from a jcvi MCScan .blocks file
 - [Population genomics](/docs/tutorials/population_genomics) - Windowed Fst, nucleotide diversity, and Tajima's D scans plus a genotype matrix, LD heatmap, and a between-population sweep from real Drosophila data — a fully reproducible pipeline
