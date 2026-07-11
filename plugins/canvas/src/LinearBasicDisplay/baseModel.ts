@@ -1103,10 +1103,11 @@ export default function baseStateModelFactory(
          * descriptions), else `labels` (drop descriptions), else `decimated` (keep
          * names only on wide/pinned features), else `bodies` (drop names too, pack
          * tight). The kept rung is then scaled to fill the track: grown up to
-         * `fitMaxScale` when it fits with room to spare (so sparse bodies get
-         * taller instead of leaving whitespace), or — only at the last `bodies`
-         * rung — squeezed down to `fitMinScale` and scrolled if even that
-         * overflows. Non-fit modes stay at `full`, scale 1. Read off the unscaled
+         * `fitMaxScale` when it fits with room to spare, but never past the normal
+         * feature height — so in normal display mode grow is pinned at 1 and spare
+         * space stays whitespace, while a compact mode may enlarge back up to
+         * normal; or — only at the last `bodies` rung — squeezed down to
+         * `fitMinScale` and scrolled if even that overflows. Non-fit modes stay at `full`, scale 1. Read off the unscaled
          * candidate heights so it can't feed back on its own `scale`. The ladder
          * walk + scale math live in `resolveFitLadder`.
          */
