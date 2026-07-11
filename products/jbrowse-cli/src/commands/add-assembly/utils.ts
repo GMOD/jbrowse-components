@@ -98,6 +98,73 @@ export function guessSequenceType(sequence: string) {
   )
 }
 
+// a sidecar file sits next to the sequence at `${sequence}${suffix}`, unless
+// the matching --faiLocation/--gziLocation flag overrides its path
+interface SeqSidecar {
+  field: 'faiLocation' | 'gziLocation'
+  suffix: string
+}
+
+// declarative layout for each non-custom sequence type: the adapter type + its
+// primary location field, any sidecar index files, and how the default assembly
+// name is derived from the sequence filename. Keeping the adapter and its files
+// in one spec means they cannot drift.
+interface SeqSpec {
+  adapterType: string
+  locField: string
+  sidecars: SeqSidecar[]
+  defaultName: (p: string) => string
+}
+
+const seqSpecs: Record<Exclude<SequenceType, 'custom'>, SeqSpec> = {
+  indexedFasta: {
+    adapterType: 'IndexedFastaAdapter',
+    locField: 'fastaLocation',
+    sidecars: [{ field: 'faiLocation', suffix: '.fai' }],
+    defaultName: basenameWithoutFastaExt,
+  },
+  bgzipFasta: {
+    adapterType: 'BgzipFastaAdapter',
+    locField: 'fastaLocation',
+    sidecars: [
+      { field: 'faiLocation', suffix: '.fai' },
+      { field: 'gziLocation', suffix: '.gzi' },
+    ],
+    defaultName: basenameWithoutFastaExt,
+  },
+  twoBit: {
+    adapterType: 'TwoBitAdapter',
+    locField: 'twoBitLocation',
+    sidecars: [],
+    defaultName: p => path.basename(p, '.2bit'),
+  },
+  chromSizes: {
+    adapterType: 'ChromSizesAdapter',
+    locField: 'chromSizesLocation',
+    sidecars: [],
+    defaultName: p => path.basename(p, '.chrom.sizes'),
+  },
+}
+
+async function customSequenceAdapter(argsSequence: string, name?: string) {
+  const adapter = await readInlineOrFileJson<Sequence['adapter']>(argsSequence)
+  debug(`Custom adapter: ${JSON.stringify(adapter)}`)
+  if (!name) {
+    if (isValidJSON(argsSequence)) {
+      throw new Error(
+        'Must provide --name when using custom inline JSON sequence',
+      )
+    }
+    name = path.basename(argsSequence, '.json')
+  }
+  if (!adapter.type) {
+    throw new Error(
+      `No "type" specified in sequence adapter "${JSON.stringify(adapter)}"`,
+    )
+  }
+  return { adapter, name }
+}
+
 export async function getAssembly({
   runFlags,
   argsSequence,
@@ -107,98 +174,46 @@ export async function getAssembly({
 }): Promise<{ assembly: Assembly; filesToLoad: string[] }> {
   validateLoadAndLocation(argsSequence, runFlags.load)
 
-  let { name } = runFlags
-  let { type } = runFlags
-  if (type) {
-    debug(`Type is: ${type}`)
-  } else {
-    type = guessSequenceType(argsSequence)
-    debug(`No type specified, guessing type: ${type}`)
-  }
-  if (name) {
-    debug(`Name is: ${name}`)
-  }
+  const type = runFlags.type ?? guessSequenceType(argsSequence)
+  debug(runFlags.type ? `Type is: ${type}` : `No type specified, guessed: ${type}`)
 
-  const { load, faiLocation, gziLocation } = runFlags
   const uri = (p: string) =>
     ({
-      uri: mapLocationForFiles(p, load),
+      uri: mapLocationForFiles(p, runFlags.load),
       locationType: 'UriLocation',
     }) as const
 
-  let adapter: Sequence['adapter']
-  let filesToLoad: string[] = []
-
-  switch (type) {
-    case 'indexedFasta': {
-      const faiLoc = faiLocation || `${argsSequence}.fai`
-      debug(`FASTA: ${argsSequence}, index: ${faiLoc}`)
-      name ||= basenameWithoutFastaExt(argsSequence)
-      adapter = {
-        type: 'IndexedFastaAdapter',
-        fastaLocation: uri(argsSequence),
-        faiLocation: uri(faiLoc),
-      }
-      filesToLoad = [argsSequence, faiLoc]
-      break
-    }
-    case 'bgzipFasta': {
-      const faiLoc = faiLocation || `${argsSequence}.fai`
-      const gziLoc = gziLocation || `${argsSequence}.gzi`
-      debug(`bgzipFASTA: ${argsSequence}, fai: ${faiLoc}, gzi: ${gziLoc}`)
-      name ||= basenameWithoutFastaExt(argsSequence)
-      adapter = {
-        type: 'BgzipFastaAdapter',
-        fastaLocation: uri(argsSequence),
-        faiLocation: uri(faiLoc),
-        gziLocation: uri(gziLoc),
-      }
-      filesToLoad = [argsSequence, faiLoc, gziLoc]
-      break
-    }
-    case 'twoBit': {
-      debug(`2bit: ${argsSequence}`)
-      name ||= path.basename(argsSequence, '.2bit')
-      adapter = { type: 'TwoBitAdapter', twoBitLocation: uri(argsSequence) }
-      filesToLoad = [argsSequence]
-      break
-    }
-    case 'chromSizes': {
-      debug(`chrom.sizes: ${argsSequence}`)
-      name ||= path.basename(argsSequence, '.chrom.sizes')
-      adapter = {
-        type: 'ChromSizesAdapter',
-        chromSizesLocation: uri(argsSequence),
-      }
-      filesToLoad = [argsSequence]
-      break
-    }
-    case 'custom': {
-      adapter = await readInlineOrFileJson<{ type: string }>(argsSequence)
-      debug(`Custom adapter: ${JSON.stringify(adapter)}`)
-      if (!name) {
-        if (isValidJSON(argsSequence)) {
-          throw new Error(
-            'Must provide --name when using custom inline JSON sequence',
-          )
-        }
-        name = path.basename(argsSequence, '.json')
-      }
-      if (!('type' in adapter)) {
-        throw new Error(
-          `No "type" specified in sequence adapter "${JSON.stringify(adapter)}"`,
-        )
-      }
-      break
-    }
+  if (type === 'custom') {
+    const { adapter, name } = await customSequenceAdapter(
+      argsSequence,
+      runFlags.name,
+    )
+    return { assembly: { name, sequence: makeSequence(name, adapter) }, filesToLoad: [] }
   }
 
-  const sequence: Sequence = {
+  const spec = seqSpecs[type]
+  const sidecars = spec.sidecars.map(s => ({
+    field: s.field,
+    path: runFlags[s.field] ?? `${argsSequence}${s.suffix}`,
+  }))
+  const name = runFlags.name || spec.defaultName(argsSequence)
+  const adapter = {
+    type: spec.adapterType,
+    [spec.locField]: uri(argsSequence),
+    ...Object.fromEntries(sidecars.map(s => [s.field, uri(s.path)])),
+  }
+  return {
+    assembly: { name, sequence: makeSequence(name, adapter) },
+    filesToLoad: [argsSequence, ...sidecars.map(s => s.path)],
+  }
+}
+
+function makeSequence(name: string, adapter: Sequence['adapter']): Sequence {
+  return {
     type: 'ReferenceSequenceTrack',
     trackId: `${name}-ReferenceSequenceTrack`,
     adapter,
   }
-  return { assembly: { name, sequence }, filesToLoad }
 }
 
 export async function resolveTargetPath(output: string): Promise<string> {
