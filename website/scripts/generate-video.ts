@@ -34,9 +34,10 @@ const outDir = path.resolve(__dirname, '..', 'static', 'video')
 const headed = process.argv.includes('--headed')
 
 const PORT = 3335
-// 16:9 at a size that keeps the webm small but legible; deviceScaleFactor 1
-// (video doesn't need the 2x retina backing store the stills use).
-const VIEWPORT = { width: 1280, height: 720, deviceScaleFactor: 1 }
+// Widescreen ~21:9 and short — the LGV is a horizontal strip (header + a couple
+// tracks), so a wide, shallow frame fills with genome instead of dead space
+// below the tracks. deviceScaleFactor 1 (video doesn't need the stills' 2x).
+const VIEWPORT = { width: 1600, height: 620, deviceScaleFactor: 1 }
 // Time a cursor glide takes on camera; also how long we let each animated zoom
 // spring play before the next click.
 const GLIDE_MS = 550
