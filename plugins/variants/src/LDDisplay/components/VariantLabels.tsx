@@ -2,26 +2,10 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { getSnpViewportX } from './snpViewportX.ts'
+
 import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-// SNP position in viewport-canvas-x: bpToPx returns the absolute genome pixel,
-// subtract the raw view.offsetPx to get viewport-relative (0 = view left edge).
-// Matches the connector lines' getGenomicX; the `left` gap when offsetPx < 0
-// lives in the render frame (renderTransform.viewOffsetX / the export group's
-// origin), not here — clamping it here would double-count in one frame.
-function getGenomicX(
-  view: LinearGenomeViewModel,
-  assembly: { getCanonicalRefName2: (refName: string) => string },
-  snp: { refName: string; start: number },
-) {
-  return (
-    (view.bpToPx({
-      refName: assembly.getCanonicalRefName2(snp.refName),
-      coord: snp.start,
-    })?.offsetPx ?? 0) - view.offsetPx
-  )
-}
 
 const VariantLabels = observer(function VariantLabels({
   model,
@@ -42,7 +26,7 @@ const VariantLabels = observer(function VariantLabels({
   return (
     <>
       {snps.map((snp, i) => {
-        const genomicX = getGenomicX(view, assembly, snp)
+        const genomicX = getSnpViewportX(view, assembly, snp)
         return (
           <text
             // eslint-disable-next-line @eslint-react/no-array-index-key -- snp.id may be missing or duplicated (multi-allelic sites share a position); idx only breaks ties

@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 
 import VariantLabels from './VariantLabels.tsx'
 import Wrapper from './Wrapper.tsx'
+import { getSnpViewportX } from './snpViewportX.ts'
 import {
   ConnectorLine,
   ConnectorLineField,
@@ -15,21 +16,6 @@ import {
 import type { ConnectorCoord } from '../../shared/ConnectorLines.tsx'
 import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-// SNP position in viewport-canvas-x: bpToPx returns the absolute genome
-// pixel, subtract view.offsetPx to get viewport-relative.
-function getGenomicX(
-  view: LinearGenomeViewModel,
-  assembly: { getCanonicalRefName2: (refName: string) => string },
-  snp: { refName: string; start: number },
-) {
-  const abs =
-    view.bpToPx({
-      refName: assembly.getCanonicalRefName2(snp.refName),
-      coord: snp.start,
-    })?.offsetPx ?? 0
-  return abs - view.offsetPx
-}
 
 // NOTE: not horizontally-flip aware. The SNP-index axis runs left-to-right
 // regardless of view.reversed, so on a flipped view these connector lines cross
@@ -76,7 +62,7 @@ const AllLines = observer(function AllLines({
     return snps.map((snp, i) => ({
       snp,
       mx: getMatrixX(i, blockWidth, n, viewScale, viewOffsetX),
-      gx: getGenomicX(view, assembly, snp),
+      gx: getSnpViewportX(view, assembly, snp),
     }))
   }, [assembly, n, snps, blockWidth, viewScale, viewOffsetX, view])
 
