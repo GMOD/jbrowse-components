@@ -169,3 +169,47 @@ test('arc display SVG export renders bezier arcs for BND variants', async () => 
   expect(svg).toContain(' C ')
   expect(normalizeSvg(svg)).toMatchSnapshot()
 }, 45000)
+
+// These two assert-only tests live at the end of the file on purpose: the
+// `@jbrowse/svgcanvas` clip-id counter is a module global that increments per
+// export and isn't covered by normalizeSvg, so inserting a snapshot-affecting
+// test earlier would renumber every later snapshot's `svgcanvas-clip-N`.
+
+test('wiggle SVG export includes cross-hatches when enabled', async () => {
+  const { view, findByTestId } = await createView()
+  view.setNewView(5, 0)
+  fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
+  await findByTestId('wiggle-display-done', ...opts)
+
+  const display = view.tracks[0]!.displays[0] as {
+    toggleCrossHatches: () => void
+  }
+  display.toggleCrossHatches()
+
+  await view.exportSvg({ rasterizeLayers: false })
+  // CrossHatchLines draws a guide line at each Y-scale tick. renderToStaticMarkup
+  // strips the rgba alpha, so the exported stroke is rgb(200,200,200).
+  expect(getSavedSvg()).toContain('stroke="rgb(200,200,200)"')
+}, 45000)
+
+test('multi-wiggle SVG export includes row separators and cross-hatches when enabled', async () => {
+  const { view, findByTestId } = await createView()
+  view.setNewView(5, 0)
+  fireEvent.click(
+    await findByTestId(hts('volvox_microarray_multi_multirowxy'), ...opts),
+  )
+  await findByTestId('multi-wiggle-display-done', ...opts)
+
+  const display = view.tracks[0]!.displays[0] as {
+    toggleCrossHatches: () => void
+    setShowRowSeparators: (arg: boolean) => void
+  }
+  display.toggleCrossHatches()
+  display.setShowRowSeparators(true)
+
+  await view.exportSvg({ rasterizeLayers: false })
+  const svg = getSavedSvg()
+  expect(svg).toContain('stroke="#0003"') // inter-row separators
+  // cross-hatches: renderToStaticMarkup strips the rgba alpha to rgb
+  expect(svg).toContain('stroke="rgb(200,200,200)"')
+}, 45000)
