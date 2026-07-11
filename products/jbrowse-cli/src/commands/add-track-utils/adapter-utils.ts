@@ -455,8 +455,12 @@ export const adapterTypesToTrackTypeMap: Record<string, string> = {
   ChainAdapter: 'SyntenyTrack',
   MashMapAdapter: 'SyntenyTrack',
   PairwiseIndexedPAFAdapter: 'SyntenyTrack',
+  AllVsAllPAFAdapter: 'SyntenyTrack',
+  AllVsAllIndexedPAFAdapter: 'SyntenyTrack',
+  BlastTabularAdapter: 'SyntenyTrack',
   MCScanAnchorsAdapter: 'SyntenyTrack',
   MCScanSimpleAnchorsAdapter: 'SyntenyTrack',
+  MCScanBlocksAdapter: 'SyntenyTrack',
 }
 
 export function guessTrackType(adapterType: string): string {

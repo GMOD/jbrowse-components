@@ -694,3 +694,26 @@ test('can override adapter type with --adapterType BedAdapter', async () => {
     expect(exists(ctxDir(ctx, 'volvox.bed.gz.tbi'))).toBeFalsy()
   })
 })
+
+test('all-vs-all synteny adapter type gets SyntenyTrack and threaded assemblyNames', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const { error } = await runCommand([
+      'add-track',
+      simplePaf,
+      '--load',
+      'copy',
+      '--adapterType',
+      'AllVsAllPAFAdapter',
+      '--assemblyNames',
+      'grape,peach,cacao',
+    ])
+    if (error) {
+      throw error
+    }
+    const track = readConf(ctx).tracks[0]
+    expect(track.type).toBe('SyntenyTrack')
+    expect(track.adapter.type).toBe('AllVsAllPAFAdapter')
+    expect(track.adapter.assemblyNames).toEqual(['grape', 'peach', 'cacao'])
+  })
+})
