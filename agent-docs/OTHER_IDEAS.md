@@ -1662,4 +1662,124 @@ Where this leaves the perf story (all measured)
 
 Honest next step
 
-The only thing that reduces that per-frame cost is cutting the number of components that re-render each zoom frame. Pinning down which ones needs a React-render-level measurement (React DevTools profiler or render counters), not a CPU flame graph — that's the right tool for "who re-rendered and why." I can wire that up next if you want to keep going, but I'd stop guessing and let that measurement pick the target. Given how much we've covered, this is a clean place to pause.
+The only thing that reduces that per-frame cost is cutting the number of components that re-render each zoom frame. Pinning down which ones needs a React-render-level measurement (React DevTools profiler or render counters), not a CPU flame graph — that's the right tool for "who re-rendered and why."
+
+**Measured culprit (2026-07-11): the LGV coordinate ruler, not the alignments overlays.** A `MutationObserver` attributing every DOM mutation during a 5× zoom to its nearest `data-testid` subtree found ~2056 mutations dominated by `rubberband_controls` (the ScaleBar): 719 structural node add/remove + 439 style-attr, vs **2 of 2056** in the alignments overlays. The alignments display overlays are already zoom-invariant (`highlightBoxes` short-circuits to `[]` when nothing hovered; `renderSections`/`sections`/`groupLaidOutMap` read only vertical layout, never `offsetPx`/`bpPerPx`; sashimi/bezier default-off) — **do not chase them.** `VisibleLabelsOverlay` is a canvas, so it contributes no DOM churn.
+
+The churn is `ScalebarCoordinateLabels` (`plugins/linear-genome-view/.../ScalebarCoordinateLabels.tsx`): it creates/destroys ~144 tick `<div>` nodes per zoom click. Its `key`-by-base reuse works for *pan* (same bases scroll across) but not *zoom* — the scale changes, so the tick set + keys change every frame, forcing React to tear down + rebuild the whole tick list, each new node paying the emotion/tss `tickLabel` styling cost. Fix, lowest-risk first: **pool the tick `<div>`s** (fixed pool, reposition+relabel, no add/remove) → kills the 719 structural churn, keeps accessible DOM text; or a **canvas ruler** (bigger win, loses selectable text); or **coarsen ticks off `coarseBpPerPx`** during the zoom spring, snap exact on settle. Repro tool: `website/scripts/measure-zoom-churn.ts` (throwaway) + `~/src/jb2bench/scripts/interaction-profile.ts <url> <label> [pan|scroll|zoom|both]`, `THROTTLE=n`.
+
+Also, per-mousemove: `AlignmentsDisplayComponent` `setMouseCoord` on every `onMouseMove` re-runs the top observer; children are `observer`-memoized so blast radius is mostly the tooltip — confirm no inline object/array prop defeats a child's memo.
+
+## Multi-hop / fusion chaining (SplitThreader-style)
+
+Design only, no code. Show cancer multi-hop rearrangements / gene fusions the
+way [SplitThreader](https://github.com/marianattestad/splitthreader) does —
+reference-space arcs (its panel A) *and* a linearized "fusion contig" axis with
+ribbons to the reference (its panel B). User's wish: *"chain everything
+together similar to launch → linear read vs ref."*
+
+A split read is a walk through a breakpoint graph (nodes = positions, edges =
+junctions); a read with SA segments `A→B→C` is a 2-hop path, a fusion is the
+consensus path many reads agree on. JBrowse **already has both panels**, but
+each is single-read / per-read, and the chain-walk logic is **triplicated**:
+
+- **Panel A (reference-space arcs):** bezier overlay (`readGroupConnections`/
+  `chainSubRead` — on-screen only) + coverage arcs (`unpairedReadChain`/
+  `unpairedChainArcs`, `features/arcs/compute.ts` — inserts off-screen SA
+  segments) + breakpoint-split-view `AlignmentConnections` (`readChainSegments`/
+  `markHiddenSegments` — SA-aware + marks hidden).
+- **Panel B (query-space linear chain):** the "Linear read vs ref" launcher —
+  `buildReadVsRefFeatures` (one read + SA → segments sorted by
+  `clipLengthAtStartOfRead`) → `buildReadVsRefTemporaryAssembly` (temp assembly
+  whose one chromosome *is* the read) → `LinearSyntenyView`.
+
+**Unifying model: sources → `Chain` → sinks.** Every current copy already builds
+the `segments` half; the enabling refactor is one shared `Chain` type
+(`{segments: ChainSegment[]; junctions: Junction[]}`) with an insert-node vs
+mark-hidden flag for off-screen hops, plus one `renderChainPaths(junctions,
+projector, style)` emitter over the shared `bezierConnectorPath`
+(`packages/core/src/util/bezierConnector.ts`). Shared primitives already
+single-source: `readEndpoints.ts` (`connectionEndpointBps`), `featurizeSA`,
+`splitInversion`. SA tags already cross the worker boundary
+(`PileupDataResult.readSuppAlignments`/`readClipAtStart`/`readNextPositions`),
+so chain-building stays main-thread — no worker changes for phase 1.
+
+Phasing: **P0** extract the shared `Chain` behind one builder (pure refactor;
+watch the "no leaky abstractions" rule — the only host seam should be a small
+`ChainProjector` of `screenX/screenY/reversed`; if it gets fat, keep the
+copies). **P1** generalize `buildReadVsRefFeatures` single-read → multi-segment
++ a multi-read "Linear fusion vs reference" launcher, and "linearize this
+rearrangement" from a breakpoint-split-view `layoutMatches` chunk (which is
+*already* an ordered `Chain`). **P2** SA-aware bezier overlay + off-screen
+anchor (A1 baseline-drop / A2 edge-clamp / A3 multi-region-only). **P3**
+`aggregateJunctions` consensus → breakend features → breakpoint-split-view
+renders them through its existing `getMatchedBreakendFeatures` path (a consensus
+junction *is* a breakend; the alignments track discovers the fusion, the
+breakpoint view renders it as it would a called SV — no new draw path).
+
+Open decisions (need user input before coding): what the fusion contig is built
+from (curated reads → consensus junctions → VCF breakend walk — all additive
+sources feeding the same sink, ship in that order); the single-region off-screen
+anchor (A1/A2/A3); aggregation scope (visible-reads main-thread vs whole-region
+worker scan); whether P3's breakend bridge is in scope. Minor findings noted:
+`PileupBezierOverlay` `onClick` always selects `arc.id1` (a multi-hop `id2`
+endpoint is unreachable via click); `arcIsVisible` culls by endpoint Y only (a
+same-row bowed curve just off-screen can be dropped, harmless).
+
+## C-GIAB tutorial follow-ups (need data prep + S3 upload, not sandbox-runnable)
+
+Two items deferred from the figure-accuracy pass, verified against the V0.5
+benchmark files + the data paper (McDaniel et al. 2025, _Sci Data_ 12:1195, DOI
+10.1038/s41597-025-05438-2). See also TODO.md "more accurate cgiab: wakhan,
+pycnv".
+
+**V0.4 → V0.5 benchmark upgrade.** V0.5 (2026-03-18) is the current somatic
+SV+CNV benchmark; the tutorial loads V0.4. Gene-level CN/haplotype states are
+**unchanged** (CDKN2A CN0; TP53 = CNA_20, 1+0; chr17q = CNA_21, 2+0; SMAD4 =
+CNA_48, 0+1; KRAS = SV_101, 2+1), so the walkthrough biology holds. Swap V0.4
+load URLs for the V0.5 dir (`.../NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/`)
+in the tutorial commands, `cgiab-demo-config.json`, and `specs/sv.ts`; re-confirm
+call IDs against the V0.5 VCF/BED before updating prose (IDs renumber between
+versions). New in V0.5: confident subclonal SVs (VAF>5%) promoted to PASS,
+VNTR/TR SVs, `svviz2` VAF, explicit `EVENTTYPE=CHROMOPLEXY` (the chr3-chr13
+fusion is `cluster_3`) — worth one line in the translocation walkthrough. The
+demo-bucket log2/BAF/CNV bigWigs don't need regenerating.
+
+**Single-cell WGS section.** C-GIAB publishes single-cell WGS for HG008-T via
+BioSkryb ResolveDNA (PTA): 119 per-cell CRAMs (Ultima UG100, GRCh38, barcode in
+filename) + per-cell VCFs, plus 8 clonal cell lines (`.../HG008/NIST/HG008-T_clones/`).
+No ready-made per-cell CNV matrix — must derive from CRAMs. Result to show =
+subclonal CNV heterogeneity (also the honest reason bulk allelic signals read
+muted). **Option A (cleanest):** bin each of the 8 clones' bulk WGS to a
+GC/mappability-corrected log2 bigWig (existing mosdepth + median-normalize
+pipeline, 500 kb–1 Mb bins), stack as a multi-wiggle over `showAllRegions`.
+**Option B:** same pipeline over the 119 per-cell CRAMs → clustered/pseudobulk
+multi-wiggle (denser, low-depth — use ≥1 Mb bins). New spec
+`sv_cgiab/single_cell_cnv`, placed right after "reading copy number" so
+per-clone heterogeneity visualizes the subclonal-fraction explanation for why
+SMAD4 reads muted vs TP53.
+
+## Deferred architecture-review items (type-safety / DisplayChrome)
+
+Deliberately left for a decision after the 2026-07 architecture-review fix pass
+(the code + doc fixes landed; `viewportMatchesLastDrawn` freshness gate, the
+clipPath-id and byte-limit fixes, etc.). The dotplot/circular export-freshness
+gap from the same pass is tracked in TODO.md.
+
+- **DisplayChrome prop/height parity.** (a) `{...divProps}` spread only on the
+  ready branch, so terminal early-returns drop ref/handlers — already documented
+  as benign-by-design (ADR-025); (b) `TooLargeMessage` renders at intrinsic
+  height while `DisplayRenderErrorOverlay` gets `height={model.height}`.
+  Threading height through `TooLargeMessage`→`BlockMsg` could churn many
+  displays' too-large snapshots and the intrinsic height may be intentional —
+  needs a product call.
+- **The early-return-vs-ternary jsdom rule.** A house-style override rests on a
+  mechanism nobody has isolated (all evidence is jsdom + `act()`). Get a
+  Puppeteer `--backend=canvas2d` repro or refutation; if it doesn't repro
+  in-browser the fix belongs in the test harness, not production JSX. Keep the
+  tests regardless.
+- **Migrate imperative `regionTooLarge`** (wiggle/alignments/LD) to the derived
+  shape, or document why they can't hit the stuck-banner bug. Bigger refactor.
+- **Make `dataLoaded` a required member** (omission = compile error, not a
+  runtime export hang). MST mixin composition doesn't enforce "must override a
+  getter" cleanly; riskier, deferred.
