@@ -46,11 +46,10 @@ selector (top-left menu icon of any linear view):
 
 [Open the 1000 Genomes demo](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json)
 
-In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset —
-listed by its file name, **1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf**,
-near the top of the list (it is uncategorized, so it sits above the **1000
-Genomes** category rather than inside it). A track of orange SV bars will appear
-across the genome.
+In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset — under
+**1000 Genomes → SV callsets**, listed by its file name,
+**1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf**. A track of orange SV bars
+will appear across the genome.
 
 ## Browsing SVs with the SV inspector
 
@@ -59,7 +58,7 @@ whole-genome circular overview. Open it from the **Add** menu in the menu bar,
 then paste the callset URL into the import form:
 
 ```
-https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/1000genomes/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
+https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
 ```
 
 (the same URL is also listed in the track's About track menu). The circular view
@@ -158,6 +157,14 @@ span the inverted interval confirm the rearrangement.
 See the
 [SV visualization guide — Inversion section](/docs/user_guides/sv_visualization#inversion)
 for diagrams of these orientation patterns.
+
+For an even clearer signal, the demo also includes Oxford Nanopore long-read
+alignments for 1,019 samples (the
+[1KG ONT Vienna callset](https://www.internationalgenome.org/data-portal/data-collection/1kg_ont_vienna),
+Schloissnig et al.), under **1000 Genomes → Alignments → ONT (Vienna
+long-read)**. A single long read often spans an entire small inversion, so the
+inverted segment appears as a strand-flipped stretch within one read rather than
+as an inference from paired-end orientation.
 
 ### Breakpoint split view
 
