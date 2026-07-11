@@ -37,6 +37,24 @@ and dual-mappings (a sequence against itself, and the redundant reverse of each
 pair — the adapter draws both directions from one record), and the PanSN
 prefixes let the adapter tell which record belongs to which pair.
 
+## Set up the four assemblies
+
+The stacked view has one row per strain, so each strain FASTA must be a JBrowse
+assembly whose name matches an entry in the track's `assemblyNames`. Load each
+one with the CLI:
+
+```bash
+for strain in K12 Sakai CFT073 NCTC86; do
+  jbrowse add-assembly $strain.fa --name $strain --load copy
+done
+```
+
+Each assembly's reference sequence names are the PanSN headers from its FASTA
+(`K12#1#chr`, …), which is what the synteny rows and the adapter's PanSN
+classification both use. See the
+[assemblies configuration guide](/docs/config_guides/assemblies) for the
+equivalent JSON and indexing options.
+
 ## Loading it with AllVsAllPAFAdapter
 
 Because the file already contains every pairwise comparison,
@@ -54,7 +72,7 @@ prefix):
   "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"],
   "adapter": {
     "type": "AllVsAllPAFAdapter",
-    "pafLocation": { "uri": "all_vs_all.paf.gz" },
+    "pafLocation": { "uri": "all_vs_all.paf" },
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"]
   }
 }

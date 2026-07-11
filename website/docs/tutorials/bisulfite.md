@@ -89,6 +89,69 @@ rows — the **Aggregate methylation** track in the figure below. This is the sa
 mechanism as the
 [DNA methylation tutorial's aggregate section](/docs/tutorials/methylation#aggregate-methylation-with-modkit-bedmethyl).
 
+```json
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "arabidopsis_wgbs_methyldackel",
+  "name": "Aggregate methylation (MethylDackel)",
+  "assemblyNames": ["tair10"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "CpG",
+        "color": "red",
+        "bigWigLocation": { "uri": "arabidopsis_wgbs_CpG.bw" }
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CHG",
+        "color": "green",
+        "bigWigLocation": { "uri": "arabidopsis_wgbs_CHG.bw" }
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CHH",
+        "color": "blue",
+        "bigWigLocation": { "uri": "arabidopsis_wgbs_CHH.bw" }
+      }
+    ]
+  }
+}
+```
+
+## Loading into JBrowse
+
+Both views below read from the `arabidopsis_wgbs.bam` produced above, so add it
+alongside the TAIR10 assembly it was aligned to.
+
+Set up the assembly from the same `tair10.fa` reference (the CLI indexes and
+bgzips it for you):
+
+```bash
+jbrowse add-assembly tair10.fa --name tair10 --load copy
+```
+
+Then add the alignments track — the per-read bisulfite coloring is a property of
+this track, no separate configuration:
+
+```json
+{
+  "type": "AlignmentsTrack",
+  "trackId": "arabidopsis_wgbs",
+  "name": "Arabidopsis WGBS (bwameth)",
+  "assemblyNames": ["tair10"],
+  "adapter": {
+    "type": "BamAdapter",
+    "uri": "arabidopsis_wgbs.bam"
+  }
+}
+```
+
+See the [assemblies configuration guide](/docs/config_guides/assemblies) for the
+equivalent assembly JSON.
+
 ## Coloring reads in JBrowse
 
 Open the alignments track and, from the track menu, choose **Color by → Advanced

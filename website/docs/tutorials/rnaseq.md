@@ -120,6 +120,12 @@ JBrowse Web from **Add track**, or add it to a config as an `AlignmentsTrack`:
 }
 ```
 
+The track's `assemblyNames` must match an assembly already configured in
+JBrowse; if you don't have `hg38` set up yet, add it first — see the
+[assemblies configuration guide](/docs/config_guides/assemblies). (Reads come
+from a spliced aligner such as STAR, then `samtools sort` + `samtools index` so
+the `.bai` sits beside the BAM.)
+
 JBrowse computes the splice arcs and per-read splicing shown above from the
 CIGAR strings automatically, with no extra configuration; to color reads by
 fragment strand, use **Color by → First of pair strand** in the track menu. See

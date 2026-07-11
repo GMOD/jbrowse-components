@@ -77,6 +77,24 @@ You now have `grape.blocks` plus `grape.bed`, `peach.bed`, and `cacao.bed`. The
 adapter reads them plain or gzipped, so `gzip grape.blocks *.bed` to match the
 `.gz` paths used below.
 
+## Set up the three assemblies
+
+The stacked view has one row per genome, so grape, peach, and cacao must each be
+a JBrowse assembly whose name matches an entry in the track's `assemblyNames`.
+Add each genome FASTA (the same Ensembl Plants genomes the `.bed` coordinates
+refer to) with the CLI:
+
+```bash
+for sp in grape peach cacao; do
+  jbrowse add-assembly $sp.fa --name $sp --load copy
+done
+```
+
+Each assembly's reference sequence names must match the chromosome names in the
+corresponding `.bed` file. See the
+[assemblies configuration guide](/docs/config_guides/assemblies) for the
+equivalent JSON.
+
 ## Loading it in JBrowse with MCScanBlocksAdapter
 
 A synteny band draws one pair of genomes, but a `.blocks` file describes N. The

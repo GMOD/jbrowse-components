@@ -91,7 +91,10 @@ config reads below.
 ## Configure the multi-row feature display
 
 Add a `FeatureTrack` with a `BigBedAdapter`, and give it a
-`LinearMultiRowFeatureDisplay` that partitions on the `cellType` field:
+`LinearMultiRowFeatureDisplay` that partitions on the `cellType` field. The
+track references the `hg19` assembly (the same one `hg19.chrom.sizes` came from,
+e.g. `fetchChromSizes hg19` from UCSC tools) — set it up first if you haven't,
+see the [assemblies configuration guide](/docs/config_guides/assemblies):
 
 ```json
 {

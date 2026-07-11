@@ -15,9 +15,11 @@ Kinh-Vietnamese trio HG02024 (chr1 only):
 - [VCF](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
 - [Index (.tbi)](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi)
 
-Add the VCF to JBrowse via the CLI (`jbrowse add-track`) or the in-app "Add
-track" workflow (see the
-[variant track guide](/docs/config_guides/variant_track)). Once loaded:
+Every track here references the `hg38` assembly, so set that up first if you
+haven't — see the
+[assemblies configuration guide](/docs/config_guides/assemblies). Then add the
+VCF via the CLI (`jbrowse add-track`) or the in-app "Add track" workflow (see
+the [variant track guide](/docs/config_guides/variant_track)). Once loaded:
 
 <Figure caption="Initial load of the VCF file, showing the default display mode with simple orange boxes for each variant" src="/img/trio-basic.png"/>
 
@@ -119,10 +121,19 @@ Per child haplotype it:
   blocks abut (genuine large gaps, like the centromere, stay blank).
 
 It writes one BED9 line per block plus a `parenthap` label, coloring the
-father's two copies in blues and the mother's in reds via `itemRgb`.
+father's two copies in blues and the mother's in reds via `itemRgb`. The
+[`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py)
+script is that step — give it the `trio.ibd.gz` from above plus the child,
+father, and mother sample IDs, then `bgzip` and `tabix -p bed` the result so the
+`BedTabixAdapter` below can read it:
 
-`bgzip` and `tabix -p bed` the resulting BED so the `BedTabixAdapter` below can
-read it. The finished track for this dataset is already loaded in the
+```bash
+python3 scripts/hapibd_to_bed.py trio.ibd.gz HG02024 HG02026 HG02025 trio.hapibd.bed
+sort -k1,1 -k2,2n trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
+tabix -p bed trio.hapibd.bed.gz
+```
+
+The finished track for this dataset is already loaded in the
 [live demo](#live-demo) at the end of this page.
 
 Load the result as a `FeatureTrack` whose display is a

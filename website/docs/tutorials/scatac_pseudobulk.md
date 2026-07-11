@@ -151,8 +151,11 @@ files. Export the session to get the JSON config.
 
 ### Via config JSON
 
-Add a track object to your config's `tracks` array. Minimal three-cell-type
-example against hg38:
+Add a track object to your config's `tracks` array. Its `assemblyNames` must
+match an assembly already configured in JBrowse (the BigWigs above were built
+against `hg38`); if you don't have it set up yet, see the
+[assemblies configuration guide](/docs/config_guides/assemblies). Minimal
+three-cell-type example against hg38:
 
 ```json
 {

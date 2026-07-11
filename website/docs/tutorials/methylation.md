@@ -28,6 +28,24 @@ the
 JBrowse 2 can color individual bases on each read by their modification
 probability, with no extra configuration required.
 
+Load the modBAM (or modCRAM) as an `AlignmentsTrack` — its `assemblyNames` must
+match an assembly already configured in JBrowse (see the
+[assemblies configuration guide](/docs/config_guides/assemblies)), and the
+`.bai`/`.crai` index sits beside the file:
+
+```json
+{
+  "type": "AlignmentsTrack",
+  "trackId": "my_modbam",
+  "name": "My modified-base BAM",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BamAdapter",
+    "uri": "https://yourhost/sample.bam"
+  }
+}
+```
+
 Turn on modification or methylation coloring from the track menu. Each
 modification type renders in its own color, with intensity reflecting the
 modification probability (ML tag value).

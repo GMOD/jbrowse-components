@@ -66,9 +66,23 @@ chr1    20291558    53451539   BXD1_D   0     .      20291558   53451539 220,60,
 chr1    53451539    69355875   BXD1_B   0     .      53451539   69355875 65,105,225   BXD1    B
 ```
 
-`bgzip` and `tabix` it, then configure a `FeatureTrack` whose
-`LinearMultiRowFeatureDisplay` partitions on the `sample` column and colors each
-block from its `itemRgb` field:
+The
+[`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
+script does exactly this run-length encoding. Run it on the downloaded `.geno`,
+then sort, `bgzip`, and `tabix` the result (the `#`-header line names the
+columns for the adapter):
+
+```bash
+python3 scripts/bxd_geno_to_painting_bed.py BXD.geno bxd_painting.bed
+(head -1 bxd_painting.bed; tail -n +2 bxd_painting.bed | sort -k1,1 -k2,2n) \
+  | bgzip > bxd_painting.bed.gz
+tabix -p bed bxd_painting.bed.gz
+```
+
+Then configure a `FeatureTrack` whose `LinearMultiRowFeatureDisplay` partitions
+on the `sample` column and colors each block from its `itemRgb` field. Both
+tracks reference the `mm10` assembly, so set that up first if you haven't — see
+the [assemblies configuration guide](/docs/config_guides/assemblies).
 
 ```json
 {
@@ -126,6 +140,20 @@ Write the scan out as a tabix'd BED-like table with a `neg_log_pvalue` column:
 ```
 #chrom  start     end       name        score strand neg_log_pvalue
 chr4    80750000  80750001  rs3708061   .     .      51.9
+```
+
+The
+[`bxd_qtl_scan.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_qtl_scan.py)
+script runs the regression on the same `.geno` plus a two-column `strain,value`
+phenotype file (pull one trait column out of the qtl2data `pheno.csv`), emitting
+that table:
+
+```bash
+# needs numpy + scipy
+python3 scripts/bxd_qtl_scan.py BXD.geno coat_color.pheno.csv bxd_gwas_coatcolor.tsv
+(head -1 bxd_gwas_coatcolor.tsv; tail -n +2 bxd_gwas_coatcolor.tsv | sort -k1,1 -k2,2n) \
+  | bgzip > bxd_gwas_coatcolor.tsv.gz
+tabix -p bed bxd_gwas_coatcolor.tsv.gz
 ```
 
 A `GWASTrack`/`GWASAdapter` reads that column and renders the Manhattan plot.
