@@ -687,5 +687,10 @@ test('can override adapter type with --adapterType BedAdapter', async () => {
     const track = readConf(ctx).tracks[0]
     expect(track.adapter.type).toBe('BedAdapter')
     expect(track.adapter.bedLocation).toBeDefined()
+    // BedAdapter is a single-file adapter, so the .tbi that the .bed.gz
+    // extension would normally imply must not be copied (would be an orphan,
+    // and a hard error if it did not exist alongside the data file)
+    expect(exists(ctxDir(ctx, 'volvox.bed.gz'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'volvox.bed.gz.tbi'))).toBeFalsy()
   })
 })

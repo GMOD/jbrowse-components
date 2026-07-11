@@ -16,7 +16,7 @@ export function validateLoadOption(load?: string): void {
   }
 }
 
-export function validateTrackArg(track?: string): void {
+export function validateTrackArg(track?: string): asserts track is string {
   if (!track) {
     throw new Error(
       'Missing 1 required arg:\ntrack  Track file or URL\nSee more help with --help',

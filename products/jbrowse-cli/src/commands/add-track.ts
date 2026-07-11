@@ -3,9 +3,9 @@ import { parseArgs } from 'node:util'
 
 import { printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
 import {
-  guessAdapter,
-  guessFileNames,
+  guessTrack,
   guessTrackType,
+  makeLocationProtocol,
 } from './add-track-utils/adapter-utils.ts'
 import { loadFiles } from './add-track-utils/file-operations.ts'
 import {
@@ -126,8 +126,8 @@ export async function run(args?: string[]) {
   const notes =
     '--load controls how the data file is placed relative to config.json: ' +
     'copy, move, or symlink it into the install directory, or inPlace to ' +
-    'reference it where it already sits (use inPlace for URLs or pre-staged ' +
-    'files). The matching index (.bai/.csi/.tbi/.fai) is inferred from the ' +
+    'reference a pre-staged local file where it already sits. Omit --load ' +
+    'entirely for URLs. The matching index (.bai/.csi/.tbi/.fai) is inferred from the ' +
     'data file name; pass --indexFile when it differs.\n\n' +
     '--config takes inline JSON (not a file path) that is merged into the ' +
     'generated track config, so you can set fields the dedicated flags do not ' +
@@ -169,8 +169,8 @@ export async function run(args?: string[]) {
 
   validateLoadOption(flags.load)
 
-  const track = positionals[0]
-  validateTrackArg(track)
+  const location = positionals[0]
+  validateTrackArg(location)
 
   const {
     config,
@@ -188,7 +188,6 @@ export async function run(args?: string[]) {
     adapterType,
   } = flags
 
-  const location = track!
   validateLoadAndLocation(location, load)
 
   const configObj = config ? parseConfigFlag(config) : undefined
@@ -196,19 +195,20 @@ export async function run(args?: string[]) {
   const targetConfigPath = await resolveConfigPath(target, out)
   const configDir = path.dirname(targetConfigPath)
 
-  const mapLoc = (p: string) => mapLocationForFiles(p, load, subDir)
-  const mapOpt = (p?: string) => (p ? mapLoc(p) : undefined)
+  const wrap = makeLocationProtocol(protocol)
+  const mapLocation = (p: string) =>
+    wrap(mapLocationForFiles(p, load, subDir))
 
-  let adapter = guessAdapter({
-    protocol,
-    location: mapLoc(location),
-    index: mapOpt(index),
-    bed1: mapOpt(bed1),
-    bed2: mapOpt(bed2),
+  const { adapter: guessedAdapter, files } = guessTrack({
+    location,
+    index,
+    bed1,
+    bed2,
     adapterType,
+    mapLocation,
   })
 
-  adapter = addSyntenyAssemblyNames(adapter, flags.assemblyNames)
+  const adapter = addSyntenyAssemblyNames(guessedAdapter, flags.assemblyNames)
 
   validateAdapterType(adapter.type)
 
@@ -244,7 +244,7 @@ export async function run(args?: string[]) {
   const updatedConfig = { ...configContents, tracks }
 
   await loadFiles({
-    files: guessFileNames({ location, index, bed1, bed2 }),
+    files,
     destDir: configDir,
     mode: load,
     subDir,
