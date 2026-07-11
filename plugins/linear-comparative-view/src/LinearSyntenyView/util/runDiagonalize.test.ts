@@ -20,8 +20,8 @@ jest.mock('@jbrowse/core/util', () => ({
   getSession: jest.fn(),
 }))
 
-function region(refName: string): Region {
-  return { refName, start: 0, end: 100, assemblyName: 'asm' }
+function region(refName: string, assemblyName = 'asm'): Region {
+  return { refName, start: 0, end: 100, assemblyName }
 }
 
 function makeView(regions: Region[]) {
@@ -45,13 +45,19 @@ function makeLevel() {
 // the applied order is observably different from the input.
 function setupRpc() {
   const seenReferenceRegions: Region[][] = []
+  const seenTargets: (string | undefined)[] = []
   const call = jest.fn(
     async (
       _sessionId: string,
       _method: string,
-      args: { referenceRegions: Region[]; currentRegions: Region[] },
+      args: {
+        referenceRegions: Region[]
+        currentRegions: Region[]
+        targetAssemblyName?: string
+      },
     ) => {
       seenReferenceRegions.push(args.referenceRegions)
+      seenTargets.push(args.targetAssemblyName)
       return {
         newRegions: [...args.currentRegions].reverse(),
         stats: {
@@ -67,15 +73,15 @@ function setupRpc() {
     assemblyManager: {},
     rpcManager: { call },
   })
-  return { seenReferenceRegions, call }
+  return { seenReferenceRegions, seenTargets, call }
 }
 
 describe('runDiagonalize cascade', () => {
   test('level i+1 diagonalizes against the row level i just reordered', async () => {
-    const { seenReferenceRegions, call } = setupRpc()
-    const peach = makeView([region('p1'), region('p2')])
-    const cacao = makeView([region('c1'), region('c2')])
-    const grape = makeView([region('g1'), region('g2')])
+    const { seenReferenceRegions, seenTargets, call } = setupRpc()
+    const peach = makeView([region('p1', 'peach'), region('p2', 'peach')])
+    const cacao = makeView([region('c1', 'cacao'), region('c2', 'cacao')])
+    const grape = makeView([region('g1', 'grape'), region('g2', 'grape')])
     const model = {
       views: [peach, cacao, grape],
       levels: [makeLevel(), makeLevel()],
@@ -97,6 +103,12 @@ describe('runDiagonalize cascade', () => {
     expect(seenReferenceRegions[1]!.map(r => r.refName)).toEqual(['c2', 'c1'])
     // level 1 reordered grape
     expect(grape.displayedRegions.map(r => r.refName)).toEqual(['g2', 'g1'])
+
+    // each level names the row it is reordering as the fetch target, so a
+    // multi-genome adapter draws the right pair (level 0 reorders cacao, level 1
+    // reorders grape) — without this the adapter defaults the mate to the first
+    // other assembly and the reordered row's alignments match nothing
+    expect(seenTargets).toEqual(['cacao', 'grape'])
   })
 
   test('returns undefined for a single-view stack', async () => {

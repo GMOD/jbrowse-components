@@ -40,6 +40,9 @@ export interface DiagonalizeSyntenyArgs {
   adapters: DiagonalizeSyntenyAdapter[]
   referenceRegions: Region[]
   currentRegions: Region[]
+  // the assembly on the query axis (the row being reordered); a multi-genome
+  // adapter uses it to select which of its N-1 pairs this level draws
+  targetAssemblyName?: string
   bpPerPx: number
   stopToken?: StopToken
   statusCallback?: StatusCallback
@@ -65,6 +68,7 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
       adapters,
       referenceRegions,
       currentRegions,
+      targetAssemblyName,
       bpPerPx,
       sessionId,
       stopToken,
@@ -99,6 +103,7 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
           stopToken,
           bpPerPx,
           statusCallback,
+          targetAssemblyName,
         }),
         f => f.id(),
       )
