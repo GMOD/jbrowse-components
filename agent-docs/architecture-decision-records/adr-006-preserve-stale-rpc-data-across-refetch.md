@@ -6,6 +6,22 @@ Accepted for viewport-agnostic display types (canvas today). Revises
 ADR-003's blank-on-settings-change stance. Viewport-baked display types
 keep clearing — see "When to preserve vs clear" below.
 
+**Naming reconciled to current source.** The decision holds and is live in
+`plugins/canvas/src/LinearBasicDisplay/baseModel.ts`, but the symbols in the
+original code blocks were renamed. Map:
+
+| ADR (original) | Current source |
+| --- | --- |
+| `rawRpcDataMap` | `rpcDataMap` |
+| `onFetchNeeded` | `fetchNeeded` |
+| `pruneRawRpcDataMapToVisible` | `pruneRpcDataMapToVisible` |
+| `withFetchLifecycle` | `fetchRegions` (via `MultiRegionDisplayMixin`) |
+| `fetchedBpPerPxMap` | removed — this display is `alwaysRender` (BigWig), so no per-region bpPerPx map |
+
+Note also: `LinearBasicDisplay` preserves `rpcDataMap` (this ADR); its sibling
+`LinearMultiRowFeatureDisplay` clears it in `clearDisplaySpecificData` — the
+preserve-vs-clear test below is per display, not per plugin.
+
 ## When to preserve vs clear
 
 **Preserve** if the display's per-region data is viewport-agnostic —
@@ -35,40 +51,42 @@ already signals loading.
 
 ## Decision
 
-Don't clear `rawRpcDataMap` in `clearDisplaySpecificData`. Prune
-out-of-viewport regions at the top of `onFetchNeeded` to cap growth.
+Don't clear `rpcDataMap` in `clearDisplaySpecificData`. Prune out-of-viewport
+regions at the top of `fetchNeeded` to cap growth. (Current source; see the
+naming map under Status for the original names.)
 
 ```typescript
 clearDisplaySpecificData() {
-  self.fetchedBpPerPxMap.clear()
-  self.setRegionTooLarge(false)
-  self.setScrollTop(0)
+  // Intentionally a no-op on the data: rpcDataMap (and densityStatsPerRegion,
+  // for the derived too-large banner) survive clearAllRpcData. Growth is
+  // capped by pruneRpcDataMapToVisible inside fetchNeeded instead.
 },
 
-pruneRawRpcDataMapToVisible(visible: Set<number>) {
-  for (const key of [...self.rawRpcDataMap.keys()]) {
+pruneRpcDataMapToVisible(visible: Set<number>) {
+  for (const key of self.rpcDataMap.keys()) {
     if (!visible.has(key)) {
-      self.rawRpcDataMap.delete(key)
-      self.fetchedBpPerPxMap.delete(key)
+      self.rpcDataMap.delete(key)
     }
   }
 },
 
-onFetchNeeded(needed) {
-  self.pruneRawRpcDataMapToVisible(
+fetchNeeded(needed) {
+  self.pruneRpcDataMapToVisible(
     new Set(view.bufferedVisibleRegions.map(b => b.displayedRegionIndex)),
   )
-  self.withFetchLifecycle(needed, /* ... */)
+  self.fetchRegions(needed, /* ... */)
 },
 ```
 
-The derived `rpcDataMap` view recomputes on viewport/label changes, so
-stale raw + current inputs gives a coherent intermediate frame.
+The derived `laidOutDataMap` computed recomputes on viewport/label changes, so
+stale per-region data + current inputs gives a coherent intermediate frame.
+When `regionTooLarge` is true, `laidOutDataMap` returns empty, so no stale
+features render through the banner.
 
 ## No-leak argument
 
 Every invalidation path routes through `FetchVisibleRegions` →
-`onFetchNeeded`, which prunes before fetching. A stale region number can
+`fetchNeeded`, which prunes before fetching. A stale region number can
 only survive if no fetch ever fires after a clear — teardown only.
 
 ## Revises ADR-003
@@ -89,7 +107,7 @@ still stands — we just stop clearing *data* along with *state*.
 
 **Alignments arcs.** Arc data (`arcX1/arcX2` as bp offsets) is viewport-agnostic
 and could in principle be preserved. Not done: arcs are computed *from pileup
-data* inside `onFetchNeeded`, not fetched independently. Pileup must keep
+data* inside `fetchNeeded`, not fetched independently. Pileup must keep
 clearing (compact-zoom pixel geometry is viewport-baked). Preserving arcs while
 pileup is blank would show arc curves floating over empty space — worse than a
 clean flash.

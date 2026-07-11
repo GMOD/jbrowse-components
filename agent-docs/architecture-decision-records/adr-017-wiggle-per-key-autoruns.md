@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted
+Accepted. **Update:** the helper was subsequently promoted to
+`packages/render-core/src/installPerRegionLifecycle.ts` (its "Revisit if" clause
+fired — see below), reversing this ADR's *Rejected alternative* against lifting it
+to a shared package. Filenames in this ADR are reconciled to current source.
 
 ## Context
 
@@ -29,8 +32,10 @@ visibly janky during initial load.
 ## Decision
 
 Use one autorun per `rpcDataMap` key, managed by a key-manager loop in the
-upload callback. Lives in `plugins/wiggle/src/shared/installPerRegionWiggleLifecycle.ts`.
-Both `LinearWiggleDisplay` and `MultiLinearWiggleDisplay` call it.
+upload callback. Lives in `packages/render-core/src/installPerRegionLifecycle.ts`
+(originally `plugins/wiggle/src/shared/installPerRegionWiggleLifecycle.ts`, since
+promoted). Wiggle wraps it in `plugins/wiggle/src/shared/installWiggleRenderingBackend.ts`;
+both `LinearWiggleDisplay` and `MultiLinearWiggleDisplay` call that wrapper.
 
 ```ts
 upload: b => {
@@ -95,9 +100,9 @@ N is 4–8 in realistic zooms.
   `currentRenderingBackend`; when the slot mixin reassigns it on
   `attachRenderingBackend(newRenderingBackend)`, every per-key autorun fires and re-uploads
   to the new backend. Closure-capturing the outer `b` would break this.
-- `installPerRegionWiggleLifecycle.test.ts` locks in the upload-count contract
-  and the dep-tracking shape (5 tests covering O(N) arrivals, encoder dep
-  re-fire, per-key value mutation, removal, backend swap).
+- `installPerRegionLifecycle.test.ts` (in `packages/render-core/src`) locks in the
+  upload-count contract and the dep-tracking shape (5 tests covering O(N)
+  arrivals, encoder dep re-fire, per-key value mutation, removal, backend swap).
 
 ## Rejected alternatives
 
@@ -109,12 +114,17 @@ watcher and upload autoruns (one render frame with mixed-prop region state),
 and the rationale ("MobX won't track gpuProps without help") is fragile.
 Per-key autoruns express the same dependency graph natively.
 
-**Promote the helper to `packages/core/src/gpu/`.** Tempting because the
-"Per-region streamed" pattern is documented in `ARCHITECTURE.md` as one of
-three upload shapes, but only wiggle's per-region encode is pure. Promoting
-the helper would suggest canvas/alignments could adopt it; they cannot.
-Re-evaluate if a future plugin lands with truly independent per-region
-encodes.
+**Promote the helper to a shared package.** At the time this was rejected:
+only wiggle's per-region encode was pure, so promoting the helper would wrongly
+suggest canvas/alignments could adopt it. **This has since happened** — the
+helper lives in `packages/render-core/src/installPerRegionLifecycle.ts` and is
+now used by wiggle, multi-wiggle, manhattan (`plugins/gwas`), MAF, the reference
+sequence display, and canvas's `LinearMultiRowFeatureDisplay` — all displays
+whose per-region encode is genuinely independent. Canvas's `LinearBasicDisplay`
+and alignments/synteny still route through a whole-map computed and do **not**
+use it, for the cross-region-layout reason in "Why this is wiggle-only" (the
+"wiggle-only" heading now means "not whole-map-layout displays", not literally
+one plugin). The promotion was the "Revisit if" case below, realized.
 
 ## Revisit if
 

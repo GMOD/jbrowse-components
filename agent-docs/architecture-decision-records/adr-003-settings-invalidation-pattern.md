@@ -2,7 +2,21 @@
 
 ## Status
 
-Accepted
+**Superseded** (mechanism), retained for rationale.
+
+- The blank-on-settings-change stance was revised by **ADR-006** (viewport-agnostic
+  displays now preserve stale `rpcDataMap` through a refetch).
+- The `autorun` + `prevKey` + `JSON.stringify` mechanism below was replaced by the
+  `SettingsInvalidate` autorun in `MultiRegionDisplayMixin.afterAttach`, which
+  reads `void self.rpcProps()` directly (MobX tracks every field it reads as a
+  cache key — no manual `prevKey`) and is guarded by `makeSettingsLoopGuard`
+  against the `rpcProps()` feedback-loop trap.
+- `withFetchLifecycle` no longer exists; its role is now `MultiRegionDisplayMixin`
+  (`fetchRegions` / `clearAllRpcData`).
+
+The core decision — **one keyed invalidation per display type, not one autorun
+per setting, and not `reaction` + object return + custom `equals`** — still holds;
+`rpcProps()` is that single key. Rationale below.
 
 ## Context
 

@@ -2,7 +2,16 @@
 
 ## Status
 
-Accepted
+**Superseded by ADR-017** (per-region streamed wiggle upload uses per-key
+autoruns).
+
+`rpcDataMap` is now a MobX `observable.map` (`WiggleCommonMixin.ts`), and
+`setRpcData` calls `self.rpcDataMap.set(idx, data)` directly — the
+`new Map(self.rpcDataMap)` copy-and-reassign shown below is historical. ADR-017's
+per-key autoruns read `rpcDataMap.get(key)` to upload only the region that
+changed, which is exactly the "zero-delay reaction over `rpcDataMap`" scenario
+this ADR's *Consequences* named as the one case that would justify the migration.
+The reasoning below is retained for that history.
 
 ## Context
 
