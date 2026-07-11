@@ -118,7 +118,10 @@ export interface ClassifiedPair {
   s2: number
   isNormal: boolean
   colorType: number
-  hasPaired: boolean
+  // A split-read junction (drives the fold-back of the second endpoint's bezier
+  // handle) vs a paired mate link. Same `isSplit` the resolver assigns; carried
+  // through so the overlay doesn't re-derive it.
+  isSplit: boolean
 }
 
 // Classify a resolved connection. `isSplit` (from readGroupConnections) selects
@@ -137,7 +140,7 @@ export function classifyPair(
   const colorType = hasPaired
     ? pairedColorType(orientNum)
     : splitColorType(s1, s2)
-  return { bp1, bp2, s1, s2, isNormal, colorType, hasPaired }
+  return { bp1, bp2, s1, s2, isNormal, colorType, isSplit }
 }
 
 export interface LinkedPair {

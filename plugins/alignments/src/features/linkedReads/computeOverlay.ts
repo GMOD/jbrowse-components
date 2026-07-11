@@ -152,7 +152,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
           y2: sy2,
           s1: c.s1,
           s2: c.s2,
-          leadingEnd2: !c.hasPaired,
+          leadingEnd2: c.isSplit,
           reversed1: !!r1.reversed,
           reversed2: !!r2.reversed,
           handlePx: bezierConnectorHandlePx(sx1, sx2),

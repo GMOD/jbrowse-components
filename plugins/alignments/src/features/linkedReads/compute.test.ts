@@ -157,10 +157,10 @@ describe('classifyPair — paired reads', () => {
     })
   }
 
-  it('LR → PAIR_LR color, normal, 3-prime endpoints, hasPaired=true', () => {
+  it('LR → PAIR_LR color, normal, 3-prime endpoints, isSplit=false', () => {
     const data = makePairedData(1)
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
-    expect(c.hasPaired).toBe(true)
+    expect(c.isSplit).toBe(false)
     expect(c.colorType).toBe(LINKED_READ_COLOR_PAIR_LR)
     expect(c.isNormal).toBe(true)
     expect(c.bp1).toBe(200) // fwd 3-prime = end
@@ -170,7 +170,7 @@ describe('classifyPair — paired reads', () => {
   it('RL → PAIR_RL color, not normal', () => {
     const data = makePairedData(2)
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
-    expect(c.hasPaired).toBe(true)
+    expect(c.isSplit).toBe(false)
     expect(c.colorType).toBe(LINKED_READ_COLOR_PAIR_RL)
     expect(c.isNormal).toBe(false)
   })
@@ -208,7 +208,7 @@ describe('classifyPair — split long reads', () => {
       ys: [0, 1],
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
-    expect(c.hasPaired).toBe(false)
+    expect(c.isSplit).toBe(true)
     expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
     expect(c.isNormal).toBe(true)
     expect(c.bp1).toBe(200) // e1 fwd: read-trailing (3') edge = end
@@ -228,7 +228,7 @@ describe('classifyPair — split long reads', () => {
       ys: [0, 1],
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
-    expect(c.hasPaired).toBe(false)
+    expect(c.isSplit).toBe(true)
     expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
     expect(c.isNormal).toBe(true)
     expect(c.bp1).toBe(100) // e1 rev: read-trailing (3') edge = start
@@ -248,7 +248,7 @@ describe('classifyPair — split long reads', () => {
       ys: [0, 1],
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
-    expect(c.hasPaired).toBe(false)
+    expect(c.isSplit).toBe(true)
     expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_INV)
     expect(c.isNormal).toBe(false)
     // The fix: a1 fwd → a.end (200, =a2); b rev → b.end (400, =b2). Connects
@@ -274,7 +274,7 @@ describe('classifyPair — split long reads', () => {
       ys: [0, 1],
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
-    expect(c.hasPaired).toBe(false)
+    expect(c.isSplit).toBe(true)
     expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_INV)
     expect(c.isNormal).toBe(false)
     expect(c.bp1).toBe(100) // e1 rev: read-trailing edge = start
