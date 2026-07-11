@@ -5,83 +5,74 @@ Add auto-generated **videos** (motion tours) alongside the existing auto-generat
 screenshots, so the gallery/docs can show panning + zooming in motion, not just
 stills. Requested "using puppeteer".
 
-## Status: PROTOTYPE WORKS, one finalization bug remains
+## Status: PROTOTYPE WORKS END-TO-END ✅ (not yet wired into the spec system)
 
-A standalone prototype exists at `website/scripts/generate-video.ts` (NOT yet
-wired into the spec system, NOT committed). Run it with:
+`website/scripts/generate-video.ts` (untracked, not committed) produces a clean
+`static/video/volvox_tour.{webm,mp4,gif}` on every run. Run it with:
 
 ```bash
 cd website
-node --experimental-strip-types scripts/generate-video.ts
+node --experimental-strip-types scripts/generate-video.ts           # headless (CI path)
+node --experimental-strip-types scripts/generate-video.ts --headed  # real GPU, local
 ```
 
 (Use `node --experimental-strip-types`, NOT tsx — same reason as
 generate-screenshots.ts: tsx's keepNames breaks `page.evaluate`'d fns.)
 
-### What already works ✅
-- Environment is capable: **puppeteer 25.3.0** (has `page.screencast()`) and
-  **ffmpeg 8.0** are both installed.
-- The prototype serves `products/jbrowse-web/build` via `createTestServer` on
-  **port 3335** (avoids the screenshots' 3334 and a dev server on 3000), loads a
-  volvox LGV session (`lgvSession` helper) with `volvox_microarray` +
-  `volvox_cram_alignments` tracks pre-opened, then records `page.screencast()`.
-- **Motion is captured correctly.** Verified by extracting frames from the webm:
-  the wiggle xyplot + CRAM pileup render, and the view visibly zooms
-  (ctgA:1–50,000 → 13–49,988 → 3,177–46,824), with the "Zoom in 2x" tooltip
-  visible. Clicking the `zoom_in`/`zoom_out` header buttons fires `model.zoom()`
-  which **animates** (unlike `zoomTo`), so the screencast records smooth motion.
-- Motion primitives reused from the screenshot pipeline: `animatedZoom` (clicks
-  `[data-testid="zoom_in"|"zoom_out"]`), `panDrag` (stepped `page.mouse` drag).
+### What it does
+- Serves `products/jbrowse-web/build` via `createTestServer` on **port 3335**
+  (avoids screenshots' 3334 and a dev server on 3000), loads a volvox LGV session
+  (`lgvSession`) with **`volvox_microarray` (wiggle) + `gff3tabix_genes`**
+  pre-opened, then records `page.screencast()` while it drives a zoom-in →
+  zoom-out tour.
+- **All motion is real UI button clicks.** `clickButton()` finds the
+  `zoom_in`/`zoom_out` header control, glides a **fake cursor overlay** onto it,
+  plays a click-ripple pulse, then does the real `.click()` (which fires the
+  animated `model.zoom()` spring). No model-poking, no synthetic `zoomTo`.
+- **Fake cursor**: headless Chrome renders no OS cursor into the screencast, so
+  `injectCursor()` adds an arrow `<div>` kept in sync with `page.mouse` (CSS
+  `transform` glide), plus `clickPulse()` for an expanding ring on each click.
+- Finalizes the webm (`recorder.stop()` in a `finally`), then ffmpeg-transcodes
+  to mp4 (h264/yuv420p +faststart) and a preview gif, and **verifies the mp4 has
+  a real duration** to catch a truncated capture.
 
-### The remaining bug 🐛
-`recorder.stop()` throws `TargetCloseError: Protocol error
-(Runtime.callFunctionOn): Target closed`. Because stop() doesn't complete, the
-webm is left **unfinalized** — `ffprobe` shows `duration=N/A`, ffmpeg reports
-"File ended prematurely" — so the mp4/gif transcodes at the end of the script
-never run. The 27–30MB webm on disk DOES contain the frames (ffmpeg can still
-extract them) but is not a clean container.
+### The old "finalization bug" — ROOT-CAUSED and FIXED
+The prototype used to hang in `recorder.stop()` / leave an unfinalized webm. The
+real cause was **not** puppeteer and **not** stop(): the tour opened a **CRAM
+pileup** track and drove `.click()` mid-zoom. Under headless
+`--enable-unsafe-swiftshader` (software WebGL), re-rendering the dense pileup each
+animated-zoom frame is CPU-rasterized and **blocks the main thread ~7s per zoom
+step**. That starves the click's clickable-point `Runtime.callFunctionOn`
+round-trip until it nearly times out and throws "Target closed", and starves the
+whole script (stepped mouse, evaluate — everything queues behind the block).
 
-I already added, in `generate-video.ts`:
-- `page.on('error')` + `page.on('pageerror')` crash listeners (to distinguish a
-  real tab crash from its downstream "Target closed").
-- `recorder.stop()` moved into a `try/finally` around the motion so it's always
-  attempted before `browser.close()`.
+Proven, not guessed (6× animated zoom, same session/tracks, only GL backend
+differs):
 
-But if the *target itself* closed (tab crash), `recorder.stop()` still rejects
-and the file still won't finalize — so **the root cause must be found, not just
-guarded**.
+| environment | zoom-in ×6 | result |
+|---|---:|---|
+| headless swiftshader + CRAM pileup | ~28s | stalls, click throws "Target closed" |
+| **headed real GPU** (Intel UHD 630) + CRAM pileup | ~8.6s | smooth |
+| headless swiftshader + wiggle+genes | ~8.6s | smooth |
 
-### Leading hypothesis (per CLAUDE.md: prove it, don't work around)
-The puppeteer stack trace ends in `CdpElementHandle.evaluate` — that's
-`ElementHandle.click()`'s internal clickable-point evaluate. So the failing call
-is a `zoom_in`/`zoom_out` `.click()` in the SECOND `animatedZoom` batch (after
-the pan). Captured frames stop around there. Candidate causes, in order to test:
-1. **Tab crash under swiftshader** rendering the CRAM pileup during zoom. The new
-   `page.on('error')` listener will print `PAGE CRASH: ...` if so. **Check the
-   run's stdout/stderr first** — if PAGE CRASH appears, it's this.
-2. **The pan drag** (`panDrag` at y=500 over the CRAM track) may trigger a
-   rubberband/zoom-to-region selection or otherwise leave the page in a state
-   that the next click can't resolve. Try removing the pan and re-running.
-3. Navigating/zooming detached the element handle. (Less likely — I re-`page.$`
-   the button each iteration.)
+So the multi-second freeze is a **swiftshader software-rasterization artifact**,
+not a rendering-code bug — real users on a GPU don't hit it. The fix is to keep
+the headless tour on **light tracks** (wiggle + genes); it then never blocks, the
+clicks resolve instantly, and `recorder.stop() → ok` in ~0.5s. Heavy pileups can
+still be filmed via `--headed` (real GPU).
 
-### Suggested next steps
-- Read the latest run's output file for the crash listener lines. Last run
-  (task) left `static/video/volvox_tour.webm` at 27MB, dur=N/A, no mp4/gif, and
-  an EMPTY stdout file — meaning node likely died before printing; re-run in
-  foreground to see the `PAGE CRASH`/`recorder.stop failed` lines.
-- If it's a swiftshader crash (hypothesis 1): lighten the render — swap CRAM for
-  a gene track (a gene-track tour is arguably a better first demo anyway), and/or
-  add memory flags. A gene/wiggle tour won't hit the pileup's per-read load.
-- Once a clean webm finalizes, confirm the ffmpeg mp4 (h264/yuv420p +faststart)
-  and gif transcodes produce playable files.
+Note: a finalized VP9/webm from `page.screencast()`'s ffmpeg pipe legitimately
+reports `duration=N/A` at the container level — that is normal, **not** a sign of
+truncation. Verify via the transcoded **mp4**'s duration instead (the script
+does). The old "File ended prematurely" symptom was the genuinely truncated file
+from the hang, now gone.
 
-### Verify a captured webm (works even while unfinalized)
-```bash
-ffmpeg -y -i static/video/volvox_tour.webm -vf "fps=1,scale=640:-1" /tmp/vframes/f_%03d.png
-convert /tmp/vframes/f_001.png /tmp/vframes/f_004.png /tmp/vframes/f_007.png +append /tmp/montage.png
-# then Read /tmp/montage.png
-```
+### Separately: real (milder) interaction jank on hardware
+Distinct from the swiftshader freeze, there IS a measured per-frame cost on real
+GPUs during alignments zoom/pan (~21ms/frame at 4× CPU throttle) —
+per-interaction React/MUI/Emotion **overlay re-renders**, not GPU draw. That has
+its own ranked fix plan in `agent-docs/ALIGNMENTS_INTERACTION_PERF_HANDOFF.md`
+(+ profiler in `~/src/jb2bench`). It is not what broke the video.
 
 ## Integration plan (once the prototype is solid) — NOT started
 This is still a throwaway script. To productionize, mirror the screenshot
@@ -89,7 +80,8 @@ pipeline's structure:
 - Add a `VideoSpec` type (name + session URL + an `actions`-style motion
   timeline) alongside the screenshot specs in `scripts/screenshot-specs.ts` (or a
   new `video-specs.ts`), reusing the existing `ScreenshotAction`/`runAction`
-  machinery for the motion steps.
+  machinery for the motion steps (extend it with the cursor overlay so clicks are
+  visible).
 - Generalize `generate-video.ts` into a spec-driven generator with the same CLI
   ergonomics as generate-screenshots.ts (`--filter`, `--concurrency`, etc.).
 - Decide output format/location: `website/static/video/<name>.{webm,mp4,gif}`.
