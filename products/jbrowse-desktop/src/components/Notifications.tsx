@@ -1,30 +1,58 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { ReactNode } from 'react'
 
-import { Alert, Snackbar } from '@mui/material'
+import { Alert, Button, Snackbar } from '@mui/material'
 
 import { NotifyContext } from './NotifyContext.ts'
 
+import type { NotifyAction } from './NotifyContext.ts'
+
+interface Notification {
+  error: unknown
+  action?: NotifyAction
+}
+
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const [error, setError] = useState<unknown>()
+  const [notification, setNotification] = useState<Notification>()
+  const notify = useCallback((error: unknown, action?: NotifyAction) => {
+    setNotification({ error, action })
+  }, [])
+  const close = () => {
+    setNotification(undefined)
+  }
+  const action = notification?.action
   return (
-    <NotifyContext value={setError}>
+    <NotifyContext value={notify}>
       {children}
       <Snackbar
-        open={!!error}
+        open={!!notification}
         autoHideDuration={6000}
         onClose={() => {
-          setError(undefined)
+          close()
         }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           severity="error"
           onClose={() => {
-            setError(undefined)
+            close()
           }}
+          action={
+            action ? (
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  action.onClick()
+                  close()
+                }}
+              >
+                {action.label}
+              </Button>
+            ) : undefined
+          }
         >
-          {`${error}`}
+          {`${notification?.error}`}
         </Alert>
       </Snackbar>
     </NotifyContext>

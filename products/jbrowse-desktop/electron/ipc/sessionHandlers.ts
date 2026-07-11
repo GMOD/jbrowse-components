@@ -3,7 +3,12 @@ import path from 'node:path'
 
 import { shell } from 'electron'
 
-import { ENCODING, getThumbnailPath, stringify } from '../paths.ts'
+import {
+  ENCODING,
+  getLegacyThumbnailPath,
+  getThumbnailPath,
+  stringify,
+} from '../paths.ts'
 import { logError } from '../util.ts'
 import { ipcHandle } from './channels.ts'
 import { relativeUrisToLocalPaths } from './relativeUrisToLocalPaths.ts'
@@ -11,7 +16,7 @@ import { relativeUrisToLocalPaths } from './relativeUrisToLocalPaths.ts'
 import type { AppPaths } from '../paths.ts'
 import type { RecentSession, SessionSnap } from './channels.ts'
 
-const { unlink, readFile, writeFile } = fs.promises
+const { unlink, readFile, writeFile, rename } = fs.promises
 const THUMBNAIL_WIDTH = 500
 
 async function readRecentSessions(
@@ -38,7 +43,13 @@ async function readSession(sessionPath: string): Promise<SessionSnap> {
     relativeUrisToLocalPaths(snap, path.dirname(sessionPath))
     return snap
   } catch (e) {
-    throw new Error(`Failed to read session ${sessionPath}: ${e}`, { cause: e })
+    const missing = e instanceof Error && 'code' in e && e.code === 'ENOENT'
+    throw new Error(
+      missing
+        ? `Session file no longer exists: ${sessionPath}. It may have been moved or deleted.`
+        : `Failed to read session ${sessionPath}: ${e}`,
+      { cause: e },
+    )
   }
 }
 
@@ -158,6 +169,12 @@ export function registerSessionHandlers(
     ])
   })
 
+  ipcHandle('removeRecentSession', async (_, sessionPath) => {
+    await updateRecentSessions(paths.recentSessionsPath, rows =>
+      rows.filter(s => s.path !== sessionPath),
+    )
+  })
+
   ipcHandle('renameSession', async (_, sessionPath, newName) => {
     // serialize the whole read-modify-write: the session file is only rewritten
     // when its entry is present in recent_sessions, so the existence check and
@@ -192,10 +209,18 @@ export function registerSessionHandlers(
   })
 
   ipcHandle('loadThumbnail', async (_, name) => {
+    const thumbnailPath = getThumbnailPath(paths, name)
     try {
-      return await readFile(getThumbnailPath(paths, name), ENCODING)
+      return await readFile(thumbnailPath, ENCODING)
     } catch {
-      return undefined
+      // Migrate a thumbnail written by a pre-sha256 build (encodeURIComponent
+      // name) to the current name on first view, so upgrades don't blank cards.
+      const legacyPath = getLegacyThumbnailPath(paths, name)
+      const data = await readFile(legacyPath, ENCODING).catch(() => undefined)
+      if (data !== undefined) {
+        await rename(legacyPath, thumbnailPath).catch(logError)
+      }
+      return data
     }
   })
 

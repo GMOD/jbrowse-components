@@ -59,6 +59,12 @@ export function getThumbnailPath(paths: AppPaths, sessionPath: string) {
   return path.join(paths.thumbnailDir, `${hash}.data`)
 }
 
+// Pre-sha256 builds named thumbnails encodeURIComponent(sessionPath); kept so
+// loadThumbnail can migrate them lazily instead of blanking cards on upgrade.
+export function getLegacyThumbnailPath(paths: AppPaths, sessionPath: string) {
+  return path.join(paths.thumbnailDir, `${encodeURIComponent(sessionPath)}.data`)
+}
+
 export function getFaiPath(paths: AppPaths, name: string) {
   return path.join(paths.faiDir, `${encodeURIComponent(name)}.fai`)
 }

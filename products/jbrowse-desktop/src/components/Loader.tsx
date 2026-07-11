@@ -18,6 +18,8 @@ import { destroyPluginManager, loadPluginManager } from './StartScreen/util.tsx'
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+const { ipcRenderer } = window.require('electron')
+
 setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
 
 const LoaderContents = observer(function LoaderContents() {
@@ -54,7 +56,21 @@ const LoaderContents = observer(function LoaderContents() {
   })
 
   const handleConfigError = useEventCallback((e: unknown) => {
-    notifyError(e)
+    // the failing config path is a recent-session entry we can prune, so offer
+    // it as a toast action rather than leaving a dead row behind
+    notifyError(
+      e,
+      config
+        ? {
+            label: 'Remove from recent sessions',
+            onClick: () => {
+              ipcRenderer
+                .invoke('removeRecentSession', config)
+                .catch(console.error)
+            },
+          }
+        : undefined,
+    )
     // fall back to the start screen so the user can pick another config
     setConfig(undefined)
   })

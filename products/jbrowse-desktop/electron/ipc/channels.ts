@@ -37,6 +37,9 @@ export interface IpcChannels {
   createInitialAutosaveFile: { args: [snap: SessionSnap]; return: string }
   saveSession: { args: [sessionPath: string, snap: SessionSnap]; return: void }
   deleteSessions: { args: [sessionPaths: string[]]; return: void }
+  // list-only removal (leaves any on-disk file intact) for pruning a recent
+  // entry whose session file no longer loads
+  removeRecentSession: { args: [sessionPath: string]; return: void }
   renameSession: { args: [sessionPath: string, newName: string]; return: void }
   showItemInFolder: { args: [sessionPath: string]; return: void }
   loadThumbnail: { args: [name: string]; return: string | undefined }
