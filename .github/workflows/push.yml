@@ -392,6 +392,7 @@ jobs:
         run: |
           cd website/
           pnpm build
+          node --experimental-strip-types scripts/check-llms.ts
           mkdir testing
           mv dist testing/jb2
       - name: Check website links

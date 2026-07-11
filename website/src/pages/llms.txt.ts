@@ -1,5 +1,5 @@
-import { getCollection } from 'astro:content'
 import { base, site } from 'astro:config/client'
+import { getCollection } from 'astro:content'
 
 import { buildSidebar, entrySlug } from '../lib/docs-sidebar.ts'
 
@@ -29,7 +29,11 @@ export async function GET() {
       const label = entry.type === 'group' ? entry.label : 'General'
       const bullets = flattenLinks(entry)
         .filter(link => docSlugs.has(link.slug))
-        .filter(link => !seen.has(link.slug) && seen.add(link.slug))
+        .filter(link => {
+          const fresh = !seen.has(link.slug)
+          seen.add(link.slug)
+          return fresh
+        })
         .map(link => `- [${link.label}](${mdUrl(link.slug)})`)
       return bullets.length ? `## ${label}\n\n${bullets.join('\n')}` : ''
     })

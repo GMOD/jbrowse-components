@@ -23,6 +23,7 @@ const { html, toc } = await renderMarkdown(entry.body ?? '', entry.id)
   currentSlug={currentSlug}
   description={entry.data.description}
   toc={toc}
+  rawMarkdown={entry.body ?? ''}
 >
   <Fragment set:html={html} />
 </DocsLayout>

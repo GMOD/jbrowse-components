@@ -1,0 +1,119 @@
+---
+import { base, site } from 'astro:config/client'
+
+import { absolutizeMarkdownLinks } from '../lib/absolutize-markdown-links.ts'
+
+interface Props {
+  markdown: string
+  title: string
+}
+
+const { markdown, title } = Astro.props
+const origin = `${site ?? ''}${base.replace(/\/$/, '')}`
+const raw = `# ${title}\n\n${absolutizeMarkdownLinks(markdown, origin)}`
+---
+
+<button
+  id="copy-markdown"
+  type="button"
+  title="Copy this page as raw Markdown (for pasting into an LLM)"
+>
+  <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      class="copy-icon"
+      d="M9 9h9v11H9zM6 15H4V4h9v2"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linejoin="round"
+      stroke-linecap="round"></path>
+    <path
+      class="check-icon"
+      d="M5 13l4 4L19 7"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+      style="display: none"></path>
+  </svg>
+  <span>Copy markdown</span>
+</button>
+
+<script is:inline define:vars={{ raw }}>
+  const btn = document.getElementById('copy-markdown')
+  const label = btn?.querySelector('span')
+  const copyIcon = btn?.querySelector('.copy-icon')
+  const checkIcon = btn?.querySelector('.check-icon')
+  const original = label?.textContent
+
+  btn?.addEventListener('click', async () => {
+    // clipboard.writeText rejects on insecure origins and where the API is
+    // unavailable — surface that instead of silently doing nothing.
+    let ok = true
+    try {
+      await navigator.clipboard.writeText(raw)
+    } catch {
+      ok = false
+    }
+    if (label) {
+      label.textContent = ok ? 'Copied!' : 'Copy failed'
+    }
+    if (ok) {
+      copyIcon?.setAttribute('style', 'display: none')
+      checkIcon?.setAttribute('style', '')
+      btn.classList.add('copied')
+    }
+    setTimeout(() => {
+      if (label) {
+        label.textContent = original ?? 'Copy markdown'
+      }
+      copyIcon?.setAttribute('style', '')
+      checkIcon?.setAttribute('style', 'display: none')
+      btn.classList.remove('copied')
+    }, 1500)
+  })
+</script>
+
+<style>
+  #copy-markdown {
+    position: fixed;
+    top: calc(var(--nav-height) + 0.75rem);
+    right: 0.75rem;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #copy-markdown:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+  #copy-markdown.copied {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: var(--color-sidebar-active-bg);
+  }
+
+  /* On wide viewports the TOC toggle occupies the top-right slot; stack the
+     copy button just below it. Below 1200px the toggle is hidden, so the copy
+     button takes the top slot. */
+  @media (min-width: 1201px) {
+    #copy-markdown {
+      top: calc(var(--nav-height) + 0.75rem + 2.6rem);
+    }
+  }
+  @media (max-width: 768px) {
+    #copy-markdown {
+      display: none;
+    }
+  }
+</style>

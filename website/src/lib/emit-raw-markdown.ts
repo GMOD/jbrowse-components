@@ -1,5 +1,4 @@
-import fs from 'node:fs/promises'
-import { glob } from 'node:fs/promises'
+import fs, { glob } from 'node:fs/promises'
 import path from 'node:path'
 
 import { absolutizeMarkdownLinks } from './absolutize-markdown-links.ts'
@@ -22,7 +21,7 @@ function parseFrontmatter(raw: string) {
     for (const line of match[1]!.split(/\r?\n/)) {
       const kv = /^(\w+):\s*(.*)$/.exec(line)
       if (kv) {
-        data[kv[1]!] = kv[2]!.trim().replace(/^['"]|['"]$/g, '')
+        data[kv[1]!] = kv[2]!.trim().replaceAll(/^['"]|['"]$/g, '')
       }
     }
   }
