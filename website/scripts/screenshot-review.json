@@ -52,9 +52,9 @@
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
     "status": "bad",
-    "note": "the short insert is light pink in legend but dark pink in figure. there is also a salmon color being plotted not in legend.",
-    "reviewedAt": "2026-07-10T21:08:30.191Z",
-    "hash": "8672fa596c474c5756dfd82b7d044318acbaf2b1"
+    "note": "this is looking good but the legend is a little obtrusive. not sure if possible to shrink labels, zoom out to maximum zoom out, etc. also, it is an assertion that the split read is a deletion. might not be. so might consider not saying that.",
+    "reviewedAt": "2026-07-11T02:15:40.146Z",
+    "hash": "a43d0e7139df9b93176f22f0a71ea0be9aa396ce"
   },
   "dotplot": {
     "name": "dotplot",
@@ -1201,8 +1201,8 @@
   "multiway_synteny/grape_peach_cacao": {
     "name": "multiway_synteny/grape_peach_cacao",
     "status": "bad",
-    "note": "INVESTIGATED (still imperfect, kept original order): confirmed autoDiagonalize DOES run + complete (added an explicit autoDiagonalizeComplete gate on settled/synteny_canvas_done, mirroring the dotplot fix, so a skipped/errored reorder now fails loudly instead of committing a hairball). The top peach-cacao band stays crossy because it is a TRANSITIVE pair (peach+cacao relate only through the grape MCScan reference) AND cross-karyotype (8/19/10 chr); putting grape in the middle to make both bands direct produced a WORSE double-hairball. Original peach/cacao/grape order (one clean cacao-grape band) is optimal. Figure itself unchanged; needs a conserved-block zoom to truly fix.",
-    "reviewedAt": "2026-07-10T18:24:01.000Z",
+    "note": "i think there is something wrong with autodiagonalization heere. the peach vs cacao clearly has tons of overlaps. do we need a different autodiaonalization algorithm? the cacao vs grape looks fine. INVESTIGATED (still imperfect, kept original order): confirmed autoDiagonalize DOES run + complete (added an explicit autoDiagonalizeComplete gate on settled/synteny_canvas_done, mirroring the dotplot fix, so a skipped/errored reorder now fails loudly instead of committing a hairball). The top peach-cacao band stays crossy because it is a TRANSITIVE pair (peach+cacao relate only through the grape MCScan reference) AND cross-karyotype (8/19/10 chr); putting grape in the middle to make both bands direct produced a WORSE double-hairball. Original peach/cacao/grape order (one clean cacao-grape band) is optimal. Figure itself unchanged; needs a conserved-block zoom to truly fix.",
+    "reviewedAt": "2026-07-11T01:48:15.439Z",
     "hash": "aa3dd53fa7a65cdec1391433a6b98cd64e3ee649"
   },
   "search_feature_highlight": {
@@ -1306,8 +1306,8 @@
   "introgression": {
     "name": "introgression",
     "status": "bad",
-    "note": "it's hard to see, the blue boxes are kind of small. if needed we can zoom in a little bit, or add boxes around blue segments, or remove the neanderthan segments. the neanderthal segments are also very scattered. also, we need to ensure we are using ACCURATE data for this, if we computed this ourselves, we could be way off",
-    "reviewedAt": "2026-07-10T18:44:24.025Z",
+    "note": "it's hard to see, the blue boxes are kind of small. if needed we can zoom in a little bit, or add boxes around blue segments, or remove the neanderthan segments. the neanderthal segments are also very scattered. also, we need to ensure we are using ACCURATE data for this, if we computed this ourselves, we could be way off. also way too much prose in the annotation boxes",
+    "reviewedAt": "2026-07-11T01:47:16.971Z",
     "hash": "11a690623812b44d1b765917ebad57c0da23dbe5"
   },
   "introgression_locus": {
@@ -1376,16 +1376,16 @@
   "popgen/fst_in2lt_2L": {
     "name": "popgen/fst_in2lt_2L",
     "status": "good",
-    "note": "FIXED: replotted genome-wide (all 6 dm6 arms) so 2L’s elevated Fst stands out as anomalous against low background on every other arm (reviewer: plot genome-wide vs background).",
-    "reviewedAt": "2026-07-10T06:14:04.754Z",
-    "hash": "d21139beac053a22f633bd50ad7b38fa4ce282fd"
+    "note": "reduce biological prose, explain the colors in figure. ",
+    "reviewedAt": "2026-07-11T02:00:52.388Z",
+    "hash": "66cbf758609520aa6b461577e9c07c47d7ad18ae"
   },
   "popgen/pi_cyp6g1": {
     "name": "popgen/pi_cyp6g1",
-    "status": "good",
-    "note": "FIXED: zoomed out to ~3Mb so the diversity dip reads against background; replaced the misplaced text-anchored box with a genomic Cyp6g1 highlight band + repositioned callout.",
-    "reviewedAt": "2026-07-10T06:14:04.754Z",
-    "hash": "5204af09b0d18992a3c2e4ee318f5f77e67e83b9"
+    "status": "bad",
+    "note": "might highlight the entire 'dip', increase browser height also, and decrease height of pi track. if needed, combine",
+    "reviewedAt": "2026-07-11T02:02:07.129Z",
+    "hash": "0d609a959f4bb09f572cd1af5b5ddd725bcaa9c8"
   },
   "qtl/bxd_overview": {
     "name": "qtl/bxd_overview",
@@ -1431,17 +1431,17 @@
   },
   "jbrowse-img/scatac_multiwiggle": {
     "name": "jbrowse-img/scatac_multiwiggle",
-    "status": "bad",
-    "note": "decrease height of each multiwiggle row a bit. it is also somewhat not exciting because only one row shows activity, but if it is well known we can call this out",
-    "reviewedAt": "2026-07-10T21:10:02.029Z",
-    "hash": "87ef32bae679ffc65e105a08604072a7cc2bb8af"
+    "status": "good",
+    "note": "FIXED (2026-07): reduced multiwig height 520->440 (~27px/row) for tighter rows; Alpha/GCG peak still reads. Cell-type-specificity (one active row) is the intended point (spec comment).",
+    "reviewedAt": "2026-07-11T01:43:44.196Z",
+    "hash": "a6bb85ddf201053d6d72a0b4f405d3cba87f470b"
   },
   "methylation/arabidopsis_wgbs_boundary": {
     "name": "methylation/arabidopsis_wgbs_boundary",
     "status": "bad",
-    "note": "if it helps we can add a 'bedmethyl' type track too or bigwig of the methylation, smoothed",
-    "reviewedAt": "2026-07-10T21:10:43.646Z",
-    "hash": "af79c224dfdc10c4ad58c472a57455aa4f494027"
+    "note": "this figure is a little confusing because only one modification mode is showing, but it is demonstrating 3 different methyldackyl modes",
+    "reviewedAt": "2026-07-11T01:43:39.990Z",
+    "hash": "2466c1811d77335ad338f784b74711d13c75af54"
   },
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
@@ -1454,8 +1454,8 @@
     "name": "methylation/arabidopsis_wgbs_contexts",
     "status": "bad",
     "note": "this figure is a little confusing because only one modification mode is showing, but it is demonstrating 3 different methyldackyl modes",
-    "reviewedAt": "2026-07-10T21:11:23.017Z",
-    "hash": "91d29a51aea28de000535576e064565992e4b731"
+    "reviewedAt": "2026-07-11T01:43:29.343Z",
+    "hash": "365b6c67e8c1073fb6b67398cdb0cd66eda0bc15"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
@@ -1494,38 +1494,38 @@
   },
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
-    "status": "bad",
-    "note": "hard to tell what is going on in this screenshot. if it is supposed to say something specific, plot along with another track to co-emphasize. add gene track and highlights if needed.",
-    "reviewedAt": "2026-07-10T15:40:40.075Z",
-    "hash": "159bbfbab8ac91b268bffd5fcea39ed493b66c6d"
+    "status": "good",
+    "note": "FIXED (reviewer's SV-genotype-matrix idea): In(2L)t is a ~13 Mb inversion, so a per-SNP matrix collapses at arm scale. Replaced with an SV genotype matrix — built a one-record <INV> VCF (2L:2,225,744-13,154,180) genotyped across all 180 lines from the karyotype calls (dgrp_In2Lt_sv.vcf.gz, uploaded to jbrowse.org/demos/popgen), displayed as LinearMultiSampleVariantMatrixDisplay colored by karyotype. The 19 carriers form a clean homozygous-alt block over the 161 standard lines. Reworked the tutorial section (build pipeline + config + caption + honest framing that GTs = karyotype calls). Regenerated + verified.",
+    "reviewedAt": "2026-07-11T01:56:16.000Z",
+    "hash": "c01b8277bf816834b6cc04504b183df453ee08b3"
   },
   "popgen/ld_decay_2R": {
     "name": "popgen/ld_decay_2R",
-    "status": "bad",
-    "note": "hard to tell what is going on in this screenshot. if it is supposed to say something specific, plot along with another track to co-emphasize. add gene track and highlights if needed.",
-    "reviewedAt": "2026-07-10T15:40:46.498Z",
-    "hash": "bc5ffa417046eb2bc313bf56b6170f225a67276b"
+    "status": "good",
+    "note": "resolved: DELETED per reviewer (not powerful/clear enough). Removed spec + LD_TRACK const + PNG + the Figure in population_genomics.md (LD-section prose/config kept). gen:gallery-links + audit-figures regenerated. FOLLOW-UP (proposed, not yet done): replace with a famous human LD triangle — 17q21.31 MAPT/H1-H2 inversion block (ties to the tutorial's inversion theme); needs 1000G PLINK --r2 computed + hosted on jbrowse.org/demos.",
+    "reviewedAt": "2026-07-11T01:56:16.000Z",
+    "hash": ""
   },
   "popgen/combined_cyp6g1_dest": {
     "name": "popgen/combined_cyp6g1_dest",
     "status": "bad",
-    "note": "the highlight appears 'before' the fst goes to zero. not sure if that is expected. might want to zoom out more. i see ",
-    "reviewedAt": "2026-07-10T15:41:06.726Z",
-    "hash": "3b760a41d2c12849283c51604159f5a76e1c0d30"
+    "note": "we might want to make the cytobands for dmel less weird and red. then we might want to make the browser taller. and maybe thicken the lines if that is possible",
+    "reviewedAt": "2026-07-11T01:59:57.246Z",
+    "hash": "a2d2a2d5688ad65cf5afbb6fd078d89c088e916d"
   },
   "popgen/tajimad_cyp6g1": {
     "name": "popgen/tajimad_cyp6g1",
     "status": "bad",
-    "note": "zoom out more. if it is possible to get finer grained bigwis that would be ideal. more 'frission' from the detailed data. make gene track taller e.g. heightmode grow",
-    "reviewedAt": "2026-07-10T15:41:47.350Z",
-    "hash": "db9ad6f1ec620c59a09335e5816c89c7942b10b1"
+    "note": "if this is duplicating popgen/pi_cyp6g1 too much, can consider deleting.",
+    "reviewedAt": "2026-07-11T02:02:19.233Z",
+    "hash": "ed4e3d1a3217b5e3cde771e82e3154c20e51f660"
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
-    "status": "good",
-    "note": "KEEP (not a standalone doc figure): this is the \"before\" (alphabetical/salt-and-pepper) half of the bxd_sort_before_after compose AND a live-link target in bxd_qtl.md. It is needed to show the unsorted state the sort resolves; deleting it would break the compose + its \"Input order\" open-live link.",
-    "reviewedAt": "2026-07-10T18:28:34.000Z",
-    "hash": "64ab1e2cce5529993bf6878e61263ef0157edd05"
+    "status": "bad",
+    "note": "unclear why this one part figure needed to stay in existence, why not a normal two part figure like our other two part figures",
+    "reviewedAt": "2026-07-11T02:03:08.145Z",
+    "hash": "feb513142929bbdc0cfe3ed2b98d925d55e3415e"
   },
   "qtl/bxd_painting_sorted": {
     "name": "qtl/bxd_painting_sorted",
@@ -1550,10 +1550,10 @@
   },
   "rnaseq/strand_specific": {
     "name": "rnaseq/strand_specific",
-    "status": "bad",
-    "note": "we should maybe use the 'pin' icon for expressing making a setting the default? the text 'Make 'first of pair strand' the default for all alignments tracks' is a mouthful and makes menu large",
-    "reviewedAt": "2026-07-10T21:13:25.518Z",
-    "hash": "87e074baa90d83c40960951683d9428e0a51a0c5"
+    "status": "good",
+    "note": "FIXED: the reviewer's pin-icon ask was already implemented in code (commit 843a58a, per-value PushPin session-default adornments replaced the long 'Make ... the default for all alignments tracks' text item). The committed PNG was stale because the built jbrowse-web bundle predated that commit; rebuilt jbrowse-web + force-regenerated so the menu now shows the pin adornments on each color-scheme radio (no long-text item).",
+    "reviewedAt": "2026-07-11T02:03:10.271Z",
+    "hash": "b88eeaf19536bfc4431288c3b03e3dbecde86c53"
   },
   "trio-ancestry": {
     "name": "trio-ancestry",

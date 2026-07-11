@@ -89,19 +89,26 @@ const TAJD_TRACK = {
 // color by arrangement. Using the informative markers (rather than all genotypes)
 // makes the two arrangements read as clean opposing blocks; the full genotype set
 // is hosted alongside as dgrp_In2Lt_2L.vcf.gz.
+// A single In(2L)t inversion call (<INV>, 2L:2,225,744-13,154,180) genotyped
+// across all 180 karyotyped DGRP lines — GTs derived from the karyotype calls
+// (1/1 for the 19 In(2L)t lines, 0/0 for the 161 standard). Displayed as a
+// multi-sample matrix, one feature spanning the whole inversion resolves the
+// ~13 Mb arrangement that the per-SNP matrix couldn't (its columns vanish at
+// arm scale): the feature literally starts and ends at the breakpoints, so the
+// boundaries are on-screen, with each row a line colored by its genotype.
 const KARYOTYPE_VCF_TRACK = {
   type: 'VariantTrack',
   trackId: 'dgrp_In2Lt_matrix',
-  name: 'DGRP genotypes at In(2L)t-informative SNPs',
+  name: 'In(2L)t inversion genotyped across DGRP lines',
   assemblyNames: ['dm6'],
   adapter: {
     type: 'VcfTabixAdapter',
     vcfGzLocation: {
-      uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_informative.vcf.gz',
+      uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz',
     },
     index: {
       location: {
-        uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_informative.vcf.gz.tbi',
+        uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz.tbi',
       },
     },
     samplesTsvLocation: {
@@ -112,25 +119,10 @@ const KARYOTYPE_VCF_TRACK = {
     {
       type: 'LinearMultiSampleVariantMatrixDisplay',
       displayId: 'dgrp_In2Lt_matrix-matrix',
-      // color the left sidebar strip by the karyotype metadata column; clustering
-      // (below) reorders the rows so the two karyotypes fall into contiguous
-      // clades
+      // color the left sidebar strip by the karyotype metadata column
       colorBy: 'karyotype',
     },
   ],
-}
-
-// Pre-computed pairwise LD (PLINK --r2) over a euchromatic 2R window, tabix
-// indexed for the LD-heatmap display.
-const LD_TRACK = {
-  type: 'LDTrack',
-  trackId: 'ld_decay_2R',
-  name: 'LD (r², DGRP panel)',
-  assemblyNames: ['dm6'],
-  adapter: {
-    type: 'PlinkLDTabixAdapter',
-    uri: 'https://jbrowse.org/demos/popgen/ld_2R_decay_chr.ld.gz',
-  },
 }
 
 // Between-population Fst (African vs cosmopolitan) across the Cyp6g1 region,
@@ -300,8 +292,10 @@ export const popgenSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        x: 760,
-        y: 66,
+        // sits in the upper-right white space of the wiggle plot, clear of the
+        // header/location bar it used to overlap (reviewer: move down + right)
+        x: 900,
+        y: 205,
         maxWidth: 360,
         fontSize: 15,
         text: 'π collapses to under a tenth of the arm-wide background here — the hard-sweep signature at the Cyp6g1 insecticide-resistance gene',
@@ -309,17 +303,13 @@ export const popgenSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The raw genotypes behind the Fst block: the 180 In(2L)t-karyotyped lines as a
-  // multi-sample genotype matrix at the arrangement-informative SNPs, over a
-  // 200 kb window inside the inversion, colored by karyotype and clustered by
-  // genotype similarity. Because every column is a marker that tags the
-  // arrangement, the 19 inverted lines cluster into one clade carrying the alt
-  // allele (one solid block) against the 161 standard lines carrying the
-  // reference (the other block) — the recombination-suppressed inversion holds
-  // these alleles together across the whole region. This is the direct,
-  // per-sample view of what the windowed Fst scan summarizes. runClustering runs
-  // the real cluster-by-genotype RPC once (declarative, no dialog); the ready
-  // wait is on the dendrogram, which only renders once the RPC lands.
+  // The In(2L)t arrangement as one SV call genotyped across the panel: the whole
+  // ~11 Mb inversion (2L:2.23-13.15 Mb) shown with flanking reference on both
+  // sides, so the <INV> feature's start and end sit at the breakpoints on-screen.
+  // Each of the 180 rows is a DGRP line colored by its genotype at the inversion;
+  // the karyotype sidebar strip and the VCF row order both put the 19 In(2L)t
+  // carriers in one block above the 161 standard lines. This resolves the
+  // arrangement the per-SNP matrix couldn't (its columns collapse at arm scale).
   {
     mode: 'url',
     name: 'popgen/genotype_matrix_in2lt',
@@ -329,23 +319,36 @@ export const popgenSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'dm6',
-          loc: 'chr2L:2,225,744-2,425,744',
+          // ruler set to the inversion extent (breakpoints ~2.23 + ~13.15 Mb) so
+          // the full-width matrix band reads as spanning the whole arrangement —
+          // the matrix indexes columns by variant, not bp, so flanks add nothing
+          loc: 'chr2L:2,000,000-13,400,000',
           tracks: [
             {
               trackId: 'dgrp_In2Lt_matrix',
               type: 'LinearMultiSampleVariantMatrixDisplay',
               height: 520,
-              runClustering: true,
             },
           ],
         },
       ],
     })}&sessionName=Screenshot`,
     readyText: 'chr2L',
-    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
     readyTimeout: 90000,
     viewportHeight: 620,
-    settleMs: 4000,
+    settleMs: 8000,
+    annotations: [
+      {
+        type: 'text',
+        // over the uniform grey standard-line block, clear of the teal carrier
+        // rows at top and the genotype legend at right
+        x: 300,
+        y: 400,
+        maxWidth: 340,
+        fontSize: 15,
+        text: 'One In(2L)t inversion call genotyped across 180 lines. Each row = one strain; the 19 carriers (orange strip) share the inverted allele, and the call spans the full ~11 Mb between its breakpoints.',
+      },
+    ],
   },
 
   // Tajima's D + π at Cyp6g1 (chr2R:12,185,667): the two-part hard-sweep signature
@@ -364,7 +367,11 @@ export const popgenSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'dm6',
-          loc: 'chr2R:11,900,000-12,450,000',
+          // widened from 550 kb to ~1 Mb so the joint Tajima's D + π dip at
+          // Cyp6g1 reads as a sharp, localized trough against more arm-background
+          // on both sides (whole-panel bigWigs cover the whole arm, so zooming
+          // out just adds context, no empty flanks)
+          loc: 'chr2R:11,700,000-12,700,000',
           highlight: [
             {
               refName: 'chr2R',
@@ -388,6 +395,9 @@ export const popgenSpecs: ScreenshotSpec[] = [
             {
               trackId: 'dm6-ncbiRefSeqCurated',
               type: 'LinearBasicDisplay',
+              // grow so the gene track sizes to its full feature stack (reviewer:
+              // taller gene track) instead of a fixed thin strip
+              heightMode: 'grow',
               height: 110,
               showOnlyGenes: true,
             },
@@ -398,46 +408,9 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="wiggle-display-done"]',
     readyText: 'Tajima',
     readyTimeout: 90000,
-    // tajd(200) + pi(180) + gene(110) + 3 track headers + ruler/overview: the
-    // old 640 clipped the gene track the caption promises
-    viewportHeight: 820,
+    // tajd(200) + pi(180) + grow gene track + 3 headers + ruler/overview
+    viewportHeight: 960,
     settleMs: 12000,
-  },
-
-  // LD-heatmap display over a euchromatic 2R window: the classic triangle where
-  // pairwise r² is high for nearby SNP pairs (bright band hugging the diagonal)
-  // and decays with physical distance (fading into the body of the triangle),
-  // resolving into discrete haplotype blocks. This LD decay is the phenomenon that
-  // sets the resolution of association mapping — how far a tag SNP's signal
-  // reaches. Pre-computed with PLINK --r2 in this tutorial's pipeline and loaded
-  // through PlinkLDTabixAdapter.
-  {
-    mode: 'url',
-    name: 'popgen/ld_decay_2R',
-    url: `${DM6_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [LD_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'dm6',
-          loc: 'chr2R:5,050,000-5,300,000',
-          tracks: [
-            {
-              trackId: 'ld_decay_2R',
-              type: 'LDTrackDisplay',
-              height: 380,
-            },
-          ],
-        },
-      ],
-    })}&sessionName=Screenshot`,
-    readySelector: '[data-testid="ld_canvas"]',
-    readyText: 'chr2R',
-    readyTimeout: 90000,
-    // the SNP-position connector rake + full triangle need more room than the
-    // old 470 gave — the triangle apex was clipped
-    viewportHeight: 640,
-    settleMs: 8000,
   },
 
   // The payoff combined figure: at the Cyp6g1 insecticide-resistance sweep, three
@@ -459,7 +432,10 @@ export const popgenSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'dm6',
-          loc: 'chr2R:11,950,000-12,450,000',
+          // full extent of the DEST slice (tabix'd 2R:11.7-12.7 Mb) so the Fst
+          // peak + cosmopolitan diversity valley read against the widest
+          // background the data covers (reviewer: zoom out more)
+          loc: 'chr2R:11,700,000-12,700,000',
           highlight: [
             {
               refName: 'chr2R',
@@ -497,5 +473,15 @@ export const popgenSpecs: ScreenshotSpec[] = [
     // fst(180) + diversity(200) + gene(90) + 3 headers + ruler/overview
     viewportHeight: 720,
     settleMs: 12000,
+    annotations: [
+      {
+        type: 'text',
+        x: 300,
+        y: 150,
+        maxWidth: 300,
+        fontSize: 15,
+        text: 'Fst peaks at Cyp6g1 while cosmopolitan diversity (red) collapses and African (blue) holds — a population-specific sweep.',
+      },
+    ],
   },
 ]

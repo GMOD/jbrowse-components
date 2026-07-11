@@ -131,7 +131,7 @@ windows from a VCF and two sample lists:
 vcftools --gzvcf "$VCF" \
   --weir-fst-pop In2Lt_INV.txt \
   --weir-fst-pop In2Lt_STD.txt \
-  --fst-window-size 10000 --fst-window-step 10000 \
+  --fst-window-size 2000 --fst-window-step 2000 \
   --out fst_In2Lt
 # -> fst_In2Lt.windowed.weir.fst
 #    CHROM  BIN_START  BIN_END  N_VARIANTS  WEIGHTED_FST  MEAN_FST
@@ -156,12 +156,12 @@ diversity can be compared on the same scale:
 
 ```bash
 # whole panel
-vcftools --gzvcf "$VCF" --window-pi 10000 --out pi_all
+vcftools --gzvcf "$VCF" --window-pi 2000 --out pi_all
 # -> pi_all.windowed.pi   CHROM  BIN_START  BIN_END  N_VARIANTS  PI
 
 # per In(2L)t group (reuses the sample lists from above)
-vcftools --gzvcf "$VCF" --keep In2Lt_INV.txt --window-pi 10000 --out pi_INV
-vcftools --gzvcf "$VCF" --keep In2Lt_STD.txt --window-pi 10000 --out pi_STD
+vcftools --gzvcf "$VCF" --keep In2Lt_INV.txt --window-pi 2000 --out pi_INV
+vcftools --gzvcf "$VCF" --keep In2Lt_STD.txt --window-pi 2000 --out pi_STD
 
 # same awk-to-bigWig conversion for each
 for g in all INV STD; do
@@ -192,7 +192,7 @@ is simply low-diversity for other reasons.
 needed, it is a whole-panel statistic:
 
 ```bash
-vcftools --gzvcf "$VCF" --TajimaD 10000 --out tajd_all
+vcftools --gzvcf "$VCF" --TajimaD 2000 --out tajd_all
 # -> tajd_all.Tajima.D   CHROM  BIN_START  N_SNPS  TajimaD
 ```
 
@@ -201,7 +201,7 @@ negative values (unlike Fst, Tajima's D is meaningfully signed — the negative
 excursions are the signal):
 
 ```bash
-awk 'NR>1 && $4!="nan" && $4!="-nan" {print $1"\t"$2"\t"($2+10000)"\t"$4}' \
+awk 'NR>1 && $4!="nan" && $4!="-nan" {print $1"\t"$2"\t"($2+2000)"\t"$4}' \
   tajd_all.Tajima.D \
   | sort -k1,1 -k2,2n > tajd_all.bedgraph
 bedGraphToBigWig tajd_all.bedgraph dm6.chrom.sizes tajd_all.bw
@@ -242,15 +242,15 @@ awk -F'\t' 'NR>1 && $3==2 {gsub(/_/,"-",$1); print $1}' In2Lt.tsv \
 # 4. windowed Fst -> bigWig
 vcftools --gzvcf "$VCF" \
   --weir-fst-pop In2Lt_INV.txt --weir-fst-pop In2Lt_STD.txt \
-  --fst-window-size 10000 --fst-window-step 10000 --out fst_In2Lt
+  --fst-window-size 2000 --fst-window-step 2000 --out fst_In2Lt
 awk 'NR>1 && $5!="-nan" {v=($5<0?0:$5); print $1"\t"($2-1)"\t"$3"\t"v}' \
   fst_In2Lt.windowed.weir.fst | sort -k1,1 -k2,2n > fst_In2Lt.bedgraph
 bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
 
 # 5. windowed pi -> bigWig (whole panel + each In(2L)t arrangement)
-vcftools --gzvcf "$VCF" --window-pi 10000 --out pi_all
-vcftools --gzvcf "$VCF" --keep In2Lt_INV.txt --window-pi 10000 --out pi_INV
-vcftools --gzvcf "$VCF" --keep In2Lt_STD.txt --window-pi 10000 --out pi_STD
+vcftools --gzvcf "$VCF" --window-pi 2000 --out pi_all
+vcftools --gzvcf "$VCF" --keep In2Lt_INV.txt --window-pi 2000 --out pi_INV
+vcftools --gzvcf "$VCF" --keep In2Lt_STD.txt --window-pi 2000 --out pi_STD
 for g in all INV STD; do
   awk 'NR>1 && $5!="nan" {print $1"\t"($2-1)"\t"$3"\t"$5}' \
     pi_$g.windowed.pi | sort -k1,1 -k2,2n > pi_$g.bedgraph
@@ -258,8 +258,8 @@ for g in all INV STD; do
 done
 
 # 6. windowed Tajima's D -> bigWig (whole panel)
-vcftools --gzvcf "$VCF" --TajimaD 10000 --out tajd_all
-awk 'NR>1 && $4!="nan" && $4!="-nan" {print $1"\t"$2"\t"($2+10000)"\t"$4}' \
+vcftools --gzvcf "$VCF" --TajimaD 2000 --out tajd_all
+awk 'NR>1 && $4!="nan" && $4!="-nan" {print $1"\t"$2"\t"($2+2000)"\t"$4}' \
   tajd_all.Tajima.D | sort -k1,1 -k2,2n > tajd_all.bedgraph
 bedGraphToBigWig tajd_all.bedgraph dm6.chrom.sizes tajd_all.bw
 
@@ -283,7 +283,7 @@ its own data:
 {
   "type": "QuantitativeTrack",
   "trackId": "fst_in2lt",
-  "name": "Fst (In(2L)t vs standard, 10kb windows)",
+  "name": "Fst (In(2L)t vs standard, 2kb windows)",
   "assemblyNames": ["dm6"],
   "adapter": {
     "type": "BigWigAdapter",
@@ -450,19 +450,21 @@ Load the Fst bigWig as a `QuantitativeTrack` and the two diversity bigWigs as
 one `MultiWiggleAdapter` track (shared scale — same statistic on both rows) to
 reproduce the figure.
 
-## Per-sample view: the genotype matrix
+## Per-sample view: the inversion genotyped across the panel
 
 The windowed Fst scan _summarizes_ the inversion into one number per window. To
-see the raw signal it summarizes — the actual per-line genotypes — load the
-genotypes as a
-[multi-sample variant matrix](/docs/user_guides/multivariant_track).
+see which lines actually carry it, represent the whole arrangement as a single
+structural-variant call — one `<INV>` record spanning the In(2L)t breakpoints
+(`2L:2,225,744–13,154,180`) — genotyped across every karyotyped line, and load
+it as a [multi-sample variant matrix](/docs/user_guides/multivariant_track). A
+per-SNP matrix can't hold a ~13 Mb inversion on screen: zoom out far enough to
+see both breakpoints and the individual marker columns collapse to nothing. One
+SV call sidesteps that — the inversion is a single feature no matter how wide it
+is.
 
-Subset the panel to the karyotyped lines over `2L`, then keep the
-**arrangement-informative** SNPs: the sites whose alternate-allele frequency
-differs sharply between the two karyotypes. Those are the markers that tag the
-inversion — the same variants that drive the Fst block — so a matrix built from
-them shows the two arrangements as clean opposing blocks rather than a haze of
-ordinary polymorphism:
+First subset the panel to the karyotyped lines over `2L` (this biallelic-SNP
+subset also feeds the LD step below) and write a `samples.tsv` so the matrix can
+color rows by arrangement:
 
 ```bash
 # subset to the 180 karyotyped lines, 2L, biallelic SNPs
@@ -471,23 +473,29 @@ vcftools --gzvcf "$VCF" --chr 2L --keep In2Lt_STD.txt --keep In2Lt_INV.txt \
   --recode --stdout | bgzip > dgrp_In2Lt_2L.vcf.gz
 tabix -p vcf dgrp_In2Lt_2L.vcf.gz
 
-# alt-allele frequency within each arrangement (vcftools --freq2 col 6 = ALT freq)
-vcftools --gzvcf dgrp_In2Lt_2L.vcf.gz --keep In2Lt_INV.txt --freq2 --stdout \
-  | awk 'NR>1{print $1"\t"$2"\t"$6}' > inv.frq
-vcftools --gzvcf dgrp_In2Lt_2L.vcf.gz --keep In2Lt_STD.txt --freq2 --stdout \
-  | awk 'NR>1{print $1"\t"$2"\t"$6}' > std.frq
-
-# keep SNPs whose alt frequency differs by >0.7 between arrangements
-paste inv.frq std.frq \
-  | awk '{d=$3-$6; if(d<0)d=-d; if(d>0.7) print $1"\t"$2}' > informative.pos
-vcftools --gzvcf dgrp_In2Lt_2L.vcf.gz --positions informative.pos \
-  --recode --stdout | bgzip > dgrp_In2Lt_informative.vcf.gz
-tabix -p vcf dgrp_In2Lt_informative.vcf.gz
-
 # samples.tsv (name<TAB>karyotype) so the matrix can group/color by arrangement
 { echo -e "name\tkaryotype";
   awk '{print $1"\tIn(2L)t"}' In2Lt_INV.txt;
   awk '{print $1"\tStandard"}' In2Lt_STD.txt; } > dgrp_In2Lt_samples.tsv
+```
+
+Then build a one-record SV VCF straight from those karyotype calls — `1/1` for
+the In(2L)t lines, `0/0` for the standard lines:
+
+```bash
+samples=$(tail -n +2 dgrp_In2Lt_samples.tsv | cut -f1 | paste -sd'\t')
+gts=$(tail -n +2 dgrp_In2Lt_samples.tsv \
+  | awk -F'\t' '{print ($2=="In(2L)t") ? "1/1" : "0/0"}' | paste -sd'\t')
+{
+  printf '##fileformat=VCFv4.3\n##contig=<ID=2L,length=23513712>\n'
+  printf '##ALT=<ID=INV,Description="Inversion">\n'
+  printf '##INFO=<ID=SVTYPE,Number=1,Type=String,Description="SV type">\n'
+  printf '##INFO=<ID=END,Number=1,Type=Integer,Description="End position">\n'
+  printf '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n'
+  printf '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s\n' "$samples"
+  printf '2L\t2225744\tIn2Lt\tN\t<INV>\t.\tPASS\tSVTYPE=INV;END=13154180\tGT\t%s\n' "$gts"
+} | bgzip > dgrp_In2Lt_sv.vcf.gz
+tabix -p vcf dgrp_In2Lt_sv.vcf.gz
 ```
 
 Load it as a `VariantTrack` whose adapter carries the samples TSV, with a
@@ -497,16 +505,16 @@ Load it as a `VariantTrack` whose adapter carries the samples TSV, with a
 {
   "type": "VariantTrack",
   "trackId": "dgrp_In2Lt_matrix",
-  "name": "DGRP genotypes at In(2L)t-informative SNPs",
+  "name": "In(2L)t inversion genotyped across DGRP lines",
   "assemblyNames": ["dm6"],
   "adapter": {
     "type": "VcfTabixAdapter",
     "vcfGzLocation": {
-      "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_informative.vcf.gz"
+      "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz"
     },
     "index": {
       "location": {
-        "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_informative.vcf.gz.tbi"
+        "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz.tbi"
       }
     },
     "samplesTsvLocation": {
@@ -522,17 +530,19 @@ Load it as a `VariantTrack` whose adapter carries the samples TSV, with a
 }
 ```
 
-Open the track inside the inversion and choose **Cluster by genotype** from the
-track menu. The 19 inverted lines carry the alternate allele at these markers
-and the 161 standard lines carry the reference, so clustering separates them
-into two clades — a solid block of shared genotypes per arrangement, with the
-karyotype color strip down the sidebar confirming the split.
+Viewed across the inversion, the single call resolves the whole ~11 Mb
+arrangement at once: each row is a line, colored by its genotype at the
+inversion, so the 19 In(2L)t carriers (~10% of the panel) form the
+homozygous-alt block at top and the 161 standard lines the homozygous-reference
+block below, with the karyotype strip down the sidebar.
 
-<Figure src="/img/popgen/genotype_matrix_in2lt.png" caption="Genotype matrix of the 180 karyotyped DGRP lines at In(2L)t-informative SNPs, over a 200 kb window inside the inversion, clustered by genotype similarity (dendrogram at left) and colored by karyotype (sidebar strip). The 19 inverted lines form one clade carrying the alternate allele across the whole window (one solid block); the 161 standard lines form the other, carrying the reference. This is the per-line reality behind the Fst block — the recombination-suppressed inversion holds these alleles together, so every informative marker agrees on the same split."/>
+<Figure src="/img/popgen/genotype_matrix_in2lt.png" caption="The In(2L)t arrangement as one <INV> call genotyped across the 180 karyotyped DGRP lines, viewed over the inversion span on 2L. Each row is a line, colored by its genotype at the inversion (teal = carries In(2L)t, grey = standard) with the karyotype sidebar strip. The 19 carriers form the block at top. Because recombination between arrangements is suppressed, this single call stands in for a whole co-inherited ~11 Mb haplotype."/>
 
-This is the same signal the Fst scan measures, shown one line at a time: the
-inversion is a block of co-inherited genotypes because recombination between
-arrangements is suppressed across the whole region.
+The genotypes here are the arrangement karyotypes themselves, so this is the
+cleanest per-line view of _who_ carries the inversion. The independent evidence
+that ordinary SNPs across the region co-segregate with it — the reason the
+arrangement behaves as one recombination-suppressed block — is exactly what the
+Fst scan above quantifies.
 
 ## Linkage disequilibrium
 
@@ -586,13 +596,11 @@ SNP pairs are correlated) and fades into the body as pairs get farther apart —
 the LD **decay** that sets how far a single tag SNP's signal reaches, and hence
 the resolution of association mapping.
 
-<Figure src="/img/popgen/ld_decay_2R.png" caption="LD-heatmap display over a euchromatic 2R window: pairwise r² is high for nearby SNP pairs (the bright band along the diagonal) and decays with physical distance, resolving into discrete haplotype blocks. This decay is the ordinary recombining-genome pattern — the baseline against which the In(2L)t inversion stands out."/>
-
 Inside the `In(2L)t` inversion the picture is different: because recombination
 between arrangements is suppressed, LD does **not** decay the same way — pairs
-megabases apart stay associated, the flip side of the arrangement-informative
-block seen in the genotype matrix above. Note that with the inversion at only
-~10% frequency in this panel, that persistence is clearest among the
+megabases apart stay associated, the flip side of the single co-inherited block
+the genotype matrix above shows. Note that with the inversion at only ~10%
+frequency in this panel, that persistence is clearest among the
 arrangement-informative markers (and in `D'`) rather than as a bright
 genome-wide r² block.
 
@@ -624,9 +632,11 @@ rows.
 
 ## Notes
 
-- **Window size** trades resolution for smoothness. 5–10 kb windows resolve
-  single-gene signals in the compact _Drosophila_ genome, while larger windows
-  suit broad, genome-wide overviews.
+- **Window size** trades resolution for smoothness. The scans above use 2 kb
+  windows — with the DGRP panel's dense SNPs (~1 site per 70 bp) each window
+  still holds tens of segregating sites, so a single-gene sweep like Cyp6g1
+  resolves sharply. Widen toward 5–10 kb for smoother, broad genome-wide
+  overviews, or narrow further only where SNP density stays high.
 - **Negative Fst** estimates are an expected artifact of the Weir & Cockerham
   estimator at low-differentiation sites. Flooring at 0 for display (as above)
   is conventional.
@@ -647,8 +657,6 @@ rows.
   genotype-matrix display, grouping and coloring samples by metadata
 - [GWAS / Manhattan track](/docs/user_guides/gwas_track) — the same
   genome-wide-statistic-as-track pattern for association scans
-- [Introgression tracts](/docs/tutorials/introgression) — another population-
-  genomic analysis (archaic ancestry segments) in the genome browser
 - [Configuring assemblies](/docs/config_guides/assemblies) — loading a non-human
   reference such as dm6
 
