@@ -65,8 +65,7 @@ export const wiggleConfigSchemaFields = {
   lineWidth: {
     type: 'number',
     defaultValue: 1,
-    description:
-      'Line thickness in px for line ("line"/"multiline") rendering',
+    description: 'Line thickness in px for line ("line"/"multiline") rendering',
     advanced: true,
   },
 } as const

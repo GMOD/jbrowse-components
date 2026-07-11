@@ -1538,7 +1538,7 @@
   "qtl/bxd_sort_before_after": {
     "name": "qtl/bxd_sort_before_after",
     "status": "good",
-    "note": "FIXED: the first (input-order) panel now opens the painting's right-click context menu with 'Sort rows by value here' boxed near the peak column, + a caption — the interactive twin of the declarative sortRowsBy the second panel bakes in. Only opens the menu (never clicks it) so the top panel stays in input order; the bottom panel shows the resulting B/D split.",
+    "note": "FIXED: the first (input-order) panel now opens the painting's right-click context menu with 'Sort rows by color here' boxed near the peak column, + a caption — the interactive twin of the declarative sortRowsBy the second panel bakes in. Only opens the menu (never clicks it) so the top panel stays in input order; the bottom panel shows the resulting B/D split.",
     "reviewedAt": "2026-07-10T21:11:39.966Z",
     "hash": "186dd0a4099c12ca840188bbe9f04e67c562d9ba"
   },

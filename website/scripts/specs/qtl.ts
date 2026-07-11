@@ -145,7 +145,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
 
   // "Before" panel of the sort proof: painting in default alphabetical order,
   // with the painting's right-click context menu open over it to show HOW the
-  // sort is triggered — "Sort rows by value here" is the interactive twin of the
+  // sort is triggered — "Sort rows by color here" is the interactive twin of the
   // declarative sortRowsBy the "after" panel bakes in (reviewer: show the
   // context menu in the first screenshot). We only OPEN the menu (rightclick +
   // wait); we never click the item, so the painting stays in input order.
@@ -164,7 +164,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
       // manhattan track), near the Tyrp1 peak x (~52% across whole chr4), so the
       // menu appears at the column the sort would key on
       { type: 'rightclick', from: { x: 776, y: 430 } },
-      { type: 'waitForText', text: 'Sort rows by value here' },
+      { type: 'waitForText', text: 'Sort rows by color here' },
       { type: 'delay', ms: 600 },
     ],
     annotations: [
@@ -176,7 +176,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
         fontSize: 15,
         text: 'Default (alphabetical) order — right-click the painting to sort rows by genotype at that column',
       },
-      { type: 'box', anchor: { text: 'Sort rows by value here' } },
+      { type: 'box', anchor: { text: 'Sort rows by color here' } },
     ],
   },
 

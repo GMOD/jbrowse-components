@@ -59,7 +59,7 @@ shared URL are merged in via preProcessSnapshot
 type bookmarks = IOptionalIType<IArrayType<IModelType<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
 // code
 bookmarks: types.optional(types.array(LabeledRegionModel), () =>
-        JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
+        localStorageGetJSON(localStorageKeyF(), []),
       )
 ```
 
@@ -260,7 +260,7 @@ type setSelectedBookmarks = (bookmarks: IExtendedLabeledRegionModel[]) => void
 #### action: setBookmarkedRegions
 
 ```ts
-type setBookmarkedRegions = (regions: IMSTArray<IModelType<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>) => void
+type setBookmarkedRegions = (regions: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>>>[]) => void
 ```
 
 #### action: setBookmarkHighlightsVisible

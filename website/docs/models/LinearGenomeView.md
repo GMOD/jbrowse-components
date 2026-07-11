@@ -140,7 +140,6 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [visibleLocStrings](#getter-visiblelocstrings)                           | Getters    | a single "combo-locstring" representing all the regions visible on the screen                                                                                                                                                                                                                                                                                                                                                                           |
 | [coarseVisibleLocStrings](#getter-coarsevisiblelocstrings)               | Getters    | same as visibleLocStrings, but only updated every 500ms                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [coarseTotalBpDisplayStr](#getter-coarsetotalbpdisplaystr)               | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [effectiveBpPerPx](#getter-effectivebpperpx)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [effectiveTotalBp](#getter-effectivetotalbp)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [effectiveTotalBpDisplayStr](#getter-effectivetotalbpdisplaystr)         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [centerLineInfo](#getter-centerlineinfo)                                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -1092,12 +1091,6 @@ type visibleBp = number
 
 ```ts
 type coarseTotalBpDisplayStr = string
-```
-
-#### getter: effectiveBpPerPx
-
-```ts
-type effectiveBpPerPx = number
 ```
 
 #### getter: effectiveTotalBp

@@ -18,8 +18,13 @@ interface Props {
   rawMarkdown?: string
 }
 
-const { title, currentSlug, description, toc = [], rawMarkdown = '' } =
-  Astro.props
+const {
+  title,
+  currentSlug,
+  description,
+  toc = [],
+  rawMarkdown = '',
+} = Astro.props
 
 const allDocs = await getCollection('docs')
 const sidebar = buildSidebar(allDocs, baseUrl)

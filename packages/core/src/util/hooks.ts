@@ -73,7 +73,11 @@ export function useWidthSetter(view: {
   return ref
 }
 
-function readLocalStorage<T>(key: string, initialValue: T, enabled: boolean): T {
+function readLocalStorage<T>(
+  key: string,
+  initialValue: T,
+  enabled: boolean,
+): T {
   if (typeof window === 'undefined' || !enabled) {
     return initialValue
   }

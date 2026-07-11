@@ -31,6 +31,7 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 | [autoscaleType](#getter-autoscaletype)               | Getters    |                                    |
 | [numStdDev](#getter-numstddev)                       | Getters    |                                    |
 | [scatterPointSize](#getter-scatterpointsize)         | Getters    |                                    |
+| [lineWidth](#getter-linewidth)                       | Getters    |                                    |
 | [summaryScoreMode](#getter-summaryscoremode)         | Getters    |                                    |
 | [renderingType](#getter-renderingtype)               | Getters    |                                    |
 | [minScore](#getter-minscore)                         | Getters    |                                    |
@@ -47,6 +48,7 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 | [setRenderingType](#action-setrenderingtype)         | Actions    |                                    |
 | [setSummaryScoreMode](#action-setsummaryscoremode)   | Actions    |                                    |
 | [setScatterPointSize](#action-setscatterpointsize)   | Actions    |                                    |
+| [setLineWidth](#action-setlinewidth)                 | Actions    |                                    |
 | [setAutoscale](#action-setautoscale)                 | Actions    |                                    |
 | [isCacheValid](#action-iscachevalid)                 | Actions    | Strict zoom equality: see adr-008. |
 
@@ -136,6 +138,12 @@ type numStdDev = number
 
 ```ts
 type scatterPointSize = number
+```
+
+#### getter: lineWidth
+
+```ts
+type lineWidth = number
 ```
 
 #### getter: summaryScoreMode
@@ -250,6 +258,12 @@ type setSummaryScoreMode = (val: string) => void
 
 ```ts
 type setScatterPointSize = (val?: number | undefined) => void
+```
+
+#### action: setLineWidth
+
+```ts
+type setLineWidth = (val?: number | undefined) => void
 ```
 
 #### action: setAutoscale

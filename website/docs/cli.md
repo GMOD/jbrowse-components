@@ -254,6 +254,15 @@ Options:
 
       --config               Any extra config settings to add to a track
 
+      --color                Track color: a plain CSS color or a jexl callback.
+                             Merged into displayDefaults
+
+      --height               Track display height in pixels. Merged into
+                             displayDefaults
+
+      --displayDefaults      Inline JSON merged into the track displayDefaults
+                             (labels, mouseover, jexlFilters, etc.)
+
       --target               Path to config file in JB2 installation to write
                              out to
 
@@ -280,15 +289,21 @@ Options:
 Notes:
 
 --load controls how the data file is placed relative to config.json: copy, move,
-or symlink it into the install directory, or inPlace to reference it where it
-already sits (use inPlace for URLs or pre-staged files). The matching index
-(.bai/.csi/.tbi/.fai) is inferred from the data file name; pass --indexFile when
-it differs.
+or symlink it into the install directory, or inPlace to reference a pre-staged
+local file where it already sits. Omit --load entirely for URLs. The matching
+index (.bai/.csi/.tbi/.fai) is inferred from the data file name; pass
+--indexFile when it differs.
 
 --config takes inline JSON (not a file path) that is merged into the generated
 track config, so you can set fields the dedicated flags do not cover, e.g.
 --config '{"metadata":{"skipTextIndex":true}}' to exclude the track from jbrowse
 text-index.
+
+--color and --height set the two most common appearance settings without writing
+JSON. Wrap the value in single quotes and use double quotes inside a jexl
+callback so nothing needs escaping, e.g. --color
+'jexl:feature.strand==1?"blue":"red"'. --displayDefaults takes inline JSON for
+any other appearance setting (labels, mouseover, jexlFilters).
 
 For synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target — the
 reverse of the minimap2/nucmer input order.
@@ -312,6 +327,9 @@ $ jbrowse add-track https://mywebsite.com/my.bam
 
 # --load inPlace adds a track without doing file operations
 $ jbrowse add-track /url/relative/path.bam --load inPlace
+
+# color a track by strand and set its height (no escaping: single-quote the value, double-quote inside the jexl)
+$ jbrowse add-track genes.gff3.gz --load copy --color 'jexl:feature.strand==1?"blue":"red"' --height 200
 ```
 
 ## jbrowse text-index

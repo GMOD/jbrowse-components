@@ -22,11 +22,8 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | [trackName](#getter-trackname)                                   | Getters    |                                                                                                                       |
 | [uris](#getter-uris)                                             | Getters    |                                                                                                                       |
 | [isFtp](#getter-isftp)                                           | Getters    |                                                                                                                       |
-| [isRelativeTrackUrl](#getter-isrelativetrackurl)                 | Getters    |                                                                                                                       |
-| [isRelativeIndexUrl](#getter-isrelativeindexurl)                 | Getters    |                                                                                                                       |
 | [isRelativeUrl](#getter-isrelativeurl)                           | Getters    |                                                                                                                       |
 | [wrongProtocol](#getter-wrongprotocol)                           | Getters    |                                                                                                                       |
-| [unsupported](#getter-unsupported)                               | Getters    |                                                                                                                       |
 | [adapterHintNotConfigurable](#getter-adapterhintnotconfigurable) | Getters    | Returns true if the user selected an adapter from the dropdown but the extension point couldn't build a config for it |
 | [assembly](#getter-assembly)                                     | Getters    |                                                                                                                       |
 | [trackAdapterType](#getter-trackadaptertype)                     | Getters    |                                                                                                                       |
@@ -117,18 +114,6 @@ type uris = (string | undefined)[]
 type isFtp = boolean
 ```
 
-#### getter: isRelativeTrackUrl
-
-```ts
-type isRelativeTrackUrl = boolean
-```
-
-#### getter: isRelativeIndexUrl
-
-```ts
-type isRelativeIndexUrl = boolean
-```
-
 #### getter: isRelativeUrl
 
 ```ts
@@ -139,12 +124,6 @@ type isRelativeUrl = boolean
 
 ```ts
 type wrongProtocol = boolean
-```
-
-#### getter: unsupported
-
-```ts
-type unsupported = boolean
 ```
 
 #### getter: assembly

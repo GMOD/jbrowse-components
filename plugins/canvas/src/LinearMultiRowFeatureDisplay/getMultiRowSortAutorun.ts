@@ -12,7 +12,7 @@ interface SortAutorunSelf extends IAnyStateTreeNode {
   sortRowsByValueAt: (refName: string, pos: number) => void
 }
 
-// Declarative one-shot counterpart to the right-click "Sort rows by value here"
+// Declarative one-shot counterpart to the right-click "Sort rows by color here"
 // (same launch-spec pattern as getMultiRowClusterAutorun / LinearGenomeView
 // `init`): a session/figure sets `sortRowsBy`, and the sort applies as soon as
 // the region containing that position is loaded — then the flag clears so a

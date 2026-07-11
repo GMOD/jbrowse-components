@@ -237,6 +237,7 @@ and docs.
 [autoscaleType](../wigglescoreconfigmixin#getter-autoscaletype),
 [numStdDev](../wigglescoreconfigmixin#getter-numstddev),
 [scatterPointSize](../wigglescoreconfigmixin#getter-scatterpointsize),
+[lineWidth](../wigglescoreconfigmixin#getter-linewidth),
 [summaryScoreMode](../wigglescoreconfigmixin#getter-summaryscoremode),
 [renderingType](../wigglescoreconfigmixin#getter-renderingtype),
 [minScore](../wigglescoreconfigmixin#getter-minscore),
@@ -255,6 +256,7 @@ and docs.
 [setRenderingType](../wigglescoreconfigmixin#action-setrenderingtype),
 [setSummaryScoreMode](../wigglescoreconfigmixin#action-setsummaryscoremode),
 [setScatterPointSize](../wigglescoreconfigmixin#action-setscatterpointsize),
+[setLineWidth](../wigglescoreconfigmixin#action-setlinewidth),
 [setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
 [isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
 

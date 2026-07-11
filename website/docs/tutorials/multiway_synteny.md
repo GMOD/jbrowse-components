@@ -110,8 +110,8 @@ The `blockAssemblies` slot names every column in order (column 0 first), and
 
 `bedLocations` is a per-column array and `blockAssemblies` names those columns —
 neither is expressible as a `jbrowse add-track` flag. To add this track from the
-CLI, save the JSON above to a file and hand it to `jbrowse add-track-json`, which
-inserts a full track config verbatim (any adapter shape works):
+CLI, save the JSON above to a file and hand it to `jbrowse add-track-json`,
+which inserts a full track config verbatim (any adapter shape works):
 
 ```bash
 jbrowse add-track-json blocks_track.json --out /path/to/jb2

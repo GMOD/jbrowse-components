@@ -45,12 +45,10 @@ async function buildExport(
   // to a self-contained export rather than failing the whole operation —
   // planWebExport treats a missing baseConfig as "no usable base".
   const baseConfig = sourceConfigUrl
-    ? await fetchJson<HostedBaseConfig>(sourceConfigUrl).catch(
-        (e: unknown) => {
-          console.error(e)
-          return undefined
-        },
-      )
+    ? await fetchJson<HostedBaseConfig>(sourceConfigUrl).catch((e: unknown) => {
+        console.error(e)
+        return undefined
+      })
     : undefined
   const plan = planWebExport(snapshot, baseConfig)
   const { sessionParam, password, plaintext } = await encodeSessionParam(
@@ -70,7 +68,9 @@ function PortabilityWarning({ plan }: { plan: WebExportPlan }) {
   // local files not attached to a track — a local assembly sequence, say —
   // can't be dropped as a track; the whole session won't open without them
   const sessionFiles = [
-    ...new Set(plan.report.nonPortable.filter(l => !l.trackId).map(l => l.name)),
+    ...new Set(
+      plan.report.nonPortable.filter(l => !l.trackId).map(l => l.name),
+    ),
   ]
   return droppedTracks.length || sessionFiles.length ? (
     <Alert severity="warning">
@@ -78,9 +78,9 @@ function PortabilityWarning({ plan }: { plan: WebExportPlan }) {
         <div>
           {droppedTracks.length} track{droppedTracks.length === 1 ? '' : 's'}{' '}
           left out of the export because{' '}
-          {droppedTracks.length === 1 ? 'it references' : 'they reference'} local
-          files: {droppedTracks.join(', ')}. Host these files at a URL to include
-          them.
+          {droppedTracks.length === 1 ? 'it references' : 'they reference'}{' '}
+          local files: {droppedTracks.join(', ')}. Host these files at a URL to
+          include them.
         </div>
       ) : null}
       {sessionFiles.length ? (

@@ -82,7 +82,8 @@ export async function run(args?: string[]) {
     },
     height: {
       type: 'string',
-      description: 'Track display height in pixels. Merged into displayDefaults',
+      description:
+        'Track display height in pixels. Merged into displayDefaults',
     },
     displayDefaults: {
       type: 'string',
