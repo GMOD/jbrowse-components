@@ -1,4 +1,4 @@
-import { parseError } from '../parseError.ts'
+import { parseError } from './parseError.ts'
 
 describe('parseError', () => {
   it('returns undefined snapshotValue for non-MST errors', () => {

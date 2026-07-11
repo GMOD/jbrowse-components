@@ -2,9 +2,9 @@ import '@testing-library/jest-dom'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
-import CascadingMenuButton from '../CascadingMenuButton.tsx'
+import CascadingMenuButton from './CascadingMenuButton.tsx'
 
-import type { MenuItem } from '../MenuTypes.ts'
+import type { MenuItem } from './MenuTypes.ts'
 
 jest.spyOn(console, 'warn').mockImplementation(() => {})
 
@@ -31,7 +31,7 @@ async function setup(items: MenuItem[] = menuItems) {
   return user
 }
 
-describe('CascadingMenu', () => {
+describe('CascadingMenuButton', () => {
   it('should open menu via keyboard', async () => {
     const user = await setup()
     await user.tab()
