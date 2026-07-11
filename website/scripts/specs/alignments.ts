@@ -119,9 +119,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               // lines stay visible.
               arcColorByType: 'insertSizeAndOrientation',
               colorBy: { type: 'insertSizeAndOrientation' },
-              // legend off: it was obtrusive and labeled a red category
-              // "deletion", an inference the cloud shouldn't assert (reviewer)
-              showLegend: false,
+              // legend on (reviewer): at this whole-contig zoom-out the cloud
+              // leaves enough empty space that the floating legend keys the
+              // insert-size/orientation colors without obscuring the reads
+              showLegend: true,
               coverageHeight: 100,
               readConnectionsHeight: 100,
               height: 600,

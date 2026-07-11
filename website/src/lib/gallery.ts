@@ -154,12 +154,6 @@ export const gallerySections: readonly GallerySection[] = [
           'A ~500bp insertion in SKBR3 PacBio reads. "Read vs reference" opens the alignment as a synteny view (lower panel) where the diagonal gap marks the insertion; drag to extract any read\'s sequence.',
       },
       {
-        label: 'Breakpoint split view (multi-hop split read)',
-        spec: 'gallery/breakpoint_multihop',
-        description:
-          'A breakpoint split view connecting one split read across more than two locations.',
-      },
-      {
         label: 'Inversion ("single row" breakpoint view)',
         session:
           '?config=test_data%2Fconfig_demo.json&session=share-sA7riIQWhJ&password=3pkHd',
@@ -285,13 +279,6 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'hic_track',
         description:
           'A Hi-C contact matrix from a .hic file (Juicebox format) over ~11 Mb of chr8, with the RefSeq gene track above.',
-      },
-      {
-        label: 'Hi-C loops and enhancer–gene arcs (ENCODE GM12878)',
-        spec: 'encode_hic_loops_arcs',
-        guide: 'user_guides/hic_track',
-        description:
-          'ENCODE GM12878 HiCCUPS loop calls and EPIraction enhancer–gene predictions as BEDPE paired-arc tracks over the intact Hi-C contact matrix (hg38); the loop arc reappears as the matrix corner dot below it.',
       },
       {
         label: 'ChromHMM state painting (Roadmap)',

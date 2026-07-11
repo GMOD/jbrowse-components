@@ -45,8 +45,6 @@ ship as [BEDPE](/docs/config_guides/file_types/) files with two endpoints per
 line. JBrowse renders them in a paired-arc display, one arc per call, so you can
 stack the called loops directly above the matrix they came from.
 
-<Figure src="/img/encode_hic_loops_arcs.png" caption="ENCODE GM12878 (hg38, chr3:122.48–122.78Mb), top to bottom: RefSeq genes, HiCCUPS loop calls (ENCFF560LOS), EPIraction enhancer–gene predictions (ENCFF266FGY), and the intact Hi-C matrix (ENCFF484NFB). The HiCCUPS loop arc joins the two shaded promoter anchors and reappears as the off-diagonal corner dot in the matrix directly below it. Each call is drawn as one thin arc between its anchors; stroke width is set per track from the track menu." />
-
 Load a BEDPE file like any other track (paste its URL into "Add a track"), then
 add the `.hic` matrix as a separate track and reorder so the arcs sit above it.
 Arc thickness is adjustable from the track menu: open **Arc width** and drag the

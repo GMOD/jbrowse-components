@@ -31,9 +31,7 @@ async function startObserver(page: Page) {
     const counts = new Map<string, number>()
     const labelFor = (node: Node) => {
       let el: Element | null =
-        node.nodeType === 1
-          ? (node as Element)
-          : (node.parentElement)
+        node.nodeType === 1 ? (node as Element) : node.parentElement
       for (let i = 0; el && i < 12; i++) {
         const testid = el.dataset.testid
         if (testid) {
@@ -61,8 +59,9 @@ async function startObserver(page: Page) {
       attributes: true,
       characterData: true,
     })
-    ;(window as unknown as { __churn: { counts: Map<string, number> } }).__churn =
-      { counts }
+    ;(
+      window as unknown as { __churn: { counts: Map<string, number> } }
+    ).__churn = { counts }
     ;(window as unknown as { __churnObs: MutationObserver }).__churnObs = obs
   })
 }

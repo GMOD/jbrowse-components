@@ -86,24 +86,20 @@ export const qtlSpecs: ScreenshotSpec[] = [
     name: 'qtl/bxd_tyrp1_locus',
     url: lgvSession('test_data/config_bxd.json', {
       assembly: 'mm10',
-      // ~48 Mb centered on Tyrp1 so the full width of the coat-color
-      // association peak is visible against more flanking background, while
-      // still resolving the individual B/D recombination breakpoints the
-      // whole-chromosome painting blurs together
-      loc: 'chr4:57,000,000-105,000,000',
+      // whole chr4 (~156 Mb): the coat-color association reads as one localized
+      // peak against the full chromosome background, and the B/D haplotype
+      // painting fills the chromosome so Tyrp1's position under the peak is
+      // legible at a glance
+      loc: 'chr4',
+      // no gene track at this whole-chromosome zoom: individual genes aren't
+      // resolvable across 156 Mb (and the track would just hit its
+      // feature-density limit), so the Manhattan peak + haplotype painting carry
+      // the figure
       tracks: [
         {
           trackId: 'bxd_gwas_coatcolor_mm10',
           type: 'LinearManhattanDisplay',
           height: 200,
-        },
-        {
-          trackId: 'mm10_ncbi_refseq',
-          // gene-glyph-only + short: a context strip at this wide zoom, not a
-          // dense mRNA/exon band
-          type: 'LinearBasicDisplay',
-          height: 90,
-          showOnlyGenes: true,
         },
         {
           trackId: 'bxd_chromosome_painting_mm10',
@@ -115,8 +111,8 @@ export const qtlSpecs: ScreenshotSpec[] = [
     }),
     readySelector: '[data-testid="manhattan-display-done"]',
     readyTimeout: 90000,
-    // manhattan(200) + gene strip(90) + full painting(460) + headers clear crop
-    viewportHeight: 1060,
+    // manhattan(200) + full painting(460) + headers clear crop
+    viewportHeight: 950,
     settleMs: 16000,
     annotations: [
       {

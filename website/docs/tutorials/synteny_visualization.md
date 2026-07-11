@@ -154,8 +154,6 @@ deterministic color. Coloring every strain's gene track by the gene symbol
 standardized symbols across strains) makes orthologous genes share a color in
 every panel, so a gene's synteny is legible by color alone.
 
-<Figure caption="The same three-strain H. pylori stack with each gene track colored by gene symbol via Color by attribute (jexl:randomColor(get(feature,'gene'))). Orthologs share a color across strains — prfB (indigo), fliR (olive), efp (green), psel (magenta), lysS (red) — while strain-specific genes with no shared symbol take their own colors." src="/img/sv_synteny/linear_synteny_genes_colored.png" />
-
 ## Troubleshooting
 
 | Problem                                          | Possible cause                                  | Solution                                                                                                                |

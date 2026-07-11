@@ -312,19 +312,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       // wider window around the SNRPN promoter / PWS-IC so the DMR sits in
-      // gene-body/flanking context, with the CpG-island DMR highlighted; the
-      // per-haplotype red-vs-blue methylation contrast is still clear
+      // gene-body/flanking context; the per-haplotype red-vs-blue methylation
+      // contrast is clear, and the CpG-island track above marks the DMR
       loc: 'chr15:24,948,000-24,962,000',
-      highlight: [
-        {
-          refName: 'chr15',
-          start: 24_954_600,
-          end: 24_956_050,
-          assemblyName: 'hg38',
-          label: 'SNRPN promoter (PWS-IC)',
-          color: 'rgba(214,40,40,0.13)',
-        },
-      ],
       tracks: [
         'cpgisland_ucsc_hg38',
         {
@@ -347,5 +337,23 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 15000,
     viewportHeight: 880,
+    // label the two haplotype bands the groupBy HP split produces (reviewer):
+    // HP:1 reads are methylated (red) across the DMR, HP:2 unmethylated (blue)
+    annotations: [
+      {
+        type: 'text',
+        x: 170,
+        y: 505,
+        fontSize: 20,
+        text: 'reads tagged HP:1',
+      },
+      {
+        type: 'text',
+        x: 170,
+        y: 700,
+        fontSize: 20,
+        text: 'reads tagged HP:2',
+      },
+    ],
   },
 ]
