@@ -103,6 +103,9 @@ export const bigwigSpecs: ScreenshotSpec[] = [
               gcMode: 'skew',
               windowSize: 20000,
               windowDelta: 2000,
+              // taller so the two-arm skew and its zero-crossings at the origin
+              // and terminus read clearly across the whole genome
+              height: 160,
             },
           ],
         },
@@ -112,6 +115,28 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hpylori_26695',
           loc: 'NC_018939.1',
+          // GC skew flips sign at the two replication landmarks: cumulative-skew
+          // minimum ~1.636 Mb (≈ coordinate 0, the oriC near dnaA) and maximum
+          // ~0.814 Mb (the terminus). Bands mark both so the sign transition is
+          // findable (reviewer: can we find the replication origin?)
+          highlight: [
+            {
+              refName: 'NC_018939.1',
+              start: 1_628_000,
+              end: 1_643_000,
+              assemblyName: 'hpylori_26695',
+              label: 'Origin (oriC)',
+              color: 'rgba(30,132,132,0.16)',
+            },
+            {
+              refName: 'NC_018939.1',
+              start: 806_000,
+              end: 822_000,
+              assemblyName: 'hpylori_26695',
+              label: 'Terminus',
+              color: 'rgba(214,40,40,0.14)',
+            },
+          ],
           tracks: ['gc_content_hpylori', 'gc_skew_hpylori'],
         },
       ],
@@ -119,8 +144,9 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     readyText: 'GC content',
     readyTimeout: 60000,
     settleMs: 8000,
-    // two short tracks; crop off the empty viewport below them
-    crop: { x: 0, y: 0, width: 1500, height: 430 },
+    // content(~100) + taller skew(160) + headers/ruler/overview; crop off the
+    // empty viewport below the two tracks
+    crop: { x: 0, y: 0, width: 1500, height: 560 },
   },
 
   // Whole-genome coverage profile from a single BigWig (COLO829 tumor MinION

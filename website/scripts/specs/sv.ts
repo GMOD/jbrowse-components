@@ -507,12 +507,18 @@ export const svSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          // ~16kb centered on the left breakpoint (chr19:41,797,752): reads from
+          // ~35kb centered on the left breakpoint (chr19:41,797,752): reads from
           // the inverted haplotype clip at the junction and continue as a
           // reverse-strand supplementary segment, so the strand flip lands mid-view
-          loc: 'chr19:41,790,000-41,806,000',
+          // with more flanking context (reviewer: zoom out more)
+          loc: 'chr19:41,780,000-41,815,000',
           tracks: [
-            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            {
+              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+              type: 'LinearVariantDisplay',
+              // compact the callset lane so the read pileup dominates (reviewer)
+              height: 40,
+            },
             {
               trackId: 'HG00637.ont.vienna.hg38',
               type: 'LinearAlignmentsDisplay',
@@ -609,9 +615,9 @@ export const svSpecs: ScreenshotSpec[] = [
   // The chr3<->chr13 translocation that the chord in the SV inspector
   // points at — benchmark call SV_20 joins chr3:139,976,414 to chr13:114,353,244.
   // Built declaratively as a BreakpointSplitView (init.views resolves to the two
-  // child LGVs after attach), each panel showing the 116x tumor PacBio HiFi reads
-  // in Super-compact mode (featureHeight 1 / spacing 0, reviewer).
-  // showIntraviewLinks draws the
+  // child LGVs after attach), each panel showing the somatic-SV benchmark call
+  // (compact VCF lane) above the 116x tumor PacBio HiFi reads in Super-compact
+  // mode (featureHeight 1 / spacing 0, reviewer). showIntraviewLinks draws the
   // black splines between reads that map partially to each side of the junction.
   // The PacBio BAM is the full 118 GB NCBI ftp-trace file (no rehosted slice
   // exists for this locus), so the ~26 MB BAI index downloads on every fresh-tab
@@ -634,6 +640,14 @@ export const svSpecs: ScreenshotSpec[] = [
               loc: 'chr3:139,971,414-139,981,414',
               assembly: 'GRCh38_GIABv3',
               tracks: [
+                // the somatic-SV benchmark call, so the junction the reads
+                // support is anchored to its benchmark BND on both panels
+                {
+                  trackId:
+                    'GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf',
+                  type: 'LinearVariantDisplay',
+                  height: 40,
+                },
                 {
                   trackId:
                     'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
@@ -650,6 +664,12 @@ export const svSpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId:
+                    'GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf',
+                  type: 'LinearVariantDisplay',
+                  height: 40,
+                },
+                {
+                  trackId:
                     'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
                   featureHeight: 1,
                   featureSpacing: 0,
@@ -664,7 +684,7 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG008-T_PacBio',
     readyTimeout: 180000,
-    viewportHeight: 900,
+    viewportHeight: 1000,
     settleMs: 25000,
   },
 
@@ -970,46 +990,18 @@ export const svSpecs: ScreenshotSpec[] = [
 
   // The normalized CNV signal built in the "Build CNV tracks" tutorial section:
   // a single log2(tumor/normal) coverage ratio bigWig across all chromosomes,
-  // over the benchmark CNV BED. Unlike the two independently-median-normalized
-  // indexcov tracks above, one log2-ratio track reads directly as copy number
-  // (0 = the genome-wide median, + = gain, - = loss) so gains/losses line up
-  // with the called intervals without eyeballing two bands. Domain capped to a
-  // symmetric -2..2 so gains/losses read around the 0 line.
+  // over the benchmark CNV BED. One log2-ratio track reads directly as copy
+  // number (0 = the genome-wide median, + = gain, - = loss) so gains/losses line
+  // up with the called intervals. Domain capped to a symmetric -2..2 so
+  // gains/losses read around the 0 line. The redundant indexcov coverage band
+  // and the BAF track were dropped here (reviewer): the log2 ratio is the depth
+  // signal, and BAF is taught at chromosome scale in cnv_log2_baf below. Rendered
+  // wide so the per-chromosome copy-number structure resolves.
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_log2ratio_genome',
     url: cgiabUrl({
-      sessionTracks: [
-        HG008_LOG2RATIO_TRACK,
-        HG008_BAF_TRACK,
-        {
-          type: 'MultiQuantitativeTrack',
-          trackId: 'hg008_cnv_indexcov',
-          name: 'HG008 normal vs tumor coverage (indexcov)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'MultiWiggleAdapter',
-            subadapters: [
-              {
-                name: 'HG008-N (normal)',
-                type: 'BigWigAdapter',
-                bigWigLocation: {
-                  uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
-                  locationType: 'UriLocation',
-                },
-              },
-              {
-                name: 'HG008-T (tumor)',
-                type: 'BigWigAdapter',
-                bigWigLocation: {
-                  uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
-                  locationType: 'UriLocation',
-                },
-              },
-            ],
-          },
-        },
-      ],
+      sessionTracks: [HG008_LOG2RATIO_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -1018,24 +1010,12 @@ export const svSpecs: ScreenshotSpec[] = [
           loc: 'chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY',
           tracks: [
             {
-              // raw normalized coverage (median≈1 → copy number) for both
-              // samples in one band, the signal log2(tumor/normal) is built from
-              trackId: 'hg008_cnv_indexcov',
-              type: 'MultiLinearWiggleDisplay',
-              defaultRendering: 'multiscatter',
-              resolution: 10,
-              minScore: 0,
-              maxScore: 2.5,
-              height: 160,
-            },
-            {
               trackId: 'hg008_log2ratio',
               type: 'LinearWiggleDisplay',
               // scatter of the per-bin average (not the default filled/whisker
               // xyplot) reads copy-number gains/losses as a clean point band,
               // the conventional CNV depth-ratio plot. useBicolor:false keeps it
-              // a single color: gains/losses read off the 0 line by position, so
-              // red/blue stays free to mean tumor/normal on the indexcov track
+              // a single color; gains/losses read off the 0 line by position
               defaultRendering: 'scatter',
               useBicolor: false,
               summaryScoreMode: 'avg',
@@ -1045,25 +1025,10 @@ export const svSpecs: ScreenshotSpec[] = [
               resolution: 10,
               minScore: -2,
               maxScore: 2,
-              height: 160,
+              height: 220,
               // horizontal gridlines behind the scatter so the log2=0 baseline
               // and the ±1 copy-number steps are readable (reviewer)
               displayCrossHatches: true,
-            },
-            {
-              trackId: 'hg008_baf',
-              type: 'LinearWiggleDisplay',
-              // raw 0..1 BAF as a fine-resolution scatter preserving the
-              // per-bin spread: LOH arms split into symmetric upper/lower
-              // bands off the central 0.5 het line, balanced regions stay a
-              // single 0.5 line. resolution:10 keeps bins small enough that
-              // the split survives at genome scale.
-              defaultRendering: 'scatter',
-              scatterPointSize: 1,
-              resolution: 10,
-              minScore: 0,
-              maxScore: 1,
-              height: 120,
             },
             'hg008_cnv_calls',
           ],
@@ -1072,8 +1037,8 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr1',
     readyTimeout: 90000,
-    viewportWidth: 1500,
-    viewportHeight: 860,
+    viewportWidth: 1900,
+    viewportHeight: 520,
     settleMs: 25000,
   },
 

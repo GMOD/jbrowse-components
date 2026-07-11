@@ -1,13 +1,14 @@
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// ENCODE GM12878 chromatin interactions rendered as arcs over the intact Hi-C
-// contact matrix (test_data/encode_hic_loops.json). The config's own
-// defaultSession opens tight (chr3:122.48-122.78Mb) so the one strong HiCCUPS
-// loop (ENCFF560LOS) joins two promoter anchors ~125kb apart and the SAME
-// contact reads as the off-diagonal corner dot in the matrix directly below the
-// arc apex; two `init.highlight` bands label the anchors. The .hic matrix
-// (ENCFF484NFB) uses useLogScale + resolutionBias:3 so the loop dot reads above
-// the diagonal at this zoom. All three ENCODE files stream from the
+// ENCODE GM12878 chromatin loops rendered as arcs over the intact Hi-C contact
+// matrix (test_data/encode_hic_loops.json). The config's own defaultSession
+// opens on a ~2Mb window (chr3:121.6-123.6Mb) so the HiCCUPS loops (ENCFF560LOS)
+// read against the broader TAD structure and each arc's contact reads as an
+// off-diagonal dot in the matrix directly below it; two `init.highlight` bands
+// label the PARP9/PARP14 promoter anchors. The .hic matrix (ENCFF484NFB) uses
+// useLogScale so the loop dots read above the diagonal. The enhancer-gene
+// prediction track is intentionally left out — the figure is just the Hi-C
+// matrix and the loops called from it. The ENCODE files stream from the
 // encode-public S3 bucket (CORS-enabled), so no session override is needed — a
 // bare `?config=` both captures locally and opens live on jbrowse.org.
 //
@@ -34,7 +35,7 @@ export const hicSpecs: ScreenshotSpec[] = [
         y: 300,
         maxWidth: 330,
         fontSize: 16,
-        text: 'The HiCCUPS loop (arc, top) is the off-diagonal dot in the contact matrix below.',
+        text: 'HiCCUPS loops (arcs, top) are the off-diagonal dots in the contact matrix below.',
       },
     ],
   },

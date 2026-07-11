@@ -51,10 +51,10 @@
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
-    "status": "good",
-    "note": "FIXED: removed the obtrusive floating legend (which also carried the red \"deletion\" color-legend assertion); added one concise annotation naming the pink short-insert cluster. Regenerated.",
-    "reviewedAt": "2026-07-11T03:42:23.000Z",
-    "hash": "c3ca4ca19d35d772ebe886ace2b1b3c5b1be9983"
+    "status": "bad",
+    "note": "can you add legend? you can hit the zoom out button manually so it zooms out to maximum level and then the legend might not obstruct as much",
+    "reviewedAt": "2026-07-11T19:36:24.932Z",
+    "hash": "4a707b96b6b25adee0a7c16fec80bb0dcfb2989f"
   },
   "dotplot": {
     "name": "dotplot",
@@ -202,8 +202,8 @@
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
     "status": "bad",
-    "note": " ideally use real normalized depth, not indexcov. might just skip for now, pending work on sv_cgiab/cnv_log2ratio_genome",
-    "reviewedAt": "2026-07-08T00:55:47.022Z",
+    "note": "DEFERRED (data-blocked): this is the intentional raw-coverage sanity-check figure in the walkthrough. Real normalized depth (not indexcov) needs mosdepth per-sample coverage normalized to median, which requires labserver compute; only indexcov (normal) + mismatched raw bigwigs are hosted. Reviewer said skip for now.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
     "hash": "d8634221ed031dfd15a0b031331813face20f827"
   },
   "sv_cgiab/dotplot_result": {
@@ -242,8 +242,9 @@
   "add_track_form": {
     "name": "add_track_form",
     "status": "good",
-    "note": "fixed: arrow now anchors to the \"Enter track data\" heading and stops short (dx:-30) instead of pointing into the middle of the widget; regenerated (forced)",
-    "reviewedAt": "2026-06-21T17:36:31.000Z"
+    "note": "screenshot is too 'small' now. also, the '1' label in the add track is kind of confusing.  ",
+    "reviewedAt": "2026-07-11T18:55:45.932Z",
+    "hash": "4b287300eb09ec4f97dd07d55453fd32ac86d768"
   },
   "alignments_soft_clipped_menu": {
     "name": "alignments_soft_clipped_menu",
@@ -482,8 +483,9 @@
   "hic_track": {
     "name": "hic_track",
     "status": "good",
-    "note": "fixed: added trackLabels:offset so the Hi-C display fills full width; regenerated",
-    "reviewedAt": "2026-06-21T17:36:31.000Z"
+    "note": "Not reproduced: the Hi-C color-scale legend defaults to false and the regenerated PNG shows no legend (the render was byte-stable / kept). No legend is shown by default.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "6e172702a06343c259df7579092bd5c3ab6c25eb"
   },
   "hierarchical/collapse_subcategories-fs8": {
     "name": "hierarchical/collapse_subcategories-fs8",
@@ -639,8 +641,9 @@
   "gwas/locuszoom_ld": {
     "name": "gwas/locuszoom_ld",
     "status": "good",
-    "note": "link to the example-site pan-ukbb examples too  DONE: Added link to the live embedded LocusZoom-style LD example (jbrowse.org/storybook/lgv/locus-zoom-ld) in gwas_track.md.",
-    "reviewedAt": "2026-06-21T22:46:23.000Z"
+    "note": "FIXED: enlarged Manhattan points (scatterPointSize 4->7) and added a compact NCBI RefSeq gene track anchoring the peak to STAT1/STAT4 (reviewer). Added the ncbi_gff_hg19 track to test_data/config_gwas.json (shares hg19 aliases with config_demo). Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "7f7105d3ac2544a64a3918f2db2efcf7672bb021"
   },
   "gwas/manhattan": {
     "name": "gwas/manhattan",
@@ -657,9 +660,9 @@
   "methylation/colo829_cram_and_bedmethyl": {
     "name": "methylation/colo829_cram_and_bedmethyl",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T21:04:16.372Z",
-    "hash": "3bed0b03745189bb685f3e501cd8c3596e4307f1"
+    "note": "FIXED: decluttered per \"chaotic screenshot\" - hid the sparse 5hmC (h) calls on the reads (the magenta mixed with dense red 5mC read as noise) and made the pileup a compact fixed-height band. The aggregate bedMethyl below still teaches both h and m subtracks. Doc caption updated. Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "7b382ecb742bb2bf8b0bc46a2fddfc6603aef30f"
   },
   "methylation/per_read_mod_bam": {
     "name": "methylation/per_read_mod_bam",
@@ -841,8 +844,8 @@
     "name": "alignments/modifications2",
     "status": "good",
     "note": "FIXED: removed the crossing arrows (each CRAM row is now labeled with its color mode and the two menu items are boxed, so they map by name); narrowed viewport 2400->2000; trimmed blurbs. Regenerated.",
-    "reviewedAt": "2026-07-11T03:42:23.000Z",
-    "hash": "d61c750146f309c57a3683b756cff9aaf3405beb"
+    "reviewedAt": "2026-07-11T18:52:11.197Z",
+    "hash": "f0d1dd89c3df7491bdec12b72ffcdd17b1103557"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -861,8 +864,9 @@
   "gene_track_mature_peptides": {
     "name": "gene_track_mature_peptides",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-21T20:39:13.250Z"
+    "note": "FIXED: added showOnlyGenes (reviewer) so the polyprotein collapses to its mature-peptide products. Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "dd328409863447105fc04520f9ea0a8209ecc677"
   },
   "rnaseq/single_read": {
     "name": "rnaseq/single_read",
@@ -879,10 +883,10 @@
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
-    "status": "bad",
-    "note": "potentially add the cgiab benchmark vcf on both levels",
-    "reviewedAt": "2026-07-08T01:11:14.529Z",
-    "hash": "0235370c10a7b28b02a40e2cf992d304f8ec05fb"
+    "status": "good",
+    "note": "FIXED: added the somatic-SV benchmark VCF (compact lane) to both breakpoint-split panels (reviewer), so each panel anchors its reads to the benchmark BND call (SV_20 / SV_190 reciprocal). Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "32e26dfa2c30ad87d79ac7fbe7b3e111ebffcf84"
   },
   "sv_inspector_importform_filtered": {
     "name": "sv_inspector_importform_filtered",
@@ -1143,10 +1147,10 @@
   },
   "sv_cgiab/cnv_log2ratio_genome": {
     "name": "sv_cgiab/cnv_log2ratio_genome",
-    "status": "bad",
-    "note": "the multiwiggle depth should ideally be raw depths not indexcov. can use aws cli to 'aws s3 ls' in cgiab demos folder if it helps. we can also consider using a production grade cnv detector like cnvpytor or an R tool or something to get the best signal to plot. we may not want to do that now because we cant access our labserver to run analysis. we may want to make this screenshot wider. the baf values are also probably confusing for anyone without proper background, and the 'whiskers' are confusing too. also we are not plotting folded b-allele frequency anymore",
-    "reviewedAt": "2026-07-09T22:44:08.617Z",
-    "hash": "673255398b4aef705c4802fea41992993bc4e4b7"
+    "status": "good",
+    "note": "FIXED: dropped the redundant indexcov coverage band and the BAF track (both flagged confusing; BAF is taught at chr3 scale in cnv_log2_baf), leaving a clean whole-genome log2(tumor/normal) ratio scatter over the benchmark CNV calls, rendered wide (1900px). Doc caption updated. Real raw-depth multiwiggle still needs mosdepth on the labserver.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "5bc89fef568d441f048ef4be9caa1aafacb44083"
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
@@ -1165,9 +1169,9 @@
   "gc_content": {
     "name": "gc_content",
     "status": "good",
-    "note": "FIXED: root-caused — LinearGCContentTrackDisplay/LinearGCContentDisplay inherited summaryScoreMode:whiskers from LinearWiggleDisplay, and buildSourceRenderData skips the bicolor pos/neg split entirely in whiskers mode (posColor only), so GC skew rendered monochrome despite useBicolor/bicolorPivot already defaulting correctly. GCContentAdapter never emits real per-bin min/max, so whiskers mode was pointless there anyway — defaulted summaryScoreMode to avg in both display config schemas. Skew now shows the real two-arm blue/red replichore profile. Replication-fork annotation left as a follow-up.",
-    "reviewedAt": "2026-07-08T02:11:50.856Z",
-    "hash": "74958493fbd20d523acbf51a2a285d9148c38a97"
+    "note": "FIXED: view is already whole-genome; made the GC-skew track taller and marked the two replication landmarks where skew flips sign - origin/oriC (~1.636Mb, cumulative-skew min) and terminus (~0.814Mb, cumulative-skew max), computed from the genome. The blue->red two-arm transition is now unmistakable. Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "98f092c3ff4d3bd0fcaa2f738ba4cbb3d482a87d"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
@@ -1201,8 +1205,8 @@
     "name": "multiway_synteny/grape_peach_cacao",
     "status": "good",
     "note": "FIXED (real bug found): the middle row (cacao) was NOT being diagonalized at all — it stayed in raw fai order (I,II,III,IV,IX,V,...). Root cause: runDiagonalize/DiagonalizeSyntenyRpc fetched each level's alignments WITHOUT a targetAssemblyName, so the multi-genome MCScanBlocksAdapter defaulted the mate to the first other assembly (grape) and returned peach-GRAPE alignments for the peach-cacao level; those query refNames matched no cacao region, so diagonalizeRegions left cacao untouched. Threaded targetAssemblyName (the row being reordered) through runDiagonalize -> RPC -> getFeatures, mirroring the render path (executeSyntenyFeaturesAndPositions v2.displayedRegions[0].assemblyName). Now cacao reorders to IV,II,VIII,I,X,VI,VII,III,IX,V (verified live == independent node-script prediction), grape re-diagonalizes to follow. peach-cacao crossing ~56%->36%. Diagnosis: quantified all 6 orders on the real 35k-row grape.blocks — no order removes the residual (transitive peach-cacao + grape ancestral triplication = genuine many-to-one ribbons); a different algorithm does NOT help (both-rows-free barycenter diverges). Prior 'grape-in-middle is a WORSE double-hairball' claim was NOT reproduced — it was masking this bug. PNG regenerated + runDiagonalize.test asserts per-level targetAssemblyName. A truly pristine multi-way figure still wants a conserved-block zoom (clean 1:1:1 locus exists: grape11/peachG7/cacaoIX, rho 1.00/0.68).",
-    "reviewedAt": "2026-07-11T01:48:15.439Z",
-    "hash": "aa3dd53fa7a65cdec1391433a6b98cd64e3ee649"
+    "reviewedAt": "2026-07-11T18:50:47.534Z",
+    "hash": "e37ea10f3bb1194ca78a3b28c49ce8414f3dded1"
   },
   "search_feature_highlight": {
     "name": "search_feature_highlight",
@@ -1214,8 +1218,8 @@
   "feature_height_default_pin": {
     "name": "feature_height_default_pin",
     "status": "good",
-    "note": "FIXED: rewrote the robotic blurb (\"un-pinned tracks follow\") into plain language.",
-    "reviewedAt": "2026-07-10T06:14:04.754Z",
+    "note": "",
+    "reviewedAt": "2026-07-11T18:56:51.171Z",
     "hash": "4201d3fac2adab28d106cb9fcbad350496ee3ee5"
   },
   "display_settings_url_snapshot": {
@@ -1228,9 +1232,9 @@
   "gallery/breakpoint_multihop": {
     "name": "gallery/breakpoint_multihop",
     "status": "good",
-    "note": "FIXED+regen: short (h90) variant lanes.",
-    "reviewedAt": "2026-07-08T23:35:18.206Z",
-    "hash": "dd7108786df067f3dc11e996d559c41d528abf83"
+    "note": "FIXED: removed the VCF breakend track from both panels - just the reads + connecting splines now (reviewer). Trimmed viewportHeight 900->560 to drop the freed whitespace. Regenerated (forced for the height crop).",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "7744b7c05abd016f5267bd26f0c9a1305d42eb3d"
   },
   "gallery/copynumber_clustered": {
     "name": "gallery/copynumber_clustered",
@@ -1270,9 +1274,8 @@
   "gallery/human_mito": {
     "name": "gallery/human_mito",
     "status": "good",
-    "note": "Zoomed from the whole-genome overview to MT-ND3 (NC_012920.1:9,950-10,550) — shortest mt protein-coding gene, one of six whose stop codon is completed by polyadenylation (transl_except in the Note field).",
-    "reviewedAt": "2026-07-07T15:40:14.467Z",
-    "hash": "f5a279ad755d4f6a310e4c71480b0141f2c49a40"
+    "note": "resolved: deleted per reviewer (uninteresting). Removed spec + PNG + the Figure in gene_track.md; the transl_table prose + selenocysteine figure still cover the mitochondrial-code point.",
+    "reviewedAt": "2026-07-11T19:23:36Z"
   },
   "gallery/nanopore_methylation": {
     "name": "gallery/nanopore_methylation",
@@ -1291,9 +1294,9 @@
   "gallery/scatac_catlas": {
     "name": "gallery/scatac_catlas",
     "status": "good",
-    "note": "FIXED: recaptured (transient HTTP 503 gone); the 16-cell-type CATlas scATAC panel renders with the Beta/insulin peak at the INS promoter.",
-    "reviewedAt": "2026-07-11T03:42:23.000Z",
-    "hash": "e0394518c631940b68a4d7507a6868671148b41a"
+    "note": "FIXED: added a compact NCBI RefSeq gene track (INS/TH visible) and zoomed out to ~30kb (chr11:2,145,000-2,175,000) so the beta-cell accessibility peak reads against the gene bodies (reviewer). Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "12a9a05cad72897ddedebcacfe74a59e8da80ffa"
   },
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
@@ -1325,8 +1328,8 @@
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
     "status": "good",
-    "note": "Follow-up per user: hiddenModifications:[m,h] so only 6mA (a) renders/legends; also fixed a real bug where hiddenModifications filtered what rendered but not the legend swatches (legendUtils.ts). Also fixed a stale capture (was committed mid-download, progress bars baked in) by raising settleMs 20000->45000.",
-    "reviewedAt": "2026-07-07T19:47:08.871Z",
+    "note": "",
+    "reviewedAt": "2026-07-11T19:00:30.869Z",
     "hash": "1603f9aea4ac2c3d8018a9ad6f7a5ef15e87e9ce"
   },
   "multiway_synteny/ecoli_import_form": {
@@ -1394,16 +1397,16 @@
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
     "status": "good",
-    "note": "Tyrp1 is already named via the highlight band label + annotation; a track-level gene label cannot render at a 48Mb zoom (sub-pixel features drop labels), and zooming in would lose the QTL-plateau context the figure is built around. Trimmed the annotation prose.",
-    "reviewedAt": "2026-07-11T03:42:23.000Z",
-    "hash": "10d66d7b455c0faa4ce56c1f7a1a6a2f13bbfdf6"
+    "note": "FIXED: removed the Tyrp1 genomic-highlight band (reviewer); annotation reworded to drop the \"(red band)\" reference. Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "de8225e9a24614a39ef3e399c1202d13ee622706"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
     "status": "good",
-    "note": "FIXED: added one concise annotation tying the HiCCUPS loop arc to the off-diagonal dot in the contact matrix below. Regenerated.",
-    "reviewedAt": "2026-07-11T03:42:23.000Z",
-    "hash": "837984d01d624d31db5f4b38af4cc89cf42a7dc6"
+    "note": "FIXED: zoomed out to ~2Mb (chr3:121.6-123.6Mb) and removed the enhancer-gene prediction track, so the figure is just the Hi-C matrix + the loops called from it (reviewer). Edited the config defaultSession so capture + live link stay in sync. Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "8a80c2e60e8112dc535d2a0c0eff05bb3ca14c8e"
   },
   "sv_synteny/linear_synteny_genes_colored": {
     "name": "sv_synteny/linear_synteny_genes_colored",
@@ -1448,9 +1451,9 @@
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
     "status": "good",
-    "note": "FIXED: merged the two callouts into one blurb (Left: gene body, CpG only. Right: silenced element, all three contexts). Regenerated.",
-    "reviewedAt": "2026-07-11T03:42:23.000Z",
-    "hash": "3c5b06d72c71b6d353591b16a17a70da4fa0601c"
+    "note": "Removed the on-image annotation (reviewer). One-color methylation was left as-is: bisulfite always emits both methylated/unmethylated marks and a one-color mode would need a code change altering the global default. Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "5f8a3ac9a8441afb7e799fac6fb3d827a0a57669"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
@@ -1476,16 +1479,16 @@
   "methylation/hg002_snrpn_allele_specific": {
     "name": "methylation/hg002_snrpn_allele_specific",
     "status": "good",
-    "note": "RESOLVED: strong allele-specific example (HP1 ~89% vs HP2 ~10% 5mC over the SNRPN CpG island). \"Also plot the reads\" now DONE via companion figure methylation/hg002_snrpn_reads: sliced the GIAB HG002 ONT alignment (ont-open-data giab_2023.05 pass CRAM, GRCh38) to chr15 SNRPN, haplotagged with whatshap against the phased SNP calls, hosted jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam. GroupBy HP + colorBy methylation shows HP1 red (5mC) / HP2 blue (unmethylated) across the island (verified HP1 86.5% vs HP2 4.6% by pysam). Gotcha: giab_2025.01 wf-human-variation haplotagged CRAMs ship BROKEN .crai (container-offset mismatch, CRC32 failure), so 2023.05 CRAM was used + re-haplotagged instead.",
-    "reviewedAt": "2026-07-10T23:24:00.000Z",
+    "note": "zoom out a bit. combine with the alignments figure",
+    "reviewedAt": "2026-07-11T19:01:31.312Z",
     "hash": "16170cfaca1cca632a4c54b3e77654d8c0d57101"
   },
   "methylation/hg002_snrpn_reads": {
     "name": "methylation/hg002_snrpn_reads",
     "status": "good",
-    "note": "Read-level companion to hg002_snrpn_allele_specific. Haplotagged HG002 ONT reads (434 tagged: 203 HP1 / 231 HP2) over the SNRPN CpG island, groupBy HP + colorBy methylation. HP1 reads red (5mC), HP2 blue (unmethylated) = imprinted split read-by-read. BAM: jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam (12MB, chr15:24.85-25.05Mb slice).",
-    "reviewedAt": "2026-07-10T23:24:00.000Z",
-    "hash": "16170cfaca1cca632a4c54b3e77654d8c0d57101"
+    "note": "FIXED: zoomed out to ~14kb (chr15:24,948,000-24,962,000), gene track set to compact displayMode, and the SNRPN promoter/PWS-IC DMR highlighted. HP1 red (5mC) vs HP2 blue split reads clearly at the highlighted island. Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "b5ea6b40f1f2321c759fcf51943d71fdf9dd4306"
   },
   "multiway_synteny/ecoli_one_vs_all": {
     "name": "multiway_synteny/ecoli_one_vs_all",
@@ -1510,16 +1513,16 @@
   "popgen/combined_cyp6g1_dest": {
     "name": "popgen/combined_cyp6g1_dest",
     "status": "good",
-    "note": "FIXED: dm6 cytoband ideogram no longer a distracting red block — Cytobands.tsx n/a stains (dm6 polytene divisions) now alternate two greys instead of black/mauve-red; taller viewport (720->820); trimmed annotation. Regenerated.",
-    "reviewedAt": "2026-07-11T03:42:23.000Z",
+    "note": "Already at the full DEST data extent: the dest_cyp6g1_*.bw bigWigs cover exactly chr2R:11,700,000-12,700,000 (verified via bigWigToBedGraph), which the spec already spans. Cannot zoom out further without regenerating the DEST Pool-Seq pipeline (not runnable here).",
+    "reviewedAt": "2026-07-11T19:23:26Z",
     "hash": "f1d45b628583744b4bc5c6276fdafe659b2bf829"
   },
   "popgen/tajimad_cyp6g1": {
     "name": "popgen/tajimad_cyp6g1",
     "status": "good",
-    "note": "FIXED: kept as the merged pi + Tajima’s D figure (pi_cyp6g1 deleted, tutorial reworded); widened highlight band to 12.13-12.20Mb so it covers the whole joint dip. Regenerated.",
-    "reviewedAt": "2026-07-11T03:42:23.000Z",
-    "hash": "d7861db544523f78aa121534a2015040152c685c"
+    "note": "",
+    "reviewedAt": "2026-07-11T18:51:43.813Z",
+    "hash": "424cd9c729c28c682c39b19b00a40d4db47c8bd0"
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
@@ -1569,5 +1572,25 @@
     "note": "DELETED (spec+PNG): folded into the reworked single-view arabidopsis_wgbs_contexts, whose aggregate MethylDackel track now shows the CpG context as its own labeled row.",
     "reviewedAt": "2026-07-10T19:00:03.331Z",
     "hash": "b813e45e78870337589405c316c647e27270c5aa"
+  },
+  "multisv_ont_inversion": {
+    "name": "multisv_ont_inversion",
+    "status": "good",
+    "note": "FIXED: zoomed out 16kb->35kb and compacted the VCF callset to a 40px lane (reviewer). The overlapping red+blue color has no legend entry (would need a code change); reviewer was unsure on that, left as-is. Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "99ce8359d20cb138a1731a4614eb31124837c59f"
+  },
+  "multiway_synteny/grape_peach_cacao_conserved_block": {
+    "name": "multiway_synteny/grape_peach_cacao_conserved_block",
+    "status": "good",
+    "note": "resolved: deleted per reviewer (not interesting). Removed spec + PNG + the Figure in multiway_synteny.md; the section prose flows straight into the gene-ortholog figure.",
+    "reviewedAt": "2026-07-11T19:23:36Z"
+  },
+  "multiway_synteny/grape_peach_cacao_gene_orthologs": {
+    "name": "multiway_synteny/grape_peach_cacao_gene_orthologs",
+    "status": "good",
+    "note": "FIXED: gene tracks now render in compact displayMode (showOnlyGenes + displayMode:compact) so orthologs pack tightly. Regenerated.",
+    "reviewedAt": "2026-07-11T19:23:26Z",
+    "hash": "7c0727233c3a243849f63f92ffb0348e76256a74"
   }
 }

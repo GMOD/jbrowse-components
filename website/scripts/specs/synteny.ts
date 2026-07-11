@@ -164,54 +164,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  // Conserved-block zoom: the clean counterpart to the whole-genome figure.
-  // grape 11 / peach G7 / cacao IX are descendants of one ancestral eudicot
-  // chromosome, so this one segment stays collinear across all three (a single
-  // 1:1:1 syntenic block). grape sits in the MIDDLE so BOTH bands are DIRECT
-  // MCScan pairs (no transitive peach-cacao band): peach-grape is essentially
-  // perfectly collinear (Spearman rho 1.00) and grape-cacao is strongly
-  // collinear (rho 0.68). Each row is zoomed to just this block's aligned
-  // window (grape 11's homeolog is peach G7's distal ~4 Mb and cacao IX's
-  // proximal ~21 Mb — the triplication asymmetry), so the ribbons read as tidy
-  // near-parallel diagonals instead of the whole-genome hairball.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/grape_peach_cacao_conserved_block',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearSyntenyView',
-            views: [
-              { assembly: 'peach', loc: 'G7:17,900,000-22,388,614' },
-              { assembly: 'grape', loc: '11:1-19,919,003' },
-              { assembly: 'cacao', loc: 'IX:400,000-21,500,000' },
-            ],
-            tracks: [
-              ['grape_peach_cacao_blocks'],
-              ['grape_peach_cacao_blocks'],
-            ],
-            drawCurves: true,
-            colorBy: 'reference',
-          },
-        ],
-      },
-    ),
-    readySelector: '[data-testid="synteny_canvas_done"]',
-    readyTimeout: 120000,
-    settleMs: 12000,
-  },
-
-  // Gene-level ortholog zoom: drill into a ~75 kb window of the same conserved
+  // Gene-level ortholog zoom: drill into a ~75 kb window of the conserved
   // block (grape 11 / peach G7 / cacao IX) where 10 consecutive orthologous
   // genes step monotonically across all three genomes. showOnlyGenes collapses
-  // each locus to its gene glyph, so the synteny ribbons connect individual
-  // orthologs one-to-one — the gene-scale counterpart to the chromosome-scale
-  // conserved-block figure. All three run in the same (forward) orientation, so
-  // no [rev] flips are needed.
+  // each locus to its gene glyph, and compact displayMode packs the rows so the
+  // synteny ribbons connect individual orthologs one-to-one. All three run in
+  // the same (forward) orientation, so no [rev] flips are needed.
   {
     mode: 'url',
     name: 'multiway_synteny/grape_peach_cacao_gene_orthologs',
@@ -227,17 +185,35 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 assembly: 'peach',
                 loc: 'G7:19,290,000-19,362,000',
-                tracks: [{ trackId: 'peach_genes', showOnlyGenes: true }],
+                tracks: [
+                  {
+                    trackId: 'peach_genes',
+                    showOnlyGenes: true,
+                    displayMode: 'compact',
+                  },
+                ],
               },
               {
                 assembly: 'grape',
                 loc: '11:1,840,000-1,927,000',
-                tracks: [{ trackId: 'grape_genes', showOnlyGenes: true }],
+                tracks: [
+                  {
+                    trackId: 'grape_genes',
+                    showOnlyGenes: true,
+                    displayMode: 'compact',
+                  },
+                ],
               },
               {
                 assembly: 'cacao',
                 loc: 'IX:4,665,000-4,743,000',
-                tracks: [{ trackId: 'cacao_genes', showOnlyGenes: true }],
+                tracks: [
+                  {
+                    trackId: 'cacao_genes',
+                    showOnlyGenes: true,
+                    displayMode: 'compact',
+                  },
+                ],
               },
             ],
             tracks: [

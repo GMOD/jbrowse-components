@@ -134,16 +134,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     viewportHeight: 520,
     settleMs: 25000,
-    annotations: [
-      {
-        type: 'text',
-        x: 40,
-        y: 120,
-        maxWidth: 300,
-        fontSize: 15,
-        text: 'Short-insert pairs (pink) cluster away from the concordant background.',
-      },
-    ],
   },
 
   // Soft clipping, two-stage figure: top frame opens the track menu's "Show..."

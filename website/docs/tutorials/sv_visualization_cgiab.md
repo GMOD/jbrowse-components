@@ -227,7 +227,7 @@ line is the sample's genome-wide median, not absolute diploid: in a tumor where
 much of the genome is deleted, copy-neutral regions sit above 0 — the benchmark
 CNV BED track gives the absolute copy-number reference alongside it.
 
-<Figure caption="Genome-wide somatic copy number, top to bottom: tumor-vs-normal coverage (indexcov — tumor red, normal blue), the log2(tumor/normal) ratio (±2 scatter; 0 = genome median, above = gain, below = loss), the raw BAF (0.5 = balanced; LOH splits toward 0 and 1), and the benchmark CNV calls." src="/img/sv_cgiab/cnv_log2ratio_genome.png" />
+<Figure caption="Genome-wide somatic copy number: the log2(tumor/normal) coverage ratio (±2 scatter; 0 = genome median, above = gain, below = loss) over the benchmark CNV calls. Gains and losses line up with the called intervals across all chromosomes." src="/img/sv_cgiab/cnv_log2ratio_genome.png" />
 
 > For a quick approximation without downloading the full alignments, build the
 > same track from [indexcov](https://github.com/brentp/goleft) bigWigs (computed

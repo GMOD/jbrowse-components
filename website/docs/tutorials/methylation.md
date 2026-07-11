@@ -118,13 +118,14 @@ multirow mode by default so their scales are independent.
 
 The screenshot below shows the COLO829 melanoma tumor ONT dataset at
 chr20:21,505,200–21,514,000, spanning two adjacent CpG islands. Top: the UCSC
-CpG-island annotation. Middle: the CRAM alignment with reads colored by
-modification. Bottom: the modkit bedMethyl file as a `MultiQuantitativeTrack`
-with `h` (5hmC) and `m` (5mC) subtracks. The per-read calls and the aggregate
+CpG-island annotation. Middle: the CRAM alignment with reads colored by 5mC
+methylation (the sparser 5hmC calls are hidden here so the per-read band reads
+cleanly). Bottom: the modkit bedMethyl file as a `MultiQuantitativeTrack` with
+`h` (5hmC) and `m` (5mC) subtracks. The per-read 5mC calls and the aggregate
 fractions track each other, and both drop over the leftmost, hypomethylated
 island.
 
-<Figure caption="COLO829 tumor ONT alignments (top) with per-read modification coloring, alongside the modkit bedMethyl MultiQuantitativeTrack (bottom) showing 5hmC ('h') and 5mC ('m') methylation fractions at individual CpG positions." src="/img/methylation/colo829_cram_and_bedmethyl.png" />
+<Figure caption="COLO829 tumor ONT alignments (top) with per-read 5mC methylation coloring, alongside the modkit bedMethyl MultiQuantitativeTrack (bottom) showing 5hmC ('h') and 5mC ('m') methylation fractions at individual CpG positions." src="/img/methylation/colo829_cram_and_bedmethyl.png" />
 
 ## Allele-specific methylation by haplotype
 

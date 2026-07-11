@@ -114,7 +114,7 @@
         "type": "LinearGenomeView",
         "init": {
           "assembly": "hg38",
-          "loc": "chr3:122,475,000-122,775,000",
+          "loc": "chr3:121,600,000-123,600,000",
           "highlight": [
             {
               "assemblyName": "hg38",
@@ -143,7 +143,6 @@
               }
             },
             "encode_gm12878_loops",
-            "encode_gm12878_re2g",
             "encode_gm12878_hic"
           ]
         }

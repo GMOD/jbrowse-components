@@ -52,25 +52,6 @@ export const gallerySpecs: ScreenshotSpec[] = [
   // Extra gallery cards (website/src/lib/gallery.ts): compact local-test-data
   // views promoted from link-only entries to screenshots. Local data so they
   // render deterministically in the generator.
-  {
-    mode: 'url',
-    name: 'gallery/human_mito',
-    // Zoomed to MT-ND3 rather than the whole-genome overview (reviewer:
-    // uninteresting at full width) — ND3 is the shortest human mitochondrial
-    // protein-coding gene and, like five other mt-genes, its stop codon is
-    // just "T--" in the genome; polyadenylation of the mRNA completes it to
-    // TAA (annotated as a `transl_except` on the CDS, in the Note field).
-    url: lgvSession('test_data/human_mito/config.json', {
-      assembly: 'human_mito',
-      loc: 'NC_012920.1:9,950-10,550',
-      colorByCDS: true,
-      tracks: ['ncbi_genes_human_mito'],
-    }),
-    readyText: 'ND3',
-    readyTimeout: 60000,
-    settleMs: 6000,
-    viewportHeight: 420,
-  },
   // Remaining gallery cards promoted from link-only /gallery/ entries. Each
   // `url` is the exact session that gallery.ts opened as a live link, so the
   // figure and the link stay identical; the loading-overlay + display-done
@@ -162,15 +143,23 @@ export const gallerySpecs: ScreenshotSpec[] = [
     name: 'gallery/scatac_catlas',
     // INS (insulin) promoter — a beta-cell-restricted accessibility peak, with
     // Alpha (glucagon) and the other 14 cell types in this atlas subset showing
-    // little to no signal at the same locus. Shorter display height (was the
-    // 500px config default) so the 16 rows read as a compact panel.
+    // little to no signal at the same locus. Zoomed out to a ~30kb window with a
+    // compact gene track on top so the peak reads against the INS gene body and
+    // its neighbors. Shorter display height so the 16 rows stay a compact panel.
     url: sessionSpec('test_data/config_demo.json', {
       views: [
         {
           assembly: 'hg38',
-          loc: 'chr11:2,158,000-2,163,000',
+          loc: 'chr11:2,145,000-2,175,000',
           type: 'LinearGenomeView',
           tracks: [
+            {
+              trackId: 'ncbi_refseq_109_hg38_latest',
+              type: 'LinearBasicDisplay',
+              displayMode: 'compact',
+              showOnlyGenes: true,
+              height: 60,
+            },
             {
               trackId: 'catlas_scatac_celltypes_hg38',
               type: 'MultiLinearWiggleDisplay',
@@ -182,7 +171,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 500,
+    viewportHeight: 560,
   },
   {
     mode: 'url',
@@ -242,7 +231,8 @@ export const gallerySpecs: ScreenshotSpec[] = [
     name: 'gallery/breakpoint_multihop',
     // A single PacBio split read crossing more than two locations, shown as a
     // multi-panel BreakpointSplitView (chr3 <-> chr6). Declarative like the
-    // SKBR3 breakpoint_split_view card.
+    // SKBR3 breakpoint_split_view card. Just the reads (the VCF breakend lane
+    // was dropped as more confusing than helpful, reviewer).
     // Short alignments height on each panel so both panels + the connecting
     // curves fit; taller viewport so the whole split view is captured.
     url: sessionSpec('test_data/breakpoint/config.json', {
@@ -262,12 +252,6 @@ export const gallerySpecs: ScreenshotSpec[] = [
                   type: 'LinearAlignmentsDisplay',
                   height: 150,
                 },
-                {
-                  trackId: 'pacbio_vcf',
-                  // short variant lane — only the BND call sits here
-                  type: 'LinearVariantDisplay',
-                  height: 90,
-                },
               ],
             },
             {
@@ -280,12 +264,6 @@ export const gallerySpecs: ScreenshotSpec[] = [
                   type: 'LinearAlignmentsDisplay',
                   height: 150,
                 },
-                {
-                  trackId: 'pacbio_vcf',
-                  // short variant lane — only the BND call sits here
-                  type: 'LinearVariantDisplay',
-                  height: 90,
-                },
               ],
             },
           ],
@@ -294,6 +272,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 90000,
     settleMs: 12000,
-    viewportHeight: 900,
+    // two 150px read panels + the connecting curves, no VCF lanes
+    viewportHeight: 560,
   },
 ]

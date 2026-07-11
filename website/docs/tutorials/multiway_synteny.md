@@ -222,12 +222,10 @@ cacao IX — descend from one ancestral eudicot chromosome, so this one segment
 stays collinear across all three genomes. Putting grape in the middle makes both
 bands direct MCScan pairs.
 
-<Figure caption="One conserved block: grape chr11 with its peach (G7) and cacao (IX) homeologs, grape in the middle so both bands are direct pairs. At single-chromosome scale the shared segment reads as clean collinear ribbons instead of the whole-genome tangle." src="/img/multiway_synteny/grape_peach_cacao_conserved_block.png" />
-
-Zooming further, into a ~75 kb window of the same block, the ribbons connect
-individual orthologous genes. Turning on each genome's gene track (with **Show
-only genes** so each locus collapses to its gene glyph) shows a run of ten
-orthologs stepping in the same order across grape, peach, and cacao.
+At the gene level, the ribbons connect individual orthologous genes. Turning on
+each genome's gene track (with **Show only genes** so each locus collapses to its
+gene glyph) shows a run of ten orthologs stepping in the same order across grape,
+peach, and cacao.
 
 <Figure caption="Gene-level view of the same block: ten consecutive orthologs run in the same order across grape, peach, and cacao, so each synteny ribbon links one gene to its ortholog in the row above and below." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
 

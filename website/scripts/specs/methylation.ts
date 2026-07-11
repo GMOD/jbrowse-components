@@ -64,7 +64,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
   // colored by one context (CpG/CHG/CHH). Each per-read copy lines up 1:1 with
   // its aggregate row. CpG is methylated over both the gene body AND the element
   // (red left + right); CHG/CHH are methylated only over the silenced element
-  // (red confined to the right). Text callouts name the two regimes.
+  // (red confined to the right).
   {
     mode: 'url',
     name: 'methylation/arabidopsis_wgbs_contexts',
@@ -97,16 +97,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
     settleMs: 20000,
     // genes + aggregate(3 rows) + 3 compact pileups + headers/ruler/overview
     viewportHeight: 900,
-    annotations: [
-      {
-        type: 'text',
-        x: 250,
-        y: 145,
-        maxWidth: 620,
-        fontSize: 15,
-        text: 'Left: gene body, CpG only. Right: silenced element, all three contexts (CpG, CHG, CHH).',
-      },
-    ],
   },
   // CRAM modifications + bedmethyl together over a chr20:21.505-21.514Mb window
   // that captures a methylation *contrast* the reviewer asked for: the leftmost
@@ -144,6 +134,16 @@ export const methylationSpecs: ScreenshotSpec[] = [
           // blue "unmethylated" signal has no counterpart in the
           // bedmethyl track below
           colorBy: { type: 'modifications' },
+          // hide the 5hmC ('h') calls on the reads: the sparse magenta 5hmC
+          // marks mixed with the dense red 5mC made the pileup read as noise
+          // (reviewer). The aggregate bedmethyl below still shows both h and m,
+          // so the per-read band stays a clean 5mC readout. Compact fixed-height
+          // band so the pileup doesn't dominate the figure.
+          hiddenModifications: ['h'],
+          heightMode: 'fixed',
+          featureHeight: 4,
+          featureSpacing: 0,
+          height: 240,
         },
         {
           trackId: 'COLO829_tumor.ht_modkit.bed_multi',
@@ -311,15 +311,27 @@ export const methylationSpecs: ScreenshotSpec[] = [
     name: 'methylation/hg002_snrpn_reads',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      // zoomed onto the CpG island / DMR so the per-haplotype red-vs-blue
-      // contrast fills the view rather than the flanking gene-body methylation
-      loc: 'chr15:24,954,600-24,956,050',
+      // wider window around the SNRPN promoter / PWS-IC so the DMR sits in
+      // gene-body/flanking context, with the CpG-island DMR highlighted; the
+      // per-haplotype red-vs-blue methylation contrast is still clear
+      loc: 'chr15:24,948,000-24,962,000',
+      highlight: [
+        {
+          refName: 'chr15',
+          start: 24_954_600,
+          end: 24_956_050,
+          assemblyName: 'hg38',
+          label: 'SNRPN promoter (PWS-IC)',
+          color: 'rgba(214,40,40,0.13)',
+        },
+      ],
       tracks: [
         'cpgisland_ucsc_hg38',
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
           type: 'LinearBasicDisplay',
           geneGlyphMode: 'longestCoding',
+          displayMode: 'compact',
         },
         {
           trackId: 'HG002_snrpn_5mC_reads',

@@ -80,7 +80,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
   // plateau (RI-panel LD extends for many Mb), so the gene sits under the
   // *region*, not a razor apex — the figure's real payload is the gene position
   // plus the strain-by-strain recombination breakpoints resolved in the painting
-  // below. A genomic highlight band marks Tyrp1, a sub-pixel sliver at this zoom.
+  // below.
   {
     mode: 'url',
     name: 'qtl/bxd_tyrp1_locus',
@@ -91,19 +91,6 @@ export const qtlSpecs: ScreenshotSpec[] = [
       // still resolving the individual B/D recombination breakpoints the
       // whole-chromosome painting blurs together
       loc: 'chr4:57,000,000-105,000,000',
-      // colored band over the Tyrp1 gene + QTL-peak marker so the eye lands on
-      // it under the peak; 350 kb still reads as a visible stripe at this zoom
-      // (the bare 30 kb gene body was a sub-pixel sliver)
-      highlight: [
-        {
-          refName: 'chr4',
-          start: 80_700_000,
-          end: 81_050_000,
-          assemblyName: 'mm10',
-          label: 'Tyrp1',
-          color: 'rgba(214,40,40,0.16)',
-        },
-      ],
       tracks: [
         {
           trackId: 'bxd_gwas_coatcolor_mm10',
@@ -138,7 +125,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
         y: 66,
         maxWidth: 360,
         fontSize: 15,
-        text: 'Tyrp1 (red band): the coat-color gene under the QTL peak',
+        text: 'Tyrp1: the coat-color gene under the QTL peak',
       },
     ],
   },

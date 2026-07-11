@@ -84,8 +84,6 @@ valid start codon for that table (including alternative initiators such as `GTG`
 or `TTG`), and `transl_except` overrides (e.g. selenocysteine `U`) are applied
 and highlighted.
 
-<Figure caption="The complete human mitochondrial genome (NC_012920.1) with Color by CDS on. The 13 protein-coding genes are translated with the vertebrate mitochondrial code (transl_table=2), so the in-frame TGA codons read as tryptophan rather than stops; the two genes whose stop codon is completed by post-transcriptional polyadenylation carry a transl_except that is applied at the drawn codon." src="/img/gallery/human_mito.png" />
-
 <Figure caption="The selenoprotein GPX1 (glutathione peroxidase 1) on hg19. Its in-frame UGA codon is recoded to selenocysteine via the GFF transl_except attribute, so codon 49 is drawn as a highlighted U on the CDS instead of a stop. The reference sequence track's plain six-frame translation above, which has no CDS context, still shows that codon as a stop (*)." src="/img/gene_track_selenocysteine.png" />
 
 ## Mature peptides (polyproteins)
