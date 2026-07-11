@@ -109,44 +109,86 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             },
           ],
         },
+        // The two replication landmarks the GC skew reveals, as an actual
+        // feature track (not just highlight bands). oriC is anchored on the
+        // annotated dnaA gene (NC_018939.1:1,607,647-1,609,020, the chromosomal
+        // replication initiator that binds the origin) — a known landmark that
+        // coincides with the cumulative-skew minimum; the terminus sits at the
+        // skew maximum. Widened to ~20kb region markers so they're visible at
+        // whole-genome zoom. FromConfigAdapter keeps the features inline, so the
+        // track needs no hosted file and travels with the live-link session.
+        {
+          type: 'FeatureTrack',
+          trackId: 'hpylori_repl_origin',
+          name: 'Replication origin / terminus (from GC skew)',
+          assemblyNames: ['hpylori_26695'],
+          adapter: {
+            type: 'FromConfigAdapter',
+            features: [
+              {
+                refName: 'NC_018939.1',
+                uniqueId: 'oriC',
+                start: 1_598_000,
+                end: 1_618_000,
+                name: 'oriC (dnaA)',
+                color: '#1e8484',
+              },
+              {
+                refName: 'NC_018939.1',
+                uniqueId: 'terminus',
+                start: 804_000,
+                end: 824_000,
+                name: 'terminus',
+                color: '#d62828',
+              },
+            ],
+          },
+        },
       ],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hpylori_26695',
           loc: 'NC_018939.1',
-          // GC skew flips sign at the two replication landmarks: cumulative-skew
-          // minimum ~1.636 Mb (≈ coordinate 0, the oriC near dnaA) and maximum
-          // ~0.814 Mb (the terminus). Bands mark both so the sign transition is
-          // findable (reviewer: can we find the replication origin?)
+          // Faint vertical guides at the two replication landmarks the origin
+          // track names above, so the eye connects each marker to the GC-skew
+          // sign transition far below it (labels live on the feature track, not
+          // here, to avoid double-labeling).
           highlight: [
             {
               refName: 'NC_018939.1',
-              start: 1_628_000,
-              end: 1_643_000,
+              start: 1_598_000,
+              end: 1_618_000,
               assemblyName: 'hpylori_26695',
-              label: 'Origin (oriC)',
-              color: 'rgba(30,132,132,0.16)',
+              color: 'rgba(30,132,132,0.14)',
             },
             {
               refName: 'NC_018939.1',
-              start: 806_000,
-              end: 822_000,
+              start: 804_000,
+              end: 824_000,
               assemblyName: 'hpylori_26695',
-              label: 'Terminus',
-              color: 'rgba(214,40,40,0.14)',
+              color: 'rgba(214,40,40,0.12)',
             },
           ],
-          tracks: ['gc_content_hpylori', 'gc_skew_hpylori'],
+          tracks: [
+            {
+              trackId: 'hpylori_repl_origin',
+              type: 'LinearBasicDisplay',
+              height: 50,
+              color: "jexl:get(feature,'color')",
+            },
+            'gc_content_hpylori',
+            'gc_skew_hpylori',
+          ],
         },
       ],
     }),
     readyText: 'GC content',
     readyTimeout: 60000,
     settleMs: 8000,
-    // content(~100) + taller skew(160) + headers/ruler/overview; crop off the
-    // empty viewport below the two tracks
-    crop: { x: 0, y: 0, width: 1500, height: 560 },
+    // origin track(50) + content(~100) + taller skew(160) + headers/ruler/
+    // overview; crop off the empty viewport below the three tracks
+    crop: { x: 0, y: 0, width: 1500, height: 640 },
   },
 
   // Whole-genome coverage profile from a single BigWig (COLO829 tumor MinION

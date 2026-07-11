@@ -25,7 +25,7 @@ sequence adapter in a `GCContentAdapter`, so it works for any assembly
 regardless of whether its sequence is a 2bit, indexed FASTA, or bgzip-indexed
 FASTA — no new data is fetched beyond the sequence the browser already reads.
 
-<Figure caption="A GC content track (top, XY plot) and a GC skew track (bottom) over volvox ctgA, both computed on the fly from the reference sequence. GC content reads out the local G+C fraction; GC skew swings positive and negative around zero as the (G−C)/(G+C) balance shifts between strands." src="/img/gc_content.png" />
+<Figure caption="GC content (top, XY plot) and GC skew (bottom) computed on the fly across the whole H. pylori 26695 chromosome. The skew flips sign at the two points marked by the Replication origin / terminus track: oriC (teal, anchored on the annotated dnaA gene) at the cumulative-skew minimum, and the terminus (red) at the maximum — the classic way GC skew pinpoints the replication origin in a bacterial genome." src="/img/gc_content.png" />
 
 ## GC content vs GC skew
 
