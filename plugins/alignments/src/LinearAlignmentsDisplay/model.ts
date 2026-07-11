@@ -1205,9 +1205,14 @@ export default function stateModelFactory(
          * the ungrouped (single-group) case: grouped sections surface their own
          * truncation per-label (`isGroupTruncated`), where raising `maxHeight`
          * wouldn't lift the fit-to-viewport cap anyway — expanding the group does.
+         * Suppressed in fit-to-display mode for the same reason: reads there are
+         * already clamped to a 1px floor, so "Show all" can't deliver a fit — it
+         * only deepens the 1px scroll. The overflow indicator still flags the
+         * scroll in that case.
          */
         get pileupTruncated() {
           return (
+            !self.fitHeightToDisplay &&
             this.groupOrder.length <= 1 &&
             this.isGroupTruncated(this.groupOrder[0]?.key ?? '')
           )
