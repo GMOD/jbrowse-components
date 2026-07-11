@@ -109,7 +109,12 @@ test('fails if it cannot find a file', async () => {
     '--load',
     'copy',
   ])
-  expect(error?.message).toMatchSnapshot()
+  // the fasta and its .fai are copied concurrently, so whichever missing-file
+  // ENOENT rejects first is nondeterministic — assert the invariant, not the
+  // racing filename
+  expect(error?.message).toMatch(
+    /ENOENT: no such file or directory, copyfile 'simple\.doesNotExist\.fasta(\.fai)?'/,
+  )
 })
 
 test('fails if using invalid inline JSON', async () => {
