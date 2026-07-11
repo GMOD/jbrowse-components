@@ -321,6 +321,6 @@ long reads) before painting.
 
 ## Live demo
 
-[Open this session](https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"1:62,174,000-65,097,304","tracks":[{"trackId":"HG02024_VN049_KHVTrio.chr1.vcf","displaySnapshot":{"type":"LinearMultiSampleVariantMatrixDisplay","renderingMode":"phased","minorAlleleFrequencyFilter":0.1}}]}]})
-to explore the trio dataset described above. The "Open this view in JBrowse"
-link under the painting figure opens the hap-ibd track on its own.
+Every figure above links to the live session that produced it — use its "Open
+this view in JBrowse ↗" link to explore that view yourself. The painting figure
+opens the hap-ibd track on its own.

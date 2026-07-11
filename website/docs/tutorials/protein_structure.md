@@ -87,38 +87,11 @@ intronic and UTR positions are skipped and each codon maps to a single residue.
 
 ### Sharing a connected view as a URL
 
-A connected session can also be built **declaratively** as a session-spec URL,
-which is handy for demo links and embedded apps. In the simplest form you give
-the plugin a UniProt accession and a transcript id, plus the genome location and
-tracks to show, and it resolves the rest — the AlphaFold structure, the
-transcript feature, and the aligned protein sequence:
-
-The session is passed as the `session` URL parameter, prefixed with `spec-` (the
-prefix tells JBrowse the value is an inline session). Tagging the block below
-`live` builds that `?config=…&session=spec-…` link straight from this JSON, so
-the link and the shown session can never drift:
-
-```json live config=/ucsc/hg38/config.json base="https://jbrowse.org/code/jb2/latest/"
-{
-  "views": [
-    {
-      "type": "ProteinView",
-      "uniprotId": "P04637",
-      "transcriptId": "NM_000546.6",
-      "connectedView": {
-        "assembly": "hg38",
-        "loc": "chr17:7,668,421-7,687,550",
-        "tracks": ["hg38-ncbiRefSeqCurated", "hg38-clinvarMain"]
-      }
-    }
-  ]
-}
-```
-
-The transcript must be present in one of the listed `tracks` at `loc`. If you
-need a transcript that isn't loaded as a track, you can instead pass the
-structure `url`, the `feature`, and the protein sequence explicitly. Both forms,
-the full parameter list, and ready-to-open URLs are documented in the
+A connected view can also be built declaratively as a session-spec URL, handy
+for demo links and embedded apps: you pass a UniProt accession and transcript id
+(or an explicit structure `url`, feature, and sequence) alongside the genome
+location and tracks, and the plugin resolves the AlphaFold structure and
+alignment. The parameters and ready-to-open example URLs are documented in the
 [protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md#connected-genome--protein-view).
 
 ## Viewing a multiple sequence alignment

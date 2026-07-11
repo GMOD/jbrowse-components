@@ -121,11 +121,8 @@ lining up across the alignments.
 
 <Figure caption="A linear synteny view stacking three H. pylori strains (26695, CHC155, J99) vertically, with a gene annotation track on each genome. Pink ribbons connect aligned blocks between adjacent genomes, and conserved genes such as fliR, cbf2, efp, and lysS line up across the strains." src="/img/sv_synteny/linear_synteny_genes.png" />
 
-[Live demo: J99 vs 26695 linear synteny](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json&session=spec-%7B"views":%5B%7B"type":"LinearSyntenyView","tracks":%5B"26695_vs_j99.pif"%5D,"views":%5B%7B"loc":"NZ_CP011330.1:1564863-1636528","assembly":"hpylori_j99","tracks":%5B"hpylori_j99.gff"%5D%7D,%7B"loc":"NC_018939.1:367069-439278","assembly":"hpylori_26695","tracks":%5B"hpylori_26695.gff"%5D%7D%5D%7D%5D%7D)
-— this opens a syntenic ~72 kb block with gene tracks on both genomes. Conserved
-genes such as `cheV`, `cfaS`, and `metG` line up across the connecting ribbon.
 See [URL parameters → linear synteny view](/docs/urlparams#linear-synteny-view)
-for the session-spec fields these links encode.
+for building a linear synteny view from a session-spec URL.
 
 ### Coloring alignments
 
