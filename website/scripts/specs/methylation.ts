@@ -10,50 +10,108 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 const ARABIDOPSIS_WGBS_CONFIG =
   'test_data/arabidopsis_methylation/config_emseq_bisulfite.json'
 
+// three copies of the one WGBS CRAM, each colored by a different cytosine
+// context, so the per-read pileup demonstrates the three MethylDackel contexts
+// directly (not just the aggregate). Distinct trackIds share one adapter.
+const WGBS_CRAM_ADAPTER = {
+  type: 'CramAdapter',
+  uri: 'https://jbrowse.org/demos/bisulfite/arabidopsis_wgbs_bisulfite.cram',
+}
+function wgbsContextTrack(context: 'CG' | 'CHG' | 'CHH') {
+  const label = context === 'CG' ? 'CpG' : context
+  return {
+    track: {
+      type: 'AlignmentsTrack',
+      trackId: `arabidopsis_wgbs_${context.toLowerCase()}`,
+      name: `Per-read WGBS — ${label} context`,
+      assemblyNames: ['arabidopsis'],
+      adapter: WGBS_CRAM_ADAPTER,
+    },
+    display: {
+      trackId: `arabidopsis_wgbs_${context.toLowerCase()}`,
+      type: 'LinearAlignmentsDisplay',
+      colorBy: { type: 'bisulfite', modifications: { cytosineContext: context } },
+      // compact reads, coverage hidden: three stacked pileups stay legible and
+      // the row's message is the read colors, not a per-copy histogram
+      showCoverage: false,
+      heightMode: 'fixed',
+      featureHeight: 3,
+      featureSpacing: 0,
+      height: 90,
+    },
+  }
+}
+const WGBS_CONTEXT_COPIES = (['CG', 'CHG', 'CHH'] as const).map(
+  wgbsContextTrack,
+)
+
 // Arabidopsis WGBS (Col-0 DRR029742, bwameth-aligned) over
 // NC_003070.9:4,398,000-4,412,000, a window that pairs two methylation regimes:
 // the expressed ARM-repeat gene AT1G12930 (~4.398-4.406 Mb) carries gene-body
 // CpG methylation only, while the silenced element to its right (pseudogene
 // AT1G12935 + a repeat, ~4.406-4.410 Mb) is methylated in all three plant
-// contexts. Three tracks stack the story: the RefSeq gene annotation for
-// context, an aggregate MethylDackel track (per-position CpG/CHG/CHH fraction,
-// one colored row each) that makes the tri-context contrast quantitative, and
-// the per-read bisulfite pileup the tutorial demos — C-vs-T against the
-// reference (no MM/ML tags): methylated C = red, unmethylated (C->T) = blue.
+// contexts. The contexts figure below shows this at two levels: the aggregate
+// MethylDackel fractions (one row per context) AND the same per-read pileup
+// colored three ways (one copy per context), so the tri-context contrast reads
+// both quantitatively and per-molecule. methylated C = red, unmethylated = blue.
 export const methylationSpecs: ScreenshotSpec[] = [
-  // The three plant methylation contexts, kept as the single message of this
-  // figure: gene annotation + the aggregate MethylDackel track with one labeled
-  // row per context (CpG/CHG/CHH). CpG is high over both the gene body and the
-  // silenced element; CHG/CHH are confined to the element. The per-read pileup is
-  // deliberately NOT here — stacking a single-mode red/blue pileup under a
-  // three-context aggregate read as "one mode vs three" and confused reviewers;
-  // the raw reads get their own figure at the boundary below.
+  // The three plant methylation contexts, shown at both levels so the "3 modes"
+  // is unmistakable and consistent: the aggregate MethylDackel track (one 0-100%
+  // row per context) over THREE copies of the same per-read WGBS pileup, each
+  // colored by one context (CpG/CHG/CHH). Each per-read copy lines up 1:1 with
+  // its aggregate row. CpG is methylated over both the gene body AND the element
+  // (red left + right); CHG/CHH are methylated only over the silenced element
+  // (red confined to the right). Text callouts name the two regimes.
   {
     mode: 'url',
     name: 'methylation/arabidopsis_wgbs_contexts',
-    url: lgvSession(ARABIDOPSIS_WGBS_CONFIG, {
-      assembly: 'arabidopsis',
-      loc: 'NC_003070.9:4,398,000-4,412,000',
-      tracks: [
-        { trackId: 'arabidopsis_genes' },
-        // aggregate CpG/CHG/CHH fraction, one labeled row each (multirowxy, so
-        // the three contexts don't overlay into a single apparent track)
+    url: sessionSpec(ARABIDOPSIS_WGBS_CONFIG, {
+      sessionTracks: WGBS_CONTEXT_COPIES.map(c => c.track),
+      views: [
         {
-          trackId: 'arabidopsis_methyldackel',
-          type: 'MultiLinearWiggleDisplay',
-          defaultRendering: 'multirowxy',
-          minScore: 0,
-          maxScore: 100,
-          height: 260,
+          type: 'LinearGenomeView',
+          assembly: 'arabidopsis',
+          loc: 'NC_003070.9:4,398,000-4,412,000',
+          tracks: [
+            { trackId: 'arabidopsis_genes' },
+            // aggregate CpG/CHG/CHH fraction, one labeled row each (multirowxy)
+            {
+              trackId: 'arabidopsis_methyldackel',
+              type: 'MultiLinearWiggleDisplay',
+              defaultRendering: 'multirowxy',
+              minScore: 0,
+              maxScore: 100,
+              height: 170,
+            },
+            ...WGBS_CONTEXT_COPIES.map(c => c.display),
+          ],
         },
       ],
     }),
     readyText: 'MethylDackel',
-    // remote gene GFF + three bigWigs: settles under these caps
+    // remote CRAM (x3 copies, one adapter) + gene GFF + three bigWigs
     readyTimeout: 90000,
-    settleMs: 12000,
-    // genes + all three aggregate rows (CpG/CHG/CHH) + headers/ruler/overview
-    viewportHeight: 640,
+    settleMs: 20000,
+    // genes + aggregate(3 rows) + 3 compact pileups + headers/ruler/overview
+    viewportHeight: 900,
+    annotations: [
+      {
+        type: 'text',
+        x: 250,
+        y: 150,
+        maxWidth: 250,
+        fontSize: 14,
+        text: 'Gene body (AT1G12930): methylated in CpG only',
+      },
+      {
+        type: 'text',
+        x: 900,
+        y: 150,
+        maxWidth: 250,
+        fontSize: 14,
+        text: 'Silenced element (AT1G12935): methylated in all three contexts',
+      },
+    ],
   },
   // Zoomed to ~3 kb straddling the gene->element boundary at 4,405,669 (the
   // AT1G12930 3' end, pinned by the gene track above), colored by ALL cytosines
