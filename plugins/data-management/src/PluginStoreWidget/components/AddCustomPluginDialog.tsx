@@ -58,6 +58,8 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
   return (
     <SubmitDialog
       open
+      maxWidth="sm"
+      fullWidth
       title="Add custom plugin"
       submitDisabled={!ready}
       onCancel={onClose}
@@ -74,6 +76,8 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
         <TextField
           label="Plugin name"
           variant="outlined"
+          fullWidth
+          margin="dense"
           value={umdPluginName}
           onChange={event => {
             setUMDPluginName(event.target.value)
@@ -82,6 +86,8 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
         <TextField
           label="Plugin URL"
           variant="outlined"
+          fullWidth
+          margin="dense"
           value={umdPluginUrl}
           onChange={event => {
             setUMDPluginUrl(event.target.value)
@@ -114,6 +120,8 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
             <TextField
               label="ESM build URL"
               variant="outlined"
+              fullWidth
+              margin="dense"
               value={esmPluginUrl}
               onChange={event => {
                 setESMPluginUrl(event.target.value)
@@ -122,6 +130,8 @@ const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
             <TextField
               label="CJS build URL"
               variant="outlined"
+              fullWidth
+              margin="dense"
               value={cjsPluginUrl}
               onChange={event => {
                 setCJSPluginUrl(event.target.value)

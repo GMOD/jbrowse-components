@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
-import { DialogContentText, Input } from '@mui/material'
+import { DialogContentText, TextField } from '@mui/material'
 
 import { useIpcAction } from './useIpcAction.ts'
 
@@ -25,6 +25,8 @@ export default function RenameSessionDialog({
   return (
     <ConfirmDialog
       open
+      maxWidth="xs"
+      fullWidth
       title="Rename session"
       onSubmit={onSubmit}
       onCancel={onClose}
@@ -32,8 +34,11 @@ export default function RenameSessionDialog({
       <DialogContentText>
         Please enter a new name for the session:
       </DialogContentText>
-      <Input
+      <TextField
         autoFocus
+        fullWidth
+        variant="outlined"
+        margin="dense"
         value={newName}
         onChange={event => {
           setNewName(event.target.value)

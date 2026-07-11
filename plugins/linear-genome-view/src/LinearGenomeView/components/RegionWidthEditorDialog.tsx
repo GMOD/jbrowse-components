@@ -25,6 +25,8 @@ const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
   return (
     <SubmitDialog
       open
+      maxWidth="xs"
+      fullWidth
       title="Edit zoom level"
       onCancel={handleClose}
       onSubmit={() => {
@@ -41,6 +43,8 @@ const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
         <TextField
           label="Zoom level (bp)"
           autoFocus
+          fullWidth
+          variant="outlined"
           value={val}
           onChange={event => {
             setVal(event.target.value)

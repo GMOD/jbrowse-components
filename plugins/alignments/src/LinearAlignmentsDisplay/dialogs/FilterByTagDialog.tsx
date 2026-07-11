@@ -167,6 +167,8 @@ function ReadNameFilterSection(props: {
       <Typography>Filter by read name</Typography>
       <TextField
         className={classes.field}
+        fullWidth
+        variant="outlined"
         value={readName}
         placeholder="Enter read name"
         onChange={event => {

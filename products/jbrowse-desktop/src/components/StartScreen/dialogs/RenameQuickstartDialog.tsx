@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { ConfirmDialog, ErrorMessage } from '@jbrowse/core/ui'
-import { DialogContentText, Input } from '@mui/material'
+import { DialogContentText, TextField } from '@mui/material'
 
 import { useIpcAction } from './useIpcAction.ts'
 
@@ -32,6 +32,8 @@ export default function RenameQuickstartDialog({
   return (
     <ConfirmDialog
       open
+      maxWidth="xs"
+      fullWidth
       title="Rename quickstart"
       onSubmit={onSubmit}
       onCancel={onClose}
@@ -44,8 +46,11 @@ export default function RenameQuickstartDialog({
           There is already a quickstart named &quot;{newName}&quot;
         </DialogContentText>
       ) : null}
-      <Input
+      <TextField
         autoFocus
+        fullWidth
+        variant="outlined"
+        margin="dense"
         value={newName}
         onChange={event => {
           setNewName(event.target.value)
