@@ -33,12 +33,8 @@ export interface LabelMetrics {
 // right-edge limit wins the `Math.min`, so a feature whose right edge sits
 // within textWidth of the screen left keeps the label anchored to that right
 // edge even though its start then falls left of screen.
-function computeLabelLeftPx(
-  textWidth: number,
-  featureLeftPx: number,
-  featureRightPx: number,
-  screenStartPx: number,
-) {
+function computeLabelLeftPx(textWidth: number, bounds: FeatureBoundsPx) {
+  const { featureLeftPx, featureRightPx, screenStartPx } = bounds
   const fitsInFeature = textWidth <= featureRightPx - featureLeftPx
   const visibleStart = Math.max(screenStartPx, featureLeftPx, 0)
   const rightEdgeLimit = featureRightPx - textWidth
@@ -56,16 +52,9 @@ export function computeLabelPosition(
   padding: number,
   bounds: FeatureBoundsPx,
 ) {
-  const { featureLeftPx, featureRightPx, featureBottomPx, screenStartPx } =
-    bounds
   return {
-    labelX: computeLabelLeftPx(
-      label.textWidth,
-      featureLeftPx,
-      featureRightPx,
-      screenStartPx,
-    ),
-    labelY: featureBottomPx + label.relativeY + padding,
+    labelX: computeLabelLeftPx(label.textWidth, bounds),
+    labelY: bounds.featureBottomPx + label.relativeY + padding,
   }
 }
 
@@ -107,7 +96,7 @@ function resolveFeatureLabels(
   const { nameLabel, descriptionLabel, subfeatureLabel } = labelData
   const out: ResolvedLabel[] = []
   const add = (
-    label: LabelItem & { isOverlay?: boolean },
+    label: ResolvedLabel['label'],
     padding: number,
     kind: ResolvedLabel['kind'],
   ) => {
