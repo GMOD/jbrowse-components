@@ -4,7 +4,8 @@ sidebar_label: Overview
 ---
 
 This guide covers the structure and usage of the `config.json` file that drives
-a JBrowse 2 session.
+a JBrowse 2 session. Prefer copy-paste snippets? See the
+[Cookbook](/docs/cookbook) for short recipes covering the most common tasks.
 
 ## Getting started
 

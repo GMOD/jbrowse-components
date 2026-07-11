@@ -9,7 +9,8 @@ A collection of short, copy-paste recipes for the things people configure most
 often. Each recipe is a self-contained snippet you can drop into your
 `config.json` and adapt. The examples use the `volvox` sample data (in
 [`test_data/volvox`](https://github.com/GMOD/jbrowse-components/tree/main/test_data/volvox))
-so you can try them against a real dataset.
+so you can try them against a real dataset. For the full reference behind these
+recipes, see the [Config guide](/docs/config_guide).
 
 **New here?** Read the [TL;DR](#tldr-a-complete-config-on-one-screen) and
 [How config shorthand works](#how-config-shorthand-works) first — they explain

@@ -48,8 +48,6 @@ see the [full tutorials list](/docs/tutorials) for all of them.
 
 ## Embedding & scripting
 
-- [Embedded components](/docs/embedded_components) — add a genome view to your
-  own React app
 - [Automating JBrowse](/docs/automating) — the shared `init` spec behind URL,
   embedded, and config/session launches
 - [URL query parameter API](/docs/urlparams) — share or bookmark a specific
