@@ -56,7 +56,7 @@ export interface Track {
   description?: string
 }
 
-export const defaultAttributesToIndex = ['Name', 'ID']
+export const defaultAttributesToIndex = ['Name', 'ID', 'symbol']
 export const defaultFeatureTypesToExclude = ['exon', 'CDS']
 
 export const adapterLocationKey: Record<string, string> = {

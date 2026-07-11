@@ -100,7 +100,7 @@ pluginManager.pluggableConfigSchemaType('adapter')
 
 list of which feature attributes to index for text searching
 
-**Type:** `stringArray` · **Default:** `['Name', 'ID']`
+**Type:** `stringArray` · **Default:** `['Name', 'ID', 'symbol']`
 
 #### slot: textSearching.indexingFeatureTypesToExclude
 

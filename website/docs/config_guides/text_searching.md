@@ -118,11 +118,11 @@ in the FAQ.
 
 ### Only some genes are searchable
 
-`text-index` indexes `Name` and `ID` attributes by default. Add others with
-`--attributes`:
+`text-index` indexes `Name`, `ID`, and `symbol` attributes by default. Add
+others with `--attributes`:
 
 ```bash
-jbrowse text-index --attributes=Name,ID,gene_name
+jbrowse text-index --attributes=Name,ID,symbol,gene_name
 ```
 
 ## See also

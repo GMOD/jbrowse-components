@@ -8,7 +8,7 @@ import type { AddTrackModel, IndexingAttr } from '../model.ts'
 import type { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
 export const defaultIndexingConf: IndexingAttr = {
-  attributes: ['Name', 'ID'],
+  attributes: ['Name', 'ID', 'symbol'],
   exclude: ['CDS', 'exon'],
 }
 

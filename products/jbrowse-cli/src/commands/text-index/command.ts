@@ -1,5 +1,7 @@
 import { parseArgs } from 'node:util'
 
+import { defaultAttributesToIndex } from '@jbrowse/text-indexing-core'
+
 import { aggregateIndex, indexFileList, perTrackIndex } from './index.ts'
 import { printHelp } from '../../utils.ts'
 
@@ -29,7 +31,7 @@ export async function run(args?: string[]) {
     attributes: {
       type: 'string',
       description: 'Comma separated list of attributes to index',
-      default: 'Name,ID',
+      default: defaultAttributesToIndex.join(','),
     },
     assemblies: {
       type: 'string',
