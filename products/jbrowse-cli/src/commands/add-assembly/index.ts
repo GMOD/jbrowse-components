@@ -185,4 +185,9 @@ export async function run(args?: string[]) {
     itemId: assembly.name,
     wasOverwritten,
   })
+
+  console.log(
+    `\nNext, add tracks to this assembly (replace with your data file):\n` +
+      `  jbrowse add-track myfile.bam -a ${assembly.name} --load copy`,
+  )
 }

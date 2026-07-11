@@ -113,4 +113,12 @@ export async function run(args?: string[]) {
   if (exitCode !== 0) {
     throw new Error(`PIF sort/index pipeline exited with code ${exitCode}`)
   }
+
+  const indexFile = `${outputFile}.${csi ? 'csi' : 'tbi'}`
+  console.log(
+    `Created ${outputFile} and ${indexFile}\n\n` +
+      'Next, add it as a synteny track (set -a to your query,target assembly names):\n' +
+      `  jbrowse add-track ${outputFile} -a query,target --load copy\n\n` +
+      'For an all-vs-all PAF, add --adapterType AllVsAllIndexedPAFAdapter and list every assembly in -a.',
+  )
 }
