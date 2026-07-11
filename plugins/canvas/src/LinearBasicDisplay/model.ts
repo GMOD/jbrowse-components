@@ -4,9 +4,10 @@ import {
   getConf,
   getConfResolved,
   makeCurrentValueSessionDefaultControl,
+  makeSessionDefaultControl,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { promotableToggleItem } from '@jbrowse/core/ui'
+import { promotableRadioItem, promotableToggleItem } from '@jbrowse/core/ui'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
@@ -26,6 +27,18 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export type { Region } from '@jbrowse/core/util'
+
+// Radio options for the "Subfeature labels" submenu. 'none' is the promotedBase
+// of the promotable slot; every option is still pinnable so any mode can be
+// promoted back over another session default (mirrors the displayMode menu).
+const SUBFEATURE_LABEL_OPTIONS = [
+  { value: 'none', label: 'Off' },
+  { value: 'below', label: 'Below' },
+  { value: 'overlay', label: 'Overlay' },
+] as const satisfies readonly {
+  value: Exclude<DisplayConfig['subfeatureLabels'], 'inherit'>
+  label: string
+}[]
 
 /**
  * #stateModel LinearBasicDisplay
@@ -168,18 +181,23 @@ export default function stateModelFactory(
         showSubmenuMenuItems() {
           return [
             ...superShowSubmenuMenuItems(),
-            promotableToggleItem({
-              label: 'Show subfeature labels',
-              checked: self.subfeatureLabels !== 'none',
-              onToggle: () => {
-                self.setSubfeatureLabels(
-                  self.subfeatureLabels === 'none' ? 'overlay' : 'none',
-                )
-              },
-              sessionDefault: makeCurrentValueSessionDefaultControl(self, [
-                'subfeatureLabels',
-              ]),
-            }),
+            {
+              label: 'Subfeature labels',
+              subMenu: SUBFEATURE_LABEL_OPTIONS.map(option =>
+                promotableRadioItem({
+                  label: option.label,
+                  checked: self.subfeatureLabels === option.value,
+                  onClick: () => {
+                    self.setSubfeatureLabels(option.value)
+                  },
+                  sessionDefault: makeSessionDefaultControl(
+                    self,
+                    'subfeatureLabels',
+                    option.value,
+                  ),
+                }),
+              ),
+            },
             {
               label: 'Show only genes',
               type: 'checkbox' as const,
