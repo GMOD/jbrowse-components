@@ -83,6 +83,19 @@ test('keeps same-named data files from different directories distinct', () => {
   ])
 })
 
+test('pairs same-named data files in different directories with their own index', () => {
+  const pairs = pairLocations([
+    uri('/x/a.bam'),
+    uri('/x/a.bam.bai'),
+    uri('/y/a.bam'),
+    uri('/y/a.bam.bai'),
+  ])
+  expect(names(pairs)).toEqual([
+    { file: '/x/a.bam', index: '/x/a.bam.bai' },
+    { file: '/y/a.bam', index: '/y/a.bam.bai' },
+  ])
+})
+
 test('long-form index (.bam.bai) takes priority over short-form (.bai) when both are present', () => {
   // Verifies the Map algorithm always prefers the case-1 match (dataName+suffix)
   // over the case-2 match (stripExt(dataName)+suffix), regardless of list order.

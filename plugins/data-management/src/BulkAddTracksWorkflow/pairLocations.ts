@@ -36,6 +36,19 @@ function stripLastExt(name: string) {
   return dot === -1 ? name : name.slice(0, dot)
 }
 
+// Key used to match data files to their index sidecars. Uses the full path
+// (uri/localPath) so same-named files in different directories don't collide;
+// blob/file-handle locations have no path, so fall back to their filename.
+function pairingId(loc: FileLocation) {
+  if ('uri' in loc) {
+    return loc.uri
+  } else if ('localPath' in loc) {
+    return loc.localPath
+  } else {
+    return getFileName(loc)
+  }
+}
+
 function indexSuffixOf(name: string) {
   const lower = name.toLowerCase()
   return INDEX_SUFFIXES.find(suffix => lower.endsWith(suffix))
@@ -58,7 +71,11 @@ export function isIndexFile(loc: FileLocation) {
 export function pairLocations(locations: FileLocation[]): LocationPair[] {
   const named = locations.map(loc => {
     const name = getFileName(loc)
-    return { loc, lower: name.toLowerCase(), suffix: indexSuffixOf(name) }
+    return {
+      loc,
+      lower: pairingId(loc).toLowerCase(),
+      suffix: indexSuffixOf(name),
+    }
   })
   // Dedupe data files repeated under the same location (e.g. a URL pasted
   // twice). Callers that pre-dedupe (the workflow component) keep this as a

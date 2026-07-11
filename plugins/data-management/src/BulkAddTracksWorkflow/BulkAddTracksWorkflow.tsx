@@ -57,6 +57,13 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
       dropped.add(locationId(pair.index))
     }
     input.removeLocations(dropped)
+    // Drop any edited name so a later re-add of the same URL starts fresh
+    // rather than resurrecting the removed row's custom name.
+    setCustomNames(prev => {
+      const next = { ...prev }
+      delete next[rowId]
+      return next
+    })
   }
 
   return (
