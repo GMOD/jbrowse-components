@@ -40,6 +40,10 @@ export async function buildShareUrl(
   params.set('session', sessionParam)
   if (password) {
     params.set('password', password)
+  } else {
+    // drop a stale password carried over from a prior short link — the inline
+    // long/json modes don't use one, and it would leak the old link's password
+    params.delete('password')
   }
   const str = params.toString()
   if (mode === 'short') {

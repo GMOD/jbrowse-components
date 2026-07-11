@@ -434,7 +434,7 @@ test('planWebExport drops a local session track but keeps a remote one', () => {
   expect(plan.droppedTracks).toEqual(['Local track'])
 })
 
-test('buildWebExportUrl points config at the hosted base and session at encoded-', () => {
+test('buildWebExportUrl puts an encoded- long link in the hash, keeping config', () => {
   const url = buildWebExportUrl(
     {
       strategy: 'hostedConfigBase',
@@ -449,13 +449,16 @@ test('buildWebExportUrl points config at the hosted base and session at encoded-
   expect(parsed.origin + parsed.pathname).toBe(
     'https://jbrowse.org/code/jb2/latest/',
   )
-  expect(parsed.searchParams.get('config')).toBe(
+  // inline session lives in the hash (never sent to the server, avoids HTTP 414)
+  expect(parsed.search).toBe('')
+  const hashParams = new URLSearchParams(parsed.hash.slice(1))
+  expect(hashParams.get('config')).toBe(
     'https://jbrowse.org/ucsc/hg38/config.json',
   )
-  expect(parsed.searchParams.get('session')).toBe('encoded-ABC')
+  expect(hashParams.get('session')).toBe('encoded-ABC')
 })
 
-test('buildWebExportUrl uses config=none for a self-contained session', () => {
+test('buildWebExportUrl puts a self-contained encoded- session in the hash', () => {
   const url = buildWebExportUrl(
     {
       strategy: 'selfContained',
@@ -466,8 +469,10 @@ test('buildWebExportUrl uses config=none for a self-contained session', () => {
     'encoded-XYZ',
   )
   const parsed = new URL(url)
-  expect(parsed.searchParams.get('config')).toBe('none')
-  expect(parsed.searchParams.get('session')).toBe('encoded-XYZ')
+  expect(parsed.search).toBe('')
+  const hashParams = new URLSearchParams(parsed.hash.slice(1))
+  expect(hashParams.get('config')).toBe('none')
+  expect(hashParams.get('session')).toBe('encoded-XYZ')
 })
 
 test('buildWebExportUrl adds the password param for a short share link', () => {

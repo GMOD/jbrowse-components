@@ -347,18 +347,32 @@ export const DEFAULT_WEB_BASE_URL = 'https://jbrowse.org/code/jb2/latest/'
 
 // Assembles the jbrowse-web URL for an export plan. `sessionParam` is the
 // ready-made `session` value: `share-<id>` for a short lambda link (pass its
-// `password`) or `encoded-<b64>` for a self-contained long link. `config`
-// points at the hosted base, or `none` for a self-contained session.
+// `password`) or `encoded-<b64>`/`json-<json>` for an inline long link.
+// `config` points at the hosted base, or `none` for a self-contained session.
+//
+// The large inline modes (`encoded-`/`json-`) go in the hash fragment, which is
+// never sent to the server and so can't trip the request-line limit (HTTP 414)
+// the query string can — a self-contained export carries its own assemblies and
+// tracks and is exactly the biggest kind of session. The tiny `share-<id>` short
+// link stays in the query string. Mirrors jbrowse-web's buildShareUrl; the
+// SessionLoader reads `session=`/`config=` from either location (hash XOR query).
 export function buildWebExportUrl(
   plan: WebExportPlan,
   sessionParam: string,
   options: { password?: string; webBaseUrl?: string } = {},
 ): string {
   const url = new URL(options.webBaseUrl ?? DEFAULT_WEB_BASE_URL)
-  url.searchParams.set('config', plan.configUrl ?? 'none')
-  url.searchParams.set('session', sessionParam)
+  const params = new URLSearchParams()
+  params.set('config', plan.configUrl ?? 'none')
+  params.set('session', sessionParam)
   if (options.password) {
-    url.searchParams.set('password', options.password)
+    params.set('password', options.password)
+  }
+  const str = params.toString()
+  if (sessionParam.startsWith('share-')) {
+    url.search = str
+  } else {
+    url.hash = str
   }
   return url.href
 }

@@ -15,8 +15,8 @@ function generateSessionId(session) {
     .update(session + Math.random())
     .digest('base64')
     .slice(0, 10)
-    .replace('+', '-')
-    .replace('/', '_')
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
     .replace(/=+$/, '')
 }
 

@@ -61,6 +61,18 @@ describe('buildShareUrl', () => {
     expect(passwordParam).toBe('pw')
   })
 
+  it('drops a stale password when switching to a long link', async () => {
+    setUrl('/app/?session=share-old&password=stale')
+    mockEncode.mockResolvedValue({ sessionParam: 'encoded-BIG' })
+
+    const { url } = await buildShareUrl('long', {}, 'https://share/')
+    const u = new URL(url, window.location.origin)
+    expect(u.search).toBe('')
+    const hashParams = new URLSearchParams(u.hash.slice(1))
+    expect(hashParams.get('session')).toBe('encoded-BIG')
+    expect(hashParams.get('password')).toBeNull()
+  })
+
   it('carries existing hash params when the page already uses the hash', async () => {
     setUrl('/app/#config=conf.json&session=local-old')
     mockEncode.mockResolvedValue({ sessionParam: 'encoded-BIG' })
