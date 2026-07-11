@@ -3,7 +3,7 @@ import {
   dedupe,
   getSession,
   localStorageGetJSON,
-  localStorageSetItem,
+  localStorageSetJSON,
   notEmpty,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -17,7 +17,7 @@ import {
   findTopLevelCategories,
   getAllTrackNodes,
 } from './util.ts'
-import { keyConfigPostFix } from '../shared/configScopedKey.ts'
+import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 
 import type { TreeNode } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -41,9 +41,7 @@ export function getItemHeight(item: TreeNode, folderCategories: Set<string>) {
 }
 
 function recentlyUsedK(assemblyNames: string[]) {
-  return ['recentlyUsedTracks', keyConfigPostFix(), assemblyNames.join(',')]
-    .filter(Boolean)
-    .join('-')
+  return configScopedKey('recentlyUsedTracks', assemblyNames)
 }
 
 // this has a extra } at the end because that's how it was initially
@@ -74,12 +72,6 @@ function collapsedK(assemblyNames: string[], viewType: string) {
 // the connection (see toggleCategory)
 function connectionCategoryId(connectionId: string) {
   return `connection-${connectionId}`
-}
-
-function localStorageSetJSON(key: string, val: unknown) {
-  if (val !== undefined && val !== null) {
-    localStorageSetItem(key, JSON.stringify(val))
-  }
 }
 
 function sortedTreeChildren(

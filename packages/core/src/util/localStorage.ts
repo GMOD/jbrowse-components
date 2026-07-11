@@ -27,6 +27,12 @@ export function localStorageGetJSON<T>(key: string, defaultVal: T): T {
   return defaultVal
 }
 
+export function localStorageSetJSON(key: string, val: unknown) {
+  if (val !== undefined && val !== null) {
+    localStorageSetItem(key, JSON.stringify(val))
+  }
+}
+
 export function localStorageGetBoolean(key: string, defaultVal: boolean) {
   return Boolean(localStorageGetJSON(key, defaultVal))
 }
