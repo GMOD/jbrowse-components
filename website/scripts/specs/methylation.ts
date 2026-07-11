@@ -29,9 +29,17 @@ export const methylationSpecs: ScreenshotSpec[] = [
       loc: 'NC_003070.9:4,398,000-4,412,000',
       tracks: [
         { trackId: 'arabidopsis_genes' },
-        // aggregate CpG/CHG/CHH fraction, one colored row each: CpG high over
-        // gene body AND element, CHG/CHH confined to the element
-        { trackId: 'arabidopsis_methyldackel', height: 160 },
+        // aggregate CpG/CHG/CHH fraction, one labeled row each (multirowxy, so
+        // the three contexts don't overlay into a single apparent track): CpG
+        // high over gene body AND element, CHG/CHH confined to the element
+        {
+          trackId: 'arabidopsis_methyldackel',
+          type: 'MultiLinearWiggleDisplay',
+          defaultRendering: 'multirowxy',
+          minScore: 0,
+          maxScore: 100,
+          height: 180,
+        },
         {
           trackId: 'arabidopsis_wgbs',
           type: 'LinearAlignmentsDisplay',
@@ -66,6 +74,18 @@ export const methylationSpecs: ScreenshotSpec[] = [
       loc: 'NC_003070.9:4,404,500-4,407,500',
       tracks: [
         { trackId: 'arabidopsis_genes' },
+        // smoothed per-context methylation fraction above the reads: the CpG row
+        // stays high across the boundary while CHG/CHH rise as reads enter the
+        // silenced element — the aggregate corroboration of the per-read C->T
+        // transition below
+        {
+          trackId: 'arabidopsis_methyldackel',
+          type: 'MultiLinearWiggleDisplay',
+          defaultRendering: 'multirowxy',
+          minScore: 0,
+          maxScore: 100,
+          height: 150,
+        },
         {
           trackId: 'arabidopsis_wgbs',
           type: 'LinearAlignmentsDisplay',
@@ -79,7 +99,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readyText: 'Arabidopsis WGBS',
     readyTimeout: 90000,
     settleMs: 20000,
-    viewportHeight: 470,
+    viewportHeight: 620,
   },
 
   // CRAM modifications + bedmethyl together over a chr20:21.505-21.514Mb window

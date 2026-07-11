@@ -14,9 +14,18 @@ page explains what each type accepts, so a `Type: fileLocation` or
 
 Plain text, e.g. a track `name` or an `assemblyName`.
 
+### stringArray
+
+A list of strings, e.g. a track's `assemblyNames` or `category`.
+
 ### number
 
 A numeric value (integer or decimal), e.g. a pixel height or a score threshold.
+
+### maybeNumber
+
+A number or unset, where unset is a distinct state that defers to a higher-tier
+default (see `maybeBoolean`).
 
 ### integer
 
