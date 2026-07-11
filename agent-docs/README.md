@@ -91,6 +91,10 @@ how-tos in **[guides/](guides/)**, and design rationale in
 
 | Doc                                                                          | Purpose                                                     | When to read                                  |
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
+| **[SVG_EXPORT.md](reference/SVG_EXPORT.md)**                                 | SVG export pipeline: `renderSvg` shape, `svgReady`/`settled` gates, `paintLayer`, clip ids | Touching a display's `renderSvg.tsx` or export/capture readiness |
+| **[BP_PRECISION.md](reference/BP_PRECISION.md)**                             | Absolute-uint32 convention, hi/lo float math, window-relative cumBp, genome-size limits | Writing a `.slang` shader or a CPU instance packer |
+| **[PROGRESS_REPORTING.md](reference/PROGRESS_REPORTING.md)**                 | Worker→UI status channel: `statusCallback`, determinate bars, concurrent-fetch aggregation, cancel | Touching a progress bar or a download/worker loop |
+| **[HISTORICAL.md](reference/HISTORICAL.md)**                                 | Bugs that shaped the design + corrections to old writeups | "Why isn't it done the obvious way?" / avoiding a known-bad fix |
 | **[CONFIG_PATTERN.md](reference/CONFIG_PATTERN.md)**                         | Display config → MST snapshot → plain object → renderer     | Touching config, JEXL callbacks, RPC payloads |
 | **[DISPLAY_TYPE_DEFAULTS.md](reference/DISPLAY_TYPE_DEFAULTS.md)**           | Session-wide per-display-type slot defaults (promotable slots, CSS-cascade resolve) | Adding a "make default for all tracks like this" setting; touching `getConfResolved` / `promotable` slots |
 | **[VIEW_INIT.md](reference/VIEW_INIT.md)**                                   | Declarative `init` launch spec → afterAttach → state machine | Touching view launch, URL params, createViewState |
