@@ -91,6 +91,7 @@ export async function navToOption({
 
   const { pluginManager } = getEnv(session)
   await pluginManager.evaluateAsyncExtensionPoint(
+    /** #extensionPoint LinearGenomeView-searchResultSelected | async | Invoked when a search result is selected */
     'LinearGenomeView-searchResultSelected',
     undefined,
     { session, result: option, model, assemblyName },
@@ -204,36 +205,42 @@ export async function fetchResults({
     searchScope,
   )
 
-  // ensure aliases are loaded: the getters below are pure, so reading
-  // allRefNames does not itself kick off the lazy load
+  // ensure aliases are loaded: allRefNames is a pure getter, so reading it does
+  // not itself kick off the lazy load
   await assembly?.load()
-
-  // resolve aliases (e.g. 'contigB') to the canonical refname ('ctgB') so
-  // the dropdown shows the name that matches the FASTA / displayed regions.
-  // allRefNames can hold ~10^6 entries, so stop once we have enough unique
-  // canonical hits rather than lowercasing and scanning the entire list on
-  // every keystroke
-  const q = queryString.toLowerCase()
-  const allRefNames = assembly?.allRefNames
-  const canonicalHits = new Set<string>()
-  if (assembly && allRefNames) {
-    for (const ref of allRefNames) {
-      const lower = ref.toLowerCase()
-      const isMatch = searchType === 'exact' ? lower === q : lower.startsWith(q)
-      if (isMatch) {
-        canonicalHits.add(assembly.getCanonicalRefName(ref) ?? ref)
-        if (canonicalHits.size >= MAX_REFNAME_HITS) {
-          break
-        }
-      }
-    }
-  }
-  const refNameResults = [...canonicalHits].map(
-    r => new RefSequenceResult({ label: r, refName: r }),
-  )
+  const refNameResults = assembly
+    ? searchRefNames(assembly, queryString, searchType)
+    : []
 
   return dedupe([...refNameResults, ...(textSearchResults ?? [])], elt =>
     elt.getId(),
+  )
+}
+
+// Scan assembly refnames for query matches, resolving aliases (e.g. 'contigB')
+// to the canonical refname ('ctgB') so the dropdown shows the name that matches
+// the FASTA / displayed regions. allRefNames can hold ~10^6 entries, so stop
+// once enough unique canonical hits accumulate rather than lowercasing and
+// scanning the entire list on every keystroke.
+function searchRefNames(
+  assembly: Assembly,
+  queryString: string,
+  searchType?: SearchType,
+) {
+  const q = queryString.toLowerCase()
+  const canonicalHits = new Set<string>()
+  for (const ref of assembly.allRefNames ?? []) {
+    const lower = ref.toLowerCase()
+    const isMatch = searchType === 'exact' ? lower === q : lower.startsWith(q)
+    if (isMatch) {
+      canonicalHits.add(assembly.getCanonicalRefName(ref) ?? ref)
+      if (canonicalHits.size >= MAX_REFNAME_HITS) {
+        break
+      }
+    }
+  }
+  return [...canonicalHits].map(
+    r => new RefSequenceResult({ label: r, refName: r }),
   )
 }
 
