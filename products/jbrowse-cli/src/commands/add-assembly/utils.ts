@@ -175,7 +175,9 @@ export async function getAssembly({
   validateLoadAndLocation(argsSequence, runFlags.load)
 
   const type = runFlags.type ?? guessSequenceType(argsSequence)
-  debug(runFlags.type ? `Type is: ${type}` : `No type specified, guessed: ${type}`)
+  debug(
+    runFlags.type ? `Type is: ${type}` : `No type specified, guessed: ${type}`,
+  )
 
   const uri = (p: string) =>
     ({
@@ -188,7 +190,10 @@ export async function getAssembly({
       argsSequence,
       runFlags.name,
     )
-    return { assembly: { name, sequence: makeSequence(name, adapter) }, filesToLoad: [] }
+    return {
+      assembly: { name, sequence: makeSequence(name, adapter) },
+      filesToLoad: [],
+    }
   }
 
   const spec = seqSpecs[type]
