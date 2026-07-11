@@ -102,8 +102,8 @@ those skips:
 <Figure caption="Long-read (IsoSeq) RNA-seq in JBrowse 2. A long read often spans all of a transcript's exons at once, producing a long, clean spliced alignment." src="/img/rnaseq/longread_isoseq.png" />
 
 Because a long read carries a whole isoform end-to-end, long-read RNA-seq makes
-alternative splicing (like the PKM example above) even more direct — each read
-_is_ one isoform, no inference across junctions required.
+alternative splicing even more direct — each read _is_ one isoform, no inference
+across junctions required.
 
 ## Loading your own RNA-seq data
 

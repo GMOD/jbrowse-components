@@ -465,7 +465,7 @@ ordinary polymorphism:
 
 ```bash
 # subset to the 180 karyotyped lines, 2L, biallelic SNPs
-vcftools --gzvcf "$VCF" --chr 2L --keep In2Lt_homozygous.txt \
+vcftools --gzvcf "$VCF" --chr 2L --keep In2Lt_STD.txt --keep In2Lt_INV.txt \
   --min-alleles 2 --max-alleles 2 --remove-indels --mac 10 \
   --recode --stdout | bgzip > dgrp_In2Lt_2L.vcf.gz
 tabix -p vcf dgrp_In2Lt_2L.vcf.gz

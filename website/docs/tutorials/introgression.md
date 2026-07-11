@@ -61,8 +61,9 @@ tabix -p bed introgression.multirow.bed.gz
 
 The five individuals are one each from Europe (French), East Asia (Han), the
 Americas (Karitiana), and Oceania (Bougainville, PapuanHighlands). Each output
-line is BED6 plus three trailing fields — `sample` (the `<pop> <hap>` row
-label), `source`, and `meanprob` — which drive the rows and colors.
+line is BED6 plus five trailing fields — `sample` (the `<pop> <hap>` row label),
+`source`, `meanprob`, `pop`, and `region`; the first three drive the rows and
+colors.
 
 ## Configure the multi-row feature display
 

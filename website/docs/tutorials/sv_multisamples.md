@@ -129,7 +129,7 @@ allele.
 
 <Figure caption="chr19 region containing the large inversion shown in the 1KGP SV callset alongside pileup tracks from multiple samples. The dense colored variation in the alignment tracks reflects the two orientations of the inverted segment segregating in the population. The track selector panel on the right shows the 1000 Genomes track categories, and enabling 1000 Genomes → Alignments adds coverage and pileup panels per sample." src="/img/multisv.png" />
 
-[Open the inversion demo session](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"19:41,700,000-42,000,000","tracks":[{"trackId":"1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf","displaySnapshot":{"type":"MultiLinearVariantDisplay"}},"ncbi_refseq_109_hg38_latest"]}]})
+[Open the inversion demo session](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"19:41,700,000-42,000,000","tracks":[{"trackId":"1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf","displaySnapshot":{"type":"LinearMultiSampleVariantDisplay"}},"ncbi_refseq_109_hg38_latest"]}]})
 
 ### Read orientation evidence at the breakpoints
 
