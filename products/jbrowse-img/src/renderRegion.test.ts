@@ -5,7 +5,6 @@ import path from 'node:path'
 import { makeLocation, makeTrackConfig } from './makeConfigs.ts'
 import { standardizeArgv } from './parseArgv.ts'
 import { readData } from './readData.ts'
-import { booleanize } from './util.ts'
 
 const dataDir = path.join(__dirname, '..', 'data')
 const configFile = path.join(dataDir, 'config.json')
@@ -19,22 +18,6 @@ const fakeAssembly = {
     adapter: { type: 'IndexedFastaAdapter' },
   },
 }
-
-describe('booleanize', () => {
-  test('false string returns false', () => {
-    expect(booleanize('false')).toBe(false)
-  })
-
-  test('non-empty string returns true', () => {
-    expect(booleanize('true')).toBe(true)
-    expect(booleanize('1')).toBe(true)
-    expect(booleanize('yes')).toBe(true)
-  })
-
-  test('empty string returns false', () => {
-    expect(booleanize('')).toBe(false)
-  })
-})
 
 describe('standardizeArgv', () => {
   const trackTypes = [

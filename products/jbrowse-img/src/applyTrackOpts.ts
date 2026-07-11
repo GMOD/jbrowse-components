@@ -1,6 +1,6 @@
 import path from 'node:path'
 
-import { booleanize } from './util.ts'
+import { getBooleanValue } from './options.ts'
 
 import type { Entry } from './parseArgv.ts'
 import type { Track } from './types.ts'
@@ -302,8 +302,14 @@ function applyModifier(
         } else if (val1 === 'up' || val1 === 'down') {
           snap.readConnections = 'arc'
           snap.readConnectionsDown = val1 === 'down'
-        } else {
+        } else if (val1 === 'off' || val1 === '') {
           snap.readConnections = 'off'
+        } else {
+          // A typo (arcs:upp) previously silently turned arcs off; warn so the
+          // mistake is visible instead of producing a plot without arcs.
+          console.warn(
+            `Warning: unknown arcs mode "${val1}" (expected off, up, down, samplot); ignoring`,
+          )
         }
       }
       break
@@ -333,7 +339,7 @@ function applyModifier(
     }
     case 'coverage': {
       if (isAlignments) {
-        snap.showCoverage = booleanize(val1 || 'true')
+        snap.showCoverage = getBooleanValue(val1 || 'true', 'coverage')
       }
       break
     }
@@ -391,18 +397,18 @@ function applyModifier(
       // Legacy boolean: true → 0px spacing, false → 2px spacing (the value the
       // pre-unification override branch baked in for noSpacing=false).
       if (hasFeatureSize) {
-        snap.featureSpacing = booleanize(val1 || 'true') ? 0 : 2
+        snap.featureSpacing = getBooleanValue(val1 || 'true', 'noSpacing') ? 0 : 2
       }
       break
     }
     case 'softClipping': {
       if (isAlignments) {
-        snap.showSoftClipping = booleanize(val1 || 'true')
+        snap.showSoftClipping = getBooleanValue(val1 || 'true', 'softClipping')
       }
       break
     }
     case 'force': {
-      if (booleanize(val1 || 'true')) {
+      if (getBooleanValue(val1 || 'true', 'force')) {
         result.force = true
       }
       break
@@ -460,7 +466,7 @@ function applyModifier(
     }
     case 'crosshatch': {
       if (isScore) {
-        snap.displayCrossHatches = booleanize(val1 || 'true')
+        snap.displayCrossHatches = getBooleanValue(val1 || 'true', 'crosshatch')
       }
       break
     }
@@ -469,7 +475,7 @@ function applyModifier(
     // `fill:true` is plain `xyplot`.
     case 'fill': {
       if (isScore) {
-        snap.defaultRendering = booleanize(val1 || 'true')
+        snap.defaultRendering = getBooleanValue(val1 || 'true', 'fill')
           ? 'xyplot'
           : 'scatter'
       }

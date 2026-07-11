@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process'
 
-import { booleanize, convert } from './util.ts'
+import { convert } from './util.ts'
 
 jest.mock('node:child_process', () => ({ spawnSync: jest.fn() }))
 
@@ -8,15 +8,6 @@ const mockSpawnSync = jest.mocked(spawnSync)
 
 beforeEach(() => {
   mockSpawnSync.mockReset()
-})
-
-describe('booleanize', () => {
-  test('"false" is false, empty is false, anything else is true', () => {
-    expect(booleanize('false')).toBe(false)
-    expect(booleanize('')).toBe(false)
-    expect(booleanize('true')).toBe(true)
-    expect(booleanize('yes')).toBe(true)
-  })
 })
 
 describe('convert', () => {

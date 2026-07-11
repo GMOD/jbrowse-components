@@ -201,9 +201,34 @@ export function getString(rest: Record<string, unknown>, key: string) {
   return typeof v === 'string' ? v : undefined
 }
 
+// Parse a boolean CLI value. `true`/`false` (and a bare flag, which arrives as
+// the boolean `true`) map directly; an absent flag is `false`. Anything else
+// warns and is treated as false, so a typo (`coverage:ture`) or a loose value
+// (`coverage:0`, which the old `!!str` wrongly made truthy) is visible instead
+// of silently on. Shared by top-level flags (getBoolean) and track modifiers.
+export function getBooleanValue(value: unknown, label: string) {
+  const result =
+    value === true || value === 'true'
+      ? true
+      : value === undefined || value === false || value === 'false'
+        ? false
+        : undefined
+  if (result === undefined) {
+    console.warn(
+      `Warning: expected true or false for ${label}, got "${String(value)}"; treating as false`,
+    )
+  }
+  return result ?? false
+}
+
 export function getBoolean(rest: Record<string, unknown>, key: string) {
+  return getBooleanValue(rest[key], `--${key}`)
+}
+
+export function getOptionalNumber(rest: Record<string, unknown>, key: string) {
   const v = rest[key]
-  return v === true || v === 'true'
+  const n = typeof v === 'string' ? Number(v) : NaN
+  return Number.isFinite(n) ? n : undefined
 }
 
 export function getNumber(
@@ -211,15 +236,26 @@ export function getNumber(
   key: string,
   fallback: number,
 ) {
-  const v = rest[key]
-  const n = typeof v === 'string' ? Number(v) : NaN
-  return Number.isFinite(n) ? n : fallback
+  return getOptionalNumber(rest, key) ?? fallback
 }
 
-export function getOptionalNumber(rest: Record<string, unknown>, key: string) {
-  const v = rest[key]
-  const n = typeof v === 'string' ? Number(v) : NaN
-  return Number.isFinite(n) ? n : undefined
+// Resolve a flag against a fixed set of allowed values, warning (rather than
+// silently falling back to the default) when a present value isn't one of them —
+// a typo like `--cigarMode ful` or `--trackLabels lft` should be reported, the
+// same way an unknown option name is.
+function getEnum<T extends string>(
+  rest: Record<string, unknown>,
+  key: string,
+  allowed: readonly T[],
+) {
+  const v = getString(rest, key)
+  const match = allowed.find(a => a === v)
+  if (v !== undefined && !match) {
+    console.warn(
+      `Warning: unknown --${key} "${v}" (expected ${allowed.join(', ')}); ignoring`,
+    )
+  }
+  return match
 }
 
 // A comma-separated numeric list (e.g. levelHeights:300,300), dropping any
@@ -239,15 +275,28 @@ export function getNumberList(rest: Record<string, unknown>, key: string) {
 const trackLabelModes: TrackLabelMode[] = ['offset', 'overlay', 'left', 'none']
 
 export function getTrackLabels(rest: Record<string, unknown>) {
-  const v = getString(rest, 'trackLabels')
-  return trackLabelModes.find(mode => mode === v)
+  return getEnum(rest, 'trackLabels', trackLabelModes)
 }
 
 export const cigarModes = ['off', 'matches', 'full'] as const
 
 export function getCigarMode(rest: Record<string, unknown>) {
-  const v = getString(rest, 'cigarMode')
-  return cigarModes.find(mode => mode === v)
+  return getEnum(rest, 'cigarMode', cigarModes)
+}
+
+// The built-in theme names (see packages/core/src/ui/theme.ts). Kept in sync
+// with the --themeName help text; validated so a misspelled theme warns instead
+// of silently rendering the default.
+export const themeNames = [
+  'default',
+  'lightStock',
+  'lightMinimal',
+  'darkStock',
+  'darkMinimal',
+] as const
+
+export function getThemeName(rest: Record<string, unknown>) {
+  return getEnum(rest, 'themeName', themeNames)
 }
 
 export const knownOptions = new Set([

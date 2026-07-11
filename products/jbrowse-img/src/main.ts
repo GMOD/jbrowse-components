@@ -21,6 +21,7 @@ import {
   getNumberList,
   getOptionalNumber,
   getString,
+  getThemeName,
   getTrackLabels,
   knownOptions,
 } from './options.ts'
@@ -29,7 +30,7 @@ const scriptName = 'jb2export'
 
 // Write the rendered SVG: to stdout when no --out, else by extension. .png/.pdf
 // route through rsvg-convert (.pdf via the `-f pdf` flag); anything else is the
-// raw SVG.
+// raw SVG. Both raster formats honor --width so PDF matches PNG.
 function writeOutput(
   result: string,
   outFile: string | undefined,
@@ -40,9 +41,9 @@ function writeOutput(
   } else {
     const lower = outFile.toLowerCase()
     if (lower.endsWith('.png')) {
-      convert(result, { out: outFile, pngwidth: String(width) })
+      convert(result, { out: outFile, width: String(width) })
     } else if (lower.endsWith('.pdf')) {
-      convert(result, { out: outFile }, ['-f', 'pdf'])
+      convert(result, { out: outFile, width: String(width) }, ['-f', 'pdf'])
     } else {
       fs.writeFileSync(outFile, result)
     }
@@ -68,7 +69,11 @@ async function main() {
       `Unknown subcommand "${first}". Known subcommands: ${subcommandTokens.join(', ')}, list`,
     )
     process.exit(1)
-  } else if (args.includes('--help') || args.includes('-h')) {
+  } else if (
+    argv.length === 0 ||
+    args.includes('--help') ||
+    args.includes('-h')
+  ) {
     console.log(buildHelp(scriptName, trackTypes, syntenyTrackTypes, mode))
   } else if (args.includes('--version') || args.includes('-v')) {
     const { version } = JSON.parse(
@@ -123,7 +128,7 @@ async function main() {
       defaultSession: getBoolean(rest, 'defaultSession'),
       tracks: getString(rest, 'tracks'),
       cytobands: getString(rest, 'cytobands'),
-      themeName: getString(rest, 'themeName'),
+      themeName: getThemeName(rest),
       fontFamily: getString(rest, 'fontFamily') ?? 'serif',
       showGridlines: getBoolean(rest, 'showGridlines'),
       trackLabels: getTrackLabels(rest),

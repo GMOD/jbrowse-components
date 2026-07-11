@@ -2,8 +2,11 @@ import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
 import {
   buildHelp,
   getBoolean,
+  getBooleanValue,
+  getCigarMode,
   getNumber,
   getString,
+  getThemeName,
   getTrackLabels,
   knownOptions,
 } from './options.ts'
@@ -34,6 +37,61 @@ test('applies fallbacks when options are absent', () => {
 test('validates trackLabels against the allowed modes', () => {
   expect(getTrackLabels(parse('--trackLabels offset'))).toBe('offset')
   expect(getTrackLabels(parse('--trackLabels bogus'))).toBeUndefined()
+})
+
+test('warns on an invalid enum value instead of silently defaulting', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  try {
+    expect(getCigarMode(parse('--cigarMode full'))).toBe('full')
+    expect(getThemeName(parse('--themeName darkStock'))).toBe('darkStock')
+    expect(warn).not.toHaveBeenCalled()
+
+    expect(getCigarMode(parse('--cigarMode ful'))).toBeUndefined()
+    expect(getThemeName(parse('--themeName drakStock'))).toBeUndefined()
+    expect(getTrackLabels(parse('--trackLabels lft'))).toBeUndefined()
+    expect(warn).toHaveBeenCalledTimes(3)
+  } finally {
+    warn.mockRestore()
+  }
+})
+
+test('absent enum flags return undefined without warning', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  try {
+    expect(getCigarMode(parse('--loc chr1'))).toBeUndefined()
+    expect(getThemeName(parse('--loc chr1'))).toBeUndefined()
+    expect(warn).not.toHaveBeenCalled()
+  } finally {
+    warn.mockRestore()
+  }
+})
+
+describe('getBooleanValue', () => {
+  test('true/false and bare flag map directly without warning', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(getBooleanValue(true, 'x')).toBe(true)
+      expect(getBooleanValue('true', 'x')).toBe(true)
+      expect(getBooleanValue(false, 'x')).toBe(false)
+      expect(getBooleanValue('false', 'x')).toBe(false)
+      expect(getBooleanValue(undefined, 'x')).toBe(false)
+      expect(warn).not.toHaveBeenCalled()
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  test('a loose value like "0" warns and is false (not silently truthy)', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(getBooleanValue('0', 'coverage')).toBe(false)
+      expect(getBooleanValue('yes', 'coverage')).toBe(false)
+      expect(getBooleanValue('ture', 'coverage')).toBe(false)
+      expect(warn).toHaveBeenCalledTimes(3)
+    } finally {
+      warn.mockRestore()
+    }
+  })
 })
 
 test('knownOptions covers named options including help and version', () => {

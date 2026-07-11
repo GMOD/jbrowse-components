@@ -3,13 +3,9 @@ import fs from 'node:fs'
 
 import { fileSync } from 'tmp'
 
-export function booleanize(str: string) {
-  return str === 'false' ? false : !!str
-}
-
 export function convert(
   result: string,
-  args: { out: string; pngwidth?: string },
+  args: { out: string; width?: string },
   spawnArgs: string[] = [],
 ) {
   const { name } = fileSync({
@@ -17,9 +13,9 @@ export function convert(
     prefix: 'jbrowse-img-',
     postfix: '.svg',
   })
-  const { pngwidth = '2048', out } = args
+  const { width = '2048', out } = args
   fs.writeFileSync(name, result)
-  const a = ['-w', pngwidth, name, '-o', out, ...spawnArgs]
+  const a = ['-w', width, name, '-o', out, ...spawnArgs]
   const ls = spawnSync('rsvg-convert', a)
   try {
     // The spawn itself failing (e.g. rsvg-convert not installed) leaves
