@@ -6,10 +6,12 @@ import fs from 'node:fs/promises'
 import { glob } from 'node:fs/promises'
 import path from 'node:path'
 
+import { emitRawMarkdown } from './src/lib/emit-raw-markdown.ts'
 import rehypeBaseUrls from './src/lib/rehype-base-urls.ts'
 
 // allows deploying to an alternative suburi, e.g. for staging builds
 const BASE = process.env.SITE_BASE_PATH || '/jb2'
+const SITE = 'https://jbrowse.org'
 
 function fixAbsoluteLinks() {
   return {
@@ -33,8 +35,25 @@ function fixAbsoluteLinks() {
   }
 }
 
+// Emit raw `/docs/<slug>.md` files for LLM/agent consumption (see
+// src/lib/emit-raw-markdown.ts and the /llms.txt index).
+function emitRawMarkdownIntegration() {
+  return {
+    name: 'emit-raw-markdown',
+    hooks: {
+      'astro:build:done': async ({ dir }) => {
+        await emitRawMarkdown({
+          docsDir: new URL('./docs', import.meta.url).pathname,
+          distDir: dir instanceof URL ? dir.pathname : dir,
+          origin: `${SITE}${BASE}`,
+        })
+      },
+    },
+  }
+}
+
 export default defineConfig({
-  site: 'https://jbrowse.org',
+  site: SITE,
   base: BASE,
   publicDir: './static',
   trailingSlash: 'always',
@@ -44,7 +63,12 @@ export default defineConfig({
   // whitespace (the browser collapses runs to one space); the size cost is
   // negligible for a static docs site.
   compressHTML: false,
-  integrations: [react(), icon(), fixAbsoluteLinks()],
+  integrations: [
+    react(),
+    icon(),
+    fixAbsoluteLinks(),
+    emitRawMarkdownIntegration(),
+  ],
   // Self-hosted Roboto (downloaded + optimized at build, served from our own
   // origin) — no render-blocking request to fonts.googleapis.com. Exposed as
   // var(--font-roboto); emit the <Font> tags with <Font cssVariable> in the head.
