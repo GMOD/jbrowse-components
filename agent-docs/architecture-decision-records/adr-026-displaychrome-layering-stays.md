@@ -137,8 +137,9 @@ Keep the current layering. Each layer maps to a genuine concern boundary:
   hic/LD `rpcData`-gated `_done` selectors, so the gate is uniformly `canvasDrawn`
   expressed once. Two unrelated emitters remain by design: the standalone non-LGV
   `synteny_canvas_done` / `dotplot_webgl_canvas_done` (those views never render
-  DisplayChrome), and the generic block-path `display-${id}-done` from
-  `BaseLinearDisplay.tsx` (the legacy `LinearBlocks` wrapper, gated
+  DisplayChrome), and the generic `display-${id}-done` from
+  `BaseLinearDisplay.tsx` (once the legacy `LinearBlocks` wrapper, now the thin
+  shared GPU container left after the block path's removal, gated
   `'canvasDrawn' in model`). Distinct roles, distinct wrappers — not drift. See
   [DISPLAYCHROME.md](../reference/DISPLAYCHROME.md) "First-paint `-done` testid".
 - `renderTick` stays: it is a justified workaround for MobX's inability to express

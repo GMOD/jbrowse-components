@@ -166,21 +166,36 @@ drift.**
 
 ## Worked example: retiring the legacy block stack
 
-This is why the block stack is "maintained indefinitely" — and the path out.
+> **Resolution (webgl-poc):** this example has since played out — the opposite
+> way from the graceful "path out" below. The GPU migration **removed** the
+> block state model, `LinearBareDisplay`, `BasicTrack`, and the block components
+> in-tree and **accepted the gdc/icgc breakage**, offering to rebuild the path as
+> an external compat plugin (core's `ServerSideRendererType` /
+> `renderToAbstractCanvas` / `CoreRender` machinery stays public, so that's a
+> clean plugin, not a monkeypatch). So "nothing is removed" was not iron law — a
+> hard-enough forcing function (a whole-pipeline rewrite) overrode it. The
+> analysis below still holds for every export *not* worth a rewrite to shed; read
+> it as "the cost of keeping," with the block stack as the case where the cost of
+> keeping finally lost. See `ARCHITECTURE.md` §"The legacy block stack" and
+> `reference/HISTORICAL.md`.
 
-- **Today:** `BaseLinearDisplay` (state model) + the server-side-render block path
-  are `@jbrowse/plugin-linear-genome-view` public exports. In-tree only
-  `LinearBareDisplay` composes them (and it's the LGV test suite's lightweight
-  test vehicle). External `gdc`/`icgc`/`mafviewer` reach
+The pre-rip situation, and the graceful path we *didn't* take:
+
+- **Pre-rip:** `BaseLinearDisplay` (state model) + the server-side-render block
+  path were `@jbrowse/plugin-linear-genome-view` public exports. In-tree only
+  `LinearBareDisplay` composed them (and it was the LGV test suite's lightweight
+  test vehicle). External `gdc`/`icgc`/`mafviewer` reached
   `LGVPlugin.exports.BaseLinearDisplay` + `BaseLinearDisplayComponent` at runtime.
-  `mafviewer` is already superseded in-tree by `plugins/maf`.
-- **Why it's stuck:** can't prove no external plugin composes it → can't remove.
-- **Path out:** (a) declare `BaseLinearDisplay`/`BaseLinearDisplayComponent`
-  `@public` or not; (b) if not, wrap in a runtime deprecation warning to start the
-  clock and learn usage; (c) ship a version-gated API so removal lands on a major
-  with a migration guide. "Indefinite maintenance" becomes "removed in v4, warned
-  since v3." Keep `LinearBareDisplay` in-tree as long as the path lives — it's the
-  only in-tree regression coverage for it.
+  `mafviewer` was already superseded in-tree by `plugins/maf`.
+- **Why it was stuck:** can't prove no external plugin composes it → can't remove
+  *without breaking someone*.
+- **Graceful path out (not taken):** (a) declare
+  `BaseLinearDisplay`/`BaseLinearDisplayComponent` `@public` or not; (b) if not,
+  wrap in a runtime deprecation warning to start the clock and learn usage; (c)
+  ship a version-gated API so removal lands on a major with a migration guide.
+  "Indefinite maintenance" becomes "removed in v4, warned since v3." webgl-poc
+  instead took the blunt path (remove now, accept breakage) because the GPU
+  rewrite made in-tree maintenance of the block path untenable.
 
 ---
 
