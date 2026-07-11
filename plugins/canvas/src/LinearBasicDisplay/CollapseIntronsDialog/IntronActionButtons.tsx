@@ -32,32 +32,26 @@ const IntronActionButtons = observer(function IntronActionButtons({
   trackId: string
   soloFeatureId: string | undefined
 }) {
-  const disabled = windowSize === undefined
+  // undefined while the window-size field is invalid; both buttons disable and
+  // the click handlers no-op, so neither action runs with a bad padding.
+  const args =
+    windowSize === undefined
+      ? undefined
+      : { view, transcripts, assembly, padding: windowSize, flip, trackId, soloFeatureId }
+  const run = (action: (a: NonNullable<typeof args>) => void | Promise<void>) => {
+    if (args) {
+      void runIntronAction(view, () => action(args), handleClose)
+    }
+  }
   return (
     <>
       <Button
         size="small"
         variant="contained"
         color="primary"
-        disabled={disabled}
+        disabled={args === undefined}
         onClick={() => {
-          if (windowSize !== undefined) {
-            void runIntronAction(
-              view,
-              () => {
-                replaceIntrons({
-                  view,
-                  transcripts,
-                  assembly,
-                  padding: windowSize,
-                  flip,
-                  trackId,
-                  soloFeatureId,
-                })
-              },
-              handleClose,
-            )
-          }
+          run(replaceIntrons)
         }}
       >
         Replace current view
@@ -67,25 +61,9 @@ const IntronActionButtons = observer(function IntronActionButtons({
           size="small"
           variant="contained"
           color="primary"
-          disabled={disabled}
+          disabled={args === undefined}
           onClick={() => {
-            if (windowSize !== undefined) {
-              void runIntronAction(
-                view,
-                () => {
-                  collapseIntrons({
-                    view,
-                    transcripts,
-                    assembly,
-                    padding: windowSize,
-                    flip,
-                    trackId,
-                    soloFeatureId,
-                  })
-                },
-                handleClose,
-              )
-            }
+            run(collapseIntrons)
           }}
         >
           Open in new view

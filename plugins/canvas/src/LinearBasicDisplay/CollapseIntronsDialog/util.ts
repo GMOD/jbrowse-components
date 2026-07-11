@@ -2,6 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession, mergeIntervals, stripTrackIds } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
+import { getFeatureName } from '../../RenderFeatureDataRPC/labelUtils.ts'
 import {
   getSubfeatures,
   isCDS,
@@ -114,18 +115,36 @@ interface TrackSnapshot {
 }
 
 // Isolate the track (matched by trackId) in `view` to a single feature via the
-// canvas display's solo set. Used by the in-place "Replace" action, where the
-// display already exists so isolating is a direct action call.
+// canvas display's solo set, returning a callback that restores the display's
+// prior solo state. Used by the in-place "Replace" action, where the display
+// already exists so isolating is a direct action call — and its Undo needs to
+// reverse the isolation, not just the region/zoom change.
 export function soloFeatureInView(
   view: LinearGenomeViewModel,
   trackId: string,
   featureId: string,
-) {
+): () => void {
   const track = view.tracks.find(
     t => readConfObject(t.configuration, 'trackId') === trackId,
   )
   const display = track?.displays.find(isSoloCapable)
-  display?.soloFeature(featureId)
+  if (!display) {
+    return () => {}
+  }
+  const prevIds = [...display.soloFeatureIds]
+  const prevApplied = display.soloApplied
+  display.soloFeature(featureId)
+  return () => {
+    display.clearSolo()
+    for (const id of prevIds) {
+      display.toggleSoloFeature(id)
+    }
+    // toggleSoloFeature collects without isolating; re-apply only if the prior
+    // set was actually isolating (an applied set is always non-empty).
+    if (prevApplied) {
+      display.applySolo()
+    }
+  }
 }
 
 // Seed the collapsed view's snapshot so its solo-capable display opens already
@@ -179,7 +198,7 @@ export function calculateInitialViewState(
 
 function transcriptLabel(transcripts: Feature[]) {
   const f = transcripts[0]
-  return f?.get('name') ?? f?.get('id') ?? 'feature'
+  return (f ? getFeatureName(f) : undefined) ?? 'feature'
 }
 
 function buildArgs({
@@ -255,14 +274,16 @@ export function replaceIntrons({
   }
   view.setDisplayedRegions(args.mergedRegions)
   view.setNewView(args.initialState.bpPerPx, args.initialState.offsetPx)
-  if (soloFeatureId !== undefined) {
-    soloFeatureInView(view, trackId, soloFeatureId)
-  }
+  const restoreSolo =
+    soloFeatureId === undefined
+      ? undefined
+      : soloFeatureInView(view, trackId, soloFeatureId)
   getSession(view).notify('Introns collapsed', 'info', {
     name: 'Undo',
     onClick: () => {
       view.setDisplayedRegions(previous.displayedRegions)
       view.setNewView(previous.bpPerPx, previous.offsetPx)
+      restoreSolo?.()
     },
   })
 }

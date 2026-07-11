@@ -12,6 +12,7 @@ import { observer } from 'mobx-react'
 
 import IntronActionButtons from './IntronActionButtons.tsx'
 import { getExonsAndCDS } from './util.ts'
+import { getFeatureName } from '../../RenderFeatureDataRPC/labelUtils.ts'
 import { isExon } from '../../RenderFeatureDataRPC/util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -43,10 +44,7 @@ function buildRows(transcripts: Feature[]): TranscriptRow[] {
       const exonCount = exonsAndCDS.filter(f => isExon(f)).length
       return {
         transcript,
-        name:
-          transcript.get('name') ||
-          transcript.get('id') ||
-          `Transcript ${idx + 1}`,
+        name: getFeatureName(transcript) ?? `Transcript ${idx + 1}`,
         type: transcript.get('type') || 'transcript',
         lengthBp: end - start,
         exonCount,
