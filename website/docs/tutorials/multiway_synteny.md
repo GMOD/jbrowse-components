@@ -109,8 +109,17 @@ The `blockAssemblies` slot names every column in order (column 0 first), and
 ```
 
 `bedLocations` is a per-column array and `blockAssemblies` names those columns —
-neither is expressible through `jbrowse add-track` flags, so this adapter is
-configured directly in `config.json` as shown rather than from the CLI.
+neither is expressible as a `jbrowse add-track` flag. To add this track from the
+CLI, save the JSON above to a file and hand it to `jbrowse add-track-json`, which
+inserts a full track config verbatim (any adapter shape works):
+
+```bash
+jbrowse add-track-json blocks_track.json --out /path/to/jb2
+```
+
+Unlike `add-track`, `add-track-json` only writes the config — it does not copy
+data files, so put `grape.blocks.gz` and the BED files where their `uri`s point
+(e.g. the config directory) or reference them by URL.
 
 ## Stacking the three genomes
 
