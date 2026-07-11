@@ -29,8 +29,6 @@ Not ready to install anything? Browse [live demos](/demos/), the
 - [Config guide](/docs/config_guide) — detailed configuration settings
 - [Supported file types](/docs/config_guides/file_types) — every format JBrowse
   reads and the adapter it maps to
-- [Admin server](/docs/quickstart_adminserver) — configure JBrowse via the GUI
-  with the admin-server tool
 - [Plugin store](/docs/user_guides/plugin_store) — install community plugins
   without writing code
 - [Automating JBrowse](/docs/automating) — the shared `init` spec behind URL,

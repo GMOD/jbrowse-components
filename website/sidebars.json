@@ -6,8 +6,7 @@
       "label": "Getting started",
       "items": [
         "quickstart_desktop",
-        "quickstart_web",
-        "quickstart_adminserver"
+        "quickstart_web"
       ]
     },
     {
