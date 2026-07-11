@@ -104,21 +104,19 @@ export async function run(args?: string[]) {
   const stdin = child.stdin
   // end stdin even if createPIF throws, otherwise the spawned sort/index child
   // is left running with an open stdin
-  try {
-    await createPIF(file, stdin, coarseSplitGap)
-  } finally {
+  const { pansn } = await createPIF(file, stdin, coarseSplitGap).finally(() => {
     stdin.end()
-  }
+  })
   const exitCode = await waitForProcessClose(child)
   if (exitCode !== 0) {
     throw new Error(`PIF sort/index pipeline exited with code ${exitCode}`)
   }
 
   const indexFile = `${outputFile}.${csi ? 'csi' : 'tbi'}`
-  console.log(
-    `Created ${outputFile} and ${indexFile}\n\n` +
-      'Next, add it as a synteny track (set -a to your query,target assembly names):\n' +
-      `  jbrowse add-track ${outputFile} -a query,target --load copy\n\n` +
-      'For an all-vs-all PAF, add --adapterType AllVsAllIndexedPAFAdapter and list every assembly in -a.',
-  )
+  const nextCommand = pansn
+    ? 'Next, add it as an all-vs-all synteny track (PanSN names detected — list every assembly in -a):\n' +
+      `  jbrowse add-track ${outputFile} --adapterType AllVsAllIndexedPAFAdapter -a asm1,asm2,asm3 --load copy`
+    : 'Next, add it as a synteny track (set -a to your query,target assembly names):\n' +
+      `  jbrowse add-track ${outputFile} -a query,target --load copy`
+  console.log(`Created ${outputFile} and ${indexFile}\n\n${nextCommand}`)
 }

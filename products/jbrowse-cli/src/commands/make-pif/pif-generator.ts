@@ -18,7 +18,17 @@ import type { Writable } from 'node:stream'
 // served), so smaller gaps that would be sub-pixel there don't fragment rows.
 export const DEFAULT_COARSE_SPLIT_GAP = 10_000
 
-function processLine(line: string, coarseSplitGap: number | undefined): string {
+// mutable flag set true when any PanSN-named (`sample#…`) sequence is seen, the
+// signal that a PAF is all-vs-all rather than pairwise
+interface PanSNDetector {
+  pansn: boolean
+}
+
+function processLine(
+  line: string,
+  coarseSplitGap: number | undefined,
+  detect?: PanSNDetector,
+): string {
   const parts = line.split('\t')
   // A valid PAF row has 12 mandatory columns; anything shorter (blank, comment,
   // or truncated) would produce NaN coords, so skip it rather than emit garbage.
@@ -26,6 +36,9 @@ function processLine(line: string, coarseSplitGap: number | undefined): string {
     return ''
   }
   const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = parts
+  if (detect && (c1!.includes('#') || c2!.includes('#'))) {
+    detect.pansn = true
+  }
   // rest[0]=num_matches, rest[1]=block_len, rest[2]=mapq, rest[3+]=optional tags
 
   // Prefer an existing CIGAR (cg:Z). When only a minimap2 cs difference string
@@ -123,7 +136,10 @@ function processLine(line: string, coarseSplitGap: number | undefined): string {
   return tRow + qRow + coarseRows
 }
 
-function makePifTransform(coarseSplitGap?: number): Transform {
+function makePifTransform(
+  coarseSplitGap: number | undefined,
+  detect: PanSNDetector,
+): Transform {
   let tail = ''
   return new Transform({
     transform(chunk: Buffer, _enc, callback) {
@@ -141,22 +157,25 @@ function makePifTransform(coarseSplitGap?: number): Transform {
           .slice(0, lastNl)
           .split('\n')
           .filter(Boolean)
-          .map(l => processLine(l, coarseSplitGap))
+          .map(l => processLine(l, coarseSplitGap, detect))
           .join(''),
       )
     },
     flush(callback) {
-      callback(null, tail ? processLine(tail, coarseSplitGap) : '')
+      callback(null, tail ? processLine(tail, coarseSplitGap, detect) : '')
     },
   })
 }
 
+// resolves to whether the input looked all-vs-all (PanSN-named), so the caller
+// can suggest the right adapter
 export async function createPIF(
   filename: string | undefined,
   stream: Writable,
   coarseSplitGap?: number,
-): Promise<void> {
-  const transform = makePifTransform(coarseSplitGap)
+): Promise<PanSNDetector> {
+  const detect: PanSNDetector = { pansn: false }
+  const transform = makePifTransform(coarseSplitGap, detect)
   if (filename) {
     const source = createReadStream(filename)
     await (/\.b?gz$/i.test(filename)
@@ -165,6 +184,7 @@ export async function createPIF(
   } else {
     await pipeline(process.stdin, transform, stream)
   }
+  return detect
 }
 
 export function spawnSortProcess(outputFile: string, useCsi: boolean) {

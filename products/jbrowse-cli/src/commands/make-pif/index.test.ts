@@ -4,14 +4,25 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+import { Writable } from 'node:stream'
 import { gunzipSync } from 'node:zlib'
 
+import { createPIF } from './pif-generator.ts'
 import { runCommand, runInTmpDir } from '../../testUtil.ts'
 
 const base = path.join(__dirname, '..', '..', '..', 'test', 'data')
 const simplePaf = path.join(base, 'volvox_inv_indels.paf')
 
 const exists = (p: string) => fs.existsSync(p)
+
+// discards the PIF output; the tests using it only care about the returned
+// PanSN detection
+const sink = () =>
+  new Writable({
+    write(_chunk, _enc, cb) {
+      cb()
+    },
+  })
 
 test('make-pif', async () => {
   await runInTmpDir(async () => {
@@ -170,6 +181,30 @@ test('coarse tier keeps the aligner de:f: tag for a plain M CIGAR', async () => 
     const coarseQ = lines.find(l => l.startsWith('Q'))!
     expect(coarseT).toContain('de:f:0.100000')
     expect(coarseQ).toContain('de:f:0.100000')
+  })
+})
+
+test('detects a plain-named PAF as pairwise (not all-vs-all)', async () => {
+  const { pansn } = await createPIF(simplePaf, sink())
+  expect(pansn).toBe(false)
+})
+
+test('detects a PanSN-named PAF as all-vs-all', async () => {
+  await runInTmpDir(async ({ dir }) => {
+    const pafPath = path.join(dir, 'ava.paf')
+    const rows = fs
+      .readFileSync(simplePaf, 'utf8')
+      .trim()
+      .split('\n')
+      .map(l => {
+        const p = l.split('\t')
+        p[0] = `K12#1#${p[0]}`
+        p[5] = `Sakai#1#${p[5]}`
+        return p.join('\t')
+      })
+    fs.writeFileSync(pafPath, `${rows.join('\n')}\n`)
+    const { pansn } = await createPIF(pafPath, sink())
+    expect(pansn).toBe(true)
   })
 })
 
