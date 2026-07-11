@@ -13,6 +13,7 @@ import {
   getConfResolved,
   makeCurrentValueSessionDefaultControl,
   makeSessionDefaultControl,
+  makeSlotsValueSessionDefaultControl,
   setSlotsSessionDefault,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -2911,12 +2912,10 @@ export default function stateModelFactory(
                   self.setColorSupplementaryChains(flag)
                 },
               },
-              sessionDefault: {
-                isDefault: self.isColorByDefault,
-                setDefault: (promote: boolean) => {
-                  self.setColorByDefault(promote)
-                },
-              },
+              sessionDefault: (colorBy: ColorBy) =>
+                makeSlotsValueSessionDefaultControl(self, [
+                  { slot: 'colorBy', value: colorBy },
+                ]),
             }),
             getSortByMenuItem(self, {
               disabled: !self.showPileup,
