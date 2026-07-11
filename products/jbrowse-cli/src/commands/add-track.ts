@@ -12,6 +12,7 @@ import {
   addSyntenyAssemblyNames,
   buildTrackConfig,
   mapLocationForFiles,
+  mergeDisplayDefaults,
 } from './add-track-utils/track-config.ts'
 import {
   parseConfigFlag,
@@ -20,6 +21,7 @@ import {
   validateLoadAndLocation,
   validateLoadOption,
   validateTrackArg,
+  warnUnknownAssemblyNames,
 } from './add-track-utils/validators.ts'
 import {
   findAndUpdateOrAdd,
@@ -72,6 +74,20 @@ export async function run(args?: string[]) {
     config: {
       type: 'string',
       description: 'Any extra config settings to add to a track',
+    },
+    color: {
+      type: 'string',
+      description:
+        'Track color: a plain CSS color or a jexl callback. Merged into displayDefaults',
+    },
+    height: {
+      type: 'string',
+      description: 'Track display height in pixels. Merged into displayDefaults',
+    },
+    displayDefaults: {
+      type: 'string',
+      description:
+        'Inline JSON merged into the track displayDefaults (labels, mouseover, jexlFilters, etc.)',
     },
     target: {
       type: 'string',
@@ -133,6 +149,12 @@ export async function run(args?: string[]) {
     'generated track config, so you can set fields the dedicated flags do not ' +
     'cover, e.g. --config \'{"metadata":{"skipTextIndex":true}}\' to exclude ' +
     'the track from jbrowse text-index.\n\n' +
+    '--color and --height set the two most common appearance settings without ' +
+    'writing JSON. Wrap the value in single quotes and use double quotes inside ' +
+    'a jexl callback so nothing needs escaping, e.g. ' +
+    '--color \'jexl:feature.strand==1?"blue":"red"\'. --displayDefaults takes ' +
+    'inline JSON for any other appearance setting (labels, mouseover, ' +
+    'jexlFilters).\n\n' +
     'For synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target — ' +
     'the reverse of the minimap2/nucmer input order.'
 
@@ -154,6 +176,9 @@ export async function run(args?: string[]) {
     '',
     '# --load inPlace adds a track without doing file operations',
     '$ jbrowse add-track /url/relative/path.bam --load inPlace',
+    '',
+    '# color a track by strand and set its height (no escaping: single-quote the value, double-quote inside the jexl)',
+    `$ jbrowse add-track genes.gff3.gz --load copy --color 'jexl:feature.strand==1?"blue":"red"' --height 200`,
   ]
 
   if (flags.help) {
@@ -190,14 +215,22 @@ export async function run(args?: string[]) {
 
   validateLoadAndLocation(location, load)
 
-  const configObj = config ? parseConfigFlag(config) : undefined
+  const baseConfigObj = config ? parseConfigFlag(config) : undefined
+  const displayDefaults = mergeDisplayDefaults({
+    configObj: baseConfigObj,
+    color: flags.color,
+    height: flags.height,
+    displayDefaults: flags.displayDefaults,
+  })
+  const configObj = displayDefaults
+    ? { ...baseConfigObj, displayDefaults }
+    : baseConfigObj
 
   const targetConfigPath = await resolveConfigPath(target, out)
   const configDir = path.dirname(targetConfigPath)
 
   const wrap = makeLocationProtocol(protocol)
-  const mapLocation = (p: string) =>
-    wrap(mapLocationForFiles(p, load, subDir))
+  const mapLocation = (p: string) => wrap(mapLocationForFiles(p, load, subDir))
 
   const { adapter: guessedAdapter, files } = guessTrack({
     location,
@@ -221,6 +254,7 @@ export async function run(args?: string[]) {
   const name = flags.name || trackId
   const assemblyNames =
     flags.assemblyNames || configContents.assemblies?.[0]?.name || ''
+  warnUnknownAssemblyNames(configContents, assemblyNames)
 
   const trackConfig = buildTrackConfig({
     trackType,

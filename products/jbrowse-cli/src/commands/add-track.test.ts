@@ -310,6 +310,33 @@ test('adds bam track with all the custom fields', async () => {
   })
 })
 
+test('--color, --height, and --displayDefaults merge into displayDefaults', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
+      'add-track',
+      simpleGff,
+      '--load',
+      'copy',
+      '--color',
+      'jexl:feature.strand==1?"blue":"red"',
+      '--height',
+      '200',
+      '--displayDefaults',
+      '{"mouseover":"jexl:feature.name","color":"green"}',
+    ])
+
+    // typed --color wins over the color in --displayDefaults, --height parses to
+    // a number, and the unrelated mouseover is preserved
+    expect(readConf(ctx).tracks[0].displayDefaults).toEqual({
+      mouseover: 'jexl:feature.name',
+      color: 'jexl:feature.strand==1?"blue":"red"',
+      height: 200,
+    })
+  })
+})
+
 test('adds bam track from a url', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
@@ -719,5 +746,43 @@ test('all-vs-all synteny adapter type gets SyntenyTrack and threaded assemblyNam
     // rather than dropping the file, so the track is actually loadable
     expect(track.adapter.pafLocation).toBeDefined()
     expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf'))).toBeTruthy()
+  })
+})
+
+test('warns (does not throw) when an assemblyName is not in the config', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const { error } = await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--assemblyNames',
+      'notARealAssembly',
+    ])
+    expect(error).toBeUndefined()
+    expect(readConf(ctx).tracks).toHaveLength(1)
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('notARealAssembly'),
+    )
+    warnSpy.mockRestore()
+  })
+})
+
+test('does not warn when the assemblyName matches the config', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--assemblyNames',
+      'testAssembly',
+    ])
+    expect(warnSpy).not.toHaveBeenCalled()
+    warnSpy.mockRestore()
   })
 })

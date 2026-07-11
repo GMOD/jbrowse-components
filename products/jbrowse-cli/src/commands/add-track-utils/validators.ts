@@ -1,13 +1,21 @@
 import { isURL } from '../../types/common.ts'
+import { parseCommaSeparatedString } from '../../utils.ts'
 
 import type { Config } from '../../base.ts'
 
-export function parseConfigFlag(config: string): Record<string, unknown> {
+export function parseJsonFlag(
+  value: string,
+  flagName: string,
+): Record<string, unknown> {
   try {
-    return JSON.parse(config) as Record<string, unknown>
+    return JSON.parse(value) as Record<string, unknown>
   } catch {
-    throw new Error(`--config is not valid JSON: ${config}`)
+    throw new Error(`${flagName} is not valid JSON: ${value}`)
   }
+}
+
+export function parseConfigFlag(config: string): Record<string, unknown> {
+  return parseJsonFlag(config, '--config')
 }
 
 export function validateLoadOption(load?: string): void {
@@ -57,6 +65,29 @@ export function validateAssemblies(
   if (configContents.assemblies.length > 1 && !assemblyNames) {
     throw new Error(
       'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
+    )
+  }
+}
+
+// warn (don't throw) when a --assemblyNames entry matches no assembly in the
+// config: a typo or reversed query,target usually means this, but referencing an
+// assembly to be added later is legitimate, so it stays a soft warning
+export function warnUnknownAssemblyNames(
+  configContents: Config,
+  assemblyNames: string,
+): void {
+  const known = new Set(
+    configContents.assemblies?.flatMap(a => [a.name, ...(a.aliases ?? [])]) ??
+      [],
+  )
+  const missing = parseCommaSeparatedString(assemblyNames).filter(
+    name => !known.has(name),
+  )
+  if (missing.length) {
+    console.warn(
+      `Warning: assembly name(s) not found in config: ${missing.join(', ')}. ` +
+        `Available: ${[...known].join(', ')}. ` +
+        'Check for a typo or reversed query,target order; the track will not display until a matching assembly exists.',
     )
   }
 }
