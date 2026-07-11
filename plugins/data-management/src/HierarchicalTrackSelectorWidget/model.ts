@@ -2,7 +2,7 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
   dedupe,
   getSession,
-  localStorageGetItem,
+  localStorageGetJSON,
   localStorageSetItem,
   notEmpty,
 } from '@jbrowse/core/util'
@@ -74,11 +74,6 @@ function collapsedK(assemblyNames: string[], viewType: string) {
 // the connection (see toggleCategory)
 function connectionCategoryId(connectionId: string) {
   return `connection-${connectionId}`
-}
-
-function localStorageGetJSON<T>(key: string, defaultValue: T) {
-  const val = localStorageGetItem(key)
-  return val ? (JSON.parse(val) as T) : defaultValue
 }
 
 function localStorageSetJSON(key: string, val: unknown) {

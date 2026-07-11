@@ -1,6 +1,6 @@
 import {
   getSession,
-  localStorageGetItem,
+  localStorageGetJSON,
   localStorageSetItem,
 } from '@jbrowse/core/util'
 import { ElementId, Region as RegionModel } from '@jbrowse/core/util/types/mst'
@@ -11,7 +11,7 @@ import { bookmarkKey } from './utils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
-import type { IMSTArray, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -127,7 +127,7 @@ export default function f(_pluginManager: PluginManager) {
        * from a shared URL are merged in via preProcessSnapshot
        */
       bookmarks: types.optional(types.array(LabeledRegionModel), () =>
-        JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
+        localStorageGetJSON(localStorageKeyF(), []),
       ),
     })
     .volatile(() => ({
@@ -267,7 +267,7 @@ export default function f(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      setBookmarkedRegions(regions: IMSTArray<typeof LabeledRegionModel>) {
+      setBookmarkedRegions(regions: SnapshotIn<typeof LabeledRegionModel>[]) {
         self.bookmarks = cast(regions)
       },
       /**
@@ -297,7 +297,7 @@ export default function f(_pluginManager: PluginManager) {
         self.setBookmarkedRegions(
           self.bookmarks.filter(
             bookmark => !self.validAssemblies.has(bookmark.assemblyName),
-          ) as IMSTArray<typeof LabeledRegionModel>,
+          ),
         )
       },
       /**
@@ -322,8 +322,12 @@ export default function f(_pluginManager: PluginManager) {
         const key = localStorageKeyF()
         function handler(e: StorageEvent) {
           if (e.key === key) {
-            const localStorage = JSON.parse(localStorageGetItem(key) || '[]')
-            self.setBookmarkedRegions(localStorage)
+            self.setBookmarkedRegions(
+              localStorageGetJSON<SnapshotIn<typeof LabeledRegionModel>[]>(
+                key,
+                [],
+              ),
+            )
           }
         }
         window.addEventListener('storage', handler)
@@ -351,9 +355,9 @@ export default function f(_pluginManager: PluginManager) {
         return snap
       }
       const { sharedBookmarks, ...rest } = s
-      const local = JSON.parse(
-        localStorageGetItem(localStorageKeyF()) || '[]',
-      ) as SnapshotIn<typeof LabeledRegionModel>[]
+      const local = localStorageGetJSON<
+        SnapshotIn<typeof LabeledRegionModel>[]
+      >(localStorageKeyF(), [])
       const shared = sharedBookmarks as SnapshotIn<typeof LabeledRegionModel>[]
       const seen = new Set(local.map(bookmarkKey))
       const merged = [

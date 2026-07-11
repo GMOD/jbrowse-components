@@ -11,13 +11,24 @@ export function localStorageSetItem(str: string, item: string) {
 }
 
 export function localStorageGetNumber(key: string, defaultVal: number) {
-  return +(localStorageGetItem(key) ?? defaultVal)
+  const parsed = +(localStorageGetItem(key) ?? defaultVal)
+  return Number.isNaN(parsed) ? defaultVal : parsed
+}
+
+export function localStorageGetJSON<T>(key: string, defaultVal: T): T {
+  const stored = localStorageGetItem(key)
+  if (stored) {
+    try {
+      return JSON.parse(stored) as T
+    } catch (e) {
+      console.warn(`Invalid localStorage value for ${key}: ${stored}`, e)
+    }
+  }
+  return defaultVal
 }
 
 export function localStorageGetBoolean(key: string, defaultVal: boolean) {
-  return Boolean(
-    JSON.parse(localStorageGetItem(key) || JSON.stringify(defaultVal)),
-  )
+  return Boolean(localStorageGetJSON(key, defaultVal))
 }
 
 export function localStorageSetBoolean(key: string, value: boolean) {
