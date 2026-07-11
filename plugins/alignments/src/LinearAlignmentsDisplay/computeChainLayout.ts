@@ -113,6 +113,22 @@ export function computeMultiRegionChainLayout(
   return buildChainRowMap(chains, maxRows)
 }
 
+/**
+ * Row count (maxY) chain layout would produce, without cloning any region.
+ * Chain layout already computes maxY cheaply (no per-feature clone), so this
+ * just runs the shared row-map pass and drops the clones — the count-only twin
+ * of `pileupLayoutMaxY` for the fit-height pass.
+ */
+export function chainLayoutMaxY(
+  dataMap: ReadonlyMap<number, PileupDataResult>,
+  maxRows = Number.POSITIVE_INFINITY,
+) {
+  const withReads = [...dataMap].filter(([, v]) => v.readIds.length > 0)
+  return withReads.length === 0
+    ? 0
+    : computeMultiRegionChainLayout(withReads, maxRows).maxY
+}
+
 export interface Span {
   start: number
   end: number

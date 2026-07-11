@@ -1,9 +1,13 @@
 import {
   attachLinkedReadLines,
   buildLaidOutChainMap,
+  chainLayoutMaxY,
 } from './computeChainLayout.ts'
 import { overlayReadTagColors } from './readTagColors.ts'
-import { buildLaidOutPileupMap } from '../RenderAlignmentDataRPC/sortLayout.ts'
+import {
+  buildLaidOutPileupMap,
+  pileupLayoutMaxY,
+} from '../RenderAlignmentDataRPC/sortLayout.ts'
 
 import type { GroupId } from './groupedDataMaps.ts'
 import type { RegionBounds } from '../RenderAlignmentDataRPC/sortLayout.ts'
@@ -44,6 +48,29 @@ export interface GroupLayoutContext {
   colorTagMap: Record<string, string>
 }
 
+// Lay out one group's reads (Y arrays filled + linked-read lines + tag colors)
+// at a given row cap. Extracted so the fit reclaim pass can re-lay-out just the
+// groups whose cap changed instead of rebuilding every group.
+function layoutOneGroup(
+  ctx: GroupLayoutContext,
+  key: string,
+  cap: number,
+): Map<number, PileupDataResult> {
+  const dataMap = ctx.rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
+  const base = ctx.isChainMode
+    ? buildLaidOutChainMap(dataMap, cap)
+    : buildLaidOutPileupMap({
+        dataMap,
+        sortedBy: ctx.sortedBy,
+        showSoftClipping: ctx.showSoftClipping,
+        regions: ctx.regions,
+        maxRows: cap,
+        largeFeaturesFirst: ctx.largeFeaturesFirst,
+      })
+  const withLines = ctx.showLinkedReadLines ? attachLinkedReadLines(base) : base
+  return overlayReadTagColors(withLines, ctx.colorBy, ctx.colorTagMap)
+}
+
 // Lay out each group independently so one dense group can't starve the rest:
 // every group runs the existing single/multi-region layout over just its own
 // reads, capped at `maxRowsOverrides.get(key) ?? maxRows`. Ungrouped fetches are
@@ -57,28 +84,39 @@ export function buildLaidOutByGroup(
 ): LaidOutByGroup {
   const byGroup: LaidOutByGroup = new Map()
   for (const { key } of ctx.order) {
-    const dataMap =
-      ctx.rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
-    const cap = maxRowsOverrides?.get(key) ?? maxRows
-    const base = ctx.isChainMode
-      ? buildLaidOutChainMap(dataMap, cap)
-      : buildLaidOutPileupMap({
-          dataMap,
-          sortedBy: ctx.sortedBy,
-          showSoftClipping: ctx.showSoftClipping,
-          regions: ctx.regions,
-          maxRows: cap,
-          largeFeaturesFirst: ctx.largeFeaturesFirst,
-        })
-    const withLines = ctx.showLinkedReadLines
-      ? attachLinkedReadLines(base)
-      : base
-    byGroup.set(
-      key,
-      overlayReadTagColors(withLines, ctx.colorBy, ctx.colorTagMap),
-    )
+    byGroup.set(key, layoutOneGroup(ctx, key, maxRowsOverrides?.get(key) ?? maxRows))
   }
   return byGroup
+}
+
+// Per-group row counts (maxY) only — no laid-out clones. The fit-height pass
+// needs just each group's stack depth to size reads, so it skips the dominant
+// `cloneWithLayout` cost (per-base *Ys arrays) that `buildLaidOutByGroup` pays.
+// Row counts match `groupMaxY(buildLaidOutByGroup(...).get(key))` exactly:
+// `attachLinkedReadLines`/`overlayReadTagColors` never change `maxY`.
+export function layoutGroupRowCounts(
+  ctx: GroupLayoutContext,
+  maxRows: number,
+): Map<string, number> {
+  const counts = new Map<string, number>()
+  for (const { key } of ctx.order) {
+    const dataMap =
+      ctx.rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
+    counts.set(
+      key,
+      ctx.isChainMode
+        ? chainLayoutMaxY(dataMap, maxRows)
+        : pileupLayoutMaxY({
+            dataMap,
+            sortedBy: ctx.sortedBy,
+            showSoftClipping: ctx.showSoftClipping,
+            regions: ctx.regions,
+            maxRows,
+            largeFeaturesFirst: ctx.largeFeaturesFirst,
+          }),
+    )
+  }
+  return counts
 }
 
 // Fit-to-viewport policy inputs, in px, plus the per-group user overrides. Kept
@@ -149,13 +187,16 @@ export function layoutGroupsToViewport(
     defaultMaxRows,
     maxRows: maxHeightRows,
   })
-  return bonusCaps
-    ? buildLaidOutByGroup(
-        ctx,
-        defaultMaxRows,
-        new Map([...overrideCaps, ...bonusCaps]),
-      )
-    : pass
+  // Only the truncated groups get a raised cap; every other group's layout is
+  // byte-identical to pass 1, so reuse it and re-lay-out just the changed ones.
+  let result = pass
+  if (bonusCaps) {
+    result = new Map(pass)
+    for (const [key, cap] of bonusCaps) {
+      result.set(key, layoutOneGroup(ctx, key, cap))
+    }
+  }
+  return result
 }
 
 // Equal-split row budget per group when grouping fits to the viewport: every

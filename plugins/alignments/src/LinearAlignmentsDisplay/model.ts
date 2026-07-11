@@ -51,8 +51,8 @@ import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { ColorScheme } from './constants.ts'
 import {
   anyRegionTruncated,
-  buildLaidOutByGroup,
   groupMaxY,
+  layoutGroupRowCounts,
   layoutGroupsToViewport,
   maxRowsFor,
   nextGroupHeightOverride,
@@ -1793,17 +1793,13 @@ export default function stateModelFactory(
          * height->grownHeight->layout->featureHeight if this ever moves.
          */
         get fittedFeatureHeight() {
-          const empty = new Map<number, PileupDataResult>()
-          const laid = buildLaidOutByGroup(
+          const counts = layoutGroupRowCounts(
             self.groupLayoutContext,
             maxRowsFor(self.maxHeight, 1),
           )
           const rows = self.groupOrder
             .filter(g => !self.collapsedGroups.has(g.key))
-            .reduce(
-              (sum, { key }) => sum + groupMaxY(laid.get(key) ?? empty),
-              0,
-            )
+            .reduce((sum, { key }) => sum + (counts.get(key) ?? 0), 0)
           const pileupSpace =
             self.fitTargetHeight -
             Math.max(1, self.groupOrder.length) * self.coverageDisplayHeight

@@ -678,6 +678,82 @@ export function cloneWithLayout(
   }
 }
 
+export interface PileupLayoutArgs {
+  dataMap: ReadonlyMap<number, PileupDataResult>
+  sortedBy: SortedBy | undefined
+  showSoftClipping: boolean | undefined
+  regions?: ReadonlyMap<number, RegionBounds>
+  maxRows?: number
+  largeFeaturesFirst?: boolean
+}
+
+// Per-region Y assignment before cloning: the raw data plus its filled readYs,
+// the shared row count, and the truncation flag. Split out from
+// `buildLaidOutPileupMap` so a count-only caller (fit-height row counting) can
+// stop here and skip the per-feature `cloneWithLayout` — the dominant cost when
+// per-base-quality/letter overlays balloon the *Ys arrays. `laid` is empty when
+// `countOnly` (only `maxY` is meaningful then).
+function computePileupRowLayout(
+  {
+    dataMap,
+    sortedBy,
+    showSoftClipping,
+    regions,
+    maxRows = Number.POSITIVE_INFINITY,
+    largeFeaturesFirst,
+  }: PileupLayoutArgs,
+  countOnly: boolean,
+): {
+  empties: [number, PileupDataResult][]
+  laid: { idx: number; data: PileupDataResult; readYs: Uint16Array }[]
+  maxY: number
+  truncated: boolean
+} {
+  const empties: [number, PileupDataResult][] = []
+  const withReads: [number, PileupDataResult][] = []
+  for (const [k, v] of dataMap) {
+    if (v.readIds.length === 0) {
+      empties.push([k, v])
+    } else {
+      withReads.push([k, v])
+    }
+  }
+  if (withReads.length === 0) {
+    return { empties, laid: [], maxY: 0, truncated: false }
+  }
+  if (withReads.length === 1) {
+    const [idx, data] = withReads[0]!
+    const { readYs, maxY, truncated } = sortedBy
+      ? computeSortedLayout(data, sortedBy, showSoftClipping, maxRows)
+      : computeLayout(data, showSoftClipping, maxRows, largeFeaturesFirst)
+    return {
+      empties,
+      laid: countOnly ? [] : [{ idx, data, readYs }],
+      maxY,
+      truncated,
+    }
+  }
+  const { rowMap, maxY, truncated } = computeMultiRegionLayout({
+    entries: withReads,
+    regions,
+    sortedBy,
+    showSoftClipping,
+    maxRows,
+    largeFeaturesFirst,
+  })
+  const laid = countOnly
+    ? []
+    : withReads.map(([idx, data]) => {
+        const numReads = data.readIds.length
+        const readYs = new Uint16Array(numReads)
+        for (let i = 0; i < numReads; i++) {
+          readYs[i] = rowMap.get(data.readIds[i]!)!
+        }
+        return { idx, data, readYs }
+      })
+  return { empties, laid, maxY, truncated }
+}
+
 /**
  * Build a laid-out pileup map from raw fetched data. The raw map's entries
  * keep zero-filled Y arrays (from the worker); this returns a parallel map
@@ -686,56 +762,26 @@ export function cloneWithLayout(
  * Intended to be called from a MobX-cached getter so layout recomputes only
  * when `rpcDataMap`, `sortedBy`, or `showSoftClipping` change.
  */
-export function buildLaidOutPileupMap({
-  dataMap,
-  sortedBy,
-  showSoftClipping,
-  regions,
-  maxRows = Number.POSITIVE_INFINITY,
-  largeFeaturesFirst,
-}: {
-  dataMap: ReadonlyMap<number, PileupDataResult>
-  sortedBy: SortedBy | undefined
-  showSoftClipping: boolean | undefined
-  regions?: ReadonlyMap<number, RegionBounds>
-  maxRows?: number
-  largeFeaturesFirst?: boolean
-}): Map<number, PileupDataResult> {
+export function buildLaidOutPileupMap(
+  args: PileupLayoutArgs,
+): Map<number, PileupDataResult> {
+  const { empties, laid, maxY, truncated } = computePileupRowLayout(args, false)
   const out = new Map<number, PileupDataResult>()
-  const withReads: [number, PileupDataResult][] = []
-  for (const [k, v] of dataMap) {
-    if (v.readIds.length === 0) {
-      out.set(k, v)
-    } else {
-      withReads.push([k, v])
-    }
+  for (const [k, v] of empties) {
+    out.set(k, v)
   }
-  if (withReads.length === 0) {
-    return out
-  }
-  if (withReads.length === 1) {
-    const [idx, data] = withReads[0]!
-    const { readYs, maxY, truncated } = sortedBy
-      ? computeSortedLayout(data, sortedBy, showSoftClipping, maxRows)
-      : computeLayout(data, showSoftClipping, maxRows, largeFeaturesFirst)
+  for (const { idx, data, readYs } of laid) {
     out.set(idx, cloneWithLayout(data, readYs, maxY, truncated))
-  } else {
-    const { rowMap, maxY, truncated } = computeMultiRegionLayout({
-      entries: withReads,
-      regions,
-      sortedBy,
-      showSoftClipping,
-      maxRows,
-      largeFeaturesFirst,
-    })
-    for (const [idx, data] of withReads) {
-      const numReads = data.readIds.length
-      const readYs = new Uint16Array(numReads)
-      for (let i = 0; i < numReads; i++) {
-        readYs[i] = rowMap.get(data.readIds[i]!)!
-      }
-      out.set(idx, cloneWithLayout(data, readYs, maxY, truncated))
-    }
   }
   return out
+}
+
+/**
+ * Row count (maxY) the pileup layout would produce, without building the laid-
+ * out clones. Used by the fit-to-height pass, which only needs the stack depth
+ * to size reads — computing it via `buildLaidOutPileupMap` paid the full
+ * per-feature clone (7 *Ys arrays + Flatbush per region) just to read `maxY`.
+ */
+export function pileupLayoutMaxY(args: PileupLayoutArgs): number {
+  return computePileupRowLayout(args, true).maxY
 }
