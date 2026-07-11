@@ -1,3 +1,8 @@
+---
+name: svg-export
+description: SVG export pipeline covering the renderSvg shape, the svgReady/settled readiness gates, paintLayer, and clip ids. Read when touching a display's renderSvg or export readiness.
+---
+
 # SVG export pipeline
 
 SVG export and on-screen rendering share the same pure Canvas2D draw functions,

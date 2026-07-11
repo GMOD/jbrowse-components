@@ -1,3 +1,8 @@
+---
+name: screenshot-review-handoff
+description: Working the bad-status screenshot-review backlog, the regen pipeline, and hosted-track sources. Read when fixing website screenshot specs or gallery figures.
+---
+
 # Screenshot-review handoff
 
 Working through the `bad`-status items in

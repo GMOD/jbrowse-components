@@ -1,3 +1,8 @@
+---
+name: display-type-defaults
+description: Session-wide per-display-type slot defaults via promotable slots and CSS-cascade resolution. Read when adding a make-default-for-all-tracks setting or touching getConfResolved.
+---
+
 # Display-type defaults (promotable config slots)
 
 The third config axis, alongside per-track [`trackConfigDeltas`](../../packages/product-core/src/Session/CLAUDE.md)

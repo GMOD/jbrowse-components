@@ -1,3 +1,8 @@
+---
+name: bp-precision
+description: The absolute-uint32 coordinate convention, hi/lo float32 math, and genome-size limits. Read when writing a Slang shader or a CPU instance packer.
+---
+
 # BP precision & coordinate conventions
 
 Genomic positions exceed 3×10⁹ on T2T assemblies. Float32's 24-bit mantissa

@@ -1,3 +1,8 @@
+---
+name: view-init
+description: The declarative init launch spec, afterAttach, and the view launch state machine. Read when touching view launch, URL params, or createViewState.
+---
+
 # View `init` — declarative launch mechanism
 
 How a linear genome view gets navigated, tracked, and highlighted at launch.

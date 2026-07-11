@@ -1,3 +1,8 @@
+---
+name: progress-reporting
+description: The worker to UI status channel via statusCallback, determinate bars, concurrent-fetch aggregation, and cancel. Read when touching a progress bar or download loop.
+---
+
 # Status / progress reporting
 
 How loading status travels from workers to the loading UI. This is one

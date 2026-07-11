@@ -1,3 +1,8 @@
+---
+name: other-ideas
+description: Future and exploratory concepts plus folded proposals, not current work. Read when brainstorming product direction.
+---
+
 # Ideas and future directions
 
 Exploratory / fanciful concepts — not committed work. Concrete action items live

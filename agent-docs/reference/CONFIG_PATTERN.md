@@ -1,3 +1,8 @@
+---
+name: config-pattern
+description: How display config reaches the renderer, from config to MST snapshot to plain object to RPC payload. Read when touching config, JEXL callbacks, or RPC payloads.
+---
+
 # Display Config Pattern
 
 How display settings flow from MST model → rendering code (GPU/Canvas2D/worker).

@@ -1,3 +1,8 @@
+---
+name: displaychrome
+description: The shared display status chrome that owns loading, error, and retry UI, plus its adoption map. Read when touching loading/error/retry UI on a display.
+---
+
 # DisplayChrome — the shared display status chrome
 
 "What it is" + the adoption map. For **why the layering stays** (rejected

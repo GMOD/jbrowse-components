@@ -1,3 +1,8 @@
+---
+name: perf-instrumentation
+description: Instrumentation patterns for GPU render and scroll jank. Read when diagnosing a perf regression.
+---
+
 # Perf instrumentation patterns
 
 How to diagnose "is the GPU rendering slow / why is scroll choppy" without

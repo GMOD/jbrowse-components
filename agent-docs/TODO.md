@@ -1,3 +1,8 @@
+---
+name: todo
+description: Action items to build or fix, the current backlog. Read when picking up work.
+---
+
 ## Alignments / canvas
 
 - Group by strand, `plugins/canvas`.

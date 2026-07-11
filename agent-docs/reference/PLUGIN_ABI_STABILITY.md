@@ -1,3 +1,8 @@
+---
+name: plugin-abi-stability
+description: Why plugin exports ossify into permanent ABI, and the fixes. Read when removing or renaming a plugin export.
+---
+
 # Plugin ABI stability & architecture ossification
 
 **Purpose.** Why "architecture we built once becomes maintained forever," what

@@ -1,3 +1,8 @@
+---
+name: rfc-001-community-plugin-api
+description: The community plugin API proposal. Read when doing plugin API design.
+---
+
 # RFC-001: Community plugin API for the WebGPU/WebGL2/Canvas2D era
 
 **Status:** Historical proposal. The mixin/lifecycle rename pass in §4

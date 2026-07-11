@@ -1,3 +1,8 @@
+---
+name: test-infrastructure
+description: Browser and unit tests and WebGPU CI. Read when running or writing tests, or validating RPC.
+---
+
 # Test Infrastructure
 
 Browser tests (Puppeteer) in `products/jbrowse-web/browser-tests/`; unit tests

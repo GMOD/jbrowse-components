@@ -1,3 +1,8 @@
+---
+name: gpu-glossary
+description: A plain-language GPU rendering glossary and Canvas2D to GPU primer. Read when writing about GPU internals for a non-specialist audience.
+---
+
 # GPU Rendering Glossary & Primer
 
 A plain-language guide to how JBrowse draws tracks on the GPU, plus the precise

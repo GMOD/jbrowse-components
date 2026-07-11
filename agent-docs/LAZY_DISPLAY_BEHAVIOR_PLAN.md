@@ -1,3 +1,8 @@
+---
+name: lazy-display-behavior-plan
+description: Design note on deferring displays' interaction surface out of the eager bundle via the MST fork's extendInstance, not implemented. Read for bundle-size work on display models.
+---
+
 # Lazy-loaded display behavior via `extendInstance`
 
 Design note (not yet implemented). Explores using the `@jbrowse/mobx-state-tree`

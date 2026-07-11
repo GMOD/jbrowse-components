@@ -1,3 +1,8 @@
+---
+name: compiler-ternary-finding
+description: Why babel-plugin-react-compiler can stale a MobX read, and the observer patterns that avoid it. Read when writing observer components or debugging stale MobX reads.
+---
+
 # Finding: the DisplayChrome early-`return` rule is a React-Compiler bug, not a jsdom artifact
 
 > **RESOLVED.** `DisplayChromeInner` now carries `'use no memo'`, so the compiler

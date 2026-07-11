@@ -1,3 +1,8 @@
+---
+name: architecture
+description: GPU render lifecycle, HAL, Slang shaders, and the worker→main fetch pipeline. Read when touching a display, rendering backend, or shader.
+---
+
 # Architecture
 
 The canonical reference for how JBrowse renders a track. Read the overview first
@@ -22,7 +27,7 @@ display, whatever it draws, follows the same three-part shape:
   when anything visible changes. Pan and zoom become a cheap redraw of buffers
   already on the GPU, not a refetch.
 - **Three interchangeable backends.** Rendering targets WebGPU first, falls back
-  to WebGL2, then to Canvas 2D, chosen at runtime behind a hardware abstraction
+  to WebGL2, then to Canvas2D, chosen at runtime behind a hardware abstraction
   layer (HAL). Every display **must** provide a Canvas2D draw function; the GPU
   shader path is an optional accelerator layered on top. **SVG export runs the
   Canvas2D path**, so on-screen and exported pixels can't drift.
@@ -88,7 +93,7 @@ Three foundations cover every in-tree display:
 
 | Foundation (composed on `BaseDisplay`) | Brings | Displays |
 | --- | --- | --- |
-| `MultiRegionDisplayMixin()` | `RenderLifecycleMixin` + `FetchMixin` + `RegionTooLargeMixin` + the four fetch autoruns + `rpcProps()`→refetch wiring | `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `LinearManhattanDisplay`, `LinearAlignmentsDisplay`, both multi-sample variant displays (via `MultiSampleVariantBaseModel`), `LinearReferenceSequenceDisplay`, and — via `LinearCanvasBaseDisplay` — `LinearBasicDisplay`, `LinearVariantDisplay`, `LinearMultiRowFeatureDisplay` |
+| `MultiRegionDisplayMixin()` | `RenderLifecycleMixin` + `FetchMixin` + `RegionTooLargeMixin` + the four fetch autoruns + `rpcProps()`→refetch wiring | `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `LinearManhattanDisplay`, `LinearAlignmentsDisplay`, both multi-sample variant displays, `LinearReferenceSequenceDisplay`, plus the canvas displays (via `LinearCanvasBaseDisplay` — see below) |
 | `GlobalDataDisplayMixin()` | same slot mixins, **no** fetch autoruns (each display installs its own `afterAttach` autorun) | HiC (`LinearHicDisplay`), LD (`plugins/variants/src/LDDisplay`) |
 | `RegionTooLargeMixin()` + custom `renderSvg` (no GPU/fetch mixin) | lightweight React-SVG render — no GPU upload, no block machinery | `LinearArcDisplay`, `LinearPairedArcDisplay` |
 
@@ -345,7 +350,7 @@ ADR-030.
 HAL is the hardware abstraction layer (WebGL2 vs WebGPU). Full vocabulary +
 Canvas2D→GPU primer: [reference/GPU_GLOSSARY.md](reference/GPU_GLOSSARY.md).
 
-### One-liner
+### The core contract
 
 Each GPU display is an MST model that composes `RenderLifecycleMixin` and calls
 `self.attachRenderingBackend(backend, { upload, render })` in its
@@ -888,7 +893,7 @@ data.
 (`antialias: true`, VAO + UBO, context-loss recovery), `MockHal` (tests).
 
 **Renderer override** (query param `?renderer=`): `webgpu` / `webgl` / `canvas2d`
-/ `canvas`; omitted → auto-detect WebGPU → WebGL2 → Canvas 2D.
+/ `canvas`; omitted → auto-detect WebGPU → WebGL2 → Canvas2D.
 
 #### Renderers stay stateless
 
