@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistance } from 'date-fns'
 
 /**
  * Shared "last modified" formatting for the recent-sessions card and list
@@ -11,7 +11,7 @@ export function formatLastModified(updated: number | undefined, now: number) {
   }
   const date = new Date(updated)
   return {
-    label: formatDistanceToNow(date, { addSuffix: true }),
+    label: formatDistance(date, new Date(now), { addSuffix: true }),
     tooltip: date.toLocaleString('en-US'),
   }
 }

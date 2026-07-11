@@ -614,8 +614,19 @@ export function processFeatureRecord(
   collector: Collector,
 ) {
   const { feature } = layout
-  const featureStart = feature.get('start')
-  const featureEnd = feature.get('end')
+  // A gene in longestCoding mode collapses to a single transcript, but the gene
+  // feature's own start/end still span every (now-hidden) isoform. Anchor the
+  // label + hit box to the rendered transcript's extent so the name doesn't
+  // float left of the visible glyph over empty track.
+  const collapsedChildren = layout.isoformsCollapsed
+    ? layout.children
+    : undefined
+  const featureStart = collapsedChildren
+    ? Math.min(...collapsedChildren.map(c => c.feature.get('start')))
+    : feature.get('start')
+  const featureEnd = collapsedChildren
+    ? Math.max(...collapsedChildren.map(c => c.feature.get('end')))
+    : feature.get('end')
   const strand = feature.get('strand') ?? 0
 
   const { name, description } = readFeatureLabels(ctx.config, feature, ctx.jexl)
