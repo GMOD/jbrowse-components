@@ -1,4 +1,4 @@
-import { InputLabel, TextField } from '@mui/material'
+import { InputLabel, TextField, alpha } from '@mui/material'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 
@@ -7,9 +7,9 @@ import type { TextFieldProps } from '@mui/material'
 const monospaceFontFamily =
   'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   error: {
-    color: 'red',
+    color: theme.palette.error.main,
     fontSize: '0.8em',
   },
   container: {
@@ -19,7 +19,10 @@ const useStyles = makeStyles()({
   field: {
     fontFamily: monospaceFontFamily,
   },
-})
+  errorField: {
+    background: alpha(theme.palette.error.main, 0.15),
+  },
+}))
 
 // Monospace multiline TextField for code/jexl/JSON/sequence content. Turns red
 // on a parse error, renders an optional error banner above and an InputLabel,
@@ -32,6 +35,7 @@ export default function MonospaceTextField({
   label,
   children,
   style,
+  className,
   readOnly,
   variant = 'outlined',
   ...rest
@@ -43,7 +47,7 @@ export default function MonospaceTextField({
   children?: React.ReactNode
   readOnly?: boolean
 } & Omit<TextFieldProps, 'value' | 'onChange' | 'error' | 'slotProps'>) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   return (
     <>
       {error ? <p className={classes.error}>{`${error}`}</p> : null}
@@ -57,7 +61,8 @@ export default function MonospaceTextField({
           onChange={event => {
             onChange?.(event.target.value)
           }}
-          style={{ background: error ? '#fdd' : undefined, ...style }}
+          className={cx(className, error ? classes.errorField : undefined)}
+          style={style}
           slotProps={{
             input: {
               readOnly,

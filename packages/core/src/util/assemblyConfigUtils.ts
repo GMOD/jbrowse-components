@@ -38,6 +38,19 @@ export interface FormState {
   cytobandsLocation: FileLocation
 }
 
+// Curried field setter for the add-assembly form:
+// makeSetField(setForm)('faiLocation') returns a value setter that merges just
+// that field. Shared by AdvancedOptions and SequenceAdapterInputs so the
+// immutable-update logic lives in one place.
+export function makeSetField(
+  setForm: (update: (prev: FormState) => FormState) => void,
+) {
+  return <K extends keyof FormState>(key: K) =>
+    (value: FormState[K]) => {
+      setForm(f => ({ ...f, [key]: value }))
+    }
+}
+
 const blank = { uri: '' } as FileLocation
 
 export function initialFormState(): FormState {

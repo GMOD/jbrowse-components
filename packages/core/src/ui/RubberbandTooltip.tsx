@@ -6,7 +6,7 @@ export default function RubberbandTooltip({
   text,
 }: {
   anchorEl: HTMLElement
-  side: string
+  side: 'left' | 'right'
   text: React.ReactNode
 }) {
   return (

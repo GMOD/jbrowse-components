@@ -2,9 +2,9 @@ import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import FileSelector from './FileSelector/FileSelector.tsx'
+import { makeSetField } from '../util/assemblyConfigUtils.ts'
 
 import type { FormState } from '../util/assemblyConfigUtils.ts'
-import type { FileLocation } from '../util/types/index.ts'
 
 // Display name plus the optional refName-aliases and cytobands files. Shared by
 // every add-assembly surface (desktop Open genome dialog, in-app Assembly
@@ -17,13 +17,7 @@ const AdvancedOptions = observer(function AdvancedOptions({
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
 }) {
-  const setField =
-    <K extends keyof FormState>(key: K) =>
-    (value: FormState[K]) => {
-      setForm(f => ({ ...f, [key]: value }))
-    }
-  const setRefNameAliasesLocation = setField('refNameAliasesLocation')
-  const setCytobandsLocation = setField('cytobandsLocation')
+  const setField = makeSetField(setForm)
   return (
     <>
       <TextField
@@ -42,18 +36,14 @@ const AdvancedOptions = observer(function AdvancedOptions({
         name="refName aliases"
         description="Remap equivalent refNames (e.g. chr1 and 1). Tab-separated file such as a UCSC .chromAliases file."
         location={form.refNameAliasesLocation}
-        setLocation={(loc: FileLocation) => {
-          setRefNameAliasesLocation(loc)
-        }}
+        setLocation={setField('refNameAliasesLocation')}
       />
       <FileSelector
         inline
         name="Cytobands"
         description="UCSC cytoBand.txt / cytoBandIdeo.txt format (.gz allowed)."
         location={form.cytobandsLocation}
-        setLocation={(loc: FileLocation) => {
-          setCytobandsLocation(loc)
-        }}
+        setLocation={setField('cytobandsLocation')}
       />
     </>
   )

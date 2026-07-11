@@ -3,18 +3,11 @@ import { useState } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { ColorPopover } from './ColorPicker.tsx'
+import { swatchStyle } from './colorSwatchStyle.ts'
 
 const useStyles = makeStyles()({
   picker: { position: 'relative' },
-  swatch: {
-    width: 24,
-    height: 24,
-    margin: 4,
-    border: 'none',
-    padding: 0,
-    cursor: 'pointer',
-    outline: 'none',
-  },
+  swatch: swatchStyle,
   // Signals a color that isn't explicitly set — the swatch shows the effective
   // (auto) color, dashed to distinguish it from a user-chosen value.
   unset: {

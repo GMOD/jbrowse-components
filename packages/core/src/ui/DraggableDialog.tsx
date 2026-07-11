@@ -2,16 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
-import {
-  Dialog,
-  DialogTitle,
-  Divider,
-  IconButton,
-  ScopedCssBaseline,
-} from '@mui/material'
+import { DialogTitle, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { DialogProps } from '@mui/material'
+import Dialog, { type Props as DialogProps } from './Dialog.tsx'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -25,11 +19,14 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+// A drag-repositionable dialog. Renders the shared Dialog so it inherits the
+// content-box input fix and the error boundary, and supplies a draggable title
+// bar as Dialog's `header`.
 const DraggableDialog = observer(function DraggableDialog(
   props: DialogProps & { title: string },
 ) {
   const { classes } = useStyles()
-  const { title, children, onClose } = props
+  const { title, children, onClose, ...rest } = props
   const [pos, setPos] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
   const originRef = useRef({ mouseX: 0, mouseY: 0, x: 0, y: 0 })
@@ -59,15 +56,15 @@ const DraggableDialog = observer(function DraggableDialog(
 
   return (
     <Dialog
-      {...props}
+      {...rest}
+      onClose={onClose}
       slotProps={{
         ...props.slotProps,
         paper: {
           style: { transform: `translate(${pos.x}px, ${pos.y}px)` },
         },
       }}
-    >
-      <ScopedCssBaseline>
+      header={
         <DialogTitle
           className={classes.title}
           onMouseDown={event => {
@@ -85,16 +82,16 @@ const DraggableDialog = observer(function DraggableDialog(
             <IconButton
               className={classes.closeButton}
               onClick={event => {
-                onClose(event, 'backdropClick')
+                onClose(event, 'closeButtonClick')
               }}
             >
               <CloseIcon />
             </IconButton>
           ) : null}
         </DialogTitle>
-        <Divider />
-        {children}
-      </ScopedCssBaseline>
+      }
+    >
+      {children}
     </Dialog>
   )
 })

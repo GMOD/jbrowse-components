@@ -6,6 +6,7 @@ declare global {
   }
 }
 
+import { rewriteExternalAnchors } from './rewriteExternalAnchors.ts'
 import { linkify } from '../util/index.ts'
 
 // source https://github.com/sindresorhus/html-tags/blob/master/html-tags.json
@@ -84,10 +85,7 @@ function SetHTML({ value, className }: { value: string; className?: string }) {
     if (el) {
       try {
         el.setHTML?.(value)
-        for (const a of el.querySelectorAll('a')) {
-          a.setAttribute('rel', 'noopener noreferrer')
-          a.setAttribute('target', '_blank')
-        }
+        rewriteExternalAnchors(el)
       } catch (e) {
         console.error(e)
       }

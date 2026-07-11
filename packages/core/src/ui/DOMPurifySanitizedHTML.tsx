@@ -2,6 +2,8 @@ import { useLayoutEffect, useRef } from 'react'
 
 import dompurify from 'dompurify'
 
+import { rewriteExternalAnchors } from './rewriteExternalAnchors.ts'
+
 export default function DOMPurifySanitizedHTML({
   value,
   className,
@@ -14,10 +16,7 @@ export default function DOMPurifySanitizedHTML({
   useLayoutEffect(() => {
     const el = spanRef.current
     if (el) {
-      for (const a of el.querySelectorAll('a')) {
-        a.setAttribute('rel', 'noopener noreferrer')
-        a.setAttribute('target', '_blank')
-      }
+      rewriteExternalAnchors(el)
     }
   }, [value])
 

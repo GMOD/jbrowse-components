@@ -99,6 +99,8 @@ async function mapStackTrace(stack: string) {
       const consumer = await getSourceMapFromUri(frame.uri)
       const pos = consumer.originalPositionFor(frame)
       mappedStack.push(
+        // source-map-js types line/column/source as non-nullable, but at runtime
+        // they are null for unmapped frames, so guard with truthiness
         pos.source && pos.line && pos.column
           ? `${pos.source}:${pos.line}:${pos.column + 1} (${frame.prefix})`
           : line,
@@ -114,8 +116,10 @@ const MAX_ERR_LEN = 10_000
 
 // Chrome prepends the error message to the stack trace; Firefox doesn't.
 // Strip it to avoid duplication (the message is already shown above the trace).
-function stripMessage(trace: string, error: unknown) {
-  return trace.startsWith('Error:') ? trace.slice(`${error}`.length) : trace
+// The message is the stringified error, e.g. "TypeError: foo" for any Error
+// subclass, so compare against it rather than a hardcoded "Error:" prefix.
+function stripMessage(trace: string, message: string) {
+  return message && trace.startsWith(message) ? trace.slice(message.length) : trace
 }
 
 function getStackTrace(error: unknown) {

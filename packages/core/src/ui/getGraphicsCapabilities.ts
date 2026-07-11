@@ -6,6 +6,8 @@ export interface GraphicsCapabilities {
 export async function getGraphicsCapabilities(): Promise<GraphicsCapabilities> {
   let webgpu = false
   try {
+    // navigator.gpu is typed non-nullable but is undefined without WebGPU
+    // support, so the try/catch guards that access as well as adapter failures
     webgpu = !!(await navigator.gpu.requestAdapter())
   } catch {}
   // probe-only context; release it so feature detection doesn't hold a GPU

@@ -22,19 +22,16 @@ const useStyles = makeStyles()({
 export function MenuItemEndDecoration({
   type,
   checked,
-  disabled,
 }: {
   type: 'checkbox' | 'radio'
   checked: boolean
-  disabled?: boolean
 }) {
   const { classes } = useStyles()
-  const color = disabled && checked ? 'inherit' : undefined
   let icon: React.ReactElement
   switch (type) {
     case 'checkbox': {
       icon = checked ? (
-        <CheckBoxIcon color={color} />
+        <CheckBoxIcon />
       ) : (
         <CheckBoxOutlineBlankIcon color="action" />
       )
@@ -42,7 +39,7 @@ export function MenuItemEndDecoration({
     }
     case 'radio': {
       icon = checked ? (
-        <RadioButtonCheckedIcon color={color} />
+        <RadioButtonCheckedIcon />
       ) : (
         <RadioButtonUncheckedIcon color="action" />
       )

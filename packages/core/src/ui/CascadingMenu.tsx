@@ -280,7 +280,6 @@ function CascadingMenuList({
                 <MenuItemEndDecoration
                   type={item.type}
                   checked={item.checked}
-                  disabled={item.disabled}
                 />
               ) : null}
               {item.helpText && !item.disabled ? (

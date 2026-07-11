@@ -56,8 +56,8 @@ export interface Props extends Omit<DialogProps, 'onClose'> {
 
 function Dialog(props: Props) {
   const { classes } = useStyles()
-  const { titleNode, header, ...rest } = props
-  const { title, children, onClose } = rest
+  const { titleNode, header, title, ...rest } = props
+  const { children, onClose } = rest
   const theme = useTheme()
   // content-box override xref https://github.com/GMOD/jbrowse-components/pull/3666
   const dialogTheme = useMemo(

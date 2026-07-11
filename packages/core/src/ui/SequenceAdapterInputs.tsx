@@ -2,7 +2,11 @@ import { Alert, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import FileSelector from './FileSelector/FileSelector.tsx'
-import { adapterLabels, adapterTypes } from '../util/assemblyConfigUtils.ts'
+import {
+  adapterLabels,
+  adapterTypes,
+  makeSetField,
+} from '../util/assemblyConfigUtils.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { AdapterType, FormState } from '../util/assemblyConfigUtils.ts'
@@ -60,11 +64,7 @@ const SequenceAdapterInputs = observer(function SequenceAdapterInputs({
   setTwoBitFile: (location: FileLocation) => void
 }) {
   const { classes } = useStyles()
-  const setField =
-    <K extends keyof FormState>(key: K) =>
-    (value: FormState[K]) => {
-      setForm(f => ({ ...f, [key]: value }))
-    }
+  const setField = makeSetField(setForm)
   const { adapterSelection } = form
   return (
     <>

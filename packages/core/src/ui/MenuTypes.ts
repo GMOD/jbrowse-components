@@ -27,10 +27,10 @@ export interface BaseMenuItem {
   /** tooltip shown when the item is disabled, in place of helpText */
   disabledHelpText?: string
   /**
-   * Extra content rendered at the trailing (right) edge of the row, before the
-   * checkbox/radio decoration — e.g. a secondary toggle. The content must
-   * `stopPropagation` on its own click so it doesn't fire the row's onClick or
-   * dismiss the menu.
+   * Extra content rendered at the trailing (right) edge of the row, after the
+   * checkbox/radio decoration and help icon — e.g. a secondary toggle. The
+   * content must `stopPropagation` on its own click so it doesn't fire the row's
+   * onClick or dismiss the menu.
    */
   endAdornment?: React.ReactNode
 }

@@ -4,6 +4,7 @@ import { colord } from '@jbrowse/core/util/colord'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MenuItem, Popover, Select, TextField } from '@mui/material'
 
+import { swatchStyle } from './colorSwatchStyle.ts'
 import { paletteColors } from './colors.ts'
 import { RgbaStringColorPicker } from './react-colorful.ts'
 import { useDebounce, useLocalStorage } from '../util/index.ts'
@@ -26,15 +27,7 @@ const useStyles = makeStyles()({
     padding: 12,
     flexWrap: 'wrap',
   },
-  swatch: {
-    width: 24,
-    height: 24,
-    margin: 4,
-    border: 'none',
-    padding: 0,
-    cursor: 'pointer',
-    outline: 'none',
-  },
+  swatch: swatchStyle,
 })
 
 const palettes = Object.keys(paletteColors)
