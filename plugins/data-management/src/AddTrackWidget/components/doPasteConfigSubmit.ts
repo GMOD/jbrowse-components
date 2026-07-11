@@ -1,12 +1,8 @@
-import {
-  getSession,
-  isSessionModelWithWidgets,
-  isSessionWithAddTracks,
-} from '@jbrowse/core/util'
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
 import { parseTrackConfigs } from './parseTrackConfigs.ts'
-import { viewDisplaysAssembly } from './util.ts'
+import { finishAddTrack, viewDisplaysAssembly } from './util.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -47,10 +43,7 @@ export function doPasteConfigSubmit({
           }
         }
       }
-      model.clearData()
-      if (isSessionModelWithWidgets(session)) {
-        session.hideWidget(model)
-      }
+      finishAddTrack(model)
     })
     if (notShown.length) {
       // These tracks were added to the session but can't be shown here because

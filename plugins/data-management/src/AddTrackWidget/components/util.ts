@@ -1,6 +1,10 @@
-import { groupBy } from '@jbrowse/core/util'
+import {
+  getSession,
+  groupBy,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 
-import type { IndexingAttr } from '../model.ts'
+import type { AddTrackModel, IndexingAttr } from '../model.ts'
 import type { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 
 export const defaultIndexingConf: IndexingAttr = {
@@ -25,4 +29,16 @@ export function viewDisplaysAssembly(
   assemblyNames: readonly (string | undefined)[] | undefined,
 ) {
   return !!view?.assemblyNames?.some(a => assemblyNames?.includes(a))
+}
+
+/**
+ * Reset the form and dismiss the widget after a successful add. Shared by the
+ * single-track and paste-JSON submit paths.
+ */
+export function finishAddTrack(model: AddTrackModel) {
+  const session = getSession(model)
+  model.clearData()
+  if (isSessionModelWithWidgets(session)) {
+    session.hideWidget(model)
+  }
 }

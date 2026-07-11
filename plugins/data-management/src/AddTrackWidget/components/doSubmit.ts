@@ -1,13 +1,16 @@
 import {
   getSession,
   isElectron,
-  isSessionModelWithWidgets,
   isSessionWithAddTracks,
   isSupportedIndexingAdapter,
 } from '@jbrowse/core/util'
 import { getRoot } from '@jbrowse/mobx-state-tree'
 
-import { defaultIndexingConf, viewDisplaysAssembly } from './util.ts'
+import {
+  defaultIndexingConf,
+  finishAddTrack,
+  viewDisplaysAssembly,
+} from './util.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -79,10 +82,7 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
         timestamp,
       })
     }
-    model.clearData()
-    if (isSessionModelWithWidgets(session)) {
-      session.hideWidget(model)
-    }
+    finishAddTrack(model)
   } else {
     throw new Error(
       'Failed to add track.\nThe configuration of this file is not currently supported.',

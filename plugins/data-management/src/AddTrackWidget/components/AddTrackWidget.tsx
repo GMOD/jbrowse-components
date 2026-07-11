@@ -91,7 +91,12 @@ const AddTrackSelector = observer(function AddTrackSelector({
       </FormControl>
 
       <Suspense fallback={null}>
-        <Component model={model} switchWorkflow={setVal} />
+        <Component
+          model={model}
+          switchWorkflow={name => {
+            setVal(name)
+          }}
+        />
       </Suspense>
     </>
   )

@@ -30,7 +30,9 @@ const TrackSourceSelect = observer(function TrackSourceSelect({
         name="Main file"
         description=""
         location={model.trackData}
-        setLocation={model.setTrackData}
+        setLocation={loc => {
+          model.setTrackData(loc)
+        }}
         rootModel={rootModel}
       />
       <div className={classes.spacer} />
@@ -38,7 +40,9 @@ const TrackSourceSelect = observer(function TrackSourceSelect({
         name="Index file"
         description="(Optional) The URL of the index file is automatically inferred from the URL of the main file if it is not supplied."
         location={model.indexTrackData}
-        setLocation={model.setIndexTrackData}
+        setLocation={loc => {
+          model.setIndexTrackData(loc)
+        }}
         rootModel={rootModel}
       />
     </Paper>

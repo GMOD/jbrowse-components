@@ -197,22 +197,10 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get isRelativeTrackUrl() {
-        const uri = getUri(self.trackData)
-        return uri ? isRelativeUrlString(uri) : false
-      },
-      /**
-       * #getter
-       */
-      get isRelativeIndexUrl() {
-        const uri = getUri(self.indexTrackData)
-        return uri ? isRelativeUrlString(uri) : false
-      },
-      /**
-       * #getter
-       */
       get isRelativeUrl() {
-        return this.isRelativeIndexUrl || this.isRelativeTrackUrl
+        // isRelativeUrlString('') is true, so skip empty/undefined uris that
+        // getUri returns for non-URI (e.g. local file) locations
+        return this.uris.some(uri => !!uri && isRelativeUrlString(uri))
       },
 
       /**
