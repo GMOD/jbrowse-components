@@ -31,19 +31,27 @@ share no state model with canvas.
 the backend factory (see "RenderingBackend interfaces per plugin"), not by which
 foundation a display composes.
 
-### The legacy block stack
+### The legacy block stack (removed on webgl-poc)
 
-`BaseLinearDisplay` (plugins/linear-genome-view) is the one remaining server-side
-RPC-render → SVG-block state model, and the pluggable server-side-renderer
-extension point. It is **kept indefinitely** because it is public API composed by
-external plugins (`jbrowse-plugin-gdc`, `-icgc`, legacy `-mafviewer`). In-tree
-only `LinearBareDisplay` still composes it — a rarely-used fallback for
-`FeatureTrack`/`BasicTrack` and the LGV core test suite's lightweight vehicle.
+Before the GPU pipeline, displays rendered each region-block server-side to an
+SVG/HTML string and the main thread just positioned those images: the
+`BaseLinearDisplay` state model, `LinearBareDisplay`, `BasicTrack`, and the
+`<LinearBlocks>` component. **All of it was removed on this branch.** How it
+worked, and why it went, is in
+[reference/HISTORICAL.md](reference/HISTORICAL.md).
 
-A GPU display like `LinearBasicDisplay` does **not** extend this state model,
-even though it shares the `baseLinearDisplayConfigSchema` and the
-`BaseLinearDisplayComponent` React shell. Full detail on why it can't be deleted,
-and the three-artifacts-sharing-one-name hazard, is in
+Two names survive with new roles: `BaseLinearDisplayComponent` collapsed to a
+thin GPU container (every consumer sets `DisplayMessageComponent` and renders its
+own canvas inside it), and `baseLinearDisplayConfigSchema` remains the shared
+config base every foundation extends.
+
+Core's server-side render machinery (`ServerSideRendererType`, `BoxRendererType`,
+`FeatureRendererType`, `renderToAbstractCanvas`, the `CoreRender` RPC,
+`addRendererType`) is still public in `ReExports`, so the block path can be
+rebuilt as an **external compat plugin** rather than restored in-tree. External
+`jbrowse-plugin-gdc` / `-icgc` (which composed the in-tree model) are the accepted
+breakage. The general "why exports ossify into permanent ABI" analysis — which
+used this very stack as its example — is
 [reference/PLUGIN_ABI_STABILITY.md](reference/PLUGIN_ABI_STABILITY.md).
 
 ## Coordinate system

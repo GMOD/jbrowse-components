@@ -5,6 +5,56 @@ of this is current behavior — it's kept so a future reader doesn't re-derive a
 wrong story or "fix" something back into a known-bad shape. The live docs state
 only the current truth; the *why-it-isn't-otherwise* lives here.
 
+## The old block-based (server-side) rendering system
+
+Before the GPU pipeline, JBrowse rendered on the **worker** and shipped rasterized
+output to the main thread. This whole path was ripped out of `webgl-poc` on
+2026-06-13 (commits `4b89af33ec` / `8b1dacf9ff` / `d2e75b53c1`). Summary of how it
+worked, for anyone reading old code, old plugins, or the released 2.x line:
+
+**The unit of work was a block.** The view tiled the visible genome into
+region-blocks (`view.dynamicBlocks` / `staticBlocks` → `blockDefinitions.contentBlocks`).
+`BaseLinearDisplay`'s state model held a `blockState: types.map(BlockState)`, and a
+`blockDefinitionsAutorun` reconciled that map against the view's current content
+blocks — adding a `BlockState` for each new block key, deleting stale ones as the
+user panned. Each block was an independent render.
+
+**Each block rendered server-side to an image.** A `BlockState`
+(`serverSideRenderedBlock.ts`) assembled render args via `renderBlockData` (assembly
+check, `display.renderProps()`, config, `rendererTypeName`) and ran
+`renderBlockEffect`, which called `rendererType.renderInClient(rpcManager, {...})`.
+That dispatched the `CoreRender` RPC to the renderer type in the worker
+(`SvgFeatureRenderer`, `DivSequenceRenderer`, wiggle/pileup renderers, etc.), which
+laid features out and painted them via `renderToAbstractCanvas` into an SVG string
+(or PNG data-url). The result — markup + feature layout data (`maxHeightReached`,
+feature-position maps for mouseover) — came back and was stored on the block
+(`filled = true`, cached `renderArgs`).
+
+**The main thread only positioned images.** `<LinearBlocks>` / `RenderedBlocks`
+laid the returned per-block markup out horizontally at each block's pixel offset;
+`ServerSideRenderedBlockContent` was the per-block React component that mounted it.
+The main thread did no drawing — pan/zoom re-tiled blocks and re-issued RPCs;
+`reload()` cleared `blockState` and re-rendered everything.
+
+**Extension points (still public in core).** Renderers registered via
+`addRendererType` and subclassed `ServerSideRendererType` / `BoxRendererType` /
+`FeatureRendererType`. `jbrowse-plugin-gdc`, `-icgc`, and the legacy `-mafviewer`
+composed `BaseLinearDisplay` and shipped their own renderer types. These core
+classes plus `renderToAbstractCanvas` and the `CoreRender` RPC are still exported
+from `ReExports`, so the block path can be rebuilt as an external compat plugin.
+
+**Why it was replaced.** Every pan/zoom round-tripped rasterization through the
+worker and reconciled a per-block React subtree, so interaction latency scaled with
+block count and re-render cost. The GPU pipeline inverts the split: the worker
+returns **absolute-uint32 feature data** (not pixels), the main thread uploads it
+once to the GPU, and an autorun redraws every frame from the same buffers — so
+pan/zoom is a cheap redraw, not a refetch+re-rasterize. The per-block `blockState`
+map, per-block RPC, and per-block React components collapsed into a single
+`rpcDataMap` + the upload/render autorun pair (`ARCHITECTURE.md` §"Life of a
+frame"). Recovery plan for the external compat plugin, and the vetting of which
+external plugins survive, is tracked outside these docs (pre-rip anchor
+`d673d7e390`).
+
 ## regionTooLarge banner: no oscillation (correction)
 
 Earlier writeups (and commit `614465dd51`) described a `regionTooLarge`
