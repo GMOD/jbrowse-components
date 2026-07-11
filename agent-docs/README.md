@@ -115,7 +115,8 @@ how-tos in **[guides/](guides/)**, and design rationale in
 ### `architecture-decision-records/`
 
 Design decisions (ADR-001 … ADR-035) — read to understand why something is the
-way it is.
+way it is. **[architecture-decision-records/README.md](architecture-decision-records/README.md)**
+indexes all of them by number, status, and one-line decision.
 
 ## Common questions
 
