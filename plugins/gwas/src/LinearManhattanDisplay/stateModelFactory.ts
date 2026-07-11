@@ -122,6 +122,14 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * Offset the track label above the plot so the -log10(p) y-axis stays
+       * pinned to the content edge instead of dodging right of the label.
+       */
+      get prefersOffset() {
+        return true
+      },
+      /**
+       * #getter
        */
       get TooltipComponent() {
         return TooltipComponent
