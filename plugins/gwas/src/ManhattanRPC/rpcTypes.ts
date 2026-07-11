@@ -8,6 +8,13 @@ export const GLYPH_POINT = 0
 export const GLYPH_INSERTION = 1
 export const GLYPH_INDEX = 2
 
+// Default Manhattan point color. Single source of truth for the `color` config
+// slot default (configSchemaFactory) and the worker's fallback for a jexl
+// `color` expression that yields a non-string (makeColorEvaluator), so the two
+// can't drift. Lives here rather than in configSchemaFactory so the worker can
+// import it without pulling the wiggle config schema into the worker bundle.
+export const DEFAULT_MANHATTAN_COLOR = '#0068d1'
+
 export interface GetManhattanDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>

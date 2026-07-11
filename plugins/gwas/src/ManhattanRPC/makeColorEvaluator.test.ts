@@ -3,6 +3,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
+import { DEFAULT_MANHATTAN_COLOR } from './rpcTypes.ts'
 
 const jexl = createJexlInstance()
 
@@ -66,5 +67,5 @@ test('non-string jexl result → visible default, not transparent', () => {
   expect(fn(f1)).toBe(abgr(255, 0, 0))
   const fallback = fn(f2)
   expect(fallback).not.toBe(0)
-  expect(fallback).toBe(cssColorToABGR('#0068d1'))
+  expect(fallback).toBe(cssColorToABGR(DEFAULT_MANHATTAN_COLOR))
 })

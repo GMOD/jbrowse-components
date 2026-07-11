@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
 
+import { DEFAULT_MANHATTAN_COLOR } from '../ManhattanRPC/rpcTypes.ts'
+
 // Reuses LinearWiggleDisplay's schema, but overrides `color` so we don't
 // inherit wiggle's bicolor sentinel (`#f0f`). Manhattan is single-color and
 // supports per-feature jexl callbacks.
@@ -64,7 +66,7 @@ export function configSchemaFactory() {
        */
       color: {
         type: 'color',
-        defaultValue: '#0068d1',
+        defaultValue: DEFAULT_MANHATTAN_COLOR,
         description: 'CSS color or jexl callback for Manhattan points',
       },
       /**

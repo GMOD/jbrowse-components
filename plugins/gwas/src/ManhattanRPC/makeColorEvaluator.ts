@@ -1,15 +1,17 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { isJexl, stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 
+import { DEFAULT_MANHATTAN_COLOR } from './rpcTypes.ts'
+
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 // Fallback when a jexl `color` expression yields a non-string (undefined, a
 // number, a typo'd branch): render the default point color rather than a fully
 // transparent (0) point. An invisible point is indistinguishable from a render
-// failure — a visible default surfaces the misconfiguration instead. Mirrors
-// the `color` slot default in configSchemaFactory.
-const FALLBACK_COLOR = cssColorToABGR('#0068d1')
+// failure — a visible default surfaces the misconfiguration instead. Shares the
+// `color` slot default so the two can't drift.
+const FALLBACK_COLOR = cssColorToABGR(DEFAULT_MANHATTAN_COLOR)
 
 // Resolves `color` (CSS literal or `jexl:...`) into a per-feature ABGR-packed
 // uint32. Compiles the jexl expression once and reuses it across features.
