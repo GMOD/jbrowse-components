@@ -25,7 +25,6 @@ const useStyles = makeStyles()({
     flexGrow: 1,
   },
   scrollZoomButton: {
-    height: 44,
     border: 'none',
     textTransform: 'none',
   },

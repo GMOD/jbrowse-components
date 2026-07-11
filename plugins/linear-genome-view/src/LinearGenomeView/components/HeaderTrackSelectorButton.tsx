@@ -7,7 +7,6 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 const useStyles = makeStyles()(theme => ({
   toggleButton: {
-    height: 44,
     border: 'none',
     marginLeft: theme.spacing(4),
   },

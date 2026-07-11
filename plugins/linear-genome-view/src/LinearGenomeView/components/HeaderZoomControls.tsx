@@ -46,7 +46,7 @@ function ValueLabelComponent(props: SliderValueLabelProps) {
 
 function getZoomMenuItems(model: LinearGenomeViewModel) {
   return [
-    ...[100, 50, 10].map(r => ({
+    ...[10, 50, 100].map(r => ({
       label: `Zoom in ${r}x`,
       onClick: () => {
         model.zoom(model.bpPerPx / r)

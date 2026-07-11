@@ -23,7 +23,6 @@ const useStyles = makeStyles()(theme => ({
   trackName: {
     margin: '0 auto',
     width: '90%',
-    fontSize: '0.8rem',
     pointerEvents: 'none',
   },
 }))
@@ -44,7 +43,7 @@ const TrackLabel = observer(function TrackLabel({
       <TrackLabelCloseButton track={track} />
       <TrackLabelMinimizeButton track={track} />
       <Typography
-        variant="body1"
+        variant="body2"
         component="span"
         className={classes.trackName}
       >
