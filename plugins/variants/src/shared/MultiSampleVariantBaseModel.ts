@@ -117,16 +117,20 @@ function encodeGenotype(gt: string) {
 // Sort `sources` by per-sample genotype, descending (more non-ref alleles
 // first). Sources in phased mode carry haplotype-keyed `name` (e.g.
 // "HG001 HP0"); the genotype map is keyed by sample name, so look up via
-// `sampleName` rather than `name`.
+// `sampleName` rather than `name`. A missing genotype ranks -1 (last), matching
+// a fully-uncalled call. Rank is computed once per source (not per comparison)
+// so the comparator doesn't re-split genotype strings O(S·logS) times.
 export function sortSourcesByGenotype(
   sources: ProcessedSource[],
   genotypes: Record<string, string>,
 ): ProcessedSource[] {
-  return [...sources].sort((a, b) => {
-    const ga = genotypes[a.sampleName] ?? './.'
-    const gb = genotypes[b.sampleName] ?? './.'
-    return encodeGenotype(gb) - encodeGenotype(ga)
-  })
+  return sources
+    .map(source => {
+      const gt = genotypes[source.sampleName]
+      return { source, rank: gt === undefined ? -1 : encodeGenotype(gt) }
+    })
+    .sort((a, b) => b.rank - a.rank)
+    .map(d => d.source)
 }
 
 // Regions to fetch + render, by mode. Regular mode draws each variant at its
