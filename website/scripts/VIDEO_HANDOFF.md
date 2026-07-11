@@ -74,10 +74,10 @@ from the hang, now gone.
 
 Distinct from the swiftshader freeze, there IS a measured per-frame cost on real
 GPUs during alignments zoom/pan (~21ms/frame at 4× CPU throttle) —
-per-interaction React/MUI/Emotion re-renders (measured: the LGV coordinate
-ruler `ScalebarCoordinateLabels`' per-zoom tick churn, not the alignments
-overlays), not GPU draw. See the "Perf" section of `agent-docs/OTHER_IDEAS.md`
-(+ profiler in `~/src/jb2bench`). It is not what broke the video.
+per-interaction React/MUI/Emotion re-renders (measured: the LGV coordinate ruler
+`ScalebarCoordinateLabels`' per-zoom tick churn, not the alignments overlays),
+not GPU draw. See the "Perf" section of `agent-docs/OTHER_IDEAS.md` (+ profiler
+in `~/src/jb2bench`). It is not what broke the video.
 
 ## Integration plan (once the prototype is solid) — NOT started
 

@@ -38,7 +38,7 @@
   "alignments_soft_clipped": {
     "name": "alignments_soft_clipped",
     "status": "good",
-    "note": "kept distinct from alignments_soft_clipped_menu: this one illustrates the SV breakpoint-clustering concept (sv_visualization.md, full-width, no menu) vs the menu walkthrough figure documenting how to toggle the feature (alignments_track.md) — not actually duplicates",
+    "note": "kept distinct from alignments_soft_clipped_menu: this one illustrates the SV breakpoint-clustering concept (sv_visualization.md, full-width, no menu) vs the menu walkthrough figure documenting how to toggle the feature (alignments_track.md) \u2014 not actually duplicates",
     "reviewedAt": "2026-06-24T18:19:56.000Z",
     "hash": "2978ac0765ffcb3acd35f9d5de22b49ad8d26128"
   },
@@ -361,7 +361,7 @@
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
     "status": "good",
-    "note": "FIXED: spec no longer hovers/expands the Launch view submenu — the base right-click menu is captured. Regenerated + verified.",
+    "note": "FIXED: spec no longer hovers/expands the Launch view submenu \u2014 the base right-click menu is captured. Regenerated + verified.",
     "reviewedAt": "2026-07-10T00:33:04.593Z",
     "hash": "24ee49bfe935e58a0ac7dafeb9b09ae914c87fbb"
   },
@@ -615,7 +615,7 @@
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
     "status": "good",
-    "note": "KEEP: the clean no-menu phased matrix used by multivariant_track.md, analyze_trio.md, and the gallery — distinct from the menu-overlay trio-matrix-phased",
+    "note": "KEEP: the clean no-menu phased matrix used by multivariant_track.md, analyze_trio.md, and the gallery \u2014 distinct from the menu-overlay trio-matrix-phased",
     "reviewedAt": "2026-07-07T04:51:38.047Z",
     "hash": "992fcb9a1d3cda9dd6e8d1314be489cbfe6a2951"
   },
@@ -635,7 +635,7 @@
   "variants/population_1000genomes": {
     "name": "variants/population_1000genomes",
     "status": "good",
-    "note": "Implemented: the floating legend now renders as separate titled, individually-closable sections — Genotypes (cell coloring) vs Population (sidebar row-label coloring) — making the two distinct color meanings explicit. FloatingLegend gained sections/onDismissSection; model gained legendSections()+dismissLegendSection(). Regenerated.",
+    "note": "Implemented: the floating legend now renders as separate titled, individually-closable sections \u2014 Genotypes (cell coloring) vs Population (sidebar row-label coloring) \u2014 making the two distinct color meanings explicit. FloatingLegend gained sections/onDismissSection; model gained legendSections()+dismissLegendSection(). Regenerated.",
     "reviewedAt": "2026-06-26T00:00:00.000Z"
   },
   "gwas/locuszoom_ld": {
@@ -648,7 +648,7 @@
   "gwas/manhattan": {
     "name": "gwas/manhattan",
     "status": "good",
-    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md — genome-wide real-world Manhattan.",
+    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md \u2014 genome-wide real-world Manhattan.",
     "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "link_to_split_view": {
@@ -685,19 +685,19 @@
   "product_architecture": {
     "name": "product_architecture",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one — the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one \u2014 the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "products_and_plugins": {
     "name": "products_and_plugins",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source — tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source \u2014 tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "protein/structure": {
     "name": "protein/structure",
     "status": "good",
-    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views — structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
+    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views \u2014 structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "no_build_final": {
@@ -770,7 +770,7 @@
   "desktop-session": {
     "name": "desktop-session",
     "status": "good",
-    "note": "resolved: the requested fallback is already implemented — products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
+    "note": "resolved: the requested fallback is already implemented \u2014 products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
     "reviewedAt": "2026-06-14T20:30:00.000Z"
   },
   "multiwig/cluster_dialog": {
@@ -794,7 +794,7 @@
   "variants/cluster_dialog": {
     "name": "variants/cluster_dialog",
     "status": "good",
-    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) — dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
+    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) \u2014 dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
     "reviewedAt": "2026-06-11T14:25:43.428Z"
   },
   "variants/clustered_result": {
@@ -925,13 +925,13 @@
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
     "status": "good",
-    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING — GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision — renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
+    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING \u2014 GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision \u2014 renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
     "status": "good",
-    "note": "resolved: deleted — the bezier connectors matched the read colors, redundant with the inverted_duplication figure above. Removed spec (sv.ts), PNG, and the Figure+paragraph in sv_visualization.md.",
+    "note": "resolved: deleted \u2014 the bezier connectors matched the read colors, redundant with the inverted_duplication figure above. Removed spec (sv.ts), PNG, and the Figure+paragraph in sv_visualization.md.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "trio-hapibd-painting": {
@@ -963,7 +963,7 @@
   "embed_linear_genome_view/final": {
     "name": "embed_linear_genome_view/final",
     "status": "good",
-    "note": "Implemented: now a real puppeteer capture of the embedded @jbrowse/react-linear-genome-view2 component (new mode:embedded in the generator — serves a UMD script-tag harness, screenshots the component element). Rebuilt the UMD in production mode (committed dist was a broken dev-JSX build: jsxDEV is not a function). The tutorial config referenced a dead hg38 SKBR3 bam (404, file gone — only hg19 SKBR3 exists); removed that track from both the spec and the tutorial doc. Figure now shows reference/genes/exome/phyloP/variants cleanly.",
+    "note": "Implemented: now a real puppeteer capture of the embedded @jbrowse/react-linear-genome-view2 component (new mode:embedded in the generator \u2014 serves a UMD script-tag harness, screenshots the component element). Rebuilt the UMD in production mode (committed dist was a broken dev-JSX build: jsxDEV is not a function). The tutorial config referenced a dead hg38 SKBR3 bam (404, file gone \u2014 only hg19 SKBR3 exists); removed that track from both the spec and the tutorial doc. Figure now shows reference/genes/exome/phyloP/variants cleanly.",
     "reviewedAt": "2026-06-26T00:00:00.000Z"
   },
   "jbrowse-img/1": {
@@ -1025,7 +1025,7 @@
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
     "status": "good",
-    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/alignments_readgroup": {
@@ -1038,7 +1038,7 @@
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
     "status": "good",
-    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "hg38_assembly_table": {
@@ -1169,9 +1169,9 @@
   "gc_content": {
     "name": "gc_content",
     "status": "good",
-    "note": "NOT ACTIONABLE: the view already spans the entire single-contig H. pylori 26695 chromosome (NC_018939.1:1-1,667,892 = whole genome). There is nothing further to zoom out to.",
-    "reviewedAt": "2026-07-11T19:58:10Z",
-    "hash": "cc2510851fc416f8e990d58d78a565a07a61c111"
+    "note": "FIXED: added a real Replication origin / terminus feature track (FromConfigAdapter, inline) \u2014 oriC anchored on the annotated dnaA gene (NC_018939.1:1,607,647-1,609,020, the chromosomal replication initiator) at the GC-skew minimum, terminus at the maximum. Distinct teal/red markers + faint vertical guides tie each to the skew sign-flip. (The view already spans the whole single-contig genome; the real ask was the origin track.) Caption corrected (was stale volvox). Regenerated.",
+    "reviewedAt": "2026-07-11T20:09:01Z",
+    "hash": "7b5b2dca294bb61f76bb96e08f3a0276871b1254"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
@@ -1348,21 +1348,21 @@
   "synteny_human_chimp_cigar_modes": {
     "name": "synteny_human_chimp_cigar_modes",
     "status": "good",
-    "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow — normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
+    "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow \u2014 normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
     "reviewedAt": "2026-07-10T06:21:29.908Z",
     "hash": "0e6c0810995b5114a73e09f77a0faa33e2592629"
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
     "status": "good",
-    "note": "FIXED: RepeatMasker heightMode fit->grow — repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
+    "note": "FIXED: RepeatMasker heightMode fit->grow \u2014 repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
     "reviewedAt": "2026-07-10T06:21:29.908Z",
     "hash": "db577c5f8b39401d4656e2f08edfc4c5d171c30b"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
     "status": "good",
-    "note": "FIXED: RepeatMasker heightMode grow — normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
+    "note": "FIXED: RepeatMasker heightMode grow \u2014 normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
     "reviewedAt": "2026-07-10T06:21:29.908Z",
     "hash": "9f130006d86d643a451e3b1bfc5deaacd2a6692e"
   },
@@ -1383,7 +1383,7 @@
   "popgen/pi_cyp6g1": {
     "name": "popgen/pi_cyp6g1",
     "status": "good",
-    "note": "resolved: deleted, merged into popgen/tajimad_cyp6g1 (which shows pi + Tajima’s D together); population_genomics.md \"Reading the signals\" reworded so pi and Tajima’s D are read off the one combined figure.",
+    "note": "resolved: deleted, merged into popgen/tajimad_cyp6g1 (which shows pi + Tajima\u2019s D together); population_genomics.md \"Reading the signals\" reworded so pi and Tajima\u2019s D are read off the one combined figure.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "qtl/bxd_overview": {
@@ -1421,7 +1421,7 @@
   "jbrowse-img/sashimi_junctions": {
     "name": "jbrowse-img/sashimi_junctions",
     "status": "good",
-    "note": "FIXED: added featureHeight:super-compact so the supporting reads pack into a thin band below the coverage/sashimi arcs — the exon-by-exon read coverage feeding the junctions is now visible without the pileup dominating.",
+    "note": "FIXED: added featureHeight:super-compact so the supporting reads pack into a thin band below the coverage/sashimi arcs \u2014 the exon-by-exon read coverage feeding the junctions is now visible without the pileup dominating.",
     "reviewedAt": "2026-07-10T21:09:23.243Z",
     "hash": "bac16fd559dfeddafebaef95b4d82bfa6bcd61ba"
   },
@@ -1441,7 +1441,7 @@
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
     "status": "good",
-    "note": "FIXED (caption): the arcs are CLI-rendered (no in-figure annotation possible), so explained the color coding in the README prose + Figure caption — purple arcs = split-read inversion junctions (read halves in opposite orientation, the inversion signature), orange arcs = same-strand deletion-type splits. Verified against the linkedReadColorPalette source (idx6 colorSplitReadInversion, idx5 colorSupplementary). Regenerated jbrowse-img.md.",
+    "note": "FIXED (caption): the arcs are CLI-rendered (no in-figure annotation possible), so explained the color coding in the README prose + Figure caption \u2014 purple arcs = split-read inversion junctions (read halves in opposite orientation, the inversion signature), orange arcs = same-strand deletion-type splits. Verified against the linkedReadColorPalette source (idx6 colorSplitReadInversion, idx5 colorSupplementary). Regenerated jbrowse-img.md.",
     "reviewedAt": "2026-07-10T18:27:12.000Z",
     "hash": "fea935a1545174a51a45b104fbcb25df6a9f3a89"
   },
@@ -1497,13 +1497,13 @@
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
     "status": "good",
-    "note": "resolved: figure deleted per reviewer. Removed spec (popgen.ts) + PNG; kept the tutorial section’s how-to pipeline and reworded the figure-referencing prose.",
+    "note": "resolved: figure deleted per reviewer. Removed spec (popgen.ts) + PNG; kept the tutorial section\u2019s how-to pipeline and reworded the figure-referencing prose.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "popgen/ld_decay_2R": {
     "name": "popgen/ld_decay_2R",
     "status": "good",
-    "note": "resolved: DELETED per reviewer (not powerful/clear enough). Removed spec + LD_TRACK const + PNG + the Figure in population_genomics.md (LD-section prose/config kept). gen:gallery-links + audit-figures regenerated. FOLLOW-UP (proposed, not yet done): replace with a famous human LD triangle — 17q21.31 MAPT/H1-H2 inversion block (ties to the tutorial's inversion theme); needs 1000G PLINK --r2 computed + hosted on jbrowse.org/demos.",
+    "note": "resolved: DELETED per reviewer (not powerful/clear enough). Removed spec + LD_TRACK const + PNG + the Figure in population_genomics.md (LD-section prose/config kept). gen:gallery-links + audit-figures regenerated. FOLLOW-UP (proposed, not yet done): replace with a famous human LD triangle \u2014 17q21.31 MAPT/H1-H2 inversion block (ties to the tutorial's inversion theme); needs 1000G PLINK --r2 computed + hosted on jbrowse.org/demos.",
     "reviewedAt": "2026-07-11T01:56:16.000Z",
     "hash": ""
   },
@@ -1524,7 +1524,7 @@
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
     "status": "good",
-    "note": "KEEP: this is the \"Input order\" (before) part of the two-part compose figure qtl/bxd_sort_before_after used in bxd_qtl.md — already a normal two-part before/after figure. The review tool just surfaces compose parts individually.",
+    "note": "KEEP: this is the \"Input order\" (before) part of the two-part compose figure qtl/bxd_sort_before_after used in bxd_qtl.md \u2014 already a normal two-part before/after figure. The review tool just surfaces compose parts individually.",
     "reviewedAt": "2026-07-11T03:42:23.000Z",
     "hash": "feb513142929bbdc0cfe3ed2b98d925d55e3415e"
   },
@@ -1538,7 +1538,7 @@
   "qtl/bxd_sort_before_after": {
     "name": "qtl/bxd_sort_before_after",
     "status": "good",
-    "note": "FIXED: the first (input-order) panel now opens the painting's right-click context menu with 'Sort rows by color here' boxed near the peak column, + a caption — the interactive twin of the declarative sortRowsBy the second panel bakes in. Only opens the menu (never clicks it) so the top panel stays in input order; the bottom panel shows the resulting B/D split.",
+    "note": "FIXED: the first (input-order) panel now opens the painting's right-click context menu with 'Sort rows by color here' boxed near the peak column, + a caption \u2014 the interactive twin of the declarative sortRowsBy the second panel bakes in. Only opens the menu (never clicks it) so the top panel stays in input order; the bottom panel shows the resulting B/D split.",
     "reviewedAt": "2026-07-10T21:11:39.966Z",
     "hash": "186dd0a4099c12ca840188bbe9f04e67c562d9ba"
   },
