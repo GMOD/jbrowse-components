@@ -1,3 +1,4 @@
+import { makeCurrentValueSessionDefaultControl } from '@jbrowse/core/configuration'
 import {
   makeRadioSubMenu,
   makeScatterPointSizeMenuItem,
@@ -7,11 +8,11 @@ import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
-import StraightenIcon from '@mui/icons-material/Straighten'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { IconButton, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import type { PromotableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const SCATTER_POINT_SIZE_DEFAULT = 2
@@ -45,11 +46,13 @@ export function makeRenderingTypeSubMenu(
 // Top-level track-menu item (not nested under Plot type, for discoverability),
 // present only in scatter variants ('scatter'/'multirowscatter'/'multiscatter')
 // where point size applies. Uses the shared inline-slider submenu.
-export function makePointSizeMenuItems(self: {
-  renderingType: string
-  scatterPointSize: number
-  setScatterPointSize: (n?: number) => void
-}): MenuItem[] {
+export function makePointSizeMenuItems(
+  self: {
+    renderingType: string
+    scatterPointSize: number
+    setScatterPointSize: (n?: number) => void
+  } & PromotableDisplay,
+): MenuItem[] {
   if (!self.renderingType.includes('scatter')) {
     return []
   }
@@ -63,11 +66,13 @@ export function makePointSizeMenuItems(self: {
 
 // Top-level track-menu item present only in line variants ('line'/'multirowline'
 // /'multiline') where stroke thickness applies. Uses the shared inline slider.
-export function makeLineWidthMenuItems(self: {
-  renderingType: string
-  lineWidth: number
-  setLineWidth: (n?: number) => void
-}): MenuItem[] {
+export function makeLineWidthMenuItems(
+  self: {
+    renderingType: string
+    lineWidth: number
+    setLineWidth: (n?: number) => void
+  } & PromotableDisplay,
+): MenuItem[] {
   if (!self.renderingType.includes('line')) {
     return []
   }
@@ -75,7 +80,6 @@ export function makeLineWidthMenuItems(self: {
     makeSizeMenu({
       label: 'Line width',
       title: 'Line width',
-      icon: StraightenIcon,
       getValue: () => self.lineWidth,
       isDefault: self.lineWidth === LINE_WIDTH_DEFAULT,
       onChange: n => {
@@ -84,6 +88,7 @@ export function makeLineWidthMenuItems(self: {
       onReset: () => {
         self.setLineWidth(undefined)
       },
+      sessionDefault: makeCurrentValueSessionDefaultControl(self, ['lineWidth']),
     }),
   ]
 }

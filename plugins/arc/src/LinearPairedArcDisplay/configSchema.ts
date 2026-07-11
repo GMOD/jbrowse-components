@@ -55,6 +55,7 @@ export function configSchemaFactory() {
         type: 'number',
         description: 'the stroke width of the arcs, in pixels',
         defaultValue: defaultArcLineWidth,
+        promotable: true,
       },
     },
     {

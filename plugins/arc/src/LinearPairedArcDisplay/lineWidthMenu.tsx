@@ -1,5 +1,5 @@
+import { makeCurrentValueSessionDefaultControl } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
-import StraightenIcon from '@mui/icons-material/Straighten'
 
 import { defaultArcLineWidth } from './configSchema.ts'
 
@@ -14,7 +14,6 @@ export function makeLineWidthMenuItem(
   return makeSizeMenu({
     label: 'Arc width',
     title: 'Arc width',
-    icon: StraightenIcon,
     min: 1,
     max: 20,
     step: 1,
@@ -26,5 +25,6 @@ export function makeLineWidthMenuItem(
     onReset: () => {
       self.setLineWidth(undefined)
     },
+    sessionDefault: makeCurrentValueSessionDefaultControl(self, ['lineWidth']),
   })
 }

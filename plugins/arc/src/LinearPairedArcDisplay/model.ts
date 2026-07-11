@@ -2,7 +2,7 @@ import type React from 'react'
 
 import {
   ConfigurationReference,
-  getConf,
+  getConfResolved,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
@@ -97,11 +97,11 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * arc stroke width in px, from the `lineWidth` slot (track-menu slider
-       * writes it); flat across all arcs
+       * arc stroke width in px, from the promotable `lineWidth` slot (track-menu
+       * slider writes it); flat across all arcs
        */
       get lineWidth(): number {
-        return getConf(self, 'lineWidth')
+        return getConfResolved(self, 'lineWidth')
       },
     }))
     .views(self => ({

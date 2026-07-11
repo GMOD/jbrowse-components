@@ -87,6 +87,7 @@ export function configSchemaFactory() {
         type: 'number',
         defaultValue: 4,
         description: 'Diameter in px of Manhattan points',
+        promotable: true,
       },
       /**
        * #slot

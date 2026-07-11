@@ -400,11 +400,13 @@ export default function stateModelFactory(
           // density maps score to color, so score-axis cross hatches are
           // meaningless there
           ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
+          // point size / line width apply only to their respective scatter /
+          // line renderings
+          ...makePointSizeMenuItems(self),
+          ...makeLineWidthMenuItems(self),
         ]
         return [
           makeRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERINGS),
-          ...makePointSizeMenuItems(self),
-          ...makeLineWidthMenuItems(self),
           {
             label: 'Clustering',
             icon: AccountTreeIcon,

@@ -280,8 +280,6 @@ export default function stateModelFactory(
       trackMenuItems() {
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
-          ...makePointSizeMenuItems(self),
-          ...makeLineWidthMenuItems(self),
           ...makeResolutionSubMenu(self),
           // scaleType: true keeps the scale-type submenu (manhattan, linear-only,
           // drops it); summary score mode leads the Score submenu, matching
@@ -291,10 +289,13 @@ export default function stateModelFactory(
             leadingItems: makeSummaryScoreModeSubMenu(self),
           }),
           // cross hatches are meaningless in density mode (score maps to color,
-          // not height)
-          ...makeShowSubMenu(
-            self.isDensityMode ? [] : [makeCrossHatchItem(self)],
-          ),
+          // not height); point size / line width apply only to their respective
+          // scatter / line renderings
+          ...makeShowSubMenu([
+            ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
+            ...makePointSizeMenuItems(self),
+            ...makeLineWidthMenuItems(self),
+          ]),
           {
             label: 'Edit color...',
             icon: PaletteIcon,
