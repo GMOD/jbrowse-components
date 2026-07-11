@@ -34,6 +34,9 @@ function MoreButton({
       value="more"
       selected={false}
       disabled={disabled}
+      // ToggleButton types its target as HTMLElement, but it always renders a
+      // <button>, so narrowing to HTMLButtonElement for CascadingMenuButton's
+      // ButtonComponent contract is sound
       onClick={e => {
         onClick(e as React.MouseEvent<HTMLButtonElement>)
       }}
@@ -45,22 +48,17 @@ function MoreButton({
 
 export default function SourceTypeSelector({
   value,
-  shownAccountIds,
-  hiddenAccountIds,
-  accountMap,
+  shownAccounts,
+  hiddenAccounts,
   onChange,
   onHiddenAccountSelect,
 }: {
   value: string
-  shownAccountIds: string[]
-  hiddenAccountIds: string[]
-  accountMap: Record<string, BaseInternetAccountModel>
+  shownAccounts: BaseInternetAccountModel[]
+  hiddenAccounts: BaseInternetAccountModel[]
   onChange: (event: React.MouseEvent, newValue: string | null) => void
   onHiddenAccountSelect: (id: string) => void
 }) {
-  const shownAccounts = shownAccountIds.map(id => accountMap[id]!)
-  const hiddenAccounts = hiddenAccountIds.map(id => accountMap[id]!)
-
   return (
     <ToggleButtonGroup
       value={value}
