@@ -54,16 +54,14 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
     grouped.map(group => (
       <section class="tut-section">
         <h2 class="tut-heading">{group.category}</h2>
-        <div class="tut-grid">
+        <ul class="tut-list">
           {group.items.map(tutorial => (
-            <a class="tut-card" href={tutorial.href}>
-              <span class="tut-title">{tutorial.title}</span>
-              {tutorial.description && (
-                <span class="tut-desc">{tutorial.description}</span>
-              )}
-            </a>
+            <li>
+              <a href={tutorial.href}>{tutorial.title}</a>
+              {tutorial.description && <> — {tutorial.description}</>}
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
     ))
   }
@@ -76,47 +74,21 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
     margin: 0 0 1.5rem;
   }
   .tut-section {
-    margin: 0 0 2rem;
+    margin: 0 0 1.75rem;
   }
   .tut-heading {
     font-size: 1.15rem;
-    margin: 0 0 0.85rem;
+    margin: 0 0 0.6rem;
     padding-bottom: 0.35rem;
     border-bottom: 1px solid var(--color-border);
   }
-  .tut-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1rem;
+  .tut-list {
+    margin: 0;
+    padding-left: 1.25rem;
   }
-  .tut-card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    padding: 1rem 1.25rem;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    background: var(--color-surface);
-    color: var(--color-text);
-    text-decoration: none;
-    transition:
-      border-color 150ms ease,
-      box-shadow 150ms ease,
-      transform 150ms ease;
-  }
-  .tut-card:hover {
-    border-color: var(--color-accent);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
-    text-decoration: none;
-  }
-  .tut-title {
-    font-weight: 600;
-    color: var(--color-accent);
-  }
-  .tut-desc {
-    font-size: 0.875rem;
-    line-height: 1.45;
+  .tut-list li {
+    margin: 0.35rem 0;
+    line-height: 1.5;
     color: var(--color-text-muted);
   }
 </style>
