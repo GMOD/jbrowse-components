@@ -34,7 +34,10 @@ includes deletions, insertions, inversions, and translocations with per-sample
 genotypes across all 2,504 individuals.
 
 For this tutorial we use a pre-configured JBrowse instance that already has the
-SV callset and trio BAM tracks loaded. No data download is required.
+SV callset and trio alignment tracks loaded, so no data download is required. It
+was built with the usual `jbrowse add-track` workflow: the ensemble SV callset
+is bgzip-compressed and tabix-indexed on JBrowse's S3, and the trio tracks
+stream the published high-coverage CRAMs directly from the 1000 Genomes FTP.
 
 ## Getting started
 
@@ -43,16 +46,25 @@ selector (top-left menu icon of any linear view):
 
 [Open the 1000 Genomes demo](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json)
 
-Under **Variant calls** in the track selector, enable the 1KGP 2022 Illumina
-ensemble SV callset. A track of orange SV bars will appear across the genome.
+In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset —
+listed by its file name, **1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf**,
+near the top of the list (it is uncategorized, so it sits above the **1000
+Genomes** category rather than inside it). A track of orange SV bars will appear
+across the genome.
 
 ## Browsing SVs with the SV inspector
 
 The SV inspector combines a searchable/filterable table of all calls with a
 whole-genome circular overview. Open it from the **Add** menu in the menu bar,
-then provide the VCF from the demo config (the URL is listed in the track's
-About track menu). The circular view renders inter-chromosomal translocations as
-orange chords. The table can be sorted and filtered by any column.
+then paste the callset URL into the import form:
+
+```
+https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/1000genomes/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
+```
+
+(the same URL is also listed in the track's About track menu). The circular view
+renders inter-chromosomal translocations as orange chords. The table can be
+sorted and filtered by any column.
 
 <Figure caption="The SV inspector loaded with a large SV callset. The circular plot on the right renders inter-chromosomal events as orange chords connecting the two loci. The table on the left lists every call and can be sorted or filtered by SVTYPE, chromosome, quality, or any INFO field. Clicking a row navigates the linear view to that locus." src="/img/sv_inspector_importform_loaded.png" />
 
@@ -82,14 +94,15 @@ details on the display modes.
 
 ## Inspecting a trio
 
-The demo includes BAM tracks for a parent–child trio, available under **1000
-Genomes → Alignments** in the track selector. Load all three (mother, child,
-father) to stack them beneath the variant track.
+The demo includes CRAM alignment tracks for many pedigreed trios, under **1000
+Genomes → Alignments → Pedigreed** in the track selector, grouped by family id.
+Pick one family (for example 1328: `NA12329_child`, `NA06984_father`,
+`NA06989_mother`) and load all three to stack them beneath the variant track.
 
 Once you have an SV of interest, check the three trio rows in the SAMPLES table
 and the corresponding read tracks:
 
-<Figure caption="Multi-sample SV view with trio BAM tracks loaded. The top track shows the 1KGP SV callset, and the three alignment tracks below are the mother, child, and father. The feature details panel on the right shows the BREAKENDS section (with a link to open the breakpoint split view) and the SAMPLES table listing each sample's GT, depth, and other per-sample fields." src="/img/multi-sv-trio.png" />
+<Figure caption="Multi-sample SV view with trio alignment tracks loaded. The top track shows the 1KGP SV callset, and the three alignment tracks below are the mother, child, and father. The feature details panel on the right shows the BREAKENDS section (with a link to open the breakpoint split view) and the SAMPLES table listing each sample's GT, depth, and other per-sample fields." src="/img/multi-sv-trio.png" />
 
 | Genotype pattern            | Interpretation                               |
 | --------------------------- | -------------------------------------------- |

@@ -56,7 +56,11 @@ BRAF (UniProt P15056) directly in the hg38 browser:
 
 ## Installing the plugins
 
-To add the feature to your own JBrowse 2:
+You only need this to add the feature to your **own** JBrowse — both plugins are
+already deployed on the public browsers at
+[genomes.jbrowse.org](https://genomes.jbrowse.org), so if you just want to use
+them, open a genome there and skip this section. To add the feature to your own
+JBrowse 2:
 
 - Open the [plugin store](/docs/user_guides/plugin_store) (Tools menu) and
   install **Protein3d** and **MSAView**, or
