@@ -1,19 +1,92 @@
 # Architecture
 
-The GPU rendering lifecycle across all display types: how a display fetches
-data, uploads it, draws it, and exports it. Deep subsystems that are read on
-their own task live in separate reference docs:
+The canonical reference for how JBrowse renders a track. Start with the overview
+below for the mental model, then jump to the section for whatever you're
+touching. Deep subsystems that you only touch on a specific task live in their
+own docs — collected under [See also](#see-also) at the end.
 
-- **SVG export, `svgReady`, on-screen capture** → [reference/SVG_EXPORT.md](reference/SVG_EXPORT.md)
-- **BP precision, hi/lo float math, coordinate conventions** → [reference/BP_PRECISION.md](reference/BP_PRECISION.md)
-- **Status / progress reporting** → [reference/PROGRESS_REPORTING.md](reference/PROGRESS_REPORTING.md)
-- **Bugs that shaped the design, corrections to old writeups** → [reference/HISTORICAL.md](reference/HISTORICAL.md)
+## Overview
+
+A **display** is the object that draws one track inside a view — the pileup in an
+alignments track, the bars in a wiggle track, the matrix in a Hi-C track. Every
+display, whatever it draws, follows the same three-part shape:
+
+- **Workers fetch, the main thread renders.** Data is loaded and parsed in an RPC
+  worker, off the UI thread. The worker returns feature data as **absolute
+  genomic coordinates** — uint32 base positions, never pixels and never
+  region-relative offsets — so the same data stays valid as the user pans and
+  zooms.
+- **The main thread uploads once, then redraws every frame.** An MST model holds
+  the worker's output in an observable map. Two MobX autoruns watch it: one
+  *uploads* the bytes to the GPU when the data changes, one *renders* a frame
+  when anything visible changes. Pan and zoom become a cheap redraw of buffers
+  already on the GPU, not a refetch.
+- **Three interchangeable backends.** Rendering targets WebGPU first, falls back
+  to WebGL2, then to Canvas 2D, chosen at runtime behind a hardware abstraction
+  layer (HAL). Every display **must** provide a Canvas2D draw function; the GPU
+  shader path is an optional accelerator layered on top. **SVG export runs the
+  Canvas2D path**, so on-screen and exported pixels can't drift.
+
+```
+worker:  adapter → features            (absolute uint32 bp)
+                     │  RPC, off the UI thread
+                     ▼
+main:    model.rpcDataMap              (MST node, observable)
+                     │  upload autorun — fires when the data changes
+                     ▼
+         GPU buffers                   (HAL: WebGPU → WebGL2 → Canvas2D)
+                     │  render autorun — fires every frame
+                     ▼
+         <canvas> on screen
+
+         SVG export reuses the same Canvas2D draw fn — never the shader.
+```
+
+That inversion — the worker ships coordinates, not rendered images — is the whole
+point of the GPU pipeline. The server-side system it replaced (which rasterized
+each block to an image in the worker) is described in
+[reference/HISTORICAL.md](reference/HISTORICAL.md).
+
+## Vocabulary
+
+Terms used throughout this doc:
+
+- **Display** — draws one track in one view. Composed from MST mixins that supply
+  its behavior (fetch, render lifecycle, height). The subject of most of this doc.
+- **Backend** — the per-display object that actually draws, either GPU
+  (`GpuXxxRenderer`) or Canvas2D (`Canvas2DXxxRenderer`), produced by a factory
+  that picks one at runtime.
+- **Region / block** — the visible genome is split into regions
+  (`view.displayedRegions`) and finer render blocks; a display fetches and draws
+  per region. `displayedRegionIndex` is the join key between the model's data map
+  and the GPU buffers.
+- **HAL** — hardware abstraction layer; hides the WebGPU-vs-WebGL2 difference.
+- **RPC / worker** — the off-thread context where adapters fetch and parse data.
+- **MST model / autorun** — a display is a `mobx-state-tree` node; `autorun` is
+  the MobX primitive that re-runs a function whenever the observables it read
+  change.
+
+## How this doc is organized
+
+- **Display stacks** — which foundation mixins a display composes, and how the
+  GPU and (removed) legacy paths relate.
+- **Data fetching pipeline** — the fetch autoruns, the region-too-large gate, and
+  the refetch-loop traps.
+- **GPU rendering architecture** — the lifecycle in depth: the mixin, the
+  upload/render autoruns, the per-plugin backends, the three upload patterns, the
+  HAL, and shaders.
+- **Adding a new GPU display type** — the checklist.
+- **What NOT to do** — the invariants, as a quick-scan list.
+
+---
 
 ## Display stacks
 
-Linear-genome-view displays compose from a small set of **foundation mixins** on
-`BaseDisplay`. "GPU vs block" is a *render-path* distinction layered on top, not
-the primary axis of sharing. Three foundations cover every in-tree display:
+**What this section answers: which mixins do I compose to build a display, and
+why?** Linear-genome-view displays compose from a small set of **foundation
+mixins** on `BaseDisplay`. "GPU vs block" is a *render-path* distinction layered
+on top, not the primary axis of sharing. Three foundations cover every in-tree
+display:
 
 | Foundation (composed on `BaseDisplay`) | Brings | Displays |
 | --- | --- | --- |
@@ -1004,3 +1077,26 @@ tuple of two displayedRegion indices.
   the other way: a Canvas2D sub-pixel *overdraw* (fudge factor / `f2`) or
   stroke-vs-fill swap is deliberate AA compensation with no shader equivalent —
   don't port it into a `.slang`. See "Keeping the two backends in parity."
+
+---
+
+## See also
+
+Deep subsystems, each read on its own task (also linked inline where they come
+up):
+
+- [reference/SVG_EXPORT.md](reference/SVG_EXPORT.md) — SVG export pipeline, the
+  `svgReady` / `settled` readiness gates, `paintLayer`, model-scoped clip ids.
+- [reference/BP_PRECISION.md](reference/BP_PRECISION.md) — the absolute-uint32
+  convention, hi/lo float math, window-relative cumBp, genome-size limits.
+- [reference/PROGRESS_REPORTING.md](reference/PROGRESS_REPORTING.md) — the
+  worker→UI status channel, determinate bars, concurrent-fetch aggregation,
+  cancel.
+- [reference/HISTORICAL.md](reference/HISTORICAL.md) — the old server-side block
+  system, bugs that shaped the current design, corrections to old writeups.
+- [reference/GPU_GLOSSARY.md](reference/GPU_GLOSSARY.md) — plain-language GPU
+  glossary and a Canvas2D→GPU primer.
+- [reference/CONFIG_PATTERN.md](reference/CONFIG_PATTERN.md) — how config reaches
+  the renderer (config → MST snapshot → plain object → RPC).
+- [reference/DISPLAYCHROME.md](reference/DISPLAYCHROME.md) — the shared
+  loading/error/retry chrome every display renders through.
