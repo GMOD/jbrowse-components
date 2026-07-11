@@ -39,7 +39,6 @@ const MiniControls = observer(function MiniControls({
     minBpPerPx,
     hideHeader,
     scalebarOnly,
-    effectiveBpPerPx,
   } = model
   const { focusedViewId } = getSession(model)
   return (
@@ -78,7 +77,7 @@ const MiniControls = observer(function MiniControls({
           <>
             <IconButton
               data-testid="zoom_out"
-              disabled={effectiveBpPerPx >= maxBpPerPx - 0.0001}
+              disabled={bpPerPx >= maxBpPerPx - 0.0001}
               onClick={() => {
                 model.zoom(bpPerPx * 2)
               }}
@@ -87,7 +86,7 @@ const MiniControls = observer(function MiniControls({
             </IconButton>
             <IconButton
               data-testid="zoom_in"
-              disabled={effectiveBpPerPx <= minBpPerPx + 0.0001}
+              disabled={bpPerPx <= minBpPerPx + 0.0001}
               onClick={() => {
                 model.zoom(bpPerPx / 2)
               }}

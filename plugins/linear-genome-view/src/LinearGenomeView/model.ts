@@ -128,6 +128,11 @@ const SHOW_ALL_REGIONS_FILL = 0.9
 // pointless offset re-anchoring on micro-steps
 const BP_PER_PX_EPSILON = 0.000001
 
+// px of the rightmost content kept on-screen at max scroll-right, so the genome
+// can't be scrolled entirely off the left edge. Shared by maxOffset and
+// getSelectedRegions' clamp so the two bounds can't drift apart.
+const MAX_OFFSET_PADDING_PX = 10
+
 /**
  * Resolve a NavLocation's refName to the assembly's canonical name, falling
  * back to the raw refName (and the view's default assembly) when the assembly
@@ -857,8 +862,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get maxOffset() {
         // objectively determined to keep the linear genome on the main screen
-        const leftPadding = 10
-        return this.displayedRegionsTotalPx - leftPadding
+        return this.displayedRegionsTotalPx - MAX_OFFSET_PADDING_PX
       },
 
       /**
@@ -1328,7 +1332,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const offsetPx = clamp(
           rawOffsetPx,
           self.minOffset,
-          self.totalBp / bpPerPx - 10,
+          self.totalBp / bpPerPx - MAX_OFFSET_PADDING_PX,
         )
         return calculateDynamicBlocks({
           ...snapWithLayout,
@@ -1368,13 +1372,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       showAllRegionsInAssembly(assemblyName?: string) {
         const session = getSession(self)
         const { assemblyManager } = session
-        const names = new Set(self.displayedRegions.map(r => r.assemblyName))
-        if (!assemblyName && names.size > 1) {
+        const { assemblyNames } = self
+        if (!assemblyName && assemblyNames.length > 1) {
           session.notify(
             `Can't perform operation with multiple assemblies currently`,
           )
         } else {
-          const resolvedName = assemblyName ?? [...names][0]
+          const resolvedName = assemblyName ?? assemblyNames[0]
           const regions = resolvedName
             ? assemblyManager.get(resolvedName)?.regions
             : undefined
@@ -1754,6 +1758,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return ticks
         },
         /**
+         * #getter
          * Scalebar coordinate labels (x in the staticBlocks frame + display
          * text). Sibling of gridlineTicks sharing the same makeBlockTicks
          * formula, so labels line up exactly with their gridlines. staticBlocks
@@ -1878,13 +1883,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         get coarseTotalBpDisplayStr() {
           return getBpDisplayStr(self.coarseTotalBp)
-        },
-
-        /**
-         * #getter
-         */
-        get effectiveBpPerPx() {
-          return self.bpPerPx
         },
 
         /**
@@ -2266,7 +2264,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // The cytobands setting has been `showCytobandsSetting` and (briefly)
       // `cytobandsVisible`; both now persist as the bare `showCytobands` prop
       // (the capability-gated getter is `effectiveShowCytobands`).
-      const { highlight, showCytobandsSetting, cytobandsVisible, ...rest } = snap
+      const { highlight, showCytobandsSetting, cytobandsVisible, ...rest } =
+        snap
       const legacyShowCytobands = showCytobandsSetting ?? cytobandsVisible
       return {
         highlight:
