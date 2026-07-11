@@ -679,7 +679,11 @@ O(N²) total GPU uploads when N regions arrive sequentially.
 
 **The fix lives in `@jbrowse/render-core/installPerRegionLifecycle`** and is used
 by wiggle, multi-wiggle, manhattan, MAF, sequence, and canvas's
-`LinearMultiRowFeatureDisplay`. (The multi-variant displays are per-region
+`LinearMultiRowFeatureDisplay` — **not** the canvas plugin's other display,
+`LinearBasicDisplay`, whose whole-map Y-layout keeps it on the computed-map form
+described below. ("canvas" in this doc names the plugin; its two displays sit on
+opposite upload strategies, so they're always spelled out where they diverge.)
+(The multi-variant displays are per-region
 streamed too but hand-roll their upload loop.) Each plugin's
 `startRenderingBackend` collapses to a single call:
 
@@ -714,9 +718,10 @@ passes it to the render callback — wiggle's renderer reads from this map becau
 its renderer is stateless; other callers ignore the arg and read `rpcDataMap`
 directly. Cleanup is automatic via `addDisposer(self, …)`.
 
-**Why the helper doesn't apply to canvas / alignments:** Wiggle uploads each
-chromosome independently. Canvas and alignments lay out features into Y-rows
-across all loaded regions together (so a gene spanning two adjacent regions ends
+**Why the helper doesn't apply to `LinearBasicDisplay` / alignments:** Wiggle
+uploads each chromosome independently. `LinearBasicDisplay` and alignments lay out
+features into Y-rows across all loaded regions together (so a gene spanning two
+adjacent regions ends
 up on the same row in both). Any new arrival could in principle change the layout
 of everything already loaded, so those paths route through a whole-map MobX
 computed (`laidOutDataMap` / `laidOutPileupMap`) that invalidates whenever any
@@ -729,8 +734,9 @@ Y row in each. That's also why layout runs on the main thread — row assignment
 needs the union of all visible regions' features, which only the main thread
 sees.)
 
-- **Canvas** is commonly a whole-genome gene track with N=24 chromosomes (many
-  more in collapsed-intron views), so the naive form is O(N²). This is fixed:
+- **`LinearBasicDisplay`** is commonly a whole-genome gene track with N=24
+  chromosomes (many more in collapsed-intron views), so the naive form is O(N²).
+  This is fixed:
   `createIncrementalLayout` (`plugins/canvas/src/LinearBasicDisplay/layout.ts`)
   memoizes the pure `computeLaidOutData` **per ref-group** (`assembly:refName`).
   Layout is independent across chromosomes, so when one chromosome's data arrives
