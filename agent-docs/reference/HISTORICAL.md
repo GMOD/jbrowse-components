@@ -101,11 +101,11 @@ dispose-on-unmount is.
 
 Several displays' `svgReady`/`settled` gates used to resolve on the *first datum*
 and stay true through an in-place refetch, so a pan/zoom export captured stale
-data. `plugins/arc/CLAUDE.md` and other writeups still describe this as open — it
-isn't. Every path now carries a freshness signal: the per-region spatial check
-(`viewportWithinLoadedData`), the global `viewportMatchesLastDrawn`, and the
-signature compare (`isDataCurrent`) all close the debounce+RPC window. See
-`reference/SVG_EXPORT.md`.
+data. This is closed everywhere now: each path carries a freshness signal — the
+per-region spatial check (`viewportWithinLoadedData`), the global
+`viewportMatchesLastDrawn`, and the signature compare (`isDataCurrent`) all close
+the debounce+RPC window. See `reference/SVG_EXPORT.md`. (Older writeups described
+this gap as open; if you find one that still does, it's stale.)
 
 ## The former ~68.7 Gbp synteny/dotplot ceiling
 
