@@ -15,7 +15,7 @@ const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
-  slugs: examples.map(e => e.slug),
+  slugs: examples.filter(e => !e.skipSmoke).map(e => e.slug),
   // the web-worker example must actually spawn an RPC worker — guards the
   // Rollup circular-dependency TDZ that webpack tolerates. See MIGRATION.md.
   workerSlug: 'with-web-worker',

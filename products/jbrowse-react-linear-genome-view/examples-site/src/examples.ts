@@ -4,6 +4,10 @@ export interface ExampleMeta {
   title: string
   description: string
   group: string
+  // exclude from the examples-site smoke test (scripts/smoke.mjs). The page
+  // still ships and works in a real browser; it's only skipped in CI's headless
+  // software-WebGL (swiftshader), where its rendering crashes the renderer.
+  skipSmoke?: boolean
 }
 
 // single source of truth for the gallery index and each example page's
@@ -290,6 +294,8 @@ export const examples: ExampleMeta[] = [
     description:
       'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A — pick a pathogen from the dropdown.',
     group: 'Real-world demos',
+    // the genotype-matrix GPU render crashes CI's headless software-WebGL
+    skipSmoke: true,
   },
   {
     slug: 'nextstrain-msa',
