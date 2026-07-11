@@ -489,6 +489,55 @@ export const svSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // sv_multisamples.md: the chr19 HGSV_72999 inversion read at single-read
+  // resolution in ONT long reads. HG00637 is one of the 72 ONT-Vienna samples
+  // that carry the het inversion; its long reads read straight through the left
+  // breakpoint (chr19:41,797,752), so the segment before the junction aligns
+  // forward and the segment after aligns reverse — drawn as a supplementary/split
+  // alignment, chained by linkedReads:'normal' (so the reverse piece paints the
+  // flipped-strand pair-orientation color and the split junctions arc), directly
+  // reading out the strand flip that short-read pair orientation can only imply.
+  // The ONT track is now part of the deployed 1KGP config, so it loads by
+  // trackId and the live link resolves for readers (CORS-enabled EBI CRAMs).
+  {
+    mode: 'url',
+    name: 'multisv_ont_inversion',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          // ~16kb centered on the left breakpoint (chr19:41,797,752): reads from
+          // the inverted haplotype clip at the junction and continue as a
+          // reverse-strand supplementary segment, so the strand flip lands mid-view
+          loc: 'chr19:41,790,000-41,806,000',
+          tracks: [
+            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            {
+              trackId: 'HG00637.ont.vienna.hg38',
+              type: 'LinearAlignmentsDisplay',
+              // link supplementary alignments so each read's split segments chain
+              // onto one row: the reverse-strand piece paints the flipped-strand
+              // color and the junctions arc, instead of an uncolored pileup
+              linkedReads: 'normal',
+              readConnections: 'arc',
+              height: 560,
+              coverageHeight: 70,
+              colorBy: { type: 'pairOrientation' },
+              showLegend: true,
+              // lift the force-load byte gate so the reads auto-load headless
+              userByteSizeLimit: 200_000_000,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG00637',
+    readyTimeout: 120000,
+    viewportHeight: 780,
+    settleMs: 40000,
+  },
+
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)
 
   // Single-frame SV-inspector launch: the app "Add" menu with the "SV inspector"
