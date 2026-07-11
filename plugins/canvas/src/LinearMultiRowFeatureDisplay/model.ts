@@ -675,7 +675,7 @@ export default function stateModelFactory(
       /**
        * #method
        * Items for the right-click context menu, built from the clicked position
-       * (contextMenuInfo). "Sort rows by value here" is the interactive twin of
+       * (contextMenuInfo). "Sort rows by color here" is the interactive twin of
        * the declarative `sortRowsBy`.
        */
       contextMenuItems(): MenuItem[] {
@@ -685,7 +685,7 @@ export default function stateModelFactory(
         }
         return [
           {
-            label: 'Sort rows by value here',
+            label: 'Sort rows by color here',
             icon: SwapVertIcon,
             onClick: () => {
               self.sortRowsByValueAt(info.refName, info.pos)
