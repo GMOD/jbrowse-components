@@ -9,15 +9,11 @@ This tutorial embeds a single JBrowse linear genome view into a web page using a
 `<script>` tag — no build step or React project required. For the full JBrowse
 app, see the [web quickstart](/docs/quickstart_web) instead.
 
-:::tip
-
 The [LGV storybook](https://jbrowse.org/storybook/lgv/) is the reference for
 _customizing_ this component. It has live, runnable, copy-pasteable examples for
 custom themes, per-feature colors, text searching, drawer widgets, reacting to
 view state, web-worker rendering, and much more. This tutorial covers getting a
 basic view on the page. Reach for the storybook for anything beyond that.
-
-:::
 
 To embed other view types (synteny, dotplot, circular) or use a different
 bundler, see [Embedded components](/docs/embedded_components).

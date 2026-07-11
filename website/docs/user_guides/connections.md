@@ -31,12 +31,8 @@ out of the way until you actually want them, and means you no longer have to
 Once expanded, the connection's tracks appear underneath it and you open them
 with their checkboxes like any other track.
 
-:::tip
-
 Because loading only happens on expand, adding several connections is cheap.
 Expand the one you want when you want it; leave the rest collapsed.
-
-:::
 
 ## Opening a connection
 
@@ -75,13 +71,9 @@ Public hubs are listed in the
 [UCSC Public Hub directory](https://genome.ucsc.edu/cgi-bin/hgHubConnect). Each
 hub listed there has a "URL" column — paste that URL into the connection form.
 
-:::info Assembly names
-
 JBrowse matches hub tracks to assemblies by genome ID. If the hub targets an
 assembly not already configured in your JBrowse instance, those tracks will not
 appear. You can filter by assembly name in the connection form.
-
-:::
 
 ## JBrowse 1 connection URL format
 

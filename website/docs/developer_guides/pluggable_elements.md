@@ -23,13 +23,9 @@ Plugins often also have their `install` method add "pluggable elements" into the
 host JBrowse application. This is how plugins can add new kinds of views,
 tracks, displays, and so forth.
 
-:::info
-
 Many plugins referenced below are in the
 [JBrowse Github repo](https://github.com/gmod/jbrowse-components) and serve as
 up-to-date examples.
-
-:::
 
 ## Pluggable elements
 
@@ -124,16 +120,12 @@ displays (the arc and circular-chord displays) draw with plain main-thread SVG.
 See [renderer architecture](/docs/developer_guides/renderer_architecture/) and
 [creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display).
 
-:::info
-
 How views, tracks, and displays relate:
 
-- A **view** is a container that typically _has tracks_
-- A **track** controls _what_ data (adapter) and _how_ it's displayed (display)
-- A **display** is a specific way to draw a track's data, and owns the drawing —
-  a track may have multiple displays for different view types
-
-:::
+- A view is a container that typically _has tracks_
+- A track controls _what_ data (adapter) and _how_ it's displayed (display)
+- A display is a specific way to draw a track's data, and owns the drawing — a
+  track may have multiple displays for different view types
 
 ## Widgets
 

@@ -25,18 +25,12 @@ The most important things to configure are your
 [assemblies](/docs/config_guides/assemblies) and your
 [tracks](/docs/config_guides/tracks).
 
-:::tip
-
 Looking for the complete list of options for a specific track or adapter type?
 The auto-generated [config reference](/docs/config_guide) has one page per type,
 generated directly from the source code (so it never goes stale) — e.g.
 [BamAdapter](/docs/config/bamadapter) or
 [LinearWiggleDisplay](/docs/config/linearwiggledisplay). The hand-written guides
 explain the common cases; the reference is the exhaustive master list.
-
-:::
-
-:::tip
 
 You rarely need to write `config.json` by hand. The [`@jbrowse/cli`](/docs/cli)
 commands (`jbrowse add-assembly`, `jbrowse add-track`) write the JSON for you,
@@ -45,16 +39,8 @@ and for repetitive data you can
 [Deploying JBrowse Web](/docs/config_guides/deploying) for an end-to-end
 scripted setup.
 
-:::
-
-:::info
-
 On jbrowse desktop, a "session" is a complete JBrowse config with a `.jbrowse`
 file extension.
-
-:::
-
-:::info
 
 Embedded components (e.g. `@jbrowse/react-linear-genome-view2`) take a config
 object at runtime rather than a config file (see
@@ -73,8 +59,6 @@ createViewState({
   assembly: config.assemblies[0], // only one assembly used in embedded currently
 })
 ```
-
-:::
 
 ## See also
 

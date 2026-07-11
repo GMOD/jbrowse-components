@@ -86,12 +86,8 @@ once, use `File` → `Open connection...`. See the
 
 <Figure caption="The 'Open track...' item in the File menu opens the 'Add a track' form as a drawer widget." src="/img/add_track_form.png" />
 
-:::tip
-
 A circular plus (+) icon button in the "Available tracks" widget also opens the
 "Add a track" form.
-
-:::
 
 <Figure caption="(1) Open the 'Available tracks' widget with the button on the far left of the linear genome view. (2) The circular plus (+) icon button in the bottom right of the 'Available tracks' widget can also be used to launch the 'Add a track' form." src="/img/add_track_tracklist.png" />
 
@@ -153,13 +149,9 @@ The following file formats are supported in core JBrowse 2:
 Additional data formats can be supported via plugins; check out the
 [plugin store](/plugin_store).
 
-:::note
-
 If you are an administrator, you can add tracks with the
 [command line](/docs/quickstart_web/#adding-tracks) (CLI) or with the
 [admin server](/docs/quickstart_adminserver) (GUI).
-
-:::
 
 ## Undo and redo
 
@@ -174,11 +166,7 @@ send to other users.
 The address-bar URL does not capture full session state — always use the Share
 button to get a shareable link.
 
-:::note
-
 Sharing sessions is not available for JBrowse Desktop.
-
-:::
 
 <Figure caption="The session share dialog, which gives you a short URL to share your session with other users." src="/img/share_button.png" />
 

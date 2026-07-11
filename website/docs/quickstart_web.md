@@ -44,12 +44,8 @@ npm install -g @jbrowse/cli
 jbrowse --version
 ```
 
-:::note
-
 To avoid a global install, replace `jbrowse` with `npx @jbrowse/cli` in any
 command below.
-
-:::
 
 ## Download JBrowse 2
 
@@ -136,8 +132,6 @@ tabix file.vcf.gz
 jbrowse add-track file.vcf.gz --load copy
 ```
 
-:::note
-
 If tabix reports the VCF is unsorted, sort it first:
 
 ```bash
@@ -147,8 +141,6 @@ tabix file.sorted.vcf.gz
 ```
 
 See https://www.htslib.org/ for more on `bgzip`, `tabix`, and `bcftools`.
-
-:::
 
 <Figure caption="JBrowse 2 linear genome view with variant track" src="/img/volvox_variants.png"/>
 

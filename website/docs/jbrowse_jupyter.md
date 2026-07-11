@@ -16,13 +16,9 @@ It is the modern replacement for the older Dash-based `jbrowse-jupyter` +
 `dash_jbrowse` stack: no Dash server, no component-generation step, just a
 prebuilt ESM bundle loaded by anywidget.
 
-:::note
-
 Install from GitHub for now (below) — a PyPI release is planned, after which
 `pip install jbrowse-anywidget` will work directly. The example notebooks each
 open in Colab with one click.
-
-:::
 
 ## Install
 

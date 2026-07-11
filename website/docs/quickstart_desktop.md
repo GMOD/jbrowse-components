@@ -138,12 +138,8 @@ JBrowse desktop supports the same file formats as JBrowse web — see
 preparation commands behind these formats, see the
 [web quick start](/docs/quickstart_web).
 
-:::note
-
 To load many tracks at once, choose **Add multiple tracks at once** in the "Add
 a track" form.
-
-:::
 
 ### Connecting to a track hub
 

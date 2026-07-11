@@ -11,13 +11,9 @@ Each of these populates the same `init` object on a view, which sets the
 assembly, location, tracks, and highlights it shows. This page describes those
 fields and links to the reference for each one.
 
-:::note
-
 This page covers launching and presetting views. For headless static-image
 export see [@jbrowse/img](/docs/jbrowse-img); for the Python/notebook API see
 [JBrowse Jupyter](/docs/jbrowse_jupyter).
-
-:::
 
 ## The `init` fields
 
@@ -73,13 +69,9 @@ JBrowse Web maps query parameters straight onto `init`:
 See [URL query parameter API](/docs/urlparams) for every parameter, session
 specs for all view types, and shareable/encoded sessions.
 
-:::note
-
 Embedded components (`@jbrowse/react-linear-genome-view2`,
 `@jbrowse/react-app2`) make no assumptions about URL parameters — that logic is
 up to the host application.
-
-:::
 
 ## Embedded components (`createViewState`)
 

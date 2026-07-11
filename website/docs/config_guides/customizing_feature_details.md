@@ -240,8 +240,6 @@ And then in your config.json
 }
 ```
 
-:::note
-
 The feature in `formatDetails` callbacks is a plain JS object (not a
 `SimpleFeature`), so attributes are only available as plain properties like
 `feature.start` — the `feature.get('start')` method form does **not** work here.
@@ -249,8 +247,6 @@ This is because the feature detail panel reads from the serialized session. In
 color callbacks the feature is a `SimpleFeature`, where property form
 (`feature.start`) and method form (`feature.get('start')`) both work; property
 form is preferred.
-
-:::
 
 ## Going beyond field formatting
 

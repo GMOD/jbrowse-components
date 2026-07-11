@@ -37,14 +37,10 @@ Everything `jbrowse add-track` does is write a JSON entry into the `tracks`
 array of `config.json` — so you never have to hand-edit `config.json`, and you
 can do the same thing yourself from a script (next section).
 
-:::info
-
 Docker/Kubernetes are usually overkill for JBrowse itself, since it is just
 static files. They make sense if you are bundling JBrowse alongside other
 server-side code you operate. The static folder above is all JBrowse needs —
 copy it into whatever image or bucket your pipeline already uses.
-
-:::
 
 ## Generating config.json from a script
 
@@ -78,14 +74,10 @@ triplicate), emit a single
 `subadapters` array is built from the same rows — see that guide for a templated
 `subadapters` example.
 
-:::info
-
 This is also where tools like [Jsonnet](https://jsonnet.org/) fit well, if you
 prefer a templating language to a script. JBrowse does not require Jsonnet — the
 output is still ordinary `config.json` — but it can be a clean way to express
 repeated track shapes.
-
-:::
 
 ## Keep trackIds stable for reproducible links
 

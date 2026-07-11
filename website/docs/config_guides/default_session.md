@@ -68,11 +68,7 @@ In `config.json`:
 The `defaultSession` value is exactly the `session` object you exported — copy
 it in verbatim.
 
-:::info
-
 To configure sessions via URL, see [URL parameters](/docs/urlparams).
-
-:::
 
 ## See also
 

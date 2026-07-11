@@ -5,13 +5,9 @@ sidebar_label: URL parameters
 
 JBrowse Web supports URL parameters for initializing a session.
 
-:::note
-
 Embedded components like @jbrowse/react-linear-genome-view2 make no assumptions
 about URL parameters — that logic must be implemented by the consuming
 application.
-
-:::
 
 ## Linear genome view (simple)
 
@@ -218,12 +214,8 @@ Intended to load one or more UCSC track hubs as a session (multiple hubs as a
 comma-separated list), typically combined with `?config=none` since the hub
 supplies its own assemblies and tracks.
 
-:::note
-
 This parameter is experimental and may not be fully functional — verify it works
 for your use case before relying on it.
-
-:::
 
 ### Navigating within the default session
 
@@ -240,12 +232,8 @@ With `&extendSession=true`, `&loc=` (and `&tracks=`, `&highlight=`, `&nav=`,
 `defaultSession` instead of replacing it. The assembly comes from that view, so
 `&assembly=` isn't needed.
 
-:::note
-
-`&sessionTracks=` (dynamically-added track configs) is not layered onto the
-default session — use a full [session spec](#session-spec) for that.
-
-:::
+Note that `&sessionTracks=` (dynamically-added track configs) is not layered
+onto the default session — use a full [session spec](#session-spec) for that.
 
 ## Session spec
 

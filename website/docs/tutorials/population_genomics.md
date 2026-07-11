@@ -25,14 +25,10 @@ Fst peak and a negative Tajima's D is a sweep. That is why the figures below
 stack the statistics on a shared genomic axis: the interpretation lives in the
 overlap.
 
-:::tip
-
 Working in a notebook? The
 [Jupyter selection-scan example](/docs/jbrowse_jupyter) runs this same
 compute-then-view loop in Python — a windowed Fst scan loaded straight from a
 DataFrame — and opens in Colab with one click.
-
-:::
 
 JBrowse does no population-genetic inference itself. It draws the windowed
 statistic your tool produced. This tutorial is a reproducible pipeline: every

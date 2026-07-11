@@ -16,11 +16,7 @@ turns off both:
 }
 ```
 
-:::info
-
 Embedded components do not collect any analytics.
-
-:::
 
 `disableAnalytics` is one of the global `configuration` slots — see the
 [intro to the config.json format](/docs/config_guides/intro) for where it sits,
