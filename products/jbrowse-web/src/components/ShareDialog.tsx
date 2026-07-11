@@ -14,8 +14,10 @@ import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import SettingsIcon from '@mui/icons-material/Settings'
 import {
+  Box,
   Button,
   Checkbox,
+  CircularProgress,
   DialogActions,
   DialogContent,
   DialogContentText,
@@ -109,7 +111,10 @@ const ShareDialog = observer(function ShareDialog({
               }}
             />
           ) : loading ? (
-            <Typography>Generating {currentSetting} URL...</Typography>
+            <Box display="flex" alignItems="center" gap={1}>
+              <CircularProgress size={16} />
+              <Typography>Generating {currentSetting} URL...</Typography>
+            </Box>
           ) : (
             <>
               <ShareLinkField value={url} />
