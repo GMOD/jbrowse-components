@@ -103,6 +103,12 @@ function reservedLabelWidthPx(
   return width > 0 ? width + LABEL_PADDING_PX : 0
 }
 
+function scaleFloat32(arr: Float32Array, multiplier: number) {
+  for (let i = 0; i < arr.length; i++) {
+    arr[i]! *= multiplier
+  }
+}
+
 // Scales all height/y fields in a cloned FeatureDataResult by the compact
 // multiplier. Worker geometry is always in normal-mode units (multiplier=1);
 // this makes compact/superCompact a pure main-thread operation.
@@ -110,24 +116,12 @@ function applyHeightScale(data: FeatureDataResult, multiplier: number) {
   if (multiplier === 1) {
     return
   }
-  for (let i = 0; i < data.rectYs.length; i++) {
-    data.rectYs[i]! *= multiplier
-  }
-  for (let i = 0; i < data.rectHeights.length; i++) {
-    data.rectHeights[i]! *= multiplier
-  }
-  for (let i = 0; i < data.lineYs.length; i++) {
-    data.lineYs[i]! *= multiplier
-  }
-  for (let i = 0; i < data.lineHeights.length; i++) {
-    data.lineHeights[i]! *= multiplier
-  }
-  for (let i = 0; i < data.arrowYs.length; i++) {
-    data.arrowYs[i]! *= multiplier
-  }
-  for (let i = 0; i < data.arrowHeights.length; i++) {
-    data.arrowHeights[i]! *= multiplier
-  }
+  scaleFloat32(data.rectYs, multiplier)
+  scaleFloat32(data.rectHeights, multiplier)
+  scaleFloat32(data.lineYs, multiplier)
+  scaleFloat32(data.lineHeights, multiplier)
+  scaleFloat32(data.arrowYs, multiplier)
+  scaleFloat32(data.arrowHeights, multiplier)
   for (const item of data.flatbushItems) {
     item.featureHeightPx *= multiplier
   }
@@ -670,7 +664,8 @@ function packRef(
       ? labelOverhangRoomPx(allFeatures, bpPerPx)
       : undefined
 
-  // Pass 2: decide each feature's kept label lines and reserve their row height.
+  // Pass 2: decide each feature's kept label lines, reserve their row height,
+  // and widen its layout span by the reserved label overhang.
   for (const [id, ext] of allFeatures) {
     const labelInfo = labelInfoByFeatureId.get(id)
     // Whitespace the name overhang can use, on the side(s) this feature points:
@@ -712,24 +707,17 @@ function packRef(
     }
     ext.height = height
     ext.reservesLabel = keepName || keepDescription
-  }
 
-  for (const [id, ext] of allFeatures) {
-    const labelInfo = labelInfoByFeatureId.get(id)
-    if (!labelInfo || !ext.reservesLabel) {
-      continue
-    }
-    const labelBp = labelInfo.maxLabelWidthPx * bpPerPx
-    if (ext.hasNonReversed) {
-      const labelEndBp = ext.startBp + labelBp
-      if (labelEndBp > ext.layoutEndBp) {
-        ext.layoutEndBp = labelEndBp
+    // Widen the layout span by the label overhang so the packer keeps a kept
+    // name off its neighbor's row. A reversed region overhangs toward lower bp
+    // (widen layoutStartBp); otherwise toward higher bp (widen layoutEndBp).
+    if (labelInfo && ext.reservesLabel) {
+      const labelBp = labelInfo.maxLabelWidthPx * bpPerPx
+      if (ext.hasNonReversed) {
+        ext.layoutEndBp = Math.max(ext.layoutEndBp, ext.startBp + labelBp)
       }
-    }
-    if (ext.hasReversed) {
-      const labelStartBp = ext.endBp - labelBp
-      if (labelStartBp < ext.layoutStartBp) {
-        ext.layoutStartBp = labelStartBp
+      if (ext.hasReversed) {
+        ext.layoutStartBp = Math.min(ext.layoutStartBp, ext.endBp - labelBp)
       }
     }
   }
