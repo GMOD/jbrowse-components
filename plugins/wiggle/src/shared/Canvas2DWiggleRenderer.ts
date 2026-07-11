@@ -37,6 +37,7 @@ function drawWiggleBlocks(
     domainY,
     numRows,
     scatterPointSize,
+    lineWidth,
   } = state
   const rowHeight = canvasHeight / numRows
 
@@ -65,7 +66,7 @@ function drawWiggleBlocks(
 
       switch (renderingType) {
         case RENDERING_TYPE_LINE:
-          drawLine({ ...row, rgb })
+          drawLine({ ...row, rgb, lineWidth })
           break
         case RENDERING_TYPE_DENSITY:
           drawDensity({ ...row, r, g, b })

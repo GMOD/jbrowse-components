@@ -302,6 +302,7 @@ export function makeRenderState(
   height: number,
   numRows: number,
   scatterPointSize: number,
+  lineWidth: number,
 ): WiggleGPURenderState {
   return {
     domainY: domain,
@@ -311,5 +312,6 @@ export function makeRenderState(
     canvasHeight: height,
     numRows,
     scatterPointSize,
+    lineWidth,
   }
 }

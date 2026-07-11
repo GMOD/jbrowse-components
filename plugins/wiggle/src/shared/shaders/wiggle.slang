@@ -1,8 +1,9 @@
 // Wiggle track renderer. One shader covers four rendering modes (xyplot,
 // density, line, scatter) branched on the `renderingType` uniform, plus
-// linear/log scale branch. Same shader is bound to two passes via different
-// primitive topologies: PASS_FILL uses triangle-list, PASS_LINE uses
-// line-list — both read the same per-instance vertex buffer.
+// linear/log scale branch. Same shader is bound to two triangle-list passes
+// reading the same per-instance vertex buffer: PASS_FILL draws 6-vert quads
+// (xyplot/density/scatter); PASS_LINE draws 18-vert thick step-lines (3
+// square-capped quad segments per feature honoring u.lineWidth).
 //! targets: wgsl, glsl
 
 import hpmath;
@@ -44,6 +45,7 @@ struct Uniforms {
   float  zero;
   float  viewportWidth;
   float  scatterPointSize;
+  float  lineWidth;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -101,26 +103,34 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   float2 localPos = float2(0.0, 0.0);
 
   if (u.renderingType == RENDERING_TYPE_LINE) {
-    uint v = vid % VERTS_PER_INSTANCE;
+    // Thick step-line: each feature draws 3 triangle-quad segments (18 verts,
+    // triangle-list) so the stroke honors u.lineWidth. Half-widths are in clip
+    // space, computed separately for x and y because the two axes have
+    // different px→clip scales. Each quad is square-capped (extended by the
+    // half-width along its own length) so segments overlap at the joints and
+    // corners fill with no gaps.
+    //   seg 0: vertical at startX from prevScore → score (transition in)
+    //   seg 1: horizontal at score across [startX, endX]
+    //   seg 2: vertical at endX   from score → nextScore (transition out)
+    // prevScore=0 encodes gapBefore (rise from zero); nextScore=0 encodes
+    // gapAfter (drop to zero). When adjacent, nextScore==score collapses seg 2
+    // to a square joint that fills the corner with the next feature's seg 0.
+    uint seg = vid / 6u;
+    float2 q = quadLocal(vid);
     float clipScoreY = rowScoreToClipY(inst.score,     rowTop, rowHeight, pxToClip);
     float clipPrevY  = rowScoreToClipY(inst.prevScore, rowTop, rowHeight, pxToClip);
     float clipNextY  = rowScoreToClipY(inst.nextScore, rowTop, rowHeight, pxToClip);
-    // line-list segments: (v0,v1)=vertical-at-start, (v2,v3)=horizontal, (v4,v5)=vertical-at-end
-    // prevScore=0 encodes gapBefore (rise from zero); nextScore=0 encodes gapAfter (drop to zero)
-    // No min-width floor here: the line is a continuous polyline, so widening a
-    // single instance's end would break the join with the next feature's start.
-    if (v == 0u) {
-      sx = sx1;
-      sy = clipPrevY;
-    } else if (v < 3u) {
-      sx = sx1;
-      sy = clipScoreY;
-    } else if (v < 5u) {
-      sx = sx2;
-      sy = clipScoreY;
+    float hwx = u.lineWidth * 0.5 * 2.0 / u.viewportWidth;
+    float hwy = u.lineWidth * 0.5 * pxToClip;
+    if (seg == 0u) {
+      sx = lerp(sx1 - hwx, sx1 + hwx, q.x);
+      sy = lerp(min(clipPrevY, clipScoreY) - hwy, max(clipPrevY, clipScoreY) + hwy, q.y);
+    } else if (seg == 1u) {
+      sx = lerp(min(sx1, sx2) - hwx, max(sx1, sx2) + hwx, q.x);
+      sy = lerp(clipScoreY - hwy, clipScoreY + hwy, q.y);
     } else {
-      sx = sx2;
-      sy = clipNextY;
+      sx = lerp(sx2 - hwx, sx2 + hwx, q.x);
+      sy = lerp(min(clipScoreY, clipNextY) - hwy, max(clipScoreY, clipNextY) + hwy, q.y);
     }
   } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
     // Point plot: every feature is a point marker centered on the bp midpoint,

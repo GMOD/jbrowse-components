@@ -1,8 +1,10 @@
 import {
   makeRadioSubMenu,
   makeScatterPointSizeMenuItem,
+  makeSizeMenu,
 } from '@jbrowse/wiggle-core'
 import AddIcon from '@mui/icons-material/Add'
+import LineWeightIcon from '@mui/icons-material/LineWeight'
 import RemoveIcon from '@mui/icons-material/Remove'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
@@ -13,6 +15,7 @@ import { observer } from 'mobx-react'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const SCATTER_POINT_SIZE_DEFAULT = 2
+const LINE_WIDTH_DEFAULT = 1
 
 // Shared "Show" submenu: single and multi wiggle both group their visibility
 // toggles here, and both drop the whole submenu when no toggle applies (e.g.
@@ -54,6 +57,33 @@ export function makePointSizeMenuItems(self: {
     makeScatterPointSizeMenuItem(self, {
       label: 'Scatter point size',
       defaultValue: SCATTER_POINT_SIZE_DEFAULT,
+    }),
+  ]
+}
+
+// Top-level track-menu item present only in line variants ('line'/'multirowline'
+// /'multiline') where stroke thickness applies. Uses the shared inline slider.
+export function makeLineWidthMenuItems(self: {
+  renderingType: string
+  lineWidth: number
+  setLineWidth: (n?: number) => void
+}): MenuItem[] {
+  if (!self.renderingType.includes('line')) {
+    return []
+  }
+  return [
+    makeSizeMenu({
+      label: 'Line width',
+      title: 'Line width',
+      icon: LineWeightIcon,
+      getValue: () => self.lineWidth,
+      isDefault: self.lineWidth === LINE_WIDTH_DEFAULT,
+      onChange: n => {
+        self.setLineWidth(n)
+      },
+      onReset: () => {
+        self.setLineWidth(undefined)
+      },
     }),
   ]
 }

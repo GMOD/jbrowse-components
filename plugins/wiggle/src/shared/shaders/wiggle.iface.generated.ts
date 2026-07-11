@@ -5,7 +5,7 @@ import type { GlAttributeLayout } from '@jbrowse/render-core/hal'
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 48
+export const UNIFORMS_SIZE_BYTES = 64
 
 // Indices into a Float32Array / Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -19,6 +19,7 @@ export const UNIFORM_OFFSET_F32 = {
   zero: 9,
   viewportWidth: 10,
   scatterPointSize: 11,
+  lineWidth: 12,
 } as const
 
 
@@ -33,6 +34,7 @@ export interface Uniforms {
   zero: number
   viewportWidth: number
   scatterPointSize: number
+  lineWidth: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -50,6 +52,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[9] = uniforms.zero
   f32[10] = uniforms.viewportWidth
   f32[11] = uniforms.scatterPointSize
+  f32[12] = uniforms.lineWidth
 }
 
 export const INSTANCE_STRIDE_BYTES = 28

@@ -20,9 +20,13 @@ const PASS_LINE = 'line'
 
 const U = wiggleShader.UNIFORM_OFFSET_F32
 
-// One shader, two passes: same vertex buffer, different primitive topology.
-// PASS_LINE draws the score polyline via line-list; PASS_FILL draws xyplot /
-// density / scatter quads via triangle-list.
+// One shader, two triangle-list passes sharing the same vertex buffer.
+// PASS_FILL draws xyplot / density / scatter as 6-vert quads; PASS_LINE draws
+// the thick step-line as 18 verts per feature (3 square-capped quad segments)
+// so stroke thickness honors the lineWidth uniform (line-list topology can't —
+// its width is hard-locked to 1px on WebGPU/WebGL).
+const LINE_VERTS_PER_INSTANCE = 18
+
 export const WIGGLE_PASSES: PassDescriptor[] = [
   slangPass({
     id: PASS_FILL,
@@ -32,7 +36,8 @@ export const WIGGLE_PASSES: PassDescriptor[] = [
   slangPass({
     id: PASS_LINE,
     mod: wiggleShader,
-    topology: 'line-list',
+    topology: 'triangle-list',
+    verticesPerInstance: LINE_VERTS_PER_INSTANCE,
   }),
 ]
 
@@ -90,6 +95,7 @@ export class GpuWiggleRenderer
     // WIGGLE_MIN_PX in the Canvas2D path.
     this.uniformF32[U.viewportWidth] = clip.scissorW
     this.uniformF32[U.scatterPointSize] = state.scatterPointSize
+    this.uniformF32[U.lineWidth] = state.lineWidth
 
     this.hal.writeUniforms(this.uniformData)
     this.hal.drawPass(passId, block.displayedRegionIndex, PASS_FILL)

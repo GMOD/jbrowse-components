@@ -144,12 +144,14 @@ export function drawLine({
   domainY,
   scaleType,
   rgb,
-}: RowDraw & { rgb: string }) {
+  lineWidth,
+}: RowDraw & { rgb: string; lineWidth: number }) {
   const n = source.numFeatures
   if (n === 0) {
     return
   }
   ctx.strokeStyle = rgb
+  ctx.lineWidth = lineWidth
   ctx.beginPath()
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const zeroY = scoreToY(0) + rowTop

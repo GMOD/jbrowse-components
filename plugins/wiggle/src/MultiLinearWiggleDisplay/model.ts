@@ -38,6 +38,7 @@ import {
   makeRenderState,
 } from '../shared/wiggleComponentUtils.ts'
 import {
+  makeLineWidthMenuItems,
   makePointSizeMenuItems,
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
@@ -199,6 +200,7 @@ export default function stateModelFactory(
             height,
             self.isOverlay ? 1 : self.numSources,
             self.scatterPointSize,
+            self.lineWidth,
           ),
         )
       },
@@ -402,6 +404,7 @@ export default function stateModelFactory(
         return [
           makeRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERINGS),
           ...makePointSizeMenuItems(self),
+          ...makeLineWidthMenuItems(self),
           {
             label: 'Clustering',
             icon: AccountTreeIcon,

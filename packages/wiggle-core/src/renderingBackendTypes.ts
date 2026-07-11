@@ -16,6 +16,9 @@ export interface WiggleGPURenderState {
   // Full height in px of a scatterplot point (the point spans scoreY ± size/2).
   // Default 2 reproduces the previous hardcoded scoreY±1 band.
   scatterPointSize: number
+  // Stroke thickness in px for line rendering. Default 1 matches the canvas
+  // default line width.
+  lineWidth: number
 }
 
 export interface SourceRenderData {

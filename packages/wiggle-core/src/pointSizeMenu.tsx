@@ -8,7 +8,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // `getValue` is a thunk read inside the observer so the live slider tracks the
 // model while the menu stays open (the value is the only thing that changes
 // mid-interaction; a captured number would go stale).
-const PointSizeSlider = observer(function PointSizeSlider({
+const SizeSlider = observer(function SizeSlider({
+  title,
   getValue,
   min,
   max,
@@ -16,6 +17,7 @@ const PointSizeSlider = observer(function PointSizeSlider({
   unit,
   onChange,
 }: {
+  title: string
   getValue: () => number
   min: number
   max: number
@@ -24,10 +26,11 @@ const PointSizeSlider = observer(function PointSizeSlider({
   onChange: (n: number) => void
 }) {
   const value = getValue()
+  const slug = title.toLowerCase().replaceAll(' ', '-')
   return (
     <div style={{ width: 200 }}>
       <Typography variant="caption" color="textSecondary">
-        Point size: {value}
+        {title}: {value}
         {unit}
       </Typography>
       <SingleSlider
@@ -36,8 +39,8 @@ const PointSizeSlider = observer(function PointSizeSlider({
         max={max}
         step={step}
         size="small"
-        aria-label="point size"
-        data-testid="point-size-slider"
+        aria-label={title.toLowerCase()}
+        data-testid={`${slug}-slider`}
         valueLabelDisplay="auto"
         valueLabelFormat={(v: number) => `${v}${unit}`}
         onChange={v => {
@@ -48,11 +51,13 @@ const PointSizeSlider = observer(function PointSizeSlider({
   )
 })
 
-// Shared "point size" submenu (inline slider + reset row) used by the wiggle
-// scatter and GWAS manhattan displays. Each display owns its own config
-// slot/semantics and just wires the accessors.
-export function makePointSizeMenu(opts: {
-  label?: string
+// Shared inline "size" submenu (live slider + reset row). The wiggle scatter
+// point-size, wiggle line-width, and GWAS manhattan point-size controls each
+// own their config slot/semantics and just wire the accessors + a title (which
+// also derives the slider's test id).
+export function makeSizeMenu(opts: {
+  label: string
+  title: string
   icon?: React.ElementType
   getValue: () => number
   isDefault: boolean
@@ -64,7 +69,8 @@ export function makePointSizeMenu(opts: {
   onReset: () => void
 }): MenuItem {
   const {
-    label = 'Point size',
+    label,
+    title,
     icon,
     getValue,
     isDefault,
@@ -80,10 +86,11 @@ export function makePointSizeMenu(opts: {
     icon,
     subMenu: [
       {
-        label: 'Point size slider',
+        label: `${title} slider`,
         type: 'custom',
         render: () => (
-          <PointSizeSlider
+          <SizeSlider
+            title={title}
             getValue={getValue}
             min={min}
             max={max}
@@ -94,7 +101,7 @@ export function makePointSizeMenu(opts: {
         ),
       },
       {
-        label: 'Reset to default size',
+        label: 'Reset to default',
         disabled: isDefault,
         onClick: () => {
           onReset()
@@ -105,8 +112,8 @@ export function makePointSizeMenu(opts: {
 }
 
 // Wires a display's shared `scatterPointSize`/`setScatterPointSize` (from
-// WiggleScoreConfigMixin) to makePointSizeMenu. Used by both the wiggle scatter
-// and GWAS Manhattan track menus so the slider/reset behavior can't drift.
+// WiggleScoreConfigMixin) to makeSizeMenu. Used by both the wiggle scatter and
+// GWAS Manhattan track menus so the slider/reset behavior can't drift.
 export function makeScatterPointSizeMenuItem(
   self: {
     scatterPointSize: number
@@ -114,8 +121,9 @@ export function makeScatterPointSizeMenuItem(
   },
   opts: { label: string; defaultValue: number },
 ): MenuItem {
-  return makePointSizeMenu({
+  return makeSizeMenu({
     label: opts.label,
+    title: 'Point size',
     icon: ScatterPlotIcon,
     getValue: () => self.scatterPointSize,
     isDefault: self.scatterPointSize === opts.defaultValue,

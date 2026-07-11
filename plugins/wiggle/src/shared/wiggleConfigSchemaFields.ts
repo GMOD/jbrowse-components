@@ -62,4 +62,11 @@ export const wiggleConfigSchemaFields = {
       'Point height in px for scatterplot ("scatter"/"multiscatter") rendering',
     advanced: true,
   },
+  lineWidth: {
+    type: 'number',
+    defaultValue: 1,
+    description:
+      'Line thickness in px for line ("line"/"multiline") rendering',
+    advanced: true,
+  },
 } as const

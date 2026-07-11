@@ -53,6 +53,7 @@ const DEFAULT_STATE = {
   domainY: [0, 20] as [number, number],
   numRows: 1,
   scatterPointSize: 2,
+  lineWidth: 1,
 }
 
 describe('GpuWiggleRenderer', () => {

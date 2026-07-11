@@ -22,6 +22,7 @@ import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
 import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
 import {
+  makeLineWidthMenuItems,
   makePointSizeMenuItems,
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
@@ -160,6 +161,7 @@ export default function stateModelFactory(
             height,
             1,
             self.scatterPointSize,
+            self.lineWidth,
           ),
         )
       },
@@ -279,6 +281,7 @@ export default function stateModelFactory(
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
           ...makePointSizeMenuItems(self),
+          ...makeLineWidthMenuItems(self),
           ...makeResolutionSubMenu(self),
           // scaleType: true keeps the scale-type submenu (manhattan, linear-only,
           // drops it); summary score mode leads the Score submenu, matching

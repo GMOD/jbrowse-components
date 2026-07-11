@@ -105,6 +105,12 @@ export function WiggleScoreConfigMixin() {
       /**
        * #getter
        */
+      get lineWidth(): number {
+        return getConf(confNode(self), 'lineWidth')
+      },
+      /**
+       * #getter
+       */
       get summaryScoreMode(): string {
         return getConf(confNode(self), 'summaryScoreMode')
       },
@@ -199,6 +205,12 @@ export function WiggleScoreConfigMixin() {
        */
       setScatterPointSize(val?: number) {
         confNode(self).configuration.setSlot('scatterPointSize', val)
+      },
+      /**
+       * #action
+       */
+      setLineWidth(val?: number) {
+        confNode(self).configuration.setSlot('lineWidth', val)
       },
       /**
        * #action
