@@ -31,15 +31,17 @@ function RecentSessionsDataGrid({
   sessions,
   setSelectedSessions,
   setSessionToRename,
-  favorites,
+  setSessionsToDelete,
+  isFavorite,
   toggleFavorite,
   addToQuickstartList,
 }: {
   launch: (path: string) => Promise<void>
   setSessionToRename: (arg: RecentSessionData) => void
+  setSessionsToDelete: (arg: RecentSessionData[]) => void
   setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
-  favorites: string[]
+  isFavorite: (sessionPath: string) => boolean
   toggleFavorite: (sessionPath: string) => void
   addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
@@ -63,8 +65,6 @@ function RecentSessionsDataGrid({
       { stripHTML: true },
     ) + 40
 
-  const favs = new Set(favorites)
-
   const columns = [
     {
       field: 'name',
@@ -74,10 +74,11 @@ function RecentSessionsDataGrid({
         <SessionNameCell
           value={String(value)}
           row={row}
-          isFavorite={favs.has(row.path)}
+          isFavorite={isFavorite(row.path)}
           launch={launch}
           toggleFavorite={toggleFavorite}
           setSessionToRename={setSessionToRename}
+          setSessionsToDelete={setSessionsToDelete}
           addToQuickstartList={addToQuickstartList}
         />
       ),

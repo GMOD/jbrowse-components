@@ -3,13 +3,7 @@ import { useState } from 'react'
 import { CascadingMenuButton } from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import DeleteIcon from '@mui/icons-material/Delete'
-import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
-import Star from '@mui/icons-material/Star'
-import StarBorder from '@mui/icons-material/StarBorder'
-import TextFieldsIcon from '@mui/icons-material/TextFields'
 import {
   Card,
   CardActionArea,
@@ -22,6 +16,7 @@ import {
 
 import { defaultSessionScreenshot } from './defaultSessionScreenshot.ts'
 import { formatLastModified } from './formatLastModified.ts'
+import { sessionMenuItems } from './sessionMenuItems.ts'
 import StarIcon from '../StarIcon.tsx'
 
 import type { RecentSessionData } from '../types.ts'
@@ -51,7 +46,7 @@ const useStyles = makeStyles()({
 function RecentSessionCard({
   sessionData,
   isFavorite,
-  onClick,
+  launch,
   onDelete,
   onRename,
   onAddToQuickstartList,
@@ -59,7 +54,7 @@ function RecentSessionCard({
 }: {
   sessionData: RecentSessionData
   isFavorite: boolean
-  onClick: () => void
+  launch: (path: string) => Promise<void>
   onDelete: (arg: RecentSessionData) => void
   onRename: (arg: RecentSessionData) => void
   onAddToQuickstartList: (arg: RecentSessionData) => Promise<void>
@@ -86,7 +81,7 @@ function RecentSessionCard({
     <Card className={classes.card}>
       <CardActionArea
         onClick={() => {
-          onClick()
+          launch(path).catch(console.error)
         }}
       >
         <CardMedia
@@ -115,45 +110,15 @@ function RecentSessionCard({
           }}
         />
         <CascadingMenuButton
-          menuItems={[
-            {
-              label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-              icon: isFavorite ? Star : StarBorder,
-              onClick: () => {
-                onToggleFavorite()
-              },
-            },
-            {
-              label: 'Rename',
-              icon: TextFieldsIcon,
-              onClick: () => {
-                onRename(sessionData)
-              },
-            },
-            {
-              label: 'Delete',
-              icon: DeleteIcon,
-              onClick: () => {
-                onDelete(sessionData)
-              },
-            },
-            {
-              label: 'Add to quickstart list',
-              icon: PlaylistAddIcon,
-              onClick: async () => {
-                await onAddToQuickstartList(sessionData)
-              },
-            },
-            {
-              label: 'Show in folder',
-              icon: FolderOpenIcon,
-              onClick: () => {
-                ipcRenderer
-                  .invoke('showItemInFolder', path)
-                  .catch(console.error)
-              },
-            },
-          ]}
+          menuItems={sessionMenuItems({
+            session: sessionData,
+            isFavorite,
+            launch,
+            onRename,
+            onDelete,
+            onToggleFavorite,
+            onAddToQuickstartList,
+          })}
         >
           <MoreVertIcon />
         </CascadingMenuButton>

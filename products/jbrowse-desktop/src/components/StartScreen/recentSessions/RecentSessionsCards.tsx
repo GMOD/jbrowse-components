@@ -1,6 +1,7 @@
 import { Grid } from '@mui/material'
 
 import SessionCard from './RecentSessionCard.tsx'
+import { useInnerDims } from '../availableGenomes/util.ts'
 
 import type { RecentSessionData } from '../types.ts'
 
@@ -10,7 +11,7 @@ export default function RecentSessionsCards({
   setSessionToRename,
   launch,
   addToQuickstartList,
-  favorites,
+  isFavorite,
   toggleFavorite,
 }: {
   setSessionsToDelete: (e: RecentSessionData[]) => void
@@ -18,30 +19,30 @@ export default function RecentSessionsCards({
   launch: (path: string) => Promise<void>
   sessions: RecentSessionData[]
   addToQuickstartList: (arg: RecentSessionData) => Promise<void>
-  favorites: string[]
+  isFavorite: (sessionPath: string) => boolean
   toggleFavorite: (sessionPath: string) => void
 }) {
-  const favs = new Set(favorites)
+  const { height: innerHeight } = useInnerDims()
   return (
-    <Grid container spacing={4}>
-      {sessions.map(session => (
-        <SessionCard
-          key={session.path}
-          sessionData={session}
-          isFavorite={favs.has(session.path)}
-          onClick={async () => {
-            await launch(session.path)
-          }}
-          onDelete={() => {
-            setSessionsToDelete([session])
-          }}
-          onRename={setSessionToRename}
-          onAddToQuickstartList={addToQuickstartList}
-          onToggleFavorite={() => {
-            toggleFavorite(session.path)
-          }}
-        />
-      ))}
-    </Grid>
+    <div style={{ maxHeight: innerHeight / 2, overflow: 'auto' }}>
+      <Grid container spacing={4}>
+        {sessions.map(session => (
+          <SessionCard
+            key={session.path}
+            sessionData={session}
+            isFavorite={isFavorite(session.path)}
+            launch={launch}
+            onDelete={session => {
+              setSessionsToDelete([session])
+            }}
+            onRename={setSessionToRename}
+            onAddToQuickstartList={addToQuickstartList}
+            onToggleFavorite={() => {
+              toggleFavorite(session.path)
+            }}
+          />
+        ))}
+      </Grid>
+    </div>
   )
 }

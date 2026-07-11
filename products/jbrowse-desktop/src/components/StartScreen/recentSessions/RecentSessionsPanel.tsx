@@ -125,7 +125,15 @@ export default function RecentSessionPanel({
       setPluginManager(await loadPluginManager(path))
     } catch (e) {
       console.error(e)
-      notifyError(e)
+      notifyError(e, {
+        label: 'Remove from recent sessions',
+        onClick: () => {
+          ipcRenderer
+            .invoke('removeRecentSession', path)
+            .then(refreshSessions)
+            .catch(console.error)
+        },
+      })
     } finally {
       setSessionLoading(false)
     }
@@ -150,6 +158,7 @@ export default function RecentSessionPanel({
   }
 
   const favs = new Set(favorites)
+  const isFavorite = (sessionPath: string) => favs.has(sessionPath)
   const toggleFavorite = (sessionPath: string) => {
     if (favs.has(sessionPath)) {
       setFavorites(favorites.filter(path => path !== sessionPath))
@@ -319,7 +328,7 @@ export default function RecentSessionPanel({
           sessions={filteredSessions}
           setSessionsToDelete={setSessionsToDelete}
           setSessionToRename={setSessionToRename}
-          favorites={favorites}
+          isFavorite={isFavorite}
           toggleFavorite={toggleFavorite}
         />
       ) : (
@@ -327,8 +336,9 @@ export default function RecentSessionPanel({
           launch={launch}
           setSelectedSessions={setSelectedSessions}
           setSessionToRename={setSessionToRename}
+          setSessionsToDelete={setSessionsToDelete}
           sessions={filteredSessions}
-          favorites={favorites}
+          isFavorite={isFavorite}
           toggleFavorite={toggleFavorite}
           addToQuickstartList={entry => addToQuickstartList([entry])}
         />
