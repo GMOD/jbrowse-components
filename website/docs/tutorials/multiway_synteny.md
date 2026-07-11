@@ -42,9 +42,26 @@ genome, produced alongside) map each gene id to a genomic position.
 ## Producing the data
 
 Install [jcvi](https://github.com/tanghaibao/jcvi) and the
-[LAST](https://gitlab.com/mcfrith/last) aligner, then grab CDS + GFF3 for each
-genome (this example uses Ensembl Plants release 58: grape `PN40024.v4`, peach
-`NCBIv2`, cacao Criollo `V2`).
+[LAST](https://gitlab.com/mcfrith/last) aligner, then grab the genome (dna),
+CDS, and GFF3 for each species from
+[Ensembl Plants release 58](http://ftp.ensemblgenomes.org/pub/plants/release-58),
+renaming to the short `grape` / `peach` / `cacao` names used throughout (a
+`short prefix assembly` table drives the loop):
+
+```bash
+base=http://ftp.ensemblgenomes.org/pub/plants/release-58
+while read -r name prefix asm; do
+  species=$(echo "$prefix" | tr 'A-Z' 'a-z')
+  wget -O $name.dna.fa.gz  $base/fasta/$species/dna/$prefix.$asm.dna.toplevel.fa.gz
+  wget -O $name.cds.fa.gz  $base/fasta/$species/cds/$prefix.$asm.cds.all.fa.gz
+  wget -O $name.gff3.gz    $base/gff3/$species/$prefix.$asm.58.gff3.gz
+  gunzip -c $name.dna.fa.gz > $name.fa
+done <<'EOF'
+grape  Vitis_vinifera   PN40024.v4
+peach  Prunus_persica   Prunus_persica_NCBIv2
+cacao  Theobroma_cacao  Theobroma_cacao_20110822
+EOF
+```
 
 Convert each GFF3 to a jcvi BED (one primary isoform per gene) and normalize the
 CDS FASTA so its headers match the BED names:
@@ -72,6 +89,10 @@ python -m jcvi.compara.synteny mcscan grape.bed grape.cacao.lifted.anchors \
 python -m jcvi.formats.base join grape.peach.i1.blocks grape.cacao.i1.blocks \
   --noheader | cut -f1,2,4 > grape.blocks
 ```
+
+The `cut -f1,2,4` keeps the grape gene (col 1), its peach ortholog (col 2), and
+its cacao ortholog (col 4), dropping col 3 — the duplicate grape column the join
+emits from the second table.
 
 You now have `grape.blocks` plus `grape.bed`, `peach.bed`, and `cacao.bed`. The
 adapter reads them plain or gzipped, so `gzip grape.blocks *.bed` to match the
@@ -149,9 +170,10 @@ a row and the one track is wired to back every adjacent band. The
 [all-vs-all tutorial](/docs/tutorials/allvsall_synteny#from-the-ui) walks
 through this same quick start step by step.
 
-To open the stack automatically on load, drop the view snapshot into the
-config's `defaultSession` — the declarative way JBrowse opens a view, with no
-clicks or imperative setup. This demo stacks them peach – cacao – grape:
+To open the stack automatically on load, add a top-level `defaultSession` key to
+your `config.json` holding the view snapshot — the declarative way JBrowse opens
+a view, with no clicks or imperative setup. This demo stacks them peach – cacao
+– grape:
 
 ```json
 {

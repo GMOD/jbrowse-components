@@ -24,10 +24,44 @@ For cross-species comparisons built from gene-level ortholog tables instead, see
 An all-vs-all PAF is what the [PGGB](https://github.com/pangenome/pggb) mapping
 step produces, and you can make one directly by concatenating
 [PanSN](https://github.com/pangenome/PanSN-spec)-named genomes and self-aligning
-with [minimap2](https://github.com/lh3/minimap2):
+with [minimap2](https://github.com/lh3/minimap2). **PanSN** (Pangenome Sequence
+Naming) names every sequence `sample#haplotype#contig`, e.g.
+`K12#1#NC_000913.3`; it is how pangenome tools tell which genome a sequence
+belongs to, and the adapter later classifies each PAF record by its `sample`
+prefix.
+
+First obtain each strain's genome FASTA. This example uses four complete NCBI
+RefSeq assemblies, fetched with the NCBI
+[`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+CLI (a `strain accession` table keeps the short names we use throughout):
 
 ```bash
-# PanSN names each sequence sample#haplotype#contig, e.g. K12#1#chr
+while read -r strain acc; do
+  datasets download genome accession "$acc" --include genome --filename "$strain.zip"
+  unzip -o "$strain.zip" -d "$strain"
+  cat "$strain"/ncbi_dataset/data/*/*.fna > "$strain.raw.fa"
+done <<'EOF'
+K12     GCF_000005845.2
+Sakai   GCF_000008865.2
+CFT073  GCF_000007445.1
+NCTC86  GCF_003697165.2
+EOF
+```
+
+(`GCF_000005845.2` is K-12 MG1655, `GCF_000008865.2` is O157:H7 Sakai,
+`GCF_000007445.1` is the uropathogenic CFT073, and `GCF_003697165.2` is the _E.
+coli_ type strain NCTC 86 / ATCC 11775.) Downloaded genomes have ordinary
+headers (`>NC_000913.3 …`), so first rewrite each to PanSN (the haplotype is
+always `1` — these are haploid bacterial assemblies), then concatenate and
+self-align:
+
+```bash
+for strain in K12 Sakai CFT073 NCTC86; do
+  # '>NC_000913.3 Escherichia…' -> '>K12#1#NC_000913.3'
+  awk -v s="$strain" '/^>/{sub(/^>/, ">" s "#1#"); print $1; next} {print}' \
+    "$strain.raw.fa" > "$strain.fa"
+done
+
 cat K12.fa Sakai.fa CFT073.fa NCTC86.fa > all.fa
 minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 ```
@@ -50,7 +84,7 @@ done
 ```
 
 Each assembly's reference sequence names are the PanSN headers from its FASTA
-(`K12#1#chr`, …), which is what the synteny rows and the adapter's PanSN
+(`K12#1#NC_000913.3`, …), which is what the synteny rows and the adapter's PanSN
 classification both use. See the
 [assemblies configuration guide](/docs/config_guides/assemblies) for the
 equivalent JSON and indexing options.
@@ -79,7 +113,8 @@ prefix):
 ```
 
 If a JBrowse assembly name differs from its PanSN sample prefix, map it with the
-`assemblyNameToPanSN` slot (e.g. `{ "grape": "Vitis_vinifera" }`).
+`assemblyNameToPanSN` slot (e.g. if you named the assembly `Ecoli_K12` but its
+PanSN prefix is `K12`, use `{ "Ecoli_K12": "K12" }`).
 
 To add the track from the command line instead of editing the config by hand,
 pass `--adapterType` explicitly — the `.paf` extension alone would otherwise be
@@ -157,9 +192,9 @@ all-vs-all track Quick start does it in one step.
 
 ### Declaratively with defaultSession
 
-To open the stacked view automatically on load, put a `LinearSyntenyView`
-snapshot in the config's `defaultSession`. Four rows means three bands, so
-`tracks` has three entries — all served by the same track:
+To open the stacked view automatically on load, add a top-level `defaultSession`
+key to your `config.json` holding a `LinearSyntenyView` snapshot. Four rows
+means three bands, so `tracks` has three entries — all served by the same track:
 
 ```json
 {

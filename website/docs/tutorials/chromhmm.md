@@ -15,7 +15,7 @@ locus — one labeled row per cell type, each painted with the ChromHMM state
 colors.
 
 This tutorial shows how the gallery's ChromHMM figure is built: how to pack many
-per-cell-type segmentation BEDs into a single **multi-row bigBed**, and how to
+per-cell-type segmentation BEDs into a single **multi-row BED**, and how to
 configure the **multi-row feature display** so the file draws as one color-coded
 row per cell type.
 
@@ -37,8 +37,15 @@ adapter, and one fetch.
 Start from the UCSC ENCODE Broad HMM 15-state model (hg19) across 9 cell types.
 The per-cell-type files live under the
 [wgEncodeBroadHmm](http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/)
-download directory. Concatenate them, appending a `cellType` column derived from
-each filename:
+download directory. Grab the nine state BEDs:
+
+```bash
+wget -r -np -nd -A 'wgEncodeBroadHmm*HMM.bed.gz' \
+  http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/
+```
+
+Then concatenate them, appending a `cellType` column derived from each filename
+(the `declare -A` associative array needs bash 4+):
 
 ```bash
 # map each UCSC filename token to its canonical ENCODE cell-line label
@@ -55,46 +62,26 @@ done | sort -k1,1 -k2,2n > wgEncodeBroadHmm.multirow.bed
 Each line is now standard BED9 plus one trailing string field — the cell-type
 label that becomes a row. Those labels are what `rowOrder` references below.
 
-## Convert to a bigBed with the extra field
+## Compress and index
 
-bigBed needs an [autoSql](https://genome.ucsc.edu/goldenPath/help/bigBed.html)
-schema to describe columns beyond the standard BED. Declare BED9 plus the one
-extra `cellType` string (`bed9+1`):
-
-```
-table chromhmm
-"ChromHMM state, per cell type"
-(
-string   chrom;       "Reference sequence chromosome or scaffold"
-uint     chromStart;  "Start position of feature on chromosome"
-uint     chromEnd;    "End position of feature on chromosome"
-string   name;        "ChromHMM state"
-uint     score;       "Score"
-char[1]  strand;      "+ or -"
-uint     thickStart;  "Coding region start"
-uint     thickEnd;    "Coding region end"
-uint     reserved;    "itemRgb state color"
-string   cellType;    "Cell type this segmentation is from"
-)
-```
-
-Then build the bigBed against the assembly's chrom sizes:
+The combine step already emitted a coordinate-sorted BED, so just bgzip and
+tabix it. JBrowse fetches any region on demand — no bigBed conversion, no
+autoSql schema, and no chrom.sizes file needed:
 
 ```bash
-bedToBigBed -type=bed9+1 -as=chromhmm.as \
-  wgEncodeBroadHmm.multirow.bed hg19.chrom.sizes wgEncodeBroadHmm.multirow.bb
+bgzip wgEncodeBroadHmm.multirow.bed
+tabix -p bed wgEncodeBroadHmm.multirow.bed.gz
 ```
-
-The `itemRgb`/`reserved` column and the `cellType` column are what the display
-config reads below.
 
 ## Configure the multi-row feature display
 
-Add a `FeatureTrack` with a `BigBedAdapter`, and give it a
+Add a `FeatureTrack` with a `BedTabixAdapter`, and give it a
 `LinearMultiRowFeatureDisplay` that partitions on the `cellType` field. The
-track references the `hg19` assembly (the same one `hg19.chrom.sizes` came from,
-e.g. `fetchChromSizes hg19` from UCSC tools) — set it up first if you haven't,
-see the [assemblies configuration guide](/docs/config_guides/assemblies):
+adapter's `columnNames` names each BED column so the display can resolve column
+9 `itemRgb` (the state color) and the extra column 10 `cellType` (the field to
+split rows on). The track references the `hg19` assembly — set it up first if
+you haven't, see the
+[assemblies configuration guide](/docs/config_guides/assemblies):
 
 ```json
 {
@@ -104,9 +91,22 @@ see the [assemblies configuration guide](/docs/config_guides/assemblies):
   "assemblyNames": ["hg19"],
   "category": ["ENCODE", "Chromatin state"],
   "adapter": {
-    "type": "BigBedAdapter",
-    "bigBedLocation": {
-      "uri": "https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb",
+    "type": "BedTabixAdapter",
+    "disableGeneHeuristic": true,
+    "columnNames": [
+      "chrom",
+      "chromStart",
+      "chromEnd",
+      "name",
+      "score",
+      "strand",
+      "thickStart",
+      "thickEnd",
+      "itemRgb",
+      "cellType"
+    ],
+    "bedGzLocation": {
+      "uri": "wgEncodeBroadHmm.multirow.bed.gz",
       "locationType": "UriLocation"
     }
   },
@@ -135,6 +135,9 @@ see the [assemblies configuration guide](/docs/config_guides/assemblies):
 
 The fields that drive the display:
 
+- **`columnNames`** (on the adapter) — names each column of the BED, so the
+  standard `itemRgb` and the extra `cellType` field resolve as feature
+  attributes the display below reads.
 - **`partitionField`** — the feature attribute to split rows by. Every distinct
   `cellType` value becomes its own labeled sub-row, so a 9-cell-type file draws
   as 9 stacked rows.
@@ -143,6 +146,13 @@ The fields that drive the display:
   feature is painted with its ChromHMM state color straight from the file.
 - **`rowOrder`** — pins the sub-rows to a chosen order. Omit it and rows fall
   back to the order the partition values are first seen.
+
+**Using JBrowse Desktop?** These steps work unchanged — Desktop opens
+`wgEncodeBroadHmm.multirow.bed.gz` straight from your local disk (point
+`bedGzLocation` at the local path), no web server needed. See the
+[desktop quickstart](/docs/quickstart_desktop). (A bigBed loaded with a
+`BigBedAdapter` works too, and is what the hosted demo below uses; the
+tabix-indexed BED just skips the conversion and chrom.sizes step.)
 
 ## Scaling up: 127 epigenomes
 
@@ -168,4 +178,4 @@ state** categories.
 - [jexl](/docs/config_guides/jexl) — the color callback syntax used to map
   itemRgb to a CSS color
 - [Configuring tracks](/docs/config_guides/tracks) — general
-  FeatureTrack/BigBedAdapter config referenced above
+  FeatureTrack/BedTabixAdapter config referenced above

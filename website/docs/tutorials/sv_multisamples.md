@@ -54,6 +54,11 @@ In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset — und
 **1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf**. A track of orange SV bars
 will appear across the genome.
 
+This walkthrough uses the hosted web demo, but the SV inspector and circular
+views shown below work the same in [JBrowse Desktop](/docs/quickstart_desktop),
+which is the better fit when you want to explore your own local VCF and BAM
+files rather than the demo dataset.
+
 ## Browsing SVs with the SV inspector
 
 The SV inspector combines a searchable/filterable table of all calls with a
@@ -141,9 +146,9 @@ allele.
 
 ### Read orientation evidence at the breakpoints
 
-Zoom in to one of the inversion breakpoints (approximately chr19:41,749,000 or
-chr19:41,902,000) and enable pair-orientation coloring on a BAM track from the
-track menu. At the breakpoint you will see:
+Zoom in to one of the inversion breakpoints (the call's endpoints, roughly
+chr19:41,797,752 and chr19:42,527,236) and enable pair-orientation coloring on a
+BAM track from the track menu. At the breakpoint you will see:
 
 - **Green (LL)** pairs — both mates mapping to the forward strand — and **dark
   blue (RR)** pairs — both mates mapping to the reverse strand — clustering at

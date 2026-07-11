@@ -39,7 +39,8 @@ The more reads that stack up over a region, the more highly expressed it is. The
 coverage histogram along the top of the track is JBrowse's running per-position
 read count, so tall coverage flags a highly-transcribed gene.
 
-Turn on the **compact** display to pack the full read stack into view:
+Turn on the **compact** display (in the track menu) to pack the full read stack
+into view:
 
 <Figure caption="The compact display packing the full read stack over a gene. Coverage depth broadly tracks expression, though an accurate expression estimate requires normalization (for gene length, library size, and mapping biases) via tools like HTSeq." src="/img/rnaseq/compact_stacked.png" />
 
@@ -49,7 +50,8 @@ RNA is spliced before sequencing, so a read mapped back to the genome can skip
 across the introns that were removed. A spliced aligner like
 [STAR](https://github.com/alexdobin/STAR) records this by split-mapping the read
 — part aligns to one exon, part to the next — and encodes the skip in the read's
-CIGAR string.
+CIGAR string (Compact Idiosyncratic Gapped Alignment Report, the field in a
+SAM/BAM record that summarizes how a read aligns to the reference).
 
 A real spliced read from the ACTB pileup above (reads here are 51 bp) has a
 CIGAR like:
@@ -128,8 +130,9 @@ the `.bai` sits beside the BAM.)
 
 JBrowse computes the splice arcs and per-read splicing shown above from the
 CIGAR strings automatically, with no extra configuration; to color reads by
-fragment strand, use **Color by → First of pair strand** in the track menu. See
-the [alignments track config guide](/docs/config_guides/alignments_track) for
+fragment strand, open the track menu's color-scheme options and choose **First
+of pair strand**. See the
+[alignments track config guide](/docs/config_guides/alignments_track) for
 adapter and display options. For a precomputed coverage signal (e.g. a
 strand-specific BigWig produced by your aligner), load it separately as a
 [quantitative track](/docs/user_guides/quantitative_track).

@@ -63,6 +63,11 @@ It takes as input:
 - a genetic map in PLINK format (the README of hap-ibd provides these for
   GRCh38)
 
+Download `hap-ibd.jar` from the
+[hap-ibd releases page](https://github.com/browning-lab/hap-ibd/releases) along
+with the GRCh38 PLINK maps linked there; running it (and FLARE later) needs Java
+8+.
+
 ## What we're visualizing: crossover points
 
 Each of the child's inherited chromosomes is a mosaic of the two copies its
@@ -139,6 +144,8 @@ The finished track for this dataset is already loaded in the
 Load the result as a `FeatureTrack` whose display is a
 `LinearMultiRowFeatureDisplay`: partition rows by the `parenthap` column, order
 the four rows father-then-mother, and read each block's color from `itemRgb`.
+Add this object to the `tracks` array of your `config.json` (or paste it via the
+add-track JSON editor in the app):
 
 ```json
 {
@@ -205,7 +212,9 @@ the demo accurate.)
 [FLARE](https://github.com/browning-lab/flare) infers per-haplotype local
 ancestry by comparing each target haplotype against labeled reference samples.
 Give it the phased trio genotypes (`gt`), phased reference genotypes (`ref`)
-each tagged `AFR` or `EUR` in the `ref-panel` map, and a genetic map:
+each tagged `AFR` or `EUR` in the `ref-panel` map, and a genetic map (this
+command is illustrative — the `build_asw_trio_ancestry.sh` script below builds
+these inputs for you):
 
 ```bash
 java -jar flare.jar \
@@ -222,7 +231,8 @@ reproducible script:
 [`scripts/build_asw_trio_ancestry.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_asw_trio_ancestry.sh).
 
 Load the result as a `LinearMultiRowFeatureDisplay` partitioned by `sample`, so
-each haplotype gets its own row:
+each haplotype gets its own row (again, add it to your `config.json` `tracks`
+array or paste it via the add-track JSON editor):
 
 ```json
 {

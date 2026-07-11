@@ -28,14 +28,20 @@ This tutorial builds two JBrowse tracks from the **same BXD panel**, on mm10:
 Stacked in one view they show the core systems-genetics move: a trait peak, and
 the recombination structure underneath it.
 
+Working in a notebook? The GWAS/Manhattan and multi-row feature tracks shown
+here also render inline through the
+[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
+[JBrowseR](/docs/jbrowser) in R), so you can run the scan and view the peak in
+one Python or R session.
+
 <Figure src="/img/qtl/bxd_overview.png" caption="Whole chr4. Top: the BXD coat-color QTL scan, peaking at ~80 Mb. Bottom: the 198-strain painting (blue = B, red = D, grey = het, blank = unknown), rows sorted by each strain's genotype at the peak. Directly under the peak the strains split into a red block over a blue block — the B/D contrast the scan is scoring — and the split frays with distance as strains recombine."/>
 
 ## The data: BXD consensus genotypes
 
 GeneNetwork distributes the consensus BXD genotypes as a plain-text `.geno`
-file. Each row is a marker (with an mm10 `Mb` position); each column is a
-strain, with a one-letter genotype — `B`, `D`, `H` (heterozygous) or `U`
-(unknown):
+file. Each row is a marker (with a `cM` genetic-map and an mm10 `Mb` physical
+position — we use `Mb`); each column is a strain, with a one-letter genotype —
+`B`, `D`, `H` (heterozygous) or `U` (unknown):
 
 ```
 @name:BXD
@@ -50,6 +56,15 @@ Download it from
 [gn1.genenetwork.org/genotypes/BXD.geno](https://gn1.genenetwork.org/genotypes/BXD.geno)
 (please cite
 [Wang et al. 2016, _Nat Commun_ 7:10464](https://doi.org/10.1038/ncomms10464)).
+
+The two Python scripts used below live in the JBrowse repo — clone
+[jbrowse-components](https://github.com/GMOD/jbrowse-components), or just
+download the linked `bxd_geno_to_painting_bed.py` and `bxd_qtl_scan.py`, and run
+them from where you saved them. You'll also need Python 3 (with `pandas` for the
+phenotype step and `numpy`/`scipy` for the scan) and htslib for `bgzip`/`tabix`.
+On JBrowse Desktop, add the `.bed.gz`/`.tsv.gz` files you build through **Add
+track** by choosing the local files — no hosting step needed
+([desktop quickstart](/docs/quickstart_desktop)).
 
 ## Track 1: chromosome painting
 
@@ -128,11 +143,12 @@ the [assemblies configuration guide](/docs/config_guides/assemblies).
 ## Track 2: the QTL Manhattan
 
 To map a trait, score every marker for how well its B/D genotype predicts the
-phenotype. GeneNetwork uses a mixed model (GEMMA); this demo uses a simpler
-**single-marker regression** of the phenotype on the 0/1 (B/D) genotype,
-converting each marker's t-statistic to a `-log10(p)`. Those are the same B/D
-calls the painting draws, so the peak and the painting come from one genotype
-matrix. Real BXD phenotypes and the mm10 marker map are in the
+phenotype. GeneNetwork uses a linear mixed model (GEMMA, Genome-wide Efficient
+Mixed Model Association); this demo uses a simpler **single-marker regression**
+of the phenotype on the 0/1 (B/D) genotype, converting each marker's t-statistic
+to a `-log10(p)`. Those are the same B/D calls the painting draws, so the peak
+and the painting come from one genotype matrix. Real BXD phenotypes and the mm10
+marker map are in the
 [`rqtl/qtl2data/BXD`](https://github.com/rqtl/qtl2data/tree/master/BXD) dataset.
 
 Write the scan out as a tabix'd BED-like table with a `neg_log_pvalue` column:
@@ -145,11 +161,23 @@ chr4    80750000  80750001  rs3708061   .     .      51.9
 The
 [`bxd_qtl_scan.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_qtl_scan.py)
 script runs the regression on the same `.geno` plus a two-column `strain,value`
-phenotype file (pull one trait column out of the qtl2data `pheno.csv`), emitting
-that table:
+phenotype file. Build that file by pulling one trait column out of the qtl2data
+[`bxd_pheno.csv`](https://github.com/rqtl/qtl2data/tree/master/BXD): its columns
+are GeneNetwork trait IDs (described in `bxd_phenocovar.csv` — ID `10678` is
+"Hair coat color"), and its first column, `id`, holds the strain names:
 
 ```bash
-# needs numpy + scipy
+python3 - <<'PY'
+import pandas as pd
+df = pd.read_csv('bxd_pheno.csv', comment='#')  # skips the leading # metadata lines
+df[['id', '10678']].dropna().to_csv(
+    'coat_color.pheno.csv', index=False, header=['strain', 'value'])
+PY
+```
+
+Then run the scan (the phenotype file's header line is skipped automatically):
+
+```bash
 python3 scripts/bxd_qtl_scan.py BXD.geno coat_color.pheno.csv bxd_gwas_coatcolor.tsv
 (head -1 bxd_gwas_coatcolor.tsv; tail -n +2 bxd_gwas_coatcolor.tsv | sort -k1,1 -k2,2n) \
   | bgzip > bxd_gwas_coatcolor.tsv.gz
@@ -202,7 +230,8 @@ locus.
 
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4 (~156 Mb): the coat-color association rises to a sharp peak at ~80 Mb over Tyrp1, and the haplotype painting — sorted by genotype at that peak — resolves into a clean B (red) over D (blue) split that localizes the QTL to the gene."/>
 
-A second bundled scan maps **brain weight** to a subtler QTL on chr19.
+A second scan in the demo config maps **brain weight** to a subtler QTL on
+chr19.
 
 Open the whole demo live in the
 [JBrowse BXD demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_bxd.json),

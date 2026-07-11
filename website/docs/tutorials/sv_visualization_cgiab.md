@@ -52,6 +52,8 @@ You will need:
   - [megadepth](https://github.com/ChristopherWilks/megadepth) (v1.2.0 or later)
   - [bedGraphToBigWig](https://hgdownload.soe.ucsc.edu/admin/exe/) (UCSC tool) —
     for the log2 ratio and BAF tracks
+  - [Python 3](https://www.python.org/) (preinstalled on most Linux) — for the
+    log2-ratio computation
 
 A script with all of the data-preparation commands below is available as a
 [gist](https://gist.github.com/cmdcolin/4f2ccf037b4c3315d6eb36b0a4ec123d).
@@ -63,7 +65,7 @@ Install system dependencies and the JBrowse CLI:
 ```bash
 export OUT=/var/www/html/jbrowse2
 sudo apt-get update
-sudo apt-get install wget apache2 tabix samtools minimap2
+sudo apt-get install wget apache2 tabix samtools bcftools mosdepth minimap2
 sudo service apache2 start
 
 # Debian/Ubuntu's "nodejs" package is often older than the v18 minimum, so
@@ -78,6 +80,11 @@ sudo npm install -g @jbrowse/cli
 
 # confirm the jbrowse CLI is installed
 jbrowse --version
+
+# bedGraphToBigWig is a UCSC binary (not in apt) used by the CNV tracks below —
+# fetch it and put it on PATH
+wget https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
+chmod +x bedGraphToBigWig && sudo mv bedGraphToBigWig /usr/local/bin/
 
 # download and unzip the latest JBrowse 2, then move it into the web root
 jbrowse create tmpdir
@@ -261,7 +268,10 @@ bcftools mpileup -f $REF -r $CHROMS -T hets.vcf.gz -a AD -q 1 -Q 0 $TUMOR \
   | awk -F'[\t,]' '{d=$3+$4; if(d>=10) printf "%s\t%d\t%d\t%.4f\n",$1,$2-1,$2,$4/d}' \
   > HG008-T_baf.bedgraph
 
-LC_COLLATE=C sort -k1,1 -k2,2n HG008-T_baf.bedgraph > HG008-T_baf.sorted.bedgraph
+# sort, and drop duplicate positions (multiallelic sites can emit a position
+# twice, which bedGraphToBigWig rejects as overlapping)
+LC_COLLATE=C sort -k1,1 -k2,2n HG008-T_baf.bedgraph \
+  | awk '!seen[$1"\t"$2]++' > HG008-T_baf.sorted.bedgraph
 bedGraphToBigWig HG008-T_baf.sorted.bedgraph GRCh38_GIABv3.chrom.sizes HG008-T_baf.bw
 
 jbrowse add-track HG008-T_baf.bw --out $OUT --category "CNV" --load move
@@ -285,17 +295,15 @@ printf 'chr%s\n' {1..22} chrX chrY | xargs -P$(nproc) -I{} bash -c 'mpileup_chro
 cat $(printf 'baf_part.chr%s.bedgraph ' {1..22} chrX chrY) > HG008-T_baf.bedgraph
 ```
 
-When merging per-region output, drop duplicate positions before
-`bedGraphToBigWig` (multiallelic sites can emit a position twice, which it
-rejects as overlapping):
-`LC_COLLATE=C sort -k1,1 -k2,2n HG008-T_baf.bedgraph | awk '!seen[$1"\t"$2]++' > HG008-T_baf.sorted.bedgraph`.
+The concatenated `HG008-T_baf.bedgraph` then feeds into the same sort + dedup +
+`bedGraphToBigWig` commands as the single-pass path above.
 
-Plot BAF with a fixed `0`..`1` domain and the **scatter** rendering. BAF is one
-value per SNP, not a continuous signal, so at whole-chromosome zoom each pixel
-bins many SNPs. Scatter's per-bin min/max points keep the 0/1 split visible,
-whereas a line or the default whisker summary averages it back to a solid 0.5
-band. Pairing the log2 ratio (copy number) with BAF (allelic state) is the
-conventional two-panel somatic-CNV view.
+Plot BAF from the track menu with a fixed `0`..`1` domain and the **scatter**
+rendering. BAF is one value per SNP, not a continuous signal, so at
+whole-chromosome zoom each pixel bins many SNPs. Scatter's per-bin min/max
+points keep the 0/1 split visible, whereas a line or the default whisker summary
+averages it back to a solid 0.5 band. Pairing the log2 ratio (copy number) with
+BAF (allelic state) is the conventional two-panel somatic-CNV view.
 
 Restricting to germline-heterozygous sites is deliberate: at a homozygous site
 the alt fraction is ~0 or ~1 regardless of copy number, so it carries no
@@ -333,6 +341,8 @@ bgzip normal_phased.vcf && tabix -p vcf normal_phased.vcf.gz
 # purity/ploidy. --change-point-detection-for-cna (or a real --breakpoints
 # SV VCF, e.g. from Severus) is required or Wakhan silently no-ops; an empty
 # placeholder VCF also works and avoids an unrelated crash in segment export.
+printf '##fileformat=VCFv4.2\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n' \
+  > empty_breakpoints.vcf
 python wakhan.py all --threads 24 --reference $REF --target-bam $TUMOR \
   --normal-phased-vcf normal_phased.vcf.gz --genome-name HG008-T \
   --change-point-detection-for-cna --breakpoints empty_breakpoints.vcf \
@@ -462,9 +472,10 @@ CUZD1 gene.
 <Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The table's SVTYPE column reports the call as a DEL, and clicking the row's location link opens the region in the linear genome view below, where the same call is drawn as the <DEL> ALT allele on the variant, above the NCBI RefSeq gene track showing the affected CUZD1 exons." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
 Opening the gene annotations and the tumor PacBio HiFi reads, switching the
-reads to **compact** mode, and applying **Sort by base pair** with the deletion
-centered shows the deletion (enabling the **center line** from the view menu is
-helpful for aligning the breakpoint precisely under the center of the view).
+reads to **compact** mode and applying **Sort by base pair** (both from the
+track menu) with the deletion centered shows the deletion (enabling the **center
+line** from the view menu is helpful for aligning the breakpoint precisely under
+the center of the view).
 
 <Figure caption="After opening the gene annotations and tumor PacBio HiFi reads, displaying reads in compact mode, and sorting by base pair with the deletion in the center. The deletion removes two CUZD1 exons and is heterozygous." src="/img/sv_cgiab/deletion_linear_view.png" />
 

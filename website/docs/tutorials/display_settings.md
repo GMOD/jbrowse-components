@@ -88,11 +88,19 @@ with `trackId` plus the display settings written directly alongside it:
 }
 ```
 
-URL-encoded onto the end of a JBrowse link:
+URL-encoded onto the end of a JBrowse link. Append this query string to your own
+JBrowse instance's base URL (e.g. `https://jbrowse.org/code/jb2/latest/`), and
+swap `config` and the `trackId` values for ones in your config —
+`volvox_sv_cram` here is an example track from the bundled volvox demo data:
 
 ```
 ?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","height":250,"showSoftClipping":true,"linkedReads":"normal","colorBy":{"type":"insertSizeAndOrientation"}}]}]}
 ```
+
+The **Share** button and these `?session=spec-{...}` URLs are a JBrowse Web
+feature. JBrowse Desktop has no session-URL server — persist a track's startup
+state there through `config.json` (the
+[defaults](#in-configjson-persistent-defaults) above) instead.
 
 <Figure caption="What that link opens: the volvox-sv (cram) track at ctgA:1–10,000 — a 250px-tall pileup, soft-clipping shown, and reads viewed as pairs, so each read links to its mate and is colored by insert size and orientation. The colored cluster at the left flags a structural variant, while concordant pairs stay grey." src="/img/display_settings_url_snapshot.png" />
 

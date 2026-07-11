@@ -24,6 +24,11 @@ These approaches are described in our
 [_Proteins in the Genome Browser_ paper](https://doi.org/10.1016/j.jmb.2026.169645)
 (_Journal of Molecular Biology_, 2026).
 
+The protein and MSA views are separate view types added by these plugins. They
+work in both JBrowse Web and JBrowse Desktop, but are not part of the embedded
+linear-genome-view widget ([anywidget](/docs/jbrowse_jupyter) /
+[JBrowseR](/docs/jbrowser)), which shows only the linear genome view.
+
 ## Try it without installing anything
 
 The quickest way to see all three views linked at once is the hosted
@@ -37,8 +42,8 @@ project.
 The same plugins come preconfigured on the public genome browsers at
 [genomes.jbrowse.org](https://genomes.jbrowse.org) — pick a genome (for example
 [hg38](https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json)),
-search for a gene, right click it, and choose to launch the 3D protein viewer or
-the MSA viewer.
+search for a gene, right-click it, and launch the 3D protein-structure view or
+the MSA (multiple sequence alignment) view from its menu.
 
 For a one-click example, this session opens the AlphaFold structure of human
 BRAF (UniProt P15056) directly in the hg38 browser:
@@ -69,11 +74,17 @@ JBrowse 2:
 
 ## Viewing a 3D structure
 
-Right click a gene and open the protein structure viewer. The plugin looks up a
-structure for the gene's protein (from AlphaFold DB or UniProt) and renders it
-with Mol\*. Mouse over a position in the genome view to highlight the matching
-residue on the structure, which lets you see where a variant or feature lands in
-3D.
+First open a genome that has a gene track — the public browsers at
+[genomes.jbrowse.org](https://genomes.jbrowse.org) come with one, or add your
+own. The lookup needs a gene feature carrying a recognizable protein or
+transcript ID (as the RefSeq gene tracks on those browsers do), so an arbitrary
+feature track without such IDs won't resolve a structure.
+
+Right-click a gene and launch the protein-structure view from its menu. The
+plugin looks up a structure for the gene's protein (from AlphaFold DB or
+UniProt) and renders it with Mol\*. Mouse over a position in the genome view to
+highlight the matching residue on the structure, which lets you see where a
+variant or feature lands in 3D.
 
 ## Linking variants to a 3D structure
 
@@ -101,10 +112,10 @@ alignment. The parameters and ready-to-open example URLs are documented in the
 
 ## Viewing a multiple sequence alignment
 
-Right click a gene and open the MSA viewer to load a precomputed alignment and
-phylogenetic tree, or run a fresh NCBI BLAST query. As with the structure view,
-genomic positions map onto alignment columns so you can relate variants to
-conserved residues across species.
+Right-click a gene and launch the MSA view from its menu to load a precomputed
+alignment and phylogenetic tree, or run a fresh NCBI BLAST query. As with the
+structure view, genomic positions map onto alignment columns so you can relate
+variants to conserved residues across species.
 
 See the
 [MSAView user guide](https://github.com/GMOD/JBrowseMSA/blob/main/docs/user_guide.md)

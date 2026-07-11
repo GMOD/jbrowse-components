@@ -273,7 +273,8 @@ gene-name search works — see
 [configuring assemblies](/docs/config_guides/assemblies) and
 [gene tracks](/docs/user_guides/gene_track). Each scan loads as an ordinary
 [quantitative track](/docs/user_guides/quantitative_track), which auto-scales to
-its own data:
+its own data. Add each track object below to the `tracks` array of your
+`config.json` (or paste it via the add-track JSON editor in the app):
 
 ```json
 {
@@ -432,7 +433,7 @@ for name, val in [('fst', lambda w: fnum[w]/fden[w]),
 
 ```bash
 for f in fst div_african div_cosmopolitan; do
-  bedGraphToBigWig "$f.bg" chrom.sizes "dest_cyp6g1_$f.bw"
+  bedGraphToBigWig "$f.bg" dm6.chrom.sizes "dest_cyp6g1_$f.bw"
 done
 ```
 
@@ -566,6 +567,9 @@ tail -n +2 ld.ld \
 tabix -s1 -b2 -e2 ld_chr.ld.gz
 ```
 
+`ld.ld.gz` (literal FlyBase names) is an intermediate; the track loads
+`ld_chr.ld.gz`, the UCSC-prefixed file built just above.
+
 ```json
 {
   "type": "LDTrack",
@@ -574,7 +578,7 @@ tabix -s1 -b2 -e2 ld_chr.ld.gz
   "assemblyNames": ["dm6"],
   "adapter": {
     "type": "PlinkLDTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/ld_2R_decay_chr.ld.gz"
+    "uri": "https://jbrowse.org/demos/popgen/ld_chr.ld.gz"
   }
 }
 ```

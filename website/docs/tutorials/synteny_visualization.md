@@ -21,7 +21,11 @@ The two views below open directly into that data.
 ## What you need
 
 This tutorial assumes you already have a JBrowse 2 instance running (see the
-[web quickstart](/docs/quickstart_web) for setup). You will need:
+[web quickstart](/docs/quickstart_web), or the
+[desktop quickstart](/docs/quickstart_desktop) if you're on JBrowse Desktop).
+The CLI and config steps below are identical on both; on Desktop the two
+assembly FASTAs and the alignment are local files you can open straight from
+disk, with no web server. You will need:
 
 - Two genome assemblies in FASTA format (or use public assemblies)
 - A whole-genome alignment (PAF, MUMmer `.delta`, or UCSC `.chain`)
@@ -50,15 +54,15 @@ you can load `.delta` or `.chain` directly into JBrowse without converting.
 Both genomes must be loaded as assemblies before adding the alignment:
 
 ```bash
-jbrowse add-assembly reference.fa --out $OUT --load copy
-jbrowse add-assembly query.fa --out $OUT --load copy
+jbrowse add-assembly reference.fa --load copy
+jbrowse add-assembly query.fa --load copy
 ```
 
 Add the PAF as a synteny track. The assembly names in `-a` must match what you
 passed to `add-assembly`:
 
 ```bash
-jbrowse add-track alignment.paf -a query,reference --out $OUT --load copy
+jbrowse add-track alignment.paf -a query,reference --load copy
 ```
 
 The `-a` order is the reverse of the minimap2 argument order — the query
@@ -92,9 +96,10 @@ the PAF columns.
 
 ### Launching a linear synteny view from the dotplot
 
-To inspect a region, click and drag over it in the dotplot, then choose **Open
-linear synteny view** from the context menu. This opens the selected region in a
-new linear synteny view, showing the alignment at base resolution.
+To inspect a region, click and drag across the dotplot to rubber-band a
+selection, then right-click inside the selected box and choose **Open linear
+synteny view** from the context menu. This opens the selected region in a new
+linear synteny view, showing the alignment at base resolution.
 
 ## Linear synteny view
 
@@ -170,7 +175,7 @@ fetches only the alignments in the current viewport:
 
 ```bash
 jbrowse make-pif alignment.paf
-jbrowse add-track alignment.pif.gz -a query,reference --out $OUT --load copy
+jbrowse add-track alignment.pif.gz -a query,reference --load copy
 ```
 
 See the [PIF format guide](/docs/developer_guides/pif_format) for details.

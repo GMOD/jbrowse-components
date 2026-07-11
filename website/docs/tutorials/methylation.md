@@ -20,6 +20,11 @@ methylation dataset:
 - **Allele-specific methylation** by grouping reads on their haplotype tag
 - **6mA chromatin accessibility** from fiber-seq
 
+This tutorial is a tour of each methylation view rather than a copy-paste
+pipeline: the configs below use `https://yourhost/...` placeholders, and the
+figures use public datasets (linked where shown) that JBrowse reads by URL. Swap
+in your own modBAM/CRAM or bedMethyl file to reproduce any view.
+
 ## Per-read methylation with BAM/CRAM
 
 When a BAM or CRAM file carries base modification tags (MM/ML as specified in
@@ -46,9 +51,12 @@ match an assembly already configured in JBrowse (see the
 }
 ```
 
-Turn on modification or methylation coloring from the track menu. Each
-modification type renders in its own color, with intensity reflecting the
-modification probability (ML tag value).
+From the track menu, choose **Color by → Modification type** to paint the calls
+listed in the MM tag, or **Color by → Methylation** to additionally scan the
+read sequence for CpG dinucleotides and paint any CpG the MM tag left uncalled
+(the difference is exactly what the figure below shows). Each modification type
+renders in its own color, with intensity reflecting the modification probability
+(ML tag value).
 
 <Figure caption="The same nanopore track shown in modifications mode (top) and methylation mode (bottom) over a hypo-methylated CpG island. Modifications mode only draws the positive 5mC calls listed in the MM tag, so a hypomethylated region looks nearly empty. The MM tag does not necessarily mark unmodified bases, so methylation mode instead scans the read sequence itself for CpG dinucleotides and paints any CpG the MM tag left uncalled in blue. That manual lookup is what fills a hypomethylated region with solid blue where modifications mode shows nothing." src="/img/alignments/modifications2.png" />
 
@@ -60,6 +68,9 @@ type, with the fraction of reads carrying that modification. This is a compact
 format for storing population-level methylation across a whole genome.
 
 ### Generating the file
+
+Needs [modkit](https://github.com/nanoporetech/modkit) plus `bgzip`/`tabix`
+(htslib).
 
 ```bash
 # Standard (single modification fraction per CpG)

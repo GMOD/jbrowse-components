@@ -21,6 +21,11 @@ track. It assumes you already have clustered scATAC data (a fragments file or a
 BAM plus a per-barcode cell-type label) from a tool like 10x Cell Ranger ATAC,
 ArchR, Signac, or SnapATAC2.
 
+Working in a notebook? If you pseudobulk with SnapATAC2 (Python) or ArchR (R),
+you can compute these BigWigs and view them inline in the same session through
+the [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
+[JBrowseR](/docs/jbrowser)).
+
 ## The pseudobulk idea
 
 A scATAC experiment is a sparse per-cell signal — too sparse to plot per cell.
@@ -126,10 +131,23 @@ Without SnapATAC2/ArchR, split a 10x-style `fragments.tsv.gz` by cluster with a
 barcode→cluster map, then convert each group with standard tools:
 
 ```bash
-# per group: fragments -> genome coverage bedGraph -> bigWig
-bedtools genomecov -bg -i group.bed -g hg38.chrom.sizes \
-  | sort -k1,1 -k2,2n > group.bedGraph
-bedGraphToBigWig group.bedGraph hg38.chrom.sizes group.bw
+# clusters.tsv: two columns, "<barcode><TAB><cluster>"
+# fragments.tsv.gz columns: chrom  start  end  barcode  count
+
+# 1. split fragments into one BED per cluster (keep only that cluster's barcodes)
+for cl in $(cut -f2 clusters.tsv | sort -u); do
+  awk -v cl="$cl" 'NR==FNR{if($2==cl)keep[$1];next} ($4 in keep){print $1"\t"$2"\t"$3}' \
+    clusters.tsv <(zcat fragments.tsv.gz) \
+    | sort -k1,1 -k2,2n > "$cl.bed"
+done
+
+# 2. per cluster: genome-coverage bedGraph -> bigWig
+for bed in *.bed; do
+  name=$(basename "$bed" .bed)
+  bedtools genomecov -bg -i "$bed" -g hg38.chrom.sizes \
+    | sort -k1,1 -k2,2n > "$name.bedGraph"
+  bedGraphToBigWig "$name.bedGraph" hg38.chrom.sizes "$name.bw"
+done
 ```
 
 This route is unnormalized. Scale each group (e.g. by 1e6 / total fragments for
@@ -144,10 +162,12 @@ and an optional `group` (which seeds the sidebar clustering tree).
 
 ### Via the UI
 
-Track menu → **Add track**, choose the multi-wiggle workflow, and paste your
-BigWig URLs one per line (or a JSON array of subadapter objects). JBrowse builds
-the `MultiQuantitativeTrack` for you. This is the fastest way to try a set of
-files. Export the session to get the JSON config.
+Track menu → **Add track**, switch the workflow to **Add multi-wiggle track**,
+and paste your BigWig URLs one per line (or a JSON array of subadapter objects).
+JBrowse builds the `MultiQuantitativeTrack` for you. This is the fastest way to
+try a set of files. Export the session to get the JSON config. On JBrowse
+Desktop the same workflow loads the `.bw` files straight from local disk with no
+web server ([desktop quickstart](/docs/quickstart_desktop)).
 
 ### Via config JSON
 

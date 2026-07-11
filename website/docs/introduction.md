@@ -37,6 +37,16 @@ Not ready to install anything? Browse [live demos](/demos/), the
 Hands-on walkthroughs of common workflows, each built around a real dataset —
 see the [full tutorials list](/docs/tutorials) for all of them.
 
+These tutorials are written against JBrowse Web, but the `jbrowse` CLI and
+`config.json` steps apply equally to
+[JBrowse Desktop](/docs/quickstart_desktop). On Desktop, load the local files
+each pipeline produces by browsing to them in the **Open genome** / **Add
+track** dialogs (Desktop stores them as local file paths) rather than the web
+`uri:` locations shown here — no web server needed. Any linear-genome-view track
+shown here also works embedded from Python via
+[anywidget/Jupyter](/docs/jbrowse_jupyter) or from R via
+[JBrowseR](/docs/jbrowser).
+
 <!-- doclist:tutorials -->
 
 ## Developers

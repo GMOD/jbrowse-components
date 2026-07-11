@@ -28,16 +28,28 @@ three are visible on the same reads.
 
 ## The pipeline
 
+This is a full command-line pipeline. You'll need these tools installed: the
+NCBI
+[`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+CLI,
+[Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
+(with cutadapt), [bwameth](https://github.com/brentp/bwa-meth),
+[samtools](http://www.htslib.org/), and — for the optional aggregate track —
+[MethylDackel](https://github.com/dpryan79/MethylDackel) and UCSC's
+`bedGraphToBigWig`.
+
 ### Get the reference and reads
 
 We use the TAIR10 reference and one wild-type Col-0 WGBS run
 ([`DRR029742`](https://www.ebi.ac.uk/ena/browser/view/DRR029742), paired-end 150
-bp, HiSeq 2500).
+bp, HiSeq 2500). The `datasets download` writes a zip with the genome nested a
+few directories deep, so unzip it and rename the `.fna` to `tair10.fa`:
 
 ```bash
-# reference (TAIR10)
+# reference (TAIR10), via the NCBI datasets CLI
 datasets download genome accession GCF_000001735.4 --include genome
-# ... unzip; call it tair10.fa
+unzip ncbi_dataset.zip
+mv ncbi_dataset/data/GCF_000001735.4/*.fna tair10.fa
 
 # reads, straight from ENA (or use prefetch + fasterq-dump from SRA)
 wget https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/DRR029742_1.fastq.gz
@@ -67,8 +79,11 @@ bwameth.py --reference tair10.fa -t 8 \
 samtools index arabidopsis_wgbs.bam
 ```
 
-(Bismark is an equally common choice, especially in the plant community; JBrowse
-reads Bismark BAMs the same way.)
+(The `_val_1`/`_val_2` inputs are Trim Galore's outputs from the previous step.
+If you skipped trimming, pass the raw
+`DRR029742_1.fastq.gz DRR029742_2.fastq.gz` instead. Bismark is an equally
+common aligner, especially in the plant community; JBrowse reads Bismark BAMs
+the same way.)
 
 ### (Optional) Aggregate methylation calling
 
@@ -79,8 +94,17 @@ three plant contexts:
 
 ```bash
 MethylDackel extract --CHG --CHH tair10.fa arabidopsis_wgbs.bam
-# -> *_CpG.bedGraph, *_CHG.bedGraph, *_CHH.bedGraph
-# convert each to bigWig (bedGraphToBigWig, UCSC tools) for fast random access
+# -> arabidopsis_wgbs_CpG.bedGraph, _CHG.bedGraph, _CHH.bedGraph
+
+# bedGraphToBigWig needs a chrom.sizes; derive it from the reference
+samtools faidx tair10.fa
+cut -f1,2 tair10.fa.fai > tair10.chrom.sizes
+
+# convert each context to bigWig for fast random access
+for ctx in CpG CHG CHH; do
+  sort -k1,1 -k2,2n arabidopsis_wgbs_$ctx.bedGraph > arabidopsis_wgbs_$ctx.sorted.bedGraph
+  bedGraphToBigWig arabidopsis_wgbs_$ctx.sorted.bedGraph tair10.chrom.sizes arabidopsis_wgbs_$ctx.bw
+done
 ```
 
 Group the three bigWigs into one `MultiQuantitativeTrack` (a subadapter per
@@ -152,6 +176,24 @@ this track, no separate configuration:
 See the [assemblies configuration guide](/docs/config_guides/assemblies) for the
 equivalent assembly JSON.
 
+The figure's top row is the TAIR10 gene models. They come with the reference
+(`datasets download genome accession GCF_000001735.4 --include gff3`); sort,
+compress, and index the GFF3, then add it as a `FeatureTrack`:
+
+```bash
+jbrowse sort-gff genomic.gff | bgzip > tair10.gff.gz
+tabix -p gff tair10.gff.gz
+jbrowse add-track tair10.gff.gz --name "TAIR10 genes" --load copy
+```
+
+The **Aggregate methylation** row is the optional MethylDackel track from the
+section above — load it too if you built the bigWigs, or leave it out; the
+per-read coloring below stands on its own.
+
+**Using JBrowse Desktop?** Every step here works identically on Desktop, which
+opens `tair10.fa`, the BAM, and the bigWigs straight from your local disk with
+no web server. See the [desktop quickstart](/docs/quickstart_desktop).
+
 ## Coloring reads in JBrowse
 
 Open the alignments track and, from the track menu, choose **Color by → Advanced
@@ -160,12 +202,12 @@ cytosines). Methylated cytosines paint **red**, unmethylated **blue**. (It is
 under **Advanced** because it is reference-based and only meaningful for
 bisulfite/EM-seq libraries — no MM/ML tags are involved.)
 
-The demo view opens on `NC_003070.9` (chromosome 1) around
-`4,398,000–4,412,000`, a window that places two methylation regimes side by
-side. On the left, the expressed ARM-repeat gene **AT1G12930** carries
-**gene-body methylation** — cytosines methylated only in the **CpG** context. On
-the right, a silenced element (the pseudogene **AT1G12935** and the repeat
-sequence beyond it) is methylated in **all three** contexts, the signature of
+Type `NC_003070.9:4,398,000–4,412,000` into the location box to reach the window
+below (chromosome 1) — it places two methylation regimes side by side. On the
+left, the expressed ARM-repeat gene **AT1G12930** carries **gene-body
+methylation** — cytosines methylated only in the **CpG** context. On the right,
+a silenced element (the pseudogene **AT1G12935** and the repeat sequence beyond
+it) is methylated in **all three** contexts, the signature of
 transposon/heterochromatin silencing in plants.
 
 The figure below shows the three contexts at two levels: the **gene

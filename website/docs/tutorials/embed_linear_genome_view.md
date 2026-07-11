@@ -99,7 +99,7 @@ paint. This example wires up an hg38 genome with gene, repeat, alignment,
 variant, and conservation tracks. The [next section](#render-the-view) shows
 where these go in the page:
 
-```typescript
+```js
 const assembly = {
   name: 'hg38',
   sequence: {
@@ -212,7 +212,9 @@ Notes about the above config:
 Replace the "Hello world!" `index.html` from earlier with the page below. It
 loads the component's UMD bundle from a CDN and mounts the managed
 `LinearGenomeView` component — which owns the view engine itself, so there's no
-`createViewState` call to make — into a `<div>`:
+`createViewState` call to make — into a `<div>`. This is the complete page, with
+the `assembly`, `tracks`, and `init` from [Setup](#setup) filled in, so you can
+copy it verbatim:
 
 ```html title="index.html"
 <!doctype html>
@@ -231,7 +233,99 @@ loads the component's UMD bundle from a CDN and mounts the managed
       const { React, createRoot, LinearGenomeView } =
         JBrowseReactLinearGenomeView
 
-      // assembly, tracks, and init are the values from the previous section
+      const assembly = {
+        name: 'hg38',
+        sequence: {
+          adapter: {
+            type: 'BgzipFastaAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+          },
+        },
+        refNameAliases: {
+          adapter: {
+            type: 'RefNameAliasAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+          },
+        },
+        cytobands: {
+          adapter: {
+            type: 'CytobandAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
+          },
+        },
+      }
+
+      const tracks = [
+        {
+          type: 'FeatureTrack',
+          trackId: 'ncbi_genes',
+          name: 'NCBI RefSeq Genes',
+          assemblyNames: ['hg38'],
+          category: ['Genes'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+          },
+          textSearching: {
+            textSearchAdapter: {
+              type: 'TrixTextSearchAdapter',
+              textSearchAdapterId: 'gff3tabix_genes-index',
+              uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
+              assemblyNames: ['hg38'],
+            },
+          },
+        },
+        {
+          type: 'FeatureTrack',
+          trackId: 'repeats_hg38',
+          name: 'Repeats',
+          assemblyNames: ['hg38'],
+          category: ['Annotation'],
+          adapter: {
+            type: 'BigBedAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
+          },
+        },
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'NA12878_exome',
+          name: 'NA12878 Exome',
+          assemblyNames: ['hg38'],
+          category: ['1000 Genomes', 'Alignments'],
+          adapter: {
+            type: 'CramAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
+          },
+        },
+        {
+          type: 'VariantTrack',
+          trackId: '1000g_vcf',
+          name: '1000 Genomes Variant Calls',
+          assemblyNames: ['hg38'],
+          category: ['1000 Genomes', 'Variants'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
+          },
+        },
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'phyloP100way',
+          name: 'hg38.100way.phyloP100way',
+          category: ['Conservation'],
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'BigWigAdapter',
+            uri: 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+          },
+        },
+      ]
+
+      const init = {
+        loc: '10:29,838,565..29,838,850',
+        tracks: ['ncbi_genes', 'NA12878_exome', 'phyloP100way', '1000g_vcf'],
+      }
+
       const root = createRoot(
         document.getElementById('jbrowse_linear_genome_view'),
       )
@@ -311,3 +405,7 @@ function GenomeBrowser() {
 - [Web quickstart](/docs/quickstart_web) — a full JBrowse deployment, with the
   shareable session URLs, track hub connections, and admin panel that the
   embedded components don't provide
+- [JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter) — embed the same linear
+  genome view in a Python notebook (Jupyter, Colab, VS Code)
+- [JBrowseR](/docs/jbrowser) — embed it from R, in R Markdown, Shiny, or the R
+  console
