@@ -27,7 +27,8 @@ function getIsoforms(subfeatures: Feature[], transcriptTypes: string[]) {
 function codingLength(feature: Feature): number {
   return getSubfeatures(feature).reduce(
     (sum, sub) =>
-      sum + (isCDS(sub) ? sub.get('end') - sub.get('start') : codingLength(sub)),
+      sum +
+      (isCDS(sub) ? sub.get('end') - sub.get('start') : codingLength(sub)),
     0,
   )
 }

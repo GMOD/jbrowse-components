@@ -7,18 +7,6 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how
 to import these from a plugin.
 
-## areSlotsAtSessionDefault
-
-true when every listed slot's resolved value already equals its session-wide
-promoted default — drives the track-menu "make default" checkbox.
-
-```js
-// type signature
-(self: PromotableDisplay, slots: string[]) => boolean
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
 ## clearDisplaySessionDefaults
 
 Clear every promoted default for this display type, so sibling tracks revert to
@@ -67,33 +55,6 @@ only (consults the session) — the worker reads raw config.
 ```js
 // type signature
 <T = unknown>(self: PromotableDisplay, slot: string) => T
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
-## isSlotPinned
-
-Whether this track pins the slot (holds a non-default value) rather than
-inheriting the session-wide promoted default.
-
-```js
-// type signature
-(self: PromotableDisplay, slot: string) => boolean
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
-## isSlotValueSessionDefault
-
-Whether a _specific_ value is the session-wide promoted default for this slot,
-independent of the track's current value. Use for an always-visible "make this
-the default for all tracks" control whose meaning is "promote this on-value"
-(e.g. a per-mode toggle), rather than the value-dependent
-`areSlotsAtSessionDefault` used by "promote whatever is current" controls.
-
-```js
-// type signature
-(self: PromotableDisplay, slot: string, value: unknown) => boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -180,33 +141,5 @@ The state + action for one "make this the default for all tracks of this type"
 menu control, bundled so a row consumes it as a single prop instead of a
 separate is-default getter and toggle action. `active` = the promotion is
 currently in effect; `toggle` promotes it, or clears it when already active.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
-## setSlotsSessionDefault
-
-Explicit setter for a group of slots' session-wide default: `promote` stores
-each slot's current resolved value as the default for this display type;
-`!promote` clears it so sibling tracks fall back to their own config. The caller
-decides direction — pass `!areSlotsAtSessionDefault(...)` to toggle at the point
-of use. Grouping (e.g. featureHeight + featureSpacing) keeps a multi-slot
-setting behind one "make default" item.
-
-```js
-// type signature
-(self: PromotableDisplay, slots: string[], promote: boolean) => void
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
-## setSlotValueSessionDefault
-
-Promote a specific value as the session-wide default for this slot (`on`), or
-clear the default (`!on`). Pair with `isSlotValueSessionDefault`.
-
-```js
-// type signature
-(self: PromotableDisplay, slot: string, value: unknown, on: boolean) => void
-```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)

@@ -235,10 +235,21 @@ async function main() {
   // what we verify to confirm the capture wasn't truncated.
   const mp4Path = path.join(outDir, 'volvox_tour.mp4')
   execFileSync('ffmpeg', [
-    '-y', '-loglevel', 'error', '-i', webmPath,
-    '-vf', 'scale=1280:-2:flags=lanczos',
-    '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '23',
-    '-movflags', '+faststart',
+    '-y',
+    '-loglevel',
+    'error',
+    '-i',
+    webmPath,
+    '-vf',
+    'scale=1280:-2:flags=lanczos',
+    '-c:v',
+    'libx264',
+    '-pix_fmt',
+    'yuv420p',
+    '-crf',
+    '23',
+    '-movflags',
+    '+faststart',
     mp4Path,
   ])
   const duration = probeDuration(mp4Path)
@@ -247,8 +258,13 @@ async function main() {
   }
   const gifPath = path.join(outDir, 'volvox_tour.gif')
   execFileSync('ffmpeg', [
-    '-y', '-loglevel', 'error', '-i', webmPath,
-    '-vf', 'fps=12,scale=720:-1:flags=lanczos',
+    '-y',
+    '-loglevel',
+    'error',
+    '-i',
+    webmPath,
+    '-vf',
+    'fps=12,scale=720:-1:flags=lanczos',
     gifPath,
   ])
   log(`wrote ${mp4Path} (${duration.toFixed(1)}s)`)
@@ -257,9 +273,12 @@ async function main() {
 
 function probeDuration(file: string) {
   const out = execFileSync('ffprobe', [
-    '-v', 'error',
-    '-show_entries', 'format=duration',
-    '-of', 'default=noprint_wrappers=1:nokey=1',
+    '-v',
+    'error',
+    '-show_entries',
+    'format=duration',
+    '-of',
+    'default=noprint_wrappers=1:nokey=1',
     file,
   ])
     .toString()

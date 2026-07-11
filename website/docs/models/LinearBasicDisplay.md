@@ -91,7 +91,6 @@ and docs.
 [densityStatsPerRegion](../linearcanvasbasedisplay#volatile-densitystatsperregion),
 [featureIdUnderMouse](../linearcanvasbasedisplay#volatile-featureidundermouse),
 [subfeatureIdUnderMouse](../linearcanvasbasedisplay#volatile-subfeatureidundermouse),
-[hoveredRegionIndex](../linearcanvasbasedisplay#volatile-hoveredregionindex),
 [mouseoverExtraInformation](../linearcanvasbasedisplay#volatile-mouseoverextrainformation),
 [contextMenuInfo](../linearcanvasbasedisplay#volatile-contextmenuinfo),
 [userFeatureDensityLimit](../linearcanvasbasedisplay#volatile-userfeaturedensitylimit),
@@ -427,19 +426,7 @@ type rpcProps = () => { displayConfig: { geneGlyphMode: "auto" | "all" | "longes
 #### method: showSubmenuMenuItems
 
 ```ts
-type showSubmenuMenuItems = () => (
-  | CheckboxMenuItem
-  | {
-      label: string
-      subMenu: {
-        label: string
-        type: 'radio'
-        checked: boolean
-        onClick: () => void
-      }[]
-    }
-  | { label: string; type: 'checkbox'; checked: any; onClick: () => void }
-)[]
+type showSubmenuMenuItems = () => (CheckboxMenuItem | { label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { label: string; type: "checkbox"; checked: any; onClick: () => void; } | { ...; })[]
 ```
 
 #### method: trackMenuItems

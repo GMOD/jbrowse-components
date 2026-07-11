@@ -97,8 +97,8 @@ describe('redispatch when features extend beyond the query', () => {
     const eden = featuresArray.map(f => f.toJSON()).find(f => f.name === 'EDEN')
     expect(eden).toBeDefined()
     const mrna1 = eden!.subfeatures!.find(f => f.name === 'EDEN.1')!
-    const cdsStarts = mrna1.subfeatures!
-      .filter(f => f.type === 'CDS')
+    const cdsStarts = mrna1
+      .subfeatures!.filter(f => f.type === 'CDS')
       .map(f => f.start)
     // includes the 5' CDS at interbase 1200, far outside the [7000, 7100] query
     expect(Math.min(...cdsStarts)).toBeLessThan(7000)

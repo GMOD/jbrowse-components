@@ -95,7 +95,11 @@ const SearchResultsTable = observer(function SearchResultsTable({
                   <Button
                     onClick={async () => {
                       try {
-                        await navToOption({ option: result, model, assemblyName })
+                        await navToOption({
+                          option: result,
+                          model,
+                          assemblyName,
+                        })
                       } catch (e) {
                         console.error(e)
                         session.notifyError(`${e}`, e)

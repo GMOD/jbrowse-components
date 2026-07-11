@@ -37,8 +37,18 @@ const IntronActionButtons = observer(function IntronActionButtons({
   const args =
     windowSize === undefined
       ? undefined
-      : { view, transcripts, assembly, padding: windowSize, flip, trackId, soloFeatureId }
-  const run = (action: (a: NonNullable<typeof args>) => void | Promise<void>) => {
+      : {
+          view,
+          transcripts,
+          assembly,
+          padding: windowSize,
+          flip,
+          trackId,
+          soloFeatureId,
+        }
+  const run = (
+    action: (a: NonNullable<typeof args>) => void | Promise<void>,
+  ) => {
     if (args) {
       void runIntronAction(view, () => action(args), handleClose)
     }

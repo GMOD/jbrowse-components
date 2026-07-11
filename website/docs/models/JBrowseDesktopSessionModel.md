@@ -101,6 +101,7 @@ and docs.
 [clearSelection](../basesessionmodel#action-clearselection),
 [setHovered](../basesessionmodel#action-sethovered),
 [setPreferenceOverride](../basesessionmodel#action-setpreferenceoverride),
+[clearPreferenceOverrides](../basesessionmodel#action-clearpreferenceoverrides),
 [setScrollZoom](../basesessionmodel#action-setscrollzoom),
 [setDisplayTypeDefault](../basesessionmodel#action-setdisplaytypedefault),
 [setName](../basesessionmodel#action-setname),

@@ -4,11 +4,10 @@ description: Learn how to show BAM and CRAM files
 guide_category: Track types
 ---
 
-An alignments track shows BAM/CRAM reads two ways at once: a coverage
-histogram on top (read depth at each position) and a pileup below (one box
-per read). Open a track, zoom to base level, and most of what you need is
-already on screen — the sections below cover the track-menu options you'll reach
-for most often.
+An alignments track shows BAM/CRAM reads two ways at once: a coverage histogram
+on top (read depth at each position) and a pileup below (one box per read). Open
+a track, zoom to base level, and most of what you need is already on screen —
+the sections below cover the track-menu options you'll reach for most often.
 
 <Figure caption="An alignments track: coverage histogram on top, pileup below. Reads are grey; mismatches to the reference show as colored ticks in the pileup and as colored segments inside the coverage bars." src="/img/volvox_alignments.png" />
 
@@ -41,8 +40,8 @@ The track menu's **Color by...** offers several schemes.
 
 <!-- COLOR_TABLE alignments-strand START -->
 
-| Color | Name | Value | Description |
-| --- | --- | --- | --- |
+| Color                                                                                                                                                                       | Name           | Value     | Description                     |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | --------- | ------------------------------- |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#EC8B8B;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#EC8B8B"></span> | Forward strand | `#EC8B8B` | Read maps to the forward strand |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#8F8FD8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#8F8FD8"></span> | Reverse strand | `#8F8FD8` | Read maps to the reverse strand |
 
@@ -146,11 +145,11 @@ coverage, to suppress noise).
 
 <!-- COLOR_TABLE alignments-indicators START -->
 
-| Color | Name | Value | Description |
-| --- | --- | --- | --- |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#800080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#800080"></span> | Insertion | `#800080` | Reads carry an insertion relative to the reference |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#00f;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#00f"></span> | Soft clip | `#00f` | Reads are soft-clipped (clipped bases retained in the read) |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#f00;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#f00"></span> | Hard clip | `#f00` | Reads are hard-clipped (clipped bases removed from the read) |
+| Color                                                                                                                                                                       | Name      | Value     | Description                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | --------- | ------------------------------------------------------------ |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#800080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#800080"></span> | Insertion | `#800080` | Reads carry an insertion relative to the reference           |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#00f;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#00f"></span>       | Soft clip | `#00f`    | Reads are soft-clipped (clipped bases retained in the read)  |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#f00;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#f00"></span>       | Hard clip | `#f00`    | Reads are hard-clipped (clipped bases removed from the read) |
 
 <!-- COLOR_TABLE alignments-indicators END -->
 

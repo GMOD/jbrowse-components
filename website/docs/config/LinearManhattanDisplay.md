@@ -84,7 +84,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 CSS color or jexl callback for Manhattan points
 
 **Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'#0068d1'`
+`DEFAULT_MANHATTAN_COLOR`
 
 #### slot: colorBy
 
@@ -99,7 +99,8 @@ r² to the index SNP, read from `ldAdapter`.
 Manhattan point diameter in px (adjustable from the track menu). Larger default
 than wiggle's since Manhattan points are the primary glyph.
 
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `4`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `4` ·
+_promotable_
 
 #### slot: ldAdapter
 

@@ -40,9 +40,9 @@ chmod a+x jbrowse-desktop-*-linux.AppImage
 ./jbrowse-desktop-*-linux.AppImage
 ```
 
-In your file explorer — right-click the AppImage, open "Properties", go to
-the "Permissions" tab, and check "Allow executing file as program" (steps may
-vary by distribution). You can now double-click the AppImage to launch JBrowse.
+In your file explorer — right-click the AppImage, open "Properties", go to the
+"Permissions" tab, and check "Allow executing file as program" (steps may vary
+by distribution). You can now double-click the AppImage to launch JBrowse.
 
 ## The start screen
 

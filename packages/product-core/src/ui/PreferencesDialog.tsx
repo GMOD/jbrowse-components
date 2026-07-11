@@ -203,7 +203,9 @@ const PreferencesDialog = observer(function PreferencesDialog({
             }
           }}
         >
-          {confirmingReset ? 'Click again to confirm reset' : 'Reset to defaults'}
+          {confirmingReset
+            ? 'Click again to confirm reset'
+            : 'Reset to defaults'}
         </Button>
         <div className={classes.spacer} />
         <Button

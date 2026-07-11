@@ -84,7 +84,10 @@ export function buildLaidOutByGroup(
 ): LaidOutByGroup {
   const byGroup: LaidOutByGroup = new Map()
   for (const { key } of ctx.order) {
-    byGroup.set(key, layoutOneGroup(ctx, key, maxRowsOverrides?.get(key) ?? maxRows))
+    byGroup.set(
+      key,
+      layoutOneGroup(ctx, key, maxRowsOverrides?.get(key) ?? maxRows),
+    )
   }
   return byGroup
 }

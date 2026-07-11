@@ -223,9 +223,9 @@ stays collinear across all three genomes. Putting grape in the middle makes both
 bands direct MCScan pairs.
 
 At the gene level, the ribbons connect individual orthologous genes. Turning on
-each genome's gene track (with **Show only genes** so each locus collapses to its
-gene glyph) shows a run of ten orthologs stepping in the same order across grape,
-peach, and cacao.
+each genome's gene track (with **Show only genes** so each locus collapses to
+its gene glyph) shows a run of ten orthologs stepping in the same order across
+grape, peach, and cacao.
 
 <Figure caption="Gene-level view of the same block: ten consecutive orthologs run in the same order across grape, peach, and cacao, so each synteny ribbon links one gene to its ortholog in the row above and below." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
 

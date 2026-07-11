@@ -1,6 +1,6 @@
 # Handoff: making the auto-captured videos live
 
-Companion to `VIDEO_HANDOFF.md` (which covers the *capture* prototype). This doc
+Companion to `VIDEO_HANDOFF.md` (which covers the _capture_ prototype). This doc
 is the remaining path to actually **embed videos in the docs/gallery and ship
 them**. Nothing here is wired up yet — by request, we are "not quite ready to
 make these live." Do these steps when ready.
@@ -37,9 +37,9 @@ the sync would delete them. This is the decision that drives hosting.
 - **A. Regenerate in the docs-deploy CI (freshest, slowest).** Add a step before
   `pnpm build` in `update-docs.yml`: `pnpm --filter @jbrowse/web build` then
   `pnpm --filter website video`, so `static/video/*` is populated and astro
-  copies it into `dist/`; the existing `rclone sync` uploads it and never deletes
-  it (it's always present). Cost: a jbrowse-web build + a headless puppeteer
-  capture on **every** "update docs" push (minutes), and videos are
+  copies it into `dist/`; the existing `rclone sync` uploads it and never
+  deletes it (it's always present). Cost: a jbrowse-web build + a headless
+  puppeteer capture on **every** "update docs" push (minutes), and videos are
   non-deterministic so `--checksum` re-uploads them each time. Reference the
   video with a local `src="/video/volvox_tour.mp4"`.
 
@@ -74,11 +74,10 @@ Usage in any `.md` doc (the literal string is rewritten at build time):
 ```
 
 `remark-video.ts` emits
-`<figure><video controls preload="metadata" playsinline><source .webm><source
-.mp4></video><figcaption>…</figcaption></figure>`. It derives the `.webm`
-sibling from the `.mp4` `src` automatically; `webm=`, `poster=`, `loop="true"`,
-and `autoplay="true"` (implies muted, drops controls — a silent looping
-GIF-replacement) are optional attributes.
+`<figure><video controls preload="metadata" playsinline><source .webm><source .mp4></video><figcaption>…</figcaption></figure>`.
+It derives the `.webm` sibling from the `.mp4` `src` automatically; `webm=`,
+`poster=`, `loop="true"`, and `autoplay="true"` (implies muted, drops controls —
+a silent looping GIF-replacement) are optional attributes.
 
 ## Step 3 — poster frame
 
@@ -94,8 +93,8 @@ poster stays in sync with the capture, then pass `poster="/video/<name>.jpg"`.
 
 ## Step 4 — keep it out of the default screenshots run
 
-Screenshots are content-stable (deterministic) and committed; videos are neither.
-Add a dedicated script and keep videos off the `pnpm screenshots` path:
+Screenshots are content-stable (deterministic) and committed; videos are
+neither. Add a dedicated script and keep videos off the `pnpm screenshots` path:
 
 ```jsonc
 // website/package.json
@@ -116,11 +115,11 @@ light/dark (the `<figure>`/`<figcaption>` already inherit doc styles used by
 
 ## Later — generalize + gallery (from VIDEO_HANDOFF.md)
 
-- **Spec-driven generator.** Turn `generate-video.ts` into a `VideoSpec`
-  (name + session + an `actions`-style motion timeline) reusing
-  `actions.ts`'s `runAction`, plus the cursor overlay, mirroring
-  `generate-screenshots.ts`'s `--filter`/`--concurrency` ergonomics. Needed
-  before there's more than the one `volvox_tour`.
+- **Spec-driven generator.** Turn `generate-video.ts` into a `VideoSpec` (name +
+  session + an `actions`-style motion timeline) reusing `actions.ts`'s
+  `runAction`, plus the cursor overlay, mirroring `generate-screenshots.ts`'s
+  `--filter`/`--concurrency` ergonomics. Needed before there's more than the one
+  `volvox_tour`.
 - **Gallery card.** `/gallery` + `/demos` are driven by `src/lib/gallery.ts` off
   screenshot specs. A video card needs a parallel `VideoSpec` reference (or a
   manual entry with the poster as the card image + the mp4 as the lightbox

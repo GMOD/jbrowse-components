@@ -378,7 +378,10 @@ test('maxBpPerPx never drops below minBpPerPx for tiny regions', () => {
   expect(model.maxBpPerPx).toBe(model.minBpPerPx)
 })
 
-test.each([['empty', ''], ['whitespace', '   ']])(
+test.each([
+  ['empty', ''],
+  ['whitespace', '   '],
+])(
   'navToLocString(%s) does not blank a populated view',
   async (_name, input) => {
     const { Session, LinearGenomeModel } = initialize()

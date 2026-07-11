@@ -81,7 +81,7 @@ the color of the arcs
 the stroke width of the arcs, in pixels
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`defaultArcLineWidth`
+`defaultArcLineWidth` · _promotable_
 
 </details>
 
@@ -123,13 +123,16 @@ default height for the track
 text to display when the cursor hovers over a feature
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
+`'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
 
 ```js
 {
   type: 'string',
   description: 'text to display when the cursor hovers over a feature',
-  defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')`,
+
+
+
+  defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
   contextVariable: ['feature'],
 }
 ```

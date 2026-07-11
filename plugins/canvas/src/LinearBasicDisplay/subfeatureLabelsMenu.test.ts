@@ -20,10 +20,11 @@ function subMenuOf(items: MenuItem[], label: string) {
   }
 }
 
-function showSubMenu(display: {
-  trackMenuItems: () => MenuItem[]
-}) {
-  return subMenuOf(subMenuOf(display.trackMenuItems(), 'Show...'), 'Subfeature labels')
+function showSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
+  return subMenuOf(
+    subMenuOf(display.trackMenuItems(), 'Show...'),
+    'Subfeature labels',
+  )
 }
 
 function radio(subMenu: MenuItem[], label: string) {

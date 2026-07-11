@@ -78,7 +78,6 @@ and docs.
 [densityStatsPerRegion](../linearcanvasbasedisplay#volatile-densitystatsperregion),
 [featureIdUnderMouse](../linearcanvasbasedisplay#volatile-featureidundermouse),
 [subfeatureIdUnderMouse](../linearcanvasbasedisplay#volatile-subfeatureidundermouse),
-[hoveredRegionIndex](../linearcanvasbasedisplay#volatile-hoveredregionindex),
 [mouseoverExtraInformation](../linearcanvasbasedisplay#volatile-mouseoverextrainformation),
 [contextMenuInfo](../linearcanvasbasedisplay#volatile-contextmenuinfo),
 [userFeatureDensityLimit](../linearcanvasbasedisplay#volatile-userfeaturedensitylimit),
