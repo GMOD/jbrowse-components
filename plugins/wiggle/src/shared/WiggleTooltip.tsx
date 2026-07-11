@@ -39,17 +39,17 @@ const useStyles = makeStyles()({
   },
 })
 
-function ScoreText({ score, summary, minScore, maxScore }: WiggleTooltipRow) {
-  return summary && minScore != null && maxScore != null ? (
+function ScoreText({ row }: { row: WiggleTooltipRow }) {
+  return row.summary ? (
     <span>
-      min:{toP(minScore)} avg:{toP(score)} max:{toP(maxScore)}
+      min:{toP(row.minScore)} avg:{toP(row.score)} max:{toP(row.maxScore)}
     </span>
   ) : (
-    <span>{toP(score)}</span>
+    <span>{toP(row.score)}</span>
   )
 }
 
-function SourceRow(row: WiggleTooltipRow) {
+function SourceRow({ row }: { row: WiggleTooltipRow }) {
   const { classes } = useStyles()
   const { source, color } = row
   return (
@@ -59,7 +59,7 @@ function SourceRow(row: WiggleTooltipRow) {
           <span className={classes.swatch} style={{ background: color }} />
         ) : null}
         {source ? `${source}: ` : null}
-        <ScoreText {...row} />
+        <ScoreText row={row} />
       </span>
     </div>
   )
@@ -77,11 +77,11 @@ function TooltipContents({ feature }: { feature: WiggleFeatureUnderMouse }) {
     start === end ? toLocale(start) : `${toLocale(start)}..${toLocale(end)}`
   return (
     <div>
-      {[refName, coord].filter(f => !!f).join(':')}
+      {`${refName}:${coord}`}
       <br />
       {rows.slice(0, MAX_ROWS).map((row, i) => (
         // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, source can be undefined for unnamed rows
-        <SourceRow key={row.source ?? i} {...row} />
+        <SourceRow key={row.source ?? i} row={row} />
       ))}
       {rows.length > MAX_ROWS ? (
         <div className={classes.more}>+{rows.length - MAX_ROWS} more</div>

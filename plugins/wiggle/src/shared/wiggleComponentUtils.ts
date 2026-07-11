@@ -166,18 +166,6 @@ export function findFeatureAtBp(
   return bpOffset < featurePositions[found * 2 + 1]! ? found : -1
 }
 
-function isSummaryFeature(
-  score: number,
-  minScore: number | undefined,
-  maxScore: number | undefined,
-) {
-  return (
-    minScore !== undefined &&
-    maxScore !== undefined &&
-    (minScore !== score || maxScore !== score)
-  )
-}
-
 // Spread-friendly helper: returns `{ summary, minScore, maxScore }` when the
 // feature is a real summary (min/max diverge from score) and the user isn't
 // asking for plain 'avg'. Otherwise returns `{}` so the tooltip omits those
@@ -187,10 +175,12 @@ function summaryFields(
   minScore: number | undefined,
   maxScore: number | undefined,
   summaryScoreMode: string,
-) {
+): { summary: true; minScore: number; maxScore: number } | { summary?: false } {
   return summaryScoreMode !== 'avg' &&
-    isSummaryFeature(score, minScore, maxScore)
-    ? { summary: true as const, minScore, maxScore }
+    minScore !== undefined &&
+    maxScore !== undefined &&
+    (minScore !== score || maxScore !== score)
+    ? { summary: true, minScore, maxScore }
     : {}
 }
 

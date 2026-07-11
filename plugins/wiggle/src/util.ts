@@ -68,15 +68,13 @@ export interface Source {
 export interface EditableSource extends Source, SourceInfo {}
 
 // One score entry shown in a wiggle tooltip. `source`/`color` are populated
-// only for multi-wiggle (single-wiggle has no per-source identity).
-export interface WiggleTooltipRow {
+// only for multi-wiggle (single-wiggle has no per-source identity). The summary
+// variant carries min/max together so consumers narrow on `summary` alone.
+export type WiggleTooltipRow = {
   source?: string
   color?: string
   score: number
-  minScore?: number
-  maxScore?: number
-  summary?: boolean
-}
+} & ({ summary?: false } | { summary: true; minScore: number; maxScore: number })
 
 // Feature(s) hovered under the mouse, shared by single- and multi-wiggle.
 // `start`/`end` is the feature interval for single-wiggle and multi-wiggle row
