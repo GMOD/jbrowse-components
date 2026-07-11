@@ -11,6 +11,7 @@ import {
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { SvgTreePath } from '@jbrowse/tree-sidebar'
 
+import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
@@ -73,28 +74,6 @@ function MultiWiggleSvgBody({
   // one `treeShowing` so a blank gutter can't appear.
   const { hierarchy, showTree, treeAreaWidth } = model
   const treeShowing = showTree && !!hierarchy
-  const scalesEl = (
-    <MultiWiggleSvgScales
-      model={model}
-      canvasWidth={view.width}
-      scalebarLeft={scalebarLeft}
-      labelOffset={treeShowing ? treeAreaWidth : 0}
-    />
-  )
-
-  // Overlay-mode color legend, drawn inline here (no inter-region masks in the
-  // flat export SVG). On screen this same legend is the hoisted
-  // MultiWiggleLegendOverlay instead.
-  const legendEl =
-    model.isOverlay && model.sources.length > 1 ? (
-      <OverlayColorLegend
-        sources={model.sources}
-        fallbackColor={model.posColor}
-        canvasWidth={view.width}
-      />
-    ) : null
-
-  const treeEl = treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null
 
   const props = model.gpuProps()
   // canvas spans the viewport (visibleRegions coords are viewport-relative and
@@ -107,14 +86,6 @@ function MultiWiggleSvgBody({
     canvasWidth,
     canvasHeight: height,
   }
-  const wiggleNode = paintLayer(canvasWidth, height, opts, ctx => {
-    drawWiggleToCtx(
-      ctx,
-      { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
-      renderBlocks,
-      state,
-    )
-  })
 
   return (
     <>
@@ -123,11 +94,35 @@ function MultiWiggleSvgBody({
         width={view.width}
         height={height}
       >
-        {wiggleNode}
+        {paintLayer(canvasWidth, height, opts, ctx => {
+          drawWiggleToCtx(
+            ctx,
+            { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
+            renderBlocks,
+            state,
+          )
+        })}
       </SvgClipRect>
-      {scalesEl}
-      {legendEl}
-      {treeEl}
+      {/* Row separators and Y-scale cross-hatches, shared with the on-screen
+          path so an exported SVG matches the track when either is enabled. */}
+      <MultiWiggleOverlayLines model={model} width={view.width} />
+      <MultiWiggleSvgScales
+        model={model}
+        canvasWidth={view.width}
+        scalebarLeft={scalebarLeft}
+        labelOffset={treeShowing ? treeAreaWidth : 0}
+      />
+      {/* Overlay-mode color legend, drawn inline here (no inter-region masks in
+          the flat export SVG). On screen this same legend is the hoisted
+          MultiWiggleLegendOverlay instead. */}
+      {model.isOverlay && model.sources.length > 1 ? (
+        <OverlayColorLegend
+          sources={model.sources}
+          fallbackColor={model.posColor}
+          canvasWidth={view.width}
+        />
+      ) : null}
+      {treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null}
     </>
   )
 }

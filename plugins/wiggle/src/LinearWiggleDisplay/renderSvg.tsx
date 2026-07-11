@@ -9,7 +9,11 @@ import {
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
+import {
+  CrossHatchLines,
+  YSCALEBAR_LABEL_OFFSET,
+  YScaleBar,
+} from '@jbrowse/wiggle-core'
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
@@ -56,27 +60,7 @@ function WiggleSvgBody({
   const { offsetPx } = view
   // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
   const scalebarLeft = Math.max(-offsetPx, 0)
-  const { ticks, rpcDataMap, domain, renderState } = model
-
-  // No data-size gate: renderState is always defined (a [0,1] stub until
-  // autoscale resolves), so an empty region paints an empty plot. The axis and
-  // legend are drawn only once a real `domain` / `ticks` exist.
-  let legendEl: React.ReactNode = null
-  if (model.isDensityMode) {
-    legendEl = domain ? (
-      <ScoreLegend
-        domain={domain}
-        scaleType={model.scaleType}
-        canvasWidth={view.width}
-      />
-    ) : null
-  } else if (ticks) {
-    legendEl = (
-      <g transform={`translate(${scalebarLeft})`}>
-        <YScaleBar ticks={ticks} orientation="left" />
-      </g>
-    )
-  }
+  const { ticks, rpcDataMap, domain, renderState, displayCrossHatches } = model
 
   const props = model.gpuProps()
   // canvas spans the viewport (visibleRegions coords are viewport-relative and
@@ -90,19 +74,10 @@ function WiggleSvgBody({
     canvasWidth,
     canvasHeight: drawHeight,
   }
-  const wiggleNode = (
-    <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
-      {paintLayer(canvasWidth, drawHeight, opts, ctx => {
-        drawWiggleToCtx(
-          ctx,
-          { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
-          renderBlocks,
-          state,
-        )
-      })}
-    </g>
-  )
 
+  // No data-size gate: renderState is always defined (a [0,1] stub until
+  // autoscale resolves), so an empty region paints an empty plot. The axis and
+  // legend are drawn only once a real `domain` / `ticks` exist.
   return (
     <>
       <SvgClipRect
@@ -110,9 +85,36 @@ function WiggleSvgBody({
         width={view.width}
         height={height}
       >
-        {wiggleNode}
+        <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
+          {paintLayer(canvasWidth, drawHeight, opts, ctx => {
+            drawWiggleToCtx(
+              ctx,
+              { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
+              renderBlocks,
+              state,
+            )
+          })}
+        </g>
       </SvgClipRect>
-      {legendEl}
+      {/* Y-scale cross-hatches, shared with the on-screen path so an exported
+          SVG matches the track when the option is enabled. Tick y-positions
+          already include YSCALEBAR_LABEL_OFFSET, aligning with the canvas group. */}
+      {displayCrossHatches && ticks ? (
+        <CrossHatchLines ticks={ticks} width={canvasWidth} />
+      ) : null}
+      {model.isDensityMode ? (
+        domain ? (
+          <ScoreLegend
+            domain={domain}
+            scaleType={model.scaleType}
+            canvasWidth={view.width}
+          />
+        ) : null
+      ) : ticks ? (
+        <g transform={`translate(${scalebarLeft})`}>
+          <YScaleBar ticks={ticks} orientation="left" />
+        </g>
+      ) : null}
     </>
   )
 }

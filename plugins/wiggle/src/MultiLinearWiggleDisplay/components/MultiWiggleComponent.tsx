@@ -11,10 +11,10 @@ import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { useWiggleMouseHandlers } from '../../shared/useWiggleMouseHandlers.ts'
 import {
-  getRowTop,
   hitTestMouse,
   legendRightEdgePx,
 } from '../../shared/wiggleComponentUtils.ts'
+import MultiWiggleOverlayLines from '../MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales from '../MultiWiggleSvgScales.tsx'
 
 import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
@@ -121,8 +121,6 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
   offsetMouseCoord: [number, number]
 }) {
   const scalebarLeft = model.scalebarOverlapLeft
-  const numSources = model.numSources
-  const rowHeight = model.rowHeight
   const treeShowing = model.showTree && !!model.hierarchy
   const labelOffset = treeShowing ? model.treeAreaWidth : 0
 
@@ -164,45 +162,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
           labelOffset={labelOffset}
         />
 
-        {!model.isOverlay && model.showRowSeparators && numSources > 1
-          ? Array.from({ length: numSources - 1 }).map((_, idx) => {
-              const y = getRowTop(idx + 1, rowHeight)
-              return (
-                <line
-                  // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one separator per row boundary
-                  key={`sep-${idx}`}
-                  x1={0}
-                  y1={y}
-                  x2={totalWidth}
-                  y2={y}
-                  stroke="#0003"
-                  strokeWidth={1}
-                />
-              )
-            })
-          : null}
-
-        {model.displayCrossHatches && model.ticks
-          ? // overlay draws one set of hatches over the full height (rowHeight
-            // === height, top === 0); rows repeat them per source.
-            Array.from({ length: model.isOverlay ? 1 : numSources }).map(
-              (_, rowIdx) => {
-                const top = getRowTop(rowIdx, rowHeight)
-                return model.ticks!.items.map(({ value, y: tickY }) => (
-                  <line
-                    // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, tick values can repeat across rows
-                    key={`ch-${rowIdx}-${value}`}
-                    x1={0}
-                    x2={totalWidth}
-                    y1={top + tickY}
-                    y2={top + tickY}
-                    stroke="rgba(200,200,200,0.8)"
-                    strokeWidth={1}
-                  />
-                ))
-              },
-            )
-          : null}
+        <MultiWiggleOverlayLines model={model} width={totalWidth} />
       </svg>
 
       <TreeSidebar model={model} />

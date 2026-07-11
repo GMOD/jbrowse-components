@@ -29,7 +29,7 @@ export interface YScaleTicks {
   yBottom: number
 }
 
-export { default as CrossHatches } from './CrossHatches.tsx'
+export { CrossHatchLines, default as CrossHatches } from './CrossHatches.tsx'
 export { makeRadioSubMenu } from './radioSubMenu.ts'
 export { makeScatterPointSizeMenuItem, makeSizeMenu } from './pointSizeMenu.tsx'
 export {
