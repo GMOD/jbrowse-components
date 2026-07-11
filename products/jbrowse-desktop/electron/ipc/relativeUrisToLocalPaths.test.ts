@@ -46,6 +46,16 @@ test('http/https and other-scheme uris are left untouched', () => {
   expect(cfg.c).toEqual({ uri: 'data:text/plain,hi' })
 })
 
+test('a Windows drive-letter uri is resolved as a path, not read as a scheme', () => {
+  const cfg = { adapter: { uri: 'C:/data/sample.bam' } }
+  relativeUrisToLocalPaths(cfg, dir)
+  expect('uri' in cfg.adapter).toBe(false)
+  expect(cfg.adapter).toEqual({
+    localPath: abs('C:/data/sample.bam'),
+    locationType: 'LocalPathLocation',
+  })
+})
+
 test('a uri with an explicit baseUri (web/hub config) is left untouched', () => {
   const cfg = { uri: 'tracks/x.gff.gz', baseUri: 'https://host/config.json' }
   relativeUrisToLocalPaths(cfg, dir)

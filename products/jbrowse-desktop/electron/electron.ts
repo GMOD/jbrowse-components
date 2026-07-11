@@ -67,13 +67,24 @@ function createWindowManager() {
   let creating: Promise<BrowserWindow> | null = null
 
   async function startCreate(sessionPath: string | undefined) {
-    const win = await createMainWindow(autoUpdater, DEV_SERVER_URL, sessionPath)
-    mainWindow = win
-    win.on('closed', () => {
-      mainWindow = null
+    try {
+      const win = await createMainWindow(
+        autoUpdater,
+        DEV_SERVER_URL,
+        sessionPath,
+      )
+      mainWindow = win
+      win.on('closed', () => {
+        mainWindow = null
+        creating = null
+      })
+      return win
+    } catch (error) {
+      // Clear the in-flight promise so a later ensureWindow can retry instead
+      // of awaiting a permanently-rejected creating promise
       creating = null
-    })
-    return win
+      throw error
+    }
   }
 
   async function ensureWindow(sessionPath?: string): Promise<BrowserWindow> {
@@ -127,8 +138,9 @@ function runApp() {
       registerBlatHandlers()
       setupAutoUpdater(autoUpdater, () => wm.current)
 
-      await initializeFileSystem(paths)
-
+      // Register app-level event handlers before any await so a second-instance
+      // launch or macOS open-file that fires during filesystem init is not
+      // dropped for lack of a listener
       app.on('second-instance', (_event, argv, workingDirectory) => {
         wm.ensureWindow(findSessionPathArg(argv, workingDirectory)).catch(
           logError,
@@ -142,6 +154,7 @@ function runApp() {
         wm.ensureWindow().catch(logError)
       })
 
+      await initializeFileSystem(paths)
       await wm.ensureWindow(await initialSession)
     } catch (error) {
       showFatalError('Failed to initialize application', error)

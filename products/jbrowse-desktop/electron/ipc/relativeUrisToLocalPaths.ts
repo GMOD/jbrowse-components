@@ -22,7 +22,9 @@ export function relativeUrisToLocalPaths(
   }
   const obj = node as Record<string, unknown>
   const uri = obj.uri
-  const hasScheme = typeof uri === 'string' && /^[a-z][a-z0-9+.-]*:/i.test(uri)
+  // Require >=2 chars before the colon so a Windows drive letter (C:\data.bam)
+  // is resolved as a local path, not mistaken for a scheme like http:/file:/data:
+  const hasScheme = typeof uri === 'string' && /^[a-z][a-z0-9+.-]+:/i.test(uri)
   if (typeof uri === 'string' && !hasScheme && obj.baseUri === undefined) {
     obj.localPath = path.resolve(configDir, uri)
     obj.locationType = 'LocalPathLocation'
