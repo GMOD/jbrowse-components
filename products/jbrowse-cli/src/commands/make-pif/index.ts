@@ -104,7 +104,7 @@ export async function run(args?: string[]) {
   const stdin = child.stdin
   // end stdin even if createPIF throws, otherwise the spawned sort/index child
   // is left running with an open stdin
-  const { pansn } = await createPIF(file, stdin, coarseSplitGap).finally(() => {
+  const { samples } = await createPIF(file, stdin, coarseSplitGap).finally(() => {
     stdin.end()
   })
   const exitCode = await waitForProcessClose(child)
@@ -113,10 +113,11 @@ export async function run(args?: string[]) {
   }
 
   const indexFile = `${outputFile}.${csi ? 'csi' : 'tbi'}`
-  const nextCommand = pansn
-    ? 'Next, add it as an all-vs-all synteny track (PanSN names detected — list every assembly in -a):\n' +
-      `  jbrowse add-track ${outputFile} --adapterType AllVsAllIndexedPAFAdapter -a asm1,asm2,asm3 --load copy`
-    : 'Next, add it as a synteny track (set -a to your query,target assembly names):\n' +
-      `  jbrowse add-track ${outputFile} -a query,target --load copy`
+  const nextCommand =
+    samples.size > 0
+      ? 'Next, add it as an all-vs-all synteny track (PanSN names detected):\n' +
+        `  jbrowse add-track ${outputFile} --adapterType AllVsAllIndexedPAFAdapter -a ${[...samples].sort().join(',')} --load copy`
+      : 'Next, add it as a synteny track (set -a to your query,target assembly names):\n' +
+        `  jbrowse add-track ${outputFile} -a query,target --load copy`
   console.log(`Created ${outputFile} and ${indexFile}\n\n${nextCommand}`)
 }

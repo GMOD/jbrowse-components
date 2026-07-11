@@ -18,10 +18,17 @@ import type { Writable } from 'node:stream'
 // served), so smaller gaps that would be sub-pixel there don't fragment rows.
 export const DEFAULT_COARSE_SPLIT_GAP = 10_000
 
-// mutable flag set true when any PanSN-named (`sample#…`) sequence is seen, the
-// signal that a PAF is all-vs-all rather than pairwise
+// collects the PanSN sample prefixes (`sample#…` → `sample`) seen across the
+// PAF; a non-empty set means the input is all-vs-all rather than pairwise, and
+// the samples are the assembly names to suggest in the add-track command
 interface PanSNDetector {
-  pansn: boolean
+  samples: Set<string>
+}
+
+function addPanSNSample(detect: PanSNDetector, refName: string) {
+  if (refName.includes('#')) {
+    detect.samples.add(refName.slice(0, refName.indexOf('#')))
+  }
 }
 
 function processLine(
@@ -36,8 +43,9 @@ function processLine(
     return ''
   }
   const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = parts
-  if (detect && (c1!.includes('#') || c2!.includes('#'))) {
-    detect.pansn = true
+  if (detect) {
+    addPanSNSample(detect, c1!)
+    addPanSNSample(detect, c2!)
   }
   // rest[0]=num_matches, rest[1]=block_len, rest[2]=mapq, rest[3+]=optional tags
 
@@ -167,14 +175,14 @@ function makePifTransform(
   })
 }
 
-// resolves to whether the input looked all-vs-all (PanSN-named), so the caller
-// can suggest the right adapter
+// resolves to the PanSN samples seen (empty for a pairwise PAF), so the caller
+// can suggest the right adapter and assembly names
 export async function createPIF(
   filename: string | undefined,
   stream: Writable,
   coarseSplitGap?: number,
 ): Promise<PanSNDetector> {
-  const detect: PanSNDetector = { pansn: false }
+  const detect: PanSNDetector = { samples: new Set() }
   const transform = makePifTransform(coarseSplitGap, detect)
   if (filename) {
     const source = createReadStream(filename)

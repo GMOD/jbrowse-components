@@ -184,12 +184,12 @@ test('coarse tier keeps the aligner de:f: tag for a plain M CIGAR', async () => 
   })
 })
 
-test('detects a plain-named PAF as pairwise (not all-vs-all)', async () => {
-  const { pansn } = await createPIF(simplePaf, sink())
-  expect(pansn).toBe(false)
+test('detects a plain-named PAF as pairwise (no PanSN samples)', async () => {
+  const { samples } = await createPIF(simplePaf, sink())
+  expect(samples.size).toBe(0)
 })
 
-test('detects a PanSN-named PAF as all-vs-all', async () => {
+test('collects the PanSN sample names from an all-vs-all PAF', async () => {
   await runInTmpDir(async ({ dir }) => {
     const pafPath = path.join(dir, 'ava.paf')
     const rows = fs
@@ -203,8 +203,8 @@ test('detects a PanSN-named PAF as all-vs-all', async () => {
         return p.join('\t')
       })
     fs.writeFileSync(pafPath, `${rows.join('\n')}\n`)
-    const { pansn } = await createPIF(pafPath, sink())
-    expect(pansn).toBe(true)
+    const { samples } = await createPIF(pafPath, sink())
+    expect([...samples].sort()).toEqual(['K12', 'Sakai'])
   })
 })
 
