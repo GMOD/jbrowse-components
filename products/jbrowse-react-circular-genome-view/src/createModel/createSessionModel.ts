@@ -11,7 +11,12 @@ import {
 
 import type { ViewModel } from './createModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AssemblyManager } from '@jbrowse/core/util/types'
+import type {
+  AssemblyManager,
+  SessionWithConfigEditing,
+  SessionWithConnections,
+  SessionWithDrawerWidgets,
+} from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
@@ -111,7 +116,20 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
 type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
-// compile-time check that the session model implements AbstractSessionModel
-export type _AssertSessionModel = AssertSessionModel<
-  Instance<SessionStateModel>
+// compile-time checks that the session model implements AbstractSessionModel
+// and each capability contract this embedded view relies on. AbstractSessionModel
+// marks these capabilities optional, so it can't catch a member drifting out of
+// sync with the SessionWith* interface plugins narrow to — these do.
+export type _AssertSessionModel = AssertSessionModel<Instance<SessionStateModel>>
+export type _AssertDrawerWidgets = AssertExtends<
+  Instance<SessionStateModel>,
+  SessionWithDrawerWidgets
+>
+export type _AssertConnections = AssertExtends<
+  Instance<SessionStateModel>,
+  SessionWithConnections
+>
+export type _AssertConfigEditing = AssertExtends<
+  Instance<SessionStateModel>,
+  SessionWithConfigEditing
 >

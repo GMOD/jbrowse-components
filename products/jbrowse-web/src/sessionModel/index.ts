@@ -7,8 +7,14 @@ import {
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type {
+  SessionWithConfigEditing,
+  SessionWithConnectionEditing,
+  SessionWithFocusedViewAndDrawerWidgets,
+  SessionWithSessionPlugins,
+} from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { AssertSessionModel } from '@jbrowse/product-core'
+import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
 
 /**
  * #stateModel JBrowseWebSessionModel
@@ -35,5 +41,24 @@ export default function sessionModelFactory({
 export type WebSessionModelType = ReturnType<typeof sessionModelFactory>
 export type WebSessionModel = Instance<WebSessionModelType>
 
-// compile-time check that the session model implements AbstractSessionModel
+// compile-time checks that the session model implements AbstractSessionModel
+// and each capability contract the web app relies on. AbstractSessionModel
+// marks these capabilities optional, so it can't catch a member drifting out of
+// sync with the SessionWith* interface plugins narrow to — these do.
 export type _AssertSessionModel = AssertSessionModel<WebSessionModel>
+export type _AssertFocusedView = AssertExtends<
+  WebSessionModel,
+  SessionWithFocusedViewAndDrawerWidgets
+>
+export type _AssertConnectionEditing = AssertExtends<
+  WebSessionModel,
+  SessionWithConnectionEditing
+>
+export type _AssertConfigEditing = AssertExtends<
+  WebSessionModel,
+  SessionWithConfigEditing
+>
+export type _AssertSessionPlugins = AssertExtends<
+  WebSessionModel,
+  SessionWithSessionPlugins
+>

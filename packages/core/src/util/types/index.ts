@@ -464,7 +464,6 @@ export interface AbstractDisplayModel {
   id: string
   parentTrack: AbstractTrackModel
   renderDelay: number
-  rendererType: any
   cannotBeRenderedReason?: string
   // Effective config differences a session-wide displayTypeDefault imposes on
   // this display (distinct from per-track config edits / trackConfigDeltas).
