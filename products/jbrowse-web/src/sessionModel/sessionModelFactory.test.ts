@@ -196,5 +196,27 @@ describe('JBrowseWebSessionModel', () => {
         session.getDisplayTypeDefault('LinearBasicDisplay', 'height'),
       ).toBe(20)
     })
+
+    it('clearPreferenceOverrides drops every promoted default at once', () => {
+      const session = createTestSession()
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+      session.setDisplayTypeDefault('LinearArcDisplay', 'displayMode', 'arcs')
+      session.setPreferenceOverride('animationMode', 'disabled')
+
+      session.clearPreferenceOverrides()
+
+      expect(
+        session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
+      ).toBeUndefined()
+      expect(
+        session.getDisplayTypeDefault('LinearArcDisplay', 'displayMode'),
+      ).toBeUndefined()
+      // a plain override falls back to its config default too
+      expect(session.animationMode).toBe('enabled')
+    })
   })
 })

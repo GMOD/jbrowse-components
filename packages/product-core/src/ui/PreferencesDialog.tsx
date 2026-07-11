@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import type React from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
@@ -32,6 +32,13 @@ const useStyles = makeStyles()({
     marginTop: 16,
     display: 'block',
   },
+  actions: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  spacer: {
+    flexGrow: 1,
+  },
 })
 
 export interface PreferencesDialogSession {
@@ -44,6 +51,7 @@ export interface PreferencesDialogSession {
   setUseWorkspaces: (useWorkspaces: boolean) => void
   animationMode: AnimationMode
   setPreferenceOverride: (key: string, value: unknown) => void
+  clearPreferenceOverrides: () => void
 }
 
 // declarative user-preference rows backed by the session preferences-override
@@ -96,6 +104,22 @@ const PreferencesDialog = observer(function PreferencesDialog({
   pluginManager: PluginManager
 }) {
   const { classes } = useStyles()
+  // two-click confirm so an accidental click can't wipe every preference; the
+  // arming state resets naturally when the dialog closes (unmount)
+  const [confirmingReset, setConfirmingReset] = useState(false)
+
+  // Reset every preference this dialog exposes back to its default. The three
+  // subsystems persist independently, so each is reset through its own setter:
+  // the whole override map (scrollZoom, animationMode, all promoted display-type
+  // defaults), the theme, and the sticky-header/workspaces layout flags (whose
+  // defaults `true`/`false` mirror their MultipleViews `types.optional`).
+  function resetAllPreferences() {
+    session.clearPreferenceOverrides()
+    session.setThemeName('default')
+    session.setStickyViewHeaders(true)
+    session.setUseWorkspaces(false)
+  }
+
   const extraPanels = pluginManager.evaluateExtensionPoint(
     /** #extensionPoint Core-preferencesDialogPanels | sync | Add panels to the preferences dialog */
     'Core-preferencesDialogPanels',
@@ -167,7 +191,21 @@ const PreferencesDialog = observer(function PreferencesDialog({
           </div>
         ))}
       </DialogContent>
-      <DialogActions>
+      <DialogActions className={classes.actions}>
+        <Button
+          color="warning"
+          onClick={() => {
+            if (confirmingReset) {
+              resetAllPreferences()
+              setConfirmingReset(false)
+            } else {
+              setConfirmingReset(true)
+            }
+          }}
+        >
+          {confirmingReset ? 'Click again to confirm reset' : 'Reset to defaults'}
+        </Button>
+        <div className={classes.spacer} />
         <Button
           variant="contained"
           onClick={() => {

@@ -224,6 +224,16 @@ export function BaseSessionModel<
       },
       /**
        * #action
+       * clear every runtime preference override at once — scrollZoom,
+       * animationMode, and every promoted per-display-type default (see
+       * `setDisplayTypeDefault`) — so each falls back to its config/admin
+       * default. Backs the Preferences dialog "Reset to defaults" button.
+       */
+      clearPreferenceOverrides() {
+        self.preferencesOverrides = {}
+      },
+      /**
+       * #action
        * set the global scroll-to-zoom preference (see the `scrollZoom` getter)
        */
       setScrollZoom(flag: boolean) {
