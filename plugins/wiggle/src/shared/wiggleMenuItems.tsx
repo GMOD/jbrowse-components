@@ -4,10 +4,10 @@ import {
   makeSizeMenu,
 } from '@jbrowse/wiggle-core'
 import AddIcon from '@mui/icons-material/Add'
-import LineWeightIcon from '@mui/icons-material/LineWeight'
 import RemoveIcon from '@mui/icons-material/Remove'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
+import StraightenIcon from '@mui/icons-material/Straighten'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { IconButton, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -75,7 +75,7 @@ export function makeLineWidthMenuItems(self: {
     makeSizeMenu({
       label: 'Line width',
       title: 'Line width',
-      icon: LineWeightIcon,
+      icon: StraightenIcon,
       getValue: () => self.lineWidth,
       isDefault: self.lineWidth === LINE_WIDTH_DEFAULT,
       onChange: n => {
