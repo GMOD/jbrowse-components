@@ -10,7 +10,6 @@ import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 export interface FeatureBoundsPx {
   featureLeftPx: number
   featureRightPx: number
-  featureWidth: number
   featureBottomPx: number
   screenStartPx: number
 }
@@ -20,24 +19,28 @@ export interface LabelMetrics {
   textWidth: number
 }
 
-// Left-aligns the label to its feature's left edge, clamping so it neither
-// spills off the left of the screen nor slides past the feature's right edge.
-// A label wider than the feature pins to the feature's left edge unclamped.
-// Same math drives the DOM overlay (useOverlayElements) and the SVG export
-// (renderSvg), so any tweak here is reflected on both paths.
+// Left-aligns the label to its feature's left edge, pushing it right to the
+// screen/region edge if the feature starts off-screen, but never past the
+// feature's right edge. That right-edge clamp wins, so when a feature's right
+// edge sits within textWidth of the screen left the label ends at that right
+// edge and its start may fall left of screen. A label wider than the feature
+// pins to the feature's left edge unclamped. Same math drives the DOM overlay
+// (useOverlayElements) and the SVG export (renderSvg), so any tweak here is
+// reflected on both paths.
 export function computeLabelPosition(
   label: LabelMetrics,
   padding: number,
   bounds: FeatureBoundsPx,
 ) {
-  const { featureLeftPx, featureRightPx, featureWidth, featureBottomPx } =
+  const { featureLeftPx, featureRightPx, featureBottomPx, screenStartPx } =
     bounds
+  const featureWidth = featureRightPx - featureLeftPx
   const labelY = featureBottomPx + label.relativeY + padding
   const labelX =
     label.textWidth > featureWidth
       ? featureLeftPx
       : Math.min(
-          Math.max(bounds.screenStartPx, featureLeftPx, 0),
+          Math.max(screenStartPx, featureLeftPx, 0),
           featureRightPx - label.textWidth,
         )
   return { labelX, labelY }
@@ -75,7 +78,6 @@ function resolveFeatureLabels(
   const bounds: FeatureBoundsPx = {
     featureLeftPx,
     featureRightPx,
-    featureWidth: featureRightPx - featureLeftPx,
     featureBottomPx: labelData.topY + labelData.featureHeight,
     screenStartPx: vr.screenStartPx,
   }

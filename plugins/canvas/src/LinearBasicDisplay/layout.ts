@@ -43,26 +43,38 @@ export interface LayoutInputs {
   pinnedFeatureIds: ReadonlySet<string>
   // Name-decimation policy (default `all`). See LabelDecimation.
   labelDecimation?: LabelDecimation
+  // Whitespace multiplier for `fitWidth` decimation (default 1). The fit ladder
+  // raises it (2, 4) to keep fewer names on tighter rungs. See keepFeatureLabel.
+  labelRoomFactor?: number
 }
 
 // Whether a feature keeps its name under the active decimation policy. `all`
 // keeps every name; `fitWidth` keeps pinned/highlighted names always, plus any
-// name whose reserved width fits the whitespace its overhang can use — the
-// feature box PLUS the gap to the neighbor on the overhang side. A name renders
-// left-aligned to the box and overhangs rightward (leftward in a reversed
-// region) into free space (see computeLabelPosition), and the packer reserves
-// exactly that overhang, so keying on box width alone dropped names that plainly
-// had room; keying on the available room drops a name only where it would
-// genuinely collide. So an isolated feature keeps its name however narrow its
-// box, while a name crammed against its neighbor still sheds — thinning names
-// (and their reserved row height) precisely in the dense stretches that overflow.
+// name whose reserved width (times `roomFactor`) fits the whitespace its
+// overhang can use — the feature box PLUS the gap to the neighbor on the
+// overhang side. A name renders left-aligned to the box and overhangs rightward
+// (leftward in a reversed region) into free space (see computeLabelPosition),
+// and the packer reserves exactly that overhang, so keying on box width alone
+// dropped names that plainly had room; keying on the available room drops a name
+// only where it would genuinely collide. So an isolated feature keeps its name
+// however narrow its box, while a name crammed against its neighbor still sheds
+// — thinning names (and their reserved row height) precisely in the dense
+// stretches that overflow. `roomFactor` (>= 1) is the fit ladder's gradual knob:
+// it demands that much more whitespace before a name is kept, so the tighter
+// decimated rungs (2x, 4x) shed the crowded names first instead of dropping
+// straight to no names at all.
 function keepFeatureLabel(
   labelDecimation: LabelDecimation,
   availableRoomPx: number,
   labelWidthPx: number,
   pinned: boolean,
+  roomFactor: number,
 ) {
-  return labelDecimation === 'all' || pinned || availableRoomPx >= labelWidthPx
+  return (
+    labelDecimation === 'all' ||
+    pinned ||
+    availableRoomPx >= labelWidthPx * roomFactor
+  )
 }
 
 // Reserve strand-arrow space only on the side the arrow actually points,
@@ -689,10 +701,18 @@ function packRef(
         labelInfo.maxLabelWidthPx,
         pinnedFeatureIds.has(id),
       )
-    if (!keepName && showLabels && labelInfo?.hasName) {
+    // A feature that had a name but didn't keep it is decimated away, and
+    // applyLayoutToRegion deletes its WHOLE floatingLabelsData entry (the
+    // description with it). So don't reserve a description row that would then
+    // never draw — keep the reserved height in step with what actually renders.
+    // (On live paths this is moot: fitWidth decimation always runs with
+    // showDescriptions=false; the guard just removes the latent contradiction.)
+    const nameDropped = showLabels && !!labelInfo?.hasName && !keepName
+    if (nameDropped) {
       droppedLabelIds.add(id)
     }
-    const keepDescription = showDescriptions && !!labelInfo?.hasDescription
+    const keepDescription =
+      showDescriptions && !!labelInfo?.hasDescription && !nameDropped
 
     // bodyHeightPx is already compact-scaled (see applyHeightScale); add the
     // mode's inter-row gap (rowPadding) so rows pack tightly. Each kept label
