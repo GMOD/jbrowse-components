@@ -831,6 +831,9 @@ jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
 
 ## Parameters
 
+Flags take their value as the next argument (`--width 1200`) or inline with an
+equals sign (`--width=1200`).
+
 ### Assembly params
 
 - `--fasta` — path or http(s) URL to an indexed FASTA (`.fa`, `.fa.gz`)
