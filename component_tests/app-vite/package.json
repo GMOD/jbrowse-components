@@ -40,6 +40,7 @@
     "@jbrowse/plugin-gff3": "file:./packed/jbrowse-plugin-gff3.tgz",
     "@jbrowse/plugin-grid-bookmark": "file:./packed/jbrowse-plugin-grid-bookmark.tgz",
     "@jbrowse/plugin-gtf": "file:./packed/jbrowse-plugin-gtf.tgz",
+    "@jbrowse/plugin-gwas": "file:./packed/jbrowse-plugin-gwas.tgz",
     "@jbrowse/plugin-hic": "file:./packed/jbrowse-plugin-hic.tgz",
     "@jbrowse/plugin-legacy-jbrowse": "file:./packed/jbrowse-plugin-legacy-jbrowse.tgz",
     "@jbrowse/plugin-linear-comparative-view": "file:./packed/jbrowse-plugin-linear-comparative-view.tgz",

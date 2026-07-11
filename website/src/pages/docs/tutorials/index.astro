@@ -9,14 +9,14 @@ import { entrySlug } from '../../../lib/docs-sidebar.ts'
 // `tutorial_category` frontmatter field; anything missing or unlisted falls
 // into a trailing "More tutorials" bucket, so a new tutorial always appears
 // even before it is categorized.
-const CATEGORY_ORDER = [
+const CATEGORY_ORDER = new Set([
   'Getting started',
   'Synteny & comparative genomics',
   'Structural variation',
   'Population genomics',
   'Epigenomics & single cell',
   'Transcriptomics & proteins',
-]
+])
 const FALLBACK = 'More tutorials'
 
 const tutorials = (await getCollection('docs'))
@@ -33,7 +33,7 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
   .map(category => ({
     category,
     items: tutorials.filter(t =>
-      CATEGORY_ORDER.includes(t.category)
+      CATEGORY_ORDER.has(t.category)
         ? t.category === category
         : category === FALLBACK,
     ),
