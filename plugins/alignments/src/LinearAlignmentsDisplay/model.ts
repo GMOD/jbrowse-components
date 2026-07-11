@@ -1638,9 +1638,9 @@ export default function stateModelFactory(
          */
         get scalebarOverlapLeft() {
           const view = getContainingView(self) as {
-            trackLabels?: string
+            effectiveTrackLabels?: string
           }
-          if (view.trackLabels === 'overlapping') {
+          if (view.effectiveTrackLabels === 'overlapping') {
             const track = getContainingTrack(self)
             return measureText(getConf(track, 'name'), 12.8) + 100
           }

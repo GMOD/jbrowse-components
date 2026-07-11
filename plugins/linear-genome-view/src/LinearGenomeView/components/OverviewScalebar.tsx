@@ -114,13 +114,19 @@ const OverviewBox = observer(function OverviewBox({
 }) {
   const { classes } = useStyles()
   const theme = useTheme()
-  const { cytobandOffset, showCytobands, overviewLayout: overview } = model
+  const {
+    cytobandOffset,
+    effectiveShowCytobands,
+    overviewLayout: overview,
+  } = model
   const { reversed, refName, assemblyName } = block
   const { assemblyManager } = getSession(model)
   const assembly = assemblyManager.get(assemblyName)
   const refNameColor = assembly?.getRefNameColor(refName)
 
-  const cytobands = showCytobands ? getCytobands(assembly, refName) : []
+  const cytobands = effectiveShowCytobands
+    ? getCytobands(assembly, refName)
+    : []
   const canDisplayCytobands = cytobands.length > 0
 
   if (canDisplayCytobands) {
@@ -200,7 +206,7 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
 }) {
   const theme = useTheme()
   const {
-    showCytobands,
+    effectiveShowCytobands,
     cytobandOffset,
     overviewContentBlocksPxSpan: span,
   } = model
@@ -208,7 +214,7 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
     return null
   }
 
-  const { color, opacity } = showCytobands
+  const { color, opacity } = effectiveShowCytobands
     ? { color: '#f00', opacity: 0.1 }
     : { color: theme.palette.tertiary.light, opacity: 0.3 }
 

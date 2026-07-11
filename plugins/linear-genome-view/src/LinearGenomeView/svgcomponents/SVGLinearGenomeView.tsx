@@ -34,13 +34,13 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   } = opts
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
-  const { width, pinnedTracks, unpinnedTracks, showCytobands } = model
+  const { width, pinnedTracks, unpinnedTracks, effectiveShowCytobands } = model
   const visibleTracks = [...pinnedTracks, ...unpinnedTracks].filter(
     t => !t.minimized,
   )
   const { tracksTop } = getHeaderLayout({
     fontSize,
-    showCytobands,
+    showCytobands: effectiveShowCytobands,
     rulerHeight,
   })
   const offset = tracksTop

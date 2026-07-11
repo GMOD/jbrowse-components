@@ -71,7 +71,7 @@ export default function SVGHeader({
   rulerHeight: number
   fontSize: number
 }) {
-  const { assemblyNames, showCytobands } = model
+  const { assemblyNames, effectiveShowCytobands } = model
   const { assemblyManager } = getSession(model)
   // cytobands need a single unambiguous assembly, but the header label names
   // every assembly in the view
@@ -89,7 +89,7 @@ export default function SVGHeader({
 
   const { cytobandTop, scalebarLineY, rulerTop } = getHeaderLayout({
     fontSize,
-    showCytobands,
+    showCytobands: effectiveShowCytobands,
     rulerHeight,
   })
   return (
@@ -106,7 +106,7 @@ export default function SVGHeader({
         </text>
       ) : null}
 
-      {showCytobands ? (
+      {effectiveShowCytobands ? (
         <CytobandOverview model={model} assembly={assembly} y={cytobandTop} />
       ) : null}
 

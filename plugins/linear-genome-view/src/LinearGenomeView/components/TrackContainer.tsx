@@ -70,7 +70,7 @@ const TrackContainer = observer(function TrackContainer({
   // mounts and the context value flips from null to the node
   const [overlayEl, setOverlayEl] = useState<HTMLDivElement | null>(null)
   const trackLabelStyle =
-    model.trackLabels !== 'overlapping' || display.prefersOffset
+    model.effectiveTrackLabels !== 'overlapping' || display.prefersOffset
       ? classes.trackLabelOffset
       : classes.trackLabelOverlap
 
@@ -87,7 +87,7 @@ const TrackContainer = observer(function TrackContainer({
       {track.pinned ? (
         <Gridlines model={model} offset={showTrackOutlines ? 1 : 0} />
       ) : null}
-      {model.trackLabels !== 'hidden' ? (
+      {model.effectiveTrackLabels !== 'hidden' ? (
         <TrackLabel track={track} className={trackLabelStyle} />
       ) : null}
       <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>

@@ -60,8 +60,8 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [hideNoTracksActive](#property-hidenotracksactive)                       | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [trackSelectorType](#property-trackselectortype)                         | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [showCenterLine](#property-showcenterline)                               | Properties | show the "center line"                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [cytobandsVisible](#property-cytobandsvisible)                           | Properties | show the "cytobands" in the overview scale bar (the resolved, capability-gated value is the `showCytobands` getter)                                                                                                                                                                                                                                                                                                                                     |
-| [trackLabelsOverride](#property-tracklabelsoverride)                     | Properties | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which results in conf being used). see LinearGenomeViewPlugin https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for how conf is used                                                                                                                                                                                                   |
+| [showCytobands](#property-showcytobands)                                 | Properties | whether to show the "cytobands" in the overview scale bar (the resolved, capability-gated value is the `effectiveShowCytobands` getter)                                                                                                                                                                                                                                                                                                                 |
+| [trackLabels](#property-tracklabels)                                     | Properties | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which results in the LinearGenomeViewPlugin config default being used). the resolved value is the `effectiveTrackLabels` getter. see LinearGenomeViewPlugin https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for how conf is used                                                                                                     |
 | [showGridlines](#property-showgridlines)                                 | Properties | show the "gridlines" in the track area                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [highlight](#property-highlight)                                         | Properties | highlights on the LGV from the URL parameters                                                                                                                                                                                                                                                                                                                                                                                                           |
 | [highlightsVisible](#property-highlightsvisible)                         | Properties | controls whether view.highlight entries are rendered                                                                                                                                                                                                                                                                                                                                                                                                    |
@@ -87,7 +87,7 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [scrollZoom](#getter-scrollzoom)                                         | Getters    | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere                                                                                                                                                                                                                                                                                                                                   |
 | [pinnedTracks](#getter-pinnedtracks)                                     | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [unpinnedTracks](#getter-unpinnedtracks)                                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [trackLabels](#getter-tracklabels)                                       | Getters    | the effective track labels setting, resolving the stored `trackLabelsOverride` against the LinearGenomeViewPlugin config default                                                                                                                                                                                                                                                                                                                        |
+| [effectiveTrackLabels](#getter-effectivetracklabels)                     | Getters    | the effective track labels setting, resolving the stored `trackLabels` against the LinearGenomeViewPlugin config default                                                                                                                                                                                                                                                                                                                                |
 | [width](#getter-width)                                                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [trackWidthPx](#getter-trackwidthpx)                                     | Getters    | width minus track outline borders (1px each side when shown)                                                                                                                                                                                                                                                                                                                                                                                            |
 | [assemblyNames](#getter-assemblynames)                                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -120,7 +120,7 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [trackMap](#getter-trackmap)                                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [trackTypeActions](#getter-tracktypeactions)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [canShowCytobands](#getter-canshowcytobands)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [showCytobands](#getter-showcytobands)                                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [effectiveShowCytobands](#getter-effectiveshowcytobands)                 | Getters    | the `showCytobands` setting gated by whether cytobands can be shown at all (single region + data present) — i.e. actually on screen                                                                                                                                                                                                                                                                                                                     |
 | [anyCytobandsExist](#getter-anycytobandsexist)                           | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [cytobandOffset](#getter-cytobandoffset)                                 | Getters    | the cytoband is displayed to the right of the chromosome name, and that offset is calculated manually with this method                                                                                                                                                                                                                                                                                                                                  |
 | [isTrackSelectorOpen](#getter-istrackselectoropen)                       | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -319,32 +319,34 @@ showCenterLine: types.optional(types.boolean, () =>
 )
 ```
 
-#### property: cytobandsVisible
+#### property: showCytobands
 
-show the "cytobands" in the overview scale bar (the resolved, capability-gated
-value is the `showCytobands` getter)
+whether to show the "cytobands" in the overview scale bar (the resolved,
+capability-gated value is the `effectiveShowCytobands` getter)
 
 ```ts
 // type signature
-type cytobandsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showCytobands = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-cytobandsVisible: types.optional(types.boolean, () =>
+showCytobands: types.optional(types.boolean, () =>
   localStorageGetBoolean('lgv-showCytobands', true),
 )
 ```
 
-#### property: trackLabelsOverride
+#### property: trackLabels
 
 how to display the track labels, can be "overlapping", "offset", or "hidden", or
-empty string "" (which results in conf being used). see LinearGenomeViewPlugin
+empty string "" (which results in the LinearGenomeViewPlugin config default
+being used). the resolved value is the `effectiveTrackLabels` getter. see
+LinearGenomeViewPlugin
 https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for how conf is
 used
 
 ```ts
 // type signature
-type trackLabelsOverride = IOptionalIType<ISimpleType<string>, [undefined]>
+type trackLabels = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-trackLabelsOverride: types.optional(
+trackLabels: types.optional(
   types.string,
   () => localStorageGetItem('lgv-trackLabels') ?? '',
 )
@@ -666,13 +668,13 @@ toggling it in any view applies everywhere
 type scrollZoom = boolean
 ```
 
-#### getter: trackLabels
+#### getter: effectiveTrackLabels
 
-the effective track labels setting, resolving the stored `trackLabelsOverride`
-against the LinearGenomeViewPlugin config default
+the effective track labels setting, resolving the stored `trackLabels` against
+the LinearGenomeViewPlugin config default
 
 ```ts
-type trackLabels = any
+type effectiveTrackLabels = any
 ```
 
 #### getter: trackWidthPx
@@ -715,6 +717,15 @@ Whether to show the import form
 
 ```ts
 type showImportForm = boolean
+```
+
+#### getter: effectiveShowCytobands
+
+the `showCytobands` setting gated by whether cytobands can be shown at all
+(single region + data present) — i.e. actually on screen
+
+```ts
+type effectiveShowCytobands = boolean
 ```
 
 #### getter: cytobandOffset
@@ -1057,12 +1068,6 @@ type trackTypeActions = Map<string, MenuItem[]>
 
 ```ts
 type canShowCytobands = boolean
-```
-
-#### getter: showCytobands
-
-```ts
-type showCytobands = boolean
 ```
 
 #### getter: anyCytobandsExist

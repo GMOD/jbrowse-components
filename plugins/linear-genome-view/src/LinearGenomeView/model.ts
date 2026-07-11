@@ -332,22 +332,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * show the "cytobands" in the overview scale bar (the resolved,
-         * capability-gated value is the `showCytobands` getter)
+         * whether to show the "cytobands" in the overview scale bar (the
+         * resolved, capability-gated value is the `effectiveShowCytobands`
+         * getter)
          */
-        cytobandsVisible: types.optional(types.boolean, () =>
+        showCytobands: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-showCytobands', true),
         ),
 
         /**
          * #property
          * how to display the track labels, can be "overlapping", "offset", or
-         * "hidden", or empty string "" (which results in conf being used). see
-         * LinearGenomeViewPlugin
+         * "hidden", or empty string "" (which results in the
+         * LinearGenomeViewPlugin config default being used). the resolved value
+         * is the `effectiveTrackLabels` getter. see LinearGenomeViewPlugin
          * https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for
          * how conf is used
          */
-        trackLabelsOverride: types.optional(
+        trackLabels: types.optional(
           types.string,
           () => localStorageGetItem('lgv-trackLabels') ?? '',
         ),
@@ -508,15 +510,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the effective track labels setting, resolving the stored
-       * `trackLabelsOverride` against the LinearGenomeViewPlugin config default
+       * the effective track labels setting, resolving the stored `trackLabels`
+       * against the LinearGenomeViewPlugin config default
        */
-      get trackLabels() {
+      get effectiveTrackLabels() {
         const sessionSetting = getConf(getSession(self), [
           'LinearGenomeViewPlugin',
           'trackLabels',
         ])
-        return self.trackLabelsOverride || sessionSetting
+        return self.trackLabels || sessionSetting
       },
       /**
        * #getter
@@ -958,7 +960,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setShowCytobands(flag: boolean) {
-        self.cytobandsVisible = flag
+        self.showCytobands = flag
       },
       /**
        * #action
@@ -1252,7 +1254,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
-        self.trackLabelsOverride = setting
+        self.trackLabels = setting
       },
 
       /**
@@ -1537,9 +1539,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * the `showCytobands` setting gated by whether cytobands can be shown at
+       * all (single region + data present) — i.e. actually on screen
        */
-      get showCytobands() {
-        return this.canShowCytobands && self.cytobandsVisible
+      get effectiveShowCytobands() {
+        return this.canShowCytobands && self.showCytobands
       },
       /**
        * #getter
@@ -1556,7 +1560,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * that offset is calculated manually with this method
        */
       get cytobandOffset() {
-        return this.showCytobands
+        return this.effectiveShowCytobands
           ? measureText(self.displayedRegions[0]?.refName || '', 12) + 15
           : 0
       },
@@ -2259,19 +2263,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      // `trackLabels` was renamed to `trackLabelsOverride` (the bare
-      // `trackLabels` is now the resolved getter); map legacy snapshots forward.
-      // `showCytobandsSetting` was likewise renamed to `cytobandsVisible` (the
-      // bare `showCytobands` is the resolved getter).
-      const { highlight, trackLabels, showCytobandsSetting, ...rest } = snap
+      // The cytobands setting has been `showCytobandsSetting` and (briefly)
+      // `cytobandsVisible`; both now persist as the bare `showCytobands` prop
+      // (the capability-gated getter is `effectiveShowCytobands`).
+      const { highlight, showCytobandsSetting, cytobandsVisible, ...rest } = snap
+      const legacyShowCytobands = showCytobandsSetting ?? cytobandsVisible
       return {
         highlight:
           Array.isArray(highlight) || highlight === undefined
             ? highlight
             : [highlight],
-        ...(trackLabels ? { trackLabelsOverride: trackLabels } : {}),
-        ...(showCytobandsSetting !== undefined
-          ? { cytobandsVisible: showCytobandsSetting }
+        ...(legacyShowCytobands !== undefined
+          ? { showCytobands: legacyShowCytobands }
           : {}),
         ...rest,
       }
@@ -2284,8 +2287,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       const {
         init,
         showCenterLine,
-        cytobandsVisible,
-        trackLabelsOverride,
+        showCytobands,
+        trackLabels,
         colorByCDS,
         showTrackOutlines,
         ...rest
@@ -2301,8 +2304,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         ...(init && !snap.displayedRegions?.length ? { init } : {}),
         ...(showCenterLine ? { showCenterLine } : {}),
-        ...(!cytobandsVisible ? { cytobandsVisible } : {}),
-        ...(trackLabelsOverride ? { trackLabelsOverride } : {}),
+        ...(!showCytobands ? { showCytobands } : {}),
+        ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
         ...(!showTrackOutlines ? { showTrackOutlines } : {}),
       }
