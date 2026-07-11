@@ -6,6 +6,7 @@ import {
   classifyAssemblyFiles,
   classifyFilename,
   clearFormFields,
+  clearSequenceFiles,
   detectAdapterType,
   formHasSequence,
   getAdapterConfig,
@@ -367,6 +368,28 @@ describe('clearFormFields', () => {
       adapterSelection: 'BgzipFastaAdapter',
     })
     expect(s.adapterSelection).toBe('BgzipFastaAdapter')
+  })
+})
+
+describe('clearSequenceFiles', () => {
+  test('clears sequence files but keeps name and metadata', () => {
+    const s = clearSequenceFiles({
+      ...initialFormState(),
+      fastaLocation: fastaGz,
+      faiLocation: fai,
+      gziLocation: gzi,
+      assemblyName: 'hg38',
+      assemblyDisplayName: 'Homo sapiens',
+      refNameAliasesLocation: aliases,
+      cytobandsLocation: cytobands,
+    })
+    expect(s.fastaLocation).toEqual(blank)
+    expect(s.faiLocation).toEqual(blank)
+    expect(s.gziLocation).toEqual(blank)
+    expect(s.assemblyName).toBe('hg38')
+    expect(s.assemblyDisplayName).toBe('Homo sapiens')
+    expect(s.refNameAliasesLocation).toEqual(aliases)
+    expect(s.cytobandsLocation).toEqual(cytobands)
   })
 })
 

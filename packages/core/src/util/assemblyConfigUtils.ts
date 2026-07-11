@@ -149,6 +149,21 @@ export function clearFormFields(state: FormState): FormState {
   }
 }
 
+// Clear only the sequence-file fields (and their required index sidecars),
+// keeping assembly-level metadata the user already entered — name, display name,
+// refName aliases, cytobands. Used by the recognition card's "change" link so
+// swapping a mis-picked sequence file doesn't discard everything else.
+export function clearSequenceFiles(state: FormState): FormState {
+  return {
+    ...state,
+    fastaLocation: blank,
+    faiLocation: blank,
+    gziLocation: blank,
+    twoBitLocation: blank,
+    chromSizesLocation: blank,
+  }
+}
+
 export function getBaseAssemblyConfig(state: FormState) {
   return {
     name: state.assemblyName,

@@ -133,7 +133,8 @@ const SequenceAdapterInputs = observer(function SequenceAdapterInputs({
           />
           <FileSelector
             inline
-            name=".chrom.sizes (optional, can speed up loading 2bit files with many contigs)"
+            name=".chrom.sizes (optional)"
+            description="Can speed up loading 2bit files with many contigs."
             location={form.chromSizesLocation}
             setLocation={setField('chromSizesLocation')}
           />

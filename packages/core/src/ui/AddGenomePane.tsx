@@ -15,7 +15,7 @@ import {
   applyPrimaryFile,
   applyTwoBitFile,
   classifyFilename,
-  clearFormFields,
+  clearSequenceFiles,
   formHasSequence,
   getFilename,
   isBlank,
@@ -127,7 +127,7 @@ const RequiredIndexInputs = observer(function RequiredIndexInputs({
   return needsFai || needsGzi ? (
     <div className={classes.advanced}>
       <Alert severity="warning">
-        This format needs its index files. Add them below or drop them in.
+        This format needs its index file(s). Add them below.
       </Alert>
       {needsFai ? (
         <FileSelector
@@ -160,14 +160,14 @@ const RecognitionCard = observer(function RecognitionCard({
   form,
   setForm,
   onNameEdit,
-  onReset,
+  onChangeFile,
   showMore,
   setShowMore,
 }: {
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
   onNameEdit: () => void
-  onReset: () => void
+  onChangeFile: () => void
   showMore: boolean
   setShowMore: (arg: boolean) => void
 }) {
@@ -199,7 +199,7 @@ const RecognitionCard = observer(function RecognitionCard({
           type="button"
           variant="body2"
           onClick={() => {
-            onReset()
+            onChangeFile()
           }}
         >
           change
@@ -362,9 +362,13 @@ const AddGenomePane = observer(function AddGenomePane({
     setNameTouched(false)
     setShowMore(false)
   }
-  const startOver = () => {
-    setForm(clearFormFields)
-    resetInputs()
+  // Swap the sequence file but keep the name/advanced fields the user entered.
+  // nameTouched is preserved so a hand-edited name survives the next drop.
+  const changeFile = () => {
+    setForm(clearSequenceFiles)
+    setDropped([])
+    setUrls('')
+    setShowMore(false)
   }
   const stageAnother = () => {
     onStageAnother?.()
@@ -392,8 +396,8 @@ const AddGenomePane = observer(function AddGenomePane({
             onNameEdit={() => {
               setNameTouched(true)
             }}
-            onReset={() => {
-              startOver()
+            onChangeFile={() => {
+              changeFile()
             }}
             showMore={showMore}
             setShowMore={setShowMore}
@@ -418,7 +422,7 @@ const AddGenomePane = observer(function AddGenomePane({
         <>
           {source === 'files' ? (
             <FileDropZone
-              message="Drop your genome file (FASTA, .fa.gz, or .2bit), or click to browse"
+              message="Drop your genome files here — FASTA, .fa.gz, or .2bit, plus any .fai/.gzi index — or click to browse"
               onDrop={files => {
                 const next = [...dropped, ...files.map(f => fileToLocation(f))]
                 setDropped(next)

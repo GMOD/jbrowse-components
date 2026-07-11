@@ -39,7 +39,8 @@ const AdvancedOptions = observer(function AdvancedOptions({
       />
       <FileSelector
         inline
-        name="Add refName aliases e.g. remap chr1 and 1 to same entity. Can use a tab separated file of aliases, such as a .chromAliases files from UCSC"
+        name="refName aliases"
+        description="Remap equivalent refNames (e.g. chr1 and 1). Tab-separated file such as a UCSC .chromAliases file."
         location={form.refNameAliasesLocation}
         setLocation={(loc: FileLocation) => {
           setRefNameAliasesLocation(loc)
@@ -47,7 +48,8 @@ const AdvancedOptions = observer(function AdvancedOptions({
       />
       <FileSelector
         inline
-        name="Add cytobands for assembly with the format of cytoBands.txt/cytoBandIdeo.txt from UCSC (.gz also allowed)"
+        name="Cytobands"
+        description="UCSC cytoBand.txt / cytoBandIdeo.txt format (.gz allowed)."
         location={form.cytobandsLocation}
         setLocation={(loc: FileLocation) => {
           setCytobandsLocation(loc)
