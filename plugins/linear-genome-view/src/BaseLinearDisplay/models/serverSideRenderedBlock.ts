@@ -259,9 +259,16 @@ const blockState = types
             if (self.renderArgs && self.cachedDisplay) {
               const { rpcManager } = getSession(self)
               const { rendererType } = self.cachedDisplay
+              // renderArgs carries a statusCallback function, which
+              // structuredClone cannot handle. Cloning it whole threw
+              // DataCloneError on every block teardown -- and because the clone
+              // is an argument, it threw *before* freeResourcesInClient ran, so
+              // the renderer's layout ranges were never discarded. freeResources
+              // only needs the regions and the layout id, never the callback.
+              const { statusCallback, ...cloneableArgs } = self.renderArgs
               await rendererType.freeResourcesInClient(
                 rpcManager,
-                structuredClone(self.renderArgs),
+                structuredClone(cloneableArgs),
               )
             }
           } catch (e) {
