@@ -205,6 +205,14 @@ const MIN_FIT_HEIGHT = 50
 // shrinking boxes to invisibility. See `fitMinScale`.
 const MIN_FIT_BOX_PX = 2
 
+// The vertical scale that resizes a laid-out feature body of `bodyPx` to exactly
+// `targetPx` — the shared basis for the fit squeeze floor (target MIN_FIT_BOX_PX)
+// and the grow ceiling (target normal featureHeight). 1 when there is no body to
+// size, so a bound built on it collapses to a no-op scale.
+function bodyScaleTo(bodyPx: number, targetPx: number) {
+  return bodyPx > 0 ? targetPx / bodyPx : 1
+}
+
 /**
  * #stateModel LinearCanvasBaseDisplay
  * #category display
@@ -1066,9 +1074,7 @@ export default function baseStateModelFactory(
          * of vanishing.
          */
         get fitMinScale() {
-          return this.fitBodyPx > 0
-            ? Math.min(1, MIN_FIT_BOX_PX / this.fitBodyPx)
-            : 1
+          return Math.min(1, bodyScaleTo(this.fitBodyPx, MIN_FIT_BOX_PX))
         },
         /**
          * #getter
@@ -1081,10 +1087,10 @@ export default function baseStateModelFactory(
          * below normal) may grow back up to — but not past — the normal height.
          */
         get fitMaxScale() {
-          const normalBodyPx = getConf(self, 'featureHeight')
-          return this.fitBodyPx > 0
-            ? Math.max(1, normalBodyPx / this.fitBodyPx)
-            : 1
+          return Math.max(
+            1,
+            bodyScaleTo(this.fitBodyPx, getConf(self, 'featureHeight')),
+          )
         },
       }))
       .views(self => ({
