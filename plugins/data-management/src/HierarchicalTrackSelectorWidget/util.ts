@@ -40,14 +40,17 @@ interface Node {
   id: string
 }
 
-// Collects IDs of category nodes (depth > 0) that have at least one direct
-// leaf child — i.e. subcategories that contain tracks, not just more folders.
+// Collects IDs of subcategories that contain tracks, not just more folders.
+// `obj` is the group level (depth 0, e.g. the "Tracks" group), so the user's
+// top-level categories are depth 1 and true subcategories are depth > 1 — those
+// are what "Collapse subcategories" targets, leaving top-level categories
+// (which collapseTopLevelCategories handles) alone even when they hold tracks.
 export function findSubCategories(obj: Node[]) {
   const paths: string[] = []
   function collect(nodes: Node[], depth: number) {
     for (const node of nodes) {
       if (node.children.length) {
-        if (depth > 0 && node.children.some(c => !c.children.length)) {
+        if (depth > 1 && node.children.some(c => !c.children.length)) {
           paths.push(node.id)
         }
         collect(node.children, depth + 1)

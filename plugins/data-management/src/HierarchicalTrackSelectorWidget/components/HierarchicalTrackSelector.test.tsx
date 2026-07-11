@@ -1528,6 +1528,34 @@ test('toggleFolderCategory collapses children in flattenedItems', () => {
   expect(afterNames).toContain('Regular Track')
 })
 
+// Epigenomics is a top-level category that also holds a direct track (Regular
+// Track). collapseSubCategories must collapse only the nested Histone Marks
+// subcategory, not the top-level Epigenomics; collapseTopLevelCategories does
+// the reverse. Regression for findSubCategories sweeping in top-level
+// categories that happen to contain tracks.
+test('collapseSubCategories vs collapseTopLevelCategories scope', () => {
+  const session = addTestDataWithDeepCategories(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  model.expandAllCategories()
+  model.collapseSubCategories()
+  expect(model.collapsed.get('Tracks-Epigenomics,Histone Marks')).toBe(true)
+  expect(model.collapsed.get('Tracks-Epigenomics')).toBeUndefined()
+
+  model.expandAllCategories()
+  model.collapseTopLevelCategories()
+  expect(model.collapsed.get('Tracks-Epigenomics')).toBe(true)
+  expect(
+    model.collapsed.get('Tracks-Epigenomics,Histone Marks'),
+  ).toBeUndefined()
+})
+
 // -------------------------- test utils -
 
 function addTestDataWithMetadata(
