@@ -96,11 +96,15 @@ const TracksContainer = observer(function TracksContainer({
         range.mouseDown(event)
       }}
       onMouseMove={range.mouseMove}
-      onMouseOut={range.mouseOut}
+      onMouseLeave={range.mouseOut}
       onMouseUp={mouseUp}
     >
-      {showGridlines ? <Gridlines model={model} /> : null}
-      {showGridlines ? <PaddingBlocks model={model} /> : null}
+      {showGridlines ? (
+        <>
+          <Gridlines model={model} />
+          <PaddingBlocks model={model} />
+        </>
+      ) : null}
       <Suspense fallback={null}>
         {showCenterLine ? <CenterLine model={model} /> : null}
       </Suspense>
@@ -170,7 +174,7 @@ const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
   const additional = pluginManager.evaluateExtensionPoint(
     /** #extensionPoint LinearGenomeView-ScalebarHighlightComponent | sync | Add a highlight component to the scalebar */
     'LinearGenomeView-ScalebarHighlightComponent',
-    [] as ReactNode[],
+    [],
     { model },
   )
   return (

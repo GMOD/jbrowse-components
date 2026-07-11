@@ -16,17 +16,15 @@ export function useSideScroll(model: LinearGenomeViewModel) {
       event.preventDefault()
       const currX = event.clientX
       const distance = currX - prevXRef.current
-      if (distance) {
-        // use rAF to make it so multiple event handlers aren't fired per-frame
-        // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-        if (!scheduledRef.current) {
-          scheduledRef.current = true
-          window.requestAnimationFrame(() => {
-            model.horizontalScroll(-distance)
-            scheduledRef.current = false
-            prevXRef.current = event.clientX
-          })
-        }
+      // use rAF to make it so multiple event handlers aren't fired per-frame
+      // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
+      if (distance && !scheduledRef.current) {
+        scheduledRef.current = true
+        window.requestAnimationFrame(() => {
+          model.horizontalScroll(-distance)
+          scheduledRef.current = false
+          prevXRef.current = currX
+        })
       }
     }
 
