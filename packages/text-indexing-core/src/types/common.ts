@@ -209,9 +209,16 @@ export function guessAdapterFromFileName(filePath: string): Track {
   }
 }
 
-// replaces characters invalid in Windows filenames: \ / : * ? " < > |
+// Windows reserves these device names even with an extension, so a track or
+// assembly literally named e.g. NUL would otherwise yield an unusable NUL.ix
+const windowsReservedName = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i
+
+// makes `name` safe as a filename on Windows: replaces the invalid characters
+// \ / : * ? " < > |, drops trailing dots/spaces (Windows silently strips them),
+// and escapes reserved device names
 export function sanitizeForFilename(name: string) {
-  return name.replaceAll(/[\\/:*?"<>|]/g, '_')
+  const cleaned = name.replaceAll(/[\\/:*?"<>|]/g, '_').replace(/[. ]+$/, '')
+  return windowsReservedName.test(cleaned) ? `_${cleaned}` : cleaned
 }
 
 export function generateMeta({

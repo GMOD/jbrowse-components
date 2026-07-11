@@ -131,7 +131,11 @@ export function registerSessionHandlers(
       updateRecentSessions(paths.recentSessionsPath, rows =>
         upsertRecentSession(rows, entry),
       ),
-      ...(png ? [writeFile(getThumbnailPath(paths, sessionPath), png)] : []),
+      // Thumbnail is cosmetic like the capturePage above it: a failed write
+      // (e.g. an over-long path on Windows) must not reject the session save
+      ...(png
+        ? [writeFile(getThumbnailPath(paths, sessionPath), png).catch(logError)]
+        : []),
       writeFile(sessionPath, stringify(snap)),
     ])
   })

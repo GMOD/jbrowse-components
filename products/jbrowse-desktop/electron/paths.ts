@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import path from 'node:path'
 
 import { app } from 'electron'
@@ -49,10 +50,13 @@ export function getDeletedMarkerPath(paths: AppPaths, sessionName: string) {
 }
 
 export function getThumbnailPath(paths: AppPaths, sessionPath: string) {
-  return path.join(
-    paths.thumbnailDir,
-    `${encodeURIComponent(sessionPath)}.data`,
-  )
+  // Hash rather than encodeURIComponent(sessionPath): a URI-encoded absolute
+  // path (C%3A%5CUsers%5C...) blows past Windows' 260-char MAX_PATH for deeply
+  // nested / OneDrive-redirected sessions, making the thumbnail write throw.
+  // The cache is internal, so the name only needs to be stable and collision
+  // free, not reversible.
+  const hash = createHash('sha256').update(sessionPath).digest('hex')
+  return path.join(paths.thumbnailDir, `${hash}.data`)
 }
 
 export function getFaiPath(paths: AppPaths, name: string) {

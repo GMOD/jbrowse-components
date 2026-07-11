@@ -54,6 +54,16 @@ describe('sanitizeForFilename', () => {
       'track-name_1234.index',
     )
   })
+  it('escapes Windows reserved device names', () => {
+    expect(sanitizeForFilename('NUL')).toBe('_NUL')
+    expect(sanitizeForFilename('con')).toBe('_con')
+    expect(sanitizeForFilename('COM1')).toBe('_COM1')
+    // reserved word as a substring is fine
+    expect(sanitizeForFilename('NULsomething')).toBe('NULsomething')
+  })
+  it('strips trailing dots and spaces', () => {
+    expect(sanitizeForFilename('assembly. ')).toBe('assembly')
+  })
 })
 
 describe('utils for text indexing', () => {
