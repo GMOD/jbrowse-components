@@ -10,10 +10,6 @@ import type {
   ThemeOptions,
 } from '@mui/material/styles'
 
-interface PaletteAugmentColorOptions {
-  color: PaletteColorOptions
-}
-
 type MaybePaletteColor = PaletteColor | undefined
 type Frames = [
   null,
@@ -345,7 +341,7 @@ const darkPalette = {
   alignmentFill: darkAlignmentFill,
 }
 
-const stock = { palette: { ...defaults, mode: undefined } }
+const stock = { palette: defaults }
 
 export const defaultThemes = {
   default: { ...stock, name: 'Default (from config)' },
@@ -641,6 +637,13 @@ export function createJBrowseThemeFromArgs(args: SerializableThemeArgs = {}) {
   )
 }
 
+// Memoizes the built MUI theme across calls. This guards the RPC worker render
+// path (executeRenderFeatureData rebuilds the theme from serializable args on
+// every canvas render), where there is no MobX/React memoization — the
+// main-thread session `theme` getter is already an MST view. Bounded in
+// practice: the key space is (config theme × selected preset), a handful of
+// entries. Assumes JSON-serializable inputs — config themes carry no functions,
+// so JSON.stringify keying is stable.
 const themeCache = new Map<string, Theme>()
 
 function getThemeCacheKey(
@@ -672,7 +675,7 @@ export function createJBrowseTheme(
         ? deepmerge(themes.default!, augmentThemeColors(configTheme), {
             arrayMerge: overwriteArrayMerge,
           })
-        : addMissingColors(themes[themeName]),
+        : addMissingColors(themes[themeName] ?? themes.default),
     ),
   )
 
@@ -693,14 +696,6 @@ const augmentableColorKeys = [
 
 const baseKeys = ['A', 'C', 'G', 'T', 'N'] as const
 
-// augment one entry, accepting either the `{ color }` wrapper MUI's augmentColor
-// expects or a bare PaletteColorOptions
-function augmentColorOption(option: PaletteColorOptions): PaletteColor {
-  return 'color' in option
-    ? refTheme.palette.augmentColor(option as PaletteAugmentColorOptions)
-    : augment(option)
-}
-
 // MUI by default allows strings like '#f00' for primary and secondary and
 // augments them to have light and dark variants but not for anything else, so
 // we augment them here. `bases` is augmented per-key too, so a config theme that
@@ -711,7 +706,7 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
   for (const key of augmentableColorKeys) {
     const entry = theme.palette?.[key]
     if (entry) {
-      overlay[key] = augmentColorOption(entry)
+      overlay[key] = augment(entry)
     }
   }
   const basesEntry = theme.palette?.bases
@@ -720,7 +715,7 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
     for (const key of baseKeys) {
       const entry = basesEntry[key]
       if (entry) {
-        resolvedBases[key] = augmentColorOption(entry)
+        resolvedBases[key] = augment(entry)
       }
     }
     overlay.bases = resolvedBases
