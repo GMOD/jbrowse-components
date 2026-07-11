@@ -23,6 +23,9 @@ interface ConfNode {
   }
 }
 const confNode = (self: unknown) => self as ConfNode
+// `prefersOffset` is the optional per-display convention (BaseLinearDisplay)
+// signalling the track label is drawn above the plot, not overlapping it.
+const offsetNode = (self: unknown) => self as { prefersOffset?: boolean }
 // lineWidth is a promotable slot, read through the session-wide default cascade;
 // getConfResolved wants the display node itself (type + configuration + session).
 const promotableNode = (self: unknown) => self as PromotableDisplay
@@ -60,7 +63,13 @@ export function WiggleScoreConfigMixin() {
        */
       get scalebarOverlapLeft() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        if (view.effectiveTrackLabels === 'overlapping') {
+        // `prefersOffset` displays move the label above the plot, so the axis
+        // no longer overlaps it and needn't dodge right (matches the label
+        // placement in TrackContainer).
+        if (
+          view.effectiveTrackLabels === 'overlapping' &&
+          !offsetNode(self).prefersOffset
+        ) {
           const track = getContainingTrack(self)
           return measureText(getConf(track, 'name'), 12.8) + 100
         }

@@ -147,6 +147,16 @@ export default function stateModelFactory(
 
       /**
        * #getter
+       * Offset the track label above the plot so the left y-axis stays pinned
+       * to the content edge instead of dodging right of the label. Density mode
+       * draws no left axis (just a top score legend), so let the label overlap.
+       */
+      get prefersOffset() {
+        return !self.isDensityMode
+      },
+
+      /**
+       * #getter
        */
       get renderState() {
         const view = getContainingView(self) as LGV
