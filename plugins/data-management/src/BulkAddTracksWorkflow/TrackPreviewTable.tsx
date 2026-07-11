@@ -27,8 +27,6 @@ interface PreviewGridRow {
 function detectedTypeLabel(row: TrackConfRow) {
   if (row.status === 'ok') {
     return `${row.trackType} (${row.adapterType})`
-  } else if (row.status === 'unsupported') {
-    return 'Unsupported file type'
   } else {
     return 'Unrecognized file type'
   }

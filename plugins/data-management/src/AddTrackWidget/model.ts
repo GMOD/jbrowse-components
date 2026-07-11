@@ -1,7 +1,6 @@
 import { getSession, isUriLocation, makeTrackId } from '@jbrowse/core/util'
 import {
   UNKNOWN,
-  UNSUPPORTED,
   getFileName,
   guessAdapter,
   guessTrackType,
@@ -208,13 +207,6 @@ export default function f(pluginManager: PluginManager) {
        */
       get wrongProtocol() {
         return this.uris.some(isBlockedHttpUrl)
-      },
-
-      /**
-       * #getter
-       */
-      get unsupported() {
-        return this.trackAdapter?.type === UNSUPPORTED
       },
 
       /**

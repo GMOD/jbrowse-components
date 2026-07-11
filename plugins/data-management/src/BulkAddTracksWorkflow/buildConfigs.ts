@@ -1,7 +1,6 @@
 import { makeTrackId } from '@jbrowse/core/util'
 import {
   UNKNOWN,
-  UNSUPPORTED,
   getFileName,
   guessAdapter,
   guessTrackType,
@@ -12,7 +11,7 @@ import { locationId } from './pairLocations.ts'
 import type { LocationPair } from './pairLocations.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-export type TrackStatus = 'ok' | 'unknown' | 'unsupported'
+export type TrackStatus = 'ok' | 'unknown'
 
 export interface TrackConfRow {
   id: string
@@ -31,11 +30,7 @@ export interface TrackConfRow {
 }
 
 function statusOf(adapterType: string): TrackStatus {
-  return adapterType === UNKNOWN
-    ? 'unknown'
-    : adapterType === UNSUPPORTED
-      ? 'unsupported'
-      : 'ok'
+  return adapterType === UNKNOWN ? 'unknown' : 'ok'
 }
 
 /**
