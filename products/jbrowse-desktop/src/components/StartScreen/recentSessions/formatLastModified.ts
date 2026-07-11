@@ -1,24 +1,17 @@
 import { formatDistanceToNow } from 'date-fns'
 
-const oneDayMs = 24 * 60 * 60 * 1000
-
 /**
  * Shared "last modified" formatting for the recent-sessions card and list
- * views. Sessions touched within the last day read as relative time ("5
- * minutes ago"); older ones show an absolute locale string. The tooltip always
- * carries the absolute timestamp.
+ * views. The label reads as relative time ("5 minutes ago", "3 days ago"); the
+ * tooltip carries the precise absolute timestamp for when exact detail matters.
  */
 export function formatLastModified(updated: number | undefined, now: number) {
   if (updated === undefined) {
     return { label: 'Unknown', tooltip: undefined }
   }
   const date = new Date(updated)
-  const absolute = date.toLocaleString('en-US')
   return {
-    label:
-      now - updated < oneDayMs
-        ? formatDistanceToNow(date, { addSuffix: true })
-        : absolute,
-    tooltip: absolute,
+    label: formatDistanceToNow(date, { addSuffix: true }),
+    tooltip: date.toLocaleString('en-US'),
   }
 }

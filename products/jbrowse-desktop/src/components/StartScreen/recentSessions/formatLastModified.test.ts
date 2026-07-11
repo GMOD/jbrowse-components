@@ -15,10 +15,9 @@ test('recent session shows relative label, absolute tooltip', () => {
   expect(tooltip).toBe(new Date(updated).toLocaleString('en-US'))
 })
 
-test('old session shows absolute label equal to tooltip', () => {
+test('old session shows relative label, absolute tooltip', () => {
   const updated = now - 5 * 24 * 60 * 60 * 1000 // 5 days ago
   const { label, tooltip } = formatLastModified(updated, now)
-  const absolute = new Date(updated).toLocaleString('en-US')
-  expect(label).toBe(absolute)
-  expect(tooltip).toBe(absolute)
+  expect(label).toMatch(/ago$/)
+  expect(tooltip).toBe(new Date(updated).toLocaleString('en-US'))
 })
