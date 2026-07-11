@@ -110,7 +110,7 @@ how-tos in **[guides/](guides/)**, and design rationale in
 
 ### `architecture-decision-records/`
 
-Design decisions (ADR-001 … ADR-034) — read to understand why something is the
+Design decisions (ADR-001 … ADR-035) — read to understand why something is the
 way it is.
 
 ## Common questions
