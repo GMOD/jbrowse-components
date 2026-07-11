@@ -1438,10 +1438,10 @@
   },
   "methylation/arabidopsis_wgbs_boundary": {
     "name": "methylation/arabidopsis_wgbs_boundary",
-    "status": "bad",
-    "note": "this figure is a little confusing because only one modification mode is showing, but it is demonstrating 3 different methyldackyl modes",
-    "reviewedAt": "2026-07-11T01:43:39.990Z",
-    "hash": "2466c1811d77335ad338f784b74711d13c75af54"
+    "status": "good",
+    "note": "FIXED (one-mode-vs-3-modes confusion): the two arabidopsis figures each stacked a single-mode red/blue per-read pileup under the 3-context MethylDackel aggregate, which read as 'one mode vs three'. Split them so each has one message: this boundary figure is now gene + per-read all-cytosine pileup only (no aggregate), the single-molecule C->T transition. The contexts figure keeps the 3-row aggregate. Tutorial prose updated. Regenerated.",
+    "reviewedAt": "2026-07-11T01:56:16.000Z",
+    "hash": "f4e75929b30412d99565f4ee0fd4b9444f0dec6a"
   },
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
@@ -1452,10 +1452,10 @@
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
-    "status": "bad",
-    "note": "this figure is a little confusing because only one modification mode is showing, but it is demonstrating 3 different methyldackyl modes",
-    "reviewedAt": "2026-07-11T01:43:29.343Z",
-    "hash": "365b6c67e8c1073fb6b67398cdb0cd66eda0bc15"
+    "status": "good",
+    "note": "FIXED (one-mode-vs-3-modes confusion): dropped the single-mode per-read pileup that stacked under the aggregate and read as 'one mode vs three'. Now gene track + the 3-row MethylDackel aggregate (CpG/CHG/CHH) only — unambiguously the three-context demonstration (CpG over gene body + element; CHG/CHH confined to the element). The per-read reads get their own boundary figure. viewportHeight 640 so all three rows show. Tutorial prose updated. Regenerated.",
+    "reviewedAt": "2026-07-11T01:56:16.000Z",
+    "hash": "9aa3bca150755174e3aee34d2f0ddfd33c710516"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",

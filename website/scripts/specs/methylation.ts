@@ -21,6 +21,13 @@ const ARABIDOPSIS_WGBS_CONFIG =
 // the per-read bisulfite pileup the tutorial demos — C-vs-T against the
 // reference (no MM/ML tags): methylated C = red, unmethylated (C->T) = blue.
 export const methylationSpecs: ScreenshotSpec[] = [
+  // The three plant methylation contexts, kept as the single message of this
+  // figure: gene annotation + the aggregate MethylDackel track with one labeled
+  // row per context (CpG/CHG/CHH). CpG is high over both the gene body and the
+  // silenced element; CHG/CHH are confined to the element. The per-read pileup is
+  // deliberately NOT here — stacking a single-mode red/blue pileup under a
+  // three-context aggregate read as "one mode vs three" and confused reviewers;
+  // the raw reads get their own figure at the boundary below.
   {
     mode: 'url',
     name: 'methylation/arabidopsis_wgbs_contexts',
@@ -30,42 +37,32 @@ export const methylationSpecs: ScreenshotSpec[] = [
       tracks: [
         { trackId: 'arabidopsis_genes' },
         // aggregate CpG/CHG/CHH fraction, one labeled row each (multirowxy, so
-        // the three contexts don't overlay into a single apparent track): CpG
-        // high over gene body AND element, CHG/CHH confined to the element
+        // the three contexts don't overlay into a single apparent track)
         {
           trackId: 'arabidopsis_methyldackel',
           type: 'MultiLinearWiggleDisplay',
           defaultRendering: 'multirowxy',
           minScore: 0,
           maxScore: 100,
-          height: 180,
-        },
-        {
-          trackId: 'arabidopsis_wgbs',
-          type: 'LinearAlignmentsDisplay',
-          colorBy: { type: 'bisulfite' },
-          // the pileup is supporting context in this overview, not the subject,
-          // so compact the reads to keep genes + aggregate in frame
-          heightMode: 'fixed',
-          featureHeight: 3,
-          featureSpacing: 0,
-          height: 160,
+          height: 260,
         },
       ],
     }),
-    readyText: 'Arabidopsis WGBS',
-    // remote CRAM over CDN + gene GFF + three bigWigs: settles under these caps
+    readyText: 'MethylDackel',
+    // remote gene GFF + three bigWigs: settles under these caps
     readyTimeout: 90000,
-    settleMs: 20000,
-    // room for genes + the three aggregate rows + the full compact pileup below
-    viewportHeight: 720,
+    settleMs: 12000,
+    // genes + all three aggregate rows (CpG/CHG/CHH) + headers/ruler/overview
+    viewportHeight: 640,
   },
   // Zoomed to ~3 kb straddling the gene->element boundary at 4,405,669 (the
   // AT1G12930 3' end, pinned by the gene track above), colored by ALL cytosines
   // so every C on every read is a mark and reads are wide enough to read
   // per-base: dense blue (unmethylated C->T) cytosines over the gene body
   // resolve into dense red (methylated) cytosines as reads cross into the
-  // silenced element — the boundary visible within single reads that span it.
+  // silenced element. This is the per-read counterpart to the aggregate contexts
+  // figure above — reads only, one coloring mode, so nothing implies the
+  // three-context aggregate here.
   {
     mode: 'url',
     name: 'methylation/arabidopsis_wgbs_boundary',
@@ -74,18 +71,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
       loc: 'NC_003070.9:4,404,500-4,407,500',
       tracks: [
         { trackId: 'arabidopsis_genes' },
-        // smoothed per-context methylation fraction above the reads: the CpG row
-        // stays high across the boundary while CHG/CHH rise as reads enter the
-        // silenced element — the aggregate corroboration of the per-read C->T
-        // transition below
-        {
-          trackId: 'arabidopsis_methyldackel',
-          type: 'MultiLinearWiggleDisplay',
-          defaultRendering: 'multirowxy',
-          minScore: 0,
-          maxScore: 100,
-          height: 150,
-        },
         {
           trackId: 'arabidopsis_wgbs',
           type: 'LinearAlignmentsDisplay',
@@ -99,7 +84,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readyText: 'Arabidopsis WGBS',
     readyTimeout: 90000,
     settleMs: 20000,
-    viewportHeight: 620,
+    viewportHeight: 560,
   },
 
   // CRAM modifications + bedmethyl together over a chr20:21.505-21.514Mb window

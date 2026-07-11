@@ -105,18 +105,19 @@ the right, a silenced element (the pseudogene **AT1G12935** and the repeat
 sequence beyond it) is methylated in **all three** contexts, the signature of
 transposon/heterochromatin silencing in plants.
 
-The figure below stacks three tracks over that window so the pattern reads at a
-glance: the **gene annotation** for context, the **aggregate methylation** track
-(one row per context, from MethylDackel — see the previous section), and the
-**per-read bisulfite pileup**. CpG methylation covers both the gene body and the
-silenced element, while CHG and CHH methylation is confined to the element — so
-the tri-context element separates cleanly from the CpG-only gene body.
+The figure below stacks two tracks over that window so the pattern reads at a
+glance: the **gene annotation** for context and the **aggregate methylation**
+track, with one row per context (from MethylDackel — see the previous section).
+CpG methylation covers both the gene body and the silenced element, while CHG and
+CHH methylation is confined to the element — so the tri-context element separates
+cleanly from the CpG-only gene body.
 
-<Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: the AT1G12930 gene and the AT1G12935 pseudogene. Middle: aggregate per-position methylation in the three plant contexts — CpG (red) covers both the gene body and the silenced element (right), while CHG (orange) and CHH (blue) are confined to the element. Bottom: the per-read bisulfite pileup the contexts are read from — red = methylated cytosine, blue = unmethylated." />
+<Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: the AT1G12930 gene and the AT1G12935 pseudogene. Bottom: aggregate per-position methylation in the three plant contexts — CpG (red) covers both the gene body and the silenced element (right), while CHG (orange) and CHH (blue) are confined to the element." />
 
-Switching the pileup's context (**Color by → Advanced → Bisulfite / EM-seq**,
-then CpG / CHG / CHH / all) re-scores the same reads, so any one context can be
-isolated on the per-read pileup too.
+Those aggregate rows are computed from the per-read bisulfite pileup — the same
+reads you can color directly. Switching a pileup's context (**Color by →
+Advanced → Bisulfite / EM-seq**, then CpG / CHG / CHH / all) re-scores every read
+against the chosen context; **all cytosines** marks every C at once.
 
 Because the call is per read, zooming in resolves the methylation on individual
 molecules. The figure below is the gene→element boundary, colored by **all
