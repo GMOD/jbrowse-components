@@ -60,7 +60,7 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [hideNoTracksActive](#property-hidenotracksactive)                       | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [trackSelectorType](#property-trackselectortype)                         | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [showCenterLine](#property-showcenterline)                               | Properties | show the "center line"                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [showCytobandsSetting](#property-showcytobandssetting)                   | Properties | show the "cytobands" in the overview scale bar                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [cytobandsVisible](#property-cytobandsvisible)                           | Properties | show the "cytobands" in the overview scale bar (the resolved, capability-gated value is the `showCytobands` getter)                                                                                                                                                                                                                                                                                                                                     |
 | [trackLabelsOverride](#property-tracklabelsoverride)                     | Properties | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which results in conf being used). see LinearGenomeViewPlugin https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for how conf is used                                                                                                                                                                                                   |
 | [showGridlines](#property-showgridlines)                                 | Properties | show the "gridlines" in the track area                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [highlight](#property-highlight)                                         | Properties | highlights on the LGV from the URL parameters                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -319,15 +319,16 @@ showCenterLine: types.optional(types.boolean, () =>
 )
 ```
 
-#### property: showCytobandsSetting
+#### property: cytobandsVisible
 
-show the "cytobands" in the overview scale bar
+show the "cytobands" in the overview scale bar (the resolved, capability-gated
+value is the `showCytobands` getter)
 
 ```ts
 // type signature
-type showCytobandsSetting = IOptionalIType<ISimpleType<boolean>, [undefined]>
+type cytobandsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showCytobandsSetting: types.optional(types.boolean, () =>
+cytobandsVisible: types.optional(types.boolean, () =>
   localStorageGetBoolean('lgv-showCytobands', true),
 )
 ```

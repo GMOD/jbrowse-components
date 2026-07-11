@@ -30,7 +30,10 @@ function wgbsContextTrack(context: 'CG' | 'CHG' | 'CHH') {
     display: {
       trackId: `arabidopsis_wgbs_${context.toLowerCase()}`,
       type: 'LinearAlignmentsDisplay',
-      colorBy: { type: 'bisulfite', modifications: { cytosineContext: context } },
+      colorBy: {
+        type: 'bisulfite',
+        modifications: { cytosineContext: context },
+      },
       // compact reads, coverage hidden: three stacked pileups stay legible and
       // the row's message is the read colors, not a per-copy histogram
       showCoverage: false,
@@ -98,53 +101,13 @@ export const methylationSpecs: ScreenshotSpec[] = [
       {
         type: 'text',
         x: 250,
-        y: 150,
-        maxWidth: 250,
-        fontSize: 14,
-        text: 'Gene body (AT1G12930): methylated in CpG only',
-      },
-      {
-        type: 'text',
-        x: 900,
-        y: 150,
-        maxWidth: 250,
-        fontSize: 14,
-        text: 'Silenced element (AT1G12935): methylated in all three contexts',
+        y: 145,
+        maxWidth: 620,
+        fontSize: 15,
+        text: 'Left: gene body, CpG only. Right: silenced element, all three contexts (CpG, CHG, CHH).',
       },
     ],
   },
-  // Zoomed to ~3 kb straddling the gene->element boundary at 4,405,669 (the
-  // AT1G12930 3' end, pinned by the gene track above), colored by ALL cytosines
-  // so every C on every read is a mark and reads are wide enough to read
-  // per-base: dense blue (unmethylated C->T) cytosines over the gene body
-  // resolve into dense red (methylated) cytosines as reads cross into the
-  // silenced element. This is the per-read counterpart to the aggregate contexts
-  // figure above — reads only, one coloring mode, so nothing implies the
-  // three-context aggregate here.
-  {
-    mode: 'url',
-    name: 'methylation/arabidopsis_wgbs_boundary',
-    url: lgvSession(ARABIDOPSIS_WGBS_CONFIG, {
-      assembly: 'arabidopsis',
-      loc: 'NC_003070.9:4,404,500-4,407,500',
-      tracks: [
-        { trackId: 'arabidopsis_genes' },
-        {
-          trackId: 'arabidopsis_wgbs',
-          type: 'LinearAlignmentsDisplay',
-          colorBy: {
-            type: 'bisulfite',
-            modifications: { cytosineContext: 'all' },
-          },
-        },
-      ],
-    }),
-    readyText: 'Arabidopsis WGBS',
-    readyTimeout: 90000,
-    settleMs: 20000,
-    viewportHeight: 560,
-  },
-
   // CRAM modifications + bedmethyl together over a chr20:21.505-21.514Mb window
   // that captures a methylation *contrast* the reviewer asked for: the leftmost
   // CpG island (UCSC "CpG: 158", chr20:21,505,294-21,506,966) is hypomethylated

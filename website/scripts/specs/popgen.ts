@@ -82,49 +82,6 @@ const TAJD_TRACK = {
   },
 }
 
-// The 180 In(2L)t-karyotyped lines (161 standard + 19 inverted) at the
-// arrangement-informative SNPs — the ~16k sites whose allele frequency differs
-// sharply between the two karyotypes (|Δfreq| > 0.7), i.e. the markers that tag
-// the inversion. A samples TSV assigns each line its karyotype so the matrix can
-// color by arrangement. Using the informative markers (rather than all genotypes)
-// makes the two arrangements read as clean opposing blocks; the full genotype set
-// is hosted alongside as dgrp_In2Lt_2L.vcf.gz.
-// A single In(2L)t inversion call (<INV>, 2L:2,225,744-13,154,180) genotyped
-// across all 180 karyotyped DGRP lines — GTs derived from the karyotype calls
-// (1/1 for the 19 In(2L)t lines, 0/0 for the 161 standard). Displayed as a
-// multi-sample matrix, one feature spanning the whole inversion resolves the
-// ~13 Mb arrangement that the per-SNP matrix couldn't (its columns vanish at
-// arm scale): the feature literally starts and ends at the breakpoints, so the
-// boundaries are on-screen, with each row a line colored by its genotype.
-const KARYOTYPE_VCF_TRACK = {
-  type: 'VariantTrack',
-  trackId: 'dgrp_In2Lt_matrix',
-  name: 'In(2L)t inversion genotyped across DGRP lines',
-  assemblyNames: ['dm6'],
-  adapter: {
-    type: 'VcfTabixAdapter',
-    vcfGzLocation: {
-      uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz',
-    },
-    index: {
-      location: {
-        uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz.tbi',
-      },
-    },
-    samplesTsvLocation: {
-      uri: 'https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv',
-    },
-  },
-  displays: [
-    {
-      type: 'LinearMultiSampleVariantMatrixDisplay',
-      displayId: 'dgrp_In2Lt_matrix-matrix',
-      // color the left sidebar strip by the karyotype metadata column
-      colorBy: 'karyotype',
-    },
-  ],
-}
-
 // Between-population Fst (African vs cosmopolitan) across the Cyp6g1 region,
 // computed from DEST Pool-Seq allele frequencies (dm6). The African group pools
 // the sub-Saharan samples (ancestral range); the cosmopolitan group is the North
@@ -235,122 +192,6 @@ export const popgenSpecs: ScreenshotSpec[] = [
     settleMs: 14000,
   },
 
-  // Zoomed out to a ~3 Mb window on 2R centered on Cyp6g1 (12,185,667–12,188,431)
-  // so the diversity valley reads as a sharp, localized dip against the arm-wide
-  // background rather than filling the frame. Whole-panel pi collapses across
-  // ~12.13–12.20 Mb (the gene's window drops to ~0.0004, under 10% of the 2R
-  // average ~0.0049) between high-diversity flanks — the classic hard-sweep
-  // signature of the DDT/neonicotinoid-resistance haplotype fixing in this
-  // derived population. A genomic highlight band marks Cyp6g1, which is a sliver
-  // at this zoom; the gene track underneath is a showOnlyGenes context strip.
-  {
-    mode: 'url',
-    name: 'popgen/pi_cyp6g1',
-    url: `${DM6_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [PI_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'dm6',
-          loc: 'chr2R:10,700,000-13,700,000',
-          // stable band over the Cyp6g1 gene body so it stays identifiable even
-          // though the gene is only a few pixels wide at this scale (replaces a
-          // text-anchored box that landed in blank space once labels stopped
-          // rendering at the wider zoom)
-          highlight: [
-            {
-              refName: 'chr2R',
-              start: 12_185_000,
-              end: 12_189_000,
-              assemblyName: 'dm6',
-              label: 'Cyp6g1',
-            },
-          ],
-          tracks: [
-            {
-              trackId: 'pi_all',
-              type: 'LinearWiggleDisplay',
-              height: 240,
-            },
-            {
-              trackId: 'dm6-ncbiRefSeqCurated',
-              type: 'LinearBasicDisplay',
-              height: 110,
-              showOnlyGenes: true,
-            },
-          ],
-        },
-      ],
-    })}&sessionName=Screenshot`,
-    readySelector: '[data-testid="wiggle-display-done"]',
-    // the wiggle track name always renders; the old gene-label wait no longer
-    // works at this zoom (labels collapse)
-    readyText: 'whole panel',
-    readyTimeout: 90000,
-    viewportHeight: 560,
-    settleMs: 12000,
-    annotations: [
-      {
-        type: 'text',
-        // sits in the upper-right white space of the wiggle plot, clear of the
-        // header/location bar it used to overlap (reviewer: move down + right)
-        x: 900,
-        y: 205,
-        maxWidth: 360,
-        fontSize: 15,
-        text: 'π collapses to under a tenth of the arm-wide background here — the hard-sweep signature at the Cyp6g1 insecticide-resistance gene',
-      },
-    ],
-  },
-
-  // The In(2L)t arrangement as one SV call genotyped across the panel: the whole
-  // ~11 Mb inversion (2L:2.23-13.15 Mb) shown with flanking reference on both
-  // sides, so the <INV> feature's start and end sit at the breakpoints on-screen.
-  // Each of the 180 rows is a DGRP line colored by its genotype at the inversion;
-  // the karyotype sidebar strip and the VCF row order both put the 19 In(2L)t
-  // carriers in one block above the 161 standard lines. This resolves the
-  // arrangement the per-SNP matrix couldn't (its columns collapse at arm scale).
-  {
-    mode: 'url',
-    name: 'popgen/genotype_matrix_in2lt',
-    url: `${DM6_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [KARYOTYPE_VCF_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'dm6',
-          // ruler set to the inversion extent (breakpoints ~2.23 + ~13.15 Mb) so
-          // the full-width matrix band reads as spanning the whole arrangement —
-          // the matrix indexes columns by variant, not bp, so flanks add nothing
-          loc: 'chr2L:2,000,000-13,400,000',
-          tracks: [
-            {
-              trackId: 'dgrp_In2Lt_matrix',
-              type: 'LinearMultiSampleVariantMatrixDisplay',
-              height: 520,
-            },
-          ],
-        },
-      ],
-    })}&sessionName=Screenshot`,
-    readyText: 'chr2L',
-    readyTimeout: 90000,
-    viewportHeight: 620,
-    settleMs: 8000,
-    annotations: [
-      {
-        type: 'text',
-        // over the uniform grey standard-line block, clear of the teal carrier
-        // rows at top and the genotype legend at right
-        x: 300,
-        y: 400,
-        maxWidth: 340,
-        fontSize: 15,
-        text: 'One In(2L)t inversion call genotyped across 180 lines. Each row = one strain; the 19 carriers (orange strip) share the inverted allele, and the call spans the full ~11 Mb between its breakpoints.',
-      },
-    ],
-  },
-
   // Tajima's D + π at Cyp6g1 (chr2R:12,185,667): the two-part hard-sweep signature
   // read against the gene. Both statistics dip together in the swept window — π
   // collapses (diversity removed by the hitchhiking haplotype) and Tajima's D goes
@@ -372,11 +213,14 @@ export const popgenSpecs: ScreenshotSpec[] = [
           // on both sides (whole-panel bigWigs cover the whole arm, so zooming
           // out just adds context, no empty flanks)
           loc: 'chr2R:11,700,000-12,700,000',
+          // band the full swept window (~12.13-12.20 Mb) rather than just the
+          // gene body, so it visibly covers the whole joint Tajima's D + π dip
+          // (reviewer: highlight the entire dip)
           highlight: [
             {
               refName: 'chr2R',
-              start: 12_185_000,
-              end: 12_189_000,
+              start: 12_130_000,
+              end: 12_200_000,
               assemblyName: 'dm6',
               label: 'Cyp6g1',
             },
@@ -470,8 +314,9 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="wiggle-display-done"]',
     readyText: 'cosmopolitan',
     readyTimeout: 90000,
-    // fst(180) + diversity(200) + gene(90) + 3 headers + ruler/overview
-    viewportHeight: 720,
+    // fst(180) + diversity(200) + gene(90) + 3 headers + ruler/overview; taller
+    // so the stacked wiggles are less cramped (reviewer)
+    viewportHeight: 820,
     settleMs: 12000,
     annotations: [
       {
@@ -480,7 +325,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
         y: 150,
         maxWidth: 300,
         fontSize: 15,
-        text: 'Fst peaks at Cyp6g1 while cosmopolitan diversity (red) collapses and African (blue) holds — a population-specific sweep.',
+        text: 'Fst peaks where cosmopolitan diversity (red) collapses but African (blue) holds.',
       },
     ],
   },

@@ -105,28 +105,22 @@ the right, a silenced element (the pseudogene **AT1G12935** and the repeat
 sequence beyond it) is methylated in **all three** contexts, the signature of
 transposon/heterochromatin silencing in plants.
 
-The figure below shows the three contexts at two levels: the **gene annotation**,
-the **aggregate methylation** track (one row per context, from MethylDackel — see
-the previous section), and then **the same per-read pileup colored three separate
-ways**, one copy per context. Over the gene body (left) only the CpG copy lights
-up red; over the silenced element (right) all three copies do — the tri-context
-element separates cleanly from the CpG-only gene body, in the aggregate and in the
-reads themselves.
+The figure below shows the three contexts at two levels: the **gene
+annotation**, the **aggregate methylation** track (one row per context, from
+MethylDackel — see the previous section), and then **the same per-read pileup
+colored three separate ways**, one copy per context. Over the gene body (left)
+only the CpG copy lights up red; over the silenced element (right) all three
+copies do — the tri-context element separates cleanly from the CpG-only gene
+body, in the aggregate and in the reads themselves.
 
 <Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: gene annotation, then the aggregate MethylDackel track (one row per context), then the same per-read pileup colored by CpG, CHG, and CHH in turn. Gene body (left): only CpG is methylated (red). Silenced element (right): all three contexts are. Blue = unmethylated." />
 
 Each per-read copy is just the one alignment track re-colored: switch a pileup's
-context with **Color by → Advanced → Bisulfite / EM-seq**, then CpG / CHG / CHH /
-all — the last marks every cytosine at once.
-
-Because the call is per read, zooming in resolves the methylation on individual
-molecules. The figure below is the gene→element boundary, colored by **all
-cytosines** so every C is marked: each read is a run of blue (unmethylated)
-cytosines on the gene-body side that turns red (methylated) as it crosses into
-the silenced element — the boundary is visible even within single reads that
-span it.
-
-<Figure src="/img/methylation/arabidopsis_wgbs_boundary.png" caption="The gene→element boundary (~3 kb). Every cytosine on every read is colored: blue (unmethylated, C→T) dominates the AT1G12930 gene body on the left, and reads turn red (methylated) as they cross into the silenced element on the right. The boundary is visible even within single reads that span it, and in the coverage histogram above." />
+context with **Color by → Advanced → Bisulfite / EM-seq**, then CpG / CHG / CHH
+/ all — the last marks every cytosine at once. Because the call is per read,
+zooming in to the gene→element boundary resolves the methylation on individual
+molecules: each read runs blue (unmethylated) over the gene body and turns red
+(methylated) as it crosses into the silenced element.
 
 ## See also
 

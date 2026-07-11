@@ -984,7 +984,9 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'height:60',
     '--multiwig',
     'data/scatac_catlas.json',
-    'height:520',
+    // ~27px per row across the 16 cell types — tighter rows than the old 520 so
+    // the stack reads compactly (reviewer)
+    'height:440',
     // zoomed out to a ~300 kb window around GCG (not the bare gene body) so the
     // alpha-cell peak reads as a localized, cell-type-specific spike against
     // otherwise-quiet flanking chromatin, rather than an isolated close-up whose

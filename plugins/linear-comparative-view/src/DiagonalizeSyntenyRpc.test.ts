@@ -16,7 +16,12 @@ jest
   .mocked(getFeatureAdapterOrThrow)
   .mockResolvedValue({ getFeaturesInMultipleRegionsArray } as never)
 
-function feature(id: string, refName: string, start: number, mateRefName: string) {
+function feature(
+  id: string,
+  refName: string,
+  start: number,
+  mateRefName: string,
+) {
   return new SimpleFeature({
     uniqueId: id,
     refName,
@@ -47,7 +52,12 @@ test('execute forwards targetAssemblyName to getFeatures and reorders the query 
     {
       sessionId: 'test',
       adapters: [
-        { adapterConfig: {}, fetchRegions: [], refRefNameMap: {}, queryRefNameMap: {} },
+        {
+          adapterConfig: {},
+          fetchRegions: [],
+          refRefNameMap: {},
+          queryRefNameMap: {},
+        },
       ],
       referenceRegions: [
         { refName: 'p1', start: 0, end: 1000, assemblyName: 'peach' },

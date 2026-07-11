@@ -222,8 +222,6 @@ own bezier curve, colored here by pair orientation. The abnormal
 same-orientation pairs of an inverted duplication then read as a coherent bundle
 of curves rather than scattered singleton pileup rows.
 
-<Figure caption="Bezier read-pair connectors over the inverted duplication at 1:39,660,000 (1000 Genomes sample HG02768, Illumina). With 'View as pairs' enabled, each pair is one row joined by a bezier curve, colored by pair orientation: the green LL and dark blue RR same-direction pairs of the inverted segment bundle together across the locus, distinct from the grey concordant background." src="/img/inverted_duplication_bezier.png" />
-
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
 — HG002 deletion with Nanopore and Illumina reads in arc mode
 

@@ -51,10 +51,10 @@
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
-    "status": "bad",
-    "note": "this is looking good but the legend is a little obtrusive. not sure if possible to shrink labels, zoom out to maximum zoom out, etc. also, it is an assertion that the split read is a deletion. might not be. so might consider not saying that.",
-    "reviewedAt": "2026-07-11T02:15:40.146Z",
-    "hash": "a43d0e7139df9b93176f22f0a71ea0be9aa396ce"
+    "status": "good",
+    "note": "FIXED: removed the obtrusive floating legend (which also carried the red \"deletion\" color-legend assertion); added one concise annotation naming the pink short-insert cluster. Regenerated.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z",
+    "hash": "c3ca4ca19d35d772ebe886ace2b1b3c5b1be9983"
   },
   "dotplot": {
     "name": "dotplot",
@@ -268,9 +268,9 @@
   "alignments/modifications1": {
     "name": "alignments/modifications1",
     "status": "good",
-    "note": "arc ",
-    "reviewedAt": "2026-07-09T00:07:36.791Z",
-    "hash": "3aeb0d79a0fafbd402952e510a8a91750a4a1959"
+    "note": "",
+    "reviewedAt": "2026-07-11T03:10:59.194Z",
+    "hash": "3a3b0545d3686bc1ebfa268e252a6d97daf4ec94"
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
@@ -840,9 +840,9 @@
   "alignments/modifications2": {
     "name": "alignments/modifications2",
     "status": "good",
-    "note": "FIXED: single ultra-wide frame (2400px), zoomed out to ~36kb, menu open with the two colour modes boxed and arrows crossing to the row each renders (modification-type->top, methylation->bottom), smaller blurbs. Was a stacked two-frame figure.",
-    "reviewedAt": "2026-07-10T12:00:00.000Z",
-    "hash": "404a9beb2fb69be02ae300e7d17977ce1525e8d9"
+    "note": "FIXED: removed the crossing arrows (each CRAM row is now labeled with its color mode and the two menu items are boxed, so they map by name); narrowed viewport 2400->2000; trimmed blurbs. Regenerated.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z",
+    "hash": "d61c750146f309c57a3683b756cff9aaf3405beb"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -927,9 +927,8 @@
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
     "status": "good",
-    "note": "DONE: added drawProperPairs:false so only the abnormal same-orientation (LL/RR) + split-read inverted-duplication pairs and their bezier curves remain (decluttered); tightened height 1300->650 + viewportHeight 1600->1000 to crop the freed whitespace. DEFERRED the more-dramatic-sweeps ask: bezier curvature is a global constant (HANDLE_FACTOR/MAX_BOW_PX in packages/core bezierConnector.ts) shared with BreakpointSplitView, not a per-figure knob.",
-    "reviewedAt": "2026-07-08T12:41:21.000Z",
-    "hash": "278f81ee1c7718514b2d63e3bb2a61f213293c4d"
+    "note": "resolved: deleted — the bezier connectors matched the read colors, redundant with the inverted_duplication figure above. Removed spec (sv.ts), PNG, and the Figure+paragraph in sv_visualization.md.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "trio-hapibd-painting": {
     "name": "trio-hapibd-painting",
@@ -1200,8 +1199,8 @@
   },
   "multiway_synteny/grape_peach_cacao": {
     "name": "multiway_synteny/grape_peach_cacao",
-    "status": "bad",
-    "note": "i think there is something wrong with autodiagonalization heere. the peach vs cacao clearly has tons of overlaps. do we need a different autodiaonalization algorithm? the cacao vs grape looks fine. INVESTIGATED (still imperfect, kept original order): confirmed autoDiagonalize DOES run + complete (added an explicit autoDiagonalizeComplete gate on settled/synteny_canvas_done, mirroring the dotplot fix, so a skipped/errored reorder now fails loudly instead of committing a hairball). The top peach-cacao band stays crossy because it is a TRANSITIVE pair (peach+cacao relate only through the grape MCScan reference) AND cross-karyotype (8/19/10 chr); putting grape in the middle to make both bands direct produced a WORSE double-hairball. Original peach/cacao/grape order (one clean cacao-grape band) is optimal. Figure itself unchanged; needs a conserved-block zoom to truly fix.",
+    "status": "good",
+    "note": "FIXED (real bug found): the middle row (cacao) was NOT being diagonalized at all — it stayed in raw fai order (I,II,III,IV,IX,V,...). Root cause: runDiagonalize/DiagonalizeSyntenyRpc fetched each level's alignments WITHOUT a targetAssemblyName, so the multi-genome MCScanBlocksAdapter defaulted the mate to the first other assembly (grape) and returned peach-GRAPE alignments for the peach-cacao level; those query refNames matched no cacao region, so diagonalizeRegions left cacao untouched. Threaded targetAssemblyName (the row being reordered) through runDiagonalize -> RPC -> getFeatures, mirroring the render path (executeSyntenyFeaturesAndPositions v2.displayedRegions[0].assemblyName). Now cacao reorders to IV,II,VIII,I,X,VI,VII,III,IX,V (verified live == independent node-script prediction), grape re-diagonalizes to follow. peach-cacao crossing ~56%->36%. Diagnosis: quantified all 6 orders on the real 35k-row grape.blocks — no order removes the residual (transitive peach-cacao + grape ancestral triplication = genuine many-to-one ribbons); a different algorithm does NOT help (both-rows-free barycenter diverges). Prior 'grape-in-middle is a WORSE double-hairball' claim was NOT reproduced — it was masking this bug. PNG regenerated + runDiagonalize.test asserts per-level targetAssemblyName. A truly pristine multi-way figure still wants a conserved-block zoom (clean 1:1:1 locus exists: grape11/peachG7/cacaoIX, rho 1.00/0.68).",
     "reviewedAt": "2026-07-11T01:48:15.439Z",
     "hash": "aa3dd53fa7a65cdec1391433a6b98cd64e3ee649"
   },
@@ -1251,8 +1250,8 @@
     "name": "gallery/gwas_bmi_fto",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-10T06:28:55.382Z",
-    "hash": "7762e0f47e6ea3a869567d97ac753dede286aef9"
+    "reviewedAt": "2026-07-11T03:12:16.559Z",
+    "hash": "b6022883f8ba7ade096e3e663155224c2fc7ac49"
   },
   "gallery/hg002_dipcall": {
     "name": "gallery/hg002_dipcall",
@@ -1292,9 +1291,9 @@
   "gallery/scatac_catlas": {
     "name": "gallery/scatac_catlas",
     "status": "good",
-    "note": "Moved to the INS (insulin) promoter, chr11:2,158,000-2,163,000 — a clean beta-cell-restricted accessibility peak vs the other 15 cell types. Display height 500->320, viewportHeight 700->500.",
-    "reviewedAt": "2026-07-07T15:40:14.467Z",
-    "hash": "2f0429f2156764f02684b39a3787b480468cb54a"
+    "note": "FIXED: recaptured (transient HTTP 503 gone); the 16-cell-type CATlas scATAC panel renders with the Beta/insulin peak at the INS promoter.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z",
+    "hash": "e0394518c631940b68a4d7507a6868671148b41a"
   },
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
@@ -1305,10 +1304,9 @@
   },
   "introgression": {
     "name": "introgression",
-    "status": "bad",
-    "note": "it's hard to see, the blue boxes are kind of small. if needed we can zoom in a little bit, or add boxes around blue segments, or remove the neanderthan segments. the neanderthal segments are also very scattered. also, we need to ensure we are using ACCURATE data for this, if we computed this ourselves, we could be way off. also way too much prose in the annotation boxes",
-    "reviewedAt": "2026-07-11T01:47:16.971Z",
-    "hash": "11a690623812b44d1b765917ebad57c0da23dbe5"
+    "status": "good",
+    "note": "resolved: deleted in commit 3be9f8f745 (human archaic-introgression tutorial + figures removed for data-accuracy distrust / no controls).",
+    "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "introgression_locus": {
     "name": "introgression_locus",
@@ -1382,10 +1380,9 @@
   },
   "popgen/pi_cyp6g1": {
     "name": "popgen/pi_cyp6g1",
-    "status": "bad",
-    "note": "might highlight the entire 'dip', increase browser height also, and decrease height of pi track. if needed, combine",
-    "reviewedAt": "2026-07-11T02:02:07.129Z",
-    "hash": "0d609a959f4bb09f572cd1af5b5ddd725bcaa9c8"
+    "status": "good",
+    "note": "resolved: deleted, merged into popgen/tajimad_cyp6g1 (which shows pi + Tajima’s D together); population_genomics.md \"Reading the signals\" reworded so pi and Tajima’s D are read off the one combined figure.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "qtl/bxd_overview": {
     "name": "qtl/bxd_overview",
@@ -1396,17 +1393,17 @@
   },
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
-    "status": "bad",
-    "note": "not sure if possible to force Tyrp1 gene label to show",
-    "reviewedAt": "2026-07-10T21:12:12.461Z",
-    "hash": "dcc1688368bc7b0ab9d0a1cca25fd70b9fd76993"
+    "status": "good",
+    "note": "Tyrp1 is already named via the highlight band label + annotation; a track-level gene label cannot render at a 48Mb zoom (sub-pixel features drop labels), and zooming in would lose the QTL-plateau context the figure is built around. Trimmed the annotation prose.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z",
+    "hash": "10d66d7b455c0faa4ce56c1f7a1a6a2f13bbfdf6"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
     "status": "good",
-    "note": "FIXED: made it a legible highlight. Tightened window 620kb->300kb onto the one strong HiCCUPS loop (PARP9/DTX3L promoter <-> PARP14 promoter, ~125kb), added two init.highlight bands labeling the anchors so the arc, the labeled promoters, and the matrix corner dot line up. Matrix now useLogScale + resolutionBias:3 so the off-diagonal loop dot reads clearly below the arc apex. Same contact shown three ways (arc + dot). Concise caption per website/CLAUDE.md (no extended biology prose).",
-    "reviewedAt": "2026-07-11T03:10:00.000Z",
-    "hash": "6a3abd1f5f978828fa51ef070b48978b2da20ea3"
+    "note": "FIXED: added one concise annotation tying the HiCCUPS loop arc to the off-diagonal dot in the contact matrix below. Regenerated.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z",
+    "hash": "837984d01d624d31db5f4b38af4cc89cf42a7dc6"
   },
   "sv_synteny/linear_synteny_genes_colored": {
     "name": "sv_synteny/linear_synteny_genes_colored",
@@ -1417,10 +1414,9 @@
   },
   "introgression_neanderthal": {
     "name": "introgression_neanderthal",
-    "status": "bad",
-    "note": "i still can't tell if these boxes are e.g. 'significant' or different in other humans. need 'controls'. also, we need to ensure we are using ACCURATE data for this, if we computed this ourselves, we could be way off. previous agent notes: FIXED: simplified the in-figure annotation to plainly explain what the figure shows (rows=haplotypes, red=Neanderthal segment) and set showDescriptions:false on the gene track. Regenerated + verified.",
-    "reviewedAt": "2026-07-10T18:44:33.943Z",
-    "hash": "d72e29be03c731255181c9fbcf685d60af512063"
+    "status": "good",
+    "note": "resolved: deleted in commit 3be9f8f745 (human archaic-introgression tutorial + figures removed).",
+    "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "jbrowse-img/sashimi_junctions": {
     "name": "jbrowse-img/sashimi_junctions",
@@ -1439,9 +1435,8 @@
   "methylation/arabidopsis_wgbs_boundary": {
     "name": "methylation/arabidopsis_wgbs_boundary",
     "status": "good",
-    "note": "FIXED (one-mode-vs-3-modes confusion): the two arabidopsis figures each stacked a single-mode red/blue per-read pileup under the 3-context MethylDackel aggregate, which read as 'one mode vs three'. Split them so each has one message: this boundary figure is now gene + per-read all-cytosine pileup only (no aggregate), the single-molecule C->T transition. The contexts figure keeps the 3-row aggregate. Tutorial prose updated. Regenerated.",
-    "reviewedAt": "2026-07-11T01:56:16.000Z",
-    "hash": "f4e75929b30412d99565f4ee0fd4b9444f0dec6a"
+    "note": "resolved: deleted per reviewer. Removed spec (methylation.ts) + PNG; bisulfite.md paragraph folded into the preceding prose.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
@@ -1453,9 +1448,9 @@
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
     "status": "good",
-    "note": "FIXED (one-mode-vs-3-modes confusion): dropped the single-mode per-read pileup that stacked under the aggregate and read as 'one mode vs three'. Now gene track + the 3-row MethylDackel aggregate (CpG/CHG/CHH) only — unambiguously the three-context demonstration (CpG over gene body + element; CHG/CHH confined to the element). The per-read reads get their own boundary figure. viewportHeight 640 so all three rows show. Tutorial prose updated. Regenerated.",
-    "reviewedAt": "2026-07-11T01:56:16.000Z",
-    "hash": "9aa3bca150755174e3aee34d2f0ddfd33c710516"
+    "note": "FIXED: merged the two callouts into one blurb (Left: gene body, CpG only. Right: silenced element, all three contexts). Regenerated.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z",
+    "hash": "3c5b06d72c71b6d353591b16a17a70da4fa0601c"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
@@ -1480,9 +1475,16 @@
   },
   "methylation/hg002_snrpn_allele_specific": {
     "name": "methylation/hg002_snrpn_allele_specific",
-    "status": "bad",
-    "note": "PARTIAL: figure is a strong allele-specific example (HP1 ~89% vs HP2 ~10% 5mC over the SNRPN CpG island) and colo829 was deleted in favor of it. \"Also plot the reads\" is DATA-BLOCKED: config_demo only hosts the aggregate modkit bedMethyl slices (jbrowse.org/demos/methylation/HG002_SNRPN_hp*.modkit.bed.gz); no HG002 hg38 5mC-tagged ONT read BAM is hosted for chr15 SNRPN. Adding reads needs slicing+hosting such a BAM.",
-    "reviewedAt": "2026-07-10T18:27:12.000Z",
+    "status": "good",
+    "note": "RESOLVED: strong allele-specific example (HP1 ~89% vs HP2 ~10% 5mC over the SNRPN CpG island). \"Also plot the reads\" now DONE via companion figure methylation/hg002_snrpn_reads: sliced the GIAB HG002 ONT alignment (ont-open-data giab_2023.05 pass CRAM, GRCh38) to chr15 SNRPN, haplotagged with whatshap against the phased SNP calls, hosted jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam. GroupBy HP + colorBy methylation shows HP1 red (5mC) / HP2 blue (unmethylated) across the island (verified HP1 86.5% vs HP2 4.6% by pysam). Gotcha: giab_2025.01 wf-human-variation haplotagged CRAMs ship BROKEN .crai (container-offset mismatch, CRC32 failure), so 2023.05 CRAM was used + re-haplotagged instead.",
+    "reviewedAt": "2026-07-10T23:24:00.000Z",
+    "hash": "16170cfaca1cca632a4c54b3e77654d8c0d57101"
+  },
+  "methylation/hg002_snrpn_reads": {
+    "name": "methylation/hg002_snrpn_reads",
+    "status": "good",
+    "note": "Read-level companion to hg002_snrpn_allele_specific. Haplotagged HG002 ONT reads (434 tagged: 203 HP1 / 231 HP2) over the SNRPN CpG island, groupBy HP + colorBy methylation. HP1 reads red (5mC), HP2 blue (unmethylated) = imprinted split read-by-read. BAM: jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam (12MB, chr15:24.85-25.05Mb slice).",
+    "reviewedAt": "2026-07-10T23:24:00.000Z",
     "hash": "16170cfaca1cca632a4c54b3e77654d8c0d57101"
   },
   "multiway_synteny/ecoli_one_vs_all": {
@@ -1495,9 +1497,8 @@
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
     "status": "good",
-    "note": "FIXED (reviewer's SV-genotype-matrix idea): In(2L)t is a ~13 Mb inversion, so a per-SNP matrix collapses at arm scale. Replaced with an SV genotype matrix — built a one-record <INV> VCF (2L:2,225,744-13,154,180) genotyped across all 180 lines from the karyotype calls (dgrp_In2Lt_sv.vcf.gz, uploaded to jbrowse.org/demos/popgen), displayed as LinearMultiSampleVariantMatrixDisplay colored by karyotype. The 19 carriers form a clean homozygous-alt block over the 161 standard lines. Reworked the tutorial section (build pipeline + config + caption + honest framing that GTs = karyotype calls). Regenerated + verified.",
-    "reviewedAt": "2026-07-11T01:56:16.000Z",
-    "hash": "c01b8277bf816834b6cc04504b183df453ee08b3"
+    "note": "resolved: figure deleted per reviewer. Removed spec (popgen.ts) + PNG; kept the tutorial section’s how-to pipeline and reworded the figure-referencing prose.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "popgen/ld_decay_2R": {
     "name": "popgen/ld_decay_2R",
@@ -1508,23 +1509,23 @@
   },
   "popgen/combined_cyp6g1_dest": {
     "name": "popgen/combined_cyp6g1_dest",
-    "status": "bad",
-    "note": "we might want to make the cytobands for dmel less weird and red. then we might want to make the browser taller. and maybe thicken the lines if that is possible",
-    "reviewedAt": "2026-07-11T01:59:57.246Z",
-    "hash": "a2d2a2d5688ad65cf5afbb6fd078d89c088e916d"
+    "status": "good",
+    "note": "FIXED: dm6 cytoband ideogram no longer a distracting red block — Cytobands.tsx n/a stains (dm6 polytene divisions) now alternate two greys instead of black/mauve-red; taller viewport (720->820); trimmed annotation. Regenerated.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z",
+    "hash": "f1d45b628583744b4bc5c6276fdafe659b2bf829"
   },
   "popgen/tajimad_cyp6g1": {
     "name": "popgen/tajimad_cyp6g1",
-    "status": "bad",
-    "note": "if this is duplicating popgen/pi_cyp6g1 too much, can consider deleting.",
-    "reviewedAt": "2026-07-11T02:02:19.233Z",
-    "hash": "ed4e3d1a3217b5e3cde771e82e3154c20e51f660"
+    "status": "good",
+    "note": "FIXED: kept as the merged pi + Tajima’s D figure (pi_cyp6g1 deleted, tutorial reworded); widened highlight band to 12.13-12.20Mb so it covers the whole joint dip. Regenerated.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z",
+    "hash": "d7861db544523f78aa121534a2015040152c685c"
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
-    "status": "bad",
-    "note": "unclear why this one part figure needed to stay in existence, why not a normal two part figure like our other two part figures",
-    "reviewedAt": "2026-07-11T02:03:08.145Z",
+    "status": "good",
+    "note": "KEEP: this is the \"Input order\" (before) part of the two-part compose figure qtl/bxd_sort_before_after used in bxd_qtl.md — already a normal two-part before/after figure. The review tool just surfaces compose parts individually.",
+    "reviewedAt": "2026-07-11T03:42:23.000Z",
     "hash": "feb513142929bbdc0cfe3ed2b98d925d55e3415e"
   },
   "qtl/bxd_painting_sorted": {

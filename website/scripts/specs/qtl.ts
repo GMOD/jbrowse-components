@@ -138,7 +138,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
         y: 66,
         maxWidth: 360,
         fontSize: 15,
-        text: 'Tyrp1 (red band): the coat-color gene, sitting under the QTL',
+        text: 'Tyrp1 (red band): the coat-color gene under the QTL peak',
       },
     ],
   },

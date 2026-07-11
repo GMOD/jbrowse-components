@@ -26,5 +26,16 @@ export const hicSpecs: ScreenshotSpec[] = [
     // capture
     settleMs: 32000,
     viewportHeight: 950,
+    annotations: [
+      {
+        type: 'text',
+        // open right area of the loops track, clear of the arc apex
+        x: 960,
+        y: 300,
+        maxWidth: 330,
+        fontSize: 16,
+        text: 'The HiCCUPS loop (arc, top) is the off-diagonal dot in the contact matrix below.',
+      },
+    ],
   },
 ]

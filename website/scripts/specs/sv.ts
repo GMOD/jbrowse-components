@@ -425,65 +425,6 @@ export const svSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Same INVdup locus as inverted_duplication, but with the linked-read *bezier*
-  // connection mode (showBezierConnections) over an ordinary pileup instead of
-  // coverage-band arcs. Each pair is drawn as a horizontal-tangent oval curve
-  // spanning its two mates — the same curve shape BreakpointSplitView's
-  // AlignmentConnections draws in a single linear view — so the green LL / blue
-  // RR same-orientation pairs of the inverted segment stand out as bundled curves
-  // across the locus. "View as pairs" (linkedReads: 'normal') is on,
-  // so each mate pair collapses onto a single row joined by its bezier curve —
-  // the abnormal same-orientation (LL/RR) pairs of the inverted duplication read
-  // as a coherent stack of curves instead of scattered singleton pileup rows.
-  {
-    mode: 'url',
-    name: 'inverted_duplication_bezier',
-    url: kgUrl({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: '1:39,658,200-39,661,800',
-          tracks: [
-            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-            {
-              trackId: 'HG02768.final',
-              showBezierConnections: true,
-              linkedReads: 'normal',
-              // hide the normally-paired reads so only the abnormal
-              // same-orientation (LL/RR) inverted-duplication pairs and their
-              // bezier curves remain, decluttering the view (reviewer)
-              drawProperPairs: false,
-              // also draw the coverage-band arcs, below the coverage (reviewer)
-              readConnections: 'arc',
-              readConnectionsDown: true,
-              // proper pairs hidden, so the abnormal-pair stack is short —
-              // sized to it instead of the old 1300px full-depth band
-              height: 650,
-              coverageHeight: 120,
-              featureHeight: 9,
-              colorBy: { type: 'pairOrientation' },
-              showLegend: true,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'HG02768',
-    readyTimeout: 60000,
-    viewportHeight: 1000,
-    settleMs: 30000,
-    annotations: [
-      {
-        type: 'text',
-        x: 60,
-        y: 470,
-        text: 'View as pairs joins each pair with a bezier curve. Green (LL) and navy (RR) same-orientation pairs bundle across the locus; magenta marks split reads crossing the inversion.',
-        maxWidth: 520,
-      },
-    ],
-  },
-
   // Same inversion, short reads vs long reads, in ONE sample (HG00151). The
   // companion to inverted_duplication: that figure shows how short paired-end
   // reads only *infer* an inversion (from discordant pair orientation + a few

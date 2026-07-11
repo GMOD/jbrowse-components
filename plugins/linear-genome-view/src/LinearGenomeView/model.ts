@@ -332,9 +332,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * show the "cytobands" in the overview scale bar
+         * show the "cytobands" in the overview scale bar (the resolved,
+         * capability-gated value is the `showCytobands` getter)
          */
-        showCytobandsSetting: types.optional(types.boolean, () =>
+        cytobandsVisible: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-showCytobands', true),
         ),
 
@@ -957,7 +958,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setShowCytobands(flag: boolean) {
-        self.showCytobandsSetting = flag
+        self.cytobandsVisible = flag
       },
       /**
        * #action
@@ -1538,7 +1539,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get showCytobands() {
-        return this.canShowCytobands && self.showCytobandsSetting
+        return this.canShowCytobands && self.cytobandsVisible
       },
       /**
        * #getter
@@ -2260,13 +2261,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
       // `trackLabels` was renamed to `trackLabelsOverride` (the bare
       // `trackLabels` is now the resolved getter); map legacy snapshots forward.
-      const { highlight, trackLabels, ...rest } = snap
+      // `showCytobandsSetting` was likewise renamed to `cytobandsVisible` (the
+      // bare `showCytobands` is the resolved getter).
+      const { highlight, trackLabels, showCytobandsSetting, ...rest } = snap
       return {
         highlight:
           Array.isArray(highlight) || highlight === undefined
             ? highlight
             : [highlight],
         ...(trackLabels ? { trackLabelsOverride: trackLabels } : {}),
+        ...(showCytobandsSetting !== undefined
+          ? { cytobandsVisible: showCytobandsSetting }
+          : {}),
         ...rest,
       }
     })
@@ -2278,7 +2284,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       const {
         init,
         showCenterLine,
-        showCytobandsSetting,
+        cytobandsVisible,
         trackLabelsOverride,
         colorByCDS,
         showTrackOutlines,
@@ -2295,7 +2301,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         ...(init && !snap.displayedRegions?.length ? { init } : {}),
         ...(showCenterLine ? { showCenterLine } : {}),
-        ...(!showCytobandsSetting ? { showCytobandsSetting } : {}),
+        ...(!cytobandsVisible ? { cytobandsVisible } : {}),
         ...(trackLabelsOverride ? { trackLabelsOverride } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
         ...(!showTrackOutlines ? { showTrackOutlines } : {}),

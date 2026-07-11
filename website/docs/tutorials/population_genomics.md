@@ -343,21 +343,15 @@ read as genuinely elevated rather than a baseline with nothing to compare it to.
 
 <Figure src="/img/popgen/fst_in2lt_2L.png" caption="Genome-wide view of all six dm6 arms, each track auto-scaled to its own data. Top: the In(2L)t inversion extent. Middle: Fst between In(2L)t-inverted and standard-arrangement lines — a tall elevated block across the whole left arm of chromosome 2 (the inverted region, ~2.2–13.2 Mb) that stands out against low background Fst on every other arm. Bottom: whole-panel nucleotide diversity (π), near-uniform across arms — the expected contrast to the localized Fst spike. Output from this tutorial's pipeline, hosted at jbrowse.org/demos/popgen."/>
 
-Then use the search box to jump to **`Cyp6g1`** (on `2R`) and inspect its window
-in the π track. π over the locus drops well below the surrounding windows, to
-under a tenth of the arm-wide average. The reduced diversity is consistent with
-a selective sweep at this insecticide-resistance gene.
+Then use the search box to jump to **`Cyp6g1`** (on `2R`) and add the **Tajima's
+D** track from the pipeline alongside π. Both statistics dip together in the
+same window. π collapses to under a tenth of the arm-wide average — but where π
+only tells you diversity is low, Tajima's D tells you _why_: at Cyp6g1 it falls
+sharply negative while sitting near zero genome-wide, the excess of rare alleles
+accumulating on the swept background. Two statistics dropping in the same window
+is the diagnostic hard-sweep signature, not the ambiguity of either alone.
 
-<Figure src="/img/popgen/pi_cyp6g1.png" caption="Whole-panel π across a ~3 Mb window of 2R centered on Cyp6g1 (highlighted band), over the NCBI RefSeq gene track. π over the Cyp6g1 window collapses to under a tenth of the arm-wide background — a sharp, localized dip between higher-diversity flanks. The reduction is consistent with a selective sweep at this insecticide-resistance gene."/>
-
-Now add the **Tajima's D** track from the pipeline and jump to the same locus.
-Where π only tells you diversity is low, Tajima's D tells you _why_: at Cyp6g1
-it drops sharply negative while sitting near zero genome-wide. The two
-statistics dipping together in the same window is the diagnostic hard-sweep
-signature — diversity removed by the sweep, then rebuilt as an excess of rare
-alleles on the swept background.
-
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across a 550 kb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Both statistics dip together at the locus: Tajima's D falls to about -2 against a genome-wide-neutral baseline near zero, and π collapses in the same window. The joint dip — a diversity valley skewed toward rare alleles — is the classic footprint of the hard sweep at this insecticide-resistance gene."/>
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across a 1 Mb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Both statistics dip together at the locus: Tajima's D falls to about -2 against a genome-wide-neutral baseline near zero, and π collapses to under a tenth of the arm-wide background in the same window. The joint dip — a diversity valley skewed toward rare alleles — is the classic footprint of the hard sweep at this insecticide-resistance gene."/>
 
 Other resistance and selection loci can be examined the same way, reading the
 signal against the gene:
@@ -535,8 +529,6 @@ arrangement at once: each row is a line, colored by its genotype at the
 inversion, so the 19 In(2L)t carriers (~10% of the panel) form the
 homozygous-alt block at top and the 161 standard lines the homozygous-reference
 block below, with the karyotype strip down the sidebar.
-
-<Figure src="/img/popgen/genotype_matrix_in2lt.png" caption="The In(2L)t arrangement as one <INV> call genotyped across the 180 karyotyped DGRP lines, viewed over the inversion span on 2L. Each row is a line, colored by its genotype at the inversion (teal = carries In(2L)t, grey = standard) with the karyotype sidebar strip. The 19 carriers form the block at top. Because recombination between arrangements is suppressed, this single call stands in for a whole co-inherited ~11 Mb haplotype."/>
 
 The genotypes here are the arrangement karyotypes themselves, so this is the
 cleanest per-line view of _who_ carries the inversion. The independent evidence

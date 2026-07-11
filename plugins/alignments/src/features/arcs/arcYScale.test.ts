@@ -1,7 +1,4 @@
-import {
-  colorShortInsert,
-  colorShortInsertArc,
-} from '@jbrowse/core/ui/theme'
+import { colorShortInsert, colorShortInsertArc } from '@jbrowse/core/ui/theme'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import { arcYFraction } from './arcYScale.ts'

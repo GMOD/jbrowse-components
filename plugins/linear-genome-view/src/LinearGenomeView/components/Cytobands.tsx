@@ -92,11 +92,14 @@ const Cytobands = observer(function Cytobands({
     const { refName, type, start, end } = args
     const s = layoutBpToPx(overview, { refName, coord: start }) ?? 0
     const e = layoutBpToPx(overview, { refName, coord: end }) ?? 0
+    // assemblies without Giemsa stains (e.g. dm6's numbered polytene divisions)
+    // arrive as 'n/a'; alternate two greys per numbered group so adjacent
+    // divisions stay distinguishable without painting a distracting colored block
     const color =
       type === 'n/a'
         ? naColorIndices[index]! % 2
-          ? 'black'
-          : '#a77'
+          ? 'rgb(120,120,120)'
+          : 'rgb(190,190,190)'
         : (colorMap[type] ?? 'black')
     return { args, s, e, color, isFirstAcen: index === firstAcenIdx }
   })

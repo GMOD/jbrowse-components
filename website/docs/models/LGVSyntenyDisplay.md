@@ -154,6 +154,7 @@ and docs.
 [coverageTicks](../linearalignmentsdisplay#getter-coverageticks),
 [colorLegendCategories](../linearalignmentsdisplay#getter-colorlegendcategories),
 [colorPalette](../linearalignmentsdisplay#getter-colorpalette),
+[readCloudLegendCategories](../linearalignmentsdisplay#getter-readcloudlegendcategories),
 [belowCoverageBandsInput](../linearalignmentsdisplay#getter-belowcoveragebandsinput),
 [laidOutByGroup](../linearalignmentsdisplay#getter-laidoutbygroup),
 [groupLayoutContext](../linearalignmentsdisplay#getter-grouplayoutcontext),

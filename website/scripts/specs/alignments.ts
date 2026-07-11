@@ -118,13 +118,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               // palette uses a saturated short-insert pink so the thin cloud
               // lines stay visible.
               arcColorByType: 'insertSizeAndOrientation',
-              // color the pileup by the same scheme as the cloud so the
-              // built-in floating legend (showLegend) spells out what the
-              // colors mean — short-insert (pink, the insertion-supporting
-              // cluster) vs normal/oriented pairs — instead of leaving the
-              // reader to guess the samplot color code
               colorBy: { type: 'insertSizeAndOrientation' },
-              showLegend: true,
+              // legend off: it was obtrusive and labeled a red category
+              // "deletion", an inference the cloud shouldn't assert (reviewer)
+              showLegend: false,
               coverageHeight: 100,
               readConnectionsHeight: 100,
               height: 600,
@@ -137,6 +134,16 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     viewportHeight: 520,
     settleMs: 25000,
+    annotations: [
+      {
+        type: 'text',
+        x: 40,
+        y: 120,
+        maxWidth: 300,
+        fontSize: 15,
+        text: 'Short-insert pairs (pink) cluster away from the concordant background.',
+      },
+    ],
   },
 
   // Soft clipping, two-stage figure: top frame opens the track menu's "Show..."
@@ -416,7 +423,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // methylation mode (both modified and reference-CpG-inferred unmodified
   // positions) — over a UCSC CpG island on chr20. The live "Color by..." menu is
   // left open on the modifications-mode track; red boxes mark the two colour
-  // modes and an arrow runs from each to the row rendered with it. The config
+  // modes and each row is labeled with the mode it is rendered in. The config
   // track (human_chr20_mod_call_5mC_5hmC_CG_cram) supplies the methylation-mode
   // row; a sessionTrack copy with its own trackId supplies the modifications-mode
   // row (the same trackId can't appear twice in a view). The island is
@@ -435,11 +442,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           adapter: {
             type: 'CramAdapter',
             cramLocation: {
-              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram',
+              uri: 'https://jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram',
               locationType: 'UriLocation',
             },
             craiLocation: {
-              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram.crai',
+              uri: 'https://jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram.crai',
               locationType: 'UriLocation',
             },
             sequenceAdapter: {
@@ -492,11 +499,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 35000,
     hideTooltip: true,
-    // ultra-wide single frame: the open menu covers only the left ~760px, so
-    // both rows' data (centred ~x1200) stay clear for the arrows to point at.
-    // The annotation SVG overlay is pinned to the live viewport (100vh), so the
-    // viewport must be tall enough to contain the open menu below the two rows.
-    viewportWidth: 2400,
+    // wide single frame: the open menu covers the left portion, so both rows'
+    // data stay clear to the right where the mode labels sit. The annotation SVG
+    // overlay is pinned to the live viewport (100vh), so the viewport must be
+    // tall enough to contain the open menu below the two rows.
+    viewportWidth: 2000,
     viewportHeight: 760,
     actions: [
       {
@@ -509,18 +516,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       ...menuCascade(['Color by...', 'Color by methylation']),
     ],
     annotations: [
-      // box the two colour modes in the open submenu
+      // box the two colour modes in the open submenu; each row is labeled with
+      // its mode name, so the boxed item maps to its row by name (no arrows —
+      // they crossed and floated off the menu items, reviewer)
       { type: 'box', anchor: { text: 'Color by methylation' } },
       { type: 'box', anchor: { text: 'Color by modification type' } },
-      // arrows from each boxed mode to the row rendered with it. The menu lists
-      // methylation above modification-type but the modifications row is on top,
-      // so the two arrows cross in a small X — that inversion is the point.
-      // "Color by modification type" (lower box) -> modifications row (top)
-      { type: 'arrow', from: { x: 1010, y: 635 }, to: { x: 1360, y: 400 } },
-      // "Color by methylation" (upper box) -> methylation row (bottom)
-      { type: 'arrow', from: { x: 1010, y: 588 }, to: { x: 1360, y: 690 } },
-      // smaller blurbs than before, anchored to each row and pushed right of the
-      // menu, clear of the arrow heads
       {
         type: 'text',
         anchor: {
@@ -531,7 +531,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -60,
         maxWidth: 260,
         fontSize: 16,
-        text: 'Modifications mode: only the bases the basecaller flagged as modified (MM/ML tags) — here, 5mC.',
+        text: 'Modifications mode: only bases flagged modified (MM/ML tags).',
       },
       {
         type: 'text',
@@ -543,7 +543,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -60,
         maxWidth: 260,
         fontSize: 16,
-        text: 'Methylation mode: red = methylated CpGs, blue = unmethylated. This island is hypomethylated → a blue block.',
+        text: 'Methylation mode: red = methylated CpG, blue = unmethylated.',
       },
     ],
   },

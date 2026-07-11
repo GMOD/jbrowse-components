@@ -317,13 +317,13 @@ function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
       function localStorageAutorun() {
         const s = (s: unknown) => JSON.stringify(s)
         const {
-          showCytobandsSetting,
+          cytobandsVisible,
           showCenterLine,
           colorByCDS,
           showTrackOutlines,
           trackLabels,
         } = self
-        localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
+        localStorageSetItem('lgv-showCytobands', s(cytobandsVisible))
         localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
         localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
         localStorageSetItem('lgv-showTrackOutlines', s(showTrackOutlines))

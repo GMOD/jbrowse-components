@@ -77,7 +77,7 @@
         "hideNoTracksActive": false,
         "trackSelectorType": "hierarchical",
         "showCenterLine": false,
-        "showCytobandsSetting": true,
+        "cytobandsVisible": true,
         "trackLabels": "offset",
         "showGridlines": true,
         "highlight": [],
