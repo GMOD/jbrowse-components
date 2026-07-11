@@ -1,9 +1,9 @@
 # Architecture
 
-The canonical reference for how JBrowse renders a track. Start with the overview
-below for the mental model, then jump to the section for whatever you're
-touching. Deep subsystems that you only touch on a specific task live in their
-own docs — collected under [See also](#see-also) at the end.
+The canonical reference for how JBrowse renders a track. Read the overview first
+for the mental model, then jump to the section for whatever you're touching. Deep
+subsystems that come up only on a specific task live in their own docs, collected
+under [See also](#see-also) at the end.
 
 ## Overview
 
@@ -43,9 +43,7 @@ main:    model.rpcDataMap              (MST node, observable)
 ```
 
 That inversion — the worker ships coordinates, not rendered images — is the whole
-point of the GPU pipeline. The server-side system it replaced (which rasterized
-each block to an image in the worker) is described in
-[reference/HISTORICAL.md](reference/HISTORICAL.md).
+point of the GPU pipeline.
 
 ## Vocabulary
 
@@ -68,8 +66,7 @@ Terms used throughout this doc:
 
 ## How this doc is organized
 
-- **Display stacks** — which foundation mixins a display composes, and how the
-  GPU and (removed) legacy paths relate.
+- **Display stacks** — which foundation mixins a display composes.
 - **Data fetching pipeline** — the fetch autoruns, the region-too-large gate, and
   the refetch-loop traps.
 - **GPU rendering architecture** — the lifecycle in depth: the mixin, the
@@ -83,10 +80,11 @@ Terms used throughout this doc:
 ## Display stacks
 
 **What this section answers: which mixins do I compose to build a display, and
-why?** Linear-genome-view displays compose from a small set of **foundation
-mixins** on `BaseDisplay`. "GPU vs block" is a *render-path* distinction layered
-on top, not the primary axis of sharing. Three foundations cover every in-tree
-display:
+why?** Linear-genome-view displays are built from a small set of **foundation
+mixins** on `BaseDisplay` (they all share `baseLinearDisplayConfigSchema` as their
+config base). Which mixins a display composes is the primary axis of code
+sharing; *how* it renders (GPU vs Canvas2D) is a separate axis layered on top.
+Three foundations cover every in-tree display:
 
 | Foundation (composed on `BaseDisplay`) | Brings | Displays |
 | --- | --- | --- |
@@ -103,29 +101,6 @@ share no state model with canvas.
 **Render path is a separate axis.** GPU-canvas vs Canvas2D is chosen per frame at
 the backend factory (see "RenderingBackend interfaces per plugin"), not by which
 foundation a display composes.
-
-### The legacy block stack (removed on webgl-poc)
-
-Before the GPU pipeline, displays rendered each region-block server-side to an
-SVG/HTML string and the main thread just positioned those images: the
-`BaseLinearDisplay` state model, `LinearBareDisplay`, `BasicTrack`, and the
-`<LinearBlocks>` component. **All of it was removed on this branch.** How it
-worked, and why it went, is in
-[reference/HISTORICAL.md](reference/HISTORICAL.md).
-
-Two names survive with new roles: `BaseLinearDisplayComponent` collapsed to a
-thin GPU container (every consumer sets `DisplayMessageComponent` and renders its
-own canvas inside it), and `baseLinearDisplayConfigSchema` remains the shared
-config base every foundation extends.
-
-Core's server-side render machinery (`ServerSideRendererType`, `BoxRendererType`,
-`FeatureRendererType`, `renderToAbstractCanvas`, the `CoreRender` RPC,
-`addRendererType`) is still public in `ReExports`, so the block path can be
-rebuilt as an **external compat plugin** rather than restored in-tree. External
-`jbrowse-plugin-gdc` / `-icgc` (which composed the in-tree model) are the accepted
-breakage. The general "why exports ossify into permanent ABI" analysis — which
-used this very stack as its example — is
-[reference/PLUGIN_ABI_STABILITY.md](reference/PLUGIN_ABI_STABILITY.md).
 
 ## Coordinate system
 
@@ -185,9 +160,10 @@ the force-load zone).
 
 ### regionTooLarge: imperative vs. derived
 
-Two implementations, both expressed through the `regionTooLarge` getter so
-consumers (`regionCannotBeRendered()`, `regionCannotBeRenderedText()`, the
-`FetchVisibleRegions` gate) work with either.
+`regionTooLarge` is the flag that raises the "region too large" banner and holds
+off the fetch. It has two implementations, both read through the one
+`regionTooLarge` getter so consumers (`regionCannotBeRendered()`,
+`regionCannotBeRenderedText()`, the `FetchVisibleRegions` gate) work with either.
 
 **Imperative** (`RegionTooLargeMixin` default; wiggle, alignments, LD):
 `setRegionTooLarge(true)` flips a volatile flag inside `fetchRegions` when the
@@ -202,9 +178,9 @@ viewport change so `FetchVisibleRegions` can retry.
   (per-region max) for the span visible at fetch time, as `byteEstimateVisibleBp`.
   `estimatedVisibleBytes` rescales it to the current span (`bytes ×
   view.visibleBp / byteEstimateVisibleBp`). The rescale makes the byte gate a
-  pure function of the view, so it self-releases on zoom-in. (Reading raw `bytes`
-  instead deadlocks the banner — see
-  [HISTORICAL.md](reference/HISTORICAL.md).)
+  pure function of the view, so it self-releases on zoom-in. (Gate on
+  `estimatedVisibleBytes`, never raw `bytes` — a raw read never shrinks on
+  zoom-in, so the banner never clears.)
 - `densityTooLarge` walks `view.visibleRegions`, looks up
   `densityStatsPerRegion[idx]` (populated for both successful fetches and
   worker-side too-large responses), and tests `(featureCount/regionWidthBp) ×
@@ -259,12 +235,12 @@ payload covering all visible regions, so variants' `fetchNeeded` expands `needed
 to all `bufferedVisibleRegions` and marks them all loaded together when the work
 callback returns.
 
-### Terminal states early-return their own root
+### Terminal states (banners) replace the whole subtree
 
-`DisplayChrome` branches on `model.displayPhase` and renders the `renderError` /
-`tooLarge` banners by **early-`return`ing** the banner as its *entire* output,
-replacing the display subtree — not by keeping the container `<div>` mounted and
-swapping the banner in beside the canvas. This looks like a leak (the caller's
+`DisplayChrome` branches on `model.displayPhase`. For the `renderError` /
+`tooLarge` banners it **early-`return`s** the banner as its *entire* output,
+replacing the display subtree — rather than keeping the container `<div>` mounted
+and swapping the banner in beside the canvas. This looks like a leak (the caller's
 `className`/`ref`/mouse handlers are absent in those two states) but the leak is
 benign: a too-large region has no canvas to interact with, and the ref
 re-attaches on force-load. Three things make this the right shape:
@@ -273,9 +249,7 @@ re-attaches on force-load. Three things make this the right shape:
   which fires `canvasRef(null)` → effect cleanup → `backend.dispose()` +
   `stopRenderingBackend()`; force-load remounts and re-inits via the callback
   ref. Nesting the banner beside a still-mounted canvas would skip that cycle.
-  (ADR-025 "GPU canvas stays mounted" is superseded — unmounting is safe given a
-  full dispose→re-init cycle, which this does. See
-  [HISTORICAL.md](reference/HISTORICAL.md).)
+  Unmounting is safe precisely because that full dispose→re-init cycle runs.
 - **The loading term stays lazy.** `computeDisplayPhase(self, loading)` takes
   `loading` as a **thunk** and calls it only after ruling out the terminal flags,
   so when a banner is up the chrome's observer tracks only that flag — not the
@@ -358,9 +332,7 @@ The rendering primitives live in **`@jbrowse/render-core`**
 (`packages/render-core`): the HAL, `RenderLifecycleMixin`, the backend base
 classes, the React backend hooks, and the clip/canvas/hp-math utilities. It is a
 leaf package (deps: `mobx` + `@jbrowse/mobx-state-tree` + `react` peer; **no**
-`@jbrowse/core`), so a third-party display can depend on it directly. The former
-`@jbrowse/core/gpu/*` re-export shims were removed once every in-tree import
-migrated.
+`@jbrowse/core`), so a third-party display can depend on it directly.
 
 Shader codegen (`packages/shader-tools/src/build-shaders.ts`, plus `slangPass` in
 render-core) and the display-integration layer (`MultiRegionDisplayMixin` /
