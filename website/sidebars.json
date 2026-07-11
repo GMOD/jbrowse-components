@@ -4,10 +4,7 @@
     {
       "type": "category",
       "label": "Getting started",
-      "items": [
-        "quickstart_desktop",
-        "quickstart_web"
-      ]
+      "items": ["quickstart_desktop", "quickstart_web"]
     },
     {
       "type": "category",

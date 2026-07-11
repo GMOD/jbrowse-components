@@ -52,7 +52,12 @@ const navActive = styles.navActive!
     <link rel="canonical" href={Astro.url.href} />
     {
       mdHref && (
-        <link rel="alternate" type="text/markdown" href={mdHref} title="Markdown" />
+        <link
+          rel="alternate"
+          type="text/markdown"
+          href={mdHref}
+          title="Markdown"
+        />
       )
     }
     <link rel="sitemap" href={`${baseUrl}/sitemap.xml`} />

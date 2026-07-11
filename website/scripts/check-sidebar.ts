@@ -95,6 +95,12 @@ function collectListedDocSlugs(
   }
 }
 
+// Pages intentionally kept out of the sidebar nav but still reachable via
+// inline links from other docs (so they can't 404). quickstart_adminserver is
+// the niche admin-server GUI guide — dropped from the getting-started quickstart
+// but linked from faq.md.
+const intentionallyUnlisted = new Set(['quickstart_adminserver'])
+
 const sidebar = JSON.parse(readFileSync(sidebarPath, 'utf8'))
   .sidebar as SidebarItem[]
 const covered = new Set<string>()
@@ -102,7 +108,9 @@ collectCovered(sidebar, covered)
 const listed = new Set<string>()
 collectListedDocSlugs(sidebar, listed)
 
-const orphans = [...allSlugs.entries()].filter(([slug]) => !covered.has(slug))
+const orphans = [...allSlugs.entries()].filter(
+  ([slug]) => !covered.has(slug) && !intentionallyUnlisted.has(slug),
+)
 const dangling = [...listed].filter(slug => !allSlugs.has(slug))
 
 const problems: string[] = []
