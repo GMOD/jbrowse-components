@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
   SvgClipRect,
@@ -73,14 +73,6 @@ function HicSvgBody({
   // the transform, yScalar, and color params with the on-screen render (handles
   // scrolled-left-of-genome and stale zoom). Canvas dims are the only
   // export-specific override, and drawHicBlocks ignores them regardless.
-  const matrixEl = paintLayer(visibleWidth, height, opts, ctx => {
-    drawHicBlocks(ctx, { positions, counts, numContacts }, fillStyleLut, {
-      ...renderState,
-      canvasWidth: visibleWidth,
-      canvasHeight: height,
-    })
-  })
-
   return (
     <>
       <SvgClipRect
@@ -88,7 +80,18 @@ function HicSvgBody({
         width={visibleWidth}
         height={height}
       >
-        {matrixEl}
+        <PaintLayer
+          width={visibleWidth}
+          height={height}
+          opts={opts}
+          paint={ctx => {
+            drawHicBlocks(ctx, { positions, counts, numContacts }, fillStyleLut, {
+              ...renderState,
+              canvasWidth: visibleWidth,
+              canvasHeight: height,
+            })
+          }}
+        />
       </SvgClipRect>
       {showLegend && colorMaxScore > 0 ? (
         <HicSVGColorLegend

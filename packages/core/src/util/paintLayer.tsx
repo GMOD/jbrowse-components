@@ -16,7 +16,7 @@ export type PaintLayerOpts = SvgRasterCanvasOpts & {
 
 /**
  * Paint into either a 2× rasterize canvas (PNG-embedded as <image>) or an
- * SvgCanvas (serialized into a <g>). Returns one ReactNode — callers don't
+ * SvgCanvas (serialized into a <g>). Renders one element — callers don't
  * branch on which mode was picked.
  *
  * Used by every renderSvg.tsx that has a heavy draw path: the same `paint`
@@ -25,12 +25,17 @@ export type PaintLayerOpts = SvgRasterCanvasOpts & {
  * callbacks never deal with devicePixelRatio). Width 0 or height 0 falls
  * through to the vector branch (canvas creation rejects 0×0).
  */
-export function paintLayer(
-  width: number,
-  height: number,
-  opts: PaintLayerOpts | undefined,
-  paint: (ctx: Ctx2D) => void,
-): React.ReactNode {
+export function PaintLayer({
+  width,
+  height,
+  opts,
+  paint,
+}: {
+  width: number
+  height: number
+  opts?: PaintLayerOpts
+  paint: (ctx: Ctx2D) => void
+}): React.ReactNode {
   if (opts?.rasterizeLayers && width > 0 && height > 0) {
     const { canvas, ctx } = createSvgRasterCanvas(width, height, opts)
     paint(ctx)

@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { getContainingView, max } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
   SvgClipRect,
@@ -87,18 +87,6 @@ function LdSvgBody({
   const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
   const triangleHeight = height - effectiveLineZoneHeight
 
-  const matrixEl = paintLayer(visibleWidth, triangleHeight, opts, ctx => {
-    drawLDBlocks(ctx, { ldValues, boundaries, numCells }, ramp, {
-      yScalar,
-      canvasWidth: visibleWidth,
-      canvasHeight: triangleHeight,
-      signedLD,
-      viewScale: 1,
-      viewOffsetX: 0,
-      uniformW,
-    })
-  })
-
   // Match the live overlay's layout: genomic-positions mode places the
   // recombination plot at the top spanning effectiveLineZoneHeight; index
   // mode tucks it in the lower half of lineZoneHeight, above the matrix.
@@ -114,7 +102,24 @@ function LdSvgBody({
         width={visibleWidth}
         height={height}
       >
-        <g transform={`translate(0 ${effectiveLineZoneHeight})`}>{matrixEl}</g>
+        <g transform={`translate(0 ${effectiveLineZoneHeight})`}>
+          <PaintLayer
+            width={visibleWidth}
+            height={triangleHeight}
+            opts={opts}
+            paint={ctx => {
+              drawLDBlocks(ctx, { ldValues, boundaries, numCells }, ramp, {
+                yScalar,
+                canvasWidth: visibleWidth,
+                canvasHeight: triangleHeight,
+                signedLD,
+                viewScale: 1,
+                viewOffsetX: 0,
+                uniformW,
+              })
+            }}
+          />
+        </g>
         {useGenomicPositions ? (
           <Wrapper model={self} exportSVG>
             <VariantLabels model={self} />

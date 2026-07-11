@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
   SvgClipRect,
@@ -107,65 +107,13 @@ function CanvasFeaturesSvgBody({
   // exports what's on screen (top viewport) rather than always the track top.
   const scrollY = model.scrollTop
   const renderBlocks = buildRenderBlocks(visibleRegions)
-  const featuresNode = paintLayer(canvasWidth, height, opts, ctx => {
-    drawFeatureBlocks(ctx, model.laidOutDataMap, renderBlocks, {
-      scrollY,
-      canvasWidth,
-      canvasHeight: height,
-    })
-  })
-  // Highlight boxes are on-screen DOM overlays the app canvas never paints, so
-  // bake them in here (same highlight.main border/tint as searchHighlightBox).
-  // Drawn over the features but under labels, matching the on-screen layering.
   const highlightColor = theme.palette.highlight.main
-  const highlightNode = paintLayer(canvasWidth, height, undefined, ctx => {
-    drawHighlightBoxes(
-      ctx,
-      model.laidOutDataMap,
-      renderBlocks,
-      model.highlightedFeatureIdSet,
-      { scrollY, canvasWidth, canvasHeight: height },
-      {
-        border: alpha(highlightColor, 0.7),
-        fill: alpha(highlightColor, 0.12),
-      },
-      {
-        showLabels: model.renderedShowLabels,
-        showDescriptions: model.renderedShowDescriptions,
-      },
-    )
-  })
   const fontSize = model.labelFontSize
   const context = {
     showLabels: model.renderedShowLabels,
     showDescriptions: model.renderedShowDescriptions,
     fontSize,
   }
-  // Labels + peptides always vector — text should remain crisp even when
-  // rasterizeLayers is on.
-  const textNode = paintLayer(canvasWidth, height, undefined, ctx => {
-    ctx.font = `${fontSize}px sans-serif`
-    // Labels/peptides are laid out in absolute track px (no per-layer scrollY,
-    // unlike drawFeatureBlocks); shift the whole layer up by scrollY so text
-    // tracks the feature geometry when the viewport is scrolled.
-    ctx.translate(0, -scrollY)
-    forEachDisplayLabel(
-      visibleRegions,
-      model.laidOutDataMap,
-      context,
-      (_, labels) => {
-        paintLabel(ctx, labels, fontSize)
-      },
-    )
-    // Same peptide walk the app canvas runs (drawPeptidesForRegions), so the
-    // export can't drift from on-screen. Peptides need no cross-region dedup,
-    // unlike labels above: codons straddling a boundary overstrike identically
-    // rather than doubling; labels differ only because computeLabelPosition
-    // clamps X per region.
-    if (renderPeptidesFlag) {
-      drawPeptidesForRegions(ctx, model.laidOutDataMap, visibleRegions)
-    }
-  })
 
   return (
     <SvgClipRect
@@ -173,9 +121,72 @@ function CanvasFeaturesSvgBody({
       width={view.width}
       height={height}
     >
-      {featuresNode}
-      {highlightNode}
-      {textNode}
+      <PaintLayer
+        width={canvasWidth}
+        height={height}
+        opts={opts}
+        paint={ctx => {
+          drawFeatureBlocks(ctx, model.laidOutDataMap, renderBlocks, {
+            scrollY,
+            canvasWidth,
+            canvasHeight: height,
+          })
+        }}
+      />
+      {/* Highlight boxes are on-screen DOM overlays the app canvas never paints,
+          so bake them in here (same highlight.main border/tint as
+          searchHighlightBox). Drawn over the features but under labels, matching
+          the on-screen layering. */}
+      <PaintLayer
+        width={canvasWidth}
+        height={height}
+        paint={ctx => {
+          drawHighlightBoxes(
+            ctx,
+            model.laidOutDataMap,
+            renderBlocks,
+            model.highlightedFeatureIdSet,
+            { scrollY, canvasWidth, canvasHeight: height },
+            {
+              border: alpha(highlightColor, 0.7),
+              fill: alpha(highlightColor, 0.12),
+            },
+            {
+              showLabels: model.renderedShowLabels,
+              showDescriptions: model.renderedShowDescriptions,
+            },
+          )
+        }}
+      />
+      {/* Labels + peptides always vector — text should remain crisp even when
+          rasterizeLayers is on. */}
+      <PaintLayer
+        width={canvasWidth}
+        height={height}
+        paint={ctx => {
+          ctx.font = `${fontSize}px sans-serif`
+          // Labels/peptides are laid out in absolute track px (no per-layer
+          // scrollY, unlike drawFeatureBlocks); shift the whole layer up by
+          // scrollY so text tracks the feature geometry when scrolled.
+          ctx.translate(0, -scrollY)
+          forEachDisplayLabel(
+            visibleRegions,
+            model.laidOutDataMap,
+            context,
+            (_, labels) => {
+              paintLabel(ctx, labels, fontSize)
+            },
+          )
+          // Same peptide walk the app canvas runs (drawPeptidesForRegions), so
+          // the export can't drift from on-screen. Peptides need no cross-region
+          // dedup, unlike labels above: codons straddling a boundary overstrike
+          // identically rather than doubling; labels differ only because
+          // computeLabelPosition clamps X per region.
+          if (renderPeptidesFlag) {
+            drawPeptidesForRegions(ctx, model.laidOutDataMap, visibleRegions)
+          }
+        }}
+      />
     </SvgClipRect>
   )
 }

@@ -4,7 +4,7 @@ import React from 'react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { colorLongreadInv } from '@jbrowse/core/ui/theme'
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
   SvgClipRect,
@@ -121,76 +121,91 @@ function MafSvgBody({
 
   return (
     <SvgClipRect id={`maf-clip-${model.id}`} width={view.width} height={height}>
-      {showCoverage
-        ? paintLayer(width, model.coverageHeight, opts, ctx => {
+      {showCoverage ? (
+        <PaintLayer
+          width={width}
+          height={model.coverageHeight}
+          opts={opts}
+          paint={ctx => {
             drawMafCoverage(ctx, renderBlocks, model.rpcDataMap, {
               coverageHeight: model.coverageHeight,
               canvasWidth: width,
               domainMax: coverageDomain?.[1] ?? 0,
               theme,
             })
-          })
-        : null}
+          }}
+        />
+      ) : null}
       {showConservation ? (
         <g transform={`translate(0, ${coverageDisplayHeight})`}>
-          {paintLayer(width, conservationHeight, opts, ctx => {
-            if (conservationMode === 'codon') {
-              drawCodonConservation(ctx, model.visibleCodonConservation, {
-                conservationHeight,
-                canvasWidth: width,
-                theme,
-              })
-            } else {
-              drawConservation(ctx, renderBlocks, model.rpcDataMap, {
-                conservationHeight,
-                canvasWidth: width,
-                theme,
-              })
-            }
-          })}
+          <PaintLayer
+            width={width}
+            height={conservationHeight}
+            opts={opts}
+            paint={ctx => {
+              if (conservationMode === 'codon') {
+                drawCodonConservation(ctx, model.visibleCodonConservation, {
+                  conservationHeight,
+                  canvasWidth: width,
+                  theme,
+                })
+              } else {
+                drawConservation(ctx, renderBlocks, model.rpcDataMap, {
+                  conservationHeight,
+                  canvasWidth: width,
+                  theme,
+                })
+              }
+            }}
+          />
         </g>
       ) : null}
       <g transform={`translate(0, ${rowsTopOffset})`}>
-        {paintLayer(width, rowsHeight, opts, ctx => {
-          // One rows rendering at a time (see activeRowRendering): the codon view
-          // and the per-row identity plot each replace the base SNP rendering;
-          // codon cells are drawn by drawMafCodons below.
-          if (activeRowRendering === 'codon') {
-            // codon cells drawn below; no base/identity rendering
-          } else if (activeRowRendering === 'sourceChrom') {
-            if (sources?.length) {
-              drawSourceChrom(ctx, renderBlocks, model.rpcDataMap, {
-                rowHeight: effectiveRowHeight,
-                rowProportion,
-                nRows: sources.length,
-                canvasWidth: width,
-              })
+        <PaintLayer
+          width={width}
+          height={rowsHeight}
+          opts={opts}
+          paint={ctx => {
+            // One rows rendering at a time (see activeRowRendering): the codon
+            // view and the per-row identity plot each replace the base SNP
+            // rendering; codon cells are drawn by drawMafCodons below.
+            if (activeRowRendering === 'codon') {
+              // codon cells drawn below; no base/identity rendering
+            } else if (activeRowRendering === 'sourceChrom') {
+              if (sources?.length) {
+                drawSourceChrom(ctx, renderBlocks, model.rpcDataMap, {
+                  rowHeight: effectiveRowHeight,
+                  rowProportion,
+                  nRows: sources.length,
+                  canvasWidth: width,
+                })
+              }
+            } else if (activeRowRendering !== 'bases') {
+              if (sources?.length) {
+                drawRowIdentity(ctx, renderBlocks, model.rpcDataMap, {
+                  rowHeight: effectiveRowHeight,
+                  rowProportion,
+                  nRows: sources.length,
+                  canvasWidth: width,
+                  mode: activeRowRendering,
+                })
+              }
+            } else {
+              drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
             }
-          } else if (activeRowRendering !== 'bases') {
-            if (sources?.length) {
-              drawRowIdentity(ctx, renderBlocks, model.rpcDataMap, {
-                rowHeight: effectiveRowHeight,
-                rowProportion,
-                nRows: sources.length,
-                canvasWidth: width,
-                mode: activeRowRendering,
-              })
-            }
-          } else {
-            drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
-          }
-          drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
-          drawMafSummaryBars(ctx, model.visibleSummaryBars, svgState.palette)
-          drawMafAnnotations(ctx, model.visibleFrames, getFrameColors(theme))
-          drawMafLabels(
-            ctx,
-            model.visibleLabels,
-            contrast,
-            state.mismatchRendering,
-          )
-          drawMafCodons(ctx, model.visibleCodons, getCodonColors(theme))
-          drawInversions(ctx, model.visibleInversions, colorLongreadInv)
-        })}
+            drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
+            drawMafSummaryBars(ctx, model.visibleSummaryBars, svgState.palette)
+            drawMafAnnotations(ctx, model.visibleFrames, getFrameColors(theme))
+            drawMafLabels(
+              ctx,
+              model.visibleLabels,
+              contrast,
+              state.mismatchRendering,
+            )
+            drawMafCodons(ctx, model.visibleCodons, getCodonColors(theme))
+            drawInversions(ctx, model.visibleInversions, colorLongreadInv)
+          }}
+        />
         <SvgTreeSidebar
           showTree={showTree}
           hierarchy={hierarchy}

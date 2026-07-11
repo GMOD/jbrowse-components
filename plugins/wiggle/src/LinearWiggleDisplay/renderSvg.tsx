@@ -2,7 +2,7 @@
 import type React from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
   SvgClipRect,
@@ -86,14 +86,22 @@ function WiggleSvgBody({
         height={height}
       >
         <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
-          {paintLayer(canvasWidth, drawHeight, opts, ctx => {
-            drawWiggleToCtx(
-              ctx,
-              { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
-              renderBlocks,
-              state,
-            )
-          })}
+          <PaintLayer
+            width={canvasWidth}
+            height={drawHeight}
+            opts={opts}
+            paint={ctx => {
+              drawWiggleToCtx(
+                ctx,
+                {
+                  rpcDataMap,
+                  encode: data => buildSourceRenderData(data, props),
+                },
+                renderBlocks,
+                state,
+              )
+            }}
+          />
         </g>
       </SvgClipRect>
       {/* Y-scale cross-hatches, shared with the on-screen path so an exported

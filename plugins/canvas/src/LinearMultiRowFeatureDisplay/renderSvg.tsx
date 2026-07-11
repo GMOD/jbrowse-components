@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
   SvgClipRect,
@@ -70,12 +70,6 @@ function MultiRowSvgBody({
   height: number
   opts: ExportSvgDisplayOptions
 }) {
-  const el = paintLayer(view.width, height, opts, ctx => {
-    drawMultiRowBlocks(ctx, self.rpcDataMap, self.renderBlocks, {
-      ...self.renderState,
-      canvasHeight: height,
-    })
-  })
   return (
     <>
       <SvgClipRect
@@ -83,7 +77,17 @@ function MultiRowSvgBody({
         width={view.width}
         height={height}
       >
-        {el}
+        <PaintLayer
+          width={view.width}
+          height={height}
+          opts={opts}
+          paint={ctx => {
+            drawMultiRowBlocks(ctx, self.rpcDataMap, self.renderBlocks, {
+              ...self.renderState,
+              canvasHeight: height,
+            })
+          }}
+        />
       </SvgClipRect>
       <SvgTreeSidebar
         showTree={self.showTree}

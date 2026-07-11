@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
   SvgClipRect,
@@ -85,19 +85,22 @@ function SequenceSvgBody({
     textColors,
   }
 
-  // Sequence is text-heavy; routed through paintLayer so rasterizeLayers can
+  // Sequence is text-heavy; routed through PaintLayer so rasterizeLayers can
   // PNG-embed when set, but the default (vector) path keeps letters crisp.
-  const node = paintLayer(totalWidth, height, opts, ctx => {
-    drawSequenceBlocks(ctx, sequenceData, model.renderBlocks, state)
-  })
-
   return (
     <SvgClipRect
       id={`sequence-clip-${model.id}`}
       width={view.width}
       height={height}
     >
-      {node}
+      <PaintLayer
+        width={totalWidth}
+        height={height}
+        opts={opts}
+        paint={ctx => {
+          drawSequenceBlocks(ctx, sequenceData, model.renderBlocks, state)
+        }}
+      />
     </SvgClipRect>
   )
 }

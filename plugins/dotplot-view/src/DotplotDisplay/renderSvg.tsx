@@ -1,7 +1,7 @@
 import { SVGErrorBox } from '@jbrowse/core/svg/SvgExport'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 
 import { drawDotplotInstances } from './drawDotplot.ts'
 
@@ -39,14 +39,21 @@ export async function renderSvg(
   }
   const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv, lineWidth } =
     dotplotRenderState
-  return paintLayer(viewWidth, viewHeight, opts, ctx => {
-    drawDotplotInstances(ctx, geometry, {
-      viewBpH,
-      bpPerPxHInv,
-      viewBpV,
-      bpPerPxVInv,
-      viewHeight,
-      lineWidth,
-    })
-  })
+  return (
+    <PaintLayer
+      width={viewWidth}
+      height={viewHeight}
+      opts={opts}
+      paint={ctx => {
+        drawDotplotInstances(ctx, geometry, {
+          viewBpH,
+          bpPerPxHInv,
+          viewBpV,
+          bpPerPxVInv,
+          viewHeight,
+          lineWidth,
+        })
+      }}
+    />
+  )
 }

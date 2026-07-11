@@ -2,7 +2,7 @@
 import type React from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
   SvgClipRect,
@@ -94,13 +94,6 @@ function ManhattanSvgBody({
   const canvasWidth = view.width
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const state = { ...renderState, canvasWidth }
-  const manhattanNode = (
-    <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
-      {paintLayer(canvasWidth, renderState.canvasHeight, opts, ctx => {
-        drawManhattanBlocks(ctx, rpcDataMap, renderBlocks, state)
-      })}
-    </g>
-  )
 
   return (
     <>
@@ -109,7 +102,16 @@ function ManhattanSvgBody({
         width={view.width}
         height={height}
       >
-        {manhattanNode}
+        <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
+          <PaintLayer
+            width={canvasWidth}
+            height={renderState.canvasHeight}
+            opts={opts}
+            paint={ctx => {
+              drawManhattanBlocks(ctx, rpcDataMap, renderBlocks, state)
+            }}
+          />
+        </g>
       </SvgClipRect>
       {legendEl}
       {ldLegendEl}

@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { SvgChrome, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawVariantMatrixBlocks } from './components/Canvas2DVariantMatrixRenderer.ts'
@@ -72,15 +72,6 @@ function VariantMatrixSvgBody({
     canDisplayLabels,
   } = model
   const canvasWidth = view.totalWidthPxWithoutBorders
-  const cellsNode = paintLayer(canvasWidth, availableHeight, opts, ctx => {
-    drawVariantMatrixBlocks(ctx, cellData, {
-      canvasWidth,
-      canvasHeight: availableHeight,
-      rowHeight,
-      scrollTop,
-      flipped: model.flipped,
-    })
-  })
 
   const sources = model.sources ?? []
   return (
@@ -88,7 +79,22 @@ function VariantMatrixSvgBody({
       id={`variant-matrix-clip-${model.id}`}
       width={canvasWidth}
       height={height}
-      content={cellsNode}
+      content={
+        <PaintLayer
+          width={canvasWidth}
+          height={availableHeight}
+          opts={opts}
+          paint={ctx => {
+            drawVariantMatrixBlocks(ctx, cellData, {
+              canvasWidth,
+              canvasHeight: availableHeight,
+              rowHeight,
+              scrollTop,
+              flipped: model.flipped,
+            })
+          }}
+        />
+      }
       sources={sources}
       rowHeight={rowHeight}
       scrollTop={scrollTop}

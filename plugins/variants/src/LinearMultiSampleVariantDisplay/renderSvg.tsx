@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { SvgChrome, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawVariantBlocks } from './components/Canvas2DVariantRenderer.ts'
@@ -73,18 +73,6 @@ function VariantSvgBody({
   // clipped to view.width below), matching the on-screen canvas rather than the
   // full-genome totalWidthPx
   const canvasWidth = view.width
-  const cellsNode = paintLayer(canvasWidth, availableHeight, opts, ctx => {
-    if (referenceDrawingMode === 'skip') {
-      ctx.fillStyle = REFERENCE_COLOR
-      ctx.fillRect(0, 0, canvasWidth, availableHeight)
-    }
-    drawVariantBlocks(ctx, perRegionCellMap, renderBlocks, {
-      canvasWidth,
-      canvasHeight: availableHeight,
-      rowHeight,
-      scrollTop,
-    })
-  })
 
   const sources = model.sources ?? []
   return (
@@ -92,7 +80,25 @@ function VariantSvgBody({
       id={`variant-clip-${model.id}`}
       width={view.width}
       height={height}
-      content={cellsNode}
+      content={
+        <PaintLayer
+          width={canvasWidth}
+          height={availableHeight}
+          opts={opts}
+          paint={ctx => {
+            if (referenceDrawingMode === 'skip') {
+              ctx.fillStyle = REFERENCE_COLOR
+              ctx.fillRect(0, 0, canvasWidth, availableHeight)
+            }
+            drawVariantBlocks(ctx, perRegionCellMap, renderBlocks, {
+              canvasWidth,
+              canvasHeight: availableHeight,
+              rowHeight,
+              scrollTop,
+            })
+          }}
+        />
+      }
       sources={sources}
       rowHeight={rowHeight}
       scrollTop={scrollTop}

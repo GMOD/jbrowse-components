@@ -2,7 +2,7 @@
 import type React from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
   SvgClipRect,
@@ -94,14 +94,19 @@ function MultiWiggleSvgBody({
         width={view.width}
         height={height}
       >
-        {paintLayer(canvasWidth, height, opts, ctx => {
-          drawWiggleToCtx(
-            ctx,
-            { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
-            renderBlocks,
-            state,
-          )
-        })}
+        <PaintLayer
+          width={canvasWidth}
+          height={height}
+          opts={opts}
+          paint={ctx => {
+            drawWiggleToCtx(
+              ctx,
+              { rpcDataMap, encode: data => buildSourceRenderData(data, props) },
+              renderBlocks,
+              state,
+            )
+          }}
+        />
       </SvgClipRect>
       {/* Row separators and Y-scale cross-hatches, shared with the on-screen
           path so an exported SVG matches the track when either is enabled. */}

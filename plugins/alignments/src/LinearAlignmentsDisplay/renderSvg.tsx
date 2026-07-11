@@ -3,7 +3,7 @@ import type React from 'react'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { paintLayer } from '@jbrowse/core/util/paintLayer'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
   SvgClipRect,
@@ -117,17 +117,6 @@ function AlignmentsSvgBody({
     scrollTop: 0,
   })
   const contrastMap = getMismatchContrastMap(model.showModifications, theme)
-  const pileupNode = paintLayer(canvasWidth, displayHeight, opts, ctx => {
-    drawAlignmentsToCtx(
-      ctx,
-      {
-        sections: model.sourceSections,
-      },
-      renderBlocks,
-      state,
-    )
-    drawAlignmentLabels(ctx, labels, contrastMap, theme)
-  })
 
   // Sashimi and linked-read bezier arcs stay vector SVG by design (low arc
   // count + native hover in the on-screen overlay); these export components
@@ -139,7 +128,22 @@ function AlignmentsSvgBody({
         width={view.width}
         height={displayHeight}
       >
-        {pileupNode}
+        <PaintLayer
+          width={canvasWidth}
+          height={displayHeight}
+          opts={opts}
+          paint={ctx => {
+            drawAlignmentsToCtx(
+              ctx,
+              {
+                sections: model.sourceSections,
+              },
+              renderBlocks,
+              state,
+            )
+            drawAlignmentLabels(ctx, labels, contrastMap, theme)
+          }}
+        />
         <SashimiArcsSvg model={model} view={view} />
         <PileupBezierArcsSvg model={model} view={view} />
       </SvgClipRect>
