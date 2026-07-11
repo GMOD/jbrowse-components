@@ -1,19 +1,10 @@
 import path from 'node:path'
 
+import { syntenyAdapterTypes } from './adapter-utils.ts'
 import { isURL } from '../../types/common.ts'
 import { parseCommaSeparatedString } from '../../utils.ts'
 
 import type { Track } from '../../base.ts'
-
-const SYNTENY_ADAPTERS = new Set([
-  'PAFAdapter',
-  'PairwiseIndexedPAFAdapter',
-  'DeltaAdapter',
-  'ChainAdapter',
-  'MashMapAdapter',
-  'MCScanAnchorsAdapter',
-  'MCScanSimpleAnchorsAdapter',
-])
 
 export function mapLocationForFiles(
   p: string,
@@ -60,7 +51,7 @@ export function addSyntenyAssemblyNames(
   adapter: { type: string; [key: string]: unknown },
   assemblyNames?: string,
 ): { type: string; [key: string]: unknown } {
-  if (SYNTENY_ADAPTERS.has(adapter.type)) {
+  if (syntenyAdapterTypes.has(adapter.type)) {
     return {
       ...adapter,
       assemblyNames: parseCommaSeparatedString(assemblyNames),

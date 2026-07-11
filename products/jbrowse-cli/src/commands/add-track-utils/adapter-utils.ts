@@ -36,7 +36,12 @@ type AdapterSpec =
     }
   // flat-sidecar adapters: each sidecar is its own top-level location field
   // (CRAM crai, (bgzip-)fasta fai/gzi)
-  | { kind: 'sidecar'; adapterType: string; locField: string; sidecars: Sidecar[] }
+  | {
+      kind: 'sidecar'
+      adapterType: string
+      locField: string
+      sidecars: Sidecar[]
+    }
   | { kind: 'anchors'; adapterType: string; locField: string }
   | { kind: 'nclist' }
   | { kind: 'sparql' }
@@ -457,3 +462,11 @@ export const adapterTypesToTrackTypeMap: Record<string, string> = {
 export function guessTrackType(adapterType: string): string {
   return adapterTypesToTrackTypeMap[adapterType] || 'FeatureTrack'
 }
+
+// the synteny adapters are exactly those mapping to a SyntenyTrack, so derive
+// the set instead of maintaining a second hand-written list that can drift
+export const syntenyAdapterTypes = new Set(
+  Object.entries(adapterTypesToTrackTypeMap)
+    .filter(([, trackType]) => trackType === 'SyntenyTrack')
+    .map(([adapterType]) => adapterType),
+)
