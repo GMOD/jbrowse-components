@@ -1632,7 +1632,9 @@ export default function stateModelFactory(
           const view = getContainingView(self) as {
             effectiveTrackLabels?: string
           }
-          if (view.effectiveTrackLabels === 'overlapping') {
+          // when grouping (prefersOffset) the label is drawn above the plot, so
+          // the coverage axis needn't dodge right of it (matches TrackContainer)
+          if (view.effectiveTrackLabels === 'overlapping' && !self.prefersOffset) {
             const track = getContainingTrack(self)
             return measureText(getConf(track, 'name'), 12.8) + 100
           }
