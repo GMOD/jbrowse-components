@@ -5,6 +5,7 @@ import { mutate, useFetch, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ListIcon from '@mui/icons-material/List'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import {
@@ -13,6 +14,8 @@ import {
   FormControl,
   FormControlLabel,
   IconButton,
+  Menu,
+  MenuItem,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
@@ -93,6 +96,8 @@ export default function RecentSessionPanel({
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>([])
   const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
+  const [moreMenuAnchor, setMoreMenuAnchor] = useState<HTMLElement>()
+  const [now] = useState(() => Date.now())
   const [showAutosaves, setShowAutosaves] = useLocalStorage(
     'showAutosaves',
     true,
@@ -110,11 +115,8 @@ export default function RecentSessionPanel({
     error: listSessionsError,
     mutate: mutateSessions,
   } = useFetch(
-    ['listSessions', showAutosaves],
-    () =>
-      ipcRenderer.invoke('listSessions', showAutosaves) as Promise<
-        RecentSessionData[]
-      >,
+    ['listSessions'],
+    () => ipcRenderer.invoke('listSessions') as Promise<RecentSessionData[]>,
   )
 
   const launch = async (path: string) => {
@@ -159,7 +161,13 @@ export default function RecentSessionPanel({
     (a, b) => (b.updated ?? 0) - (a.updated ?? 0),
   )
   const filteredSessions = sortedSessions.filter(
-    f => !showFavoritesOnly || favs.has(f.path),
+    f =>
+      (showAutosaves || !f.isAutosave) &&
+      (!showFavoritesOnly || favs.has(f.path)),
+  )
+  const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000
+  const oldAutosaves = sessions.filter(
+    f => f.isAutosave && now - (f.updated ?? 0) > thirtyDaysMs,
   )
   // The grid doesn't re-emit its selection when a filter toggle hides rows, so
   // selectedSessions can outlive the visible list. Intersect before acting so
@@ -268,6 +276,34 @@ export default function RecentSessionPanel({
             }}
           />
         </Button>
+        <Tooltip title="More actions">
+          <IconButton
+            onClick={event => {
+              setMoreMenuAnchor(event.currentTarget)
+            }}
+          >
+            <MoreVertIcon />
+          </IconButton>
+        </Tooltip>
+        <Menu
+          anchorEl={moreMenuAnchor}
+          open={Boolean(moreMenuAnchor)}
+          onClose={() => {
+            setMoreMenuAnchor(undefined)
+          }}
+        >
+          <MenuItem
+            disabled={!oldAutosaves.length}
+            onClick={() => {
+              setMoreMenuAnchor(undefined)
+              setSessionsToDelete(oldAutosaves)
+            }}
+          >
+            {oldAutosaves.length
+              ? `Delete ${oldAutosaves.length} autosave${oldAutosaves.length === 1 ? '' : 's'} older than 30 days`
+              : 'No autosaves older than 30 days'}
+          </MenuItem>
+        </Menu>
       </div>
 
       {!filteredSessions.length ? (

@@ -4,6 +4,7 @@ export interface RecentSessionData {
   path: string
   name: string
   updated?: number
+  isAutosave?: boolean
 }
 
 export interface InternetAccount {

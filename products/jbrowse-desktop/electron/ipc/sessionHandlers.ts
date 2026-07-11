@@ -79,13 +79,16 @@ export function registerSessionHandlers(
   paths: AppPaths,
   getMainWindow: () => Electron.BrowserWindow | null,
 ) {
-  ipcHandle('listSessions', async (_, showAutosaves) => {
+  ipcHandle('listSessions', async () => {
     const sessions = await serializeRecentSessions(() =>
       readRecentSessions(paths.recentSessionsPath),
     )
-    return showAutosaves
-      ? sessions
-      : sessions.filter(f => !f.path.startsWith(paths.autosaveDir))
+    // Autosaves live under autosaveDir, which only the main process knows.
+    // Stamp the flag so the renderer can filter/prune them without that path.
+    return sessions.map(s => ({
+      ...s,
+      isAutosave: s.path.startsWith(paths.autosaveDir),
+    }))
   })
 
   ipcHandle('loadSession', async (_, sessionPath) => {

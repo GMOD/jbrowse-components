@@ -9,6 +9,10 @@ export interface RecentSession {
   name?: string
 }
 
+export interface RecentSessionInfo extends RecentSession {
+  isAutosave: boolean
+}
+
 export interface SessionSnap {
   defaultSession?: { name?: string }
   assemblies?: unknown[]
@@ -28,7 +32,7 @@ export interface IpcChannels {
     return: string | undefined
   }
   promptSessionSaveAs: { args: []; return: string | undefined }
-  listSessions: { args: [showAutosaves: boolean]; return: RecentSession[] }
+  listSessions: { args: []; return: RecentSessionInfo[] }
   loadSession: { args: [sessionPath: string]; return: SessionSnap }
   createInitialAutosaveFile: { args: [snap: SessionSnap]; return: string }
   saveSession: { args: [sessionPath: string, snap: SessionSnap]; return: void }
