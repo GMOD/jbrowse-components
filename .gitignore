@@ -1,3 +1,4 @@
+website/static/video
 scripts/__pycache__
 **/.env
 **/node_modules/

@@ -82,11 +82,16 @@ export function buildCollapsedRegions({
     : merged
 }
 
-// The canvas displays expose a `soloFeature` action ("show only these
-// features"); other display types don't. Structural guard so we can reach it on
-// whichever display in a view is capable of isolating.
+// The canvas displays expose a solo set ("show only these features"); other
+// display types don't. Structural guard so we can reach it on whichever display
+// in a view is capable of isolating.
 interface SoloCapableDisplay {
+  soloFeatureIds: string[]
+  soloApplied: boolean
   soloFeature: (featureId: string) => void
+  toggleSoloFeature: (featureId: string) => void
+  applySolo: () => void
+  clearSolo: () => void
 }
 
 function isSoloCapable(d: unknown): d is SoloCapableDisplay {
