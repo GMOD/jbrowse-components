@@ -41,8 +41,16 @@ async function buildExport(
   mode: SessionShareMode,
 ) {
   const sourceConfigUrl = snapshot.configuration?.sourceConfigUrl
+  // If the hosted base config can't be fetched (hub down, offline), fall back
+  // to a self-contained export rather than failing the whole operation —
+  // planWebExport treats a missing baseConfig as "no usable base".
   const baseConfig = sourceConfigUrl
-    ? await fetchJson<HostedBaseConfig>(sourceConfigUrl)
+    ? await fetchJson<HostedBaseConfig>(sourceConfigUrl).catch(
+        (e: unknown) => {
+          console.error(e)
+          return undefined
+        },
+      )
     : undefined
   const plan = planWebExport(snapshot, baseConfig)
   const { sessionParam, password, plaintext } = await encodeSessionParam(
@@ -58,14 +66,29 @@ async function buildExport(
 }
 
 function PortabilityWarning({ plan }: { plan: WebExportPlan }) {
-  const { nonPortable } = plan.report
-  return nonPortable.length ? (
+  const { droppedTracks } = plan
+  // local files not attached to a track — a local assembly sequence, say —
+  // can't be dropped as a track; the whole session won't open without them
+  const sessionFiles = [
+    ...new Set(plan.report.nonPortable.filter(l => !l.trackId).map(l => l.name)),
+  ]
+  return droppedTracks.length || sessionFiles.length ? (
     <Alert severity="warning">
-      {nonPortable.length} local file
-      {nonPortable.length === 1 ? '' : 's'} cannot be opened on the web and will
-      not load:{' '}
-      {[...new Set(nonPortable.map(l => l.trackName ?? l.name))].join(', ')}.
-      Host these files at a URL to include them.
+      {droppedTracks.length ? (
+        <div>
+          {droppedTracks.length} track{droppedTracks.length === 1 ? '' : 's'}{' '}
+          left out of the export because{' '}
+          {droppedTracks.length === 1 ? 'it references' : 'they reference'} local
+          files: {droppedTracks.join(', ')}. Host these files at a URL to include
+          them.
+        </div>
+      ) : null}
+      {sessionFiles.length ? (
+        <div>
+          This session references local files that won&apos;t open on the web:{' '}
+          {sessionFiles.join(', ')}.
+        </div>
+      ) : null}
     </Alert>
   ) : null
 }
@@ -107,8 +130,7 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
       >
         <DialogContent>
           <DialogContentText>
-            Open this desktop session in jbrowse-web. Tracks that reference
-            remote URLs work directly; local files do not.
+            Open this desktop session in jbrowse-web.
             <IconButton
               onClick={() => {
                 setInfoDialogOpen(true)

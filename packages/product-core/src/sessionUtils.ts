@@ -249,7 +249,20 @@ export interface WebExportPlan {
   configUrl?: string
   // the session snapshot to encode into `?session=encoded-<...>`
   session: Record<string, unknown>
+  // full portability detection over the input snapshot
   report: WebPortabilityReport
+  // distinct display names of tracks excluded from `session` because they
+  // reference local files jbrowse-web can't open (empty when fully portable)
+  droppedTracks: string[]
+}
+
+// Reads a `trackId` off a loosely-typed session-track snapshot, or undefined.
+function readTrackId(track: unknown): string | undefined {
+  const id =
+    typeof track === 'object' && track !== null
+      ? (track as Record<string, unknown>).trackId
+      : undefined
+  return typeof id === 'string' ? id : undefined
 }
 
 // Decides how to hand a desktop session to jbrowse-web. When the session was
@@ -262,13 +275,34 @@ export function planWebExport(
   baseConfig?: HostedBaseConfig,
 ): WebExportPlan {
   const report = analyzeWebPortability(snapshot)
+  // trackIds whose tracks reference a local file: these can never load on the
+  // web, so they're dropped from the exported session rather than shipped
+  // broken. Locations without a trackId (e.g. a local assembly sequence) can't
+  // be dropped as a track — the dialog surfaces those separately.
+  const nonPortableTrackIds = new Set(
+    report.nonPortable.flatMap(l => (l.trackId ? [l.trackId] : [])),
+  )
+  const droppedTracks = [
+    ...new Set(
+      report.nonPortable.flatMap(l =>
+        l.trackId ? [l.trackName ?? l.trackId] : [],
+      ),
+    ),
+  ]
   const sourceConfigUrl = snapshot.configuration?.sourceConfigUrl
-  const tracks = snapshot.tracks ?? []
+  const tracks = (snapshot.tracks ?? []).filter(
+    t => !nonPortableTrackIds.has(t.trackId),
+  )
   const assemblies = snapshot.assemblies ?? []
   const defaultSession = snapshot.defaultSession ?? {}
-  const priorSessionTracks = Array.isArray(defaultSession.sessionTracks)
-    ? (defaultSession.sessionTracks as unknown[])
-    : []
+  const priorSessionTracks = (
+    Array.isArray(defaultSession.sessionTracks)
+      ? (defaultSession.sessionTracks as unknown[])
+      : []
+  ).filter(t => {
+    const id = readTrackId(t)
+    return !id || !nonPortableTrackIds.has(id)
+  })
   const priorSessionAssemblies = Array.isArray(defaultSession.sessionAssemblies)
     ? (defaultSession.sessionAssemblies as unknown[])
     : []
@@ -292,6 +326,7 @@ export function planWebExport(
         sessionTracks: [...priorSessionTracks, ...addedTracks],
       },
       report,
+      droppedTracks,
     }
   }
   return {
@@ -302,6 +337,7 @@ export function planWebExport(
       sessionTracks: [...priorSessionTracks, ...tracks],
     },
     report,
+    droppedTracks,
   }
 }
 

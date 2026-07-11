@@ -403,6 +403,35 @@ test('planWebExport carries the portability report through', () => {
   })
   expect(plan.report.portable).toBe(false)
   expect(plan.report.nonPortable[0]?.trackId).toBe('local')
+  // the local track is reported, then dropped from the exported session
+  expect(plan.droppedTracks).toEqual(['Local track'])
+  expect(plan.session.sessionTracks).toEqual([])
+})
+
+test('planWebExport drops a local session track but keeps a remote one', () => {
+  const remote = { trackId: 'remote', name: 'Remote track' }
+  const plan = planWebExport({
+    assemblies: [{ name: 'mine' }],
+    tracks: [],
+    defaultSession: {
+      name: 'session',
+      sessionTracks: [
+        remote,
+        {
+          trackId: 'local',
+          name: 'Local track',
+          adapter: {
+            bamLocation: {
+              locationType: 'LocalPathLocation',
+              localPath: '/data/a.bam',
+            },
+          },
+        },
+      ],
+    },
+  })
+  expect(plan.session.sessionTracks).toEqual([remote])
+  expect(plan.droppedTracks).toEqual(['Local track'])
 })
 
 test('buildWebExportUrl points config at the hosted base and session at encoded-', () => {
@@ -412,6 +441,7 @@ test('buildWebExportUrl points config at the hosted base and session at encoded-
       configUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
       session: {},
       report: { nonPortable: [], portable: true },
+      droppedTracks: [],
     },
     'encoded-ABC',
   )
@@ -431,6 +461,7 @@ test('buildWebExportUrl uses config=none for a self-contained session', () => {
       strategy: 'selfContained',
       session: {},
       report: { nonPortable: [], portable: true },
+      droppedTracks: [],
     },
     'encoded-XYZ',
   )
@@ -445,6 +476,7 @@ test('buildWebExportUrl adds the password param for a short share link', () => {
       strategy: 'selfContained',
       session: {},
       report: { nonPortable: [], portable: true },
+      droppedTracks: [],
     },
     'share-abc123',
     { password: 'sekret' },
