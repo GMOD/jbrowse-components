@@ -269,11 +269,6 @@ for (const { spec } of formats) {
   }
 }
 
-// kinds with a fixed location layout but no registered adapterType, whose layout
-// is still reused (relabeled) under an explicit --adapterType; other unmatched
-// kinds yield a bare { type }
-const locationKinds = new Set<AdapterSpec['kind']>(['nclist', 'sparql'])
-
 function indexType(index: string | undefined, fallback: 'BAI' | 'TBI'): string {
   return index?.toUpperCase().endsWith('CSI') ? 'CSI' : fallback
 }
@@ -389,12 +384,15 @@ function resolveSpec(
     if (known) {
       // explicit --adapterType resolves back to its known file layout
       return { spec: known }
-    } else if (spec && locationKinds.has(spec.kind)) {
-      // unknown adapter type, but the extension has a fixed location layout we
-      // can reuse, just relabeling the adapter type
+    } else if (spec) {
+      // unknown adapter type on a recognized extension: reuse that extension's
+      // file layout (location field + any sidecar/index files) under the new
+      // type name, so e.g. --adapterType AllVsAllPAFAdapter on a .paf keeps its
+      // pafLocation instead of dropping the file. Override with --config if the
+      // custom adapter uses a different field.
       return { spec, typeOverride: adapterType }
     } else {
-      // custom adapter type with no known layout: no files to reference or copy
+      // custom adapter type on an unrecognized extension: no layout to reuse
       return { typeOverride: adapterType }
     }
   } else {

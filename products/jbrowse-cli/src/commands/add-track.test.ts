@@ -715,5 +715,9 @@ test('all-vs-all synteny adapter type gets SyntenyTrack and threaded assemblyNam
     expect(track.type).toBe('SyntenyTrack')
     expect(track.adapter.type).toBe('AllVsAllPAFAdapter')
     expect(track.adapter.assemblyNames).toEqual(['grape', 'peach', 'cacao'])
+    // the unknown adapterType reuses the .paf extension's pafLocation layout
+    // rather than dropping the file, so the track is actually loadable
+    expect(track.adapter.pafLocation).toBeDefined()
+    expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf'))).toBeTruthy()
   })
 })
