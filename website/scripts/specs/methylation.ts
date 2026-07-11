@@ -334,4 +334,43 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // context on top, trimmed so the stacked haplotypes aren't mostly whitespace
     viewportHeight: 810,
   },
+
+  // Per-read view behind the aggregate SNRPN profiles: the same HG002 ONT reads
+  // modkit summarized, plotted individually. groupBy HP splits the pileup into
+  // the two phased haplotypes and colorBy methylation paints each CpG call
+  // (red = 5mC, blue = unmethylated), so the allele-specific split is visible
+  // read-by-read — one haplotype's reads are methylated across the CpG island
+  // while the other's are not, the read-level source of the ~87%/~5% aggregate.
+  // Reads are the chr15 SNRPN slice of the GIAB HG002 ONT alignment, haplotagged
+  // against the phased SNP calls, hosted next to the bedMethyl slices.
+  {
+    mode: 'url',
+    name: 'methylation/hg002_snrpn_reads',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      // zoomed onto the CpG island / DMR so the per-haplotype red-vs-blue
+      // contrast fills the view rather than the flanking gene-body methylation
+      loc: 'chr15:24,954,600-24,956,050',
+      tracks: [
+        'cpgisland_ucsc_hg38',
+        {
+          trackId: 'ncbi_refseq_109_hg38_latest',
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
+        },
+        {
+          trackId: 'HG002_snrpn_5mC_reads',
+          type: 'LinearAlignmentsDisplay',
+          height: 560,
+          userByteSizeLimit: 200_000_000,
+          groupBy: { type: 'tag', tag: 'HP' },
+          colorBy: { type: 'methylation' },
+        },
+      ],
+    }),
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 90000,
+    settleMs: 15000,
+    viewportHeight: 880,
+  },
 ]
