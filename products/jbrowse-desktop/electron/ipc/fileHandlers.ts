@@ -18,7 +18,7 @@ const FILE_FILTERS = [
 // the open dialog accepts a saved .jbrowse session OR a hand-written/CLI-built
 // config.json, so lead with both extensions (save-as keeps FILE_FILTERS)
 const OPEN_FILTERS = [
-  { name: 'JBrowse config or session', extensions: ['json', 'jbrowse'] },
+  { name: 'config.json or .jbrowse file', extensions: ['json', 'jbrowse'] },
   { name: 'All Files', extensions: ['*'] },
 ]
 

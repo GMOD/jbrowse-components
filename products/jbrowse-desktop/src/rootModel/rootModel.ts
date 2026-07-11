@@ -235,7 +235,7 @@ export default function rootModelFactory({
                     icon: DescriptionIcon,
                     subMenu: [
                       {
-                        label: 'Open session or config...',
+                        label: 'Open config.json or .jbrowse file...',
                         icon: OpenIcon,
                         onClick: async () => {
                           try {
