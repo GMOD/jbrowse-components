@@ -255,7 +255,7 @@ export default function RecentSessionPanel({
         />
 
         <Button variant="contained" component="label" disabled={sessionLoading}>
-          Open saved session (.jbrowse) file
+          Open session or config file
           <input
             type="file"
             hidden

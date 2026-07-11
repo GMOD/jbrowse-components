@@ -235,7 +235,7 @@ export default function rootModelFactory({
                     icon: DescriptionIcon,
                     subMenu: [
                       {
-                        label: 'Open session...',
+                        label: 'Open session or config...',
                         icon: OpenIcon,
                         onClick: async () => {
                           try {

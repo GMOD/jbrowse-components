@@ -15,6 +15,13 @@ const FILE_FILTERS = [
   { name: 'All Files', extensions: ['*'] },
 ]
 
+// the open dialog accepts a saved .jbrowse session OR a hand-written/CLI-built
+// config.json, so lead with both extensions (save-as keeps FILE_FILTERS)
+const OPEN_FILTERS = [
+  { name: 'JBrowse config or session', extensions: ['json', 'jbrowse'] },
+  { name: 'All Files', extensions: ['*'] },
+]
+
 export function registerFileHandlers(paths: AppPaths) {
   ipcHandle('quit', () => {
     app.quit()
@@ -41,7 +48,7 @@ export function registerFileHandlers(paths: AppPaths) {
   ipcHandle('promptOpenFile', async () => {
     const choice = await dialog.showOpenDialog({
       defaultPath: paths.jbrowseDocDir,
-      filters: FILE_FILTERS,
+      filters: OPEN_FILTERS,
     })
     return choice.filePaths[0]
   })
