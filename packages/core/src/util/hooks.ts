@@ -73,24 +73,35 @@ export function useWidthSetter(view: {
   return ref
 }
 
+function readLocalStorage<T>(key: string, initialValue: T, enabled: boolean): T {
+  if (typeof window === 'undefined' || !enabled) {
+    return initialValue
+  }
+  try {
+    const item = window.localStorage.getItem(key)
+    return item ? JSON.parse(item) : initialValue
+  } catch (error) {
+    console.error(error)
+    return initialValue
+  }
+}
+
 // Hook from https://usehooks.com/useLocalStorage/
 export function useLocalStorage<T>(
   key: string,
   initialValue: T,
   enabled = true,
 ) {
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined' || !enabled) {
-      return initialValue
-    }
-    try {
-      const item = window.localStorage.getItem(key)
-      return item ? JSON.parse(item) : initialValue
-    } catch (error) {
-      console.error(error)
-      return initialValue
-    }
-  })
+  const [storedValue, setStoredValue] = useState<T>(() =>
+    readLocalStorage(key, initialValue, enabled),
+  )
+  // re-read when the key changes at runtime (the useState initializer only runs
+  // once); render-phase reset rather than an effect
+  const [prevKey, setPrevKey] = useState(key)
+  if (key !== prevKey) {
+    setPrevKey(key)
+    setStoredValue(readLocalStorage(key, initialValue, enabled))
+  }
   const setValue = (value: T | ((val: T) => T)) => {
     try {
       const valueToStore =

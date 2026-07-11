@@ -5,7 +5,7 @@ import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
-import { ToggleButton } from '@mui/material'
+import { Divider, ToggleButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
@@ -34,6 +34,7 @@ const useStyles = makeStyles()({
     // scroll rather than clip when many rows' search boxes exceed the bar width
     overflowX: 'auto',
     minWidth: 0,
+    gap: 12,
   },
   scrollZoomButton: {
     height: 44,
@@ -49,13 +50,18 @@ const Header = observer(function Header({
 }) {
   const { classes } = useStyles()
   const { views } = model
+  // Persist search-box visibility/orientation per regime (few vs many genomes)
+  // rather than one global key, so the "compact default" heuristic isn't
+  // permanently overridden by a choice made in a differently-sized view.
+  const compact = views.length <= 3
+  const regime = compact ? 'compact' : 'large'
   const [showSearchBoxes, setShowSearchBoxes] = useLocalStorage(
-    'lcv-showSearchBoxes',
-    views.length <= 3,
+    `lcv-showSearchBoxes-${regime}`,
+    compact,
   )
   const [sideBySide, setSideBySide] = useLocalStorage(
-    'lcv-sideBySide',
-    views.length <= 3,
+    `lcv-sideBySide-${regime}`,
+    compact,
   )
 
   const syntenyModel = asSyntenyModel(model)
@@ -151,21 +157,23 @@ const Header = observer(function Header({
       >
         <MoreVertIcon />
       </CascadingMenuButton>
-      <ToggleButton
-        value="scrollZoom"
-        selected={model.scrollZoom}
-        onChange={() => {
-          model.setScrollZoom(!model.scrollZoom)
-        }}
-        title="Scroll wheel zooms instead of scrolls"
-        className={classes.scrollZoomButton}
-        size="small"
-      >
-        <ZoomInMapIcon />
-      </ToggleButton>
+      <Tooltip title="Scroll wheel zooms instead of scrolls">
+        <ToggleButton
+          value="scrollZoom"
+          selected={model.scrollZoom}
+          onChange={() => {
+            model.setScrollZoom(!model.scrollZoom)
+          }}
+          className={classes.scrollZoomButton}
+          size="small"
+        >
+          <ZoomInMapIcon />
+        </ToggleButton>
+      </Tooltip>
 
       {syntenyModel ? (
         <>
+          <Divider orientation="vertical" flexItem />
           <ColorBySelector model={syntenyModel} />
           <SyntenySettingsPopover model={syntenyModel} />
         </>

@@ -14,6 +14,8 @@ const useStyles = makeStyles()(theme => ({
   },
   searchBox: {
     display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
   },
 }))
 

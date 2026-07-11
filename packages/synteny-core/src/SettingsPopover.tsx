@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 import TuneIcon from '@mui/icons-material/Tune'
-import { IconButton, Popover } from '@mui/material'
+import { IconButton, Popover, Tooltip } from '@mui/material'
 
 export default function SettingsPopover({
   title = 'Display settings',
@@ -14,14 +14,15 @@ export default function SettingsPopover({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   return (
     <>
-      <IconButton
-        onClick={e => {
-          setAnchorEl(e.currentTarget)
-        }}
-        title={title}
-      >
-        <TuneIcon />
-      </IconButton>
+      <Tooltip title={title}>
+        <IconButton
+          onClick={e => {
+            setAnchorEl(e.currentTarget)
+          }}
+        >
+          <TuneIcon />
+        </IconButton>
+      </Tooltip>
       <Popover
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
