@@ -2,6 +2,7 @@
 title: Synteny visualization
 description: Compare genome assemblies using dotplot and linear synteny views
 guide_category: Tutorials
+tutorial_category: Synteny & comparative genomics
 ---
 
 This tutorial covers the dotplot view (chromosome-scale alignment overview) and

@@ -5,6 +5,7 @@ description:
   multi-row track and a QTL Manhattan plot from the same mouse
   recombinant-inbred panel
 guide_category: Tutorials
+tutorial_category: Population genomics
 ---
 
 The [BXD family](https://www.genenetwork.org) is a panel of ~200 mouse

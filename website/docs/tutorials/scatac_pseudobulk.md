@@ -4,6 +4,7 @@ description:
   Aggregate single-cell ATAC into per-cell-type coverage BigWigs and load them
   as one MultiWiggle track
 guide_category: Tutorials
+tutorial_category: Epigenomics & single cell
 ---
 
 JBrowse does not process single-cell data itself. To view single-cell ATAC-seq

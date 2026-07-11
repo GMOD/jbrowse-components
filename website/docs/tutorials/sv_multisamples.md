@@ -4,6 +4,7 @@ description:
   Inspect population-level SVs, explore a family trio, and characterize a large
   chromosomal inversion
 guide_category: Tutorials
+tutorial_category: Structural variation
 ---
 
 This tutorial explores structural variants (SVs) from the 1000 Genomes Project

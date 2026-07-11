@@ -2,6 +2,7 @@
 title: Phased trio analysis
 description: Examine inheritance patterns and variant phasing in a trio dataset
 guide_category: Tutorials
+tutorial_category: Population genomics
 ---
 
 A **trio** is sequencing data from a mother, father, and child together. A

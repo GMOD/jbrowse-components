@@ -4,6 +4,7 @@ description:
   Per-read, aggregate, allele-specific, and chromatin-accessibility (6mA)
   methylation from ONT/PacBio long reads and modkit
 guide_category: Tutorials
+tutorial_category: Epigenomics & single cell
 ---
 
 DNA methylation (**5mC** at **CpG** sites, and other base modifications) is read

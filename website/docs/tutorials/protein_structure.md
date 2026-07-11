@@ -2,6 +2,7 @@
 title: Protein structures
 description: View 3D protein structures and MSAs linked to genomic variants
 guide_category: Tutorials
+tutorial_category: Transcriptomics & proteins
 ---
 
 JBrowse 2 can connect genomic data to protein-level views: interactive 3D

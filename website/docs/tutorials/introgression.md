@@ -4,6 +4,7 @@ description:
   Painting per-haplotype archaic introgression segments as one labeled row per
   haplotype with the multi-row feature display
 guide_category: Tutorials
+tutorial_category: Population genomics
 ---
 
 Archaic introgression callers emit, per individual haplotype, the genomic

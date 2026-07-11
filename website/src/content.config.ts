@@ -13,6 +13,11 @@ const docsSchema = z.object({
   // index and the sidebar (see src/lib/guide-categories.ts). Only meaningful
   // for user_guides/config_guides/developer_guides pages.
   guide_category: z.string().optional(),
+  // Buckets a tutorials/ page under a labeled section on the /docs/tutorials
+  // landing page (src/pages/docs/tutorials/index.astro). Independent of
+  // guide_category (which keeps every tutorial under the user guide's
+  // "Tutorials" section). Pages without it fall into a trailing "More" bucket.
+  tutorial_category: z.string().optional(),
   // introduction.md uses `slug: /` so the glob loader keys it at the docs root
   slug: z.string().optional(),
 })

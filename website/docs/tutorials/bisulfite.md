@@ -4,6 +4,7 @@ description:
   A full Arabidopsis WGBS pipeline — SRA reads through bisulfite alignment to
   per-read CpG/CHG/CHH methylation coloring in JBrowse 2
 guide_category: Tutorials
+tutorial_category: Epigenomics & single cell
 ---
 
 Bisulfite sequencing (WGBS) and its enzymatic cousin EM-seq read DNA methylation

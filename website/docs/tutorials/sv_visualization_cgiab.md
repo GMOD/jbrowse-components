@@ -3,6 +3,7 @@ title: Cancer SVs (C-GIAB)
 description:
   Load and inspect structural variants from real cancer sequencing data
 guide_category: Tutorials
+tutorial_category: Structural variation
 ---
 
 This tutorial walks through loading data from the

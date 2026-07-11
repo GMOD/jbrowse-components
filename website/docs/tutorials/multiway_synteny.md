@@ -3,6 +3,7 @@ title: Synteny from ortholog tables
 description:
   Stack N genomes in a linear synteny view from a jcvi MCScan .blocks file
 guide_category: Tutorials
+tutorial_category: Synteny & comparative genomics
 ---
 
 A linear synteny view can stack more than two genomes: N genome rows with a

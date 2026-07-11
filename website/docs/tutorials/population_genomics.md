@@ -5,6 +5,7 @@ description:
   matrix, LD heatmap, and a between-population sweep from real Drosophila data —
   a fully reproducible pipeline
 guide_category: Tutorials
+tutorial_category: Population genomics
 ---
 
 Population-genetic scans — **Fst** (differentiation between groups),

@@ -5,14 +5,40 @@ import DocsLayout from '../../../layouts/DocsLayout.astro'
 import { baseUrl } from '../../../lib/base-url.ts'
 import { entrySlug } from '../../../lib/docs-sidebar.ts'
 
+// Section order for the landing page. A tutorial declares its section via the
+// `tutorial_category` frontmatter field; anything missing or unlisted falls
+// into a trailing "More tutorials" bucket, so a new tutorial always appears
+// even before it is categorized.
+const CATEGORY_ORDER = [
+  'Getting started',
+  'Synteny & comparative genomics',
+  'Structural variation',
+  'Population genomics',
+  'Epigenomics & single cell',
+  'Transcriptomics & proteins',
+]
+const FALLBACK = 'More tutorials'
+
 const tutorials = (await getCollection('docs'))
   .filter(entry => entry.id.startsWith('tutorials/'))
   .map(entry => ({
     href: `${baseUrl}/docs/${entrySlug(entry.id)}/`,
     title: entry.data.title,
     description: entry.data.description,
+    category: entry.data.tutorial_category ?? FALLBACK,
   }))
   .sort((a, b) => a.title.localeCompare(b.title))
+
+const grouped = [...CATEGORY_ORDER, FALLBACK]
+  .map(category => ({
+    category,
+    items: tutorials.filter(t =>
+      CATEGORY_ORDER.includes(t.category)
+        ? t.category === category
+        : category === FALLBACK,
+    ),
+  }))
+  .filter(group => group.items.length > 0)
 ---
 
 <DocsLayout
@@ -24,18 +50,23 @@ const tutorials = (await getCollection('docs'))
     Hands-on walkthroughs of common JBrowse workflows, each built around a real
     dataset.
   </p>
-  <div class="tut-grid">
-    {
-      tutorials.map(tutorial => (
-        <a class="tut-card" href={tutorial.href}>
-          <span class="tut-title">{tutorial.title}</span>
-          {tutorial.description && (
-            <span class="tut-desc">{tutorial.description}</span>
-          )}
-        </a>
-      ))
-    }
-  </div>
+  {
+    grouped.map(group => (
+      <section class="tut-section">
+        <h2 class="tut-heading">{group.category}</h2>
+        <div class="tut-grid">
+          {group.items.map(tutorial => (
+            <a class="tut-card" href={tutorial.href}>
+              <span class="tut-title">{tutorial.title}</span>
+              {tutorial.description && (
+                <span class="tut-desc">{tutorial.description}</span>
+              )}
+            </a>
+          ))}
+        </div>
+      </section>
+    ))
+  }
 </DocsLayout>
 
 <style>
@@ -43,6 +74,15 @@ const tutorials = (await getCollection('docs'))
     font-size: 1.05rem;
     color: var(--color-text-muted);
     margin: 0 0 1.5rem;
+  }
+  .tut-section {
+    margin: 0 0 2rem;
+  }
+  .tut-heading {
+    font-size: 1.15rem;
+    margin: 0 0 0.85rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--color-border);
   }
   .tut-grid {
     display: grid;

@@ -4,6 +4,7 @@ description:
   Understand what RNA-seq looks like in the genome browser, from spliced reads
   and splice arcs to alternative splicing and strand-specific coverage
 guide_category: Tutorials
+tutorial_category: Transcriptomics & proteins
 ---
 
 This tutorial shows how RNA-seq data appears in JBrowse 2: what the reads look

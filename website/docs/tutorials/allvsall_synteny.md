@@ -4,6 +4,7 @@ description:
   Stack strains or accessions in a linear synteny view from a single all-vs-all
   PAF
 guide_category: Tutorials
+tutorial_category: Synteny & comparative genomics
 ---
 
 A linear synteny view can stack more than two genomes: N genome rows with a

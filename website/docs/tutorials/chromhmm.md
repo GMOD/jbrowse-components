@@ -4,6 +4,7 @@ description:
   Painting many-cell-type ChromHMM segmentations in one track with the multi-row
   feature display
 guide_category: Tutorials
+tutorial_category: Epigenomics & single cell
 ---
 
 [ChromHMM](https://compbio.mit.edu/ChromHMM/) segments the genome into chromatin
