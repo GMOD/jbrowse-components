@@ -1,0 +1,14 @@
+name: Build jbrowse-web
+description:
+  Production build of products/jbrowse-web with the standard heap size
+
+# The webpack build needs a raised heap ceiling; keeping the flag here means the
+# --max-old-space-size value stays in one place instead of hand-synced across
+# the four jobs (push deploy, cross-backend gate, release createrelease,
+# release buildjbrowseweb) that build jbrowse-web.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      working-directory: products/jbrowse-web
+      run: NODE_OPTIONS='--max-old-space-size=6500' pnpm build
