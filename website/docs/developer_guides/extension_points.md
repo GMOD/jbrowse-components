@@ -114,7 +114,7 @@ returned value becomes the `args` for the next callback in the chain.
 
 The table below is an at-a-glance index of every extension point registered in
 the codebase. It is generated from the `#extensionPoint` tags at each point's
-fire/registration site, so it always lists every point; the detailed sections
+fire/registration site, so it lists every tagged point; the detailed sections
 that follow are hand-written.
 
 <!-- EXTENSION_POINTS_INDEX START -->

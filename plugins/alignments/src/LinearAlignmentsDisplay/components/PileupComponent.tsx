@@ -621,7 +621,11 @@ const LegendHost = observer(function LegendHost({
     <FloatingLegend
       sections={[
         { id: 'reads', title: 'Read colors', items: readItems },
-        { id: 'connections', title: 'Read connections', items: connectionItems },
+        {
+          id: 'connections',
+          title: 'Read connections',
+          items: connectionItems,
+        },
       ]}
       onDismiss={onDismiss}
     />

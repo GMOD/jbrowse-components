@@ -235,7 +235,7 @@ can be typed directly into the location search box. See the
 - [Population genomics](/docs/tutorials/population_genomics)
 - [DNA methylation](/docs/tutorials/methylation)
 - [RNA-seq](/docs/tutorials/rnaseq)
-- [All tutorials](/docs/)
+- [All tutorials](/docs/tutorials)
 
 ## See also
 

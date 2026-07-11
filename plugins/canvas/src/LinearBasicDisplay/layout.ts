@@ -503,7 +503,9 @@ function labelOverhangRoomPx(
   features: Map<string, { startBp: number; endBp: number }>,
   bpPerPx: number,
 ) {
-  const starts = [...features.values()].map(f => f.startBp).sort((a, b) => a - b)
+  const starts = [...features.values()]
+    .map(f => f.startBp)
+    .sort((a, b) => a - b)
   const ends = [...features.values()].map(f => f.endBp).sort((a, b) => a - b)
   const rightRoom = new Map<string, number>()
   const leftRoom = new Map<string, number>()

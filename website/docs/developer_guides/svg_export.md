@@ -57,9 +57,9 @@ export async function renderSvg(
   const view = getContainingView(model) as LinearGenomeViewModel
 
   // Wait until data is ready or an error is set
-  await when(() => model.dataReady || !!model.error)
+  await when(() => model.svgReady || !!model.error)
 
-  if (!model.dataReady) {
+  if (!model.svgReady) {
     return null
   }
 

@@ -184,7 +184,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get renderState(): ScoreRenderState {
         return {
-          canvasWidth: this.view.trackWidthPx,
+          canvasWidth: self.view.trackWidthPx,
           canvasHeight: self.height,
           color: getConf(self, 'color'),
         }

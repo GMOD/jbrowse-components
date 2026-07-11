@@ -219,7 +219,12 @@ describe('fitWidth label decimation', () => {
       decimate(
         labeledFeatureData([
           { featureId: 'probe', startBp: 100, endBp: 110, height: 20 },
-          { featureId: 'next', startBp: 100 + gap, endBp: 110 + gap, height: 20 },
+          {
+            featureId: 'next',
+            startBp: 100 + gap,
+            endBp: 110 + gap,
+            height: 20,
+          },
         ]),
       ).floatingLabelsData
     const kept = [10, 30, 45, 46, 60, 100].map(keptAt)

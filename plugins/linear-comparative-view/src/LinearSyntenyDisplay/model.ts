@@ -2,7 +2,11 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
-import { NO_CIGAR_OPS, coerceColorBy, isDataCurrent } from '@jbrowse/synteny-core'
+import {
+  NO_CIGAR_OPS,
+  coerceColorBy,
+  isDataCurrent,
+} from '@jbrowse/synteny-core'
 
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
@@ -327,7 +331,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               .map(v =>
                 v.displayedRegions
                   .map(
-                    r => `${r.refName}:${r.start}:${r.end}:${r.reversed ? 1 : 0}`,
+                    r =>
+                      `${r.refName}:${r.start}:${r.end}:${r.reversed ? 1 : 0}`,
                   )
                   .join(','),
               )

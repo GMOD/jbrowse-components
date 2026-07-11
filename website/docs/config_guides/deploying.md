@@ -26,7 +26,7 @@ npx @jbrowse/cli create jbrowse-web
 
 # 2. add an assembly and tracks (writes config.json for you)
 cd jbrowse-web
-jbrowse add-assembly https://example.com/hg38.fa.gz --name hg38 --load inPlace
+jbrowse add-assembly https://example.com/hg38.fa.gz --name hg38
 jbrowse add-track https://example.com/sample.bam --trackId ngs-reads --name "NGS reads" --assemblyNames hg38
 
 # 3. serve the folder with any static host

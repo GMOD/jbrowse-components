@@ -18,7 +18,9 @@ function expand(sequence: unknown) {
 test('infers IndexedFastaAdapter from a .fa uri', () => {
   const { adapter } = expand({ adapter: { uri: 'https://x.test/volvox.fa' } })
   expect(adapter.type).toBe('IndexedFastaAdapter')
-  expect(adapter.fastaLocation).toMatchObject({ uri: 'https://x.test/volvox.fa' })
+  expect(adapter.fastaLocation).toMatchObject({
+    uri: 'https://x.test/volvox.fa',
+  })
   expect(adapter.faiLocation).toMatchObject({
     uri: 'https://x.test/volvox.fa.fai',
   })
@@ -35,7 +37,9 @@ test('infers BgzipFastaAdapter (with .gzi) from a .fa.gz uri', () => {
 test('infers TwoBitAdapter from a .2bit uri', () => {
   const { adapter } = expand({ adapter: { uri: 'https://x.test/hg38.2bit' } })
   expect(adapter.type).toBe('TwoBitAdapter')
-  expect(adapter.twoBitLocation).toMatchObject({ uri: 'https://x.test/hg38.2bit' })
+  expect(adapter.twoBitLocation).toMatchObject({
+    uri: 'https://x.test/hg38.2bit',
+  })
 })
 
 test('an explicit non-sibling faiLocation overrides the guessed sibling', () => {

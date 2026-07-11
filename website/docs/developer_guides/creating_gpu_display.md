@@ -76,7 +76,7 @@ plugins/myplugin/src/LinearMyDisplay/
 // What the RPC worker returns per region
 export interface MyUploadData {
   featureCount: number
-  positionsF32: Float32Array // interleaved x, width per feature
+  positionsU32: Uint32Array // interleaved absolute-bp start, width per feature
   colorsU32: Uint32Array
 }
 
@@ -280,10 +280,9 @@ export class Canvas2DMyRenderer extends Canvas2DPerRegionRenderingBackend<
 // MyRendererFactory.ts
 import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
 
-import { GpuMyRenderer } from './GpuMyRenderer.ts'
+import { GpuMyRenderer, MY_PASSES } from './GpuMyRenderer.ts'
 import { Canvas2DMyRenderer } from './Canvas2DMyRenderer.ts'
 import { UNIFORMS_SIZE_BYTES } from './shaders/myUniforms.generated.ts'
-import { MY_PASSES } from './shaders/index.ts'
 
 import type { MyRenderingBackend } from './myRenderingBackendTypes.ts'
 

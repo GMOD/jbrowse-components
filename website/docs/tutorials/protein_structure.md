@@ -39,10 +39,19 @@ The same plugins come preconfigured on the public genome browsers at
 search for a gene, right click it, and choose to launch the 3D protein viewer or
 the MSA viewer.
 
-For a one-click example, this link opens the AlphaFold structure of human BRAF
-(UniProt P15056) directly in the hg38 browser:
+For a one-click example, this session opens the AlphaFold structure of human
+BRAF (UniProt P15056) directly in the hg38 browser:
 
-[Live demo — BRAF 3D structure](https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22url%22%3A%22https%3A%2F%2Falphafold.ebi.ac.uk%2Ffiles%2FAF-P15056-F1-model_v6.cif%22%7D%5D%7D)
+```json live config=/ucsc/hg38/config.json base="https://jbrowse.org/code/jb2/latest/"
+{
+  "views": [
+    {
+      "type": "ProteinView",
+      "url": "https://alphafold.ebi.ac.uk/files/AF-P15056-F1-model_v6.cif"
+    }
+  ]
+}
+```
 
 ## Installing the plugins
 
@@ -84,31 +93,27 @@ the plugin a UniProt accession and a transcript id, plus the genome location and
 tracks to show, and it resolves the rest — the AlphaFold structure, the
 transcript feature, and the aligned protein sequence:
 
-```js
-const session = {
-  views: [
+The session is passed as the `session` URL parameter, prefixed with `spec-` (the
+prefix tells JBrowse the value is an inline session). Tagging the block below
+`live` builds that `?config=…&session=spec-…` link straight from this JSON, so
+the link and the shown session can never drift:
+
+```json live config=/ucsc/hg38/config.json base="https://jbrowse.org/code/jb2/latest/"
+{
+  "views": [
     {
-      type: 'ProteinView',
-      uniprotId: 'P04637',
-      transcriptId: 'NM_000546.6',
-      connectedView: {
-        assembly: 'hg38',
-        loc: 'chr17:7,668,421-7,687,550',
-        tracks: ['hg38-ncbiRefSeqCurated', 'hg38-clinvarMain'],
-      },
-    },
-  ],
+      "type": "ProteinView",
+      "uniprotId": "P04637",
+      "transcriptId": "NM_000546.6",
+      "connectedView": {
+        "assembly": "hg38",
+        "loc": "chr17:7,668,421-7,687,550",
+        "tracks": ["hg38-ncbiRefSeqCurated", "hg38-clinvarMain"]
+      }
+    }
+  ]
 }
 ```
-
-Pass it as the `session` URL parameter, prefixed with `spec-` (the prefix tells
-JBrowse the value is an inline session):
-
-```
-https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json&session=spec-{"views":[{"type":"ProteinView","uniprotId":"P04637","transcriptId":"NM_000546.6","connectedView":{"assembly":"hg38","loc":"chr17:7,668,421-7,687,550","tracks":["hg38-ncbiRefSeqCurated","hg38-clinvarMain"]}}]}
-```
-
-[Live demo — TP53 connected structure](https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22uniprotId%22%3A%22P04637%22%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C421-7%2C687%2C550%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeqCurated%22%2C%22hg38-clinvarMain%22%5D%7D%7D%5D%7D)
 
 The transcript must be present in one of the listed `tracks` at `loc`. If you
 need a transcript that isn't loaded as a track, you can instead pass the

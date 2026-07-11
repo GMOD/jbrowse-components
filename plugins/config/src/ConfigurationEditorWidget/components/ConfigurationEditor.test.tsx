@@ -1,5 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema, readConfObject } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'

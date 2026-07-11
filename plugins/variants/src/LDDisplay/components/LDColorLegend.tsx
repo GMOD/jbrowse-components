@@ -1,7 +1,4 @@
-import {
-  GRADIENT_LEGEND_HEIGHT,
-  GRADIENT_LEGEND_WIDTH,
-} from '@jbrowse/core/ui'
+import { GRADIENT_LEGEND_HEIGHT, GRADIENT_LEGEND_WIDTH } from '@jbrowse/core/ui'
 
 import LDColorLegendContent from './LDColorLegendContent.tsx'
 

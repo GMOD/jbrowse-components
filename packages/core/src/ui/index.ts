@@ -63,7 +63,4 @@ export {
   GRADIENT_LEGEND_WIDTH,
   default as SvgGradientLegend,
 } from './SvgGradientLegend.tsx'
-export type {
-  GradientLabel,
-  GradientStop,
-} from './SvgGradientLegend.tsx'
+export type { GradientLabel, GradientStop } from './SvgGradientLegend.tsx'

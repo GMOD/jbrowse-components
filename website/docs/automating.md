@@ -182,7 +182,7 @@ await page.setViewport({ width: 1500, height: 800, deviceScaleFactor: 2 })
 // the same URL params documented above put the view into the desired state
 await page.goto(
   'https://jbrowse.org/code/jb2/main/?config=test_data/config.json' +
-    '&assembly=hg19&loc=chr1:1,000,000-2,000,000&tracks=genes,variants&nav=false',
+    '&assembly=hg19&loc=chr1:1,000,000-2,000,000&tracks=ncbi_gff_hg19,clinvar_hg19&nav=false',
   { waitUntil: 'networkidle0' },
 )
 

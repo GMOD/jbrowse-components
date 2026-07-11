@@ -340,7 +340,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             : self.sessionTracks.findIndex(t => t.trackId === trackId)
           if (base) {
             const plainBase = toPlainConfig(base)
-            const delta = diffTrackConfig(plainBase, trackConf) as PlainTrackConfig
+            const delta = diffTrackConfig(
+              plainBase,
+              trackConf,
+            ) as PlainTrackConfig
             // an edit that nets back to the base carries no changed slots: clear
             // any prior override (implicit reset) instead of pinning a
             // content-free delta; skip a no-op write when there's nothing to

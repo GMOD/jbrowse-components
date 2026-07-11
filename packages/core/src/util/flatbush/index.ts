@@ -366,7 +366,10 @@ export default class Flatbush {
             // node intersects; flag it as contained if its bbox is fully inside the query
             const c = +(minX <= x0 && minY <= y0 && maxX >= x1 && maxY >= y1)
             q.push(index | c, level - 1) // node; add it and its level to the search queue
-          } else if (filterFn === undefined || filterFn(index, x0, y0, x1, y1)) {
+          } else if (
+            filterFn === undefined ||
+            filterFn(index, x0, y0, x1, y1)
+          ) {
             results.push(index) // leaf item
           }
         }

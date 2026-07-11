@@ -291,9 +291,7 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
               }
             : seq
         // preserve the identity-unchanged case so nothing rebuilds needlessly
-        return sequence === snap.sequence
-          ? snap
-          : { ...rest, name, sequence }
+        return sequence === snap.sequence ? snap : { ...rest, name, sequence }
       },
     },
   )

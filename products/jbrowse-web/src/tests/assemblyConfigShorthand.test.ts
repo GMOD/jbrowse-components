@@ -55,7 +55,9 @@ test('refNameAliases/cytobands accept a bare { uri } shorthand', () => {
 
   const cytobands = readConfObject(asm.cytobands.adapter)
   expect(cytobands.type).toBe('CytobandAdapter')
-  expect(cytobands.cytobandLocation.uri).toBe('https://x.test/hg38.cytoBand.txt')
+  expect(cytobands.cytobandLocation.uri).toBe(
+    'https://x.test/hg38.cytoBand.txt',
+  )
 })
 
 test('refNameAliases { uri } carries baseUri to the alias location', () => {
