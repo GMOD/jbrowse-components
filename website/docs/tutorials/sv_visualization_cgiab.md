@@ -617,9 +617,6 @@ For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
 
-See also: [Synteny visualization](/docs/tutorials/synteny_visualization) — a
-complementary tutorial on comparing genome assemblies using the same views.
-
 ## Troubleshooting
 
 | Problem                                                             | Possible cause                                                     | Solution                                                                                                                                                              |

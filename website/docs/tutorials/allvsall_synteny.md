@@ -176,18 +176,16 @@ acquired virulence independently rather than from a shared ancestor
 ## See also
 
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) — the
-  cross-species, gene-based `.blocks` workflow.
+  cross-species, gene-based `.blocks` workflow
 - [Synteny visualization](/docs/tutorials/synteny_visualization) — pairwise
-  dotplot and linear synteny basics.
+  dotplot and linear synteny basics
 - [AllVsAllPAFAdapter config](/docs/config/allvsallpafadapter) — full schema for
-  the un-indexed adapter used above.
+  the un-indexed adapter used above
 - [AllVsAllIndexedPAFAdapter config](/docs/config/allvsallindexedpafadapter) —
-  the tabix-backed adapter for whole-genome pangenomes.
+  the tabix-backed adapter for whole-genome pangenomes
 - [LGVSyntenyDisplay config](/docs/config/lgvsyntenydisplay) — the display that
-  draws the one-vs-all view in a plain linear genome view.
+  draws the one-vs-all view in a plain linear genome view
 - [PIF format](/docs/developer_guides/pif_format) — the indexed alignment format
-  `make-pif` produces.
+  `make-pif` produces
 - [Multi-way synteny in an embedded app](https://jbrowse.org/storybook/app/multiway-synteny-example/)
-  — this same four-strain _E. coli_ all-vs-all view running live in
-  `@jbrowse/react-app2`, with the assemblies, track, and `views`/`tracks` init
-  written as React props.
+  — this same four-strain all-vs-all view running live in `@jbrowse/react-app2`

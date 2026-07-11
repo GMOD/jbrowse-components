@@ -132,19 +132,14 @@ for details.
 - [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/) —
   hosted one-click demo linking an MSA, AlphaFold 3D structure, and linear
   genome view for any human gene
-- [Proteins in the Genome Browser](https://github.com/GMOD/proteinbrowser) — the
-  project combining MSAs, 3D structures, and nucleotide-level genome evidence
-- [_Proteins in the Genome Browser_ paper](https://doi.org/10.1016/j.jmb.2026.169645)
-  (_Journal of Molecular Biology_, 2026) — the methods behind these plugins
+- [Proteins in the Genome Browser](https://github.com/GMOD/proteinbrowser) —
+  metapage linking the Protein3d and MSAView plugins, their developer docs, and
+  demos
+- [Proteins in the Genome Browser paper](https://doi.org/10.1016/j.jmb.2026.169645)
+  — the methods behind these plugins
 - [Gene tracks](/docs/user_guides/gene_track) — color-by-CDS reading frames and
-  peptide lettering on the linear gene track, from the same
-  transcript-to-protein mapping the protein viewer uses
+  peptide lettering on the linear gene track
 - [Variant tracks](/docs/user_guides/variant_track) — loading and filtering VCFs
-  such as ClinVar in the genome view
+  such as ClinVar
 - [Plugin store](/docs/user_guides/plugin_store) — installing Protein3d,
   MSAView, and other plugins
-- [protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md#connected-genome--protein-view)
-  — declaratively specifying a connected protein view as a session-spec URL
-- [msaview developer docs](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/DEVELOPERS.md)
-  — declaratively specifying an MSA view (with an optional connected genome
-  view) as a session-spec URL

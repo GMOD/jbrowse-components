@@ -204,7 +204,7 @@ whole-genome human-vs-mouse comparison.
 - [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) — stacking closely
   related strains from a single all-vs-all PAF
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) — the
-  cross-species, gene-level .blocks workflow for N-way synteny
+  cross-species, gene-level `.blocks` workflow for N-way synteny
 - [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) — the same
   dotplot/synteny views applied to a tumor de novo assembly
 - [PIF format](/docs/developer_guides/pif_format) — the indexed alignment format
