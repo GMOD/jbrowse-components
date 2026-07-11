@@ -128,6 +128,13 @@ export function doAfterAttach(
     self,
     autorun(
       function dotplotGeometryRecompute() {
+        // getContainingView reads the parent atom (a tracked MST observable);
+        // removeView detaches self and fires that atom, re-running this autorun
+        // before its disposer teardown. Bail while dead so getContainingView
+        // doesn't dereference a node no longer in the tree.
+        if (!isAlive(self)) {
+          return
+        }
         const view = getContainingView(self) as DotplotViewModel
         const { rpcData, alpha, colorBy, minAlignmentLength } = self
         if (!rpcData) {
@@ -166,6 +173,9 @@ export function doAfterAttach(
     self,
     autorun(
       async function dotplotAssemblySwapCheck() {
+        if (!isAlive(self)) {
+          return
+        }
         const view = getContainingView(self) as DotplotViewModel
         const [hAsm, vAsm] = view.assemblyNames
         if (!view.initialized) {

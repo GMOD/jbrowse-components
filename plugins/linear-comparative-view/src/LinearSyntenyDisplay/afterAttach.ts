@@ -179,6 +179,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
     self,
     autorun(
       async function syntenyAssemblySwapCheck() {
+        if (!isAlive(self)) {
+          return
+        }
         const view = getContainingView(self) as LinearSyntenyViewModel
         const level = self.level
         if (!view.initialized || level + 1 >= view.views.length) {
