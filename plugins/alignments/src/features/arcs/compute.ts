@@ -19,6 +19,7 @@ import {
 } from '../../shared/readGroupConnections.ts'
 
 import type { ArcsUploadData } from './types.ts'
+import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ReadConnection } from '../../shared/readGroupConnections.ts'
@@ -102,6 +103,42 @@ const COLOR_SPLIT_INVERSION = 7
 // Same-strand (co-linear) split — a deletion / tandem-dup junction — → the
 // supplementary yellow, matching the read-fill + connector deletion color.
 const COLOR_SPLIT_DELETION = 8
+
+// Legend category for a samplot/read-cloud endpoint-square color slot. The read
+// legend is otherwise driven purely by read-fill categories (readColorCategory),
+// so cloud-only buckets — split junctions especially, which no read fill
+// produces outside chain mode — would be missing. Mapping the arc color slots
+// back to legend categories fills that gap, and by construction each square's
+// color equals its category swatch: COLOR_SHORT_INSERT paints the pale
+// colorShortInsert (arcMarkerColorPalette / arcMarkerColorByIndex), matching the
+// 'shortInsert' swatch, and the split slots reuse the split-junction swatches.
+// The default slot is the baseline colorPairLR; its label follows the coloring
+// mode ('Normal' insert vs. 'LR' orientation, both colorPairLR).
+export function arcColorLegendCategory(
+  colorType: number,
+  colorByType: ArcColorByType,
+): ReadColorCategory {
+  switch (colorType) {
+    case COLOR_LONG_INSERT:
+      return 'longInsert'
+    case COLOR_SHORT_INSERT:
+      return 'shortInsert'
+    case COLOR_INTERCHROM:
+      return 'interchrom'
+    case COLOR_PAIR_LL:
+      return 'pairLL'
+    case COLOR_PAIR_RR:
+      return 'pairRR'
+    case COLOR_PAIR_RL:
+      return 'pairRL'
+    case COLOR_SPLIT_INVERSION:
+      return 'splitInversion'
+    case COLOR_SPLIT_DELETION:
+      return 'splitDeletion'
+    default:
+      return colorByType === 'orientation' ? 'pairLR' : 'normalInsert'
+  }
+}
 
 // A split junction (or unpaired-read segment pairing): opposite strands → the
 // magenta inversion color; same strands (both known) → the yellow deletion

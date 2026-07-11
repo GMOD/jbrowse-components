@@ -1,6 +1,13 @@
+import {
+  colorShortInsert,
+  colorShortInsertArc,
+} from '@jbrowse/core/ui/theme'
+import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
+
 import { arcYFraction } from './arcYScale.ts'
 import {
   arcColorPalette,
+  arcMarkerColorPalette,
   linkedReadColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../../LinearAlignmentsDisplay/shaders/slang/read.iface.generated.ts'
@@ -19,6 +26,34 @@ describe('arc palette parity (JS ↔ GPU uniform slots)', () => {
     expect(linkedReadColorPalette.length).toBe(
       UNIFORM_SLOT_ARRAYS.linkedReadColor.length,
     )
+  })
+})
+
+// The samplot read-cloud endpoint squares are opaque fills, so they use the pale
+// pileup-fill short-insert (matching the legend + pileup) rather than the
+// saturated stroke variant the arc curves use — otherwise the squares read a
+// different pink from the legend swatch. arcMarkerColorPalette is the GPU
+// arcMarkerColorByIndex twin; pin the one substituted slot and confirm the rest
+// is the arc palette unchanged.
+describe('arcMarkerColorPalette (samplot endpoint squares)', () => {
+  it('substitutes the pale short-insert fill at the short-insert slot', () => {
+    expect(arcMarkerColorPalette[2]).toEqual(
+      cssColorToNormalizedRgb(colorShortInsert),
+    )
+    expect(arcMarkerColorPalette[2]).not.toEqual(
+      cssColorToNormalizedRgb(colorShortInsertArc),
+    )
+    expect(arcColorPalette[2]).toEqual(
+      cssColorToNormalizedRgb(colorShortInsertArc),
+    )
+  })
+  it('leaves every other slot identical to the stroke arc palette', () => {
+    expect(arcMarkerColorPalette.length).toBe(arcColorPalette.length)
+    arcColorPalette.forEach((c, i) => {
+      if (i !== 2) {
+        expect(arcMarkerColorPalette[i]).toBe(c)
+      }
+    })
   })
 })
 

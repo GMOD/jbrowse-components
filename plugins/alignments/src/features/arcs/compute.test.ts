@@ -11,6 +11,7 @@ import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
+  arcColorLegendCategory,
   arcsToRegionResult,
   computeArcsFromPileupData,
   groupArcsByRef,
@@ -1153,5 +1154,37 @@ describe('arcsToRegionResult', () => {
     expect(result.numArcLines).toBe(2)
     expect(Array.from(result.arcLinePositions)).toEqual([1500, 2500])
     expect(Array.from(result.arcLineColorTypes)).toEqual([3, 3])
+  })
+})
+
+// The read-cloud legend is otherwise driven purely by read-fill categories, so
+// the cloud-only split-junction buckets (which no read fill emits outside chain
+// mode) would be missing. These map the arc color slots back to legend
+// categories; each returned category's swatch must equal the plotted marker's
+// color (see arcMarkerColorPalette / swatchPaletteKeys).
+describe('arcColorLegendCategory', () => {
+  test('split junctions map to the cloud-only categories', () => {
+    // COLOR_SPLIT_INVERSION = 7, COLOR_SPLIT_DELETION = 8
+    expect(arcColorLegendCategory(7, 'insertSizeAndOrientation')).toBe(
+      'splitInversion',
+    )
+    expect(arcColorLegendCategory(8, 'insertSizeAndOrientation')).toBe(
+      'splitDeletion',
+    )
+  })
+  test('insert-size + orientation slots map to their read-fill categories', () => {
+    expect(arcColorLegendCategory(1, 'insertSize')).toBe('longInsert')
+    expect(arcColorLegendCategory(2, 'insertSize')).toBe('shortInsert')
+    expect(arcColorLegendCategory(3, 'orientation')).toBe('interchrom')
+    expect(arcColorLegendCategory(4, 'orientation')).toBe('pairLL')
+    expect(arcColorLegendCategory(5, 'orientation')).toBe('pairRR')
+    expect(arcColorLegendCategory(6, 'orientation')).toBe('pairRL')
+  })
+  test('the default slot labels by coloring mode (both colorPairLR)', () => {
+    expect(arcColorLegendCategory(0, 'insertSize')).toBe('normalInsert')
+    expect(arcColorLegendCategory(0, 'insertSizeAndOrientation')).toBe(
+      'normalInsert',
+    )
+    expect(arcColorLegendCategory(0, 'orientation')).toBe('pairLR')
   })
 })

@@ -212,6 +212,18 @@ public float3 arcColorByIndex(uint idx, Uniforms u) {
   return unpackRGBA(colors[min(idx, 8u)]).xyz;
 }
 
+// Read-cloud (samplot) endpoint-square palette. The squares are filled opaque
+// marks, so they read fine with the pale pileup-fill short-insert (colorShortInsert
+// #ffc0cb) and must match it — index 2 in the arc palette is the *saturated*
+// stroke variant (colorShortInsertArc #ff3a8c), chosen so a thin translucent arc
+// line stays visible, which would mismatch the pale legend/pileup swatch. Every
+// other index defers to the shared arc palette. Index 2 == COLOR_SHORT_INSERT in
+// features/arcs/compute.ts.
+public float3 arcMarkerColorByIndex(uint idx, Uniforms u) {
+  if (idx == 2u) { return unpackRGBA(u.colorShortInsert).xyz; }
+  return arcColorByIndex(idx, u);
+}
+
 // Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip
 // 3=hardclip (anything else falls through to hardclip). Uses the *Indicator
 // colors — coverage-track marks sit on the dark track background, where the

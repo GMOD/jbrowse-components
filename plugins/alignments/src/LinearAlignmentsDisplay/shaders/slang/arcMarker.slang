@@ -51,7 +51,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float clipY = 1.0 - ((py + u.covOffset) / u.canvasH) * 2.0;
   o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
   uint idx = uint(inst.colorType + 0.5);
-  o.color = float4(arcColorByIndex(idx, u), 1.0);
+  o.color = float4(arcMarkerColorByIndex(idx, u), 1.0);
   return o;
 }
 

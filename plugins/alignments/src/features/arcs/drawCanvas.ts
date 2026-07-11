@@ -9,6 +9,7 @@ import {
 import {
   ARC_HEIGHT_MARGIN,
   arcColorPalette,
+  arcMarkerColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 import {
   ARC_FAR_SCREEN_WIDTHS,
@@ -36,6 +37,11 @@ interface DrawArcsOpts {
   pairedArcsDown: boolean
   lineWidth: number
   palette: RGBColor[]
+  // Palette for the samplot endpoint squares. Same as `palette` except the
+  // filled short-insert square is pale (matching pileup + legend) rather than
+  // the saturated stroke color the arc curves use. Mirrors the GPU
+  // arcMarkerColorByIndex split.
+  markerPalette: RGBColor[]
   // Visible width in px (mirrors arc.slang's `canvasW`); sets the far-pair
   // threshold below.
   screenWidthPx: number
@@ -81,11 +87,14 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     pairedArcsDown,
     lineWidth,
     palette,
+    markerPalette,
     screenWidthPx,
   } = opts
-  // Pre-stringify the palette once per draw — saves N Math.round + string
-  // allocations per frame (N = numArcs, often thousands).
+  // Pre-stringify the palettes once per draw — saves N Math.round + string
+  // allocations per frame (N = numArcs, often thousands). The stroke palette
+  // colors the curves; the marker palette colors the samplot endpoint squares.
   const cssPalette = palette.map(c => rgb255(c))
+  const cssMarkerPalette = markerPalette.map(c => rgb255(c))
   const paletteLen = cssPalette.length
   // Flat (samplot) connector lines are neutral black; the category color lives
   // in the endpoint squares. Alpha kept well above samplot.py's 0.25 so an
@@ -128,7 +137,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
       ctx.lineTo(mid + halfPx, apexY)
       ctx.stroke()
       // Colored square at each read endpoint (mirrors the arcMarker GPU pass).
-      ctx.fillStyle = cssPalette[colorIdx % paletteLen]!
+      ctx.fillStyle = cssMarkerPalette[colorIdx % paletteLen]!
       const m = ARC_MARKER_PX
       ctx.fillRect(sx1 - m / 2, apexY - m / 2, m, m)
       ctx.fillRect(sx2 - m / 2, apexY - m / 2, m, m)
@@ -173,6 +182,7 @@ export function drawArcs(
     pairedArcsDown,
     lineWidth: state.readConnectionsLineWidth,
     palette: arcColorPalette,
+    markerPalette: arcMarkerColorPalette,
     screenWidthPx,
   })
 

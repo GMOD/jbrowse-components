@@ -85,7 +85,10 @@ import {
   buildSectionRenders,
   computeStackedSections,
 } from './sectionLayout.ts'
-import { computeArcsRegionMap } from '../features/arcs/compute.ts'
+import {
+  arcColorLegendCategory,
+  computeArcsRegionMap,
+} from '../features/arcs/compute.ts'
 import {
   bezierConnectionLegendItems,
   enumerateBezierPairs,
@@ -1039,12 +1042,40 @@ export default function stateModelFactory(
         },
 
         /**
+         * #getter
+         * Legend categories contributed by the read-cloud (samplot) endpoint
+         * squares — the arc color slots actually plotted, mapped to legend
+         * buckets. Read-fill categories miss the cloud-only buckets (split
+         * junctions especially), so these are merged into the legend. Empty
+         * unless in samplot mode with the legend shown.
+         */
+        get readCloudLegendCategories(): Set<ReadColorCategory> {
+          const present = new Set<ReadColorCategory>()
+          if (this.showLegend && self.readConnections === 'samplot') {
+            for (const regionMap of this.arcsByGroup.values()) {
+              for (const data of regionMap.values()) {
+                for (const ct of data.arcColorTypes) {
+                  present.add(arcColorLegendCategory(ct, self.arcColorByType))
+                }
+                for (const ct of data.arcLineColorTypes) {
+                  present.add(arcColorLegendCategory(ct, self.arcColorByType))
+                }
+              }
+            }
+          }
+          return present
+        },
+
+        /**
          * #method
          */
         legendItems() {
           return getReadDisplayLegendItems(
             this.colorBy,
-            this.colorLegendCategories,
+            new Set([
+              ...this.colorLegendCategories,
+              ...this.readCloudLegendCategories,
+            ]),
             this.colorPalette,
             self.visibleModifications,
             self.colorTagMap,

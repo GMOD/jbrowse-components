@@ -5,6 +5,7 @@ import {
   colorPairLR,
   colorPairRL,
   colorPairRR,
+  colorShortInsert,
   colorShortInsertArc,
   colorSplitReadInversion,
   colorSupplementary,
@@ -36,6 +37,16 @@ export const arcColorPalette: RGBColor[] = [
   rgb(colorSplitReadInversion), // 7 split-read inversion — matches read fill + connector
   rgb(colorSupplementary), // 8 split-read deletion (same-strand) — matches yellow deletion fill
 ]
+
+// Read-cloud (samplot) endpoint-square palette. The squares are filled opaque
+// marks (like pileup rectangles), so short-insert uses the pale pileup-fill
+// color (colorShortInsert #ffc0cb) to match the legend + pileup — not the
+// saturated stroke variant (colorShortInsertArc #ff3a8c) the arc *curves* use so
+// a thin translucent line stays visible. Every other slot is the arc palette.
+// Mirrors arcMarkerColorByIndex in alignmentsUniforms.slang.
+export const arcMarkerColorPalette: RGBColor[] = arcColorPalette.map((c, i) =>
+  i === 2 ? rgb(colorShortInsert) : c,
+)
 
 // Indices match LINKED_READ_COLOR_* in features/linkedReads/compute.ts. Used by the
 // GPU palette UBO, the Canvas2D draw, and the SVG export so the three paths
