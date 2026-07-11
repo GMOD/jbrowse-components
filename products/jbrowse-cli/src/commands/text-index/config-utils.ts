@@ -82,6 +82,10 @@ export function getAssemblyNames(
   return asms
 }
 
+export function formatDryRun(trackConfigs: Track[]): string {
+  return trackConfigs.map(t => `${t.trackId}\t${t.adapter?.type}`).join('\n')
+}
+
 export function getTrackConfigs(
   config: Config,
   trackIds?: string[],

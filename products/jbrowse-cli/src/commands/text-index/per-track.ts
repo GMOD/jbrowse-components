@@ -1,5 +1,6 @@
 import { createTrixAdapter } from './adapter-utils.ts'
 import {
+  formatDryRun,
   getTrackConfigs,
   loadConfigForIndexing,
   parseCommaSeparatedString,
@@ -29,13 +30,13 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
     prefixSize,
     dryrun,
   } = flags
+  validateAssembliesForPerTrack(assemblies)
   const { config, configPath, outLocation } = await loadConfigForIndexing(
     target,
     out,
     resolveConfigPath,
   )
   const configTracks = config.tracks ?? []
-  validateAssembliesForPerTrack(assemblies)
   const confs = getTrackConfigs(
     config,
     parseCommaSeparatedString(tracks),
@@ -44,7 +45,7 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
   )
   validateTrackConfigs(confs)
   if (dryrun) {
-    console.log(confs.map(e => `${e.trackId}\t${e.adapter?.type}`).join('\n'))
+    console.log(formatDryRun(confs))
   } else {
     let hasChanges = false
     for (const trackConfig of confs) {

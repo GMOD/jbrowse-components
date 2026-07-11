@@ -1,5 +1,6 @@
 import { createTrixAdapter } from './adapter-utils.ts'
 import {
+  formatDryRun,
   getAssemblyNames,
   getTrackConfigs,
   loadConfigForIndexing,
@@ -49,13 +50,11 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
     console.log(`Indexing assembly ${asm}...`)
 
     if (dryrun) {
-      console.log(
-        trackConfigs.map(e => `${e.trackId}	${e.adapter?.type}`).join('\n'),
-      )
+      console.log(formatDryRun(trackConfigs))
     } else {
-      const id = `${asm}-index`
+      const trixConf = createTrixAdapter(asm, [asm])
       const idx = aggregateTextSearchAdapters.findIndex(
-        x => x.textSearchAdapterId === id,
+        x => x.textSearchAdapterId === trixConf.textSearchAdapterId,
       )
       if (idx !== -1 && !force) {
         console.log(
@@ -71,8 +70,6 @@ export async function aggregateIndex(flags: TextIndexFlags): Promise<void> {
         assemblyNames: [asm],
         ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
       })
-
-      const trixConf = createTrixAdapter(asm, [asm])
 
       if (idx === -1) {
         aggregateTextSearchAdapters.push(trixConf)
