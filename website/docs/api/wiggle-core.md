@@ -84,7 +84,7 @@ Builds a niced d3 scale (linear/log/quantize) from a `ScaleOpts`.
 
 ```js
 // type signature
-({ domain, range, scaleType, pivotValue, inverted, }: ScaleOpts) => Scale
+({ domain, range, scaleType }: ScaleOpts) => Scale
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)

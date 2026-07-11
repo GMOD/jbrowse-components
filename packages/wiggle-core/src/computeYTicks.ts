@@ -34,7 +34,6 @@ export function computeYTicks(opts: {
     scaleType,
     domain: [domainMin, domainMax],
     range: [yBottom, yTop],
-    inverted: false,
   })
   const values =
     height < 100 || minimalTicks

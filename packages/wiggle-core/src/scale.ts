@@ -4,8 +4,6 @@ export interface ScaleOpts {
   domain: number[]
   range: number[]
   scaleType: string
-  pivotValue?: number
-  inverted?: boolean
 }
 
 function createScaleForType(scaleType: string) {
@@ -25,13 +23,7 @@ function createScaleForType(scaleType: string) {
  * #api
  * Builds a niced d3 scale (linear/log/quantize) from a `ScaleOpts`.
  */
-export function getScale({
-  domain,
-  range,
-  scaleType,
-  pivotValue,
-  inverted,
-}: ScaleOpts) {
+export function getScale({ domain, range, scaleType }: ScaleOpts) {
   const [min, max] = domain
   if (min === undefined || max === undefined) {
     throw new Error('invalid domain')
@@ -41,9 +33,9 @@ export function getScale({
     throw new Error('invalid range')
   }
   const scale = createScaleForType(scaleType)
-  scale.domain(pivotValue !== undefined ? [min, pivotValue, max] : [min, max])
+  scale.domain([min, max])
   scale.nice()
-  scale.range(inverted ? range.slice().reverse() : range)
+  scale.range(range)
   return scale
 }
 

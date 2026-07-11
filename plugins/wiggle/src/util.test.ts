@@ -16,16 +16,6 @@ test('log scale', () => {
   expect(scale.domain()).toEqual([1, 128])
 })
 
-test('test inverted', () => {
-  const scaleType = 'log'
-  const inverted = true
-  const domain = [1, 100]
-  const range = [0, 100]
-  const scale = getScale({ scaleType, domain, range, inverted })
-  expect(scale.domain()).toEqual([1, 128])
-  expect(scale.range()).toEqual(range.reverse())
-})
-
 test('test minScore', () => {
   const scaleType = 'linear'
   const domain = [0, 100] as const
