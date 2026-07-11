@@ -5,7 +5,6 @@ import { Button } from '@mui/material'
 
 import OpenSequenceDialog from '../../OpenSequenceDialog.tsx'
 import AvailableGenomesDialog from '../availableGenomes/AvailableGenomesDialog.tsx'
-import OpenConfigUrlDialog from '../dialogs/OpenConfigUrlDialog.tsx'
 import { newSessionName } from '../sessionName.ts'
 
 import type { Fav, JBrowseConfig, LaunchCallback } from '../types.ts'
@@ -32,7 +31,6 @@ export default function OpenSequencePanel({
   const { classes } = useStyles()
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
   const [showAll, setShowAll] = useState(false)
-  const [configUrlDialogOpen, setConfigUrlDialogOpen] = useState(false)
 
   return (
     <div>
@@ -54,15 +52,6 @@ export default function OpenSequencePanel({
         }}
       >
         Show all available genomes
-      </Button>
-      <Button
-        variant="contained"
-        className={classes.button}
-        onClick={() => {
-          setConfigUrlDialogOpen(true)
-        }}
-      >
-        Open config from URL
       </Button>
 
       {sequenceDialogOpen ? (
@@ -90,15 +79,6 @@ export default function OpenSequencePanel({
           launch={launch}
           onClose={() => {
             setShowAll(false)
-          }}
-        />
-      ) : null}
-
-      {configUrlDialogOpen ? (
-        <OpenConfigUrlDialog
-          launch={launch}
-          onClose={() => {
-            setConfigUrlDialogOpen(false)
           }}
         />
       ) : null}

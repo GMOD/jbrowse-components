@@ -9,7 +9,6 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import {
-  Button,
   Checkbox,
   FormControl,
   FormControlLabel,
@@ -25,6 +24,7 @@ import {
 import RecentSessionsCards from './RecentSessionsCards.tsx'
 import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
 import { useNotifyError } from '../../NotifyContext.ts'
+import OpenLocalFileButton from '../OpenLocalFileButton.tsx'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
 import { loadPluginManager } from '../util.tsx'
@@ -91,7 +91,6 @@ export default function RecentSessionPanel({
 }) {
   const { classes } = useStyles()
   const notifyError = useNotifyError()
-  const [sessionLoading, setSessionLoading] = useState(false)
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>([])
@@ -120,7 +119,6 @@ export default function RecentSessionPanel({
   )
 
   const launch = async (path: string) => {
-    setSessionLoading(true)
     try {
       setPluginManager(await loadPluginManager(path))
     } catch (e) {
@@ -134,8 +132,6 @@ export default function RecentSessionPanel({
             .catch(console.error)
         },
       })
-    } finally {
-      setSessionLoading(false)
     }
   }
 
@@ -271,20 +267,17 @@ export default function RecentSessionPanel({
           }
         />
 
-        <Button variant="contained" component="label" disabled={sessionLoading}>
-          Open config.json or .jbrowse file
-          <input
-            type="file"
-            hidden
-            onChange={async event => {
-              const file = event.target.files?.[0]
-              if (file) {
-                const { webUtils } = window.require('electron')
-                await launch(webUtils.getPathForFile(file))
-              }
-            }}
-          />
-        </Button>
+        <OpenLocalFileButton
+          variant="contained"
+          accept=".jbrowse,.json,application/json"
+          onPick={path => {
+            launch(path).catch((e: unknown) => {
+              console.error(e)
+            })
+          }}
+        >
+          Open .jbrowse or config.json file
+        </OpenLocalFileButton>
         <Tooltip title="More actions">
           <IconButton
             onClick={event => {
