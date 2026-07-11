@@ -1495,21 +1495,21 @@
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
     "status": "bad",
-    "note": "hard to tell what is going on in this screenshot. if it is supposed to say something specific, plot alogn with another track to co-emphasize. add gene track and highlights if needed.",
+    "note": "hard to tell what is going on in this screenshot. if it is supposed to say something specific, plot along with another track to co-emphasize. add gene track and highlights if needed.",
     "reviewedAt": "2026-07-10T15:40:40.075Z",
     "hash": "159bbfbab8ac91b268bffd5fcea39ed493b66c6d"
   },
   "popgen/ld_decay_2R": {
     "name": "popgen/ld_decay_2R",
     "status": "bad",
-    "note": "hard to tell what is going on in this screenshot. if it is supposed to say something specific, plot alogn with another track to co-emphasize. add gene track and highlights if needed.",
+    "note": "hard to tell what is going on in this screenshot. if it is supposed to say something specific, plot along with another track to co-emphasize. add gene track and highlights if needed.",
     "reviewedAt": "2026-07-10T15:40:46.498Z",
     "hash": "bc5ffa417046eb2bc313bf56b6170f225a67276b"
   },
   "popgen/combined_cyp6g1_dest": {
     "name": "popgen/combined_cyp6g1_dest",
     "status": "bad",
-    "note": "the highlight appears 'before' the fst goes to zero. not sure if that is exected. might want to zoom out more. i see ",
+    "note": "the highlight appears 'before' the fst goes to zero. not sure if that is expected. might want to zoom out more. i see ",
     "reviewedAt": "2026-07-10T15:41:06.726Z",
     "hash": "3b760a41d2c12849283c51604159f5a76e1c0d30"
   },

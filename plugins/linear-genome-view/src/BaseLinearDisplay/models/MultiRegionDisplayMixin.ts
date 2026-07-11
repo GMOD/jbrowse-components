@@ -23,6 +23,11 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type { IAutorunOptions } from 'mobx'
 
+// This ESM package builds without @types/node, but consuming bundlers
+// (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
+// reference and give it a minimal module-scoped type for tsc.
+declare const process: { env: { NODE_ENV?: string } }
+
 export type { ByteEstimateConfig } from './fetchHelpers.ts'
 export type { FetchContext } from './FetchMixin.ts'
 

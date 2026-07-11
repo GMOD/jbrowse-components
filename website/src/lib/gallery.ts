@@ -62,7 +62,8 @@ export function itemHref(item: GalleryItem, baseUrl: string) {
     return CODE_BASE + item.session
   }
   if (item.guide) {
-    return `${baseUrl}/docs/${item.guide}/`
+    const [path, hash] = item.guide.split('#')
+    return `${baseUrl}/docs/${path}/${hash ? `#${hash}` : ''}`
   }
   if (item.spec) {
     const url = specSessionUrls[item.spec]
