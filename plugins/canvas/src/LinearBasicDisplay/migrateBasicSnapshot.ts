@@ -1,6 +1,10 @@
 import { legacyGeneGlyphMode } from './geneGlyphMode.ts'
 import { legacyShowLabelsToMode } from './showLabelsMode.ts'
 
+function isRecord(x: unknown): x is Record<string, unknown> {
+  return typeof x === 'object' && x !== null
+}
+
 // Lift renderer-nested props onto the snap and drop the renderer sub-config.
 // Used by migrateBasicConfigSnapshot to handle the pre-GPU-rewrite format
 // where style slots lived under an `ArcRenderer`/`SvgFeatureRenderer` key.
@@ -8,13 +12,12 @@ function liftRendererProps(
   snap: Record<string, unknown>,
 ): Record<string, unknown> {
   const { renderer, ...rest } = snap
-  if (!renderer || typeof renderer !== 'object') {
-    return snap
+  if (!isRecord(renderer)) {
+    // rest already excludes `renderer`, so returning it also drops a stray
+    // renderer:null rather than carrying the unknown key into the snapshot.
+    return rest
   }
-  const { type: _rendererType, ...rendererProps } = renderer as Record<
-    string,
-    unknown
-  >
+  const { type: _rendererType, ...rendererProps } = renderer
   // snap props take priority: spread renderer first, then rest on top.
   return { ...rendererProps, ...rest }
 }

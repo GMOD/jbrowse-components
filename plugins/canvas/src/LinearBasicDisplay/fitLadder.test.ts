@@ -101,7 +101,7 @@ describe('snapFittedContentHeight', () => {
 
 describe('resolveFitLadder', () => {
   it('keeps the least-reduced rung that fills the track, at scale 1', () => {
-    const rungs: FitRung[] = [
+    const rungs: [FitRung, ...FitRung[]] = [
       { level: 'full', layout: () => layoutOfHeight(100) },
       { level: 'labels', layout: () => layoutOfHeight(50) },
       { level: 'bodies', layout: () => layoutOfHeight(30) },
@@ -112,7 +112,7 @@ describe('resolveFitLadder', () => {
   })
 
   it('grows the kept rung to fill the track when it fits with room to spare', () => {
-    const rungs: FitRung[] = [
+    const rungs: [FitRung, ...FitRung[]] = [
       { level: 'full', layout: () => layoutOfHeight(50) },
       { level: 'labels', layout: () => layoutOfHeight(30) },
       { level: 'bodies', layout: () => layoutOfHeight(20) },
@@ -123,7 +123,7 @@ describe('resolveFitLadder', () => {
   })
 
   it('caps the grow at maxScale (surplus stays whitespace)', () => {
-    const rungs: FitRung[] = [
+    const rungs: [FitRung, ...FitRung[]] = [
       { level: 'full', layout: () => layoutOfHeight(10) },
     ]
     const stage = resolveFitLadder(rungs, 100, 0.2, 3)
@@ -132,7 +132,7 @@ describe('resolveFitLadder', () => {
   })
 
   it('descends to the first rung whose unscaled stack fits, then grows it', () => {
-    const rungs: FitRung[] = [
+    const rungs: [FitRung, ...FitRung[]] = [
       { level: 'full', layout: () => layoutOfHeight(300) },
       { level: 'labels', layout: () => layoutOfHeight(90) },
       { level: 'bodies', layout: () => layoutOfHeight(30) },
@@ -143,7 +143,7 @@ describe('resolveFitLadder', () => {
   })
 
   it('descends through decimated to bodies and squeezes when nothing fits', () => {
-    const rungs: FitRung[] = [
+    const rungs: [FitRung, ...FitRung[]] = [
       { level: 'full', layout: () => layoutOfHeight(400) },
       { level: 'labels', layout: () => layoutOfHeight(300) },
       { level: 'decimated', layout: () => layoutOfHeight(200) },
@@ -155,7 +155,7 @@ describe('resolveFitLadder', () => {
   })
 
   it('keeps the decimated rung when it fits but labels does not', () => {
-    const rungs: FitRung[] = [
+    const rungs: [FitRung, ...FitRung[]] = [
       { level: 'full', layout: () => layoutOfHeight(300) },
       { level: 'labels', layout: () => layoutOfHeight(150) },
       { level: 'decimated', layout: () => layoutOfHeight(90) },
@@ -167,7 +167,7 @@ describe('resolveFitLadder', () => {
   })
 
   it('floors the last-rung squeeze at minScale (overflow then scrolls)', () => {
-    const rungs: FitRung[] = [
+    const rungs: [FitRung, ...FitRung[]] = [
       { level: 'full', layout: () => layoutOfHeight(300) },
       { level: 'labels', layout: () => layoutOfHeight(250) },
       { level: 'bodies', layout: () => layoutOfHeight(1000) },

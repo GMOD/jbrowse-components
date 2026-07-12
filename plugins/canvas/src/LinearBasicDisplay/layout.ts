@@ -791,13 +791,6 @@ function packRef(
       .map(ext => [ext.startBp / bpPerPx, ext.endBp / bpPerPx]),
   )
 
-  let overflowCount = 0
-  let firstOverflowSample: {
-    id: string
-    leftPx: number
-    rightPx: number
-    height: number
-  } | null = null
   for (const [id, ext] of sorted) {
     // A sub-pixel density-fade box collapses into the shared density texture
     // (rect.slang densityAlpha), so pin it to row 0 and skip the greedy stacker:
@@ -830,23 +823,13 @@ function packRef(
       const { left: arrowLeft, right: arrowRight } = strandArrowPadding(ext)
       const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
       const rightPx = ext.layoutEndBp / bpPerPx + arrowRight
+      // A null top means the feature overflowed maxHeight. This is expected
+      // (fit mode's `bodies` rung, or a dense fixed-height track): the feature
+      // gets OFFSCREEN_Y so it's filtered out and the surplus scrolls.
       const top = layout.addRect(id, leftPx, rightPx, ext.height)
-      if (top === null) {
-        overflowCount++
-        firstOverflowSample ??= { id, leftPx, rightPx, height: ext.height }
-        layoutMap.set(id, OFFSCREEN_Y)
-      } else {
-        layoutMap.set(id, top)
-      }
+      layoutMap.set(id, top === null ? OFFSCREEN_Y : top)
     }
     layoutHeights.set(id, ext.height)
-  }
-  if (overflowCount > 0) {
-    console.warn(
-      `[canvas layout] overflow: ${overflowCount}/${sorted.length} features exceeded maxHeight ` +
-        `(bpPerPx=${bpPerPx}, showLabels=${showLabels}, showDescriptions=${showDescriptions}) ` +
-        `firstOverflow=${JSON.stringify(firstOverflowSample)}`,
-    )
   }
 
   return { layoutMap, layoutHeights, droppedLabelIds }

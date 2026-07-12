@@ -30,9 +30,9 @@ import {
   PromotableDefaultsMixin,
   TrackHeightMixin,
   autorunOnReadyView,
-  bakeGrownHeightOnExit,
   evaluateRegionTooLarge,
   heightModeMenuItems,
+  installGrowExitBake,
   onDisplayedRegionsChange,
   resolveByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -224,6 +224,27 @@ const FIT_SOLVE_ITERS = 8
 // size, so a bound built on it collapses to a no-op scale.
 function bodyScaleTo(bodyPx: number, targetPx: number) {
   return bodyPx > 0 ? targetPx / bodyPx : 1
+}
+
+// The "Show N hidden features" recovery item, shared by the feature context
+// menu (Show/hide submenu) and the track menu (Edit filters submenu). Empty
+// when nothing is hidden.
+function showHiddenFeaturesMenuItems(self: {
+  hiddenFeatureIds: { length: number }
+  showAllHidden: () => void
+}) {
+  const n = self.hiddenFeatureIds.length
+  return n > 0
+    ? [
+        {
+          label: `Show ${n} hidden feature${n > 1 ? 's' : ''}`,
+          icon: VisibilityIcon,
+          onClick: () => {
+            self.showAllHidden()
+          },
+        },
+      ]
+    : []
 }
 
 /**
@@ -590,10 +611,13 @@ export default function baseStateModelFactory(
         // the dialog reopens prefilled instead of blank. Empty unless that mode
         // is active.
         get colorByAttribute() {
-          if (this.colorByMode !== 'attribute') {
+          const raw = self.conf.color
+          // Empty unless "Color by attribute" is active. raw is a jexl string
+          // in that mode; narrow it explicitly so the regex gets a defined
+          // string rather than masking undefined with a fallback.
+          if (this.colorByMode !== 'attribute' || raw === undefined) {
             return ''
           }
-          const raw = self.conf.color ?? ''
           return /get\(feature,'([^']+)'\)/.exec(raw)?.[1] ?? ''
         },
 
@@ -1999,7 +2023,6 @@ export default function baseStateModelFactory(
         // mutual exclusion is inherent to the single enum. The `laidOutDataMap`
         // getter does the actual fit reactively.
         setHeightMode(mode: HeightMode) {
-          bakeGrownHeightOnExit(self, mode, getView(self).initialized)
           self.configuration.setSlot('heightMode', mode)
           // Entering a non-fixed mode (grow/fit) resets a leftover scrollTop that
           // a reconfigured height contradicts: it can strand the sticky GPU canvas
@@ -2324,10 +2347,15 @@ export default function baseStateModelFactory(
           afterAttach() {
             superAfterAttach()
 
-            // Grow mode no longer needs an autorun: the `height` getter returns
-            // `grownHeight` reactively (see the getter above), so consumers
-            // recompute when the laid-out content changes without ever writing
-            // the height config slot.
+            // Grow mode needs no autorun to drive height: the `height` getter
+            // returns `grownHeight` reactively (see the getter above), so
+            // consumers recompute when the laid-out content changes without ever
+            // writing the height config slot. Leaving grow is the one write —
+            // bake the grown height into the slot on any grow->non-grow exit
+            // (menu switch, un-pin, or a session-default change flipping an
+            // un-pinned track) so fixed/fit resume from the height the user was
+            // seeing, not the stale slot.
+            addDisposer(self, installGrowExitBake(self, getView(self)))
 
             // Keep scrollTop within the content whenever the scroll extent
             // shrinks. The morph autorun already clamps on a layout change, but
@@ -2564,7 +2592,6 @@ export default function baseStateModelFactory(
           const highlighted = self.highlightedFeatureIdSet.has(featureId)
           const inSoloSet = self.soloFeatureIdSet.has(featureId)
           const soloCount = self.soloFeatureIds.length
-          const hiddenCount = self.hiddenFeatureIds.length
           return [
             {
               label: 'Open feature details',
@@ -2678,17 +2705,7 @@ export default function baseStateModelFactory(
                 },
                 // Reachable from any still-visible feature; the track menu's
                 // "Clear filters" covers the case where everything got hidden.
-                ...(hiddenCount > 0
-                  ? [
-                      {
-                        label: `Show ${hiddenCount} hidden feature${hiddenCount > 1 ? 's' : ''}`,
-                        icon: VisibilityIcon,
-                        onClick: () => {
-                          self.showAllHidden()
-                        },
-                      },
-                    ]
-                  : []),
+                ...showHiddenFeaturesMenuItems(self),
               ],
             },
             {
@@ -2852,17 +2869,7 @@ export default function baseStateModelFactory(
                 // Track-level unhide: the per-feature "Show N hidden" item is
                 // only reachable from a still-visible feature's menu, so this is
                 // the sole recovery once every feature in view is hidden.
-                ...(hiddenCount > 0
-                  ? [
-                      {
-                        label: `Show ${hiddenCount} hidden feature${hiddenCount > 1 ? 's' : ''}`,
-                        icon: VisibilityIcon,
-                        onClick: () => {
-                          self.showAllHidden()
-                        },
-                      },
-                    ]
-                  : []),
+                ...showHiddenFeaturesMenuItems(self),
                 ...(hasFeatureFilters
                   ? [
                       {

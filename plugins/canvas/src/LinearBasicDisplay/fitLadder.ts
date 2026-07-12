@@ -76,7 +76,10 @@ export function snapFittedContentHeight(
 // even that overflows. An empty rung (contentHeight 0) stays at scale 1. Rungs are
 // laid out lazily in order, so rungs tighter than the kept one are never computed.
 export function resolveFitLadder(
-  rungs: FitRung[],
+  // Non-empty by construction: the walk always keeps the last rung, so callers
+  // must pass at least one. The tuple type rejects `[]` at compile time rather
+  // than crashing on `rungs[0]`.
+  rungs: [FitRung, ...FitRung[]],
   trackHeight: number,
   minScale: number,
   maxScale: number,
