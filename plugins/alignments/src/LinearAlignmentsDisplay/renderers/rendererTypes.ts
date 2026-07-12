@@ -267,12 +267,11 @@ export function pileupRowY(yRow: number, state: RenderState) {
 // JS is output-identical. This is what keeps Canvas2D scroll cost proportional
 // to *visible* rows rather than *total* pileup depth — without it every
 // per-row/per-base draw pass issued a fill for all ~N rows every scroll frame
-// (the deep-coverage redraw cost). One extra featureHeight of slack on each edge
-// leaves marks that paint slightly past the nominal row band (chevrons,
-// outlines) untouched.
+// (the deep-coverage redraw cost). The 1px pad covers the sub-pixel stroke edges
+// of read outlines/clip bars; nothing draws further outside the vertical band
+// (chevrons extend horizontally, not vertically).
 export function pileupRowOffCanvas(y: number, state: RenderState) {
-  const fH = state.featureHeight
-  return y + 2 * fH < 0 || y - fH > state.canvasHeight
+  return y + state.featureHeight < -1 || y > state.canvasHeight + 1
 }
 
 // Block geometry shared by every Canvas2D feature draw function. Defining

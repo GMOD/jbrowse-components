@@ -152,6 +152,10 @@ export function drawReads(
   const numSegments = region.segmentReadIndices.length
   for (let s = 0; s < numSegments; s++) {
     const i = region.segmentReadIndices[s]!
+    const y = pileupRowY(region.readYs[i]!, state)
+    if (pileupRowOffCanvas(y, state)) {
+      continue
+    }
     const xStart = bpToScreenX(
       region.segmentPositions[s * 2]!,
       block,
@@ -166,10 +170,6 @@ export function drawReads(
     )
     const xL = Math.min(xStart, xEnd)
     const xR = Math.max(xStart, xEnd)
-    const y = pileupRowY(region.readYs[i]!, state)
-    if (pileupRowOffCanvas(y, state)) {
-      continue
-    }
     const w = Math.max(1, xR - xL)
     const outline = state.showOutline && w > 2
 

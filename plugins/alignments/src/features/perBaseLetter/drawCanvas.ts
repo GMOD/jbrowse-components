@@ -32,13 +32,13 @@ export function drawPerBaseLetter(
   const unknown = state.colors.colorBaseN
 
   for (let i = 0; i < n; i++) {
-    const bp = region.perBaseLetterPositions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.perBaseLetterYs[i]!
     const y = pileupRowY(yRow, state)
     if (pileupRowOffCanvas(y, state)) {
       continue
     }
+    const bp = region.perBaseLetterPositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     ctx.fillStyle = rgb255(baseColors[region.perBaseLetterBases[i]!] ?? unknown)
     ctx.fillRect(x, y, w, fH)
   }

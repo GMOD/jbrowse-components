@@ -30,13 +30,13 @@ export function drawMismatches(
   const baseColors = buildBaseColorTupleMap(state)
 
   for (let i = 0; i < region.mismatchPositions.length; i++) {
-    const bp = region.mismatchPositions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.mismatchYs[i]!
     const y = pileupRowY(yRow, state)
     if (pileupRowOffCanvas(y, state)) {
       continue
     }
+    const bp = region.mismatchPositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const base = region.mismatchBases[i]!
     const frequency = region.mismatchFrequencies[i]! / 255
     // N has a palette entry; any other non-A/C/G/T byte falls back to the N

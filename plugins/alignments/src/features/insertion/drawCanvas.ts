@@ -33,13 +33,13 @@ export function drawInsertions(
   const pxPerBp = fullBlockWidth / bpLength
 
   for (let i = 0; i < region.insertionPositions.length; i++) {
-    const bp = region.insertionPositions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.insertionYs[i]!
     const y = pileupRowY(yRow, state)
     if (pileupRowOffCanvas(y, state)) {
       continue
     }
+    const bp = region.insertionPositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const length = region.insertionLengths[i]!
     const frequency = region.insertionFrequencies[i]! / 255
 

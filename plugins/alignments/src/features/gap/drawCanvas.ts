@@ -31,15 +31,15 @@ export function drawGaps(
   // gapPositions stores [start, end] pairs
   const numGaps = region.gapPositions.length / 2
   for (let i = 0; i < numGaps; i++) {
-    const startBp = region.gapPositions[i * 2]!
-    const endBp = region.gapPositions[i * 2 + 1]!
-    const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-    const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
     const yRow = region.gapYs[i]!
     const y = pileupRowY(yRow, state)
     if (pileupRowOffCanvas(y, state)) {
       continue
     }
+    const startBp = region.gapPositions[i * 2]!
+    const endBp = region.gapPositions[i * 2 + 1]!
+    const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+    const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
     const gapType = region.gapTypes[i]!
     // reversed (flipped) regions map startBp to the larger screen x, so anchor
     // at the smaller edge and use the absolute width

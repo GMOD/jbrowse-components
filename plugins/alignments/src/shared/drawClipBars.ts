@@ -25,13 +25,13 @@ function drawClipBars(
 
   ctx.fillStyle = color
   for (let i = 0; i < positions.length; i++) {
-    const bp = positions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = ys[i]!
     const y = pileupRowY(yRow, state)
     if (pileupRowOffCanvas(y, state)) {
       continue
     }
+    const bp = positions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     ctx.fillRect(x - 0.5, y, 1, fH)
   }
 }

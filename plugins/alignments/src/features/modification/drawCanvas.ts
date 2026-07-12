@@ -28,13 +28,13 @@ export function drawModifications(
   const w = pileupCellWidth(bpPerPx, false)
 
   for (let i = 0; i < n; i++) {
-    const bp = region.modificationPositions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.modificationYs[i]!
     const y = pileupRowY(yRow, state)
     if (pileupRowOffCanvas(y, state)) {
       continue
     }
+    const bp = region.modificationPositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     ctx.fillStyle = abgrToCssRgba(region.modificationColors[i]!)
     ctx.fillRect(x, y, w, fH)
   }

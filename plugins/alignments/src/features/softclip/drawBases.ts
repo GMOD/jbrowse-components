@@ -37,13 +37,13 @@ export function drawSoftclipBases(
   const unknownColor = state.colors.colorMutedSnpBase
 
   for (let i = 0; i < region.softclipBasePositions.length; i++) {
-    const bp = region.softclipBasePositions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.softclipBaseYs[i]!
     const y = pileupRowY(yRow, state)
     if (pileupRowOffCanvas(y, state)) {
       continue
     }
+    const bp = region.softclipBasePositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const base = region.softclipBaseBases[i]!
     ctx.fillStyle = rgb255(baseColors[base] ?? unknownColor)
     ctx.fillRect(x, y, w, fH)
