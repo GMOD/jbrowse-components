@@ -204,7 +204,7 @@ Maximum pixel height of the pileup layout; reads beyond this are not stacked
 Color scheme for reads
 
 **Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`{ type: 'normal' }` · _advanced, promotable_
+`{ type: 'inherit' }` · _advanced, promotable_
 
 ```js
 {
@@ -214,7 +214,13 @@ Color scheme for reads
 
 
 
-  defaultValue: { type: 'normal' },
+
+
+
+
+
+  defaultValue: { type: 'inherit' },
+  promotedBase: { type: 'normal' },
   promotable: true,
 
 

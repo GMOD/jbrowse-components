@@ -143,12 +143,18 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       colorBy: {
         type: 'frozen',
-        // Plain promotable slot: the `{ type: 'normal' }` default doubles as the
-        // base and the un-pinned signal, so picking "Normal" (writing the
-        // default) un-pins a track to follow the session-wide color default —
-        // no sentinel needed. getConfResolved walks the cascade. See
-        // promotableDefaults.ts.
-        defaultValue: { type: 'normal' },
+        // Sentinel promotable slot (see promotableDefaults.ts / displayMode):
+        // `{ type: 'inherit' }` is the un-pinned/stripped state, `promotedBase`
+        // (`{ type: 'normal' }`) is what it resolves to when nothing is promoted
+        // — so every real scheme, `normal` included, is pinnable over an opposite
+        // session-wide default (picking "Normal" pins normal, exactly as picking
+        // "Fixed" pins the heightMode base). `inherit` is not a registered scheme
+        // and never reaches a COLOR_SCHEMES lookup: isConcreteValue drops it
+        // before `validate`, and every read goes through the resolved
+        // `colorBy` getter (getConfResolved). Legacy stored schemes stay valid
+        // members (pinned), so no snapshot migration is needed.
+        defaultValue: { type: 'inherit' },
+        promotedBase: { type: 'normal' },
         promotable: true,
         // Reject a `.type` that isn't (or no longer is) a registered scheme —
         // whether pinned on this track or promoted session-wide — so a

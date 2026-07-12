@@ -791,9 +791,10 @@ describe('alignments fit-to-display-height split', () => {
   })
 })
 
-// colorBy is a plain (object-valued) promotable slot: `{ type: 'normal' }` is
-// both the base default and the un-pinned signal, so a track at normal follows a
-// session-wide color default and picking any other scheme pins it. Exercises the
+// colorBy is a sentinel (object-valued) promotable slot: `{ type: 'inherit' }`
+// is the un-pinned default and `promotedBase` (`{ type: 'normal' }`) is what it
+// resolves to, so an un-pinned track follows a session-wide color default while
+// every real scheme — `normal` included — is pinnable over it. Exercises the
 // structural (not identity) comparison in promotableDefaults.
 describe('alignments colorBy session default', () => {
   const methylation = { type: 'methylation' }
@@ -816,19 +817,31 @@ describe('alignments colorBy session default', () => {
     ])
   })
 
-  it('a track at normal follows the default (normal is the un-pin signal)', () => {
+  it('a track pinned to normal wins over an opposite session default', () => {
     const { session, display } = createDisplay({ colorBy: { type: 'normal' } })
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
       'colorBy',
       methylation,
     )
-    // plain slot: normal equals the default, so the track reads as un-pinned and
-    // follows the session-wide default rather than forcing normal
+    // sentinel slot: `{type:'normal'}` differs from the `{type:'inherit'}`
+    // default, so it pins the track — normal is forced over the methylation
+    // default (impossible with the old plain-default slot). Not an inherited
+    // change, so sessionDefaultChanges is empty.
+    expect(display.colorBy).toEqual({ type: 'normal' })
+    expect(display.sessionDefaultChanges()).toEqual([])
+  })
+
+  it('setColorScheme(normal) pins normal over an opposite session default', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'colorBy',
+      methylation,
+    )
     expect(display.colorBy).toEqual(methylation)
-    expect(display.sessionDefaultChanges()).toEqual([
-      { path: ['colorBy'], from: { type: 'normal' }, to: methylation },
-    ])
+    display.setColorScheme({ type: 'normal' })
+    expect(display.colorBy).toEqual({ type: 'normal' })
   })
 
   it('an explicit per-track scheme wins over the session default', () => {
