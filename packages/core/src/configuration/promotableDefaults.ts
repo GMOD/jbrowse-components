@@ -317,13 +317,32 @@ export function clearPinsToInherit(
   }
 }
 
-// Clicking a promotable pin means "make every open track of this type look like
-// this now, and keep it the default for tracks opened later." Promoting does
-// both: the caller has already set the session-wide default (future + un-pinned
-// tracks inherit it), and here we clear every open track's own value on these
-// slots so any track that pinned a different value drops onto that one default
-// too. Clearing the default just un-forces it — open tracks fall back to their
-// own config as before — so only the promote direction sweeps.
+// Open tracks of this type whose resolved value differs from the just-promoted
+// default — the ones that pinned their own value and so don't follow it. The
+// clicked track resolves to the promoted value, so it's excluded. Backs the
+// snackbar's opt-in "apply to open tracks" action.
+function tracksNotFollowingDefault(
+  self: PromotableDisplay,
+  slots: string[],
+): PromotableDisplay[] {
+  const session = getSession(self)
+  return openDisplaysOfType(self).filter(display =>
+    slots.some(slot => {
+      const promoted = session.getDisplayTypeDefault?.(self.type, slot)
+      return (
+        promoted !== undefined &&
+        !deepEqual(resolveSlot(display, slot).value, promoted)
+      )
+    }),
+  )
+}
+
+// Promoting a default is non-destructive: future tracks and any open track that
+// hasn't pinned its own value inherit it immediately (via getConfResolved). Open
+// tracks that DID pin a different value keep it — but the snackbar offers a
+// one-click "apply to open tracks" that clears those pins so they inherit too,
+// opt-in rather than silently overwriting the user's per-track choices. Clearing
+// the default just un-forces it, so only the promote direction offers the sweep.
 function applyDefaultToggle(
   self: PromotableDisplay,
   promoted: boolean,
@@ -331,8 +350,18 @@ function applyDefaultToggle(
 ): void {
   const session = getSession(self)
   if (promoted) {
-    clearPinsToInherit(openDisplaysOfType(self), slots)
-    session.notify('Applied to all open tracks of this type', 'info')
+    const notFollowing = tracksNotFollowingDefault(self, slots)
+    const n = notFollowing.length
+    if (n > 0) {
+      session.notify('Set as the default for tracks of this type', 'info', {
+        name: `Apply to ${n} open track${n === 1 ? '' : 's'}`,
+        onClick: () => {
+          clearPinsToInherit(notFollowing, slots)
+        },
+      })
+    } else {
+      session.notify('Set as the default for all tracks of this type', 'info')
+    }
   } else {
     session.notify('Cleared the default for all tracks of this type', 'info')
   }
