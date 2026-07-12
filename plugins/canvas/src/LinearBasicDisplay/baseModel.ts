@@ -34,6 +34,7 @@ import {
   heightModeMenuItems,
   installGrowExitBake,
   onDisplayedRegionsChange,
+  raiseLimitPast,
   resolveByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
@@ -1673,7 +1674,7 @@ export default function baseStateModelFactory(
             // the estimate and the click (mirrors the density branch below,
             // which uses density observed at the current bpPerPx).
             const bytes = self.estimatedVisibleBytes ?? stats.bytes
-            self.userByteSizeLimit = Math.ceil(bytes * 1.5)
+            self.userByteSizeLimit = raiseLimitPast(bytes)
           } else if (self.maxFeatureDensity !== undefined) {
             // Push the gate past the highest observed density across visible
             // regions, not past the current `maxFeatureDensity`. The latter
@@ -1684,7 +1685,7 @@ export default function baseStateModelFactory(
               observedMax > 0
                 ? observedMax
                 : readConfObject(self.conf, 'maxFeatureScreenDensity')
-            self.userFeatureDensityLimit = Math.ceil(baseline * 1.5)
+            self.userFeatureDensityLimit = raiseLimitPast(baseline)
           }
           // Derived regionTooLarge recomputes once the limit changes — no
           // imperative flag to clear.

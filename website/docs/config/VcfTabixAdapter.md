@@ -57,9 +57,9 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 <details>
 <summary>Advanced slots (1)</summary>
 
-| Slot                                   | Type     | Description                                                                                  |
-| -------------------------------------- | -------- | -------------------------------------------------------------------------------------------- |
-| [fetchSizeLimit](#slot-fetchsizelimit) | `number` | size in bytes over which to display a warning to the user that too much data will be fetched |
+| Slot                                   | Type     | Description                                                                                                                                                                                |
+| -------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [fetchSizeLimit](#slot-fetchsizelimit) | `number` | Matches the feature-track default (5 Mb): the tabix index byte estimate is a coarse upper bound that over-reports small dense regions, so the old 1 Mb gate tripped routine variant views. |
 
 </details>
 
@@ -99,10 +99,12 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 #### slot: fetchSizeLimit
 
-size in bytes over which to display a warning to the user that too much data
-will be fetched
+Matches the feature-track default (5 Mb): the tabix index byte estimate is a
+coarse upper bound that over-reports small dense regions, so the old 1 Mb gate
+tripped routine variant views. VCF text downloads fast; the feature-density gate
+remains the backstop for genuinely over-dense views.
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`1_000_000` · _advanced_
+`5_000_000` · _advanced_
 
 </details>

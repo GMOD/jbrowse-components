@@ -64,6 +64,7 @@ export {
   bytesTooLargeReason,
   evaluateRegionTooLarge,
   getDisplayStr,
+  raiseLimitPast,
   resolveByteLimit,
 } from '../shared/featureDensityUtils.ts'
 export type { RegionTooLargeStatus } from '../shared/featureDensityUtils.ts'

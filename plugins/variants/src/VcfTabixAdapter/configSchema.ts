@@ -83,12 +83,16 @@ const VcfTabixAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * Matches the feature-track default (5 Mb): the tabix byte estimate is
+     * block-granular (a small region still pulls whole BGZF blocks), so a
+     * tighter gate trips on routine variant views. VCF text downloads fast; the
+     * feature-density gate remains the backstop for genuinely over-dense views.
      */
     fetchSizeLimit: {
       type: 'number',
       description:
         'size in bytes over which to display a warning to the user that too much data will be fetched',
-      defaultValue: 1_000_000,
+      defaultValue: 5_000_000,
       advanced: true,
     },
   },
