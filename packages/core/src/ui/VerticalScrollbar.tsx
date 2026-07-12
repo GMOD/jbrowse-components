@@ -3,6 +3,7 @@ import type React from 'react'
 
 import { clamp } from '../util/numericUtils.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
+import { useRafCommit } from '../util/useRafCommit.ts'
 import { useVirtualScrollWheel } from '../util/useVirtualScrollWheel.ts'
 
 const TRACK_WIDTH = 12
@@ -67,6 +68,11 @@ export default function VerticalScrollbar({
   // and auto-releases on unmount — so no document listeners or effect cleanup.
   const dragRef = useRef<{ startY: number; startScroll: number }>(undefined)
   const [trackEl, setTrackEl] = useState<HTMLDivElement | null>(null)
+  // A thumb drag's pointermove can fire faster than the frame rate, so coalesce
+  // its scroll writes to one commit per frame; pointer-up flushes the final
+  // (absolute) target so the resting position is exact.
+  const { schedule: scheduleScroll, flush: flushScroll } =
+    useRafCommit(setScrollTop)
 
   const scrollableHeight = Math.max(0, contentHeight - viewportHeight)
 
@@ -132,8 +138,13 @@ export default function VerticalScrollbar({
     const drag = dragRef.current
     if (drag && usableTrack > 0) {
       const delta = ((e.clientY - drag.startY) / usableTrack) * scrollableHeight
-      setScrollTop(clamp(drag.startScroll + delta, 0, scrollableHeight))
+      scheduleScroll(clamp(drag.startScroll + delta, 0, scrollableHeight))
     }
+  }
+
+  function handlePointerUp() {
+    flushScroll()
+    dragRef.current = undefined
   }
 
   return (
@@ -152,10 +163,10 @@ export default function VerticalScrollbar({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={() => {
-        dragRef.current = undefined
+        handlePointerUp()
       }}
       onPointerCancel={() => {
-        dragRef.current = undefined
+        handlePointerUp()
       }}
     >
       <div
