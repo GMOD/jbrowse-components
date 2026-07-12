@@ -47,6 +47,7 @@ State model factory for the single-source wiggle display.
 | [useBicolor](#getter-usebicolor)                           | Getters    |                                                                                                                                                                                                                                                                                                                                         |
 | [isDensityMode](#getter-isdensitymode)                     | Getters    |                                                                                                                                                                                                                                                                                                                                         |
 | [ticks](#getter-ticks)                                     | Getters    |                                                                                                                                                                                                                                                                                                                                         |
+| [prefersOffset](#getter-prefersoffset)                     | Getters    | Offset the track label above the plot so the left y-axis stays pinned to the content edge instead of dodging right of the label. Density mode draws no left axis (just a top score legend), so let the label overlap.                                                                                                                   |
 | [renderState](#getter-renderstate)                         | Getters    |                                                                                                                                                                                                                                                                                                                                         |
 | [rpcProps](#method-rpcprops)                               | Methods    |                                                                                                                                                                                                                                                                                                                                         |
 | [gpuProps](#method-gpuprops)                               | Methods    | single-source gpuProps mapped onto the multi-source build path: - bicolor: no source color override; build emits pos+neg with their respective colors - solid: worker put all features in pos arrays (useBicolor=false); non-density modes use the user's color; density uses posColor (multi default, so leave source.color undefined) |
@@ -87,7 +88,7 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent)
 
 **Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
@@ -275,6 +276,21 @@ configuration: ConfigurationReference(configSchema)
 
 <details>
 <summary>LinearWiggleDisplay - Getters</summary>
+
+#### getter: prefersOffset
+
+Offset the track label above the plot so the left y-axis stays pinned to the
+content edge instead of dodging right of the label. Density mode draws no left
+axis (just a top score legend), so let the label overlap.
+
+```ts
+type prefersOffset = boolean
+```
+
+</details>
+
+<details>
+<summary>LinearWiggleDisplay - Getters (other undocumented members)</summary>
 
 #### getter: DisplayMessageComponent
 

@@ -97,7 +97,6 @@ and docs.
 [incrementalLayout](../linearcanvasbasedisplay#volatile-incrementallayout),
 [incrementalLayoutLabelsOnly](../linearcanvasbasedisplay#volatile-incrementallayoutlabelsonly),
 [incrementalLayoutBodiesOnly](../linearcanvasbasedisplay#volatile-incrementallayoutbodiesonly),
-[incrementalLayoutDecimated](../linearcanvasbasedisplay#volatile-incrementallayoutdecimated),
 [morphFromTops](../linearcanvasbasedisplay#volatile-morphfromtops),
 [morphProgress](../linearcanvasbasedisplay#volatile-morphprogress),
 [morphStartMs](../linearcanvasbasedisplay#volatile-morphstartms),
@@ -139,7 +138,7 @@ and docs.
 [layoutInputs](../linearcanvasbasedisplay#getter-layoutinputs),
 [baseLaidOutDataMap](../linearcanvasbasedisplay#getter-baselaidoutdatamap),
 [fitLabelsOnlyLayout](../linearcanvasbasedisplay#getter-fitlabelsonlylayout),
-[fitDecimatedLayout](../linearcanvasbasedisplay#getter-fitdecimatedlayout),
+[fitDecimatedSolved](../linearcanvasbasedisplay#getter-fitdecimatedsolved),
 [fitBodiesOnlyLayout](../linearcanvasbasedisplay#getter-fitbodiesonlylayout),
 [fitBodyPx](../linearcanvasbasedisplay#getter-fitbodypx),
 [fitMinScale](../linearcanvasbasedisplay#getter-fitminscale),
@@ -247,7 +246,7 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent)
 
 **Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),

@@ -343,7 +343,7 @@ Draw per-base mismatches on reads
 
 #### slot: showInterbaseIndicators
 
-Draw interbase insertion/deletion indicators
+Draw interbase insertion/clip count bars and indicator triangles
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `true`

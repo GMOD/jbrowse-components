@@ -84,6 +84,7 @@ and docs.
 [useBicolor](../linearwiggledisplay#getter-usebicolor),
 [isDensityMode](../linearwiggledisplay#getter-isdensitymode),
 [ticks](../linearwiggledisplay#getter-ticks),
+[prefersOffset](../linearwiggledisplay#getter-prefersoffset),
 [renderState](../linearwiggledisplay#getter-renderstate)
 
 **Methods:** [rpcProps](../linearwiggledisplay#method-rpcprops),
@@ -116,7 +117,7 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent)
 
 **Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),

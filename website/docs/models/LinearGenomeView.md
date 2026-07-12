@@ -65,6 +65,7 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [showGridlines](#property-showgridlines)                                 | Properties | show the "gridlines" in the track area                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [highlight](#property-highlight)                                         | Properties | highlights on the LGV from the URL parameters                                                                                                                                                                                                                                                                                                                                                                                                           |
 | [highlightsVisible](#property-highlightsvisible)                         | Properties | controls whether view.highlight entries are rendered                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [showHighlightChips](#property-showhighlightchips)                       | Properties | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default                                                                                                                                                                                                                                                                                                                              |
 | [labelsVisible](#property-labelsvisible)                                 | Properties | controls whether highlight/bookmark chip labels are shown inline                                                                                                                                                                                                                                                                                                                                                                                        |
 | [colorByCDS](#property-colorbycds)                                       | Properties | color by CDS                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | [showTrackOutlines](#property-showtrackoutlines)                         | Properties | show the track outlines                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -180,6 +181,7 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [removeHighlight](#action-removehighlight)                               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [updateHighlight](#action-updatehighlight)                               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [setHighlightsVisible](#action-sethighlightsvisible)                     | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setShowHighlightChips](#action-setshowhighlightchips)                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [setLabelsVisible](#action-setlabelsvisible)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [setVolatileGuides](#action-setvolatileguides)                           | Actions    | set temporary vertical guides (e.g., for LD display hover)                                                                                                                                                                                                                                                                                                                                                                                              |
 | [scrollTo](#action-scrollto)                                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -384,6 +386,18 @@ controls whether view.highlight entries are rendered
 type highlightsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 highlightsVisible: types.stripDefault(types.boolean, true)
+```
+
+#### property: showHighlightChips
+
+controls whether the interactive highlight chip (link icon + context menu) is
+drawn on each highlight band; off by default
+
+```ts
+// type signature
+type showHighlightChips = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showHighlightChips: types.stripDefault(types.boolean, false)
 ```
 
 #### property: labelsVisible
@@ -1563,6 +1577,12 @@ type updateHighlight = (
 
 ```ts
 type setHighlightsVisible = (arg: boolean) => void
+```
+
+#### action: setShowHighlightChips
+
+```ts
+type setShowHighlightChips = (arg: boolean) => void
 ```
 
 #### action: setLabelsVisible

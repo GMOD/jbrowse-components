@@ -28,6 +28,7 @@ the genome, with a feature widget on click.
 | [showLdLegend](#volatile-showldlegend)                       | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                         |
 | [view](#getter-view)                                         | Getters    | the containing LGV, typed once here so downstream getters don't repeat the `getContainingView` cast                                                                                                                                                                                                                                                                     |
 | [DisplayMessageComponent](#getter-displaymessagecomponent)   | Getters    |                                                                                                                                                                                                                                                                                                                                                                         |
+| [prefersOffset](#getter-prefersoffset)                       | Getters    | Offset the track label above the plot so the -log10(p) y-axis stays pinned to the content edge instead of dodging right of the label.                                                                                                                                                                                                                                   |
 | [TooltipComponent](#getter-tooltipcomponent)                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                         |
 | [color](#getter-color)                                       | Getters    | resolved point color                                                                                                                                                                                                                                                                                                                                                    |
 | [colorBy](#getter-colorby)                                   | Getters    | resolved coloring mode: 'normal' uses `color`, 'ld' colors by r² to the index SNP                                                                                                                                                                                                                                                                                       |
@@ -83,7 +84,7 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent)
 
 **Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
@@ -335,6 +336,15 @@ the containing LGV, typed once here so downstream getters don't repeat the
 
 ```ts
 type view = ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>
+```
+
+#### getter: prefersOffset
+
+Offset the track label above the plot so the -log10(p) y-axis stays pinned to
+the content edge instead of dodging right of the label.
+
+```ts
+type prefersOffset = boolean
 ```
 
 #### getter: color

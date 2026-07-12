@@ -70,7 +70,7 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent)
 
 **Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
@@ -282,16 +282,7 @@ type isRefetching = boolean
 ```ts
 type renderSvg = (
   opts: ExportSvgOptions & { theme?: ThemeOptions | undefined },
-) => Promise<
-  | string
-  | number
-  | bigint
-  | boolean
-  | Iterable<ReactNode>
-  | Element
-  | null
-  | undefined
->
+) => Promise<Element | null>
 ```
 
 </details>

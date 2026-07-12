@@ -46,6 +46,7 @@ controls how far the chords bow toward the center:
 | [configuration](#property-configuration)         | Properties |                                                                                                                                                                                                                                                                                                                        |
 | [features](#volatile-features)                   | Volatiles  |                                                                                                                                                                                                                                                                                                                        |
 | [refNameMap](#volatile-refnamemap)               | Volatiles  |                                                                                                                                                                                                                                                                                                                        |
+| [view](#getter-view)                             | Getters    |                                                                                                                                                                                                                                                                                                                        |
 | [ready](#getter-ready)                           | Getters    |                                                                                                                                                                                                                                                                                                                        |
 | [svgReady](#getter-svgready)                     | Getters    | Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady"). Chord displays are non-rectangular (radial), so they keep a bespoke `<DisplayError>` error UI instead of `SvgChrome`, but still expose `svgReady` + await it via the shared `awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state. |
 | [radiusPx](#getter-radiuspx)                     | Getters    |                                                                                                                                                                                                                                                                                                                        |
@@ -85,7 +86,7 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent)
 
 **Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),
@@ -177,6 +178,12 @@ type bezierRadius = number
 
 <details>
 <summary>ChordVariantDisplay - Getters (other undocumented members)</summary>
+
+#### getter: view
+
+```ts
+type view = ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>> & ... 10 more ... & IStateTreeNode<...>
+```
 
 #### getter: ready
 

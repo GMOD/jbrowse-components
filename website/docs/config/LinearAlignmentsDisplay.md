@@ -96,7 +96,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [showPileup](#slot-showpileup)                             | `boolean`                                                        | Draw the stacked-read pileup band                                                                                                                                   |
 | [coverageHeight](#slot-coverageheight)                     | `number`                                                         | Height of the coverage band in pixels                                                                                                                               |
 | [showMismatches](#slot-showmismatches)                     | `boolean`                                                        | Draw per-base mismatches on reads                                                                                                                                   |
-| [showInterbaseIndicators](#slot-showinterbaseindicators)   | `boolean`                                                        | Draw interbase insertion/deletion indicators                                                                                                                        |
+| [showInterbaseIndicators](#slot-showinterbaseindicators)   | `boolean`                                                        | Draw interbase insertion/clip count bars and indicator triangles                                                                                                    |
 | [drawSingletons](#slot-drawsingletons)                     | `boolean`                                                        | Draw reads whose mate is unmapped                                                                                                                                   |
 | [drawProperPairs](#slot-drawproperpairs)                   | `boolean`                                                        | Draw properly-paired reads                                                                                                                                          |
 | [flipStrandLongReadChains](#slot-flipstrandlongreadchains) | `boolean`                                                        | Flip strand coloring for reverse long-read chains                                                                                                                   |
@@ -408,7 +408,7 @@ Draw per-base mismatches on reads
 
 #### slot: showInterbaseIndicators
 
-Draw interbase insertion/deletion indicators
+Draw interbase insertion/clip count bars and indicator triangles
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `true`

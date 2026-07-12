@@ -51,6 +51,7 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [init](#property-init)                                                         | Properties | used for initializing the view from a session snapshot                                                                                                                                                                                                                    |
 | [highlight](#property-highlight)                                               | Properties | translucent highlight bands drawn per-axis: vertical when the region's assembly matches hview, horizontal when it matches vview                                                                                                                                           |
 | [highlightsVisible](#property-highlightsvisible)                               | Properties | controls whether view.highlight entries are rendered                                                                                                                                                                                                                      |
+| [showHighlightChips](#property-showhighlightchips)                             | Properties | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default                                                                                                                                                |
 | [showColorLegend](#property-showcolorlegend)                                   | Properties | Show the floating color-by legend in the top-right of the plot. Dismissible via the legend's close button; re-enable from the color-by (palette) menu.                                                                                                                    |
 | [volatileWidth](#volatile-volatilewidth)                                       | Volatiles  |                                                                                                                                                                                                                                                                           |
 | [volatileError](#volatile-volatileerror)                                       | Volatiles  |                                                                                                                                                                                                                                                                           |
@@ -101,6 +102,7 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [setHighlight](#action-sethighlight)                                           | Actions    |                                                                                                                                                                                                                                                                           |
 | [removeHighlight](#action-removehighlight)                                     | Actions    |                                                                                                                                                                                                                                                                           |
 | [setHighlightsVisible](#action-sethighlightsvisible)                           | Actions    |                                                                                                                                                                                                                                                                           |
+| [setShowHighlightChips](#action-setshowhighlightchips)                         | Actions    |                                                                                                                                                                                                                                                                           |
 | [setShowColorLegend](#action-setshowcolorlegend)                               | Actions    |                                                                                                                                                                                                                                                                           |
 | [clearView](#action-clearview)                                                 | Actions    | returns to the import form                                                                                                                                                                                                                                                |
 | [setWidth](#action-setwidth)                                                   | Actions    |                                                                                                                                                                                                                                                                           |
@@ -266,6 +268,18 @@ controls whether view.highlight entries are rendered
 type highlightsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 highlightsVisible: types.stripDefault(types.boolean, true)
+```
+
+#### property: showHighlightChips
+
+controls whether the interactive highlight chip (link icon + context menu) is
+drawn on each highlight band; off by default
+
+```ts
+// type signature
+type showHighlightChips = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showHighlightChips: types.stripDefault(types.boolean, false)
 ```
 
 #### property: showColorLegend
@@ -858,6 +872,12 @@ type removeHighlight = (highlight: HighlightType) => void
 
 ```ts
 type setHighlightsVisible = (arg: boolean) => void
+```
+
+#### action: setShowHighlightChips
+
+```ts
+type setShowHighlightChips = (arg: boolean) => void
 ```
 
 #### action: setShowColorLegend
