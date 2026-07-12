@@ -1592,6 +1592,9 @@ export default function stateModelFactory(
             console.error(e)
           }
         },
+        beforeDestroy() {
+          clearTimeout(self.resizeSettleTimer)
+        },
       }
     })
     .postProcessSnapshot(snap => {
