@@ -27,11 +27,10 @@ Minimal `GWASTrack` config. See the
 ```
 
 Taller track, LocusZoom-style coloring: `colorBy: 'ld'` colors each point by its
-r² to the index SNP read from `ldAdapter`. `ldAdapter` is a slot on
-`LinearManhattanDisplay` itself (not `GWASAdapter`), so it belongs in
-`displayDefaults` like any other display slot. The `displayDefaults` object
-shorthand is equivalent to
-`displays: [{ type: 'LinearManhattanDisplay', displayId: '...', ... }]` — see
+r² to the index SNP read from the adapter's `ldAdapter` sub-adapter. The LD data
+is a second source on `GWASAdapter` (mirroring MAF's `annotationAdapter`), so it
+nests under `adapter`, while display-only options like `height`/`colorBy` go in
+`displayDefaults` — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays):
 
 ```js
@@ -43,14 +42,14 @@ shorthand is equivalent to
   adapter: {
     type: 'GWASAdapter',
     uri: 'https://example.com/gwas.bed.gz',
-  },
-  displayDefaults: {
-    height: 400,
-    colorBy: 'ld',
     ldAdapter: {
       type: 'PlinkLDTabixAdapter',
       uri: 'https://example.com/plink.ld.gz',
     },
+  },
+  displayDefaults: {
+    height: 400,
+    colorBy: 'ld',
   },
 }
 ```
@@ -69,12 +68,11 @@ configuration for the Manhattan plot display used by GWAS tracks
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                       | Type                      | Description                                                                                               |
-| ------------------------------------------ | ------------------------- | --------------------------------------------------------------------------------------------------------- |
-| [color](#slot-color)                       | `color`                   | CSS color or jexl callback for Manhattan points                                                           |
-| [colorBy](#slot-colorby)                   | `stringEnum` (normal, ld) | LocusZoom-style coloring.                                                                                 |
-| [scatterPointSize](#slot-scatterpointsize) | `number`                  | Manhattan point diameter in px (adjustable from the track menu).                                          |
-| [ldAdapter](#slot-ldadapter)               | `frozen`                  | PLINK .ld adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying pairwise r² used when colorBy is 'ld'. |
+| Slot                                       | Type                      | Description                                                      |
+| ------------------------------------------ | ------------------------- | ---------------------------------------------------------------- |
+| [color](#slot-color)                       | `color`                   | CSS color or jexl callback for Manhattan points                  |
+| [colorBy](#slot-colorby)                   | `stringEnum` (normal, ld) | LocusZoom-style coloring.                                        |
+| [scatterPointSize](#slot-scatterpointsize) | `number`                  | Manhattan point diameter in px (adjustable from the track menu). |
 
 <details>
 <summary>LinearManhattanDisplay - Slots</summary>
@@ -89,7 +87,7 @@ CSS color or jexl callback for Manhattan points
 #### slot: colorBy
 
 LocusZoom-style coloring. 'normal' uses `color`; 'ld' colors each point by its
-r² to the index SNP, read from `ldAdapter`.
+r² to the index SNP, read from the `GWASAdapter`'s `ldAdapter` sub-adapter.
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
 `normal`, `ld`) · **Default:** `'normal'`
@@ -99,16 +97,8 @@ r² to the index SNP, read from `ldAdapter`.
 Manhattan point diameter in px (adjustable from the track menu). Larger default
 than wiggle's since Manhattan points are the primary glyph.
 
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `4` ·
-_promotable_
-
-#### slot: ldAdapter
-
-PLINK .ld adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying pairwise r²
-used when colorBy is 'ld'.
-
-**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
-`null`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`DEFAULT_POINT_DIAMETER_PX` · _promotable_
 
 </details>
 

@@ -14,7 +14,8 @@ Auto-generated config schema for the current JBrowse release — see the
 `neg_log_pvalue`. If your BED holds a raw p-value (not -log10 p), point
 `scoreColumn` at that column _and_ set `scoreTransform: 'negLog10'` so it's
 converted into the Manhattan -log10 p value (use `negLog10FromLn` for a
-natural-log p-value):
+natural-log p-value, or a `jexl:...` expression of `score` such as
+`jexl:-log10(score)` for anything else):
 
 ```js
 {

@@ -45,6 +45,17 @@ const GWASAdapterConfigSchema = ConfigurationSchema(
       description: 'transform applied to the score column',
       defaultValue: 'none',
     },
+    /**
+     * #slot
+     * optional PLINK .ld sub-adapter (PlinkLDAdapter / PlinkLDTabixAdapter)
+     * supplying pairwise r² used for LocusZoom-style coloring when the Manhattan
+     * display's `colorBy` is `ld`; null disables it
+     */
+    ldAdapter: {
+      type: 'frozen',
+      defaultValue: null,
+      description: 'sub-adapter config for PLINK .ld pairwise r² data',
+    },
   },
   {
     /**

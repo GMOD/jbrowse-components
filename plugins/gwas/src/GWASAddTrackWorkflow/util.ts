@@ -58,6 +58,11 @@ export function buildGwasTrackConfig({
       // (already -log10) adapter config minimal; only a raw/ln p-value column
       // needs the transform baked in.
       ...(scoreTransform === 'none' ? {} : { scoreTransform }),
+      // LD is a second data source nested on the adapter (like MAF's
+      // annotationAdapter); the Manhattan display reads it for colorBy 'ld'.
+      ...(ldLocation
+        ? { ldAdapter: buildLdAdapterConfig(ldLocation, ldIndexLocation) }
+        : {}),
     },
     ...(ldLocation
       ? {
@@ -66,7 +71,6 @@ export function buildGwasTrackConfig({
               type: 'LinearManhattanDisplay',
               displayId,
               colorBy: 'ld',
-              ldAdapter: buildLdAdapterConfig(ldLocation, ldIndexLocation),
             },
           ],
         }

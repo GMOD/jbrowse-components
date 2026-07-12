@@ -21,10 +21,11 @@ the box
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                   | Type                                          | Description                                                                                                                                                                                                                                                           |
-| -------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [scoreColumn](#slot-scorecolumn)       | `string`                                      | BED column to read as the Manhattan plot score                                                                                                                                                                                                                        |
-| [scoreTransform](#slot-scoretransform) | `stringEnum` (none, negLog10, negLog10FromLn) | transform applied to `scoreColumn` to produce the Manhattan -log10(p) value: `none` (column is already -log10, e.g. Pan-UKBB neglog10_pval_*), `negLog10` (column is a raw p-value), or `negLog10FromLn` (column is a natural-log p-value, e.g. Pan-UKBB Hail `ln P`) |
+| Slot                                   | Type     | Description                                                                                                                                                                                                                                                                                                                                                                                                          |
+| -------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [scoreColumn](#slot-scorecolumn)       | `string` | BED column to read as the Manhattan plot score                                                                                                                                                                                                                                                                                                                                                                       |
+| [scoreTransform](#slot-scoretransform) | `string` | transform applied to `scoreColumn` to produce the Manhattan -log10(p) value: `none` (column is already -log10, e.g. Pan-UKBB neglog10_pval_*), `negLog10` (column is a raw p-value), `negLog10FromLn` (column is a natural-log p-value, e.g. Pan-UKBB Hail `ln P`), or a `jexl:...` expression of `score` for anything else (e.g. `jexl:-log10(score)`) — arbitrary but slower than the native modes, so opt-in only |
+| [ldAdapter](#slot-ldadapter)           | `frozen` | optional PLINK .ld sub-adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying pairwise r² used for LocusZoom-style coloring when the Manhattan display's `colorBy` is `ld`; null disables it                                                                                                                                                                                                                       |
 
 <details>
 <summary>GWASAdapter - Slots</summary>
@@ -40,11 +41,22 @@ BED column to read as the Manhattan plot score
 
 transform applied to `scoreColumn` to produce the Manhattan -log10(p) value:
 `none` (column is already -log10, e.g. Pan-UKBB neglog10_pval_*), `negLog10`
-(column is a raw p-value), or `negLog10FromLn` (column is a natural-log p-value,
-e.g. Pan-UKBB Hail `ln P`)
+(column is a raw p-value), `negLog10FromLn` (column is a natural-log p-value,
+e.g. Pan-UKBB Hail `ln P`), or a `jexl:...` expression of `score` for anything
+else (e.g. `jexl:-log10(score)`) — arbitrary but slower than the native modes,
+so opt-in only
 
-**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`none`, `negLog10`, `negLog10FromLn`) · **Default:** `'none'`
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'none'`
+
+#### slot: ldAdapter
+
+optional PLINK .ld sub-adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying
+pairwise r² used for LocusZoom-style coloring when the Manhattan display's
+`colorBy` is `ld`; null disables it
+
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`null`
 
 </details>
 

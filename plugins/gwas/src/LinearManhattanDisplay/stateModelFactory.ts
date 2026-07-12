@@ -151,11 +151,12 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the configured PLINK .ld adapter, or undefined when none is set (the
-       * slot defaults to null, normalized here to undefined for "absent")
+       * the PLINK .ld sub-adapter configured on the track's `GWASAdapter`, or
+       * undefined when none is set (the slot defaults to null, normalized here
+       * to undefined for "absent")
        */
       get ldAdapterConfig(): Record<string, unknown> | undefined {
-        return readConfObject(self.configuration, 'ldAdapter') ?? undefined
+        return readConfObject(self.adapterConfig, 'ldAdapter') ?? undefined
       },
       /**
        * #getter

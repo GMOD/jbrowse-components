@@ -30,12 +30,11 @@ import { DEFAULT_MANHATTAN_COLOR } from '../ManhattanRPC/rpcTypes.ts'
  * ```
  *
  * #example
- * Taller track, LocusZoom-style coloring: `colorBy: 'ld'` colors each point
- * by its r² to the index SNP read from `ldAdapter`. `ldAdapter` is a slot on
- * `LinearManhattanDisplay` itself (not `GWASAdapter`), so it belongs in
- * `displayDefaults` like any other display slot. The `displayDefaults` object
- * shorthand is equivalent to `displays: [{ type: 'LinearManhattanDisplay',
- * displayId: '...', ... }]` — see
+ * Taller track, LocusZoom-style coloring: `colorBy: 'ld'` colors each point by
+ * its r² to the index SNP read from the adapter's `ldAdapter` sub-adapter. The
+ * LD data is a second source on `GWASAdapter` (mirroring MAF's
+ * `annotationAdapter`), so it nests under `adapter`, while display-only options
+ * like `height`/`colorBy` go in `displayDefaults` — see
  * [configuring displays](/docs/config_guides/tracks#configuring-displays):
  * ```js
  * {
@@ -46,14 +45,14 @@ import { DEFAULT_MANHATTAN_COLOR } from '../ManhattanRPC/rpcTypes.ts'
  *   adapter: {
  *     type: 'GWASAdapter',
  *     uri: 'https://example.com/gwas.bed.gz',
- *   },
- *   displayDefaults: {
- *     height: 400,
- *     colorBy: 'ld',
  *     ldAdapter: {
  *       type: 'PlinkLDTabixAdapter',
  *       uri: 'https://example.com/plink.ld.gz',
  *     },
+ *   },
+ *   displayDefaults: {
+ *     height: 400,
+ *     colorBy: 'ld',
  *   },
  * }
  * ```
@@ -73,7 +72,8 @@ export function configSchemaFactory() {
       /**
        * #slot
        * LocusZoom-style coloring. 'normal' uses `color`; 'ld' colors each point
-       * by its r² to the index SNP, read from `ldAdapter`.
+       * by its r² to the index SNP, read from the `GWASAdapter`'s `ldAdapter`
+       * sub-adapter.
        */
       colorBy: {
         type: 'stringEnum',
@@ -91,16 +91,6 @@ export function configSchemaFactory() {
         defaultValue: DEFAULT_POINT_DIAMETER_PX,
         description: 'Diameter in px of Manhattan points',
         promotable: true,
-      },
-      /**
-       * #slot
-       * PLINK .ld adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying
-       * pairwise r² used when colorBy is 'ld'.
-       */
-      ldAdapter: {
-        type: 'frozen',
-        defaultValue: null,
-        description: 'Adapter config for PLINK .ld pairwise r² data',
       },
     },
     {

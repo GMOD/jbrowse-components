@@ -75,19 +75,18 @@ test('with LD: adds a LinearManhattanDisplay in ld color mode', () => {
     ldIndexLocation: undefined,
     displayId: 'd1',
   })
+  expect(cfg.adapter).toMatchObject({
+    type: 'GWASAdapter',
+    ldAdapter: {
+      type: 'PlinkLDTabixAdapter',
+      uri: 'http://host/p.ld.gz',
+    },
+  })
   expect(cfg.displays).toEqual([
     {
       type: 'LinearManhattanDisplay',
       displayId: 'd1',
       colorBy: 'ld',
-      ldAdapter: {
-        type: 'PlinkLDTabixAdapter',
-        ldLocation: uri('http://host/p.ld.gz'),
-        index: {
-          indexType: 'TBI',
-          location: uri('http://host/p.ld.gz.tbi'),
-        },
-      },
     },
   ])
 })

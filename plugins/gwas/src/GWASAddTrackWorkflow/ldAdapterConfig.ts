@@ -25,25 +25,34 @@ export function deriveTbiLocation(loc: FileLocation): FileLocation | undefined {
     : undefined
 }
 
-// Build the PLINK .ld adapter config for the Manhattan display's `ldAdapter`
-// slot. A bgzipped (.gz) file uses the tabix adapter and needs an index — the
-// caller's index location wins, otherwise we derive `<uri>.tbi` for URLs. A
-// plain .ld file uses the in-memory adapter.
+// Build the PLINK .ld adapter config for the `GWASAdapter`'s `ldAdapter`
+// sub-adapter slot. A bgzipped (.gz) file uses the tabix adapter, a plain .ld
+// file the in-memory one.
+//
+// Both PLINK adapters accept a `uri` shorthand (their `preProcessSnapshot` sets
+// `ldLocation`, and the tabix one derives `<uri>.tbi`), which `getAdapter`
+// expands when the sub-adapter is instantiated — so for a URL with no custom
+// index we emit just `{ type, uri }`. The explicit `ldLocation`/`index` form is
+// only needed for a non-URL location (blob/localPath, no `uri` to shorthand) or
+// a custom tabix index the derived `.tbi` can't express.
 export function buildLdAdapterConfig(
   ldLocation: FileLocation,
   ldIndexLocation?: FileLocation,
 ): Record<string, unknown> {
-  return locationName(ldLocation).endsWith('.gz')
-    ? {
-        type: 'PlinkLDTabixAdapter',
-        ldLocation,
-        index: {
-          indexType: 'TBI',
-          location: ldIndexLocation ?? deriveTbiLocation(ldLocation),
-        },
-      }
-    : {
-        type: 'PlinkLDAdapter',
-        ldLocation,
-      }
+  const isTabix = locationName(ldLocation).endsWith('.gz')
+  const type = isTabix ? 'PlinkLDTabixAdapter' : 'PlinkLDAdapter'
+  if (isUriLocation(ldLocation) && !(isTabix && ldIndexLocation)) {
+    return { type, uri: ldLocation.uri }
+  } else if (isTabix) {
+    return {
+      type,
+      ldLocation,
+      index: {
+        indexType: 'TBI',
+        location: ldIndexLocation ?? deriveTbiLocation(ldLocation),
+      },
+    }
+  } else {
+    return { type, ldLocation }
+  }
 }

@@ -2,20 +2,17 @@ import { buildLdAdapterConfig } from './ldAdapterConfig.ts'
 
 const uri = (s: string) => ({ uri: s, locationType: 'UriLocation' as const })
 
-test('plain .ld file → in-memory PlinkLDAdapter', () => {
-  const ld = uri('http://host/plink.ld')
-  expect(buildLdAdapterConfig(ld)).toEqual({
+test('plain .ld URL → in-memory PlinkLDAdapter uri shorthand', () => {
+  expect(buildLdAdapterConfig(uri('http://host/plink.ld'))).toEqual({
     type: 'PlinkLDAdapter',
-    ldLocation: ld,
+    uri: 'http://host/plink.ld',
   })
 })
 
-test('.gz file → tabix adapter with derived .tbi index for URLs', () => {
-  const ld = uri('http://host/plink.ld.gz')
-  expect(buildLdAdapterConfig(ld)).toEqual({
+test('.gz URL → tabix adapter uri shorthand (preProcessSnapshot derives .tbi)', () => {
+  expect(buildLdAdapterConfig(uri('http://host/plink.ld.gz'))).toEqual({
     type: 'PlinkLDTabixAdapter',
-    ldLocation: ld,
-    index: { indexType: 'TBI', location: uri('http://host/plink.ld.gz.tbi') },
+    uri: 'http://host/plink.ld.gz',
   })
 })
 
