@@ -199,7 +199,7 @@ describe('Canvas2DVariantRenderer', () => {
   })
 
   describe('shape types', () => {
-    test('shape 1 draws right triangle via path', () => {
+    test('inversion (SHAPE_TRI_LEFT) draws a left-pointing triangle via path', () => {
       const { canvas, pathOps } = createMockCanvas()
       const renderer = new Canvas2DVariantRenderer(canvas)
       const regions = new Map([
@@ -217,100 +217,19 @@ describe('Canvas2DVariantRenderer', () => {
 
       renderer.renderBlocks([makeBlock()], regions, DEFAULT_STATE)
 
-      // Right triangle: moveTo(x1,y), lineTo(x1+w, y+rowHeight/2), lineTo(x1, y+rowHeight), fill
-      expect(pathOps).toContain('fill')
-      const moveIdx = pathOps.findIndex(op => op.startsWith('moveTo'))
-      expect(moveIdx).toBeGreaterThanOrEqual(0)
-      expect(pathOps[moveIdx + 1]).toMatch(/^lineTo/)
-      expect(pathOps[moveIdx + 2]).toMatch(/^lineTo/)
-      expect(pathOps.indexOf('fill', moveIdx)).toBeGreaterThan(moveIdx + 2)
-    })
-
-    test('shape 2 draws left triangle via path', () => {
-      const { canvas, pathOps } = createMockCanvas()
-      const renderer = new Canvas2DVariantRenderer(canvas)
-      const regions = new Map([
-        [
-          0,
-          makeRegionData({
-            numCells: 1,
-            cellPositions: [0, 100],
-            cellRowIndices: [0],
-            cellColors: [0xff0000ff],
-            cellShapeTypes: [2],
-          }),
-        ],
-      ])
-
-      renderer.renderBlocks([makeBlock()], regions, DEFAULT_STATE)
-
-      // Left triangle starts with moveTo(x1+w, y)
+      // Left triangle: moveTo(x1+w, y), lineTo(x1, y+rowHeight/2), lineTo(x1+w,
+      // y+rowHeight), fill.
       const moveOp = pathOps.find(op => op.startsWith('moveTo'))
-      expect(moveOp).toBeDefined()
       expect(moveOp).toBe('moveTo(80,0)')
+      expect(pathOps).toContain('lineTo(0,5)')
+      expect(pathOps).toContain('lineTo(80,10)')
       expect(pathOps).toContain('fill')
-    })
-
-    test('shape 3 zoomed in draws a full down triangle', () => {
-      const { canvas, pathOps } = createMockCanvas()
-      const renderer = new Canvas2DVariantRenderer(canvas)
-      const regions = new Map([
-        [
-          0,
-          makeRegionData({
-            numCells: 1,
-            cellPositions: [0, 100],
-            cellRowIndices: [0],
-            cellColors: [0xff0000ff],
-            cellShapeTypes: [3],
-          }),
-        ],
-      ])
-
-      renderer.renderBlocks([makeBlock()], regions, DEFAULT_STATE)
-
-      // span = 80px ≥ INS_TRI_SPAN_PX so triBlend = 1: a triangle whose base
-      // is capped at INS_TRI_SPAN_PX (10px), centered on the span center (px
-      // 40), collapsing to an apex (bottom width 0) at that same center.
-      const moveOp = pathOps.find(op => op.startsWith('moveTo'))
-      expect(moveOp).toBe('moveTo(35,0)')
-      expect(pathOps).toContain('lineTo(45,0)')
-      expect(pathOps).toContain('lineTo(40,10)')
-      expect(pathOps).toContain('fill')
-    })
-
-    test('shape 3 zoomed out collapses to a small centered square', () => {
-      const { canvas, fillRectCalls, pathOps } = createMockCanvas()
-      const renderer = new Canvas2DVariantRenderer(canvas)
-      const regions = new Map([
-        [
-          0,
-          // 1bp span; the 800bp/800px block below is 1px/bp, so the span is 1px
-          // on screen — below INS_DOT_SPAN_PX, so the glyph collapses to a small
-          // centered square rather than a triangle.
-          makeRegionData({
-            numCells: 1,
-            cellPositions: [500, 501],
-            cellRowIndices: [0],
-            cellColors: [0xff0000ff],
-            cellShapeTypes: [3],
-          }),
-        ],
-      ])
-
-      renderer.renderBlocks([makeBlock({ end: 800 })], regions, DEFAULT_STATE)
-
-      // center = px 500.5; the 10px-tall row gives a square of side
-      // min(INS_DOT_SIZE_PX, 10) = 6, so fillRect(500.5-3, (10-6)/2, 6, 6). No
-      // triangle edges.
-      expect(fillRectCalls).toEqual([[497.5, 2, 6, 6]])
-      expect(pathOps.some(op => op.startsWith('moveTo'))).toBe(false)
     })
   })
 
   // On a reversed (horizontally-flipped) region makeBpMapper mirrors bp→px, so
   // the same feature lands on the opposite side of the block with its full span
-  // intact. These lock in the min/abs geometry the GPU shader (variant.slang)
+  // intact. This locks in the min/abs geometry the GPU shader (variant.slang)
   // mirrors — regressing either path collapses a reversed variant to a sliver.
   describe('reversed regions', () => {
     test('rect keeps its full span, mirrored to the opposite edge', () => {
@@ -343,37 +262,6 @@ describe('Canvas2DVariantRenderer', () => {
       expect(w).toBeCloseTo(80)
       expect(y).toBe(0)
       expect(h).toBe(10)
-    })
-
-    test('insertion glyph centers on its mirrored midpoint', () => {
-      const { canvas, pathOps } = createMockCanvas()
-      const renderer = new Canvas2DVariantRenderer(canvas)
-      const regions = new Map([
-        [
-          0,
-          makeRegionData({
-            numCells: 1,
-            cellPositions: [0, 100],
-            cellRowIndices: [0],
-            cellColors: [0xff0000ff],
-            cellShapeTypes: [3],
-          }),
-        ],
-      ])
-
-      renderer.renderBlocks(
-        [makeBlock({ reversed: true })],
-        regions,
-        DEFAULT_STATE,
-      )
-
-      // Forward center is px 40; reversed mirrors it to 760 (800 - 40) with the
-      // 10px-capped triangle base, apex at the same center.
-      const moveOp = pathOps.find(op => op.startsWith('moveTo'))
-      expect(moveOp).toBe('moveTo(755,0)')
-      expect(pathOps).toContain('lineTo(765,0)')
-      expect(pathOps).toContain('lineTo(760,10)')
-      expect(pathOps).toContain('fill')
     })
   })
 })

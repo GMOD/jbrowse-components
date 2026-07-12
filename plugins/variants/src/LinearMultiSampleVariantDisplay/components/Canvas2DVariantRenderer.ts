@@ -74,15 +74,7 @@ export function drawVariantBlocks(
         ctx.fillStyle = abgrToCssRgba(color)
         prevColor = color
       }
-      drawVariantShape(
-        ctx,
-        region.cellShapeTypes[i]!,
-        x1,
-        y,
-        w,
-        drawnRowHeight,
-        spanPx,
-      )
+      drawVariantShape(ctx, region.cellShapeTypes[i]!, x1, y, w, drawnRowHeight)
     }
 
     ctx.restore()
