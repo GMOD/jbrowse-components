@@ -52,7 +52,9 @@ export default function ScoreColumnFields({
         helperText="How to map the score column onto the Manhattan -log10(p) axis"
         value={custom ? CUSTOM : scoreTransform}
         onChange={e => {
-          setScoreTransform(e.target.value === CUSTOM ? CUSTOM_STARTER : e.target.value)
+          setScoreTransform(
+            e.target.value === CUSTOM ? CUSTOM_STARTER : e.target.value,
+          )
         }}
         fullWidth
       >

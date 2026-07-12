@@ -4,8 +4,8 @@ import type { FlatbushItem } from '../RenderFeatureDataRPC/rpcTypes.ts'
 // than by its internal uniqueId. Text search (trix) never serializes the
 // adapter's uniqueId, and that id is synthetic/unstable anyway (file offset or
 // array index), so we pin the feature down by what trix DOES record: the
-// feature's exact span plus its indexed name. Resolved against rendered
-// features on the main thread (see highlightedFeatureIds), so it survives
+// feature's exact span plus its indexed name. Resolved against fetched features
+// on the main thread (see highlightedFeatureIdSet), so it survives
 // pan/zoom/refetch without ever needing the uniqueId.
 export interface FeatureHighlight {
   refName: string

@@ -9,7 +9,7 @@ import StarIcon from '../StarIcon.tsx'
 import type { LaunchCallback } from '../types.ts'
 
 // ISO datetime -> YYYY-MM-DD (first 10 chars); empty for missing or
-// unparseable values (guards against `toISOString()` throwing RangeError)
+// unparsable values (guards against `toISOString()` throwing RangeError)
 function formatReleaseDate(date: string) {
   const d = date ? new Date(date) : undefined
   return d && !Number.isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : ''

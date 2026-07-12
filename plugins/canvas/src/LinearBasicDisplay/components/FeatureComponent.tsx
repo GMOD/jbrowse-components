@@ -72,7 +72,7 @@ export interface LinearBasicDisplayModel {
   heightMode: HeightMode
   setHeightMode: (mode: HeightMode) => void
   selectedFeatureId: string | undefined
-  highlightedFeatureIds: string[]
+  highlightedFeatureIdSet: ReadonlySet<string>
   featureIdUnderMouse: string | null
   subfeatureIdUnderMouse: string | null
   hoveredFeature: FlatbushItem | null

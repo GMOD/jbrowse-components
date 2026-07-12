@@ -32,8 +32,9 @@ interface HighlightModel {
   selectedFeatureId: string | undefined
   hoveredFeature: FlatbushItem | null
   hoveredSubfeature: SubfeatureInfo | null
-  // uniqueIds of features resolved from a declarative search highlight
-  highlightedFeatureIds: string[]
+  // render-item ids resolved from a declarative search highlight; addFeatureBox
+  // no-ops any id not currently laid out (same as soloFeatureIdSet)
+  highlightedFeatureIdSet: ReadonlySet<string>
   // the "show only these features" collection and whether it's isolating yet.
   // While collecting (not applied) each member is boxed so ctrl+click has
   // visual feedback; once applied the view already shows only these, so the
@@ -224,7 +225,7 @@ export function useHighlightOverlays(
     hoveredFeature,
     hoveredSubfeature,
     selectedFeatureId,
-    highlightedFeatureIds,
+    highlightedFeatureIdSet,
     soloFeatureIdSet,
     soloApplied,
     renderedShowLabels,
@@ -374,7 +375,7 @@ export function useHighlightOverlays(
 
   // Search highlights: box + tint the specific matched feature(s). Drawn before
   // selection so a click's selection border still reads on top.
-  for (const featureId of highlightedFeatureIds) {
+  for (const featureId of highlightedFeatureIdSet) {
     addFeatureBox(
       featureId,
       classes.searchHighlightBox,

@@ -5,8 +5,8 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { isBaseSession } from './BaseSession.ts'
+import { asSession } from '../siblingCast.ts'
 
-import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SerializableThemeArgs, ThemeMap } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
@@ -21,9 +21,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       sessionThemeName: localStorageGetItem('themeName') ?? 'default',
     }))
     .views(s => {
-      // this mixin is always composed onto a base session; alias once instead
-      // of re-casting self in every view
-      const self = s as typeof s & BaseSession
+      const self = asSession(s)
       return {
         /**
          * #method

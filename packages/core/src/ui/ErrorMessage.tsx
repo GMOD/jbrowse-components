@@ -7,12 +7,14 @@ import RedErrorMessageBox from './RedErrorMessageBox.tsx'
 // redeploy) or a network hiccup; a reload fetches the current chunks
 function isChunkLoadError(error: unknown) {
   const name = error instanceof Error ? error.name : ''
-  const message = `${error}`
+  const message = `${error}`.toLowerCase()
   return (
     name === 'ChunkLoadError' ||
-    /Loading (CSS )?chunk .* failed/i.test(message) ||
-    /Failed to fetch dynamically imported module/i.test(message) ||
-    /error loading dynamically imported module/i.test(message)
+    (message.includes('loading') &&
+      message.includes('chunk') &&
+      message.includes('failed')) ||
+    message.includes('failed to fetch dynamically imported module') ||
+    message.includes('error loading dynamically imported module')
   )
 }
 

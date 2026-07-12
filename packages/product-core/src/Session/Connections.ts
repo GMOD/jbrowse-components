@@ -1,6 +1,7 @@
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession.ts'
+import { asSession } from '../siblingCast.ts'
 
 import type { BaseSession } from './BaseSession.ts'
 import type { SessionWithReferenceManagementType } from './ReferenceManagement.ts'
@@ -50,7 +51,7 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
        * #getter
        */
       get connections(): BaseConnectionConfigModel[] {
-        const { jbrowse } = self as typeof self & BaseSession
+        const { jbrowse } = asSession(self)
         return jbrowse.connections
       },
     }))

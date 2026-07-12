@@ -1,4 +1,6 @@
 products/jbrowse-web/browser-tests/suites/demo-inventory.ts
+products/jbrowse-img/src/options.ts
+products/jbrowse-img/src/options.test.ts
 packages/core/src/util/geneticCodes.ts
 *.ix
 *.gff3.gz

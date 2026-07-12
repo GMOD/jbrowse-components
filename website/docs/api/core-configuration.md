@@ -118,10 +118,11 @@ sharing one slot (arcs vs read cloud) stay independent.
 ## makeSlotsValueSessionDefaultControl
 
 Per-value control over a _group_ of slots: "make this exact combination of slot
-values the session default". Like `makeSessionDefaultControl` but for a
-multi-slot value (e.g. a feature-height preset = height + spacing + mode), so
-each row of a preset radio group gets its own independent control whose `active`
-reflects that specific combination being the current default.
+values the session default". `active` reflects whether this exact combination is
+the current default; `toggle` flips it (set/clear, non-destructive). Each row of
+a preset radio group (e.g. a feature-height preset = height + spacing + mode)
+gets its own independent control. The base builder the single-value /
+promote-current wrappers below delegate to.
 
 ```js
 // type signature

@@ -116,7 +116,7 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
@@ -137,15 +137,32 @@ export const displayModeOptions: { value: DisplayMode; label: string }[] = [
 // Persistent, declarative feature-highlight request (see featureHighlight.ts).
 // A plain span+name signature — never the adapter uniqueId — so it can be
 // authored in a session snapshot / URL and resolved once the region renders.
-// Mirror of the plain FeatureHighlight signature. Keep the two in sync by hand:
-// the pure matcher + search bridge use the interface, this MST model persists it,
-// and setFeatureHighlights(cast(...)) silently DROPS any field the model lacks.
+// Mirror of the plain FeatureHighlight signature: the pure matcher + search
+// bridge use the interface, this MST model persists it, and
+// setFeatureHighlights(cast(...)) silently DROPS any field the model lacks — so
+// the assertion below fails typecheck if the two ever drift.
 const FeatureHighlightModel = types.model('FeatureHighlight', {
   refName: types.string,
   start: types.number,
   end: types.number,
   name: types.maybe(types.string),
 })
+
+// Compile-time proof the persisted model's snapshot and the plain
+// FeatureHighlight interface stay structurally identical (checked both ways, the
+// same AssignableTo guard idiom as modelContract.ts). Errors here instead of a
+// silent field drop the next time either side gains a field.
+type AssignableTo<A extends B, B> = A
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _HighlightModelToInterface = AssignableTo<
+  SnapshotIn<typeof FeatureHighlightModel>,
+  FeatureHighlight
+>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _HighlightInterfaceToModel = AssignableTo<
+  FeatureHighlight,
+  SnapshotIn<typeof FeatureHighlightModel>
+>
 
 // Region identity (regionKey/reversed) is stored alongside the data so layout
 // grouping derives from rpcDataMap directly. Deriving it from loadedRegions
@@ -799,7 +816,11 @@ export default function baseStateModelFactory(
          * #getter
          */
         // The render-item ids resolved from a search highlight (features and/or
-        // subfeatures), for the overlay to box. See resolvedHighlights.
+        // subfeatures), for the overlay and SVG export to box. Resolved pre-layout
+        // against the raw fetched data (see resolvedHighlights), so it stays stable
+        // across pan/zoom; the overlay's addFeatureBox no-ops any id not currently
+        // laid out, so no on-screen intersection is needed here (same as
+        // soloFeatureIdSet).
         get highlightedFeatureIdSet(): ReadonlySet<string> {
           return this.resolvedHighlights.box
         },
@@ -1486,26 +1507,6 @@ export default function baseStateModelFactory(
             }
           }
           return map
-        },
-
-        /**
-         * #getter
-         */
-        // Highlighted uniqueIds that are actually on screen right now, for the
-        // overlay to box. The set is resolved pre-layout (highlightedFeatureIdSet)
-        // and intersected with the laid-out features here, so the highlight
-        // "follows" its feature across pan/zoom without a second span match. Both
-        // top-level features and subfeatures are boxable (a searched transcript
-        // renders as a subfeature), so any resolved id present in featureItemMap
-        // qualifies.
-        get highlightedFeatureIds(): string[] {
-          const ids: string[] = []
-          for (const id of self.highlightedFeatureIdSet) {
-            if (this.featureItemMap.has(id)) {
-              ids.push(id)
-            }
-          }
-          return ids
         },
 
         /**

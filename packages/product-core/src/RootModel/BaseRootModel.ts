@@ -6,20 +6,17 @@ import { cast, getType, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
 import { filterSessionInPlace } from '../sessionUtils.ts'
 
+import type { BaseSession } from '../Session/BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import type { NotificationLevel } from '@jbrowse/core/util'
 import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
-// `session` is typed as the bare IAnyType `sessionModelType` here (a stronger
-// type would make root↔session mutually recursive), so the two members the base
-// root actually reaches for are named once instead of re-shadowed per action.
-// Every concrete session composes BaseSessionModel (setName) + SnackbarModel
-// (notify), so both are present at runtime; optional keeps the cast honest.
-interface SessionShadow {
-  setName?: (name: string) => void
-  notify?: (message: string, level?: NotificationLevel) => void
-}
+// `session` is a `types.maybe(sessionModelType)` where `sessionModelType` is the
+// erased `IAnyType` (product-core can't name the concrete per-product session
+// type without a root↔session cycle), so `self.session` degrades to `any`. Every
+// concrete session composes BaseSessionModel + SnackbarModel, so asserting the
+// shared `BaseSession` contract restores real checking on the `setName`/`notify`
+// members the base root reaches for — without a hand-maintained shadow.
 
 /**
  * #stateModel BaseRootModel
@@ -123,7 +120,7 @@ export function BaseRootModelFactory({
                 .map(d => d.configuration ?? d.type ?? 'unknown')
                 .join(', ')
               const plural = dropped.length > 1
-              ;(self.session as SessionShadow).notify?.(
+              ;(self.session as BaseSession).notify(
                 `Removed ${dropped.length} track${plural ? 's' : ''} that could not be loaded: ${names}`,
                 'warning',
               )
@@ -158,7 +155,7 @@ export function BaseRootModelFactory({
         // Every concrete session model is composed from BaseSessionModel, which
         // provides setName — avoid a full setSession rebuild here since the
         // only field changing is `name`.
-        ;(self.session as SessionShadow | undefined)?.setName?.(newName)
+        ;(self.session as BaseSession | undefined)?.setName(newName)
       },
     }))
 }

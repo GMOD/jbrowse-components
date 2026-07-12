@@ -29,7 +29,10 @@ function makeConfigSchema(pluginManager: PluginManager, name: string) {
 
 export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
-    const configSchema = makeConfigSchema(pluginManager, 'LinearGCContentDisplay')
+    const configSchema = makeConfigSchema(
+      pluginManager,
+      'LinearGCContentDisplay',
+    )
     return new DisplayType({
       name: 'LinearGCContentDisplay',
       configSchema,

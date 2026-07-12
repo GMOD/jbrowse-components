@@ -30,8 +30,8 @@ async function startObserver(page: Page) {
   await page.evaluate(() => {
     const counts = new Map<string, number>()
     const labelFor = (node: Node) => {
-      let el: Element | null =
-        node.nodeType === 1 ? (node as Element) : node.parentElement
+      let el: HTMLElement | null =
+        node.nodeType === 1 ? (node as HTMLElement) : node.parentElement
       for (let i = 0; el && i < 12; i++) {
         const testid = el.dataset.testid
         if (testid) {

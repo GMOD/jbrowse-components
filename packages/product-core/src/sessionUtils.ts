@@ -266,10 +266,7 @@ export interface WebExportPlan {
 // planWebExport tells an assembly's own structural trackIds from real user
 // tracks — a local sequence file surfaces in the report tagged with the sequence
 // trackId, but it is not a droppable track.
-function collectTrackIds(
-  node: unknown,
-  out = new Set<string>(),
-): Set<string> {
+function collectTrackIds(node: unknown, out = new Set<string>()): Set<string> {
   if (Array.isArray(node)) {
     for (const item of node) {
       collectTrackIds(item, out)

@@ -114,8 +114,8 @@ describe('feature highlight declarative persistence', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay({ featureHighlights: [brca1] })
 
-    // resolver runs against featureItemMap; empty until features render
-    expect(display.highlightedFeatureIds).toEqual([])
+    // resolver runs against the raw fetched data; empty until features load
+    expect([...display.highlightedFeatureIdSet]).toEqual([])
   })
 
   it('resolves the highlight against raw data and pins it for layout', () => {

@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
+import { asSession } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -7,7 +8,6 @@ import type {
   BaseAssemblyConfigSchema,
 } from '@jbrowse/core/assemblyManager'
 import type { AnyConfiguration } from '@jbrowse/core/configuration'
-import type { BaseSession } from '@jbrowse/product-core'
 
 /**
  * #stateModel AssembliesMixin
@@ -38,7 +38,7 @@ export function AssembliesMixin(
       ),
     })
     .actions(s => {
-      const self = s as typeof s & BaseSession
+      const self = asSession(s)
       return {
         /**
          * #action
@@ -111,7 +111,7 @@ export function AssembliesMixin(
       }
     })
     .views(s => {
-      const self = s as typeof s & BaseSession
+      const self = asSession(s)
       return {
         /**
          * #getter

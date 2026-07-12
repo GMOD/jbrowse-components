@@ -5,8 +5,8 @@ import {
   pluginExtraTrackItems,
   trackListMenuItems,
 } from './TrackMenu.ts'
+import { asSession } from '../siblingCast.ts'
 
-import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -23,7 +23,7 @@ import type { TrackActionView } from '@jbrowse/core/util/types'
  */
 export function TrackMenuSessionMixin(pluginManager: PluginManager) {
   return types.model('TrackMenuSessionMixin', {}).views(s => {
-    const self = s as typeof s & BaseSession
+    const self = asSession(s)
     return {
       /**
        * #method

@@ -1,8 +1,7 @@
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { asRoot } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
-
-import type { BaseRootModel } from '@jbrowse/product-core'
 
 /**
  * #stateModel HistoryManagementMixin
@@ -47,7 +46,7 @@ export function HistoryManagementMixin() {
             self,
             autorun(
               function historyInitAutorun() {
-                const { session } = self as typeof self & BaseRootModel
+                const { session } = asRoot(self)
                 if (session) {
                   // we use a specific initialization routine after session is
                   // created to get it to start tracking itself sort of related

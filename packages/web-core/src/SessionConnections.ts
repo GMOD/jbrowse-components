@@ -1,13 +1,13 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   ConnectionManagementSessionMixin,
+  asSession,
   isSessionWithConnections,
 } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import type { BaseSession } from '@jbrowse/product-core'
 
 export interface WebSessionWithConnections {
   sessionConnections: AnyConfigurationModel[]
@@ -40,7 +40,7 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
       }),
     )
     .actions(s => {
-      const self = s as typeof s & BaseSession
+      const self = asSession(s)
       const superDeleteConnection = self.deleteConnection
       const superAddConnectionConf = self.addConnectionConf
       return {

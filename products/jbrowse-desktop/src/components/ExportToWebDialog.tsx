@@ -80,9 +80,9 @@ function PortabilityWarning({ plan }: { plan: WebExportPlan }) {
         <Alert severity="warning">
           {droppedTracks.length} track{droppedTracks.length === 1 ? '' : 's'}{' '}
           left out of the export because{' '}
-          {droppedTracks.length === 1 ? 'it references' : 'they reference'} local
-          files: {droppedTracks.join(', ')}. Host these files at a URL to include
-          them.
+          {droppedTracks.length === 1 ? 'it references' : 'they reference'}{' '}
+          local files: {droppedTracks.join(', ')}. Host these files at a URL to
+          include them.
         </Alert>
       ) : null}
     </>
