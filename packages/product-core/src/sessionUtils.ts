@@ -254,6 +254,42 @@ export interface WebExportPlan {
   // distinct display names of tracks excluded from `session` because they
   // reference local files jbrowse-web can't open (empty when fully portable)
   droppedTracks: string[]
+  // distinct names of local files that block the whole session from loading on
+  // the web and can't be shed by dropping a track — an assembly's own sequence/
+  // alias files, or any non-track local file. Empty when fully portable.
+  blockingFiles: string[]
+}
+
+// Collects every `trackId` string anywhere within a snapshot subtree. An
+// assembly's sequence config carries a trackId (`<name>-ReferenceSequenceTrack`,
+// injected by the assembly config's preProcessSnapshot), so this is how
+// planWebExport tells an assembly's own structural trackIds from real user
+// tracks — a local sequence file surfaces in the report tagged with the sequence
+// trackId, but it is not a droppable track.
+function collectTrackIds(
+  node: unknown,
+  out = new Set<string>(),
+): Set<string> {
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      collectTrackIds(item, out)
+    }
+  } else if (typeof node === 'object' && node !== null) {
+    const obj = node as Record<string, unknown>
+    if (typeof obj.trackId === 'string') {
+      out.add(obj.trackId)
+    }
+    for (const key of Object.keys(obj)) {
+      collectTrackIds(obj[key], out)
+    }
+  }
+  return out
+}
+
+// Distinct file display names of a set of non-portable locations, in first-seen
+// order.
+function distinctNames(locations: NonPortableLocation[]): string[] {
+  return [...new Set(locations.map(l => l.name))]
 }
 
 // Reads a `trackId` off a loosely-typed session-track snapshot, or undefined.
@@ -275,26 +311,44 @@ export function planWebExport(
   baseConfig?: HostedBaseConfig,
 ): WebExportPlan {
   const report = analyzeWebPortability(snapshot)
-  // trackIds whose tracks reference a local file: these can never load on the
-  // web, so they're dropped from the exported session rather than shipped
-  // broken. Locations without a trackId (e.g. a local assembly sequence) can't
-  // be dropped as a track — the dialog surfaces those separately.
+  const sourceConfigUrl = snapshot.configuration?.sourceConfigUrl
+  const assemblies = snapshot.assemblies ?? []
+  const defaultSession = snapshot.defaultSession ?? {}
+  const priorSessionAssemblies = Array.isArray(defaultSession.sessionAssemblies)
+    ? (defaultSession.sessionAssemblies as unknown[])
+    : []
+
+  // An assembly's sequence config owns a trackId (`<name>-ReferenceSequenceTrack`),
+  // so a local sequence/alias file shows up in the report tagged with that
+  // trackId even though it's structural, not a droppable track. Collect the
+  // trackIds owned by shipped assemblies so those files are classified as
+  // blocking (they break the whole session) rather than as dropped tracks.
+  const assemblyTrackIds = collectTrackIds([
+    ...assemblies,
+    ...priorSessionAssemblies,
+  ])
+
+  // trackIds of real user tracks that reference a local file: these can never
+  // load on the web, so they're dropped from the exported session rather than
+  // shipped broken. Assembly-owned trackIds are excluded — dropping them isn't
+  // possible; they surface as blockingFiles instead.
   const nonPortableTrackIds = new Set(
-    report.nonPortable.flatMap(l => (l.trackId ? [l.trackId] : [])),
+    report.nonPortable.flatMap(l =>
+      l.trackId && !assemblyTrackIds.has(l.trackId) ? [l.trackId] : [],
+    ),
   )
   const droppedTracks = [
     ...new Set(
       report.nonPortable.flatMap(l =>
-        l.trackId ? [l.trackName ?? l.trackId] : [],
+        l.trackId && !assemblyTrackIds.has(l.trackId)
+          ? [l.trackName ?? l.trackId]
+          : [],
       ),
     ),
   ]
-  const sourceConfigUrl = snapshot.configuration?.sourceConfigUrl
   const tracks = (snapshot.tracks ?? []).filter(
     t => !nonPortableTrackIds.has(t.trackId),
   )
-  const assemblies = snapshot.assemblies ?? []
-  const defaultSession = snapshot.defaultSession ?? {}
   const priorSessionTracks = (
     Array.isArray(defaultSession.sessionTracks)
       ? (defaultSession.sessionTracks as unknown[])
@@ -303,9 +357,6 @@ export function planWebExport(
     const id = readTrackId(t)
     return !id || !nonPortableTrackIds.has(id)
   })
-  const priorSessionAssemblies = Array.isArray(defaultSession.sessionAssemblies)
-    ? (defaultSession.sessionAssemblies as unknown[])
-    : []
 
   const baseAssemblyNames = new Set(
     (baseConfig?.assemblies ?? []).map(a => a.name),
@@ -316,6 +367,11 @@ export function planWebExport(
     assemblies.every(a => baseAssemblyNames.has(a.name))
 
   if (coveredByBase) {
+    // assemblies come from the hosted config, so their local files aren't
+    // shipped and can't block; only stray non-track local files remain
+    const blockingFiles = distinctNames(
+      report.nonPortable.filter(l => !l.trackId),
+    )
     const baseTrackIds = new Set((baseConfig.tracks ?? []).map(t => t.trackId))
     const addedTracks = tracks.filter(t => !baseTrackIds.has(t.trackId))
     return {
@@ -327,8 +383,16 @@ export function planWebExport(
       },
       report,
       droppedTracks,
+      blockingFiles,
     }
   }
+  // self-contained ships the assemblies, so their local files (and any other
+  // non-track local file) block the session from loading on the web
+  const blockingFiles = distinctNames(
+    report.nonPortable.filter(
+      l => !l.trackId || assemblyTrackIds.has(l.trackId),
+    ),
+  )
   return {
     strategy: 'selfContained',
     session: {
@@ -338,6 +402,7 @@ export function planWebExport(
     },
     report,
     droppedTracks,
+    blockingFiles,
   }
 }
 

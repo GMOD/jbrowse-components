@@ -64,33 +64,29 @@ async function buildExport(
 }
 
 function PortabilityWarning({ plan }: { plan: WebExportPlan }) {
-  const { droppedTracks } = plan
-  // local files not attached to a track — a local assembly sequence, say —
-  // can't be dropped as a track; the whole session won't open without them
-  const sessionFiles = [
-    ...new Set(
-      plan.report.nonPortable.filter(l => !l.trackId).map(l => l.name),
-    ),
-  ]
-  return droppedTracks.length || sessionFiles.length ? (
-    <Alert severity="warning">
+  const { droppedTracks, blockingFiles } = plan
+  return (
+    <>
+      {/* blocking files (a local assembly sequence, say) aren't attached to a
+      droppable track; the session won't load on the web until they're hosted */}
+      {blockingFiles.length ? (
+        <Alert severity="error">
+          This session references local files that jbrowse-web can&apos;t open,
+          so it won&apos;t load correctly until they&apos;re hosted at a URL:{' '}
+          {blockingFiles.join(', ')}.
+        </Alert>
+      ) : null}
       {droppedTracks.length ? (
-        <div>
+        <Alert severity="warning">
           {droppedTracks.length} track{droppedTracks.length === 1 ? '' : 's'}{' '}
           left out of the export because{' '}
-          {droppedTracks.length === 1 ? 'it references' : 'they reference'}{' '}
-          local files: {droppedTracks.join(', ')}. Host these files at a URL to
-          include them.
-        </div>
+          {droppedTracks.length === 1 ? 'it references' : 'they reference'} local
+          files: {droppedTracks.join(', ')}. Host these files at a URL to include
+          them.
+        </Alert>
       ) : null}
-      {sessionFiles.length ? (
-        <div>
-          This session references local files that won&apos;t open on the web:{' '}
-          {sessionFiles.join(', ')}.
-        </div>
-      ) : null}
-    </Alert>
-  ) : null
+    </>
+  )
 }
 
 const ExportToWebDialog = observer(function ExportToWebDialog({

@@ -434,6 +434,87 @@ test('planWebExport drops a local session track but keeps a remote one', () => {
   expect(plan.droppedTracks).toEqual(['Local track'])
 })
 
+// An assembly's sequence config carries a trackId, so its local file surfaces
+// in the portability report tagged with that trackId — but it isn't a droppable
+// track. It must be reported as a blocking file (the session can't shed the
+// assembly), NOT as a dropped track, and the assembly still ships.
+test('planWebExport classifies a local assembly sequence as a blocking file, not a dropped track', () => {
+  const plan = planWebExport({
+    assemblies: [
+      {
+        name: 'myasm',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'myasm-ReferenceSequenceTrack',
+          adapter: {
+            type: 'IndexedFastaAdapter',
+            fastaLocation: {
+              locationType: 'LocalPathLocation',
+              localPath: '/home/me/genome.fa',
+            },
+            faiLocation: {
+              locationType: 'LocalPathLocation',
+              localPath: '/home/me/genome.fa.fai',
+            },
+          },
+        },
+      } as { name: string },
+    ],
+    tracks: [],
+    defaultSession: { name: 'session' },
+  })
+  expect(plan.strategy).toBe('selfContained')
+  // not misreported as a dropped track
+  expect(plan.droppedTracks).toEqual([])
+  // reported as blocking, with the local file names
+  expect(plan.blockingFiles).toEqual([
+    '/home/me/genome.fa',
+    '/home/me/genome.fa.fai',
+  ])
+  // the assembly still ships (dropping it would destroy the whole session)
+  expect(plan.session.sessionAssemblies).toHaveLength(1)
+})
+
+// A remote-sequence assembly alongside a local user track: the track is dropped,
+// the assembly ships, and nothing is reported as blocking.
+test('planWebExport keeps a remote assembly and drops only the local user track', () => {
+  const plan = planWebExport({
+    assemblies: [
+      {
+        name: 'hg38',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'hg38-ReferenceSequenceTrack',
+          adapter: {
+            type: 'TwoBitAdapter',
+            twoBitLocation: {
+              locationType: 'UriLocation',
+              uri: 'https://example.com/hg38.2bit',
+            },
+          },
+        },
+      } as { name: string },
+    ],
+    tracks: [
+      {
+        trackId: 'local',
+        name: 'Local track',
+        adapter: {
+          bamLocation: {
+            locationType: 'LocalPathLocation',
+            localPath: '/data/a.bam',
+          },
+        },
+      } as { trackId: string },
+    ],
+    defaultSession: { name: 'session' },
+  })
+  expect(plan.droppedTracks).toEqual(['Local track'])
+  expect(plan.blockingFiles).toEqual([])
+  expect(plan.session.sessionTracks).toEqual([])
+  expect(plan.session.sessionAssemblies).toHaveLength(1)
+})
+
 test('buildWebExportUrl puts an encoded- long link in the hash, keeping config', () => {
   const url = buildWebExportUrl(
     {
@@ -442,6 +523,7 @@ test('buildWebExportUrl puts an encoded- long link in the hash, keeping config',
       session: {},
       report: { nonPortable: [], portable: true },
       droppedTracks: [],
+      blockingFiles: [],
     },
     'encoded-ABC',
   )
@@ -465,6 +547,7 @@ test('buildWebExportUrl puts a self-contained encoded- session in the hash', () 
       session: {},
       report: { nonPortable: [], portable: true },
       droppedTracks: [],
+      blockingFiles: [],
     },
     'encoded-XYZ',
   )
@@ -482,6 +565,7 @@ test('buildWebExportUrl adds the password param for a short share link', () => {
       session: {},
       report: { nonPortable: [], portable: true },
       droppedTracks: [],
+      blockingFiles: [],
     },
     'share-abc123',
     { password: 'sekret' },
