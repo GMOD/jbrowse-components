@@ -1,6 +1,7 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { openHicFilehandle } from './HicFilehandle.ts'
 import HicStraw from './hic-straw/index.ts'
@@ -76,9 +77,12 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setup(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
-    return updateStatus('Downloading .hic header', statusCallback, () =>
-      this.hic.getMetaData(),
+    const { statusCallback = () => {}, stopToken } = opts ?? {}
+    return updateStatus(
+      'Downloading .hic header',
+      statusCallback,
+      () => this.hic.getMetaData(),
+      stopToken,
     )
   }
 
@@ -112,6 +116,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       resolution: res,
       normalization = 'KR',
       statusCallback = () => {},
+      stopToken,
     } = opts
 
     const metadata = await this.setup(opts)
@@ -130,27 +135,35 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       regions.map(r => this.hic.getChromosomeIndex(r.refName)),
     )
 
-    await updateStatus('Downloading .hic data', statusCallback, async () => {
-      for (let i = 0; i < regions.length; i++) {
-        for (let j = i; j < regions.length; j++) {
-          const pairRecords = await this.getRegionPairRecords({
-            region1: regions[i]!,
-            region2: regions[j]!,
-            region1Idx: i,
-            region2Idx: j,
-            chr1Idx: regionChrIdxs[i],
-            chr2Idx: regionChrIdxs[j],
-            normalization,
-            resolution: res,
-          })
-          // Push element-wise (not `push(...spread)`) so a large pair can't
-          // overflow the call-stack argument limit.
-          for (const rec of pairRecords) {
-            allRecords.push(rec)
+    await updateStatus(
+      'Downloading .hic data',
+      statusCallback,
+      async () => {
+        for (let i = 0; i < regions.length; i++) {
+          for (let j = i; j < regions.length; j++) {
+            // cancel point between region pairs so a multi-region fetch can be
+            // stopped part-way rather than running every pair to completion
+            checkStopToken(stopToken)
+            const pairRecords = await this.getRegionPairRecords({
+              region1: regions[i]!,
+              region2: regions[j]!,
+              region1Idx: i,
+              region2Idx: j,
+              chr1Idx: regionChrIdxs[i],
+              chr2Idx: regionChrIdxs[j],
+              normalization,
+              resolution: res,
+            })
+            // Push element-wise (not `push(...spread)`) so a large pair can't
+            // overflow the call-stack argument limit.
+            for (const rec of pairRecords) {
+              allRecords.push(rec)
+            }
           }
         }
-      }
-    })
+      },
+      stopToken,
+    )
 
     return { records: allRecords, resolution: res }
   }

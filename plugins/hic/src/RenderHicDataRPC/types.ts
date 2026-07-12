@@ -1,4 +1,4 @@
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface RenderHicDataArgs {
@@ -9,6 +9,7 @@ export interface RenderHicDataArgs {
   resolution: number
   normalization: string
   stopToken?: StopToken
+  statusCallback?: StatusCallback
 }
 
 export interface HicContactItem {

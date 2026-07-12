@@ -1,5 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rpcResult } from '@jbrowse/core/util/librpc'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import {
   calcRegionCombinedOffsets,
@@ -24,6 +25,8 @@ export async function executeRenderHicData({
     bpPerPx,
     resolution,
     normalization,
+    stopToken,
+    statusCallback,
   } = args
 
   const { dataAdapter } = await getAdapter(
@@ -37,7 +40,13 @@ export async function executeRenderHicData({
     await adapter.getMultiRegionContactRecords(regions, {
       resolution,
       normalization,
+      stopToken,
+      statusCallback,
     })
+
+  // the fetch may have completed after the user navigated away; bail before
+  // the O(numContacts) buffer build + sort rather than doing throwaway work
+  checkStopToken(stopToken)
 
   const w = res / (bpPerPx * Math.SQRT2)
   const regionCombinedOffsets = calcRegionCombinedOffsets(regions, bpPerPx, res)
