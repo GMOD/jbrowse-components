@@ -91,9 +91,9 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 <details>
 <summary>Advanced slots (1)</summary>
 
-| Slot                                   | Type     | Description                                                                                                                                                                                                                        |
-| -------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [fetchSizeLimit](#slot-fetchsizelimit) | `number` | Raises the inherited 1 Mb default: feature (GFF/BED) tracks are light text, and the tabix index byte estimate is a coarse upper bound that over-reports small dense regions, so a single gene routinely tripped the old 1 Mb gate. |
+| Slot                                   | Type     | Description                                                                                                                                                                      |
+| -------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [fetchSizeLimit](#slot-fetchsizelimit) | `number` | Feature (GFF/BED) tracks are light text, and the tabix byte estimate is block-granular (a small region still pulls whole BGZF blocks), so a single gene can trip a tighter gate. |
 
 </details>
 
@@ -102,12 +102,12 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 #### slot: fetchSizeLimit
 
-Raises the inherited 1 Mb default: feature (GFF/BED) tracks are light text, and
-the tabix index byte estimate is a coarse upper bound that over-reports small
-dense regions, so a single gene routinely tripped the old 1 Mb gate. A few Mb of
-feature text downloads fast; the feature-density gate remains the backstop for
-genuinely over-dense views. Kept here on the feature leaf so the heavier
-alignment/variant displays keep their own tighter inherited limit.
+Feature (GFF/BED) tracks are light text, and the tabix byte estimate is
+block-granular (a small region still pulls whole BGZF blocks), so a single gene
+can trip a tighter gate. A few Mb of feature text downloads fast; the
+feature-density gate remains the backstop for genuinely over-dense views.
+VcfTabixAdapter matches this 5 Mb for the same reason; the binary alignment
+adapters (CRAM 3 Mb) keep their own tighter limit.
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
 `5_000_000` · _advanced_
