@@ -12,8 +12,20 @@ const useStyles = makeStyles()({
     zIndex: 1,
     pointerEvents: 'none',
   },
+  // full-width strip along the band top: the only pointer-interactive part of
+  // the band (the body stays click-through). The chip fades in on hover so the
+  // highlight menu stays reachable without a persistent icon cluttering the view
   chip: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
     pointerEvents: 'auto',
+    opacity: 0,
+    transition: 'opacity 150ms',
+    '&:hover': {
+      opacity: 1,
+    },
   },
 })
 
