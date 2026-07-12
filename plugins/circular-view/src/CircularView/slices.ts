@@ -49,8 +49,7 @@ export class Slice {
   constructor(
     view: { bpPerRadian: number },
     public region: SliceRegion,
-    public offsetRadians: number,
-    public radianWidth: number,
+    offsetRadians: number,
   ) {
     const { bpPerRadian } = view
     this.key =
@@ -59,8 +58,7 @@ export class Slice {
         : assembleLocString(region)
     this.bpPerRadian = bpPerRadian
     this.startRadians = offsetRadians
-    this.endRadians = region.widthBp / this.bpPerRadian + offsetRadians
-    Object.freeze(this)
+    this.endRadians = region.widthBp / bpPerRadian + offsetRadians
   }
 
   bpToXY(bp: number, radiusPx: number) {
@@ -78,9 +76,8 @@ function calculateStaticSlices(self: {
   let currentRadianOffset = 0
   const { bpPerRadian, spacingPx, radiusPx } = self
   for (const region of self.elidedRegions) {
-    const radianWidth = region.widthBp / bpPerRadian + spacingPx / radiusPx
-    slices.push(new Slice(self, region, currentRadianOffset, radianWidth))
-    currentRadianOffset += radianWidth
+    slices.push(new Slice(self, region, currentRadianOffset))
+    currentRadianOffset += region.widthBp / bpPerRadian + spacingPx / radiusPx
   }
   return slices
 }

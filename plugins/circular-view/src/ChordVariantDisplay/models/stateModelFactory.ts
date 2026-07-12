@@ -92,6 +92,12 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
       /**
        * #getter
        */
+      get view() {
+        return getContainingView(self) as CircularViewModel
+      },
+      /**
+       * #getter
+       */
       get ready() {
         return self.features !== undefined
       },
@@ -112,7 +118,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
        * #getter
        */
       get radiusPx() {
-        return (getContainingView(self) as CircularViewModel).radiusPx
+        return this.view.radiusPx
       },
 
       /**
@@ -127,9 +133,8 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
        * #getter
        */
       get blocksForRefs(): Record<string, Block> {
-        const view = getContainingView(self) as CircularViewModel
         const result: Record<string, Block> = {}
-        for (const block of view.staticSlices) {
+        for (const block of this.view.staticSlices) {
           const regions = block.region.elided
             ? block.region.regions
             : [block.region]
@@ -197,7 +202,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
           addDisposer(
             self,
             autorun(async () => {
-              const view = getContainingView(self) as CircularViewModel
+              const { view } = self
               if (view.displayedRegions.length) {
                 const sessionId = getRpcSessionId(self)
                 const adapterConfig = structuredClone(self.adapterConfig)

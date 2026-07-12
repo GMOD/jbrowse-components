@@ -20,13 +20,14 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
 import { calculateStaticSlices } from './slices.ts'
-import { twoPi, viewportVisibleSection } from './viewportVisibleRegion.ts'
 
 import type { SliceRegion } from './slices.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+const twoPi = 2 * Math.PI
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
@@ -92,6 +93,13 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         bpPerPx: types.stripDefault(types.number, defaultBpPerPx),
+        /**
+         * #property
+         * whether the view keeps re-fitting to its container on resize.
+         * Cleared once the user manually zooms/pans so their view (persisted
+         * via bpPerPx/offsetRadians) is preserved across resizes and reloads.
+         */
+        autoFit: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
@@ -181,17 +189,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         return self.volatileWidth
       },
 
-      /**
-       * #getter
-       */
-      get visibleSection() {
-        const { width, height } = self
-        return viewportVisibleSection(
-          [0, width, 0, height],
-          this.centerXY,
-          this.radiusPx,
-        )
-      },
       /**
        * #getter
        */
@@ -302,10 +299,13 @@ function stateModelFactory(pluginManager: PluginManager) {
           }
         }
 
-        // remove any single-region elisions
+        // a single-region elision isn't worth collapsing: promote it back to a
+        // normal region. Drop the elided `regions` wrapper so its Slice key
+        // (assembleLocString) matches a natively-visible region of the same
+        // coords instead of diverging to JSON.stringify(regions).
         return visible.map(v =>
           v.elided && v.regions.length === 1
-            ? { ...v, ...v.regions[0]!, elided: false as const }
+            ? { ...v.regions[0]!, widthBp: v.widthBp, elided: false as const }
             : v,
         )
       },
@@ -428,7 +428,9 @@ function stateModelFactory(pluginManager: PluginManager) {
       setWidth(newWidth: number): number {
         const clamped = Math.max(newWidth, minWidth)
         self.volatileWidth = clamped
-        this.fitToWindow()
+        if (self.autoFit) {
+          this.fitToWindow()
+        }
         return clamped
       },
       /**
@@ -436,7 +438,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setHeight(newHeight: number) {
         self.height = Math.max(newHeight, minHeight)
-        this.fitToWindow()
+        if (self.autoFit) {
+          this.fitToWindow()
+        }
         return self.height
       },
       /**
@@ -466,6 +470,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       resetView() {
         self.offsetRadians = defaultOffsetRadians
+        self.autoFit = true
         this.fitToWindow()
       },
 
@@ -473,6 +478,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       zoomInButton() {
+        self.autoFit = false
         this.setBpPerPx(self.bpPerPx / 1.4)
       },
 
@@ -480,6 +486,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       zoomOutButton() {
+        self.autoFit = false
         this.setBpPerPx(self.bpPerPx * 1.4)
       },
 
@@ -496,6 +503,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * genome position at that angle visually fixed under the cursor
        */
       zoomToPoint(newBpPerPx: number, cursorAngle: number) {
+        self.autoFit = false
         const oldRadius = self.radiusPx
         self.bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
         const dr = oldRadius - self.radiusPx
@@ -508,6 +516,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
+        self.autoFit = true
         this.fitToWindow()
       },
 
@@ -610,19 +619,18 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
-        const newHeight = self.setHeight(self.height + distance)
-        return newHeight - oldHeight
+        return self.setHeight(oldHeight + distance) - oldHeight
       },
       /**
        * #action
        */
       resizeWidth(distance: number) {
-        if (self.volatileWidth === undefined) {
+        const oldWidth = self.volatileWidth
+        if (oldWidth === undefined) {
           return 0
         }
-        const oldWidth = self.volatileWidth
         self.setWidth(oldWidth + distance)
-        return Math.max(oldWidth + distance, minWidth) - oldWidth
+        return self.width - oldWidth
       },
     }))
     .actions(self => ({
