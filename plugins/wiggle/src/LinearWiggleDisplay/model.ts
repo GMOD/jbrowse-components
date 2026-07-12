@@ -299,13 +299,14 @@ export default function stateModelFactory(
             leadingItems: makeSummaryScoreModeSubMenu(self),
           }),
           // cross hatches are meaningless in density mode (score maps to color,
-          // not height); point size / line width apply only to their respective
-          // scatter / line renderings
+          // not height)
           ...makeShowSubMenu([
             ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
-            ...makePointSizeMenuItems(self),
-            ...makeLineWidthMenuItems(self),
           ]),
+          // point size / line width are top-level submenus, each present only in
+          // its respective scatter / line rendering
+          ...makePointSizeMenuItems(self),
+          ...makeLineWidthMenuItems(self),
           {
             label: 'Edit color...',
             icon: PaletteIcon,

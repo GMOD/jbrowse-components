@@ -5,8 +5,10 @@ import {
   makeSizeMenu,
 } from '@jbrowse/wiggle-core'
 import AddIcon from '@mui/icons-material/Add'
+import LineWeightIcon from '@mui/icons-material/LineWeight'
 import RemoveIcon from '@mui/icons-material/Remove'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { IconButton, Tooltip, Typography } from '@mui/material'
@@ -44,7 +46,7 @@ export function makeRenderingTypeSubMenu(
   })
 }
 
-// Point-size row for the Show submenu, present only in scatter variants
+// Top-level "Scatter point size" submenu, present only in scatter variants
 // ('scatter'/'multirowscatter'/'multiscatter') where point size applies. The
 // shared makeSizeMenu renders it as a single inline slider row with a promotable
 // "default for all tracks of this type" pin.
@@ -59,14 +61,20 @@ export function makePointSizeMenuItems(
     return []
   }
   return [
-    makeScatterPointSizeMenuItem(self, {
+    {
       label: 'Scatter point size',
-      defaultValue: SCATTER_POINT_SIZE_DEFAULT,
-    }),
+      icon: ScatterPlotIcon,
+      subMenu: [
+        makeScatterPointSizeMenuItem(self, {
+          label: 'Scatter point size',
+          defaultValue: SCATTER_POINT_SIZE_DEFAULT,
+        }),
+      ],
+    },
   ]
 }
 
-// Line-width row for the Show submenu, present only in line variants
+// Top-level "Line width" submenu, present only in line variants
 // ('line'/'multirowline'/'multiline') where stroke thickness applies. The shared
 // makeSizeMenu renders it as a single inline slider row with a promotable
 // "default for all tracks of this type" pin.
@@ -81,21 +89,27 @@ export function makeLineWidthMenuItems(
     return []
   }
   return [
-    makeSizeMenu({
+    {
       label: 'Line width',
-      title: 'Line width',
-      getValue: () => self.lineWidth,
-      isDefault: self.lineWidth === LINE_WIDTH_DEFAULT,
-      onChange: n => {
-        self.setLineWidth(n)
-      },
-      onReset: () => {
-        self.setLineWidth(undefined)
-      },
-      sessionDefault: makeCurrentValueSessionDefaultControl(self, [
-        'lineWidth',
-      ]),
-    }),
+      icon: LineWeightIcon,
+      subMenu: [
+        makeSizeMenu({
+          label: 'Line width',
+          title: 'Line width',
+          getValue: () => self.lineWidth,
+          isDefault: self.lineWidth === LINE_WIDTH_DEFAULT,
+          onChange: n => {
+            self.setLineWidth(n)
+          },
+          onReset: () => {
+            self.setLineWidth(undefined)
+          },
+          sessionDefault: makeCurrentValueSessionDefaultControl(self, [
+            'lineWidth',
+          ]),
+        }),
+      ],
+    },
   ]
 }
 
