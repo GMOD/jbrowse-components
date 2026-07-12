@@ -18,7 +18,15 @@ export function appendPointMarker(
 ) {
   const radius = diameter / 2
   if (diameter <= SMALL_POINT_MAX_DIAMETER_PX) {
-    ctx.rect(cx - radius, y - radius, diameter, diameter)
+    // snap the top-left to the pixel grid (round-half-up) so the crisp square's
+    // fill lands on whole pixels instead of AA-blurring across columns/rows.
+    // Mirrors crispSquareCornerPx in pointGlyph.slang so GPU + Canvas2D agree.
+    ctx.rect(
+      Math.floor(cx - radius + 0.5),
+      Math.floor(y - radius + 0.5),
+      diameter,
+      diameter,
+    )
   } else {
     ctx.moveTo(cx + radius, y)
     ctx.arc(cx, y, radius, 0, Math.PI * 2)

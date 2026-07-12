@@ -107,11 +107,13 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
     o.localPos = local;
     o.shape = SHAPE_BAR;
   } else if (inst.glyph == 0u && u.pointRadius * 2.0 <= SMALL_POINT_MAX_DIAMETER) {
-    // tiny SNP point: crisp filled square (no AA disc). Insertions and the LD
-    // index/lead SNP keep their distinct marker even when small.
-    float dx = local.x * u.pointRadius * 2.0 / u.viewportWidth;
-    float dy = local.y * u.pointRadius * 2.0 / u.canvasHeight;
-    o.position = float4(startClipX + dx, centerClipY + dy, 0.0, 1.0);
+    // tiny SNP point: pixel-snapped crisp filled square (no AA disc). Insertions
+    // and the LD index/lead SNP keep their distinct marker even when small.
+    float diamPx = u.pointRadius * 2.0;
+    float2 centerPx = float2((startClipX + 1.0) * 0.5 * u.viewportWidth, scoreYPx);
+    float2 vPx = crispSquareCornerPx(centerPx, diamPx, float2(qx, qy));
+    o.position = float4(vPx.x / u.viewportWidth * 2.0 - 1.0,
+                        yPxToClipY(vPx.y, u.canvasHeight), 0.0, 1.0);
     o.localPos = local;
     o.shape = SHAPE_BAR;
   } else {

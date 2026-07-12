@@ -25,6 +25,18 @@ public float discExpand(float radiusPx) {
   return (radiusPx + AA_PAD_PX) / max(radiusPx, 0.5);
 }
 
+// Screen-px position of quad corner `q` (each component 0 or 1) for the crisp
+// small-point square, given the marker center and diameter in px. The square's
+// top-left is snapped to the pixel grid (round-half-up) so its fill lands on
+// whole pixels instead of AA-blurring across columns/rows — the square is
+// SHAPE_SOLID with no fragment-side AA, so an unsnapped center reads as a fuzzy
+// blob rather than a crisp square. Mirrors the Math.floor(v + 0.5) snap in the
+// Canvas2D appendPointMarker so both backends land identical pixels.
+public float2 crispSquareCornerPx(float2 centerPx, float diameterPx, float2 q) {
+  float2 topLeft = floor(centerPx - diameterPx * 0.5 + 0.5);
+  return topLeft + q * diameterPx;
+}
+
 // Antialiased disc coverage → alpha. localPos is the expanded quad-local coord
 // (-expand..expand); the disc boundary sits at distance 1, so the SDF is
 // `1 - length`. fwidth-based smoothstep gives a resolution-independent 1px fade.
