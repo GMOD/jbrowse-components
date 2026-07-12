@@ -30,7 +30,7 @@ export const WIGGLE_RENDERINGS = [
   ['xyplot', 'XY plot'],
   ['density', 'Density'],
   ['line', 'Line (step)'],
-  ['linecenter', 'Line (connect points)'],
+  ['linecenter', 'Line (interpolated)'],
   ['scatter', 'Scatter'],
 ] as const
 
@@ -38,11 +38,11 @@ export const MULTI_WIGGLE_RENDERINGS = [
   ['multirowxy', 'Multi-row XY plot'],
   ['multirowdensity', 'Multi-row density'],
   ['multirowline', 'Multi-row line (step)'],
-  ['multirowlinecenter', 'Multi-row line (connect points)'],
+  ['multirowlinecenter', 'Multi-row line (interpolated)'],
   ['multirowscatter', 'Multi-row scatter'],
   ['multixyplot', 'Overlapping XY plot'],
   ['multiline', 'Overlapping lines (step)'],
-  ['multilinecenter', 'Overlapping lines (connect points)'],
+  ['multilinecenter', 'Overlapping lines (interpolated)'],
   ['multiscatter', 'Overlapping scatter'],
 ] as const
 
