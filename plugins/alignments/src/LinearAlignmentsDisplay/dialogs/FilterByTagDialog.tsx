@@ -267,9 +267,6 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
           >
             Reset defaults
           </Button>
-          <Button variant="contained" color="primary" autoFocus type="submit">
-            Submit
-          </Button>
           <Button
             variant="contained"
             color="secondary"
@@ -278,6 +275,9 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
             }}
           >
             Cancel
+          </Button>
+          <Button variant="contained" color="primary" autoFocus type="submit">
+            Submit
           </Button>
         </DialogActions>
       </form>
