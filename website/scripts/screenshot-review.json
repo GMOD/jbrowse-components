@@ -52,9 +52,9 @@
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
     "status": "good",
-    "note": "FIXED: re-enabled the read-cloud legend (showLegend true). Already at whole-contig zoom-out (ctgA:1-50000), so the floating legend keys the insert-size/orientation colors with room. Regenerated.",
-    "reviewedAt": "2026-07-11T19:58:10Z",
-    "hash": "a43d0e7139df9b93176f22f0a71ea0be9aa396ce"
+    "note": "FIXED per reviewer: zoomed out to the whole-assembly view. Dropped the `loc` so afterAttach's showAllRegionsInAssembly lays out both ctgA + ctgB (62.3Kbp) instead of only ctgA (50Kbp) \u2014 a wider zoom than the previous single-contig max, so the samplot cloud reads as a compact cluster with room around it. Local volvox loads instantly so showAllRegions doesn't race. Legend on. Regenerated + verified.",
+    "reviewedAt": "2026-07-12T05:16:08.014866Z",
+    "hash": "070491306d810f492efbc80746e98994dc4fd2d3"
   },
   "dotplot": {
     "name": "dotplot",
@@ -149,8 +149,8 @@
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-10T05:28:30.606Z",
-    "hash": "9f1a16e982d5967275facc3f8dd7305afa7f90e0"
+    "reviewedAt": "2026-07-12T04:52:44.488Z",
+    "hash": "c228e177eceb7b853d8bb9145852d1d51fc90d9e"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -263,15 +263,15 @@
     "name": "alignments/filter_dialog",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T21:13:47.419Z",
-    "hash": "7faf29aea6cb6f1bfba10e25102707aca8842b6a"
+    "reviewedAt": "2026-07-12T04:50:48.302Z",
+    "hash": "0118cc4101ee2df78c69948460bf4cb6837cb526"
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-11T03:10:59.194Z",
-    "hash": "3a3b0545d3686bc1ebfa268e252a6d97daf4ec94"
+    "reviewedAt": "2026-07-12T04:50:56.042Z",
+    "hash": "7079c0a52937ae8d1b340a61fbef46d1b88a2417"
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
@@ -408,8 +408,8 @@
     "name": "alignments/compact",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-09T22:38:04.971Z",
-    "hash": "93c238c3686f39f60247639b09cfbf4d18b3b691"
+    "reviewedAt": "2026-07-12T04:50:46.286Z",
+    "hash": "f3af831819f6e8904309655c5a5560e95d705a42"
   },
   "bookmark_widget_edit_colors": {
     "name": "bookmark_widget_edit_colors",
@@ -584,8 +584,8 @@
     "name": "track_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-09T00:08:04.914Z",
-    "hash": "41c6d504a21ad5bc17d74d907989fccfc9c41c48"
+    "reviewedAt": "2026-07-12T04:54:37.559Z",
+    "hash": "be330629c38a829969e5ae755702122c10280b87"
   },
   "tracklabels": {
     "name": "tracklabels",
@@ -609,8 +609,8 @@
     "name": "trio-matrix-phased",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-07T01:41:30.277Z",
-    "hash": "6860c1bb2da965d4f21e31d6cade0c82733f6a69"
+    "reviewedAt": "2026-07-12T05:02:15.691Z",
+    "hash": "9af7893814bbd025dafd5265877a91592fb3a3f2"
   },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
@@ -641,9 +641,9 @@
   "gwas/locuszoom_ld": {
     "name": "gwas/locuszoom_ld",
     "status": "good",
-    "note": "FIXED: enlarged Manhattan points (scatterPointSize 4->7) and added a compact NCBI RefSeq gene track anchoring the peak to STAT1/STAT4 (reviewer). Added the ncbi_gff_hg19 track to test_data/config_gwas.json (shares hg19 aliases with config_demo). Regenerated.",
-    "reviewedAt": "2026-07-11T20:04:05.100Z",
-    "hash": "3977a041f66b299306f347dcbd8f0fc26b04d384"
+    "note": "",
+    "reviewedAt": "2026-07-12T05:01:44.101Z",
+    "hash": "3fa3196551e69f9b801aa08b7395732f96d89a6f"
   },
   "gwas/manhattan": {
     "name": "gwas/manhattan",
@@ -844,22 +844,22 @@
     "name": "alignments/modifications2",
     "status": "good",
     "note": "FIXED: removed the crossing arrows (each CRAM row is now labeled with its color mode and the two menu items are boxed, so they map by name); narrowed viewport 2400->2000; trimmed blurbs. Regenerated.",
-    "reviewedAt": "2026-07-11T18:52:11.197Z",
-    "hash": "f0d1dd89c3df7491bdec12b72ffcdd17b1103557"
+    "reviewedAt": "2026-07-12T04:50:58.068Z",
+    "hash": "cc66066a562aeb3c56d5134364390a3aab90e004"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-11T20:04:00.248Z",
-    "hash": "a936f1ddb7e324a84916685d5c837d69434b4367"
+    "note": "FIXED: caption said 'BRCA1' but the spec is PTEN (chr10) \u2014 corrected to PTEN in gene_track.md. Also set sashimiArcsMode:'auto' on the PTEN RNA track so the junction arcs auto-place above and below to minimize crossings (was the default 'up', all stacked above). Regenerated + verified.",
+    "reviewedAt": "2026-07-12T05:16:08.014866Z",
+    "hash": "9f5362719a80e76ce0ca28ad0a83ae46e1b64af7"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-04T17:56:58.414Z",
-    "hash": "66ee981acaa24a38ce362d1a6769de2cd17d30ab"
+    "reviewedAt": "2026-07-12T04:52:02.478Z",
+    "hash": "89df5de74f7f900f76c019812a5a9697e0e67c5d"
   },
   "gene_track_mature_peptides": {
     "name": "gene_track_mature_peptides",
@@ -885,8 +885,8 @@
     "name": "sv_cgiab/translocation_breakpoint_split",
     "status": "good",
     "note": "FIXED: added the somatic-SV benchmark VCF (compact lane) to both breakpoint-split panels (reviewer), so each panel anchors its reads to the benchmark BND call (SV_20 / SV_190 reciprocal). Regenerated.",
-    "reviewedAt": "2026-07-11T19:40:41.831Z",
-    "hash": "01ca5810d1b06f8d34f7802304dca0210573562a"
+    "reviewedAt": "2026-07-12T04:54:18.113Z",
+    "hash": "73b25f2bc9db0d65a0f3a91e7f4c91865b9bad3b"
   },
   "sv_inspector_importform_filtered": {
     "name": "sv_inspector_importform_filtered",
@@ -919,8 +919,8 @@
     "name": "alignments/haplotype_groupby",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T21:14:15.712Z",
-    "hash": "c3f429a281cf3f79c3ddad8aac01a537a045cb10"
+    "reviewedAt": "2026-07-12T04:50:52.189Z",
+    "hash": "f3d2402d8eec49cf5196de677198c161b41778fd"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -1079,8 +1079,8 @@
     "name": "protein/connected",
     "status": "good",
     "note": "FIXED: tightened connectedView loc from the full ~19.1kb gene span to ~13.5kb so the gene fills more of the panel after the click-driven recenter.",
-    "reviewedAt": "2026-07-08T18:15:16.368Z",
-    "hash": "0da96e4be24581192b8dcf6ebef5f2dcfd071f89"
+    "reviewedAt": "2026-07-12T04:53:39.510Z",
+    "hash": "4b3c2964aff00a2fe12ff0c422f1610747147307"
   },
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
@@ -1107,8 +1107,8 @@
     "name": "chromhmm",
     "status": "good",
     "note": "FIXED+regen: gene-track showDescriptions hidden (names only).",
-    "reviewedAt": "2026-07-08T23:35:18.206Z",
-    "hash": "8dc0c0096997cde59b4233ab0f0077de738aebf1"
+    "reviewedAt": "2026-07-12T04:51:53.823Z",
+    "hash": "52b714605ec9c6e67fd9580167e80e01cf357360"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
@@ -1120,9 +1120,9 @@
   "maf_470way": {
     "name": "maf_470way",
     "status": "good",
-    "note": "Swapped the MANE 1.4 bigBed for the jbrowse.org/ucsc/hg38 NCBI RefSeq track (geneGlyphMode: longestCoding), per reviewer ask. GAPDH exon/CDS structure still lines up cleanly with the conserved bands.",
-    "reviewedAt": "2026-07-07T15:40:14.467Z",
-    "hash": "8139227ec9f5d0550a9af35f74669d8359b53b40"
+    "note": "FIXED: narrowed the region from the whole ~4.1kb GAPDH gene to a focused ~700bp window (12:6,536,700-6,537,400). At 470 rows the full-gene view was an unreadable wall of blue; the tighter window widens each alignment column so conserved (blue) exon bands and divergent (red) intron columns are legible. Regenerated + verified.",
+    "reviewedAt": "2026-07-12T05:10:03.580349Z",
+    "hash": "6bb1fd2bf887d883946f5361e9659457a12994be"
   },
   "maf_470way_codon": {
     "name": "maf_470way_codon",
@@ -1215,13 +1215,6 @@
     "reviewedAt": "2026-07-04T20:04:06.577Z",
     "hash": "af9c2563d9d483d379d4094afa9531ce4f4e25d5"
   },
-  "feature_height_default_pin": {
-    "name": "feature_height_default_pin",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-11T18:56:51.171Z",
-    "hash": "4201d3fac2adab28d106cb9fcbad350496ee3ee5"
-  },
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
     "status": "good",
@@ -1245,16 +1238,16 @@
   "gallery/fiberseq_gapdh": {
     "name": "gallery/fiberseq_gapdh",
     "status": "good",
-    "note": "FIXED+regen: zoom out, longestCoding genes, shorter promoter/ATAC lanes, 6mA-only legend; caption provenance added.",
-    "reviewedAt": "2026-07-08T23:35:18.206Z",
-    "hash": "038eb4402bd311c4b58d4c60029efaba975f5d88"
+    "note": "FIXED: gallery caption now cites both source datasets explicitly - Oxford Nanopore HG002 chromatin-accessibility fiber-seq (epi2me.nanoporetech.com/chromatin-acc-hg002) and CATlas single-cell ATAC (Zhang et al. 2021, catlas.org). Figure unchanged.",
+    "reviewedAt": "2026-07-12T05:10:03.580349Z",
+    "hash": "54d911d2dc33fc64e275408f80cdd9374d2f0e34"
   },
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-11T20:03:34.840Z",
-    "hash": "ce31f669a2f8be82dc638c4d4db41b6545704fc0"
+    "reviewedAt": "2026-07-12T04:59:31.311Z",
+    "hash": "71f056d4c98330b4facf3a6f07c1019dddb5b6ae"
   },
   "gallery/hg002_dipcall": {
     "name": "gallery/hg002_dipcall",
@@ -1279,9 +1272,9 @@
   "gallery/nanopore_methylation": {
     "name": "gallery/nanopore_methylation",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T01:07:56.069Z",
-    "hash": "13bc3403657a0233cd1778ef0ac54d7812411e75"
+    "note": "link to source data in caption, elaborate a little more that it is a methylated and unmethylated cpg. this is gallery so interesting captions are valuable.",
+    "reviewedAt": "2026-07-12T05:01:06.081Z",
+    "hash": "9654d161e7c390fb3b919796b14a1e60022b7f47"
   },
   "gallery/sarscov2_polyprotein": {
     "name": "gallery/sarscov2_polyprotein",
@@ -1293,9 +1286,9 @@
   "gallery/scatac_catlas": {
     "name": "gallery/scatac_catlas",
     "status": "good",
-    "note": "FIXED: added a compact NCBI RefSeq gene track (INS/TH visible) and zoomed out to ~30kb (chr11:2,145,000-2,175,000) so the beta-cell accessibility peak reads against the gene bodies (reviewer). Regenerated.",
-    "reviewedAt": "2026-07-11T20:03:36.562Z",
-    "hash": "813a1940699cbaeb35fd1c857511e52b53c4473e"
+    "note": "FIXED: added source-data citation (CATlas, Zhang et al. 2021, catlas.org) to both the gallery description and the scatac_pseudobulk.md Figure caption. Reviewer also noted fiberseq_gapdh is the more interesting card (shows ATAC + fiber-seq together) - kept both; this one is the focused single-locus INS example. Figure unchanged.",
+    "reviewedAt": "2026-07-12T05:10:03.580349Z",
+    "hash": "60d386c1fa56d397acfb5eda0e71fdffed920ec6"
   },
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
@@ -1349,22 +1342,22 @@
     "name": "synteny_human_chimp_cigar_modes",
     "status": "good",
     "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow \u2014 normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
-    "reviewedAt": "2026-07-10T06:21:29.908Z",
-    "hash": "0e6c0810995b5114a73e09f77a0faa33e2592629"
+    "reviewedAt": "2026-07-12T04:54:20.294Z",
+    "hash": "a2f27829557f1af80456465a8f9b80a9092411e9"
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
     "status": "good",
     "note": "FIXED: RepeatMasker heightMode fit->grow \u2014 repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
-    "reviewedAt": "2026-07-10T06:21:29.908Z",
-    "hash": "db577c5f8b39401d4656e2f08edfc4c5d171c30b"
+    "reviewedAt": "2026-07-12T04:54:35.473Z",
+    "hash": "32c40c06c60e0248dc0bcb5355c78481525ea530"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
     "status": "good",
     "note": "FIXED: RepeatMasker heightMode grow \u2014 normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
-    "reviewedAt": "2026-07-10T06:21:29.908Z",
-    "hash": "9f130006d86d643a451e3b1bfc5deaacd2a6692e"
+    "reviewedAt": "2026-07-12T04:54:33.334Z",
+    "hash": "57e79553bb51d117c0459082fd588c1778aeabd8"
   },
   "cookbook_color_by_strand": {
     "name": "cookbook_color_by_strand",
@@ -1449,8 +1442,8 @@
     "name": "methylation/arabidopsis_wgbs_contexts",
     "status": "good",
     "note": "Removed the on-image annotation (reviewer). One-color methylation was left as-is: bisulfite always emits both methylated/unmethylated marks and a one-color mode would need a code change altering the global default. Regenerated.",
-    "reviewedAt": "2026-07-11T19:37:54.495Z",
-    "hash": "7ad230c244893ec54181a08644976e0f8dea022c"
+    "reviewedAt": "2026-07-12T04:52:17.327Z",
+    "hash": "89f6f507b9a38cbb3c6a4d97b91f5cc9f905e577"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
@@ -1476,9 +1469,9 @@
   "methylation/hg002_snrpn_allele_specific": {
     "name": "methylation/hg002_snrpn_allele_specific",
     "status": "good",
-    "note": "zoom out a bit. combine with the alignments figure",
-    "reviewedAt": "2026-07-11T19:01:31.312Z",
-    "hash": "16170cfaca1cca632a4c54b3e77654d8c0d57101"
+    "note": "FIXED: gave the NCBI RefSeq gene track height 180 (SNHG14/SNRPN/SNURF now read clearly) and shrank the single-lane UCSC CpG-island track to height 40; viewportHeight nudged to 830. Regenerated + verified.",
+    "reviewedAt": "2026-07-12T05:07:01.781Z",
+    "hash": "99867a784cbdab9132facaf85b58811425e92809"
   },
   "methylation/hg002_snrpn_reads": {
     "name": "methylation/hg002_snrpn_reads",
@@ -1517,9 +1510,9 @@
   "popgen/tajimad_cyp6g1": {
     "name": "popgen/tajimad_cyp6g1",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-11T18:51:43.813Z",
-    "hash": "424cd9c729c28c682c39b19b00a40d4db47c8bd0"
+    "note": "use compact in gene track. use bicolor pivot in wiggle track. that should be automatic i think",
+    "reviewedAt": "2026-07-12T04:53:36.529Z",
+    "hash": "778a370cb1e23e2471e230f08a06acbc9601b5a4"
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
@@ -1552,9 +1545,9 @@
   "rnaseq/strand_specific": {
     "name": "rnaseq/strand_specific",
     "status": "good",
-    "note": "FIXED: the reviewer's pin-icon ask was already implemented in code (commit 843a58a, per-value PushPin session-default adornments replaced the long 'Make ... the default for all alignments tracks' text item). The committed PNG was stale because the built jbrowse-web bundle predated that commit; rebuilt jbrowse-web + force-regenerated so the menu now shows the pin adornments on each color-scheme radio (no long-text item).",
-    "reviewedAt": "2026-07-11T02:03:10.271Z",
-    "hash": "b88eeaf19536bfc4431288c3b03e3dbecde86c53"
+    "note": "FIXED: caption rewritten to drop the biological interpretation and just describe enabling stranded coloring via the track menu (Color by -> Paired end -> First of pair strand). Figure unchanged (already shows the menu cascade + colored reads).",
+    "reviewedAt": "2026-07-12T05:07:03.565Z",
+    "hash": "7001bc52c699b29be343e251f929f4378f69bf75"
   },
   "trio-ancestry": {
     "name": "trio-ancestry",
@@ -1574,8 +1567,8 @@
     "name": "multisv_ont_inversion",
     "status": "bad",
     "note": "ideally we should find a solution for this 'red+blue' color issue. previous agent notes: FIXED: zoomed out 16kb->35kb and compacted the VCF callset to a 40px lane (reviewer). The overlapping red+blue color has no legend entry (would need a code change); reviewer was unsure on that, left as-is. Regenerated.",
-    "reviewedAt": "2026-07-11T19:39:20.525Z",
-    "hash": "7fcd90eca771f6ff7444c445f28946a25b208fb5"
+    "reviewedAt": "2026-07-12T04:52:47.473Z",
+    "hash": "daccde9f8c875bd4686f601660b8ad7aabe642d4"
   },
   "multiway_synteny/grape_peach_cacao_conserved_block": {
     "name": "multiway_synteny/grape_peach_cacao_conserved_block",
@@ -1596,5 +1589,12 @@
     "note": "",
     "reviewedAt": "2026-07-11T19:40:56.326Z",
     "hash": "82775f2e4f206da24620081c5e481813bc6eca05"
+  },
+  "feature_height_default": {
+    "name": "feature_height_default",
+    "status": "good",
+    "note": "FIXED: split into a two-stage figure and dropped 'pin' terminology (renamed spec feature_height_default_pin->feature_height_default, old PNG removed, doc caption + galleryLinks/figure-manifest regenerated). Stage 1 opens the Set-feature-height submenu with the Compact row's trailing MoreHoriz (...) manage-default control circled; stage 2 shows the manage-default dialog with both scopes ticked. Regenerated + verified.",
+    "reviewedAt": "2026-07-12T05:10:03.580349Z",
+    "hash": "84ae0db061d7713d9ec05654337b63db02ce3b9c"
   }
 }

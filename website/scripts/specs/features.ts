@@ -18,15 +18,16 @@ export const featuresSpecs: ScreenshotSpec[] = [
     // The session-wide feature-height default on alignments tracks.
     // featureHeight/featureSpacing are promotable slots (getConfResolved: track
     // value → session default → schema default). Each height row in the "Set
-    // feature height..." submenu carries a trailing pin (DefaultForAllAdornment,
-    // aria-label "manage default for <preset>") that opens the manage-default
-    // dialog for that preset. The dialog stages two choices — set the default for
-    // future tracks of this type, and apply it to the currently-open tracks that
-    // differ — applied together on submit. Here Compact's dialog is left open with
-    // both boxes ticked, so the figure shows exactly how a height becomes the
-    // session default and reaches the two open alignments tracks.
+    // feature height..." submenu carries a trailing ⋯ control
+    // (DefaultForAllAdornment, a MoreHoriz IconButton, aria-label "manage default
+    // for <preset>") that opens the manage-default dialog for that preset. Two
+    // stages mirror the how-to: stage 1 opens the submenu with the Compact row's
+    // ⋯ control circled; stage 2 opens its dialog, which stages two choices — set
+    // the default for future tracks of this type, and apply it to the currently-
+    // open tracks that differ — ticked together so the figure shows exactly how a
+    // height becomes the session default and reaches the two open tracks.
     mode: 'url',
-    name: 'feature_height_default_pin',
+    name: 'feature_height_default',
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1..8,000',
@@ -37,42 +38,70 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     viewportWidth: 1100,
-    viewportHeight: 700,
+    viewportHeight: 560,
     // alignments pileups keep re-laying-out while reads stream in; wait long
     // enough that the menu geometry is stable before the click sequence
     settleMs: 8000,
     hideTooltip: true,
-    actions: [
-      trackMenuIcon('volvox_alignments_pileup_coverage'),
-      ...openFeatureHeightSubmenu(),
-      // the pin opens the manage-default dialog (it no longer toggles inline);
-      // its stable aria-label carries the preset name so sibling pins are distinct
+    stages: [
       {
-        type: 'click',
-        selector: '[aria-label="manage default for Compact"]',
+        // top frame: the "Set feature height..." submenu open, with the Compact
+        // row's trailing ⋯ (manage-default) control hovered + circled so the one
+        // affordance that promotes a height to the default reads at a glance
+        actions: [
+          trackMenuIcon('volvox_alignments_pileup_coverage'),
+          ...openFeatureHeightSubmenu(),
+          {
+            type: 'hover',
+            selector: '[aria-label="manage default for Compact"]',
+          },
+          { type: 'delay', ms: 300 },
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            anchor: { selector: '[aria-label="manage default for Compact"]' },
+          },
+          {
+            type: 'text',
+            x: 250,
+            y: 34,
+            maxWidth: 560,
+            fontSize: 15,
+            text: 'Each feature-height preset has a trailing ⋯ control that manages its default for all tracks of this type.',
+          },
+        ],
       },
-      { type: 'waitForText', text: 'Default: Compact' },
-      { type: 'delay', ms: 400 },
-      // tick both promotion scopes so the frame shows the full effect: future
-      // tracks pick Compact up, and the two already-open alignments tracks (which
-      // differ from Compact) are updated too
-      { type: 'click', text: 'Apply to future tracks' },
-      { type: 'click', text: 'currently open track' },
-      { type: 'delay', ms: 400 },
-    ],
-    annotations: [
       {
-        type: 'box',
-        anchor: { text: 'currently open track' },
-        strokeWidth: 3,
-      },
-      {
-        type: 'text',
-        x: 250,
-        y: 34,
-        maxWidth: 560,
-        fontSize: 15,
-        text: 'A height’s pin opens this dialog. Making Compact the default sets it for future alignments tracks and, when ticked, applies it to the tracks already open.',
+        // bottom frame: clicking ⋯ opens the manage-default dialog; ticking both
+        // scopes makes Compact the default for future alignments tracks and
+        // applies it to the two already-open tracks that differ
+        actions: [
+          {
+            type: 'click',
+            selector: '[aria-label="manage default for Compact"]',
+          },
+          { type: 'waitForText', text: 'Default: Compact' },
+          { type: 'delay', ms: 400 },
+          { type: 'click', text: 'Apply to future tracks' },
+          { type: 'click', text: 'currently open track' },
+          { type: 'delay', ms: 400 },
+        ],
+        annotations: [
+          {
+            type: 'box',
+            anchor: { text: 'currently open track' },
+            strokeWidth: 3,
+          },
+          {
+            type: 'text',
+            x: 250,
+            y: 34,
+            maxWidth: 560,
+            fontSize: 15,
+            text: 'The ⋯ control opens this dialog. Ticking both boxes sets Compact as the default for new alignments tracks and applies it to the tracks already open.',
+          },
+        ],
       },
     ],
   },
@@ -256,6 +285,10 @@ export const featuresSpecs: ScreenshotSpec[] = [
               type: 'LinearAlignmentsDisplay',
               featureHeight: 3,
               featureSpacing: 0,
+              // 'auto' splits the junction arcs above and below the reads to
+              // minimize crossings (vs the default 'up', which stacks them all
+              // above)
+              sashimiArcsMode: 'auto',
             },
           ],
         },

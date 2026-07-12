@@ -11,78 +11,29 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Overview
 
-## Members
-
-| Member                                       | Kind       | Description |
-| -------------------------------------------- | ---------- | ----------- |
-| [type](#property-type)                       | Properties |             |
-| [configuration](#property-configuration)     | Properties |             |
-| [conf](#getter-conf)                         | Getters    |             |
-| [validateWithHEAD](#getter-validatewithhead) | Getters    |             |
-| [getTokenFromUser](#action-gettokenfromuser) | Actions    |             |
-| [validateToken](#action-validatetoken)       | Actions    |             |
+Internet account that authenticates requests with an HTTP Basic
+username/password the user enters through a dialog, optionally validated with a
+HEAD request. See [TokenEntryInternetAccount](../tokenentryinternetaccount) for
+the shared behavior.
 
 ### HTTPBasicInternetAccount - Configuration
 
 The configuration slots for this model are documented on its
 [config schema page](../../config/httpbasicinternetaccount).
 
-<details>
-<summary>HTTPBasicInternetAccount - Properties</summary>
+## Inherited members
 
-#### property: type
+Available on this model via composition. Follow each link for full signatures
+and docs.
 
-```ts
-// type signature
-type type = ISimpleType<'HTTPBasicInternetAccount'>
-// code
-type: types.literal('HTTPBasicInternetAccount')
-```
+### Available via [TokenEntryInternetAccount](../tokenentryinternetaccount)
 
-#### property: configuration
+**Properties:** [type](../tokenentryinternetaccount#property-type),
+[configuration](../tokenentryinternetaccount#property-configuration)
 
-```ts
-// type signature
-type configuration = ITypeUnion<any, any, any>
-// code
-configuration: ConfigurationReference(configSchema)
-```
+**Getters:**
+[validateWithHEAD](../tokenentryinternetaccount#getter-validatewithhead)
 
-</details>
-
-<details>
-<summary>HTTPBasicInternetAccount - Getters</summary>
-
-#### getter: conf
-
-```ts
-type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
-```
-
-#### getter: validateWithHEAD
-
-```ts
-type validateWithHEAD = boolean
-```
-
-</details>
-
-<details>
-<summary>HTTPBasicInternetAccount - Actions</summary>
-
-#### action: getTokenFromUser
-
-```ts
-type getTokenFromUser = (
-  resolve: (token: string) => void,
-  reject: (error: Error) => void,
-) => void
-```
-
-#### action: validateToken
-
-```ts
-type validateToken = (token: string, location: UriLocation) => Promise<string>
-```
-
-</details>
+**Actions:**
+[getTokenFromUser](../tokenentryinternetaccount#action-gettokenfromuser),
+[validateToken](../tokenentryinternetaccount#action-validatetoken)

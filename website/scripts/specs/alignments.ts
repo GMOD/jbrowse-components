@@ -103,7 +103,12 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'volvox',
-          loc: 'ctgA:1-50000',
+          // whole-genome zoom-out (both ctgA + ctgB): no `loc`, so afterAttach's
+          // showAllRegionsInAssembly lays out the entire assembly — a wider zoom
+          // than the single ctgA contig, so the samplot cloud reads as a compact
+          // cluster with room around it (reviewer wanted to see it zoomed out past
+          // the data's own extent). Local volvox assembly loads instantly, so the
+          // showAllRegions call doesn't race a remote fetch.
           tracks: [
             {
               trackId: 'volvox_sv_cram_linked',
@@ -119,9 +124,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               // lines stay visible.
               arcColorByType: 'insertSizeAndOrientation',
               colorBy: { type: 'insertSizeAndOrientation' },
-              // legend on (reviewer): at this whole-contig zoom-out the cloud
-              // leaves enough empty space that the floating legend keys the
-              // insert-size/orientation colors without obscuring the reads
+              // legend on (reviewer): the cloud leaves enough empty space that
+              // the floating legend keys the insert-size/orientation colors
+              // without obscuring the reads
               showLegend: true,
               coverageHeight: 100,
               readConnectionsHeight: 100,

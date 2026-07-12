@@ -22,6 +22,7 @@ everything will use it.
 | [name](#property-name)                                       | Properties |                                                                                                                                                                                                                                                                                                                                                                |
 | [margin](#property-margin)                                   | Properties |                                                                                                                                                                                                                                                                                                                                                                |
 | [focusedViewId](#property-focusedviewid)                     | Properties | used to keep track of which view is in focus                                                                                                                                                                                                                                                                                                                   |
+| [highlightsVisible](#property-highlightsvisible)             | Properties | one session-wide toggle for all region highlight bands (URL/view highlights and bookmark overlays)                                                                                                                                                                                                                                                             |
 | [selection](#volatile-selection)                             | Volatiles  | this is the globally "selected" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.                                                                                                                                                                                                                  |
 | [hovered](#volatile-hovered)                                 | Volatiles  | this is the globally "hovered" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.                                                                                                                                                                                                                   |
 | [queueOfDialogs](#volatile-queueofdialogs)                   | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                |
@@ -42,6 +43,7 @@ everything will use it.
 | [setSelection](#action-setselection)                         | Actions    | set the global selection, i.e. the globally-selected object. can be a feature, a view, just about anything                                                                                                                                                                                                                                                     |
 | [clearSelection](#action-clearselection)                     | Actions    | clears the global selection                                                                                                                                                                                                                                                                                                                                    |
 | [setHovered](#action-sethovered)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                |
+| [setHighlightsVisible](#action-sethighlightsvisible)         | Actions    | toggle all region highlight bands across every view                                                                                                                                                                                                                                                                                                            |
 | [setPreferenceOverride](#action-setpreferenceoverride)       | Actions    | set a runtime user-preference override (see `getPreference`). Mutates volatile state; products persist these to localStorage.                                                                                                                                                                                                                                  |
 | [clearPreferenceOverrides](#action-clearpreferenceoverrides) | Actions    | clear every runtime preference override at once — scrollZoom, animationMode, and every promoted per-display-type default (see `setDisplayTypeDefault`) — so each falls back to its config/admin default. Backs the Preferences dialog "Reset to defaults" button.                                                                                              |
 | [setScrollZoom](#action-setscrollzoom)                       | Actions    | set the global scroll-to-zoom preference (see the `scrollZoom` getter)                                                                                                                                                                                                                                                                                         |
@@ -82,6 +84,18 @@ used to keep track of which view is in focus
 type focusedViewId = IMaybe<ISimpleType<string>>
 // code
 focusedViewId: types.maybe(types.string)
+```
+
+#### property: highlightsVisible
+
+one session-wide toggle for all region highlight bands (URL/view highlights and
+bookmark overlays)
+
+```ts
+// type signature
+type highlightsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+highlightsVisible: types.stripDefault(types.boolean, true)
 ```
 
 </details>
@@ -299,6 +313,14 @@ clears the global selection
 
 ```ts
 type clearSelection = () => void
+```
+
+#### action: setHighlightsVisible
+
+toggle all region highlight bands across every view
+
+```ts
+type setHighlightsVisible = (arg: boolean) => void
 ```
 
 #### action: setPreferenceOverride

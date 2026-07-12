@@ -86,7 +86,8 @@ and docs.
 **Properties:** [id](../basesessionmodel#property-id),
 [name](../basesessionmodel#property-name),
 [margin](../basesessionmodel#property-margin),
-[focusedViewId](../basesessionmodel#property-focusedviewid)
+[focusedViewId](../basesessionmodel#property-focusedviewid),
+[highlightsVisible](../basesessionmodel#property-highlightsvisible)
 
 **Volatiles:** [selection](../basesessionmodel#volatile-selection),
 [hovered](../basesessionmodel#volatile-hovered),
@@ -111,6 +112,7 @@ and docs.
 **Actions:** [setSelection](../basesessionmodel#action-setselection),
 [clearSelection](../basesessionmodel#action-clearselection),
 [setHovered](../basesessionmodel#action-sethovered),
+[setHighlightsVisible](../basesessionmodel#action-sethighlightsvisible),
 [setPreferenceOverride](../basesessionmodel#action-setpreferenceoverride),
 [clearPreferenceOverrides](../basesessionmodel#action-clearpreferenceoverrides),
 [setScrollZoom](../basesessionmodel#action-setscrollzoom),

@@ -85,7 +85,7 @@ The **surfeit locus** is a tightly-packed gene cluster with genes alternating
 strands (RPL7A, SURF1, SURF2, SURF4). Coloring each read by its fragment's
 strand cleanly separates them:
 
-<Figure caption="The surfeit locus with reads colored by fragment strand. RPL7A reads take one color and the neighboring opposite-strand SURF genes take the other, so every read is assigned to the correct gene even where their transcripts abut." src="/img/rnaseq/strand_specific.png" />
+<Figure caption="Enabling stranded coloring: open the track menu and choose Color by → Paired end → First of pair strand. Each read is then colored by its fragment's strand." src="/img/rnaseq/strand_specific.png" />
 
 ## Short reads vs long reads
 

@@ -13,55 +13,27 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 Internet account that authenticates requests with a user-supplied external
 token, prompting for the token via a dialog and optionally validating it with a
-HEAD request.
-
-## Members
-
-| Member                                       | Kind    | Description |
-| -------------------------------------------- | ------- | ----------- |
-| [conf](#getter-conf)                         | Getters |             |
-| [validateWithHEAD](#getter-validatewithhead) | Getters |             |
-| [getTokenFromUser](#action-gettokenfromuser) | Actions |             |
-| [validateToken](#action-validatetoken)       | Actions |             |
+HEAD request. See [TokenEntryInternetAccount](../tokenentryinternetaccount) for
+the shared behavior.
 
 ### ExternalTokenInternetAccount - Configuration
 
 The configuration slots for this model are documented on its
 [config schema page](../../config/externaltokeninternetaccount).
 
-<details>
-<summary>ExternalTokenInternetAccount - Getters</summary>
+## Inherited members
 
-#### getter: conf
+Available on this model via composition. Follow each link for full signatures
+and docs.
 
-```ts
-type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
-```
+### Available via [TokenEntryInternetAccount](../tokenentryinternetaccount)
 
-#### getter: validateWithHEAD
+**Properties:** [type](../tokenentryinternetaccount#property-type),
+[configuration](../tokenentryinternetaccount#property-configuration)
 
-```ts
-type validateWithHEAD = boolean
-```
+**Getters:**
+[validateWithHEAD](../tokenentryinternetaccount#getter-validatewithhead)
 
-</details>
-
-<details>
-<summary>ExternalTokenInternetAccount - Actions</summary>
-
-#### action: getTokenFromUser
-
-```ts
-type getTokenFromUser = (
-  resolve: (token: string) => void,
-  reject: (error: Error) => void,
-) => void
-```
-
-#### action: validateToken
-
-```ts
-type validateToken = (token: string, location: UriLocation) => Promise<string>
-```
-
-</details>
+**Actions:**
+[getTokenFromUser](../tokenentryinternetaccount#action-gettokenfromuser),
+[validateToken](../tokenentryinternetaccount#action-validatetoken)

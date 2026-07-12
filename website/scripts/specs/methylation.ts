@@ -263,13 +263,20 @@ export const methylationSpecs: ScreenshotSpec[] = [
       loc: 'chr15:24,952,000-24,958,000',
       tracks: [
         // UCSC CpG-island annotation: the imprinting center overlaps a CpG
-        // island, so the methylated/unmethylated split lands on it
-        'cpgisland_ucsc_hg38',
-        // NCBI RefSeq gene track for SNRPN context
+        // island, so the methylated/unmethylated split lands on it. Kept short —
+        // it's a single annotation lane, so it needs no vertical room
+        {
+          trackId: 'cpgisland_ucsc_hg38',
+          type: 'LinearBasicDisplay',
+          height: 40,
+        },
+        // NCBI RefSeq gene track for SNRPN context, given extra height so the
+        // gene model reads clearly above the methylation profiles
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
           type: 'LinearBasicDisplay',
           geneGlyphMode: 'longestCoding',
+          height: 180,
         },
         {
           trackId: 'HG002_snrpn_modkit_hp1',
@@ -293,9 +300,10 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // small local region files, so both settle quickly
     readyTimeout: 60000,
     settleMs: 15000,
-    // both single-row HP profiles (120px each) plus the CpG-island + gene
-    // context on top, trimmed so the stacked haplotypes aren't mostly whitespace
-    viewportHeight: 810,
+    // both single-row HP profiles (120px each) plus the short CpG-island lane
+    // and the taller gene track on top, trimmed so the stacked haplotypes aren't
+    // mostly whitespace
+    viewportHeight: 830,
   },
 
   // Per-read view behind the aggregate SNRPN profiles: the same HG002 ONT reads

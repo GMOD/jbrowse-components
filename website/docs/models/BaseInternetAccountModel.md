@@ -31,11 +31,12 @@ JBrowse core.
 | [handlesLocation](#method-handleslocation)                               | Methods    | Determine whether this internetAccount provides credentials for a URL                                                                                                                                                                                                                                                                                                                                                                                |
 | [getTokenFromUser](#action-gettokenfromuser)                             | Actions    | Must be implemented by a model extending or composing this one. Pass the user's token to `resolve`.                                                                                                                                                                                                                                                                                                                                                  |
 | [storeToken](#action-storetoken)                                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [removeToken](#action-removetoken)                                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [retrieveToken](#action-retrievetoken)                                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [validateToken](#action-validatetoken)                                   | Actions    | This can be used by an internetAccount to validate a token works before it is used. This is run when preAuthorizationInformation is requested, so it can be used to check that a token is valid before sending it to a worker thread. It expects the token to be returned so that this action can also be used to generate a new token (e.g. by using a refresh token) if the original one was invalid. Should throw an error if a token is invalid. |
+| [removeToken](#action-removetoken)                                       | Actions    | Clears the stored token. Also drops the in-memory cached promise so a subsequent `getToken` re-prompts / re-derives rather than handing back the token that was just invalidated.                                                                                                                                                                                                                                                                    |
 | [getToken](#action-gettoken)                                             | Actions    | Try to get the token from the location pre-auth, from local storage, or from a previously cached promise. If token is not available, uses `getTokenFromUser`.                                                                                                                                                                                                                                                                                        |
 | [addAuthHeaderToInit](#action-addauthheadertoinit)                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [getValidatedToken](#action-getvalidatedtoken)                           | Actions    | Fetch a token and, when a location is supplied, run it through `validateToken` so subclasses can refresh an expired token before it is used. Shared by the auth-aware fetchers.                                                                                                                                                                                                                                                                      |
 | [getPreAuthorizationInformation](#action-getpreauthorizationinformation) | Actions    | Gets the token and returns it along with the information needed to create a new internetAccount.                                                                                                                                                                                                                                                                                                                                                     |
 | [getFetcher](#action-getfetcher)                                         | Actions    | Get a fetch method that will add any needed authentication headers to the request before sending it. If location is provided, it will be checked to see if it includes a token in it pre-auth information.                                                                                                                                                                                                                                           |
 | [openLocation](#action-openlocation)                                     | Actions    | Gets a filehandle that uses a fetch that adds auth headers                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -193,6 +194,16 @@ invalid. Should throw an error if a token is invalid.
 type validateToken = (token: string, _loc: UriLocation) => Promise<string>
 ```
 
+#### action: removeToken
+
+Clears the stored token. Also drops the in-memory cached promise so a subsequent
+`getToken` re-prompts / re-derives rather than handing back the token that was
+just invalidated.
+
+```ts
+type removeToken = () => void
+```
+
 #### action: getToken
 
 Try to get the token from the location pre-auth, from local storage, or from a
@@ -200,6 +211,16 @@ previously cached promise. If token is not available, uses `getTokenFromUser`.
 
 ```ts
 type getToken = (location?: UriLocation | undefined) => Promise<string>
+```
+
+#### action: getValidatedToken
+
+Fetch a token and, when a location is supplied, run it through `validateToken`
+so subclasses can refresh an expired token before it is used. Shared by the
+auth-aware fetchers.
+
+```ts
+type getValidatedToken = (loc?: UriLocation | undefined) => Promise<string>
 ```
 
 #### action: getPreAuthorizationInformation
@@ -243,12 +264,6 @@ type openLocation = (location: UriLocation) => RemoteFileWithRangeCache
 
 ```ts
 type storeToken = (token: string) => void
-```
-
-#### action: removeToken
-
-```ts
-type removeToken = () => void
 ```
 
 #### action: retrieveToken

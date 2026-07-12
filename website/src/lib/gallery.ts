@@ -192,7 +192,7 @@ export const gallerySections: readonly GallerySection[] = [
         label: 'Fiber-seq 6mA (GAPDH promoter)',
         spec: 'gallery/fiberseq_gapdh',
         description:
-          'ONT single-molecule fiber-seq (HG002, chromatin-accessibility open dataset) over the GAPDH promoter, each read colored per-base by its 6mA (A+a) calls; single-cell ATAC (CATlas, Zhang et al. 2021) above corroborates the open promoter.',
+          'ONT single-molecule fiber-seq over the GAPDH promoter, each read colored per-base by its 6mA (A+a) calls; single-cell ATAC above corroborates the open promoter. Source data: Oxford Nanopore HG002 chromatin-accessibility fiber-seq (epi2me.nanoporetech.com/chromatin-acc-hg002) and CATlas single-cell ATAC (Zhang et al. 2021, catlas.org).',
       },
     ],
   },
@@ -283,7 +283,7 @@ export const gallerySections: readonly GallerySection[] = [
         label: 'Single-cell ATAC by cell type (CATlas, INS locus)',
         spec: 'gallery/scatac_catlas',
         description:
-          'Single-cell ATAC accessibility by cell type (CATlas) around the INS locus, one coverage row per cell type.',
+          'Single-cell ATAC accessibility by cell type around the INS locus, one coverage row per cell type. Source data: CATlas (Zhang et al. 2021), catlas.org.',
       },
     ],
   },

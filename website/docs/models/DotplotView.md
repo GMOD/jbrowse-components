@@ -50,7 +50,6 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [viewTrackConfigs](#property-viewtrackconfigs)                                 | Properties | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere                                                                                                                                 |
 | [init](#property-init)                                                         | Properties | used for initializing the view from a session snapshot                                                                                                                                                                                                                    |
 | [highlight](#property-highlight)                                               | Properties | translucent highlight bands drawn per-axis: vertical when the region's assembly matches hview, horizontal when it matches vview                                                                                                                                           |
-| [highlightsVisible](#property-highlightsvisible)                               | Properties | controls whether view.highlight entries are rendered                                                                                                                                                                                                                      |
 | [showHighlightChips](#property-showhighlightchips)                             | Properties | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default                                                                                                                                                |
 | [showColorLegend](#property-showcolorlegend)                                   | Properties | Show the floating color-by legend in the top-right of the plot. Dismissible via the legend's close button; re-enable from the color-by (palette) menu.                                                                                                                    |
 | [volatileWidth](#volatile-volatilewidth)                                       | Volatiles  |                                                                                                                                                                                                                                                                           |
@@ -101,7 +100,6 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [addToHighlights](#action-addtohighlights)                                     | Actions    |                                                                                                                                                                                                                                                                           |
 | [setHighlight](#action-sethighlight)                                           | Actions    |                                                                                                                                                                                                                                                                           |
 | [removeHighlight](#action-removehighlight)                                     | Actions    |                                                                                                                                                                                                                                                                           |
-| [setHighlightsVisible](#action-sethighlightsvisible)                           | Actions    |                                                                                                                                                                                                                                                                           |
 | [setShowHighlightChips](#action-setshowhighlightchips)                         | Actions    |                                                                                                                                                                                                                                                                           |
 | [setShowColorLegend](#action-setshowcolorlegend)                               | Actions    |                                                                                                                                                                                                                                                                           |
 | [clearView](#action-clearview)                                                 | Actions    | returns to the import form                                                                                                                                                                                                                                                |
@@ -257,17 +255,6 @@ type highlight = IOptionalIType<
 >
 // code
 highlight: types.stripDefault(types.array(types.frozen<HighlightType>()), [])
-```
-
-#### property: highlightsVisible
-
-controls whether view.highlight entries are rendered
-
-```ts
-// type signature
-type highlightsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-highlightsVisible: types.stripDefault(types.boolean, true)
 ```
 
 #### property: showHighlightChips
@@ -866,12 +853,6 @@ type setHighlight = (highlight?: HighlightType[] | undefined) => void
 
 ```ts
 type removeHighlight = (highlight: HighlightType) => void
-```
-
-#### action: setHighlightsVisible
-
-```ts
-type setHighlightsVisible = (arg: boolean) => void
 ```
 
 #### action: setShowHighlightChips

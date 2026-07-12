@@ -209,7 +209,11 @@ export const mafSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: '12:6,534,400-6,538,500',
+          // a focused ~700bp window over a few GAPDH exons rather than the whole
+          // gene: at 470 rows the full-gene view is an unreadable wall, so
+          // narrowing widens each alignment column enough that the conserved
+          // (blue) exon bands and divergent (red) intron columns are legible
+          loc: '12:6,536,700-6,537,400',
           trackLabels: 'offset',
           tracks: [
             // NCBI RefSeq gene track on top (longest-coding transcript only):
