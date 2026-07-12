@@ -1,16 +1,11 @@
-import { lazy } from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 
+import GCContentParamsSliders from './components/GCContentParamsSliders.tsx'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-
-const EditGCContentParamsDialog = lazy(
-  () => import('./components/EditGCContentParams.tsx'),
-)
 
 /**
  * #stateModel SharedGCContentModel
@@ -61,13 +56,15 @@ export default function SharedModelF(
           return [
             ...superTrackMenuItems(),
             {
-              label: 'Change GC parameters',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  EditGCContentParamsDialog,
-                  { model: self, handleClose },
-                ])
-              },
+              label: 'GC parameters',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'GC parameter sliders',
+                  type: 'custom',
+                  render: () => <GCContentParamsSliders model={self} />,
+                },
+              ],
             },
             {
               label: 'GC skew',

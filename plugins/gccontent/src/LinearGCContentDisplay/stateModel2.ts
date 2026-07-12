@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import SharedModelF from './shared.ts'
+import SharedModelF from './shared.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
