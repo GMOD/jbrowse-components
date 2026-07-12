@@ -6,7 +6,7 @@ guide_category: Callbacks and customization
 ---
 
 `FromConfigAdapter` and `FromConfigSequenceAdapter` embed feature data directly
-in the config rather than reading a file — useful for small datasets or features
+in the config rather than reading a file, useful for small datasets or features
 returned by an API. Either can be the `adapter` value for any track type.
 
 ## FromConfigAdapter
@@ -42,7 +42,7 @@ optional. Use it with any feature track type, such as a `FeatureTrack`:
 ## FromConfigSequenceAdapter
 
 Like `FromConfigAdapter`, but optimized for sequence features (used by reference
-sequence tracks — see [configuring assemblies](/docs/config_guides/assemblies)).
+sequence tracks, see [configuring assemblies](/docs/config_guides/assemblies)).
 
 Example `FromConfigSequenceAdapter`:
 
@@ -70,8 +70,8 @@ Example `FromConfigSequenceAdapter`:
 
 ## See also
 
-- [Configuring tracks](/docs/config_guides/tracks) — the track config these
+- [Configuring tracks](/docs/config_guides/tracks), the track config these
   adapters plug into
 - [FromConfigAdapter config docs](/docs/config/fromconfigadapter) and
-  [FromConfigSequenceAdapter config docs](/docs/config/fromconfigsequenceadapter)
-  — the full slot reference
+  [FromConfigSequenceAdapter config docs](/docs/config/fromconfigsequenceadapter),
+  the full slot reference

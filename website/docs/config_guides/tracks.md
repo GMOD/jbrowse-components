@@ -18,7 +18,7 @@ all track types.
 
 File locations in adapter configs use a `{ "uri": "..." }` object. The
 `"locationType": "UriLocation"` field is optional for URI locations and can be
-omitted — it is only needed when the type cannot be inferred (e.g. local file
+omitted. It is only needed when the type cannot be inferred (e.g. local file
 paths on desktop).
 
 Example `config.json` containing a track config for a BigBed file:
@@ -59,15 +59,15 @@ the per-format adapters and the `uri` shorthand:
 
 ## Configuring displays
 
-Appearance settings — `color`, `height`, `labels`, jexl color callbacks, and so
-on — belong to a track's **displays** (the different ways a track can be drawn).
+Appearance settings (`color`, `height`, `labels`, jexl color callbacks, and so
+on) belong to a track's **displays** (the different ways a track can be drawn).
 There are two ways to set them: the `displayDefaults` object for the common
 case, or the full `displays` array when you need precise control.
 
 ### Shorthand object
 
 Put your settings in a `displayDefaults` object and JBrowse applies each one for
-you — you don't have to know or write the display's name:
+you. You don't have to know or write the display's name:
 
 ```json
 {
@@ -84,9 +84,9 @@ you — you don't have to know or write the display's name:
 ```
 
 JBrowse applies each setting to the display that uses it. If a track can be
-drawn more than one way, each setting lands where it fits — e.g. a
-`VariantTrack` colors its linear display with `color` and its circular (chord)
-display with `strokeColor`, both in the same object:
+drawn more than one way, each setting lands where it fits, e.g. a `VariantTrack`
+colors its linear display with `color` and its circular (chord) display with
+`strokeColor`, both in the same object:
 
 ```json
 {
@@ -107,9 +107,9 @@ typos show up.
 
 ### Full array
 
-For precise control — giving two displays different values for the same setting,
-choosing which display is the default, or setting an explicit `displayId` — pass
-`displays` as an array. Each entry names a display `type`; `displayId` is
+For precise control (giving two displays different values for the same setting,
+choosing which display is the default, or setting an explicit `displayId`), pass
+`displays` as an array. Each entry names a display `type`. `displayId` is
 optional and defaults to `{trackId}-{displayType}`.
 
 ```json
@@ -180,11 +180,11 @@ sidebar.
 
 ## See also
 
-- [Supported file types](/docs/config_guides/file_types) — per-format adapter
+- [Supported file types](/docs/config_guides/file_types), per-format adapter
   reference
-- [Hierarchical track selector](/docs/config_guides/track_selector) — where the
+- [Hierarchical track selector](/docs/config_guides/track_selector), where the
   `category` field described above is consumed
-- [Deploying JBrowse Web](/docs/config_guides/deploying#generating-configjson-from-a-script)
-  — generating track configs from a script
-- [Display settings](/docs/tutorials/display_settings) — opening a track in a
+- [Deploying JBrowse Web](/docs/config_guides/deploying#generating-configjson-from-a-script),
+  generating track configs from a script
+- [Display settings](/docs/tutorials/display_settings), opening a track in a
   particular display state via URL instead of editing the config default

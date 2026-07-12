@@ -39,8 +39,8 @@ Here is a complete config.json file containing only the hg19 assembly:
 
 Each assembly contains:
 
-- `name` - unique assembly name; each track references this name. There is no
-  separate `id` field — the `name` is the id, usually a short machine-readable
+- `name` - unique assembly name. Each track references this name. There is no
+  separate `id` field. The `name` is the id, usually a short machine-readable
   string like `hg38`
 - `displayName` - optional human-readable label shown in the assembly selector
   (e.g. `"Homo sapiens (hg38)"`)
@@ -58,8 +58,8 @@ Each assembly contains:
   ideograms (see below)
 - `refNameColors` - optional list of colors cycled across the reference
   sequences
-- `geneticCodes` - optional per-refName translation-table override for codon
-  and protein translation (see below)
+- `geneticCodes` - optional per-refName translation-table override for codon and
+  protein translation (see below)
 
 ## Configuring reference name aliasing
 
@@ -87,7 +87,7 @@ on adapter options and configuration.
 ## Configuring alternative genetic codes (translation tables)
 
 JBrowse translates protein-coding sequences using the standard genetic code
-(NCBI translation table 1) by default. Some sequences use a different code — for
+(NCBI translation table 1) by default. Some sequences use a different code. For
 example, vertebrate mitochondria use table 2 (where `TGA` codes for tryptophan
 rather than a stop, and `ATA` codes for methionine), and many plastids and
 bacteria use table 11. The full list of tables is on the
@@ -100,7 +100,7 @@ independently:
   genetic code straight from the GFF. Put a `transl_table` attribute on the CDS
   (the NCBI convention), e.g. `transl_table=2`, and that code is used when
   drawing the peptide letters and when computing the protein sequence in the
-  feature details. No assembly config is needed — the per-CDS attribute is
+  feature details. No assembly config is needed. The per-CDS attribute is
   authoritative. Start codons and `transl_except` overrides (such as
   selenocysteine) are honored.
 
@@ -131,7 +131,7 @@ are matched through reference-name aliasing, so a key of `chrM` still applies if
 the sequence is named `MT` in your FASTA.
 
 Instead of inlining the map you can load it from a sidecar TSV file with
-`geneticCodesLocation` — useful when a config generator emits the mapping
+`geneticCodesLocation`, useful when a config generator emits the mapping
 separately. The file is tab-separated `refName<TAB>geneticCodeId`, and `#`
 comment lines are allowed:
 
@@ -238,7 +238,7 @@ options):
 
 A plain (non-bgzipped) FASTA with no separate index. The adapter reads the whole
 sequence into memory, so prefer `IndexedFastaAdapter` or `BgzipFastaAdapter` for
-large genomes — this is mainly convenient for small genomes where you don't want
+large genomes. This is mainly convenient for small genomes where you don't want
 to run `samtools faidx`.
 
 ```json
@@ -293,7 +293,7 @@ many chromosomes:
 }
 ```
 
-The longhand form uses the `twoBitLocation` and `chromSizesLocation` slots — see
+The longhand form uses the `twoBitLocation` and `chromSizesLocation` slots. See
 the [TwoBitAdapter config docs](/docs/config/twobitadapter) for all options.
 
 ## ChromSizesAdapter
@@ -309,7 +309,7 @@ loading a FASTA), use a `.chrom.sizes` file (tab-separated `name<TAB>length`).
 }
 ```
 
-The longhand form uses a `chromSizesLocation` slot — see the
+The longhand form uses a `chromSizesLocation` slot. See the
 [ChromSizesAdapter config docs](/docs/config/chromsizesadapter) for all options.
 
 The reference sequence track displays no base-level sequence with this adapter.
@@ -357,9 +357,9 @@ chromosome:
 
 ## See also
 
-- [Sequence track](/docs/user_guides/sequence_track) — the reference sequence
-  and six-frame translation in the app
-- [Basic usage](/docs/user_guides/basic_usage) — the overview scale bar that
+- [Sequence track](/docs/user_guides/sequence_track), the reference sequence and
+  six-frame translation in the app
+- [Basic usage](/docs/user_guides/basic_usage), the overview scale bar that
   draws the cytoband ideogram configured here
-- [BaseAssembly config docs](/docs/config/baseassembly/) — the full slot
+- [BaseAssembly config docs](/docs/config/baseassembly/), the full slot
   reference (auto-generated from the schema)

@@ -28,7 +28,7 @@ only when the index is named differently or is a CSI index:
 
 - `vcfGzLocation` - file location of the bgzip'd VCF
 - `index.location` - file location of the index
-- `index.indexType` - `TBI` (default) or `CSI`; use CSI for chromosomes longer
+- `index.indexType` - `TBI` (default) or `CSI`. Use CSI for chromosomes longer
   than 512 Mb (e.g. some plant genomes), which TBI cannot index
 
 ```json
@@ -67,7 +67,7 @@ field via `feature.INFO.SVTYPE` and maps it to a color:
 }
 ```
 
-The `displayDefaults` object is shorthand — JBrowse applies the `color` to the
+The `displayDefaults` object is shorthand. JBrowse applies the `color` to the
 variant display for you, so you don't have to know the display's name
 (`LinearVariantDisplay`) or write the array. For per-display control use the
 array form (see the
@@ -81,7 +81,7 @@ reading `feature.INFO.CLNSIG[0]` or any other INFO key. See
 more jexl color examples.
 
 If your config must run on older JBrowse releases, use the equivalent
-`get(feature,'INFO').SVTYPE[0]` function form instead of property access — see
+`get(feature,'INFO').SVTYPE[0]` function form instead of property access. See
 the [jexl guide's note on the two forms](/docs/config_guides/jexl).
 
 ## MultiVariant display configuration
@@ -98,7 +98,7 @@ toggling them each time. The ones you will most often preset are:
 - `showReferenceAlleles` - draw reference alleles in color instead of a solid
   gray background (useful when coloring the background like a homozygous
   reference allele would mislead)
-- `renderingMode` - `alleleCount` (dosage; darker for homozygous) or `phased`
+- `renderingMode` - `alleleCount` (dosage, darker for homozygous) or `phased`
   (one row per haplotype)
 - `minorAlleleFrequencyFilter` - hide variants below a minor-allele-frequency
   threshold
@@ -194,8 +194,8 @@ by:
 
 With this configuration, samples are colored by their `population` value when
 the track loads. Each unique value (EUR, AFR, EAS, etc.) gets a distinct color
-from the palette. `colorBy` combines with the default-settings slots above —
-list them together in the same display block.
+from the palette. `colorBy` combines with the default-settings slots above. List
+them together in the same display block.
 
 ### Notes
 
@@ -214,11 +214,11 @@ list them together in the same display block.
 JBrowse can render a triangular LD heatmap of pairwise r² (or D') between
 variants. There are two ways to supply the data:
 
-- **Computed from a VCF** — add the `LDDisplay` to a regular `VariantTrack`. LD
+- **Computed from a VCF**: add the `LDDisplay` to a regular `VariantTrack`. LD
   is computed on the fly from the genotypes in the visible region, so no extra
   files are needed. Filtering (minor allele frequency, HWE, call rate, jexl) and
   signed-LD values are available because the raw genotypes are present.
-- **Pre-computed with PLINK** — use a standalone `LDTrack` pointing at PLINK
+- **Pre-computed with PLINK**: use a standalone `LDTrack` pointing at PLINK
   `--r2` output via `PlinkLDAdapter` (plain `.ld`) or `PlinkLDTabixAdapter`
   (bgzipped + tabix-indexed `.ld.gz`). This is the right choice for large
   cohorts where computing LD in the browser would be too slow, or when you want
@@ -249,8 +249,8 @@ tabix -s 1 -b 2 -e 2 -c C study.sorted.ld.gz
 
 The
 [GWAS track guide → Preparing the LD file](/docs/config_guides/gwas_track#preparing-the-ld-file)
-explains these flags in full — the same `.ld` file is used both for coloring
-GWAS points by LD and for the standalone LD track here.
+explains these flags in full. The same `.ld` file is used both for coloring GWAS
+points by LD and for the standalone LD track here.
 
 ### Pre-computed LD track (plain `.ld`)
 
@@ -267,7 +267,7 @@ GWAS points by LD and for the standalone LD track here.
 }
 ```
 
-The `uri` expands to the `ldLocation` slot; see the
+The `uri` expands to the `ldLocation` slot. See the
 [PlinkLDAdapter config docs](/docs/config/plinkldadapter) for the longhand form.
 
 ### Pre-computed LD track (tabix-indexed `.ld.gz`)
@@ -288,7 +288,7 @@ in the visible region are fetched:
 }
 ```
 
-The `uri` shorthand assumes a sibling `<uri>.tbi` index; spell out `ldLocation`
+The `uri` shorthand assumes a sibling `<uri>.tbi` index. Spell out `ldLocation`
 and `index.location` (see the
 [PlinkLDTabixAdapter config docs](/docs/config/plinkldtabixadapter)) if the
 index is named differently.
@@ -296,7 +296,7 @@ index is named differently.
 ### Computed-from-VCF LD display
 
 Attach an `LDDisplay` to a normal `VcfTabixAdapter` variant track. No LD file is
-needed — LD is computed from genotypes in the visible region:
+needed. LD is computed from genotypes in the visible region:
 
 ```json
 {
@@ -327,9 +327,9 @@ reference.
 
 ## See also
 
-- [Variant track](/docs/user_guides/variant_track) — using variant tracks in the
+- [Variant track](/docs/user_guides/variant_track), using variant tracks in the
   app
-- [Multi-sample variant display](/docs/user_guides/multivariant_track) —
+- [Multi-sample variant display](/docs/user_guides/multivariant_track),
   population-scale displays and clustering
-- [Structural variant visualization](/docs/user_guides/sv_visualization) —
+- [Structural variant visualization](/docs/user_guides/sv_visualization),
   interpreting SV calls

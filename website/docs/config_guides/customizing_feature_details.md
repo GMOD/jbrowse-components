@@ -31,9 +31,9 @@ Here is an example track with a formatter:
 }
 ```
 
-<Figure src="/img/customized_feature_details.png" caption="A feature detail panel reshaped by the formatDetails callback above. The red callout marks the name field, which the callback rewrote into an HTML hyperlink (here, a Google search for the gene name) instead of plain text; the same callback also injects the extra 'newfield' row and drops the default 'type' row."/>
+<Figure src="/img/customized_feature_details.png" caption="A feature detail panel reshaped by the formatDetails callback above. The red callout marks the name field, which the callback rewrote into an HTML hyperlink (here, a Google search for the gene name) instead of plain text. The same callback also injects the extra 'newfield' row and drops the default 'type' row."/>
 
-This formatter links the `name` field to a Google search — useful for linking to
+This formatter links the `name` field to a Google search, useful for linking to
 gene pages. It also adds a custom `newfield` and removes `type` from the
 display.
 
@@ -61,7 +61,7 @@ mention are left untouched), and the result drives what the panel shows:
 - a **new key** adds a field
 - an **existing key** overrides that field's value (the raw value is replaced,
   not shown alongside)
-- a key set to **`undefined` or `null`** hides the field — the panel filters out
+- a key set to **`undefined` or `null`** hides the field. The panel filters out
   null-ish values, so either works. `null` is the more robust choice if you
   build the object in JavaScript, since a serialization round-trip (e.g. saving
   a session) turns hidden fields into `null` anyway.
@@ -241,10 +241,10 @@ And then in your config.json:
 
 The feature in `formatDetails` callbacks is a plain JS object (not a
 `SimpleFeature`), so attributes are only available as plain properties like
-`feature.start` — the `feature.get('start')` method form does **not** work here.
+`feature.start`. The `feature.get('start')` method form does **not** work here.
 This is because the feature detail panel reads from the serialized session. In
 color callbacks the feature is a `SimpleFeature`, where property form
-(`feature.start`) and method form (`feature.get('start')`) both work; property
+(`feature.start`) and method form (`feature.get('start')`) both work. Property
 form is preferred.
 
 ## Going beyond field formatting
@@ -260,9 +260,9 @@ these extension points (see
 
 ## See also
 
-- [Using jexl callbacks](/docs/config_guides/jexl) — the expression syntax used
+- [Using jexl callbacks](/docs/config_guides/jexl), the expression syntax used
   in `formatDetails` callbacks
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) —
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors),
   the same jexl-and-plugin pattern applied to per-feature coloring
-- [Extension points](/docs/developer_guides/extension_points) — the
+- [Extension points](/docs/developer_guides/extension_points), the
   `Core-extraFeaturePanel` / `Core-replaceWidget` hooks above

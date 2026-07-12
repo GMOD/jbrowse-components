@@ -8,17 +8,17 @@ guide_category: Core configuration
 
 A **connection** points JBrowse at an external track hub or data directory and
 makes its tracks available in the track selector without configuring each track
-by hand. This guide covers the connection config format; for the in-app behavior
+by hand. This guide covers the connection config format. For the in-app behavior
 see the [Connections user guide](/docs/user_guides/connections).
 
 ## Where connections live
 
 Connections come from two places, combined in the track selector:
 
-- **`connections`** — a top-level array in your `config.json`, alongside
+- **`connections`**: a top-level array in your `config.json`, alongside
   `assemblies` and `tracks`. These are administrator-defined and available to
   everyone who loads the config.
-- **Session connections** — connections a user adds at runtime (via `File` →
+- **Session connections**: connections a user adds at runtime (via `File` →
   `Open connection...`). These live in the saved session, not the admin config.
 
 Both render identically as categories in the track selector.
@@ -28,10 +28,10 @@ Both render identically as categories in the track selector.
 Every connection shares the base fields from
 [BaseConnection](/docs/config/baseconnection):
 
-- `type` — the connection type (e.g. `UCSCTrackHubConnection`)
-- `connectionId` — a unique id for the connection
-- `name` — a human-readable name; shown as the category label
-- `assemblyNames` — optional list of assemblies the connection applies to; used
+- `type`: the connection type (e.g. `UCSCTrackHubConnection`)
+- `connectionId`: a unique id for the connection
+- `name`: a human-readable name, shown as the category label
+- `assemblyNames`: optional list of assemblies the connection applies to, used
   to match hub tracks to the assemblies configured in your instance
 
 Each type then adds its own location slot.
@@ -100,9 +100,9 @@ This appends a connection to the target `config.json`. See
 
 ## How connections are stored in a session
 
-A connection config is just a pointer — it does not embed the hub's tracks. The
+A connection config is just a pointer. It does not embed the hub's tracks. The
 hub's track list is fetched when the connection is loaded (in the app, when its
-category is expanded), and those track configs are held in memory only; they are
+category is expanded), and those track configs are held in memory only. They are
 **not** written into the saved session.
 
 The exception is a track you actually open: its config is stored in the session
@@ -113,13 +113,13 @@ connection track saves the change there as well.
 
 ## See also
 
-- [Connections user guide](/docs/user_guides/connections) — opening, browsing,
+- [Connections user guide](/docs/user_guides/connections), opening, browsing,
   and removing connections in the app
 - [BaseConnection](/docs/config/baseconnection),
   [UCSCTrackHubConnection](/docs/config/ucsctrackhubconnection),
   [JB2TrackHubConnection](/docs/config/jb2trackhubconnection),
-  [JBrowse1Connection](/docs/config/jbrowse1connection) — full config schema
+  [JBrowse1Connection](/docs/config/jbrowse1connection), full config schema
   reference
-- [Configuring tracks](/docs/config_guides/tracks) — the track config format
-- [Loading from a config file](/docs/config_guides/from_config) — the JB2 track
+- [Configuring tracks](/docs/config_guides/tracks), the track config format
+- [Loading from a config file](/docs/config_guides/from_config), the JB2 track
   hub source format

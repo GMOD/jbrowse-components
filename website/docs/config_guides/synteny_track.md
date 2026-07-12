@@ -8,8 +8,8 @@ A `SyntenyTrack` powers both the **dotplot view** and the **linear synteny
 view**. It pairs two assemblies using a whole-genome or gene-level alignment
 file.
 
-For a full end-to-end walkthrough — from generating alignments to navigating the
-views — see the
+For a full end-to-end walkthrough (from generating alignments to navigating the
+views), see the
 [synteny visualization tutorial](/docs/tutorials/synteny_visualization).
 
 ## Choosing an adapter
@@ -30,13 +30,13 @@ Pick the adapter that matches how your alignment was produced:
 The most common workflow is whole-genome alignment with minimap2, which outputs
 PAF.
 
-**Step 1 — align your genomes:**
+**Step 1. Align your genomes:**
 
 ```bash
 minimap2 -cx asm5 target.fa query.fa > alignment.paf
 ```
 
-**Step 2 — add the track with the CLI:**
+**Step 2. Add the track with the CLI:**
 
 ```bash
 jbrowse add-track alignment.paf \
@@ -45,10 +45,10 @@ jbrowse add-track alignment.paf \
   --out /var/www/html/jbrowse2
 ```
 
-The first assembly name is the **query** and the second is the **target** — this
+The first assembly name is the **query** and the second is the **target**. This
 is the **reverse** of the minimap2 argument order. minimap2 takes
 `target.fa query.fa`, but `--assemblyNames` takes `query,target`. The query is
-drawn on the horizontal axis of the dotplot (top row in linear synteny); the
+drawn on the horizontal axis of the dotplot (top row in linear synteny). The
 target is on the vertical axis (bottom row).
 
 To avoid the ordering confusion entirely, you can set the named `queryAssembly`
@@ -116,7 +116,7 @@ Used for `.paf` files from minimap2, wfmash, and similar aligners.
 }
 ```
 
-A short form using `uri` directly is also accepted — see the
+A short form using `uri` directly is also accepted. See the
 [PAFAdapter config docs](/docs/config/pafadapter) for all options.
 
 ### PairwiseIndexedPAFAdapter
@@ -190,7 +190,7 @@ intermediate outputs of the MCScan workflow).
 }
 ```
 
-A short form using `uri`, `bed1`, and `bed2` is also accepted — see the
+A short form using `uri`, `bed1`, and `bed2` is also accepted. See the
 [MCScanAnchorsAdapter config docs](/docs/config/mcscananchorsadapter) for all
 options.
 
@@ -216,8 +216,8 @@ for all options.
 
 ## See also
 
-- [Linear synteny view](/docs/user_guides/linear_synteny_view) — side-by-side
+- [Linear synteny view](/docs/user_guides/linear_synteny_view), side-by-side
   alignment of two genomes
-- [Dotplot view](/docs/user_guides/dotplot_view) — whole-genome synteny overview
-- [Synteny visualization tutorial](/docs/tutorials/synteny_visualization) —
+- [Dotplot view](/docs/user_guides/dotplot_view), whole-genome synteny overview
+- [Synteny visualization tutorial](/docs/tutorials/synteny_visualization),
   generating a PAF with minimap2 end-to-end

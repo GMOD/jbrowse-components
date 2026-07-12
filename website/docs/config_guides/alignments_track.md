@@ -60,8 +60,8 @@ See the [CramAdapter config docs](/docs/config/cramadapter) for all options.
 
 ## Display options
 
-Display settings — `colorBy`, `height`, `featureHeight`, `filterBy`, and the
-coverage `autoscale`/`minScore`/`maxScore` — are slots on the
+Display settings (`colorBy`, `height`, `featureHeight`, `filterBy`, and the
+coverage `autoscale`/`minScore`/`maxScore`) are slots on the
 `LinearAlignmentsDisplay`, not on the track. Reads are a solid gray until you
 pick a coloring scheme via the
 [`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby) slot. To change
@@ -78,8 +78,8 @@ a default, set it with the track's `displayDefaults` shorthand:
 }
 ```
 
-The `displayDefaults` object is shorthand — JBrowse applies each setting for
-you, so you don't have to know the display's name (`LinearAlignmentsDisplay`) or
+The `displayDefaults` object is shorthand. JBrowse applies each setting for you,
+so you don't have to know the display's name (`LinearAlignmentsDisplay`) or
 write the array. Use the array form when you need per-display control (see the
 [track config guide](/docs/config_guides/tracks/#configuring-displays)).
 
@@ -91,7 +91,7 @@ embedded view instead of changing the default, see
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track) — sorting, coloring,
+- [Alignments track](/docs/user_guides/alignments_track), sorting, coloring,
   grouping, and filtering reads in the app
-- [Structural variant visualization](/docs/user_guides/sv_visualization) —
+- [Structural variant visualization](/docs/user_guides/sv_visualization),
   interpreting SV signals in alignments

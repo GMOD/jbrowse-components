@@ -41,7 +41,7 @@ The customized theme uses this configuration:
 | Quaternary | #d50000    | Red         |
 
 `tertiary` and `quaternary` are JBrowse extensions to the standard MUI palette
-(which has only `primary`/`secondary`); the rest of the palette behaves as MUI
+(which has only `primary`/`secondary`). The rest of the palette behaves as MUI
 documents.
 
 ```json
@@ -72,11 +72,11 @@ documents.
 You can add extra themes via the config. In jbrowse-web and jbrowse-desktop,
 these show up in a "Preferences" dialog that the user can select from.
 
-Dark mode is enabled by adding `"mode": "dark"` inside a theme's `palette`, which
-switches it to
+Dark mode is enabled by adding `"mode": "dark"` inside a theme's `palette`,
+which switches it to
 [MUI's dark mode](https://mui.com/material-ui/customization/dark-mode/). This
-works both on an `extraThemes` entry and on the top-level `theme`, where it makes
-the default theme dark.
+works both on an `extraThemes` entry and on the top-level `theme`, where it
+makes the default theme dark.
 
 Example:
 
@@ -160,9 +160,9 @@ load a small plugin like this from config.
 
 ## See also
 
-- [Theming (developer guide)](/docs/developer_guides/theming) — the full palette
+- [Theming (developer guide)](/docs/developer_guides/theming), the full palette
   and the exported color constants for use in plugin code
-- [JBrowseConfiguration config docs](/docs/config/jbrowseconfiguration) — the
+- [JBrowseConfiguration config docs](/docs/config/jbrowseconfiguration), the
   `theme`, `extraThemes`, and `logoPath` global slots in the schema reference
-- [Configuring plugins](/docs/config_guides/plugins) — loading the small plugin
+- [Configuring plugins](/docs/config_guides/plugins), loading the small plugin
   needed for callback-based style overrides

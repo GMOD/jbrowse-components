@@ -41,20 +41,20 @@ guide use property access.
 
 A few callbacks cover most real configs:
 
-Color by feature type — index a lookup table by an attribute, with a default for
+Color by feature type. Index a lookup table by an attribute, with a default for
 types not in the map:
 
 ```json
 "color": "jexl:{CDS:'red',exon:'green',gene:'blue'}[feature.type] || 'gray'"
 ```
 
-Color by a threshold — a ternary on a numeric attribute:
+Color by a threshold, a ternary on a numeric attribute:
 
 ```json
 "color": "jexl:feature.score > 7.3 ? 'red' : '#0068d1'"
 ```
 
-Label with a fallback — the first non-empty attribute wins:
+Label with a fallback. The first non-empty attribute wins:
 
 ```json
 "name": "jexl:feature.name || feature.id"
@@ -172,11 +172,11 @@ for the full walkthrough.
 
 ## See also
 
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) —
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors),
   worked color-callback examples
-- [Customizing feature details](/docs/config_guides/customizing_feature_details)
-  — jexl in the feature-details panel
-- [Variant track](/docs/user_guides/variant_track) — reading VCF `INFO` fields
+- [Customizing feature details](/docs/config_guides/customizing_feature_details),
+  jexl in the feature-details panel
+- [Variant track](/docs/user_guides/variant_track), reading VCF `INFO` fields
   (e.g. `feature.INFO.SVTYPE`) in callbacks
-- [Alignments track](/docs/user_guides/alignments_track) — BAM/CRAM tags and
+- [Alignments track](/docs/user_guides/alignments_track), BAM/CRAM tags and
   `getTag` in callbacks

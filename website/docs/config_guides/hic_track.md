@@ -22,16 +22,16 @@ Example Hi-C track config:
 ## HicAdapter config
 
 The `HicAdapter` needs only the `.hic` file location, given here with the `uri`
-shorthand. The longhand form uses a `hicLocation` slot — see the
+shorthand. The longhand form uses a `hicLocation` slot. See the
 [HicAdapter config docs](/docs/config/hicadapter) for all options.
 
 ## Color scheme
 
 Hi-C contact matrices are drawn with a built-in color ramp, selectable from the
 track menu via the
-[`colorScheme`](/docs/config/linearhicdisplay/#slot-colorscheme) slot —
+[`colorScheme`](/docs/config/linearhicdisplay/#slot-colorscheme) slot:
 `juicebox`, `fall`, or `viridis`. Log scaling and percentile clipping are also
-slots; see the [LinearHicDisplay config docs](/docs/config/linearhicdisplay) for
+slots. See the [LinearHicDisplay config docs](/docs/config/linearhicdisplay) for
 the full list.
 
 ## Loops and interactions as arcs
@@ -64,7 +64,7 @@ example draws only the high-scoring calls, in dark red, as thin arcs:
 
 ## See also
 
-- [Hi-C track](/docs/user_guides/hic_track) — loading and interpreting contact
+- [Hi-C track](/docs/user_guides/hic_track), loading and interpreting contact
   matrices in the app
-- [LinearPairedArcDisplay config schema](/docs/config/linearpairedarcdisplay) —
+- [LinearPairedArcDisplay config schema](/docs/config/linearpairedarcdisplay),
   arc display slots

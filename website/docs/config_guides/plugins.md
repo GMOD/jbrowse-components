@@ -5,7 +5,7 @@ guide_category: Core configuration
 ---
 
 In jbrowse-web and jbrowse-desktop, plugins are added via `config.json`.
-Embedded components use a different approach — see the
+Embedded components use a different approach. See the
 [inline plugins example](https://jbrowse.org/storybook/lgv/with-inline-plugins/).
 
 External plugins can be added to the config.json file like so:
@@ -80,7 +80,7 @@ Plugin authors can submit their plugin via PR to
 
 You can verify the plugin is installed properly by checking the Plugin Store:
 
-<Figure src="/img/plugin_store.png" caption="Opening the plugin store from the Tools menu. Plugins installed via the config (here UMDUrlPlugin) show a lock icon in the Installed plugins section, indicating they cannot be removed through the GUI; the Available plugins list below offers one-click installs."/>
+<Figure src="/img/plugin_store.png" caption="Opening the plugin store from the Tools menu. Plugins installed via the config (here UMDUrlPlugin) show a lock icon in the Installed plugins section, indicating they cannot be removed through the GUI. The Available plugins list below offers one-click installs."/>
 
 See our [developer guide](/docs/developer_guide/) for more information on
 developing plugins, or our [plugins page](/plugin_store) to browse currently
@@ -88,9 +88,9 @@ published plugins.
 
 ## See also
 
-- [Plugin store](/docs/user_guides/plugin_store) — installing community plugins
+- [Plugin store](/docs/user_guides/plugin_store), installing community plugins
   from inside the app
-- [No-build plugin](/docs/developer_guides/no_build_plugin) — writing a small
+- [No-build plugin](/docs/developer_guides/no_build_plugin), writing a small
   single-file plugin with no build step
-- [Simple plugin tutorial](/docs/developer_guides/simple_plugin) — scaffolding a
+- [Simple plugin tutorial](/docs/developer_guides/simple_plugin), scaffolding a
   full plugin with the plugin template

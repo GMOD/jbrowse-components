@@ -6,7 +6,7 @@ description:
 guide_category: Getting started
 ---
 
-JBrowse Web is a **static web application** — a folder of HTML, JS, and CSS plus
+JBrowse Web is a **static web application**, a folder of HTML, JS, and CSS plus
 your `config.json`. There is no JBrowse-specific server: any static file host
 (Nginx, Apache, S3, GitHub Pages, a Docker image behind an ingress) can serve
 it. Data files (BAM, BigWig, VCF, ...) are read directly from wherever they live
@@ -34,7 +34,7 @@ npx serve .         # or copy it into your Nginx image
 ```
 
 Everything `jbrowse add-track` does is write a JSON entry into the `tracks`
-array of `config.json` — so you never have to hand-edit `config.json`, and you
+array of `config.json`, so you never have to hand-edit `config.json`, and you
 can do the same thing yourself from a script (next section).
 
 Docker/Kubernetes are usually overkill for JBrowse itself, since it is just
@@ -57,7 +57,7 @@ const rows = JSON.parse(readFileSync('samplesheet.json', 'utf8'))
 
 const tracks = rows.map(row => ({
   type: 'QuantitativeTrack',
-  // a stable, deterministic trackId is the important part — see below
+  // a stable, deterministic trackId is the important part, see below
   trackId: `rnaseq-${row.assembly}-${row.sample}`,
   name: `RNA-seq ${row.sample}`,
   assemblyNames: [row.assembly],
@@ -75,12 +75,12 @@ Here `config.base.json` holds everything that isn't per-sample, meaning your
 For a set of signals that belong together (e.g. an RNA-seq timecourse in
 triplicate), emit a single
 [MultiQuantitativeTrack](/docs/config_guides/multiquantitative_track) whose
-`subadapters` array is built from the same rows — see that guide for a templated
+`subadapters` array is built from the same rows. See that guide for a templated
 `subadapters` example.
 
 This is also where tools like [Jsonnet](https://jsonnet.org/) fit well, if you
-prefer a templating language to a script. JBrowse does not require Jsonnet — the
-output is still ordinary `config.json` — but it can be a clean way to express
+prefer a templating language to a script. JBrowse does not require Jsonnet (the
+output is still ordinary `config.json`), but it can be a clean way to express
 repeated track shapes.
 
 ## Keep trackIds stable for reproducible links
@@ -89,7 +89,7 @@ When a shared session is restored, JBrowse looks up each track by its `trackId`.
 If your pipeline regenerates `config.json` with **different** `trackId`s each
 build (e.g. an ID that embeds a timestamp or a random suffix), previously shared
 links will fail to restore those tracks. The fix is to derive each `trackId`
-deterministically from stable inputs — as in the script above, where the ID is
+deterministically from stable inputs, as in the script above, where the ID is
 built from the assembly and sample name, not from anything that changes per
 build. With stable IDs, the same view always serializes to the same session
 JSON. See
@@ -102,8 +102,8 @@ piece of deploy config that genuinely has to live in `index.html` is the
 [cache-buster](/docs/config_guides/avoiding_stale_config). It is a one-line
 snippet, so it is easy to inject from your build rather than hand-edit. Beyond
 that and any plugin `<script>` tags (see
-[plugins](/docs/config_guides/plugins)), the rest of your setup — assemblies,
-tracks, default session — is all `config.json` and can be fully scripted.
+[plugins](/docs/config_guides/plugins)), the rest of your setup (assemblies,
+tracks, default session) is all `config.json` and can be fully scripted.
 
 ## See also
 
@@ -111,4 +111,4 @@ tracks, default session — is all `config.json` and can be fully scripted.
 - [Configuring tracks](/docs/config_guides/tracks)
 - [Avoiding stale config](/docs/config_guides/avoiding_stale_config)
 - [`@jbrowse/cli` command reference](/docs/cli)
-- [URL query param API](/docs/urlparams) — linking to specific locations/tracks
+- [URL query param API](/docs/urlparams), linking to specific locations/tracks

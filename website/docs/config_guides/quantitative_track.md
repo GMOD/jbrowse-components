@@ -54,13 +54,13 @@ list of display slots and their defaults.
 BigWig (`BigWigAdapter`) and bedGraph are both supported. For bedGraph, use
 `BedGraphTabixAdapter` (a bgzip+tabix-indexed file) for large data, or
 `BedGraphAdapter` for a small plain `.bedGraph`. The example above uses the
-reduced `uri` form; see the [BigWigAdapter](/docs/config/bigwigadapter),
+reduced `uri` form. See the [BigWigAdapter](/docs/config/bigwigadapter),
 [BedGraphTabixAdapter](/docs/config/bedgraphtabixadapter), and
 [BedGraphAdapter](/docs/config/bedgraphadapter) config docs for all options.
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track) — renderer types,
+- [Quantitative track](/docs/user_guides/quantitative_track), renderer types,
   autoscaling, and CNV profiling in the app
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) —
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track),
   combining several signals on a shared axis

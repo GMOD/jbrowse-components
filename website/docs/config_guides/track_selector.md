@@ -7,21 +7,21 @@ guide_category: Other features
 By default, tracks appear in the order defined in config.json. The following
 options control sorting and default collapse behavior.
 
-- [`hierarchical.sort.trackNames`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicalsorttracknames)
-  — sort track names alphabetically
+- [`hierarchical.sort.trackNames`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicalsorttracknames):
+  sort track names alphabetically
 
-- [`hierarchical.sort.categories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicalsortcategories)
-  — sort categories alphabetically (independent of track name sorting)
+- [`hierarchical.sort.categories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicalsortcategories):
+  sort categories alphabetically (independent of track name sorting)
 
-- [`hierarchical.defaultCollapsed.categoryNames`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedcategorynames)
-  — category names to collapse at startup. For nested categories, use a
+- [`hierarchical.defaultCollapsed.categoryNames`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedcategorynames):
+  category names to collapse at startup. For nested categories, use a
   comma-joined path (e.g. `"Wiggle,Wiggle Rendering Styles"`)
 
-- [`hierarchical.defaultCollapsed.topLevelCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedtoplevelcategories)
-  — collapse all top-level categories at startup
+- [`hierarchical.defaultCollapsed.topLevelCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedtoplevelcategories):
+  collapse all top-level categories at startup
 
-- [`hierarchical.defaultCollapsed.subCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedsubcategories)
-  — collapse all sub-categories at startup
+- [`hierarchical.defaultCollapsed.subCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultcollapsedsubcategories):
+  collapse all sub-categories at startup
 
 <Figure caption="Example showing all the top-level categories collapsed" src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
 
@@ -49,7 +49,7 @@ Example config.json with examples of these hierarchical settings:
 }
 ```
 
-Note: `defaultCollapsed` options only apply on initial startup — afterwards the
+Note: `defaultCollapsed` options only apply on initial startup. Afterwards the
 user's preference is preserved in their session.
 
 ## Folder categories (supertracks)
@@ -58,8 +58,8 @@ Categories can be displayed in "folder mode", which collapses the entire
 category into a compact folder row. Clicking a folder opens a faceted track
 selector scoped to just the tracks in that category.
 
-- [`hierarchical.defaultFolderCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultfoldercategories)
-  — categories to display as folders at startup. Use the category name for
+- [`hierarchical.defaultFolderCategories`](/docs/config/hierarchicalconfigschema/#slot-configurationhierarchicaldefaultfoldercategories):
+  categories to display as folders at startup. Use the category name for
   top-level categories, or a comma-joined path for nested categories (e.g.
   `"Wiggle,Wiggle Rendering Styles"`)
 
@@ -79,7 +79,7 @@ Example config.json:
 ```
 
 Note: Like `defaultCollapsed`, `defaultFolderCategories` only applies on initial
-startup — afterwards the user's preference is preserved in their session.
+startup. Afterwards the user's preference is preserved in their session.
 
 For plugin developers: the category ID used internally is
 `Tracks-{categoryPath}` (the full comma-joined path), which is the value matched
@@ -106,7 +106,7 @@ Columns that are empty for every track are hidden automatically.
 
 ### Adding metadata columns
 
-Any `metadata` object in a track config adds extra filterable columns — one per
+Any `metadata` object in a track config adds extra filterable columns, one per
 top-level key:
 
 ```json
@@ -130,7 +130,7 @@ top to further narrow results by name, category, or description.
 
 ## See also
 
-- [Basic usage](/docs/user_guides/basic_usage) — using the track selector,
+- [Basic usage](/docs/user_guides/basic_usage), using the track selector,
   favorites, and the faceted selector in the app
-- [Configuring tracks](/docs/config_guides/tracks) — the track's `category`
-  field that feeds this hierarchy
+- [Configuring tracks](/docs/config_guides/tracks), the track's `category` field
+  that feeds this hierarchy

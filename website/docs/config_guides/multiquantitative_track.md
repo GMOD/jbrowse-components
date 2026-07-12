@@ -109,7 +109,7 @@ of generating `config.json` from a samplesheet in a CI/CD pipeline.
 
 ## See also
 
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) — using
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track), using
   multi-quantitative tracks, bedMethyl, and clustering in the app
-- [Quantitative track](/docs/user_guides/quantitative_track) — single-signal
+- [Quantitative track](/docs/user_guides/quantitative_track), single-signal
   display

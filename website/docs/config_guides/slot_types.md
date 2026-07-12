@@ -68,15 +68,14 @@ One value from a fixed set. The allowed values are listed next to the slot, e.g.
 
 ## color
 
-A CSS color — a hex string (`#f00`), an `rgb()`/`rgba()` value, or a named
-color. Many color slots also accept a
-[`jexl:` callback](/docs/config_guides/jexl) for
+A CSS color: a hex string (`#f00`), an `rgb()`/`rgba()` value, or a named color.
+Many color slots also accept a [`jexl:` callback](/docs/config_guides/jexl) for
 [per-feature coloring](/docs/config_guides/customizing_feature_colors).
 
 ## frozen
 
 An arbitrary JSON value (object or array) stored as-is, for structured settings
-that are not broken out into individual slots — for example a `colorBy` of
+that are not broken out into individual slots, for example a `colorBy` of
 `{ "type": "methylation" }` or a `groupBy` of `{ "type": "strand" }`. The shape
 a given `frozen` slot expects is described in that slot's own text.
 

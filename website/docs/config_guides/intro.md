@@ -13,7 +13,7 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
     /* list of assembly configurations, e.g. the genomes being viewed */
   ],
   "tracks": [
-    /* array of tracks being loaded; each references the assembly or assemblies
+    /* array of tracks being loaded, each references the assembly or assemblies
     it belongs to */
   ],
   "aggregateTextSearchAdapters": [/* optional array of text search adapters */],
@@ -30,10 +30,10 @@ The most important things to configure are your
 
 Looking for the complete list of options for a specific track or adapter type?
 The auto-generated [config reference](/docs/config_guide) has one page per type,
-generated directly from the source code (so it never goes stale) — e.g.
+generated directly from the source code (so it never goes stale), e.g.
 [BamAdapter](/docs/config/bamadapter) or
 [LinearWiggleDisplay](/docs/config/linearwiggledisplay). The hand-written guides
-explain the common cases; the reference is the exhaustive master list.
+explain the common cases. The reference is the exhaustive master list.
 
 You rarely need to write `config.json` by hand. The [`@jbrowse/cli`](/docs/cli)
 commands (`jbrowse add-assembly`, `jbrowse add-track`) write the JSON for you,
@@ -65,11 +65,11 @@ createViewState({
 
 ## See also
 
-- [Configuring assemblies](/docs/config_guides/assemblies) — the first thing
+- [Configuring assemblies](/docs/config_guides/assemblies), the first thing
   every config.json needs
-- [Configuring tracks](/docs/config_guides/tracks) — the second thing every
+- [Configuring tracks](/docs/config_guides/tracks), the second thing every
   config.json needs
-- [Deploying JBrowse Web](/docs/config_guides/deploying) — scripting config.json
+- [Deploying JBrowse Web](/docs/config_guides/deploying), scripting config.json
   instead of hand-writing it
-- [`@jbrowse/cli` command reference](/docs/cli) — `add-assembly`/`add-track`
+- [`@jbrowse/cli` command reference](/docs/cli), `add-assembly`/`add-track`
   generate this file for you

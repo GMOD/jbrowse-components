@@ -62,10 +62,10 @@ A per-track config looks like this:
 The `textSearching` slots control what gets indexed when you run
 `jbrowse text-index` against this track:
 
-- [`indexingAttributes`](/docs/config/basetrack/#slot-textsearchingindexingattributes)
-  — feature attributes to index
-- [`indexingFeatureTypesToExclude`](/docs/config/basetrack/#slot-textsearchingindexingfeaturetypestoexclude)
-  — feature types to skip (e.g. `CDS`, `exon`), so the index holds only the
+- [`indexingAttributes`](/docs/config/basetrack/#slot-textsearchingindexingattributes),
+  feature attributes to index
+- [`indexingFeatureTypesToExclude`](/docs/config/basetrack/#slot-textsearchingindexingfeaturetypestoexclude),
+  feature types to skip (e.g. `CDS`, `exon`), so the index holds only the
   genes/transcripts users search for
 
 See [jbrowse text-index](/docs/cli#jbrowse-text-index) for generating indexes
@@ -91,7 +91,7 @@ for all options.
 ## JBrowse1TextSearchAdapter config
 
 A names index created by JBrowse 1's `generate-names.pl` can still be used via
-the `JBrowse1TextSearchAdapter` — point `namesIndexLocation` at the names
+the `JBrowse1TextSearchAdapter`. Point `namesIndexLocation` at the names
 directory. See the
 [JBrowse1TextSearchAdapter config docs](/docs/config/jbrowse1textsearchadapter)
 for the config slots. To build a custom text-search adapter, see
@@ -109,7 +109,7 @@ jbrowse text-index --force
 ```
 
 If indexing fails because `/tmp` is low on disk space, override the temp
-directory — see
+directory. See
 [Why am I running out of disk space while trix is running](/docs/faq#why-am-i-running-out-of-disk-space-while-trix-is-running)
 in the FAQ.
 
@@ -124,7 +124,7 @@ jbrowse text-index --attributes=Name,ID,symbol,gene_name
 
 ## See also
 
-- [Basic usage: the location search box](/docs/user_guides/basic_usage#using-the-location-search-box)
-  — searching for gene names and regions once an index is built
-- [Connections](/docs/user_guides/connections) — loading track hubs that ship
+- [Basic usage: the location search box](/docs/user_guides/basic_usage#using-the-location-search-box),
+  searching for gene names and regions once an index is built
+- [Connections](/docs/user_guides/connections), loading track hubs that ship
   their own indexes
