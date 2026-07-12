@@ -123,6 +123,13 @@ export function makeLineWidthMenuItems(
         makeSizeMenu({
           label: 'Line width',
           title: 'Line width',
+          // integer px with a floor of 1: the default range/step (0.5-12 by
+          // 0.5) crowds 1px into a few px at the far-left edge between 0.5 and
+          // 1.5, so a mouse drag can't reliably land on it. 1px as the leftmost
+          // stop makes it selectable by dragging fully left.
+          min: 1,
+          max: 10,
+          step: 1,
           getValue: () => self.lineWidth,
           isDefault: self.lineWidth === LINE_WIDTH_DEFAULT,
           onChange: n => {
@@ -143,7 +150,11 @@ export function makeLineWidthMenuItems(
 // Resolution is a multiplier on the number of bins fetched (higher = finer),
 // stepped multiplicatively by 2 with a default of 1. Rendered inline so the
 // user can step finer/coarser repeatedly without reopening the menu each click.
+// Bounds mirror setResolution's clamp so the buttons disable at the edges
+// instead of silently no-op'ing.
 const RESOLUTION_STEP = 2
+const RESOLUTION_MIN = 1 / 16
+const RESOLUTION_MAX = 1024
 
 function formatResolution(n: number) {
   return n >= 1 ? `${n}×` : `1/${Math.round(1 / n)}×`
@@ -162,38 +173,47 @@ const ResolutionStepper = observer(function ResolutionStepper({
 }) {
   const value = getValue()
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: 200 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: 220 }}>
       <Tooltip title="Coarser resolution">
-        <IconButton
-          size="small"
-          onClick={() => {
-            onCoarser()
-          }}
-        >
-          <RemoveIcon fontSize="small" />
-        </IconButton>
+        <span>
+          <IconButton
+            size="small"
+            sx={{ p: 0.25 }}
+            disabled={value <= RESOLUTION_MIN}
+            onClick={() => {
+              onCoarser()
+            }}
+          >
+            <RemoveIcon fontSize="small" />
+          </IconButton>
+        </span>
       </Tooltip>
       <Typography
         variant="caption"
         color="textSecondary"
         style={{ flex: 1, textAlign: 'center' }}
       >
-        {formatResolution(value)}
+        Resolution: {formatResolution(value)}
       </Typography>
       <Tooltip title="Finer resolution">
-        <IconButton
-          size="small"
-          onClick={() => {
-            onFiner()
-          }}
-        >
-          <AddIcon fontSize="small" />
-        </IconButton>
+        <span>
+          <IconButton
+            size="small"
+            sx={{ p: 0.25 }}
+            disabled={value >= RESOLUTION_MAX}
+            onClick={() => {
+              onFiner()
+            }}
+          >
+            <AddIcon fontSize="small" />
+          </IconButton>
+        </span>
       </Tooltip>
       <Tooltip title="Reset to default resolution">
         <span>
           <IconButton
             size="small"
+            sx={{ p: 0.25 }}
             disabled={value === 1}
             onClick={() => {
               onReset()
