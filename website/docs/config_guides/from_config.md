@@ -11,10 +11,9 @@ returned by an API. Either can be the `adapter` value for any track type.
 
 ## FromConfigAdapter
 
-This adapter can be used to generate features directly from values stored in the
-configuration.
-
-Example `FromConfigAdapter`:
+Each entry in `features` is a feature object; `refName`, `start`, `end`, and a
+unique `uniqueId` are required, and `type`, `name`, and any other attributes are
+optional. Use it with any feature track type (e.g. a `FeatureTrack`):
 
 ```json
 {
@@ -22,13 +21,19 @@ Example `FromConfigAdapter`:
   "features": [
     {
       "refName": "ctgA",
-      "uniqueId": "alias1",
-      "aliases": ["A", "contigA"]
+      "uniqueId": "feature1",
+      "start": 190,
+      "end": 250,
+      "type": "gene",
+      "name": "MyGene"
     },
     {
-      "refName": "ctgB",
-      "uniqueId": "alias2",
-      "aliases": ["B", "contigB"]
+      "refName": "ctgA",
+      "uniqueId": "feature2",
+      "start": 300,
+      "end": 400,
+      "type": "mRNA",
+      "name": "MyTranscript"
     }
   ]
 }

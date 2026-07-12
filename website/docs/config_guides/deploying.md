@@ -26,8 +26,8 @@ npx @jbrowse/cli create jbrowse-web
 
 # 2. add an assembly and tracks (writes config.json for you)
 cd jbrowse-web
-jbrowse add-assembly https://example.com/hg38.fa.gz --name hg38
-jbrowse add-track https://example.com/sample.bam --trackId ngs-reads --name "NGS reads" --assemblyNames hg38
+npx @jbrowse/cli add-assembly https://example.com/hg38.fa.gz --name hg38
+npx @jbrowse/cli add-track https://example.com/sample.bam --trackId ngs-reads --name "NGS reads" --assemblyNames hg38
 
 # 3. serve the folder with any static host
 npx serve .         # or copy it into your Nginx image
@@ -39,8 +39,8 @@ can do the same thing yourself from a script (next section).
 
 Docker/Kubernetes are usually overkill for JBrowse itself, since it is just
 static files. They make sense if you are bundling JBrowse alongside other
-server-side code you operate. The static folder above is all JBrowse needs —
-copy it into whatever image or bucket your pipeline already uses.
+server-side code you operate — the static folder above drops into whatever image
+or bucket your pipeline already uses.
 
 ## Generating config.json from a script
 
@@ -67,6 +67,10 @@ const tracks = rows.map(row => ({
 const config = JSON.parse(readFileSync('config.base.json', 'utf8'))
 writeFileSync('config.json', JSON.stringify({ ...config, tracks }, null, 2))
 ```
+
+Here `config.base.json` holds everything that isn't per-sample — your
+`assemblies` array and any global settings — and the script merges in the
+generated `tracks` to produce the final `config.json`.
 
 For a set of signals that belong together (e.g. an RNA-seq timecourse in
 triplicate), emit a single

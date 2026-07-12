@@ -4,8 +4,11 @@ description: Per-track and aggregate full-text search indexes
 guide_category: Other features
 ---
 
-Text searching comes in two forms: per-track indexes, and aggregate indexes that
-search across multiple tracks.
+Text searching comes in two forms. An **aggregate index** lives in the top-level
+`aggregateTextSearchAdapters` array and is searched across many tracks at once —
+use it for a genome-wide gene-name index shared by every track on an assembly. A
+**per-track index** attaches to a single track's `textSearching` slot — use it
+to make just one track searchable.
 
 An aggregate index looks like this:
 
@@ -45,15 +48,9 @@ A per-track config looks like this:
     "textSearchAdapter": {
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "mytrack-index",
-      "ixFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
-      },
-      "ixxFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
-      },
-      "metaFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
-      },
+      "ixFilePath": { "uri": "trix/mytrack.ix" },
+      "ixxFilePath": { "uri": "trix/mytrack.ixx" },
+      "metaFilePath": { "uri": "trix/mytrack_meta.json" },
       "assemblyNames": ["hg19"]
     },
     "indexingAttributes": ["Name", "ID"],
