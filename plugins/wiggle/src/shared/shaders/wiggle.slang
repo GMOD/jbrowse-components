@@ -31,9 +31,10 @@ static const uint NO_PREV_MID = 0xffffffffu;
 // module so they stay in lockstep with manhattan.slang.
 static const float SHAPE_SOLID = 0.0;
 static const float SHAPE_DISC = 1.0;
-// Antialiased line ribbon (linecenter). localPos.x = signed px distance from the
-// centerline; the fragment turns it into angle-uniform analytic coverage and
-// outputs premultiplied alpha for the max-blend PASS_LINE_CENTER.
+// Antialiased line capsule (linecenter). localPos = segment_coord (along, perp)
+// in px from the segment center, segHalfLen = the body half-length; the fragment
+// evaluates the capsule SDF into angle-uniform analytic coverage and outputs
+// premultiplied alpha for the max-blend PASS_LINE_CENTER.
 static const float SHAPE_LINE = 2.0;
 
 struct WiggleInstance {
@@ -177,12 +178,13 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     float len = sqrt(dxPx * dxPx + dyPx * dyPx);
     float2 dir = len > 1e-4 ? float2(dxPx, dyPx) / len : float2(1.0, 0.0);
     float2 nrm = float2(-dir.y, dir.x);
-    // Quad bounds the capsule: half-length + (radius + AA pad) along the segment,
-    // (radius + AA pad) across it. localPos (segment_coord) is measured from center.
-    float rad = u.lineWidth * 0.5 + AA_PAD_PX;
+    // Quad half-extents bounding the capsule (stroke half-width + AA pad): the
+    // caps add halfExtent past each end along the segment, and halfExtent across
+    // it. localPos (segment_coord) is measured from the segment center.
+    float halfExtent = u.lineWidth * 0.5 + AA_PAD_PX;
     float2 q = quadLocal(vid);
-    float la = (q.x * 2.0 - 1.0) * (len * 0.5 + rad);
-    float lp = (q.y * 2.0 - 1.0) * rad;
+    float la = (q.x * 2.0 - 1.0) * (len * 0.5 + halfExtent);
+    float lp = (q.y * 2.0 - 1.0) * halfExtent;
     sx = centerClipX + (dir.x * la + nrm.x * lp) * 2.0 / u.viewportWidth;
     sy = 1.0 - (centerYpx + dir.y * la + nrm.y * lp) * pxToClip;
     localPos = float2(la, lp);

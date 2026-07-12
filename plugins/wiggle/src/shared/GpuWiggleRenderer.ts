@@ -80,7 +80,8 @@ export class GpuWiggleRenderer
       return
     }
     const buf = interleaveInstances(sources, totalFeatures)
-    // Upload once to PASS_FILL; PASS_LINE shares the same buffer via drawPass
+    // Upload once to PASS_FILL; PASS_LINE and PASS_LINE_CENTER read the same
+    // buffer via drawPass's bufferPassId.
     this.hal.uploadBuffer(displayedRegionIndex, PASS_FILL, buf, totalFeatures)
   }
 
