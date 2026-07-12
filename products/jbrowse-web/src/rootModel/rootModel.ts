@@ -59,6 +59,23 @@ type SessionModelFactory = (args: {
   assemblyConfigSchema: AssemblyConfig
 }) => IAnyType
 
+// Wraps an async saved-session-DB operation so any failure is logged and
+// surfaced to the current session's snackbar, matching the autosave autorun's
+// error handling.
+async function withErrorNotify(
+  self: {
+    session?: { notifyError: (message: string, error?: unknown) => void }
+  },
+  fn: () => Promise<void>,
+) {
+  try {
+    await fn()
+  } catch (e) {
+    console.error(e)
+    self.session?.notifyError(`${e}`, e)
+  }
+}
+
 /**
  * #stateModel JBrowseWebRootModel
  *
@@ -214,59 +231,52 @@ export default function RootModel({
        * #action
        */
       async activateSession(id: string) {
-        try {
+        await withErrorNotify(self, async () => {
           const ret = await self.sessionDB?.get('sessions', id)
           if (ret) {
             self.setSession(ret)
           } else {
             self.session?.notifyError('Session not found')
           }
-        } catch (e) {
-          console.error(e)
-          self.session?.notifyError(`${e}`, e)
-        }
+        })
       },
       /**
        * #action
        */
       async setSavedSessionFavorite(id: string, favorite: boolean) {
-        try {
-          const ret = self.savedSessionMetadata?.find(f => f.id === id)
-          if (self.sessionDB && ret) {
-            await self.sessionDB.put('metadata', { ...ret, favorite }, ret.id)
-            await self.fetchSessionMetadata()
+        await withErrorNotify(self, async () => {
+          if (self.sessionDB) {
+            const ret = await self.sessionDB.get('metadata', id)
+            if (ret) {
+              await self.sessionDB.put('metadata', { ...ret, favorite }, id)
+              await self.fetchSessionMetadata()
+            }
           }
-        } catch (e) {
-          console.error(e)
-          self.session?.notifyError(`${e}`, e)
-        }
+        })
       },
       /**
        * #action
        */
       async deleteSavedSession(id: string) {
-        try {
+        await withErrorNotify(self, async () => {
           if (self.sessionDB) {
             await self.sessionDB.delete('metadata', id)
             await self.sessionDB.delete('sessions', id)
             await self.fetchSessionMetadata()
           }
-        } catch (e) {
-          console.error(e)
-          self.session?.notifyError(`${e}`, e)
-        }
+        })
       },
       /**
        * #action
        */
       async renameSavedSession(id: string, name: string) {
-        try {
+        await withErrorNotify(self, async () => {
           // renaming the active session goes through the live model so the
           // autosave autorun rewrites both stores; otherwise edit IDB directly
           if (id === self.session?.id) {
             self.renameCurrentSession(name)
           } else if (self.sessionDB) {
-            const meta = self.savedSessionMetadata?.find(f => f.id === id)
+            const meta = await self.sessionDB.get('metadata', id)
             const snap = await self.sessionDB.get('sessions', id)
             if (meta && snap) {
               await self.sessionDB.put('metadata', { ...meta, name }, id)
@@ -274,10 +284,7 @@ export default function RootModel({
               await self.fetchSessionMetadata()
             }
           }
-        } catch (e) {
-          console.error(e)
-          self.session?.notifyError(`${e}`, e)
-        }
+        })
       },
     }))
     .views(self => ({

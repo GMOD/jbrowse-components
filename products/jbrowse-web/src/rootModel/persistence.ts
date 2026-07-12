@@ -3,7 +3,7 @@ import { autorun } from 'mobx'
 
 import { openSessionDB } from '../openSessionDB.ts'
 
-import type { SessionDB } from '../types.ts'
+import type { Session, SessionDB } from '../types.ts'
 import type { WebRootModel } from './rootModel.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { IDBPDatabase } from 'idb'
@@ -48,32 +48,28 @@ export async function setupSessionDB(self: WebRootModel) {
           if (self.session) {
             try {
               // careful not to access self.savedSessionMetadata in here, or
-              // else it can create an infinite loop
-              const s = self.session
-              await sessionDB.put('sessions', getSnapshot(s), s.id)
-              if (!isAlive(self)) {
-                return
-              }
-              const ret = await sessionDB.get('metadata', s.id)
-              if (!isAlive(self)) {
-                return
-              }
+              // else it can create an infinite loop. Capture id/name/snapshot
+              // synchronously so the reactive reads are tracked and the async
+              // tail never touches a possibly-destroyed node.
+              const { id, name } = self.session
+              const snap = getSnapshot<Session>(self.session)
+              const configPath = self.configPath ?? ''
+              await sessionDB.put('sessions', snap, id)
+              const ret = await sessionDB.get('metadata', id)
               await sessionDB.put(
                 'metadata',
                 {
-                  ...ret,
                   favorite: ret?.favorite ?? false,
-                  name: s.name,
-                  id: s.id,
                   createdAt: ret?.createdAt ?? new Date(),
-                  configPath: self.configPath ?? '',
+                  name,
+                  id,
+                  configPath,
                 },
-                s.id,
+                id,
               )
-              if (!isAlive(self)) {
-                return
+              if (isAlive(self)) {
+                await self.fetchSessionMetadata()
               }
-              await self.fetchSessionMetadata()
             } catch (e) {
               console.error(e)
               self.session?.notifyError(`${e}`, e)
