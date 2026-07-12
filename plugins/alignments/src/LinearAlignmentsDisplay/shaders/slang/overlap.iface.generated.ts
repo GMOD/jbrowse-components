@@ -98,6 +98,7 @@ export const UNIFORM_OFFSET_F32 = {
   colorSuppChains: 80,
   colorSplitInversion: 81,
   arcColor8: 82,
+  arcBandH: 83,
 } as const
 
 
@@ -193,6 +194,7 @@ export interface Uniforms {
   colorSuppChains: number
   colorSplitInversion: number
   arcColor8: number
+  arcBandH: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -282,6 +284,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   i32[80] = uniforms.colorSuppChains
   u32[81] = uniforms.colorSplitInversion
   u32[82] = uniforms.arcColor8
+  f32[83] = uniforms.arcBandH
 }
 
 export const INSTANCE_STRIDE_BYTES = 12

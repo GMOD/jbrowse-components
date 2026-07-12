@@ -210,25 +210,34 @@ function fillFrameUniforms(
 // Per-feature pack/upload helpers live in features/X/{packGpu,uploadGpu}.ts.
 // ---------------------------------------------------------------------------
 
-// Arc-pass UBO patch. The arc shader reads the same UBO as the read pass
-// but in a different viewport (above/below pileup), so we overwrite the
-// viewport-sensitive slots before the draw. Pure — mutates only the views.
+// Arc-pass UBO patch. The arc shaders read the same UBO as the read pass but
+// place Y in absolute canvas px against the arc band, so we overwrite the
+// band-sensitive slots before the draw. Pure — mutates only the views.
+//
+// `arcAnchorPx` is the arc baseline in absolute canvas px (band bottom in up
+// mode, band top in down mode) — what the shaders add to their per-vertex Y
+// before dividing by the full canvas height. `arcBandH` is the band's height,
+// the extent the dome/flat Y-scale maps into. Keeping the band out of the
+// viewport (it stays full-canvas) means a grouped section's band can scroll
+// partly off-screen without an out-of-bounds viewport (WebGPU rejects those
+// pre-Chrome-135); the devBand scissor does the real band clip.
 interface ArcFrame {
   region: LocalRegion
   block: RenderBlock
   state: RenderState
   scissorX: number
   scissorW: number
-  arcViewportH: number
+  arcBandH: number
   dpr: number
-  covOffset: number
+  arcAnchorPx: number
 }
 function fillArcUniforms(f: Float32Array, a: ArcFrame) {
-  const { block, state, scissorX, scissorW, arcViewportH, dpr, covOffset } = a
+  const { block, state, scissorX, scissorW, arcBandH, dpr, arcAnchorPx } = a
   const blockW = block.screenEndPx - block.screenStartPx
   const [hi, lo] = splitPositionWithFrac(block.start)
-  f[U.covOffset] = covOffset
-  f[U.canvasH] = arcViewportH / dpr
+  f[U.covOffset] = arcAnchorPx
+  f[U.canvasH] = state.canvasHeight
+  f[U.arcBandH] = arcBandH
   f[U.canvasW] = scissorW
   f[U.blockStartPx] = block.screenStartPx - scissorX
   f[U.blockWidth] = blockW
@@ -244,7 +253,7 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
   // Samplot picks its own domain (autoscaled |tlen|); arc mode defaults to
   // the bp-span that fits availH at the current zoom, reproducing the prior
   // `yBp * pxPerBp` math.
-  const availH = a.arcViewportH / dpr - ARC_HEIGHT_MARGIN
+  const availH = arcBandH - ARC_HEIGHT_MARGIN
   const pxPerBp = blockW / (block.end - block.start)
   f[U.pxPerBp] = pxPerBp
   f[U.arcsYDomainBp] =
@@ -823,18 +832,17 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     dpr: number,
     bufH: number,
   ) {
-    // The viewport keeps the band's FULL height (it sets the arc Y-scale), even
-    // when a grouped section's band scrolls partly off-screen; the scissor clips
-    // to the visible slice. Ungrouped bands sit on-screen, so viewport == scissor
-    // and this is byte-identical to the pre-grouping single pass.
-    const viewportTop = Math.round(band.top * dpr)
-    const viewportH = Math.round(band.height * dpr)
+    // Arcs render in the full-canvas viewport and place Y in absolute canvas px,
+    // so a grouped section's band can scroll partly off-screen without an
+    // out-of-bounds viewport (WebGPU rejects those pre-Chrome-135); the devBand
+    // scissor does the real band clip. Ungrouped bands sit on-screen, so the
+    // scissored output is byte-identical to the pre-grouping single pass.
     const scissor = devBand(band.top, band.height, dpr, bufH)
-    if (scissor.height > 0 && viewportH > 0) {
+    if (scissor.height > 0) {
       // saveUBO/restoreUBO bracket a temporary clobber of the shared UBO with
-      // arc-viewport uniforms. There's no try/finally, so everything between
-      // them MUST stay synchronous and exception-free: an early return or throw
-      // here would leave the UBO holding arc uniforms for the rest of the frame,
+      // arc-band uniforms. There's no try/finally, so everything between them
+      // MUST stay synchronous and exception-free: an early return or throw here
+      // would leave the UBO holding arc uniforms for the rest of the frame,
       // corrupting every later pass. Keep this block straight-line; if it ever
       // needs a guard that can bail, wrap the save/restore in try/finally.
       this.saveUBO()
@@ -844,15 +852,15 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         state,
         scissorX: geom.scissorX,
         scissorW: geom.scissorW,
-        arcViewportH: viewportH,
+        arcBandH: band.height,
         dpr,
-        // Up mode anchors at the band bottom (offset down by its full height);
-        // down mode anchors at the top (no offset).
-        covOffset: band.down ? 0 : viewportH / dpr,
+        // Up mode anchors at the band bottom (band.top + full height); down
+        // mode anchors at the band top.
+        arcAnchorPx: band.top + (band.down ? 0 : band.height),
       })
       this.hal.writeUniforms(this.uData)
 
-      this.hal.setViewport(geom.vpX, viewportTop, geom.vpW, viewportH)
+      this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
       this.hal.setScissor(geom.vpX, scissor.top, geom.vpW, scissor.height)
       this.hal.drawPass(PASS_ARC, regionKey)
       // Endpoint squares paint on top of the (now black) flat connector lines.
@@ -860,7 +868,6 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       this.hal.drawPass(PASS_ARC_LINE, regionKey)
 
       this.restoreUBO()
-      this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
       this.hal.writeUniforms(this.uData)
     }
   }

@@ -31,7 +31,7 @@ struct Instance {
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
   // Y of the flat line at this insert size — identical formula to arc.slang.
-  float availH = u.canvasH - ARC_MARKER_HEIGHT_MARGIN;
+  float availH = u.arcBandH - ARC_MARKER_HEIGHT_MARGIN;
   float frac = (u.arcsYLog > 0.5)
     ? log2(max(1.0, float(inst.yBp))) / log2(max(2.0, u.arcsYDomainBp))
     : float(inst.yBp) / u.arcsYDomainBp;

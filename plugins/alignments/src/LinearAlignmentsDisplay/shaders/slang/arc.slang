@@ -76,7 +76,7 @@ struct ArcPoint { float2 pos; float2 tang; };
 ArcPoint evalArcPoint(float t, Instance inst, Uniforms u) {
   float x1Norm = bpToLinear(inst.x1, u);
   float x2Norm = bpToLinear(inst.x2, u);
-  float availH = u.canvasH - ARC_HEIGHT_MARGIN;
+  float availH = u.arcBandH - ARC_HEIGHT_MARGIN;
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
 
   // Y scale: availH pixels = arcsYDomainBp genomic bp. CPU chooses the

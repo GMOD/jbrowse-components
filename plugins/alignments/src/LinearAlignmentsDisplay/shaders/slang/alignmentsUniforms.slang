@@ -145,6 +145,13 @@ public struct Uniforms {
   // 9th arc-palette slot (split-read deletion). Appended at the tail so adding
   // it leaves arcColor0..7's offsets — and every other field's — unchanged.
   public uint arcColor8;
+  // Arc band height (CSS px) — the vertical extent the dome / flat-line Y-scale
+  // (`availH`) maps into. Distinct from `canvasH` (the full canvas height, the
+  // clip-space divisor) because the arc passes now run in the full-canvas
+  // viewport and place Y in absolute canvas px, so the band can scroll partly
+  // off-screen without an out-of-bounds viewport. Appended at the tail for
+  // offset stability.
+  public float arcBandH;
 };
 
 // ---- Helper functions ---------------------------------------------------
