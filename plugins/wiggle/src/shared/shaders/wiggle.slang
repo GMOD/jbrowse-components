@@ -168,10 +168,10 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     float nx = -ty;
     float ny = tx;
     float halfPx = u.lineWidth * 0.5;
-    // Cross-ribbon offset, expanded by the AA pad so the feathered edge isn't
-    // clipped; the true stroke edge lands at localPos.x = ±1 (see fs_main).
-    float expand = discExpand(halfPx);
-    float halfExtentPx = halfPx * expand;
+    // Quad half-extent = stroke half-width + AA pad so the fragment's 1px
+    // coverage ramp has room; localPos.x carries the signed px distance from the
+    // centerline for that ramp (see fs_main).
+    float halfExtentPx = halfPx + AA_PAD_PX;
     float offX = nx * halfExtentPx * 2.0 / u.viewportWidth;
     float offY = ny * halfExtentPx * pxToClip;
     // Square end-caps: extend halfPx along the segment so consecutive segments
@@ -184,7 +184,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     float along = q.x * 2.0 - 1.0;
     sx = lerp(midPrevX, midCurrX, q.x) + side * offX + along * capX;
     sy = lerp(clipPrevY, clipCurrY, q.x) + side * offY + along * capY;
-    localPos = float2(side * expand, 0.0);
+    localPos = float2(side * halfExtentPx, 0.0);
     shape = SHAPE_LINE;
   } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
     // Point plot: every feature is a point marker centered on the bp midpoint,
@@ -271,12 +271,16 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     }
     outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
   } else if (fragIn.shape == SHAPE_LINE) {
-    // Cross-ribbon SDF: stroke edge at |localPos.x|=1, faded with an
-    // fwidth-based smoothstep (mirrors discAlpha) for a resolution-independent
-    // 1px AA edge on diagonals.
-    float coverage = 1.0 - abs(fragIn.localPos.x);
-    float aa = fwidth(coverage);
-    float alpha = smoothstep(-aa, aa, coverage);
+    // Analytic line AA: localPos.x is the signed px distance from the
+    // centerline. Dividing the edge distance by the true gradient magnitude
+    // (length of the screen-space derivative, = 1 for all angles since localPos.x
+    // is a unit-rate distance) gives a 1px coverage ramp whose core stays fully
+    // opaque even for a 1px stroke — a symmetric smoothstep feather never would,
+    // and its width would vary with segment angle (uneven faintness).
+    float2 grad = float2(ddx(fragIn.localPos.x), ddy(fragIn.localPos.x));
+    float aa = max(length(grad), 1e-4);
+    float halfPx = u.lineWidth * 0.5;
+    float alpha = clamp((halfPx - abs(fragIn.localPos.x)) / aa + 0.5, 0.0, 1.0);
     if (alpha <= 0.0) {
       discard;
     }

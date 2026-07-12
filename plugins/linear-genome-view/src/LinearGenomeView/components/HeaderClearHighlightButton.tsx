@@ -24,8 +24,10 @@ function isFeatureHighlightCapable(
   )
 }
 
-// Shows a "clear search highlight" button in the header only while some track in
-// the view has an active search highlight; clicking it clears every one.
+// Shows a "clear highlights" button in the header only while some track in the
+// view has an active feature highlight (from a text search or the right-click
+// "Highlight feature" menu — both land in the same set); clicking it clears
+// every one.
 const HeaderClearHighlightButton = observer(
   function HeaderClearHighlightButton({
     model,
@@ -40,7 +42,7 @@ const HeaderClearHighlightButton = observer(
     return highlighted.length > 0 ? (
       <IconButton
         data-testid="clear_search_highlight"
-        title="Clear search highlight"
+        title="Clear highlights"
         onClick={() => {
           for (const d of highlighted) {
             d.clearFeatureHighlights()
