@@ -1,4 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import CloseIcon from '@mui/icons-material/Close'
+import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -20,9 +22,16 @@ const useStyles = makeStyles()(theme => ({
   centerLineText: {
     position: 'absolute',
     left: 0,
-    pointerEvents: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
     whiteSpace: 'nowrap',
     fontWeight: 'bold',
+  },
+  dismiss: {
+    // re-enable clicks disabled on the pointer-events:none container
+    pointerEvents: 'auto',
+    padding: 2,
   },
 }))
 
@@ -53,9 +62,20 @@ const CenterLine = observer(function CenterLine({ model }: { model: LGV }) {
             top: trackHeights,
           }}
         >
-          {/* change bp to refName */}
           {centerLineInfo.refName}:{' '}
-          {Math.max(Math.round(centerLineInfo.offset) + 1, 0)}
+          {Math.max(Math.round(centerLineInfo.offset) + 1, 0).toLocaleString(
+            'en-US',
+          )}
+          <Tooltip title="Hide center line">
+            <IconButton
+              className={classes.dismiss}
+              onClick={() => {
+                model.setShowCenterLine(false)
+              }}
+            >
+              <CloseIcon fontSize="inherit" />
+            </IconButton>
+          </Tooltip>
         </div>
       )}
     </div>
