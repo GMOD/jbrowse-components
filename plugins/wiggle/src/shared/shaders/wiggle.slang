@@ -1,9 +1,9 @@
-// Wiggle track renderer. One shader covers four rendering modes (xyplot,
-// density, line, scatter) branched on the `renderingType` uniform, plus
-// linear/log scale branch. Same shader is bound to two triangle-list passes
-// reading the same per-instance vertex buffer: PASS_FILL draws 6-vert quads
-// (xyplot/density/scatter); PASS_LINE draws 18-vert thick step-lines (3
-// square-capped quad segments per feature honoring u.lineWidth).
+// Wiggle track renderer. One shader covers five rendering modes (xyplot,
+// density, line, linecenter, scatter) branched on the `renderingType` uniform,
+// plus linear/log scale branch. Same shader is bound to two triangle-list
+// passes reading the same per-instance vertex buffer: PASS_FILL draws 6-vert
+// quads (xyplot/density/scatter/linecenter); PASS_LINE draws 18-vert thick
+// step-lines (3 square-capped quad segments per feature honoring u.lineWidth).
 //! targets: wgsl, glsl
 
 import hpmath;
@@ -16,7 +16,12 @@ static const int RENDERING_TYPE_XYPLOT = 0;
 static const int RENDERING_TYPE_DENSITY = 1;
 static const int RENDERING_TYPE_LINE = 2;
 static const int RENDERING_TYPE_SCATTER = 3;
+static const int RENDERING_TYPE_LINE_CENTER = 4;
 static const int SCALE_TYPE_LOG = 1;
+
+// prevMidBp sentinel: no adjacent previous feature (run start / gap). Larger
+// than any genomic coordinate, so it never collides with a real midpoint.
+static const uint NO_PREV_MID = 0xffffffffu;
 
 // Scatter glyph shapes carved by the fragment shader (matches manhattan.slang):
 // point-like features become an AA disc, tiny points a crisp square.
@@ -24,6 +29,10 @@ static const int SCALE_TYPE_LOG = 1;
 // module so they stay in lockstep with manhattan.slang.
 static const float SHAPE_SOLID = 0.0;
 static const float SHAPE_DISC = 1.0;
+// Antialiased line ribbon (linecenter mode). localPos.x is the signed
+// cross-ribbon coord with the true edge at |x|=1; the fragment fades it like
+// the disc's SDF (see fs_main).
+static const float SHAPE_LINE = 2.0;
 
 struct WiggleInstance {
   uint2 startEnd  : ATTR0;
@@ -32,6 +41,7 @@ struct WiggleInstance {
   float nextScore : ATTR3;
   uint  color     : ATTR4;
   float rowIndex  : ATTR5;
+  uint  prevMidBp : ATTR6;
 };
 
 struct Uniforms {
@@ -132,6 +142,50 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       sx = lerp(sx2 - hwx, sx2 + hwx, q.x);
       sy = lerp(min(clipScoreY, clipNextY) - hwy, max(clipScoreY, clipNextY) + hwy, q.y);
     }
+  } else if (u.renderingType == RENDERING_TYPE_LINE_CENTER) {
+    // Point-to-point line: one thick quad per feature from the previous
+    // feature's bp midpoint (prevMidBp, prevScore) to this one's (midX, score).
+    // The ribbon is offset along the segment's px-space normal so lineWidth is
+    // honored on diagonals. NO_PREV_MID (run start / gap) collapses both
+    // endpoints to a zero-length point that produces no pixels.
+    bool hasPrev = inst.prevMidBp != NO_PREV_MID;
+    float midCurrX = (sx1 + sx2) * 0.5;
+    float midPrevX = hasPrev ? bpToClipX(inst.prevMidBp, u) : midCurrX;
+    float currYpx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
+    float prevYpx = hasPrev
+      ? scoreToY(inst.prevScore, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop
+      : currYpx;
+    float clipCurrY = 1.0 - currYpx * pxToClip;
+    float clipPrevY = 1.0 - prevYpx * pxToClip;
+    // Tangent/normal in px space (clip x → px via viewportWidth) so both the
+    // width offset and cap extension are isotropic despite the differing
+    // per-axis px→clip scales.
+    float dxPx = (midCurrX - midPrevX) * u.viewportWidth * 0.5;
+    float dyPx = currYpx - prevYpx;
+    float len = max(sqrt(dxPx * dxPx + dyPx * dyPx), 1e-6);
+    float tx = dxPx / len;
+    float ty = dyPx / len;
+    float nx = -ty;
+    float ny = tx;
+    float halfPx = u.lineWidth * 0.5;
+    // Cross-ribbon offset, expanded by the AA pad so the feathered edge isn't
+    // clipped; the true stroke edge lands at localPos.x = ±1 (see fs_main).
+    float expand = discExpand(halfPx);
+    float halfExtentPx = halfPx * expand;
+    float offX = nx * halfExtentPx * 2.0 / u.viewportWidth;
+    float offY = ny * halfExtentPx * pxToClip;
+    // Square end-caps: extend halfPx along the segment so consecutive segments
+    // overlap at their shared center and fill the joint wedge (same trick as the
+    // step-line's caps). At true run ends this over-draws a harmless half-width.
+    float capX = tx * halfPx * 2.0 / u.viewportWidth;
+    float capY = ty * halfPx * pxToClip;
+    float2 q = quadLocal(vid);
+    float side = q.y * 2.0 - 1.0;
+    float along = q.x * 2.0 - 1.0;
+    sx = lerp(midPrevX, midCurrX, q.x) + side * offX + along * capX;
+    sy = lerp(clipPrevY, clipCurrY, q.x) + side * offY + along * capY;
+    localPos = float2(side * expand, 0.0);
+    shape = SHAPE_LINE;
   } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
     // Point plot: every feature is a point marker centered on the bp midpoint,
     // never a bar (unlike manhattan.slang, which bars wide bins). scatterPointSize
@@ -143,9 +197,11 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     float2 local = q * 2.0 - float2(1.0, 1.0);
     float radiusPx = u.scatterPointSize * 0.5;
     if (u.scatterPointSize <= SMALL_POINT_MAX_DIAMETER) {
-      // tiny point: crisp filled square (SHAPE_SOLID), no AA disc
-      sx = midX + local.x * radiusPx * 2.0 / u.viewportWidth;
-      sy = centerClipY + local.y * radiusPx * pxToClip;
+      // tiny point: pixel-snapped crisp filled square (SHAPE_SOLID), no AA disc
+      float2 centerPx = float2((midX + 1.0) * 0.5 * u.viewportWidth, scoreYPx);
+      float2 vPx = crispSquareCornerPx(centerPx, u.scatterPointSize, q);
+      sx = vPx.x / u.viewportWidth * 2.0 - 1.0;
+      sy = 1.0 - vPx.y * pxToClip;
       shape = SHAPE_SOLID;
     } else {
       // expand the quad by the AA pad so the disc's fade edge isn't clipped
@@ -207,13 +263,27 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  // Solid modes (xyplot/density/line) and the wide-bin bar are flat fills.
-  if (fragIn.shape != SHAPE_DISC) {
-    return fragIn.color;
+  float4 outColor;
+  if (fragIn.shape == SHAPE_DISC) {
+    float alpha = discAlpha(fragIn.localPos);
+    if (alpha <= 0.0) {
+      discard;
+    }
+    outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
+  } else if (fragIn.shape == SHAPE_LINE) {
+    // Cross-ribbon SDF: stroke edge at |localPos.x|=1, faded with an
+    // fwidth-based smoothstep (mirrors discAlpha) for a resolution-independent
+    // 1px AA edge on diagonals.
+    float coverage = 1.0 - abs(fragIn.localPos.x);
+    float aa = fwidth(coverage);
+    float alpha = smoothstep(-aa, aa, coverage);
+    if (alpha <= 0.0) {
+      discard;
+    }
+    outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
+  } else {
+    // Solid modes (xyplot/density/step-line) and the wide-bin bar are flat fills.
+    outColor = fragIn.color;
   }
-  float alpha = discAlpha(fragIn.localPos);
-  if (alpha <= 0.0) {
-    discard;
-  }
-  return float4(fragIn.color.rgb, fragIn.color.a * alpha);
+  return outColor;
 }

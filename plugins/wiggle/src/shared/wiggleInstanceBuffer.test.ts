@@ -27,13 +27,19 @@ function makeSource(
 
 function readInstance(buf: ArrayBuffer, i: number) {
   const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
   const base = i * INSTANCE_STRIDE_F32
   return {
     score: f32[base + FIELD_OFFSET_F32.score]!,
     prevScore: f32[base + FIELD_OFFSET_F32.prevScore]!,
     nextScore: f32[base + FIELD_OFFSET_F32.nextScore]!,
+    prevMidBp: u32[base + FIELD_OFFSET_F32.prevMidBp]!,
   }
 }
+
+// Sentinel written when there's no adjacent previous feature; must match
+// NO_PREV_MID in wiggle.slang.
+const NO_PREV_MID = 0xffffffff
 
 describe('interleaveInstances', () => {
   test('single isolated feature has prevScore=0 and nextScore=0', () => {
@@ -123,5 +129,43 @@ describe('interleaveInstances', () => {
     // f2: adjacent to f1, last feature
     expect(f2.prevScore).toBe(7)
     expect(f2.nextScore).toBe(0)
+  })
+
+  // prevMidBp drives the center-line (RENDERING_TYPE_LINE_CENTER) pass, which
+  // draws a segment from the previous feature's bp midpoint to this one's.
+  describe('prevMidBp (center-line)', () => {
+    test('first feature has no previous → sentinel', () => {
+      const buf = interleaveInstances([makeSource([5], [0], [100])], 1)
+      expect(readInstance(buf, 0).prevMidBp).toBe(NO_PREV_MID)
+    })
+
+    test('adjacent feature carries the previous midpoint (floored)', () => {
+      // prev [0,100] midpoint = 50; [100,201] midpoint = 150 (floored from 150.5)
+      const buf = interleaveInstances(
+        [makeSource([5, 8], [0, 100], [100, 201])],
+        2,
+      )
+      expect(readInstance(buf, 0).prevMidBp).toBe(NO_PREV_MID)
+      expect(readInstance(buf, 1).prevMidBp).toBe(50)
+    })
+
+    test('gap before a feature → sentinel, breaking the line', () => {
+      // gap between bp 100 and 200
+      const buf = interleaveInstances(
+        [makeSource([5, 8], [0, 200], [100, 300])],
+        2,
+      )
+      expect(readInstance(buf, 1).prevMidBp).toBe(NO_PREV_MID)
+    })
+
+    test('large coordinates near uint32 range keep an exact floored midpoint', () => {
+      const a = 4_000_000_000
+      const b = 4_000_000_100
+      const buf = interleaveInstances(
+        [makeSource([5, 8], [a, b], [b, b + 100])],
+        2,
+      )
+      expect(readInstance(buf, 1).prevMidBp).toBe(Math.floor((a + b) / 2))
+    })
   })
 })

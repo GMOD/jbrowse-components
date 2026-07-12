@@ -21,8 +21,9 @@ const PASS_LINE = 'line'
 const U = wiggleShader.UNIFORM_OFFSET_F32
 
 // One shader, two triangle-list passes sharing the same vertex buffer.
-// PASS_FILL draws xyplot / density / scatter as 6-vert quads; PASS_LINE draws
-// the thick step-line as 18 verts per feature (3 square-capped quad segments)
+// PASS_FILL draws xyplot / density / scatter / linecenter as 6-vert quads (the
+// center-line's one ribbon per feature fits the same 6-vert quad); PASS_LINE
+// draws the thick step-line as 18 verts per feature (3 square-capped quad segments)
 // so stroke thickness honors the lineWidth uniform (line-list topology can't —
 // its width is hard-locked to 1px on WebGPU/WebGL).
 const LINE_VERTS_PER_INSTANCE = 18

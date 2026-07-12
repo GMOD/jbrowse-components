@@ -36,6 +36,15 @@ export function interleaveInstances(
       u32[off + FIELD_OFFSET_F32.startEnd] = currStart
       u32[off + FIELD_OFFSET_F32.startEnd + 1] = currEnd
       f32[off + FIELD_OFFSET_F32.score] = score
+      // Center-line pass (RENDERING_TYPE_LINE_CENTER) draws one segment per
+      // feature from the previous feature's bp midpoint to this one's, reusing
+      // prevScore (already the real previous score when adjacent). prevMidBp
+      // carries that previous midpoint; NO_PREV_MID (0xffffffff, larger than any
+      // genomic coord) marks the run start / a gap so the shader collapses the
+      // quad to nothing. Unused by the other modes.
+      u32[off + FIELD_OFFSET_F32.prevMidBp] = prevAdj
+        ? Math.floor((positions[pi - 2]! + positions[pi - 1]!) / 2)
+        : 0xffffffff
       // The shader's line pass draws three segments per feature:
       //   v0–v1: vertical at startX from prevScore → score (transition in)
       //   v2–v3: horizontal at score across [startX, endX]

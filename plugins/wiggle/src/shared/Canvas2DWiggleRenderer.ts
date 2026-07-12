@@ -4,11 +4,13 @@ import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegio
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_SCATTER,
 } from './wiggleComponentUtils.ts'
 import {
   drawDensity,
   drawLine,
+  drawLineCenter,
   drawScatter,
   drawXYPlot,
 } from './wiggleDrawFunctions.ts'
@@ -67,6 +69,9 @@ function drawWiggleBlocks(
       switch (renderingType) {
         case RENDERING_TYPE_LINE:
           drawLine({ ...row, rgb, lineWidth })
+          break
+        case RENDERING_TYPE_LINE_CENTER:
+          drawLineCenter({ ...row, rgb, lineWidth })
           break
         case RENDERING_TYPE_DENSITY:
           drawDensity({ ...row, r, g, b })

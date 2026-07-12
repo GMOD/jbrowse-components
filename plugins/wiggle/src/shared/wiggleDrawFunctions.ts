@@ -200,6 +200,61 @@ export function drawLine({
   ctx.stroke()
 }
 
+// Point-to-point line: connects the score at each feature's bp midpoint to its
+// neighbor's, instead of the stepped bar-tops drawLine traces. A run breaks
+// (moveTo, no connecting segment) wherever the next feature isn't bp-adjacent,
+// so gaps in the data show as gaps in the line rather than drops to zero.
+export function drawLineCenter({
+  ctx,
+  source,
+  block,
+  rowHeight,
+  rowTop,
+  domainY,
+  scaleType,
+  rgb,
+  lineWidth,
+}: RowDraw & { rgb: string; lineWidth: number }) {
+  const n = source.numFeatures
+  if (n === 0) {
+    return
+  }
+  ctx.strokeStyle = rgb
+  ctx.lineWidth = lineWidth
+  ctx.beginPath()
+  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
+  const positions = source.featurePositions
+  const scores = source.featureScores
+  const { screenStartPx, screenEndPx, reversed, start, end } = block
+  for (let i = 0; i < n; i++) {
+    const x1 = bpToScreenPx(
+      positions[i * 2]!,
+      start,
+      end,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const x2 = bpToScreenPx(
+      positions[i * 2 + 1]!,
+      start,
+      end,
+      screenStartPx,
+      screenEndPx,
+      reversed,
+    )
+    const cx = (x1 + x2) / 2
+    const cy = scoreToY(scores[i]!) + rowTop
+    const adjToPrev = i > 0 && positions[i * 2 - 1] === positions[i * 2]
+    if (adjToPrev) {
+      ctx.lineTo(cx, cy)
+    } else {
+      ctx.moveTo(cx, cy)
+    }
+  }
+  ctx.stroke()
+}
+
 export function drawScatter({
   ctx,
   source,

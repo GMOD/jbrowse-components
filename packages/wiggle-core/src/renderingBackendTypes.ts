@@ -1,7 +1,7 @@
 import type { WiggleScaleType } from './normalize.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-export type WiggleRenderingType = 0 | 1 | 2 | 3
+export type WiggleRenderingType = 0 | 1 | 2 | 3 | 4
 
 export interface WiggleGPURenderState {
   domainY: [number, number]

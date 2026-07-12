@@ -20,6 +20,10 @@ export const RENDERING_TYPE_XYPLOT: WiggleRenderingType = 0
 export const RENDERING_TYPE_DENSITY: WiggleRenderingType = 1
 export const RENDERING_TYPE_LINE: WiggleRenderingType = 2
 export const RENDERING_TYPE_SCATTER: WiggleRenderingType = 3
+// Point-to-point line: connects the score at each feature's bp midpoint to its
+// neighbor's, instead of tracing the stepped bar tops that RENDERING_TYPE_LINE
+// draws. Better for sparse/discrete data where the plateaus look wrong.
+export const RENDERING_TYPE_LINE_CENTER: WiggleRenderingType = 4
 
 function lightenColor(
   rgb: [number, number, number],
@@ -61,7 +65,12 @@ export function getRowTop(rowIndex: number, rowHeight: number) {
   return rowIndex * rowHeight
 }
 
-const overlayTypes = new Set(['multixyplot', 'multiline', 'multiscatter'])
+const overlayTypes = new Set([
+  'multixyplot',
+  'multiline',
+  'multilinecenter',
+  'multiscatter',
+])
 
 export function isOverlayMode(renderingType: string) {
   return overlayTypes.has(renderingType)
@@ -75,12 +84,15 @@ const renderingTypeMap: Record<string, WiggleRenderingType> = {
   xyplot: RENDERING_TYPE_XYPLOT,
   density: RENDERING_TYPE_DENSITY,
   line: RENDERING_TYPE_LINE,
+  linecenter: RENDERING_TYPE_LINE_CENTER,
   scatter: RENDERING_TYPE_SCATTER,
   multirowxy: RENDERING_TYPE_XYPLOT,
   multixyplot: RENDERING_TYPE_XYPLOT,
   multirowdensity: RENDERING_TYPE_DENSITY,
   multirowline: RENDERING_TYPE_LINE,
+  multirowlinecenter: RENDERING_TYPE_LINE_CENTER,
   multiline: RENDERING_TYPE_LINE,
+  multilinecenter: RENDERING_TYPE_LINE_CENTER,
   multirowscatter: RENDERING_TYPE_SCATTER,
   multiscatter: RENDERING_TYPE_SCATTER,
 }
