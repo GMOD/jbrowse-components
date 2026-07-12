@@ -36,12 +36,22 @@ export async function awaitSvgReady(
 ) {
   try {
     await when(() => model.svgReady, { timeout })
-  } catch {
-    throw new Error(
-      `SVG export timed out after ${timeout}ms: the display never became ready ` +
-        `for export (svgReady stayed false). This usually means it never reached ` +
-        `a terminal state — a fetch that never resolves, or a display missing its ` +
-        `dataLoaded / svgReady override.`,
-    )
+  } catch (e) {
+    // `when` rejects with `WHEN_TIMEOUT` only on the timeout; if the `svgReady`
+    // getter itself throws (e.g. a view-derived read before init) that error
+    // rejects here too. Relabeling both as a timeout would report a real,
+    // instant failure as a 60s hang — actively misleading in headless
+    // jbrowse-img / CI where this message is the sole diagnostic. So keep the
+    // timeout copy for the timeout, and rethrow any other error faithfully.
+    if (e instanceof Error && e.message === 'WHEN_TIMEOUT') {
+      throw new Error(
+        `SVG export timed out after ${timeout}ms: the display never became ready ` +
+          `for export (svgReady stayed false). This usually means it never reached ` +
+          `a terminal state — a fetch that never resolves, or a display missing its ` +
+          `dataLoaded / svgReady override.`,
+        { cause: e },
+      )
+    }
+    throw e
   }
 }
