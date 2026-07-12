@@ -41,7 +41,7 @@ describe('hitTestInterbase histogram bars', () => {
       30,
       rpcData,
       true,
-      false,
+      true,
       COV_HEIGHT,
       DOMAIN_MAX,
     )
@@ -61,7 +61,7 @@ describe('hitTestInterbase histogram bars', () => {
         60,
         rpcData,
         true,
-        false,
+        true,
         COV_HEIGHT,
         DOMAIN_MAX,
       ),
@@ -78,14 +78,14 @@ describe('hitTestInterbase histogram bars', () => {
         30,
         rpcData,
         true,
-        false,
+        true,
         COV_HEIGHT,
         DOMAIN_MAX,
       ),
     ).toBeUndefined()
   })
 
-  it('does not require showInterbaseIndicators (bars draw with coverage)', () => {
+  it('ignores bars when showInterbaseIndicators is off', () => {
     const rpcData = makeRpcData(oneBarAt1005)
     expect(
       hitTestInterbase(
@@ -97,8 +97,8 @@ describe('hitTestInterbase histogram bars', () => {
         false,
         COV_HEIGHT,
         DOMAIN_MAX,
-      )?.position,
-    ).toBe(1005)
+      ),
+    ).toBeUndefined()
   })
 
   it('skips bars when the coverage domain has not resolved yet', () => {
@@ -110,7 +110,7 @@ describe('hitTestInterbase histogram bars', () => {
         30,
         rpcData,
         true,
-        false,
+        true,
         COV_HEIGHT,
         undefined,
       ),
@@ -126,7 +126,7 @@ describe('hitTestInterbase histogram bars', () => {
         30,
         rpcData,
         false,
-        false,
+        true,
         COV_HEIGHT,
         DOMAIN_MAX,
       ),
@@ -149,7 +149,7 @@ describe('hitTestInterbase histogram bars', () => {
         30,
         rpcData,
         true,
-        false,
+        true,
         COV_HEIGHT,
         DOMAIN_MAX,
       )?.indicatorType,

@@ -453,8 +453,9 @@ export const GPU_PILEUP_PASS: Record<PileupLayerId, string> = {
 // at the call site. The depth-scaled passes need the autoscaled domain max, so
 // they are skipped until coverage stats settle (coarseDynamicBlocks is
 // 500ms-debounced and `coverageMaxDepth` is undefined until then) — matching the
-// Canvas2D `domainMax !== undefined` gate. The fixed-size indicator triangles
-// are depth-independent but gated on the user's `showInterbaseIndicators`.
+// Canvas2D `domainMax !== undefined` gate. The interbase count bars (depth-
+// scaled) and the fixed-size indicator triangles are both gated on the user's
+// `showInterbaseIndicators` — the one toggle governs all interbase marks.
 export function coveragePassPlan(
   state: RenderState,
 ): [pass: string, enabled: boolean][] {
@@ -463,7 +464,7 @@ export function coveragePassPlan(
     [PASS_COVERAGE, hasDomain],
     [PASS_SNP_COV, hasDomain],
     [PASS_MOD_COV, hasDomain],
-    [PASS_INTERBASE, hasDomain],
+    [PASS_INTERBASE, hasDomain && state.showInterbaseIndicators],
     [PASS_INDICATOR, state.showInterbaseIndicators],
   ]
 }

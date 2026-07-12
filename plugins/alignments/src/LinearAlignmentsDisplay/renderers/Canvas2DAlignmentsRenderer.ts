@@ -445,8 +445,9 @@ function drawCoverage(
   // are computed (coarseDynamicBlocks is 500ms-debounced) it's undefined and
   // these are skipped. Interbase clip/insertion bars are *positioned* at the
   // band top but their *height* tracks the depth domain (like the coverage and
-  // SNP bars), so they belong inside this block. The fixed-size indicator
-  // triangles are the only band-top marks independent of the depth scale.
+  // SNP bars), so they belong inside this block. Both the interbase count bars
+  // and the fixed-size indicator triangles are gated on showInterbaseIndicators
+  // — the one toggle governs all interbase marks.
   // The coverage draw helpers anchor bars/segments/indicators at the canvas
   // top (clip-top). Shifting the whole band by coverageTopOffset lets grouped
   // sections scroll their coverage with the section; it is 0 (no-op) for the
@@ -458,7 +459,9 @@ function drawCoverage(
     drawCoverageBars(ctx, region, bpToX, viewWidth, state, domainMax)
     drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
     drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
-    drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
+    if (state.showInterbaseIndicators) {
+      drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
+    }
   }
   if (state.showInterbaseIndicators) {
     drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)

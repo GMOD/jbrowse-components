@@ -362,7 +362,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       showInterbaseIndicators: {
         type: 'boolean',
         defaultValue: true,
-        description: 'Draw interbase insertion/deletion indicators',
+        description:
+          'Draw interbase insertion/clip count bars and indicator triangles',
       },
       /**
        * #slot

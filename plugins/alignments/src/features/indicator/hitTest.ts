@@ -31,8 +31,9 @@ function nearestPositionIndex(
 // Hovering the interbase histogram — the stacked insertion/softclip/hardclip
 // bars in the coverage band, plus the indicator triangles at significant
 // positions — resolves to an interbase tooltip. The coverage-depth area below
-// the bars stays a plain coverage hit. Bars are drawn whenever coverage is
-// shown; the triangles are additionally gated on showInterbaseIndicators.
+// the bars stays a plain coverage hit. Both the bars and the triangles are
+// gated on showInterbaseIndicators — the one toggle governs all interbase
+// marks, so neither is hittable when it's off.
 export function hitTestInterbase(
   genomicPos: number,
   bpPerPx: number,
@@ -45,13 +46,13 @@ export function hitTestInterbase(
 ): IndicatorHitResult | undefined {
   let hit: IndicatorHitResult | undefined
 
+  // No interbase mark is hittable unless coverage is shown and the user has
+  // interbase indicators on — the one toggle governs both the triangles and the
+  // count bars.
+  const interbaseVisible = showCoverage && showInterbaseIndicators
+
   // Indicator triangles: significant positions only, in the top strip.
-  if (
-    showCoverage &&
-    showInterbaseIndicators &&
-    canvasY >= 0 &&
-    canvasY <= INDICATOR_TRIANGLE_H
-  ) {
+  if (interbaseVisible && canvasY >= 0 && canvasY <= INDICATOR_TRIANGLE_H) {
     const { indicatorPositions, indicatorColorTypes } = rpcData
     const idx = nearestPositionIndex(
       indicatorPositions,
@@ -72,7 +73,7 @@ export function hitTestInterbase(
   // same geometry as drawInterbaseSegments).
   if (
     !hit &&
-    showCoverage &&
+    interbaseVisible &&
     domainMax !== undefined &&
     domainMax > 0 &&
     rpcData.interbaseMaxCount > 0 &&
