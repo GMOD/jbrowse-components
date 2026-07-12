@@ -1,8 +1,7 @@
 import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { buildAllTracksMenu } from '@jbrowse/core/ui'
-import { avg, getEnv, getSession, notEmpty } from '@jbrowse/core/util'
+import { avg, getSession, notEmpty } from '@jbrowse/core/util'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
@@ -540,7 +539,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       menuItems() {
-        const allTracks = self.views.flatMap(v => v.tracks)
         return [
           ...self.views.map((view, idx) => ({
             label: `Row ${idx + 1} view menu`,
@@ -570,7 +568,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             label: 'Show...',
             icon: VisibilityIcon,
             subMenu: [
-              ...buildAllTracksMenu(getEnv(self).pluginManager, allTracks),
               {
                 label: 'Show header',
                 type: 'checkbox',

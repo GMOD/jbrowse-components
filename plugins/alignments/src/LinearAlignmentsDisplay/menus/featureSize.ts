@@ -12,10 +12,9 @@ const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),
 )
 
-// Single source of truth for the (featureHeight, featureSpacing) pairs that
-// the feature-height menu and the LGV/comparative-view setCompactness API
-// both drive. Both the menu radios' `checked` state and `setCompactness`
-// derive from this — adding a preset means updating one place.
+// Single source of truth for the (featureHeight, featureSpacing) pairs the
+// feature-height menu drives. Both the menu radios' `checked` state and their
+// onClick derive from this — adding a preset means updating one place.
 //
 // 'Normal' matches the config-schema defaults (featureHeight=7, featureSpacing=1)
 // so a fresh display with no overrides reads as Normal-checked and clicking
@@ -29,8 +28,6 @@ export const COMPACTNESS_PRESETS = {
     featureSpacing: 0,
   },
 } as const
-
-export type CompactnessLevel = keyof typeof COMPACTNESS_PRESETS
 
 // Extends HeightModeMenuModel (heightMode + setHeightMode + PromotableDisplay),
 // so passing the model straight to the shared heightModeMenuItems builder

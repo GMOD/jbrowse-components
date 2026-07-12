@@ -157,13 +157,6 @@ export default function stateModelFactory(
         self.configuration.setSlot('geneGlyphMode', value)
       },
 
-      // Cross-display "compactness" API (see buildAllTracksMenu). Maps a level
-      // onto the base feature-size preset; leaves the track-height strategy
-      // alone (orthogonal), same as the base setDisplayMode.
-      setCompactness(level: 'normal' | 'compact' | 'super-compact') {
-        self.setDisplayMode(level === 'super-compact' ? 'superCompact' : level)
-      },
-
       setShowOnlyGenes(value: boolean) {
         self.showOnlyGenes = value
       },

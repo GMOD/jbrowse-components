@@ -188,7 +188,7 @@ describe('canvas display fit-to-display-height', () => {
     display.setHeightMode('fit')
     display.setDisplayMode('compact')
     expect(display.fitHeightToDisplay).toBe(true)
-    display.setCompactness('super-compact')
+    display.setDisplayMode('superCompact')
     expect(display.fitHeightToDisplay).toBe(true)
     display.setDisplayMode('normal')
     expect(display.fitHeightToDisplay).toBe(true)

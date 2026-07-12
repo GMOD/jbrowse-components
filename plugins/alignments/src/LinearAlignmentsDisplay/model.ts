@@ -65,7 +65,6 @@ import {
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
-  COMPACTNESS_PRESETS,
   getColorByMenuItem,
   getContextMenuItems,
   getCoverageMenuItem,
@@ -107,7 +106,6 @@ import type {
   ReadConnectionsMode,
   SashimiArcsMode,
 } from './constants.ts'
-import type { CompactnessLevel } from './menus/featureSize.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type { SectionsLayout } from './sectionLayout.ts'
 import type {
@@ -2378,18 +2376,6 @@ export default function stateModelFactory(
            */
           setMaxHeight(height?: number) {
             self.configuration.setSlot('maxHeight', height)
-            self.scrollTop = 0
-          },
-
-          // duck-typed by LGV/BreakpointSplitView/LinearComparativeView "Compact all tracks"
-          /**
-           * #action
-           */
-          setCompactness(level: CompactnessLevel) {
-            const { featureHeight, featureSpacing } = COMPACTNESS_PRESETS[level]
-            self.configuration.setSlot('heightMode', 'fixed')
-            self.configuration.setSlot('featureHeight', featureHeight)
-            self.configuration.setSlot('featureSpacing', featureSpacing)
             self.scrollTop = 0
           },
 

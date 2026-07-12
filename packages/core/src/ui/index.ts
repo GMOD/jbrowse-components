@@ -45,13 +45,6 @@ export { default as BaseTooltip } from './BaseTooltip.tsx'
 export { default as PluggableComponent } from './PluggableComponent.tsx'
 export type * from './MenuTypes.ts'
 export { pushLaunchViewMenuItem } from './launchViewMenu.ts'
-export {
-  type CompactableDisplay,
-  type Compactness,
-  type GroupOp,
-  buildAllTracksMenu,
-  isCompactable,
-} from './buildAllTracksMenu.ts'
 export { default as Crosshairs } from './Crosshairs.tsx'
 export { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
 export {

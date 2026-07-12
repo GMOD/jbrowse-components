@@ -537,7 +537,7 @@ describe('alignments fit-to-display-height session default', () => {
     )
     expect(display.fitHeightToDisplay).toBe(true)
 
-    display.setCompactness('compact')
+    display.setFeatureHeight(3)
     // the sentinel win: 'fixed' pins over the 'fit' session default
     expect(display.fitHeightToDisplay).toBe(false)
     expect(display.featureHeight).toBe(3)
@@ -695,7 +695,7 @@ describe('alignments grow (auto-height) mode', () => {
     )
     expect(display.autoHeight).toBe(true)
 
-    display.setCompactness('compact')
+    display.setFeatureHeight(3)
     expect(display.autoHeight).toBe(false)
     expect(display.featureHeight).toBe(3)
   })

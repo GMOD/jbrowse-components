@@ -59,7 +59,6 @@ agent-docs/ARCHITECTURE.md "Display stacks".
 | [contextMenuItems](#method-contextmenuitems)                           | Methods |             |
 | [setSubfeatureLabels](#action-setsubfeaturelabels)                     | Actions |             |
 | [setGeneGlyphMode](#action-setgeneglyphmode)                           | Actions |             |
-| [setCompactness](#action-setcompactness)                               | Actions |             |
 | [setShowOnlyGenes](#action-setshowonlygenes)                           | Actions |             |
 | [setDisplayDirectionalChevrons](#action-setdisplaydirectionalchevrons) | Actions |             |
 
@@ -456,12 +455,6 @@ type setSubfeatureLabels = (value: 'none' | 'overlay' | 'below') => void
 
 ```ts
 type setGeneGlyphMode = (value: 'auto' | 'all' | 'longestCoding') => void
-```
-
-#### action: setCompactness
-
-```ts
-type setCompactness = (level: 'normal' | 'compact' | 'super-compact') => void
 ```
 
 #### action: setShowOnlyGenes

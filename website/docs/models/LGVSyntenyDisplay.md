@@ -244,7 +244,6 @@ and docs.
 [setFeatureHeight](../linearalignmentsdisplay#action-setfeatureheight),
 [setFeatureSpacing](../linearalignmentsdisplay#action-setfeaturespacing),
 [setMaxHeight](../linearalignmentsdisplay#action-setmaxheight),
-[setCompactness](../linearalignmentsdisplay#action-setcompactness),
 [setFitHeightToDisplay](../linearalignmentsdisplay#action-setfitheighttodisplay),
 [setHeightMode](../linearalignmentsdisplay#action-setheightmode),
 [setFittedHeightPx](../linearalignmentsdisplay#action-setfittedheightpx),

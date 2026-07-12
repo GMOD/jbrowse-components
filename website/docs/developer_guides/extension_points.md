@@ -123,7 +123,6 @@ that follow are hand-written.
 | --------------------------------------------- | ----- | --------------------------------------------------------------- |
 | `Core-addTrackComponent`                      | sync  | Inject a custom React component into a track's rendering area   |
 | `Core-customizeAbout`                         | sync  | Transform the config shown in a track's About dialog            |
-| `Core-extendAllTracksMenu`                    | sync  | Add items to the all-tracks menu                                |
 | `Core-extendPluggableElement`                 | sync  | Mutate any pluggable element after it is created                |
 | `Core-extendSession`                          | sync  | Extend the session model with extra state or actions            |
 | `Core-extendWorker`                           | sync  | Register extra RPC methods on the web worker                    |

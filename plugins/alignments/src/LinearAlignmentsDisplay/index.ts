@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 import configSchemaFactory from './configSchema.ts'
-import { readConnectionsGroupOp } from './menus/allTracksGroupOps.ts'
 import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -13,10 +12,6 @@ const AlignmentsDisplayComponent = lazy(
 )
 
 export default function register(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint('Core-extendAllTracksMenu', ops => [
-    ...ops,
-    readConnectionsGroupOp,
-  ])
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({

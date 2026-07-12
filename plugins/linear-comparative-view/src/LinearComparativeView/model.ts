@@ -1,13 +1,7 @@
 import { lazy } from 'react'
 
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { buildAllTracksMenu } from '@jbrowse/core/ui'
-import {
-  avg,
-  getEnv,
-  getSession,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
@@ -386,9 +380,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       menuItems(): MenuItem[] {
-        const allTracks = self.views.flatMap(v => v.tracks)
         return [
-          ...buildAllTracksMenu(getEnv(self).pluginManager, allTracks),
           {
             label: 'Return to import form',
             onClick: () => {
