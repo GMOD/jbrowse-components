@@ -1,9 +1,4 @@
-import {
-  BlockSet,
-  makeContentBlock,
-  makeElidedBlock,
-  makeInterRegionPaddingBlock,
-} from './blockTypes.ts'
+import { BlockSet } from './blockTypes.ts'
 import { intersection2 } from './range.ts'
 
 import type { Base1DViewModel } from './calculateStaticBlocks.ts'
@@ -69,14 +64,13 @@ export default function calculateDynamicBlocks(
       const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
 
       if (padding && displayedRegionIndex === 0 && isLeftEndOfDisplayedRegion) {
-        blocks.push(
-          makeInterRegionPaddingBlock({
-            key: `${key}-beforeFirstRegion`,
-            widthPx: -offsetPx,
-            offsetPx: blockOffsetPx + offsetPx,
-            variant: 'boundary',
-          }),
-        )
+        blocks.push({
+          type: 'InterRegionPaddingBlock',
+          key: `${key}-beforeFirstRegion`,
+          widthPx: -offsetPx,
+          offsetPx: blockOffsetPx + offsetPx,
+          variant: 'boundary',
+        })
       }
 
       const data = {
@@ -94,8 +88,8 @@ export default function calculateDynamicBlocks(
       }
       blocks.push(
         elision && regionWidthPx < minimumBlockWidth
-          ? makeElidedBlock(data)
-          : makeContentBlock(data),
+          ? { ...data, type: 'ElidedBlock' }
+          : { ...data, type: 'ContentBlock' },
       )
 
       if (
@@ -104,14 +98,13 @@ export default function calculateDynamicBlocks(
         isRightEndOfDisplayedRegion
       ) {
         const afterOffsetPx = blockOffsetPx + widthPx
-        blocks.push(
-          makeInterRegionPaddingBlock({
-            key: `${key}-afterLastRegion`,
-            widthPx: width - afterOffsetPx + offsetPx,
-            offsetPx: afterOffsetPx,
-            variant: 'boundary',
-          }),
-        )
+        blocks.push({
+          type: 'InterRegionPaddingBlock',
+          key: `${key}-afterLastRegion`,
+          widthPx: width - afterOffsetPx + offsetPx,
+          offsetPx: afterOffsetPx,
+          variant: 'boundary',
+        })
       }
     }
     displayedRegionLeftPx += regionWidthPx

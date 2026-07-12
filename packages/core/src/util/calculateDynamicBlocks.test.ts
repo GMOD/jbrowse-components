@@ -575,10 +575,9 @@ describe('elided block handling', () => {
       b => b.type === 'ElidedBlock',
     )
 
+    // three consecutive tiny regions (chr2, chr3, chr4) coalesce into one block
     expect(staticElided.length).toBe(1)
     expect(dynamicElided.length).toBe(1)
-    expect((staticElided[0] as any).elidedBlockCount).toBe(2)
-    expect((dynamicElided[0] as any).elidedBlockCount).toBe(2)
   })
 
   it('no non-boundary padding blocks between consecutive elided regions', () => {

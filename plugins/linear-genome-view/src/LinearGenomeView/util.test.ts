@@ -1,9 +1,4 @@
 import {
-  makeContentBlock,
-  makeInterRegionPaddingBlock,
-} from '@jbrowse/core/util/blockTypes'
-
-import {
   getScalebarRefNameLabels,
   groupContiguousBlocks,
   makeBlockTicks,
@@ -13,7 +8,7 @@ import {
   stickyBlockIndex,
 } from './util.ts'
 
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 // bpPerPx=5000 → chooseGridPitch gives majorPitch=1_000_000
 const SCALE = 5000
@@ -119,18 +114,18 @@ describe('groupContiguousBlocks', () => {
     end: number,
     offsetPx: number,
     reversed = false,
-  ) =>
-    makeContentBlock({
-      key: `${start}`,
-      assemblyName: 'volvox',
-      refName: 'ctgA',
-      start,
-      end,
-      reversed,
-      offsetPx,
-      widthPx: end - start,
-      displayedRegionIndex,
-    })
+  ): ContentBlock => ({
+    type: 'ContentBlock',
+    key: `${start}`,
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start,
+    end,
+    reversed,
+    offsetPx,
+    widthPx: end - start,
+    displayedRegionIndex,
+  })
 
   test('merges a regions ~800px chunks into one run', () => {
     const runs = groupContiguousBlocks([
@@ -156,7 +151,7 @@ describe('groupContiguousBlocks', () => {
   test('an elided/padding block breaks a run', () => {
     const runs = groupContiguousBlocks([
       block(0, 0, 800, 0),
-      makeInterRegionPaddingBlock({ key: 'pad', widthPx: 3, offsetPx: 800 }),
+      { type: 'InterRegionPaddingBlock', key: 'pad', widthPx: 3, offsetPx: 800 },
       block(0, 800, 1600, 803),
     ])
     expect(runs).toHaveLength(2)
@@ -179,8 +174,9 @@ function refBlock({
   offsetPx: number
   widthPx: number
   isLeftEndOfDisplayedRegion?: boolean
-}) {
-  return makeContentBlock({
+}): ContentBlock {
+  return {
+    type: 'ContentBlock',
     key,
     assemblyName: 'volvox',
     refName,
@@ -190,7 +186,7 @@ function refBlock({
     widthPx,
     displayedRegionIndex,
     isLeftEndOfDisplayedRegion,
-  })
+  }
 }
 
 // map of displayedRegionIndex -> right-edge px (offsetPx + widthPx)

@@ -256,23 +256,23 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({
         className={classes.scalebarVisibleRegion}
       />
       {overviewBlocks.map((block, i) =>
-        block.type !== 'ContentBlock' ? (
+        block.type === 'ContentBlock' ? (
+          <OverviewBox
+            block={block}
+            model={model}
+            showRefName={showRefName[i]!}
+            key={block.key}
+          />
+        ) : block.type === 'ElidedBlock' ? (
           <div
-            key={block.offsetPx}
+            key={block.key}
             className={cx(classes.scalebarContig, classes.elidedOverviewBlock)}
             style={{
               width: block.widthPx,
               transform: `translateX(${block.offsetPx}px)`,
             }}
           />
-        ) : (
-          <OverviewBox
-            block={block}
-            model={model}
-            showRefName={showRefName[i]!}
-            key={`${block.refName}-${block.offsetPx}`}
-          />
-        ),
+        ) : null,
       )}
       <OverviewHighlight model={model} />
       {additional}

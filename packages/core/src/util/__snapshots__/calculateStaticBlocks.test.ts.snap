@@ -375,7 +375,6 @@ BlockSet {
     {
       "assemblyName": "test",
       "displayedRegionIndex": 0,
-      "elidedBlockCount": 0,
       "end": 1,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": true,

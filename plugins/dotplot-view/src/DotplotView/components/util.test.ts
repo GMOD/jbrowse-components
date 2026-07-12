@@ -1,10 +1,10 @@
-import { makeContentBlock } from '@jbrowse/core/util/blockTypes'
-
 import {
   axisBorderPx,
   getBlockLabelKeysToHide,
   truncateRefName,
 } from './util.ts'
+
+import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 function region(refName: string, end: number, start = 0) {
   return { refName, start, end }
@@ -12,8 +12,9 @@ function region(refName: string, end: number, start = 0) {
 
 // label position along the axis is `round(length - offsetPx + viewOffsetPx)`;
 // each label occupies the 12px ending at that position.
-function posBlock(key: string, offsetPx: number, len: number) {
-  return makeContentBlock({
+function posBlock(key: string, offsetPx: number, len: number): ContentBlock {
+  return {
+    type: 'ContentBlock',
     key,
     offsetPx,
     widthPx: 100,
@@ -21,7 +22,7 @@ function posBlock(key: string, offsetPx: number, len: number) {
     refName: key,
     start: 0,
     end: len,
-  })
+  }
 }
 
 describe('truncateRefName', () => {
