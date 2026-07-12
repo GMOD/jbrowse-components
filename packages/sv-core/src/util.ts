@@ -90,12 +90,12 @@ export function getBreakendCoveringRegions({
     }
   } else if (feature.get('mate') !== undefined) {
     const mate = feature.get('mate') as {
-      strand: number
+      strand?: number
       start: number
       end?: number
       refName: string
     }
-    const strand = feature.get('strand')!
+    const strand = feature.get('strand') as number | undefined
     const mateStrand = mate.strand
     // Forward strand (1): use end position (right side)
     // Reverse strand (-1): use start position (left side)
@@ -183,14 +183,9 @@ export function readTranslocationMate(info: {
 }
 
 export function hasBreakpointSplitView(model: IAnyStateTreeNode) {
-  try {
-    // getViewType throws if the view type isn't registered; reaching the next
-    // line means it exists.
-    getEnv(getSession(model)).pluginManager.getViewType('BreakpointSplitView')
-    return true
-  } catch {
-    return false
-  }
+  return getEnv(getSession(model)).pluginManager.viewTypes.has(
+    'BreakpointSplitView',
+  )
 }
 
 export function navToLoc(

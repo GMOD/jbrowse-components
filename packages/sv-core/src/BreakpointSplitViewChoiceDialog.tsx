@@ -71,33 +71,29 @@ const BreakpointSplitViewChoiceDialog = observer(
     const handleLaunch = () => {
       const tracks =
         copyTracks && view ? (getSnapshot(view.tracks) as Track[]) : []
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      ;(async () => {
+      const windowSizeNum = Number(windowSize) || 0
+      const suffixedId = (suffix: string) =>
+        stableViewId === undefined ? undefined : `${stableViewId}_${suffix}`
+      void (async () => {
         try {
           await (isSplitLevel
             ? navToMultiLevelBreak({
-                stableViewId:
-                  stableViewId !== undefined
-                    ? `${stableViewId}_multilevel`
-                    : undefined,
+                stableViewId: suffixedId('multilevel'),
                 session,
                 tracks,
                 mirror,
                 feature,
                 assemblyName,
-                windowSize: +windowSize || 0,
+                windowSize: windowSizeNum,
               })
             : navToSingleLevelBreak({
                 feature,
                 assemblyName,
                 focusOnBreakends,
                 session,
-                stableViewId:
-                  stableViewId !== undefined
-                    ? `${stableViewId}_singlelevel`
-                    : undefined,
+                stableViewId: suffixedId('singlelevel'),
                 tracks,
-                windowSize: +windowSize || 0,
+                windowSize: windowSizeNum,
               }))
         } catch (e) {
           console.error(e)
