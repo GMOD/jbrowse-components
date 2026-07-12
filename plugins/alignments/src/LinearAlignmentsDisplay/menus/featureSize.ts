@@ -35,6 +35,8 @@ export const COMPACTNESS_PRESETS = {
 interface FeatureHeightModel extends HeightModeMenuModel {
   featureHeight: number
   featureSpacing: number
+  configuredFeatureHeight: number
+  configuredFeatureSpacing: number
   fitHeightToDisplay: boolean
   autoHeight: boolean
   setFeatureHeight: (height?: number) => void
@@ -45,6 +47,13 @@ export function getFeatureHeightMenuItem(
   model: FeatureHeightModel,
   opts?: { disabled?: boolean; disabledHelpText?: string },
 ) {
+  // A fixed per-feature height is active (vs the grow/fit container modes) only
+  // when neither auto-sizing flag is set; the preset radios and the Custom radio
+  // are all meaningless otherwise, so they check against this.
+  const fixedHeight = !model.fitHeightToDisplay && !model.autoHeight
+  const matchesPreset = (preset: { featureHeight: number; featureSpacing: number }) =>
+    model.featureHeight === preset.featureHeight &&
+    model.featureSpacing === preset.featureSpacing
   return {
     label: 'Set feature height...',
     icon: HeightIcon,
@@ -60,11 +69,7 @@ export function getFeatureHeightMenuItem(
       ...Object.values(COMPACTNESS_PRESETS).map(preset =>
         promotableRadioItem({
           label: preset.label,
-          checked:
-            !model.fitHeightToDisplay &&
-            !model.autoHeight &&
-            model.featureHeight === preset.featureHeight &&
-            model.featureSpacing === preset.featureSpacing,
+          checked: fixedHeight && matchesPreset(preset),
           onClick: () => {
             model.setFeatureHeight(preset.featureHeight)
             model.setFeatureSpacing(preset.featureSpacing)
@@ -76,18 +81,16 @@ export function getFeatureHeightMenuItem(
           ]),
         }),
       ),
-      { type: 'divider' as const },
-      // The container-sizing strategy (fixed/grow/fit) lives under a nested
-      // "Track height" entry with effect-describing labels, mirroring the canvas
-      // display so the two present an identical menu. The shared
-      // heightModeMenuItems builder makes the radios identical by construction —
-      // same labels, checked/onClick wiring, and per-mode session-default pin.
+      // Custom sits with the presets as a peer radio (not below the divider): it
+      // writes the same (featureHeight, featureSpacing) pair, and is checked when
+      // a fixed height is active but matches none of the presets — otherwise a
+      // custom value would leave the whole group unchecked with no cue.
       {
-        label: 'Track height',
-        subMenu: heightModeMenuItems(model, 'reads'),
-      },
-      {
-        label: 'Custom',
+        label: 'Custom...',
+        type: 'radio' as const,
+        checked:
+          fixedHeight &&
+          !Object.values(COMPACTNESS_PRESETS).some(matchesPreset),
         onClick: () => {
           getSession(model).queueDialog(handleClose => [
             SetFeatureHeightDialog,
@@ -97,6 +100,16 @@ export function getFeatureHeightMenuItem(
             },
           ])
         },
+      },
+      { type: 'divider' as const },
+      // The container-sizing strategy (fixed/grow/fit) lives under a nested
+      // "Track height" entry with effect-describing labels, mirroring the canvas
+      // display so the two present an identical menu. The shared
+      // heightModeMenuItems builder makes the radios identical by construction —
+      // same labels, checked/onClick wiring, and per-mode session-default pin.
+      {
+        label: 'Track height',
+        subMenu: heightModeMenuItems(model, 'reads'),
       },
     ],
   }
