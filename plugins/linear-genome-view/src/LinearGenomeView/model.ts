@@ -388,6 +388,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         * controls whether the interactive highlight chip (link icon + context
+         * menu) is drawn on each highlight band; off by default
+         */
+        showHighlightChips: types.stripDefault(types.boolean, false),
+
+        /**
+         * #property
          * controls whether highlight/bookmark chip labels are shown inline
          */
         labelsVisible: types.stripDefault(types.boolean, true),
@@ -1058,6 +1065,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setHighlightsVisible(arg: boolean) {
         self.highlightsVisible = arg
+      },
+      /**
+       * #action
+       */
+      setShowHighlightChips(arg: boolean) {
+        self.showHighlightChips = arg
       },
       /**
        * #action

@@ -4,7 +4,6 @@ import {
   HighlightBand,
   HighlightChip,
 } from '@jbrowse/plugin-linear-genome-view'
-import BookmarkIcon from '@mui/icons-material/Bookmark'
 import { observer } from 'mobx-react'
 
 import { getBookmarkHighlights } from './getBookmarkHighlights.ts'
@@ -16,12 +15,13 @@ const Highlight = observer(function Highlight({
 }: {
   model: IExtendedLGV
 }) {
-  const { labelsVisible } = model
+  const { labelsVisible, showHighlightChips } = model
   const { session, bookmarkWidget, bookmarks } = getBookmarkHighlights(model)
 
   return bookmarkWidget
     ? bookmarks.map((r, idx) => {
         const coords = model.getHighlightCoords(r)
+        const label = labelsVisible ? r.label : undefined
         return coords ? (
           <HighlightBand
             // region fields keep the key stable across pan/zoom (unlike pixel
@@ -29,34 +29,35 @@ const Highlight = observer(function Highlight({
             key={highlightKey(r, idx)}
             coords={coords}
             background={r.highlight}
+            label={label}
           >
-            <HighlightChip
-              icon={BookmarkIcon}
-              color={colord(r.highlight)}
-              label={r.label}
-              labelsVisible={labelsVisible}
-              tooltip={r.label}
-              menuItems={[
-                {
-                  label: 'Open bookmark widget',
-                  onClick: () => {
-                    session.showWidget(bookmarkWidget)
+            {showHighlightChips ? (
+              <HighlightChip
+                color={colord(r.highlight)}
+                label={label}
+                tooltip={r.label}
+                menuItems={[
+                  {
+                    label: 'Open bookmark widget',
+                    onClick: () => {
+                      session.showWidget(bookmarkWidget)
+                    },
                   },
-                },
-                {
-                  label: 'Turn off bookmark highlights',
-                  onClick: () => {
-                    bookmarkWidget.setBookmarkHighlightsVisible(false)
+                  {
+                    label: 'Turn off bookmark highlights',
+                    onClick: () => {
+                      bookmarkWidget.setBookmarkHighlightsVisible(false)
+                    },
                   },
-                },
-                {
-                  label: 'Remove bookmark',
-                  onClick: () => {
-                    bookmarkWidget.removeBookmarkObject(r)
+                  {
+                    label: 'Remove bookmark',
+                    onClick: () => {
+                      bookmarkWidget.removeBookmarkObject(r)
+                    },
                   },
-                },
-              ]}
-            />
+                ]}
+              />
+            ) : null}
           </HighlightBand>
         ) : null
       })

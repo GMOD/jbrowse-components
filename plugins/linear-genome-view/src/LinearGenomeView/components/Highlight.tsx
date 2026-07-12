@@ -1,4 +1,3 @@
-import { Highlighter } from '@jbrowse/core/ui/Icons'
 import CloseIcon from '@mui/icons-material/Close'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { useTheme } from '@mui/material'
@@ -23,33 +22,38 @@ const Highlight = observer(function Highlight({
   const theme = useTheme()
   const coords = model.getHighlightCoords(highlight)
   const bandColor = getHighlightColor(highlight, theme)
+  const label = model.labelsVisible ? highlight.label : undefined
 
   return coords ? (
-    <HighlightBand coords={coords} background={bandColor.toRgbString()}>
-      <HighlightChip
-        icon={Highlighter}
-        color={bandColor}
-        label={highlight.label}
-        labelsVisible={model.labelsVisible}
-        tooltip={highlight.label ?? 'Highlighted region'}
-        menuItems={[
-          {
-            label: 'Dismiss highlight',
-            icon: CloseIcon,
-            onClick: () => {
-              model.removeHighlight(highlight)
+    <HighlightBand
+      coords={coords}
+      background={bandColor.toRgbString()}
+      label={label}
+    >
+      {model.showHighlightChips ? (
+        <HighlightChip
+          color={bandColor}
+          label={label}
+          tooltip={highlight.label ?? 'Highlighted region'}
+          menuItems={[
+            {
+              label: 'Dismiss highlight',
+              icon: CloseIcon,
+              onClick: () => {
+                model.removeHighlight(highlight)
+              },
             },
-          },
-          {
-            label: 'Turn off highlights',
-            icon: VisibilityOffIcon,
-            onClick: () => {
-              model.setHighlightsVisible(false)
+            {
+              label: 'Turn off highlights',
+              icon: VisibilityOffIcon,
+              onClick: () => {
+                model.setHighlightsVisible(false)
+              },
             },
-          },
-          ...model.highlightMenuItems(highlight),
-        ]}
-      />
+            ...model.highlightMenuItems(highlight),
+          ]}
+        />
+      ) : null}
     </HighlightBand>
   ) : null
 })

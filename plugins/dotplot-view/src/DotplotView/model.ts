@@ -223,6 +223,12 @@ export default function stateModelFactory(pm: PluginManager) {
           highlightsVisible: types.stripDefault(types.boolean, true),
           /**
            * #property
+           * controls whether the interactive highlight chip (link icon +
+           * context menu) is drawn on each highlight band; off by default
+           */
+          showHighlightChips: types.stripDefault(types.boolean, false),
+          /**
+           * #property
            * Show the floating color-by legend in the top-right of the plot.
            * Dismissible via the legend's close button; re-enable from the
            * color-by (palette) menu.
@@ -651,6 +657,12 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
+        setShowHighlightChips(arg: boolean) {
+          self.showHighlightChips = arg
+        },
+        /**
+         * #action
+         */
         setShowColorLegend(arg: boolean) {
           self.showColorLegend = arg
         },
@@ -1068,6 +1080,27 @@ export default function stateModelFactory(pm: PluginManager) {
                 ])
               },
             },
+            ...(self.highlight.length
+              ? [
+                  {
+                    label: 'Show highlights',
+                    type: 'checkbox' as const,
+                    checked: self.highlightsVisible,
+                    onClick: () => {
+                      self.setHighlightsVisible(!self.highlightsVisible)
+                    },
+                  },
+                  {
+                    label: 'Show highlight chips',
+                    type: 'checkbox' as const,
+                    checked: self.showHighlightChips,
+                    disabled: !self.highlightsVisible,
+                    onClick: () => {
+                      self.setShowHighlightChips(!self.showHighlightChips)
+                    },
+                  },
+                ]
+              : []),
             ...(self.hasLodCapableAdapter
               ? [
                   {
