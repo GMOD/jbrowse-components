@@ -7,7 +7,11 @@ const useStyles = makeStyles()({
     width: '1em',
     textAlign: 'left',
     '& span': {
-      visibility: 'hidden',
+      display: 'inline-block',
+      opacity: 0,
+      // promote each dot to its own compositor layer so the opacity animation
+      // is offloaded from the main thread and keeps running during jank
+      willChange: 'opacity',
       '&:nth-of-type(1)': {
         animation: `${dot1} 1.2s infinite`,
       },
