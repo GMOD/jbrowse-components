@@ -14,10 +14,11 @@ import type {
 
 /**
  * Build the packed coverage region (depth bars + SNP segments + interbase
- * insertions + indicators) from MAF blocks. Pure: shared by the worker
- * (`LinearMafGetAlignmentData`, over all sample rows) and the main thread (the
- * `coverageRegions` getter, over a subtree-filtered row set) so both produce
- * identical buffers — recomputing for a subtree just passes filtered blocks.
+ * insertions + indicators) from MAF blocks. Called from the worker
+ * (`LinearMafGetAlignmentData`) over the blocks it already narrowed to the
+ * display/subtree row set, so coverage is automatically scoped to the visible
+ * rows. Kept pure over its `blocks` argument so a subtree recompute would just
+ * pass a filtered block list.
  *
  * `refRowIndex` (the reference assembly's display row) is forwarded to the
  * identity computation so the reference's self-match is excluded; `-1` when no

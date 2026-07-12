@@ -21,7 +21,8 @@ export function renderBases(
   for (let i = 0, genomicOffset = 0; i < len; i++) {
     const refByte = seq[i]!
     if (refByte === DASH) {
-      // Reference insertion — skipped here, drawn by renderInsertions.
+      // Reference insertion — occupies no reference cell here; the marker is
+      // drawn separately by the insertion overlay / export (drawMafInsertions).
       continue
     }
     const css = resolveCellColor(refByte, alignment[i]!, cellColorConfig)

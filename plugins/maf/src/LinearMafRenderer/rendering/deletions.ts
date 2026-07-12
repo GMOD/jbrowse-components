@@ -1,42 +1,28 @@
 import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 import { measureText } from '@jbrowse/core/util'
 
-import { forEachDeletion } from './forEachDeletion.ts'
+import { FONT_CONFIG } from './types.ts'
 
-import type { RenderingContext } from './types.ts'
+import type { DeletionMarker } from '../../LinearMafDisplay/components/computeVisibleDeletions.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
- * Draw the deleted-base count inside each deletion run for one row on the
- * Canvas2D export path. Shares the `forEachDeletion` walk with the on-screen
- * overlay + hover hit-test, so all three agree on deletion geometry. The gap
- * cells are drawn by `renderBases`; this only adds the count label.
+ * Draw the deleted-base count centered inside each deletion run, shared by the
+ * on-screen `DeletionsOverlay` and the SVG export so the two can't drift (the
+ * same marker pattern the other MAF overlays use). The gap cells themselves are
+ * painted by the base pass; this only adds the count label, and only where the
+ * run is wide/tall enough to fit it. Markers come from `computeVisibleDeletions`
+ * (which shares the `forEachDeletion` walk with the hover hit-test).
  */
-export function renderDeletions(
-  context: RenderingContext,
-  alignment: Uint8Array,
-  seq: Uint8Array,
-  startBp: number,
-  rowTop: number,
-) {
-  const { ctx, scale, h, bpToCellLeftPx } = context
-  // Letters never fit below this height (shared with base/SNP + insertion text
-  // so they reveal together), so skip the whole walk — it only draws count text;
-  // gap cells are drawn by renderBases.
-  if (h >= MIN_HEIGHT_FOR_TEXT) {
-    ctx.fillStyle = 'white'
-    // Set explicitly rather than relying on the once-set outer 'center': a small
-    // insertion earlier in the same block leaves textAlign='left', which would
-    // otherwise mis-align these centered count labels.
-    ctx.textAlign = 'center'
-    const yMid = Math.round(rowTop + h / 2)
-    forEachDeletion(seq, alignment, startBp, (start, length) => {
-      const text = String(length)
-      const width = length * scale
-      if (width >= measureText(text) + 2) {
-        const xa = bpToCellLeftPx(start)
-        const xb = bpToCellLeftPx(start + length - 1)
-        ctx.fillText(text, Math.min(xa, xb) + width / 2, yMid)
-      }
-    })
+export function drawMafDeletionLabels(ctx: Ctx2D, markers: DeletionMarker[]) {
+  ctx.font = FONT_CONFIG
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillStyle = 'white'
+  for (const m of markers) {
+    const text = String(m.length)
+    if (m.width >= measureText(text) + 2 && m.h >= MIN_HEIGHT_FOR_TEXT) {
+      ctx.fillText(text, m.xLeft + m.width / 2, Math.round(m.rowTop + m.h / 2))
+    }
   }
 }

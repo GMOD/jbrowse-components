@@ -5,10 +5,9 @@ import {
   getInsertionType,
 } from '@jbrowse/alignments-core'
 
-import { forEachInsertion } from './forEachInsertion.ts'
-import { CHAR_SIZE_WIDTH } from './types.ts'
+import { CHAR_SIZE_WIDTH, FONT_CONFIG } from './types.ts'
 
-import type { RenderingContext } from './types.ts'
+import type { InsertionMarker } from '../../LinearMafDisplay/components/computeVisibleInsertions.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
@@ -55,30 +54,29 @@ export function drawMafInsertionMarker(
 }
 
 /**
- * Draw insertion markers for one row on the Canvas2D export path. The marker
- * centers on the cell boundary the insertion sits before — the cell's incoming
- * edge, which is the left edge when non-reversed and the right edge when
- * reversed.
+ * Draw all positioned insertion markers, shared by the on-screen
+ * `InsertionsOverlay` and the SVG export so the two can't drift (the same
+ * pattern the other MAF overlays use). Markers carry the orientation-aware
+ * `xCenter` already resolved by `computeVisibleInsertions`, so this is a plain
+ * marker loop over the shared `drawMafInsertionMarker`.
  */
-export function renderInsertions(
-  context: RenderingContext,
-  alignment: Uint8Array,
-  seq: Uint8Array,
-  startBp: number,
-  rowTop: number,
+export function drawMafInsertions(
+  ctx: Ctx2D,
+  markers: InsertionMarker[],
+  insertionColor: string,
+  pxPerBp: number,
 ) {
-  const { ctx, scale, h, reversed, palette, bpToCellLeftPx } = context
-  forEachInsertion(seq, alignment, startBp, (anchorBp, length) => {
-    const cellLeft = bpToCellLeftPx(anchorBp)
-    const xCenter = reversed ? cellLeft + scale : cellLeft
+  ctx.font = FONT_CONFIG
+  ctx.textBaseline = 'middle'
+  for (const m of markers) {
     drawMafInsertionMarker(
       ctx,
-      xCenter,
-      rowTop,
-      h,
-      length,
-      scale,
-      palette.insertionColor,
+      m.xCenter,
+      m.rowTop,
+      m.h,
+      m.length,
+      pxPerBp,
+      insertionColor,
     )
-  })
+  }
 }

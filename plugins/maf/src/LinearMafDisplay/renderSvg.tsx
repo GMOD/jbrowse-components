@@ -26,7 +26,9 @@ import { YSCALE_AXIS_X } from './components/yScaleAxis.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
 import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
+import { drawMafDeletionLabels } from '../LinearMafRenderer/rendering/deletions.ts'
 import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
+import { drawMafInsertions } from '../LinearMafRenderer/rendering/insertions.ts'
 import { drawInversions } from '../LinearMafRenderer/rendering/inversions.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import { drawMafSummaryBars } from '../LinearMafRenderer/rendering/summaryBars.ts'
@@ -196,6 +198,19 @@ function MafSvgBody({
             drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
             drawMafSummaryBars(ctx, model.visibleSummaryBars, svgState.palette)
             drawMafAnnotations(ctx, model.visibleFrames, getFrameColors(theme))
+            // Insertion markers + deletion count labels render from the same
+            // positioned markers the on-screen overlays use, so export matches
+            // the screen. Insertions are base-level only (gated like the live
+            // InsertionsOverlay); deletion labels draw in every mode.
+            if (activeRowRendering === 'bases') {
+              drawMafInsertions(
+                ctx,
+                model.visibleInsertions,
+                svgState.palette.insertionColor,
+                1 / view.bpPerPx,
+              )
+            }
+            drawMafDeletionLabels(ctx, model.visibleDeletions)
             drawMafLabels(
               ctx,
               model.visibleLabels,

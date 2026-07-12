@@ -4,9 +4,6 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import { renderBases } from './rendering/bases.ts'
-import { renderDeletions } from './rendering/deletions.ts'
-import { renderInsertions } from './rendering/insertions.ts'
-import { FONT_CONFIG } from './rendering/types.ts'
 import { rowBandGeometry } from '../LinearMafDisplay/components/visibleRegionGeometry.ts'
 
 import type {
@@ -16,6 +13,14 @@ import type {
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
+/**
+ * Paint the per-base SNP/sequence cells for the visible MAF blocks, the
+ * Canvas2D equivalent of the GPU shader's rect pass (so both backends and the
+ * SVG export produce the same base coloring). Insertion markers and deletion
+ * count labels are drawn separately from positioned markers (see the
+ * insertion/deletion overlays + SVG export), not here, so this stays a pure
+ * base-cell pass with no double-drawing when the overlays sit on top.
+ */
 export function drawMafBlocks(
   ctx: Ctx2D,
   regions: { get(key: number): MafRegionData | undefined },
@@ -33,11 +38,6 @@ export function drawMafBlocks(
   } = state
   const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
   const cellColorConfig = { ...palette, showAllLetters, mismatchRendering }
-  // Count-label text style is constant for the whole draw; set once. It
-  // survives the per-block save()/restore() since it's set before any save().
-  ctx.font = FONT_CONFIG
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
 
   for (const renderBlock of renderBlocks) {
     const regionData = regions.get(renderBlock.displayedRegionIndex)
@@ -56,15 +56,7 @@ export function drawMafBlocks(
     const bpToCellLeftPx = reversed
       ? (bp: number) => bpToPx(bp) - scale
       : bpToPx
-    const renderingContext = {
-      ctx,
-      scale,
-      h,
-      palette,
-      cellColorConfig,
-      reversed,
-      bpToCellLeftPx,
-    }
+    const renderingContext = { ctx, scale, h, cellColorConfig, bpToCellLeftPx }
 
     ctx.save()
     ctx.beginPath()
@@ -74,25 +66,10 @@ export function drawMafBlocks(
     for (const mafBlock of regionData.blocks) {
       const { refSeqBytes, startBp: blockStartBp } = mafBlock
       for (const row of mafBlock.rows) {
-        const { alignmentBytes } = row
         const rowTop = offset + rowHeight * row.rowIndex
         renderBases(
           renderingContext,
-          alignmentBytes,
-          refSeqBytes,
-          blockStartBp,
-          rowTop,
-        )
-        renderInsertions(
-          renderingContext,
-          alignmentBytes,
-          refSeqBytes,
-          blockStartBp,
-          rowTop,
-        )
-        renderDeletions(
-          renderingContext,
-          alignmentBytes,
+          row.alignmentBytes,
           refSeqBytes,
           blockStartBp,
           rowTop,

@@ -49,6 +49,11 @@ export function drawMafCoverage(
     baseT: theme.palette.bases.T.main,
     baseN: theme.palette.bases.N.main,
   }
+  const interbaseColors = {
+    insertion: theme.palette.insertion,
+    softclip: theme.palette.insertion,
+    hardclip: theme.palette.insertion,
+  }
   for (const block of blocks) {
     const coverage = regions.get(block.displayedRegionIndex)?.coverage
     const clip = coverage ? clipBlockForCanvas(block, canvasWidth) : null
@@ -80,11 +85,6 @@ export function drawMafCoverage(
         bpToX,
         canvasWidth,
       )
-      const interbaseColors = {
-        insertion: theme.palette.insertion,
-        softclip: theme.palette.insertion,
-        hardclip: theme.palette.insertion,
-      }
       drawInterbaseSegments(
         ctx,
         coverage.interbasePackedBuffer,

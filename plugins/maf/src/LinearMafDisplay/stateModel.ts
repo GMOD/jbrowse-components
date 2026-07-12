@@ -810,10 +810,17 @@ export default function stateModelFactory(
         const oldHeight = self.height
         const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
         self.configuration.setSlot('height', newHeight)
-        if (self.rowHeight > 0) {
+        // Only the rows area scales on a drag; the stacked coverage/conservation
+        // bands (`rowsTopOffset`) are a fixed inset that doesn't move. Scale the
+        // pinned rowHeight by the *rows-area* ratio, not the full-height ratio —
+        // otherwise the fixed bands make the dragged edge lag the cursor by
+        // rowsTopOffset/height (~20% with the coverage band on). Mirrors the
+        // variants display's available-height scaling.
+        const oldRows = oldHeight - self.rowsTopOffset
+        if (self.rowHeight > 0 && oldRows > 0) {
           self.configuration.setSlot(
             'rowHeight',
-            (self.rowHeight * newHeight) / oldHeight,
+            Math.max(1, (self.rowHeight * (newHeight - self.rowsTopOffset)) / oldRows),
           )
         }
         self.resizing = true
@@ -1357,6 +1364,7 @@ export default function stateModelFactory(
       get visibleCodonConservation(): CodonConservationBar[] {
         const view = self.lgv
         const src = self.defaultCodonSpecies
+        const refAssembly = view.assemblyNames[0]
         if (
           !view.initialized ||
           !self.showConservation ||
@@ -1372,7 +1380,15 @@ export default function stateModelFactory(
           rpcDataMap: self.rpcDataMap,
           framesDataMap: self.framesDataMap,
           defaultSrc: src,
-          refRowIndex: self.rowIndexBySrc.get(src) ?? -1,
+          // Exclude the *reference assembly's* row (matching the per-base band's
+          // worker-side `refRowIndex`), not `src`'s row: `src`
+          // (`defaultCodonSpecies`) falls back to row 0 when the reference isn't
+          // a listed sample, which would wrongly drop a real species from the
+          // denominator. `-1` when the reference isn't a visible row.
+          refRowIndex:
+            refAssembly === undefined
+              ? -1
+              : (self.rowIndexBySrc.get(refAssembly) ?? -1),
         })
       },
       /**
