@@ -27,11 +27,11 @@ function setup() {
     start: 100,
     end: 200,
   })
-  return { model: session.views[0], widget }
+  return { model: session.views[0], session }
 }
 
 test('bookmark bands render and respect bookmarkHighlightsVisible', () => {
-  const { model, widget } = setup()
+  const { model, session } = setup()
   const { container, rerender } = render(
     <svg>
       <LGVHighlightSVG model={model} height={100} />
@@ -39,7 +39,7 @@ test('bookmark bands render and respect bookmarkHighlightsVisible', () => {
   )
   expect(container.querySelectorAll('rect').length).toBeGreaterThan(0)
 
-  widget.setBookmarkHighlightsVisible(false)
+  session.setBookmarkHighlightsVisible(false)
   rerender(
     <svg>
       <LGVHighlightSVG model={model} height={100} />

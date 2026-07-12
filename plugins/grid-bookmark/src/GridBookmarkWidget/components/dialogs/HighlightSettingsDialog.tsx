@@ -9,6 +9,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { getBookmarkSession } from '../../../bookmarkViewUtils.ts'
+
 import type { GridBookmarkModel } from '../../model.ts'
 
 const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
@@ -18,6 +20,7 @@ const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
   onClose: () => void
   model: GridBookmarkModel
 }) {
+  const session = getBookmarkSession(model)
   return (
     <Dialog open onClose={onClose} title="Settings">
       <DialogContent>
@@ -31,9 +34,11 @@ const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
         <Stack direction="row" sx={{ alignItems: 'center' }}>
           <Switch
             data-testid="toggle_highlight_all_switch"
-            checked={model.bookmarkHighlightsVisible}
+            checked={session.bookmarkHighlightsVisible}
             onChange={() => {
-              model.setBookmarkHighlightsVisible(!model.bookmarkHighlightsVisible)
+              session.setBookmarkHighlightsVisible(
+                !session.bookmarkHighlightsVisible,
+              )
             }}
           />
           <Typography>Show bookmarks as highlights on views</Typography>

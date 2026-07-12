@@ -1,5 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 
+import { getBookmarkSession } from '../../../bookmarkViewUtils.ts'
+
 import type {
   GridBookmarkModel,
   IExtendedDotplotView,
@@ -25,8 +27,9 @@ export function getBookmarkWidget(model: IExtendedLGV | IExtendedDotplotView) {
 export function getBookmarkHighlights(model: IExtendedLGV) {
   const { session, bookmarkWidget } = getBookmarkWidget(model)
   const viewAssemblies = new Set(model.assemblyNames)
-  const bookmarks = bookmarkWidget?.bookmarkHighlightsVisible
-    ? bookmarkWidget.bookmarks.filter(r => viewAssemblies.has(r.assemblyName))
-    : []
+  const bookmarks =
+    getBookmarkSession(model).bookmarkHighlightsVisible && bookmarkWidget
+      ? bookmarkWidget.bookmarks.filter(r => viewAssemblies.has(r.assemblyName))
+      : []
   return { session, bookmarkWidget, bookmarks }
 }

@@ -3,6 +3,7 @@ import { DotplotHighlightBands } from '@jbrowse/plugin-dotplot-view'
 import { observer } from 'mobx-react'
 
 import { getBookmarkWidget } from './getBookmarkHighlights.ts'
+import { getBookmarkSession } from '../../../bookmarkViewUtils.ts'
 
 import type { IExtendedDotplotView } from '../../model.ts'
 
@@ -15,7 +16,7 @@ const DotplotHighlight = observer(function DotplotHighlight({
 
   // unlike the LGV overlays there is no assembly filter: a dotplot draws two
   // assemblies and DotplotHighlightBands resolves which axis a region maps to
-  return bookmarkWidget?.bookmarkHighlightsVisible
+  return getBookmarkSession(model).bookmarkHighlightsVisible && bookmarkWidget
     ? bookmarkWidget.bookmarks.map((r, idx) => (
         <DotplotHighlightBands
           key={highlightKey(r, idx)}

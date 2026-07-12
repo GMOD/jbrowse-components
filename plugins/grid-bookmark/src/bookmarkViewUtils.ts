@@ -30,54 +30,49 @@ export function ensureBookmarkWidget(node: IAnyStateTreeNode) {
   }
 }
 
-interface HighlightToggleableView {
-  highlightsVisible: boolean
+interface ChipToggleableView {
   showHighlightChips: boolean
-  setHighlightsVisible: (arg: boolean) => void
   setShowHighlightChips: (arg: boolean) => void
 }
 
-// bookmark-highlight visibility now lives on the widget (one global toggle),
-// while view.highlight visibility stays per-view
-function getExistingBookmarkWidget(node: IAnyStateTreeNode) {
-  const session = getSession(node)
-  return isSessionModelWithWidgets(session)
-    ? (session.widgets.get('GridBookmark') as GridBookmarkModel | undefined)
-    : undefined
+// bookmark-highlight visibility is a single session-level flag added by this
+// plugin's Core-extendSession, shared by every view's overlays
+export interface SessionWithBookmarkHighlights {
+  bookmarkHighlightsVisible: boolean
+  setBookmarkHighlightsVisible: (arg: boolean) => void
 }
 
-// single checkbox that flips both bookmark-highlight (widget) and view.highlight
-// visibility together; checked when either kind is visible
-export function toggleHighlightsMenuItem(
-  self: IAnyStateTreeNode & HighlightToggleableView,
-): MenuItem {
-  const widget = getExistingBookmarkWidget(self)
-  const anyOn = !!widget?.bookmarkHighlightsVisible || self.highlightsVisible
+export function getBookmarkSession(node: IAnyStateTreeNode) {
+  return getSession(node) as ReturnType<typeof getSession> &
+    SessionWithBookmarkHighlights
+}
+
+// single checkbox for the one session-level highlight-visibility flag
+export function toggleHighlightsMenuItem(self: IAnyStateTreeNode): MenuItem {
+  const session = getBookmarkSession(self)
   return {
     label: 'Toggle highlights',
     icon: HighlightIcon,
     type: 'checkbox',
-    checked: anyOn,
+    checked: session.bookmarkHighlightsVisible,
     onClick: () => {
-      widget?.setBookmarkHighlightsVisible(!anyOn)
-      self.setHighlightsVisible(!anyOn)
+      session.setBookmarkHighlightsVisible(!session.bookmarkHighlightsVisible)
     },
   }
 }
 
 // single checkbox for the interactive chip (link icon + context menu) drawn on
-// each band. Disabled while no highlights are visible
+// each band. Disabled while highlights are hidden
 export function toggleHighlightChipsMenuItem(
-  self: IAnyStateTreeNode & HighlightToggleableView,
+  self: IAnyStateTreeNode & ChipToggleableView,
 ): MenuItem {
-  const widget = getExistingBookmarkWidget(self)
-  const anyOn = !!widget?.bookmarkHighlightsVisible || self.highlightsVisible
+  const session = getBookmarkSession(self)
   return {
     label: 'Show highlight chips',
     icon: HighlightIcon,
     type: 'checkbox',
     checked: self.showHighlightChips,
-    disabled: !anyOn,
+    disabled: !session.bookmarkHighlightsVisible,
     onClick: () => {
       self.setShowHighlightChips(!self.showHighlightChips)
     },

@@ -108,11 +108,6 @@ export default function f(_pluginManager: PluginManager) {
       bookmarks: types.optional(types.array(LabeledRegionModel), () =>
         localStorageGetJSON(localStorageKeyF(), []),
       ),
-      /**
-       * #property
-       * whether saved bookmarks are drawn as highlight overlays on views
-       */
-      bookmarkHighlightsVisible: types.optional(types.boolean, true),
     })
     .volatile(() => ({
       /**
@@ -227,12 +222,6 @@ export default function f(_pluginManager: PluginManager) {
        */
       setBookmarkedRegions(regions: SnapshotIn<typeof LabeledRegionModel>[]) {
         self.bookmarks = cast(regions)
-      },
-      /**
-       * #action
-       */
-      setBookmarkHighlightsVisible(arg: boolean) {
-        self.bookmarkHighlightsVisible = arg
       },
     }))
     .actions(self => ({
