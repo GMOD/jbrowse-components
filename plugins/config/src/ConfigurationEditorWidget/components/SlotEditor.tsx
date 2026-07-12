@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { FileSelector } from '@jbrowse/core/ui'
 import CodeIcon from '@mui/icons-material/Code'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { IconButton, MenuItem, Paper, TextField, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -158,6 +159,10 @@ const SlotEditor = observer(function SlotEditor({
   const [callbackMode, setCallbackMode] = useState(() =>
     isCallbackValue(slot.value),
   )
+  // bumped on reset to remount the value editor: the buffered editors (number,
+  // json, callback) seed internal state from slot.value only on mount, so an
+  // external set wouldn't otherwise show in the field
+  const [resetNonce, setResetNonce] = useState(0)
   const TypedComponent = valueComponents[type]
   if (!callbackMode && !TypedComponent) {
     console.warn(`no slot editor defined for ${type}, editing as string`)
@@ -165,11 +170,30 @@ const SlotEditor = observer(function SlotEditor({
   const ValueComponent: React.ComponentType<any> = callbackMode
     ? CallbackEditor
     : (TypedComponent ?? StringEditor)
+  // a promotable slot's default is its inherit sentinel, so resetting it here
+  // doubles as "un-pin / follow the session-wide default"
+  const { modified } = slot
   return (
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>
-        <ValueComponent slot={slot} />
+        <ValueComponent key={resetNonce} slot={slot} />
       </div>
+      {modified ? (
+        <div className={classes.resetButton}>
+          <Tooltip title="Reset to default">
+            <IconButton
+              aria-label="reset to default"
+              onClick={() => {
+                slot.set(slot.defaultValue)
+                setCallbackMode(isCallbackValue(slot.defaultValue))
+                setResetNonce(nonce => nonce + 1)
+              }}
+            >
+              <RestartAltIcon />
+            </IconButton>
+          </Tooltip>
+        </div>
+      ) : null}
       {slot.contextVariable.length ? (
         <div className={classes.slotModeSwitch}>
           <Tooltip

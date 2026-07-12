@@ -156,6 +156,61 @@ test('a maybeBoolean slot starts unchecked (undefined) and pins true on click', 
   errorSpy.mockRestore()
 })
 
+test('reset-to-default appears only when a slot differs, and reverts it', () => {
+  const TestSchema = ConfigurationSchema('TestThing', {
+    myName: {
+      name: 'myName',
+      description: 'a string slot',
+      type: 'string',
+      defaultValue: 'original',
+    },
+  })
+  const target = TestSchema.create(undefined, { pluginManager })
+
+  const { getByLabelText, queryByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor model={{ target }} />
+    </ThemeProvider>,
+  )
+
+  // at the default value there is nothing to reset
+  expect(queryByLabelText('reset to default')).toBeNull()
+
+  fireEvent.change(getByLabelText('myName'), { target: { value: 'edited' } })
+  expect(readConfObject(target, 'myName')).toBe('edited')
+
+  // now modified, the reset control shows; clicking it restores the default
+  fireEvent.click(getByLabelText('reset to default'))
+  expect(readConfObject(target, 'myName')).toBe('original')
+  expect(queryByLabelText('reset to default')).toBeNull()
+})
+
+test('reset un-pins a promotable maybeBoolean back to its inherit default', () => {
+  const TestSchema = ConfigurationSchema('TestThing', {
+    maybeBoolTest: {
+      name: 'maybeBoolTest',
+      description: 'maybeBoolTest',
+      type: 'maybeBoolean',
+      defaultValue: undefined,
+    },
+  })
+  const target = TestSchema.create(undefined, { pluginManager })
+
+  const { getByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor model={{ target }} />
+    </ThemeProvider>,
+  )
+
+  // pinning true diverges from the undefined (inherit) default
+  fireEvent.click(getByLabelText('maybeBoolTest'))
+  expect(readConfObject(target, 'maybeBoolTest')).toBe(true)
+
+  // reset returns it to the inherit sentinel (undefined)
+  fireEvent.click(getByLabelText('reset to default'))
+  expect(readConfObject(target, 'maybeBoolTest')).toBeUndefined()
+})
+
 test('filters slots by name', () => {
   const TestSchema = ConfigurationSchema('TestThing', {
     fooColor: {

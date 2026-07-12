@@ -1,3 +1,5 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
 import {
   getConfigurationSchemaDefinition,
   isSlotDefinitionEntry,
@@ -49,6 +51,14 @@ export interface SlotFacade {
   choices?: string[]
   pluginManager: PluginManager
   readonly value: unknown
+  /**
+   * Whether the slot holds a non-default value. Each slot is `stripDefault`-
+   * wrapped, so an at-default slot is omitted from the config snapshot — the
+   * same signal the persistence/delta layer uses (robust for map/array slots
+   * where a live-value `deepEqual` against the plain default would misfire). For
+   * a promotable slot, "non-default" means pinned rather than inheriting.
+   */
+  readonly modified: boolean
   set: (val: unknown) => void
 }
 
@@ -91,6 +101,9 @@ export function makeSlotFacade(
     pluginManager: getEnv(node).pluginManager,
     get value() {
       return node[slotName]
+    },
+    get modified() {
+      return slotName in (getSnapshot(node) as Record<string, unknown>)
     },
     set(val: unknown) {
       node.setSlot(slotName, val)
