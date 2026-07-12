@@ -210,17 +210,15 @@ export interface PromotableEntry {
 /**
  * #api core/configuration
  * A promotable "default for all tracks of this type" control, bundled so a menu
- * row consumes it as a single prop. `active` = this value is currently the
- * session default; `toggle` sets it as the default or clears it (non-destructive
- * — no open track is overwritten). `self`/`entries` let the trailing adornment
- * open the manage-default dialog, whose "apply to open tracks" is the only path
- * that overwrites tracks pinned to a different value.
+ * row's trailing pin consumes it as a single prop. `active` = this value is
+ * currently the session default (a filled pin); `toggle` sets it as the default
+ * or clears it. Setting is non-destructive — open tracks pinned to their own
+ * value keep it — but when open tracks would differ, `toggle` raises a snackbar
+ * with an opt-in "apply to open tracks" action (see `applyDefaultToggle`).
  */
 export interface SessionDefaultControl {
   active: boolean
   toggle: () => void
-  self: PromotableDisplay
-  entries: PromotableEntry[]
 }
 
 // A view whose open tracks we can enumerate. The generic view interface doesn't
@@ -318,34 +316,41 @@ export function tracksDifferingFrom(
 }
 
 /**
- * #api core/configuration
- * Apply a promotable value along either or both axes — the manage-default
- * dialog's submit. `future` sets (or clears) the session default so new + un-pinned
- * tracks inherit it. `openTracks` also updates the currently-open tracks that
- * differ: when the default now holds these values (`future`), un-pin them so they
- * inherit it (and track later changes); otherwise write the values onto them
- * directly, so "open tracks" works even without a persistent default.
+ * Set (or clear) a value combination as the session default, and — only when
+ * setting, and only if any open track currently differs — raise a snackbar whose
+ * opt-in action un-pins those tracks so they follow the new default. Setting is
+ * otherwise non-destructive: future + already-un-pinned tracks inherit it via
+ * `getConfResolved`; tracks pinned to their own value keep it until the user
+ * clicks the snackbar action. Clearing never sweeps.
  */
-export function applyPromotableDefault(
+function applyDefaultToggle(
   self: PromotableDisplay,
   entries: PromotableEntry[],
-  opts: { future: boolean; openTracks: boolean },
+  on: boolean,
 ): void {
-  setPromotableDefault(self, entries, opts.future)
-  if (opts.openTracks) {
+  setPromotableDefault(self, entries, on)
+  const session = getSession(self)
+  const noun = 'tracks of this type'
+  if (on) {
+    // computed AFTER setting the default, so an un-pinned track (now following it)
+    // no longer differs — only tracks pinned to a different value remain.
     const differing = tracksDifferingFrom(self, entries)
-    if (opts.future) {
-      clearPinsToInherit(
-        differing,
-        entries.map(e => e.slot),
-      )
+    const n = differing.length
+    if (n) {
+      session.notify(`Set as the default for ${noun}`, 'info', {
+        name: `Apply to ${n} open track${n === 1 ? '' : 's'}`,
+        onClick: () => {
+          clearPinsToInherit(
+            differing,
+            entries.map(e => e.slot),
+          )
+        },
+      })
     } else {
-      for (const display of differing) {
-        for (const { slot, value } of entries) {
-          display.configuration.setSlot(slot, value)
-        }
-      }
+      session.notify(`Set as the default for all ${noun}`, 'info')
     }
+  } else {
+    session.notify(`Cleared the default for all ${noun}`, 'info')
   }
 }
 
@@ -365,10 +370,8 @@ export function makeSlotsValueSessionDefaultControl(
   const active = isPromotableDefault(self, entries)
   return {
     active,
-    self,
-    entries,
     toggle: () => {
-      setPromotableDefault(self, entries, !active)
+      applyDefaultToggle(self, entries, !active)
     },
   }
 }

@@ -40,8 +40,6 @@ function sessionDefault(model: Model) {
           model.pinned.add(key)
         }
       },
-      entries: [{ slot: 'colorBy', value: colorBy }],
-      self: undefined as unknown as SessionDefaultControl['self'],
     }
   }
 }

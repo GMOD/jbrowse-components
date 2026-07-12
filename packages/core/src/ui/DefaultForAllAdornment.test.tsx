@@ -2,63 +2,53 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
-import { openPromotableDefaultDialog } from './openPromotableDefaultDialog.ts'
 import { createJBrowseTheme } from './theme.ts'
 
 import type { SessionDefaultControl } from '../configuration/promotableDefaults.ts'
 
-jest.mock('./openPromotableDefaultDialog.ts', () => ({
-  openPromotableDefaultDialog: jest.fn(),
-}))
-
 const theme = createJBrowseTheme()
 
-// test double: the adornment reads `active` and forwards the control to the
-// (mocked) dialog opener, so self/entries/toggle are never exercised here
-function fakeControl(active: boolean): SessionDefaultControl {
-  return {
-    active,
-    toggle: () => {},
-    entries: [],
-    self: undefined,
-  } as unknown as SessionDefaultControl
+// test double: the pin only reads `active` and calls `toggle` on click
+function fakeControl(
+  active: boolean,
+  toggle: () => void = () => {},
+): SessionDefaultControl {
+  return { active, toggle }
 }
 
-function renderAdornment(active: boolean, label?: string) {
+function renderAdornment(control: SessionDefaultControl, label?: string) {
   return render(
     <ThemeProvider theme={theme}>
-      <DefaultForAllAdornment control={fakeControl(active)} label={label} />
+      <DefaultForAllAdornment control={control} label={label} />
     </ThemeProvider>,
   )
 }
 
 describe('DefaultForAllAdornment', () => {
-  beforeEach(() => {
-    jest.mocked(openPromotableDefaultDialog).mockClear()
-  })
-
-  it('renders a labeled dialog-opening button', () => {
-    const { getByRole } = renderAdornment(false)
-    const button = getByRole('button', { name: 'manage default for this' })
-    expect(button.getAttribute('aria-haspopup')).toBe('dialog')
-  })
-
-  it('names the control after its setting so siblings are distinguishable', () => {
-    const { getByRole } = renderAdornment(false, 'Compact')
+  it('renders a labeled pin button', () => {
+    const { getByRole } = renderAdornment(fakeControl(false))
     expect(
-      getByRole('button', { name: 'manage default for Compact' }),
+      getByRole('button', { name: 'make this the default for all tracks' }),
     ).toBeTruthy()
   })
 
-  it('clicking opens the manage-default dialog for its control', () => {
-    const control = fakeControl(false)
-    const { getByRole } = render(
-      <ThemeProvider theme={theme}>
-        <DefaultForAllAdornment control={control} label="Compact" />
-      </ThemeProvider>,
-    )
+  it('names the pin after its setting so siblings are distinguishable', () => {
+    const { getByRole } = renderAdornment(fakeControl(false), 'Compact')
+    expect(
+      getByRole('button', { name: 'make Compact the default for all tracks' }),
+    ).toBeTruthy()
+  })
+
+  it('reflects the active (pinned) state as pressed', () => {
+    const { getByRole } = renderAdornment(fakeControl(true))
+    expect(getByRole('button').getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('clicking toggles its control', () => {
+    const toggle = jest.fn()
+    const { getByRole } = renderAdornment(fakeControl(false, toggle))
     fireEvent.click(getByRole('button'))
-    expect(openPromotableDefaultDialog).toHaveBeenCalledWith(control, 'Compact')
+    expect(toggle).toHaveBeenCalledTimes(1)
   })
 
   it('stops click propagation so the row value is not toggled', () => {

@@ -4,16 +4,14 @@ import { getReadConnectionsMenuItem } from './readConnections.ts'
 
 import type { SessionDefaultControl } from '@jbrowse/core/configuration'
 
-// stateful stand-in for a SessionDefaultControl; self/entries are placeholders
-// (the menu builder and the promote path only touch active/toggle)
+// stateful stand-in for a SessionDefaultControl (the menu builder and the promote
+// path only touch active/toggle)
 function control(): SessionDefaultControl {
   return {
     active: false,
     toggle() {
       this.active = !this.active
     },
-    entries: [],
-    self: undefined as unknown as SessionDefaultControl['self'],
   }
 }
 
