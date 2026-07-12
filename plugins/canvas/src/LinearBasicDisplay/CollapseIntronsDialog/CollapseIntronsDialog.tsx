@@ -60,6 +60,10 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
     DEFAULT_WINDOW_SIZE,
   )
   const canLaunchView = isObservableArray(getSession(view).views)
+  // Always the originally-clicked feature id, even for a specific transcript
+  // row: solo is an exact uniqueId match (featureAdmission), and a gene-shaped
+  // feature draws from its top-level id, so isolating to a transcript's id
+  // would admit nothing and blank the track.
   const soloFeatureId = soloOnly ? featureId : undefined
 
   return (
@@ -82,7 +86,7 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           <p>
             By default the union of exons from all transcripts will be used. To
             use a specific transcript, click "Show all transcripts" and then
-            "Replace" (or "Launch") on the desired row.
+            "Replace current view" (or "Open in new view") on the desired row.
           </p>
         </DialogContentText>
         <NumberTextField

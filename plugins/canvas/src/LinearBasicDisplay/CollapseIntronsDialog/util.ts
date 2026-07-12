@@ -104,6 +104,16 @@ function isSoloCapable(d: unknown): d is SoloCapableDisplay {
   )
 }
 
+// Locate the solo-capable display of the track matched by `trackId` in `view`.
+// The track/display ids still match a pre-stripTrackIds snapshot, so seeding and
+// in-place isolation resolve the same display.
+function findSoloDisplay(view: LinearGenomeViewModel, trackId: string) {
+  const track = view.tracks.find(
+    t => readConfObject(t.configuration, 'trackId') === trackId,
+  )
+  return track?.displays.find(isSoloCapable)
+}
+
 interface DisplaySnapshot {
   id: string
   [key: string]: unknown
@@ -124,10 +134,7 @@ export function soloFeatureInView(
   trackId: string,
   featureId: string,
 ): () => void {
-  const track = view.tracks.find(
-    t => readConfObject(t.configuration, 'trackId') === trackId,
-  )
-  const display = track?.displays.find(isSoloCapable)
+  const display = findSoloDisplay(view, trackId)
   if (!display) {
     return () => {}
   }
@@ -159,10 +166,7 @@ export function seedSoloInTracks(
   trackId: string,
   featureId: string,
 ): TrackSnapshot[] {
-  const track = view.tracks.find(
-    t => readConfObject(t.configuration, 'trackId') === trackId,
-  )
-  const soloDisplayId = track?.displays.find(isSoloCapable)?.id
+  const soloDisplayId = findSoloDisplay(view, trackId)?.id
   return soloDisplayId === undefined
     ? tracks
     : tracks.map(t => ({
