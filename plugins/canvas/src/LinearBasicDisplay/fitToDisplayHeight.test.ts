@@ -92,7 +92,12 @@ function mixedWidthRegionData(count: number) {
   }[] = []
   let pos = 100
   for (let i = 0; i < count; i++) {
-    features.push({ featureId: `m${i}`, startBp: pos, endBp: pos + 5, height: 10 })
+    features.push({
+      featureId: `m${i}`,
+      startBp: pos,
+      endBp: pos + 5,
+      height: 10,
+    })
     pos += 6 + 2 * i
   }
   const floatingLabelsData: Record<string, FeatureLabelData> = {}
@@ -103,7 +108,12 @@ function mixedWidthRegionData(count: number) {
       maxX: f.endBp,
       topY: 0,
       featureHeight: f.height,
-      nameLabel: { text: f.featureId, relativeY: 0, color: '#000', textWidth: 40 },
+      nameLabel: {
+        text: f.featureId,
+        relativeY: 0,
+        color: '#000',
+        textWidth: 40,
+      },
     }
   }
   return makeFeatureData({
@@ -312,6 +322,25 @@ describe('canvas display fit-to-display-height', () => {
 
     // Fixed no longer tracks content: more rows don't change the height.
     display.setRpcData(0, stackedRegionData(30, 20), view.bpPerPx, ctgA)
+    expect(display.height).toBe(grown)
+  })
+
+  // The promotable cascade can flip a grow track out of grow mode WITHOUT
+  // setHeightMode — un-pinning it (clearPinsToInherit) or a session-default
+  // change. The bake is a reaction on the resolved mode, so that exit bakes too.
+  it('bakes on a cascade-driven grow exit, not just the menu action', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setHeightMode('grow')
+    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    const grown = display.grownHeight
+    expect(display.height).toBe(grown)
+
+    // Un-pin exactly as clearPinsToInherit does: reset the slot to its 'inherit'
+    // sentinel. Resolved heightMode falls to 'fixed' with no setHeightMode call.
+    display.configuration.setSlot('heightMode', 'inherit')
+    expect(display.autoHeight).toBe(false)
+    expect(readConfObject(display.configuration, 'height')).toBe(grown)
     expect(display.height).toBe(grown)
   })
 

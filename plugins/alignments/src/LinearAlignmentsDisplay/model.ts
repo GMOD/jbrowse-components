@@ -36,7 +36,7 @@ import {
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
   TrackHeightMixin,
-  bakeGrownHeightOnExit,
+  installGrowExitBake,
 } from '@jbrowse/plugin-linear-genome-view'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import { autorun, observable, reaction } from 'mobx'
@@ -1632,7 +1632,10 @@ export default function stateModelFactory(
           }
           // when grouping (prefersOffset) the label is drawn above the plot, so
           // the coverage axis needn't dodge right of it (matches TrackContainer)
-          if (view.effectiveTrackLabels === 'overlapping' && !self.prefersOffset) {
+          if (
+            view.effectiveTrackLabels === 'overlapping' &&
+            !self.prefersOffset
+          ) {
             const track = getContainingTrack(self)
             return measureText(getConf(track, 'name'), 12.8) + 100
           }
@@ -2408,8 +2411,6 @@ export default function stateModelFactory(
            * the display/data change.
            */
           setHeightMode(mode: HeightMode) {
-            const view = getContainingView(self) as LGV
-            bakeGrownHeightOnExit(self, mode, view.initialized)
             self.configuration.setSlot('heightMode', mode)
             if (mode !== 'fixed') {
               self.groupMaxHeightOverrides.clear()
@@ -2980,10 +2981,17 @@ export default function stateModelFactory(
               { name: 'AlignmentsFitHeight' },
             ),
           )
-          // Grow mode no longer needs an autorun: the `height` getter returns
-          // `grownHeight` reactively (see the getter above), so consumers
+          // Grow mode needs no autorun to drive height: the `height` getter
+          // returns `grownHeight` reactively (see the getter above), so consumers
           // recompute when the laid-out content changes without ever writing the
-          // height config slot.
+          // height config slot. Leaving grow is the one write — bake the grown
+          // height into the slot on any grow->non-grow exit (menu switch, un-pin,
+          // or a session-default change flipping an un-pinned track) so fixed/fit
+          // resume from the height the user was seeing, not the stale slot.
+          addDisposer(
+            self,
+            installGrowExitBake(self, getContainingView(self) as LGV),
+          )
 
           // Keep scrollTop inside the content by construction. Any geometry
           // change — band resize, group collapse/expand/drag, show/hide

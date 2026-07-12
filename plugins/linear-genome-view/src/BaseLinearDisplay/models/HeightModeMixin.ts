@@ -1,8 +1,10 @@
 import { getConf, getConfResolved } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
+import { reaction } from 'mobx'
 
 import type { HeightMode } from './heightMode.ts'
 import type { PromotableDisplay } from '@jbrowse/core/configuration'
+import type { IReactionDisposer } from 'mobx'
 
 /**
  * #stateModel HeightModeMixin
@@ -71,24 +73,45 @@ export default function HeightModeMixin<
 }
 
 /**
- * Leaving grow mode: bake the current grown height into the `height` slot so
- * fixed/fit start from the height the user was seeing. Grow computes `height`
- * reactively and never writes the slot, so without this the track would snap to
- * the stale slot default on the switch. Guarded on `viewInitialized` so
- * `grownHeight`'s transitive view-geometry reads are safe. Call from
- * `setHeightMode` BEFORE writing the new slot, so `autoHeight` still reflects the
- * mode being left.
+ * Leaving grow mode: bake the height the user was seeing into the `height` slot
+ * so fixed/fit start from it rather than snapping to the stale slot value (grow
+ * computes `height` reactively and never writes the slot). A reaction rather than
+ * a call inside `setHeightMode` because the resolved `heightMode` also flips
+ * without any imperative action — un-pinning a grow-pinned track, or changing the
+ * session-wide default out from under un-pinned grow-following tracks (the
+ * promotable cascade) — and every such exit must bake. Install from `afterAttach`
+ * on both displays that own a `grownHeight`.
+ *
+ * The captured height is `prev.grown`, computed in the tracked expression while
+ * still in grow mode: by the time the effect runs the mode has flipped and
+ * `grownHeight` may already reflect the new layout, so reading it there would
+ * bake the wrong value. Guarded on `view.initialized` (grownHeight transitively
+ * reads view geometry that throws pre-init). No loop: `setHeight` writes only the
+ * `height` slot, which the expression ignores once `autoHeight` is false.
  */
-export function bakeGrownHeightOnExit(
+export function installGrowExitBake(
   self: {
+    heightMode: HeightMode
     autoHeight: boolean
     grownHeight: number
     setHeight: (height: number) => number
   },
-  mode: HeightMode,
-  viewInitialized: boolean,
-) {
-  if (self.autoHeight && mode !== 'grow' && viewInitialized) {
-    self.setHeight(self.grownHeight)
-  }
+  view: { initialized: boolean },
+): IReactionDisposer {
+  return reaction(
+    () => ({
+      mode: self.heightMode,
+      grown: self.autoHeight && view.initialized ? self.grownHeight : undefined,
+    }),
+    (curr, prev) => {
+      if (
+        prev.mode === 'grow' &&
+        curr.mode !== 'grow' &&
+        prev.grown !== undefined
+      ) {
+        self.setHeight(prev.grown)
+      }
+    },
+    { name: 'GrowExitBake' },
+  )
 }
