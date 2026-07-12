@@ -1,3 +1,4 @@
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import IconButton from '@mui/material/IconButton'
@@ -160,7 +161,7 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
             }
           >
             {effectiveResolution !== undefined
-              ? `${(effectiveResolution / 1000).toFixed(0)}k`
+              ? getBpDisplayStr(effectiveResolution)
               : '…'}
             {biasSuffix}
           </span>

@@ -123,6 +123,13 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
 
     const allRecords: MultiRegionContactRecord[] = []
 
+    // Resolve each region's file chromosome index once (O(n)) rather than
+    // re-deriving it inside every region pair (O(n²)) — it's fixed per region
+    // and drives the transpose un-swap in getRegionPairRecords.
+    const regionChrIdxs = await Promise.all(
+      regions.map(r => this.hic.getChromosomeIndex(r.refName)),
+    )
+
     await updateStatus('Downloading .hic data', statusCallback, async () => {
       for (let i = 0; i < regions.length; i++) {
         for (let j = i; j < regions.length; j++) {
@@ -131,6 +138,8 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
             region2: regions[j]!,
             region1Idx: i,
             region2Idx: j,
+            chr1Idx: regionChrIdxs[i],
+            chr2Idx: regionChrIdxs[j],
             normalization,
             resolution: res,
           })
@@ -162,6 +171,8 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     region2,
     region1Idx,
     region2Idx,
+    chr1Idx,
+    chr2Idx,
     normalization,
     resolution,
   }: {
@@ -169,6 +180,8 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     region2: Region
     region1Idx: number
     region2Idx: number
+    chr1Idx: number | undefined
+    chr2Idx: number | undefined
     normalization: string
     resolution: number
   }): Promise<MultiRegionContactRecord[]> {
@@ -182,15 +195,15 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       )
       // hic-straw transposes the query when idx1 > idx2 (or same chr, region1
       // starts after region2), swapping bin1/bin2 relative to our (i, j)
-      // order — un-swap before storing. Resolve the indices through hic-straw's
-      // own alias table so this condition matches its transpose exactly (a
-      // divergent chr-name scheme could throw on a region it would have served).
-      const idx1 = await this.hic.getChromosomeIndex(region1.refName)
-      const idx2 = await this.hic.getChromosomeIndex(region2.refName)
+      // order — un-swap before storing. The indices come from hic-straw's own
+      // alias table (resolved once per region by the caller) so this condition
+      // matches its transpose exactly (a divergent chr-name scheme could throw
+      // on a region it would have served).
       const transposed =
-        idx1 !== undefined &&
-        idx2 !== undefined &&
-        (idx1 > idx2 || (idx1 === idx2 && region1.start >= region2.end))
+        chr1Idx !== undefined &&
+        chr2Idx !== undefined &&
+        (chr1Idx > chr2Idx ||
+          (chr1Idx === chr2Idx && region1.start >= region2.end))
       return records.map(({ bin1, bin2, counts }) => ({
         bin1: transposed ? bin2 : bin1,
         bin2: transposed ? bin1 : bin2,

@@ -5,6 +5,7 @@ import {
   SvgChrome,
   SvgClipRect,
   awaitSvgReady,
+  computeTriangleYScalar,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawHicBlocks } from './components/Canvas2DHicRenderer.ts'
@@ -69,10 +70,20 @@ function HicSvgBody({
   const visibleWidth = view.width
   const fillStyleLut = makeHicFillStyleLut(generateColorRamp(colorScheme))
 
+  // yScalar squashes the triangle to fill the display height, so when the
+  // export overrides the height it must be recomputed against that height —
+  // renderState.yScalar is keyed to the on-screen height and would mis-size the
+  // exported triangle whenever overrideHeight differs (fit-to-height only).
+  const yScalar = computeTriangleYScalar({
+    fitToHeight: self.fitToHeight,
+    displayHeight: height,
+    triangleWidth: view.totalWidthPx,
+  })
+
   // Reuse the model's renderState so the export shares one source of truth for
-  // the transform, yScalar, and color params with the on-screen render (handles
-  // scrolled-left-of-genome and stale zoom). Canvas dims are the only
-  // export-specific override, and drawHicBlocks ignores them regardless.
+  // the transform and color params with the on-screen render (handles
+  // scrolled-left-of-genome and stale zoom); yScalar and the canvas dims are the
+  // export-specific overrides.
   return (
     <>
       <SvgClipRect
@@ -91,6 +102,7 @@ function HicSvgBody({
               fillStyleLut,
               {
                 ...renderState,
+                yScalar,
                 canvasWidth: visibleWidth,
                 canvasHeight: height,
               },
