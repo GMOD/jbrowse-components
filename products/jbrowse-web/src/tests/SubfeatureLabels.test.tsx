@@ -28,7 +28,8 @@ test('toggle subfeature labels and verify eden.1 label appears', async () => {
 
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Show...', ...opts))
-  await user.click(await screen.findByText('Show subfeature labels', ...opts))
+  await user.click(await screen.findByText('Subfeature labels', ...opts))
+  await user.click(await screen.findByText('Below', ...opts))
 
   await screen.findByText('EDEN.1', ...opts)
 
