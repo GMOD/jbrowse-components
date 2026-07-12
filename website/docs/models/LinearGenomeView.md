@@ -118,7 +118,6 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [minOffset](#getter-minoffset)                                           | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [displayedRegionsTotalPx](#getter-displayedregionstotalpx)               | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [trackMap](#getter-trackmap)                                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [trackTypeActions](#getter-tracktypeactions)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [canShowCytobands](#getter-canshowcytobands)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [effectiveShowCytobands](#getter-effectiveshowcytobands)                 | Getters    | the `showCytobands` setting gated by whether cytobands can be shown at all (single region + data present) — i.e. actually on screen                                                                                                                                                                                                                                                                                                                     |
 | [anyCytobandsExist](#getter-anycytobandsexist)                           | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -1055,12 +1054,6 @@ type displayedRegionsTotalPx = number
 
 ```ts
 type trackMap = Map<any, any>
-```
-
-#### getter: trackTypeActions
-
-```ts
-type trackTypeActions = Map<string, MenuItem[]>
 ```
 
 #### getter: canShowCytobands

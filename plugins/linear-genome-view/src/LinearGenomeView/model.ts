@@ -62,8 +62,6 @@ import {
   buildMenuItems,
   buildRubberBandMenuItems,
   buildRubberbandClickMenuItems,
-  cloneMenuItems,
-  rewriteOnClicks,
 } from './menuItems.ts'
 import {
   calculateVisibleLocStrings,
@@ -931,27 +929,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       getActiveDisplayId(trackId: string): string | undefined {
         return this.getTrack(trackId)?.activeDisplay.configuration.displayId
-      },
-
-      /**
-       * #getter
-       */
-      get trackTypeActions() {
-        const allActions = new Map<string, MenuItem[]>()
-        for (const track of self.tracks) {
-          const trackInMap = allActions.get(track.type)
-          if (!trackInMap) {
-            const viewMenuActions = cloneMenuItems(track.viewMenuActions)
-            rewriteOnClicks(
-              self as LinearGenomeViewModel,
-              track.type,
-              viewMenuActions,
-            )
-            allActions.set(track.type, viewMenuActions)
-          }
-        }
-
-        return allActions
       },
     }))
     .actions(self => ({

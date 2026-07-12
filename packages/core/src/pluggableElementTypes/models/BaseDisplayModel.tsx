@@ -170,12 +170,6 @@ function stateModelFactory() {
       },
 
       /**
-       * #getter
-       */
-      get viewMenuActions(): MenuItem[] {
-        return []
-      },
-      /**
        * #method
        * @param region -
        * @returns falsy if the region is fine to try rendering. Otherwise,
@@ -224,7 +218,7 @@ export type BaseDisplayModel = Instance<BaseDisplayStateModel>
 /**
  * The shape every display instance held in a track's `displays` array
  * satisfies: the composed `BaseDisplay` state model (RenderingComponent,
- * DisplayBlurb, viewMenuActions, trackMenuItems, ...) plus the `configuration`
+ * DisplayBlurb, trackMenuItems, ...) plus the `configuration`
  * reference every display gains at instantiation. `getPortableSettings` is
  * optional — only display types that support switching type via the track menu
  * implement it. This is the concrete element type behind

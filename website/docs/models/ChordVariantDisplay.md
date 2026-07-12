@@ -86,7 +86,6 @@ and docs.
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
-[viewMenuActions](../basedisplay#getter-viewmenuactions)
 
 **Methods:** [renderingProps](../basedisplay#method-renderingprops),
 [trackMenuItems](../basedisplay#method-trackmenuitems),

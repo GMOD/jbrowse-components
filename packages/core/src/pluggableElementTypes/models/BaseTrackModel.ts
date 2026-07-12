@@ -91,7 +91,7 @@ export function createBaseTrackModel(
        * The runtime plugin union (`pluggableMstType`) is typed only as
        * `IAnyType`, erasing the element to `any`. Assert the concrete
        * `DisplayModel` instance every registered display satisfies so reads
-       * (`activeDisplay`, `viewMenuActions`, `trackMenuItems`) are checked;
+       * (`activeDisplay`, `trackMenuItems`) are checked;
        * create/snapshot stay `unknown` since the union's snapshot shape is
        * genuinely dynamic (`replaceDisplay` writes a partial snapshot).
        */
@@ -144,13 +144,6 @@ export function createBaseTrackModel(
        */
       get activeDisplay() {
         return self.displays[0]!
-      },
-
-      /**
-       * #getter
-       */
-      get viewMenuActions(): MenuItem[] {
-        return self.displays.flatMap(d => d.viewMenuActions)
       },
 
       /**

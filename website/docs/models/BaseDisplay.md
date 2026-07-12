@@ -29,7 +29,6 @@ JBrowse core.
 | [isMinimized](#getter-isminimized)                         | Getters    | Returns true if the parent track is minimized. Used to skip expensive operations like autoruns when track is not visible.                                                                                                             |
 | [effectiveRpcDriverName](#getter-effectiverpcdrivername)   | Getters    | Returns the effective RPC driver name with hierarchical fallback: 1. This display's explicit rpcDriverName 2. Parent display's effectiveRpcDriverName (for nested displays) 3. Track config's rpcDriverName                           |
 | [DisplayMessageComponent](#getter-displaymessagecomponent) | Getters    | if a display-level message should be displayed instead, make this return a react component                                                                                                                                            |
-| [viewMenuActions](#getter-viewmenuactions)                 | Getters    |                                                                                                                                                                                                                                       |
 | [renderingProps](#method-renderingprops)                   | Methods    | props passed to the renderer's React "Rendering" component. these are client-side only and never sent to the worker. includes displayModel and callbacks                                                                              |
 | [trackMenuItems](#method-trackmenuitems)                   | Methods    |                                                                                                                                                                                                                                       |
 | [regionCannotBeRendered](#method-regioncannotberendered)   | Methods    |                                                                                                                                                                                                                                       |
@@ -182,12 +181,6 @@ type DisplayBlurb = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISim
 
 ```ts
 type adapterConfig = any
-```
-
-#### getter: viewMenuActions
-
-```ts
-type viewMenuActions = MenuItem[]
 ```
 
 </details>

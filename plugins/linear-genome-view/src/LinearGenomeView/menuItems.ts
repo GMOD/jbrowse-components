@@ -33,41 +33,6 @@ function toLocaleRounded(n: number) {
   return toLocale(Math.round(n))
 }
 
-export function cloneMenuItems(items: MenuItem[]): MenuItem[] {
-  return items.map(item => {
-    const clone = { ...item }
-    if ('subMenu' in clone && Array.isArray(clone.subMenu)) {
-      clone.subMenu = cloneMenuItems(clone.subMenu)
-    }
-    return clone
-  })
-}
-
-/**
- * Modifies view menu action onClick to apply to all tracks of same type
- */
-export function rewriteOnClicks(
-  self: LinearGenomeViewModel,
-  trackType: string,
-  viewMenuActions: MenuItem[],
-) {
-  for (const action of viewMenuActions) {
-    if ('subMenu' in action) {
-      rewriteOnClicks(self, trackType, action.subMenu)
-    }
-    if ('onClick' in action) {
-      const holdOnClick = action.onClick
-      action.onClick = (...args: unknown[]) => {
-        for (const track of self.tracks) {
-          if (track.type === trackType) {
-            holdOnClick.apply(track, [track, ...args])
-          }
-        }
-      }
-    }
-  }
-}
-
 /**
  * Build the main view menu items
  */
@@ -268,24 +233,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       ],
     },
   ]
-
-  // add track's view level menu options
-  for (const [key, value] of self.trackTypeActions.entries()) {
-    if (value.length) {
-      menuItems.push(
-        {
-          type: 'divider',
-        },
-        {
-          type: 'subHeader',
-          label: key,
-        },
-      )
-      for (const action of value) {
-        menuItems.push(action)
-      }
-    }
-  }
 
   return menuItems
 }
