@@ -42,6 +42,24 @@ describe('LoadingOverlay anti-flash', () => {
     expect(queryByTestId('loading-overlay')).toBeNull()
   })
 
+  // The content chip is pointerEvents:auto; if it stayed mounted while hidden it
+  // would silently swallow clicks/hovers over the track it overlays. Assert the
+  // chip is fully unmounted (not merely transparent) in the idle state and
+  // during the flash delay.
+  it('renders no content chip while hidden', () => {
+    const { queryByText } = render(<LoadingOverlay isVisible={false} />)
+    expect(queryByText('Loading')).toBeNull()
+    flash()
+    expect(queryByText('Loading')).toBeNull()
+  })
+
+  it('renders no content chip during the flash delay', () => {
+    const { queryByText } = render(<LoadingOverlay isVisible />)
+    expect(queryByText('Loading')).toBeNull()
+    flash()
+    expect(queryByText('Loading')).not.toBeNull()
+  })
+
   it('appears immediately, skipping the flash delay, when immediate is set', () => {
     const { queryByTestId } = render(<LoadingOverlay isVisible immediate />)
     expect(queryByTestId('loading-overlay')).not.toBeNull()

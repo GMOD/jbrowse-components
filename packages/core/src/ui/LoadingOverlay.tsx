@@ -8,7 +8,7 @@ import { alpha } from '@mui/material/styles'
 import LoadingDots from './LoadingDots.tsx'
 import StatusProgressBar from './StatusProgressBar.tsx'
 import { progressLabel } from '../util/progress.ts'
-import { cx, makeStyles } from '../util/tss-react/index.ts'
+import { makeStyles } from '../util/tss-react/index.ts'
 
 const cancelDelayMs = 5000
 
@@ -55,11 +55,7 @@ const useStyles = makeStyles()(theme => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'flex-start',
-      opacity: 0,
       paddingTop: '20px',
-    },
-    visible: {
-      opacity: 1,
     },
     // the status chip is the only interactive element; the striped backdrop stays
     // click-through so it never swallows track interactions
@@ -122,11 +118,13 @@ export default function LoadingOverlay({
   const cancelableAfterDelay = useDelayedFlag(!!isVisible, cancelDelayMs)
   const cancelable = isVisible && cancelableAfterDelay
 
-  return (
-    <span
-      className={cx(classes.overlay, shown && classes.visible)}
-      data-testid={shown ? 'loading-overlay' : undefined}
-    >
+  // Rendered only while shown. The content chip is `pointerEvents:auto`, so
+  // leaving it mounted (merely transparent) in the idle state would silently
+  // swallow clicks/hovers over the top-center of every track it overlays. There
+  // is no fade transition, so mount/unmount is visually identical to toggling
+  // opacity anyway.
+  return shown ? (
+    <span className={classes.overlay} data-testid="loading-overlay">
       <span className={classes.content}>
         {canceled ? (
           <span className={classes.row}>
@@ -173,5 +171,5 @@ export default function LoadingOverlay({
         )}
       </span>
     </span>
-  )
+  ) : null
 }
