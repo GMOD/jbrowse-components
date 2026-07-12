@@ -412,7 +412,9 @@ test('a shorthand-uri track edit does not pin the expanded adapter into the delt
   const view = session.views[0]!
 
   // sanity-check the fixture actually uses the shorthand form this guards
-  const rawBase = session.jbrowse.tracks.find(t => t.trackId === SHORTHAND_TRACK)!
+  const rawBase = session.jbrowse.tracks.find(
+    t => t.trackId === SHORTHAND_TRACK,
+  )!
   expect((rawBase.adapter as { uri?: string }).uri).toBeDefined()
 
   view.showTrack(SHORTHAND_TRACK)
