@@ -191,8 +191,8 @@ the display type. Non-destructive: un-pinned open tracks inherit it via
 ## tracksDifferingFrom
 
 Open tracks (across all views) whose resolved value differs from `entries` —
-exactly the tracks "apply to open tracks" would visibly change. Drives the
-dialog's preview list and count.
+exactly the tracks "apply to open tracks" would visibly change. The
+manage-default dialog counts these to name the overwrite scope before submit.
 
 ```js
 // type signature

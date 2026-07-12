@@ -303,8 +303,8 @@ export function setPromotableDefault(
 /**
  * #api core/configuration
  * Open tracks (across all views) whose resolved value differs from `entries` —
- * exactly the tracks "apply to open tracks" would visibly change. Drives the
- * dialog's preview list and count.
+ * exactly the tracks "apply to open tracks" would visibly change. The
+ * manage-default dialog counts these to name the overwrite scope before submit.
  */
 export function tracksDifferingFrom(
   self: PromotableDisplay,

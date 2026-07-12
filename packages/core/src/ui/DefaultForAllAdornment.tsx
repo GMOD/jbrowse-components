@@ -57,7 +57,7 @@ export function DefaultForAllAdornment({
         aria-haspopup="dialog"
         onClick={e => {
           e.stopPropagation()
-          openPromotableDefaultDialog(control, label ?? what)
+          openPromotableDefaultDialog(control, what)
         }}
       >
         <MoreHorizIcon fontSize="small" />

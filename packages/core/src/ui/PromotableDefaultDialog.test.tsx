@@ -132,4 +132,17 @@ describe('PromotableDefaultDialog', () => {
       true,
     )
   })
+
+  it('disables Submit until a choice would change something', () => {
+    // 10 is not yet the default and is the only open track's value, so opening
+    // the dialog stages no change — Submit stays disabled until "future" is
+    // checked, rather than silently no-op'ing on click.
+    const session = createSession([[{ customHeight: 10 }]])
+    const { getByText, getByLabelText } = renderDialog(session, 10)
+    const submit = getByText('Submit').closest('button')!
+    expect(submit.disabled).toBe(true)
+
+    fireEvent.click(getByLabelText(/Apply to future tracks/))
+    expect(submit.disabled).toBe(false)
+  })
 })

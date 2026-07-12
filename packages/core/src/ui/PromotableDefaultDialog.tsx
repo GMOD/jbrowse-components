@@ -36,12 +36,19 @@ function PromotableDefaultDialog({
   valueLabel: string
   handleClose: () => void
 }) {
-  const [future, setFuture] = useState(() => isPromotableDefault(self, entries))
+  const initialDefault = isPromotableDefault(self, entries)
+  const [future, setFuture] = useState(initialDefault)
   const [openTracks, setOpenTracks] = useState(false)
   const differingCount = tracksDifferingFrom(self, entries).length
+  // Submit only does something when it moves the future toggle off its current
+  // state (set or clear the default) or updates open tracks; disable it
+  // otherwise so opening the dialog and clicking Submit can't silently no-op,
+  // which reads as a dead button — the visible signal that a choice is needed.
+  const noChange = future === initialDefault && !openTracks
   return (
     <SubmitDialog
       open
+      submitDisabled={noChange}
       title={`Default: ${valueLabel}`}
       onCancel={() => {
         handleClose()
