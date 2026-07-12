@@ -25,6 +25,22 @@ Apache-2.0 © Evolutionary Software Foundation
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
+### applyPromotableDefault
+
+Apply a promotable value along either or both axes — the manage-default dialog's
+submit. `future` sets (or clears) the session default so new + un-pinned tracks
+inherit it. `openTracks` also updates the currently-open tracks that differ:
+when the default now holds these values (`future`), un-pin them so they inherit
+it (and track later changes); otherwise write the values onto them directly, so
+"open tracks" works even without a persistent default.
+
+```js
+// type signature
+(self: PromotableDisplay, entries: PromotableEntry[], opts: { future: boolean; openTracks: boolean; }) => void
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
 ### clearDisplaySessionDefaults
 
 Clear every promoted default for this display type, so sibling tracks revert to
@@ -136,6 +152,18 @@ node has no session ancestor.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
+### isPromotableDefault
+
+Whether every value in `entries` is the current session default for its slot.
+The live state the manage-default dialog's checkbox reflects.
+
+```js
+// type signature
+(self: PromotableDisplay, entries: PromotableEntry[]) => boolean
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
 ### makeCurrentValueSessionDefaultControl
 
 Promote-current control: "make this track's current resolved value(s) the
@@ -169,12 +197,12 @@ sharing one slot (arcs vs read cloud) stay independent.
 Per-value control over a _group_ of slots: "make this exact combination of slot
 values the session default". Like `makeSessionDefaultControl` but for a
 multi-slot value (e.g. a feature-height preset = height + spacing + mode), so
-each row of a preset radio group gets its own independent pin whose `active`
+each row of a preset radio group gets its own independent control whose `active`
 reflects that specific combination being the current default.
 
 ```js
 // type signature
-(self: PromotableDisplay, entries: { slot: string; value: unknown; }[]) => SessionDefaultControl
+(self: PromotableDisplay, entries: PromotableEntry[]) => SessionDefaultControl
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -214,10 +242,38 @@ harmless no-op since they're dropped anyway.
 
 ### SessionDefaultControl
 
-The state + action for one "make this the default for all tracks of this type"
-menu control, bundled so a row consumes it as a single prop instead of a
-separate is-default getter and toggle action. `active` = the promotion is
-currently in effect; `toggle` promotes it, or clears it when already active.
+A promotable "default for all tracks of this type" control, bundled so a menu
+row consumes it as a single prop. `active` = this value is currently the session
+default; `toggle` sets it as the default or clears it (non-destructive — no open
+track is overwritten). `self`/`entries` let the trailing adornment open the
+manage-default dialog, whose "apply to open tracks" is the only path that
+overwrites tracks pinned to a different value.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+### setPromotableDefault
+
+Set (`on`) or clear (`!on`) this value combination as the session default for
+the display type. Non-destructive: un-pinned open tracks inherit it via
+`getConfResolved`; tracks pinned to their own value keep it.
+
+```js
+// type signature
+(self: PromotableDisplay, entries: PromotableEntry[], on: boolean) => void
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+### tracksDifferingFrom
+
+Open tracks (across all views) whose resolved value differs from `entries` —
+exactly the tracks "apply to open tracks" would visibly change. Drives the
+dialog's preview list and count.
+
+```js
+// type signature
+(self: PromotableDisplay, entries: PromotableEntry[]) => PromotableDisplay[]
+```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
