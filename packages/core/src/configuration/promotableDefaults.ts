@@ -88,6 +88,13 @@ function isConcreteValue(def: ConfigSlotDefinition, value: unknown): boolean {
 // session store / saved snapshot against garbage; not a full validation
 // (`validate` layers semantics on top). Derived from the slot's own metadata so
 // a new promotable slot type needs no change here.
+//
+// This can't just delegate to the slot's MST `model.is(value)`: that's too
+// permissive exactly where this guard matters — `types.number.is(NaN)` and
+// `types.frozen().is('any-string')` are both `true`, so it wouldn't reject the
+// non-finite number or the wrong-shape frozen value the branches below catch.
+// Only the `stringEnum` membership check has an MST equivalent, and that branch
+// is already clear.
 function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
   const { type, model, defaultValue } = def
   return type === 'stringEnum'
