@@ -124,7 +124,6 @@ jexl: randomColor(feature.type) // deterministic color from a string (e.g. a fea
 jexl: alpha('green', 0.5) // a color at 50% opacity
 jexl: hsl('#ff0000') // converts a color to its HSL form
 jexl: colorString('green') // normalizes a color name or value to a hex string
-jexl: interpolate(feature.score, scale) // applies a scale function to a value
 ```
 
 **Console logging**

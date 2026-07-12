@@ -147,7 +147,9 @@ export default function JexlF(/* config?: any*/) {
   j.addFunction('hsl', (color: Colord) => colord(color.toHsl()))
   /** #jexlFunction Color functions | colorString('green') | normalizes a color name or value to a hex string */
   j.addFunction('colorString', (color: Colord) => color.toHex())
-  /** #jexlFunction Color functions | interpolate(feature.score, scale) | applies a scale function to a value */
+  // interpolate applies a scale function to a value. It is intentionally not
+  // tagged for the jexl catalog: a config `jexl:` string has no way to supply
+  // the scale function argument, so it is not usable from config callbacks.
   j.addFunction('interpolate', (count: number, scale: (n: number) => string) =>
     scale(count),
   )
