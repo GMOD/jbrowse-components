@@ -16,7 +16,27 @@ JBrowse 2 renders feature data on the main thread with the GPU. The split is:
 
 See `plugins/canvas` and `packages/render-core` for the implementation, and
 [creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
-to build one.
+to build one. The
+[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
+is the canonical, in-depth reference for everything on this page.
+
+## Display stacks
+
+Which foundation mixin a display composes is the primary axis of code sharing;
+_how_ it renders (GPU vs Canvas2D) is layered on top. The
+[architecture spec's display-stacks table](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
+enumerates the three foundations every in-tree display is built from:
+
+- **`MultiRegionDisplayMixin`** — per-region fetch + render, the common case.
+  Covers alignments, wiggle, features, variants, Manhattan, and reference
+  sequence. Both the [Canvas2D](/docs/developer_guides/plotting_features) and
+  [GPU](/docs/developer_guides/creating_gpu_display) walkthroughs use it.
+- **`GlobalDataDisplayMixin`** — one non-regional dataset with no per-region
+  partitioning (a heatmap spanning the whole view). Same slot/render plumbing
+  but no fetch autoruns; the display installs its own via
+  `installGlobalFetchAutorun`. Used by Hi-C (`LinearHicDisplay`) and LD.
+- **`RegionTooLargeMixin` + custom `renderSvg`** — lightweight React-SVG, no GPU
+  upload. Used only by the low-volume arc displays.
 
 ## Low-volume displays
 
@@ -27,6 +47,9 @@ track types should use the GPU path above rather than emitting SVG per feature.
 
 ## See also
 
+- [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
+  - the canonical reference for the render lifecycle, display stacks, upload
+    patterns, HAL, and shaders
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
 - [Data fetching pipeline](/docs/developer_guides/data_fetching) - the
   worker-fetch side that feeds the renderer

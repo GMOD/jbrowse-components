@@ -39,9 +39,26 @@ return (absolute uint32 bp)  →   draw the visible blocks into a <canvas>
 - The renderer is a small class that paints the visible blocks with an ordinary
   `CanvasRenderingContext2D`. The same pure draw function backs SVG export.
 
+A few terms recur throughout the code below (the
+[architecture spec's vocabulary](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#vocabulary)
+is the fuller list):
+
+- **region** — one entry of `view.displayedRegions` (a chromosome or a
+  sub-interval of one). Your worker fetches, and your model stores, data one
+  region at a time.
+- **block** — a visible slice of a region with its on-screen pixel span. One
+  region can produce several blocks; you draw per block.
+- **`displayedRegionIndex`** — the zero-based index of a region in
+  `view.displayedRegions`. It's the join key between the model's `rpcDataMap`
+  and the blocks: `rpcDataMap.get(block.displayedRegionIndex)` fetches the data
+  for the region a block belongs to.
+
 The simplest complete in-tree reference is
 `plugins/sequence/src/LinearReferenceSequenceDisplay/`, a Canvas2D-only display
-whose renderer is ~30 lines. This guide mirrors its shape.
+whose renderer is ~30 lines. This guide mirrors its shape. The
+[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
+is the canonical reference for the lifecycle and mixins below — in particular
+[Canvas2D is the floor, GPU is the optional accelerator](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator).
 
 ## Files to create
 
@@ -53,7 +70,8 @@ plugins/myplugin/src/LinearScoreDisplay/
 └── components/
     ├── ScoreDisplayComponent.tsx  React: <DisplayChrome> + <canvas>
     ├── ScoreRenderer.ts           Canvas2DPerRegionRenderingBackend + factory
-    └── drawScore.ts               pure draw function (also used by SVG export)
+    ├── drawScore.ts               pure draw function (also used by SVG export)
+    └── scoreTypes.ts              ScoreRegionData + ScoreRenderState interfaces
 plugins/myplugin/src/ScoreRPC/
 ├── index.ts                       RPC registration
 └── GetScoreData.ts                worker: fetch features → ScoreRegionData
@@ -64,6 +82,7 @@ plugins/myplugin/src/ScoreRPC/
 Keep it compact and structured-clone-friendly. Use absolute genomic positions.
 
 ```ts
+// components/scoreTypes.ts
 // what the worker returns per region, stored in the model's rpcDataMap
 export interface ScoreRegionData {
   // parallel arrays, one entry per feature
@@ -371,9 +390,13 @@ export interface ScoreRenderState {
 
 ## Step 5: The React component
 
-`DisplayChrome` wires the canvas, the rendering-backend factory, the loading
-overlay, and WebGL/WebGPU context-loss recovery. You give it your factory and
-render the `<canvas>` from the `canvasRef` it hands back.
+`DisplayChrome` is the shared wrapper that supplies a display's _chrome_ — the
+UI framing around your canvas (the loading scrim, the error bar, the "region too
+large" banner), the same sense as "browser chrome." It also wires the
+rendering-backend factory and WebGL/WebGPU context-loss recovery, so every
+display gets identical status behavior. You give it your factory and render the
+`<canvas>` from the `canvasRef` it hands back; the canvas is the only part your
+display draws itself.
 
 ```tsx
 // components/ScoreDisplayComponent.tsx
@@ -480,6 +503,9 @@ you add a GPU renderer and swap `createCanvas2DBackend` for
 
 ## See also
 
+- [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
+  - the canonical reference for the render lifecycle, display stacks, and upload
+    patterns this guide walks through
 - [Data fetching pipeline](/docs/developer_guides/data_fetching) - the autorun
   chain, `rpcProps`, cancellation, and `regionTooLarge` behind `fetchNeeded`
 - [RPC and worker system](/docs/developer_guides/rpc_workers) - implementing the

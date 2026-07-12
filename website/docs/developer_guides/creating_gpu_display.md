@@ -15,6 +15,16 @@ which uses the shader-free Canvas2D path. The two share the same model, fetch
 chain, and lifecycle; only the renderer differs, so moving up later is a small
 change.
 
+This guide is the practitioner's walkthrough; the canonical source of truth for
+the lifecycle, mixins, and invariants is the
+[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md),
+whose
+[GPU rendering architecture](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#gpu-rendering-architecture)
+and
+[Adding a new GPU display type](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#adding-a-new-gpu-display-type)
+sections mirror the steps below. Where this guide and the spec disagree, the
+spec wins.
+
 :::
 
 ## Architecture overview
@@ -25,15 +35,16 @@ JBrowse GPU displays follow a three-layer model:
 Worker (RPC)          Main thread (MST model)        GPU / Canvas
 ─────────────         ──────────────────────         ─────────────
 executeRender()  →    rpcDataMap (per region)   →    upload autorun
-                      laidOutDataMap (processed) →    render autorun → frame
-                      renderState (frame uniforms)
+                      renderState (frame uniforms) → render autorun → frame
 ```
 
 The model keeps two autoruns running at all times (owned by
-`RenderLifecycleMixin`):
+`RenderLifecycleMixin`, installed by `installPerRegionLifecycle`):
 
-- The upload autorun fires when `laidOutDataMap` or the backend changes; it
-  calls `backend.uploadRegion()` for regions that changed.
+- An upload autorun _per region key_ fires when that region's `rpcDataMap` entry
+  or the backend changes; it calls `backend.uploadRegion()` for the region that
+  changed. Per-key autoruns keep a streaming whole-genome fetch at O(N) uploads
+  instead of O(N²).
 - The render autorun fires when `renderTick` bumps (after every upload) or when
   frame-level state like scroll position changes; it calls
   `backend.renderBlocks()`.
@@ -42,12 +53,18 @@ The backend is a HAL (Hardware Abstraction Layer) that dispatches to WebGPU,
 WebGL2, or Canvas2D at runtime. Your renderer code talks to the HAL. It never
 calls WebGPU or WebGL2 directly.
 
-See `agent-docs/ARCHITECTURE.md` for the full lifecycle spec and
-`packages/render-core/CLAUDE.md` for HAL invariants.
+See the
+[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#gpu-rendering-architecture)
+for the full lifecycle spec and `packages/render-core/CLAUDE.md` for HAL
+invariants.
 
-The simplest concrete reference is `plugins/canvas/src/LinearBasicDisplay/`, a
-generic feature display with four shader passes (rectangles, lines, chevrons,
-arrows).
+The simplest per-region streamed reference is
+`plugins/gwas/src/LinearManhattanDisplay/` (a scored scatter with both a GPU and
+a Canvas2D renderer behind one model). `plugins/canvas/src/LinearBasicDisplay/`
+is the fullest example — a generic feature display with four shader passes
+(rectangles, lines, chevrons, arrows) — but it uses the whole-map
+`laidOutDataMap` form for cross-region layout, so start from Manhattan when your
+regions are independent.
 
 ## Files to create
 
@@ -55,7 +72,7 @@ arrows).
 plugins/myplugin/src/LinearMyDisplay/
 ├── model.ts                         MST model: startRenderingBackend + renderState
 ├── components/
-│   ├── MyComponent.tsx              React: useRenderingBackend hook + <canvas>
+│   ├── MyComponent.tsx              React: <DisplayChrome> + <canvas>
 │   ├── MyRendererFactory.ts         createRenderingBackend dispatch function
 │   ├── GpuMyRenderer.ts             extends GpuPerRegionRenderingBackend
 │   ├── Canvas2DMyRenderer.ts        extends Canvas2DPerRegionRenderingBackend
@@ -226,10 +243,14 @@ export class GpuMyRenderer extends GpuPerRegionRenderingBackend<
 For a real, complete example of this shape see
 `plugins/gwas/src/LinearManhattanDisplay/GpuManhattanRenderer.ts`.
 
-## Step 4: Canvas2D renderer (fallback)
+## Step 4: Canvas2D renderer (required)
 
-Implement the same interface using `ctx.fillRect` etc. This runs when WebGPU and
-WebGL2 are both unavailable:
+Implement the same interface using `ctx.fillRect` etc. Canvas2D is not just an
+old-browser fallback: it is
+[the floor every display must ship](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator),
+because **SVG export runs the Canvas2D path** — the GPU shader is the optional
+accelerator layered on top. This renderer also runs when WebGPU and WebGL2 are
+both unavailable:
 
 ```ts
 // Canvas2DMyRenderer.ts
@@ -301,19 +322,34 @@ export function MyRendererFactory(canvas: HTMLCanvasElement) {
 
 ## Step 6: MST model
 
-Compose `MultiRegionDisplayMixin` (which includes `RenderLifecycleMixin`) and
-add a `startRenderingBackend` action:
+Compose `MultiRegionDisplayMixin` (which includes `RenderLifecycleMixin` and the
+fetch autoruns), store the worker output in an `rpcDataMap`, and wire the render
+lifecycle with `installPerRegionLifecycle`. This is the **per-region streamed**
+upload pattern from the
+[architecture spec's three upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#three-upload-patterns)
+— the right shape when each region's data is independent (no cross-region layout
+coupling). It's identical in structure to the Canvas2D model in
+[Plotting features](/docs/developer_guides/plotting_features#step-3-the-mst-model);
+only the renderer differs.
 
 ```ts
 // model.ts
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { MultiRegionDisplayMixin } from '@jbrowse/plugin-linear-genome-view'
 import { getContainingView } from '@jbrowse/core/util'
-import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
+import { types } from '@jbrowse/mobx-state-tree'
+import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
+import { observable } from 'mobx'
 
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
   MyRenderingBackend,
   MyRenderState,
+  MyUploadData,
 } from './components/myRenderingBackendTypes.ts'
 
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
@@ -323,9 +359,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       configuration: ConfigurationReference(configSchema),
     })
     .compose(MultiRegionDisplayMixin())
+    .volatile(() => ({
+      // fetched data keyed by displayedRegionIndex — one entry per region
+      rpcDataMap: observable.map<number, MyUploadData>(),
+    }))
     .views(self => ({
-      // rpcProps() controls when a full re-fetch fires.
-      // Keep it cheap — it runs on every observable read.
+      // rpcProps() controls when a full re-fetch fires. User-controlled
+      // settings only — never scroll/zoom or fetch results.
       rpcProps() {
         return {
           adapterConfig: readConfObject(self.configuration, 'adapter'),
@@ -343,67 +383,114 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
       },
     }))
-    .actions(self => {
-      const syncRegions = createRegionUploadSync<
-        MyUploadData,
-        MyRenderingBackend
-      >()
-      return {
-        startRenderingBackend(backend: MyRenderingBackend) {
-          self.attachRenderingBackend(backend, {
-            upload: b => {
-              syncRegions(b, self.laidOutDataMap)
-            },
-            render: b => {
-              if (self.laidOutDataMap.size === 0) return false
-              b.renderBlocks(
-                self.renderBlocks,
-                self.laidOutDataMap,
-                self.renderState,
-              )
-              return true
-            },
-          })
-        },
-      }
-    })
+    .actions(self => ({
+      setRpcData(idx: number, data: MyUploadData) {
+        self.rpcDataMap.set(idx, data)
+      },
+      clearDisplaySpecificData() {
+        self.rpcDataMap.clear()
+      },
+      // fetchNeeded is identical to the Canvas2D path — see the data fetching
+      // pipeline guide. It calls fetchEachRegion and writes into rpcDataMap.
+      startRenderingBackend(backend: MyRenderingBackend) {
+        // one autorun per region key: a new region uploads O(1); a settings
+        // change re-encodes all regions. `data => data` is the identity encoder
+        // — use it when the RPC result is already the render payload.
+        installPerRegionLifecycle(
+          self,
+          self.rpcDataMap,
+          backend,
+          data => data,
+          (b, regions) => {
+            if (regions.size === 0) {
+              return false // keep the loading overlay up until data lands
+            }
+            b.renderBlocks(self.renderBlocks, regions, self.renderState)
+            return true
+          },
+        )
+      },
+    }))
 }
 ```
 
-`rpcProps()` is watched by the fetch autorun, so any change triggers a full
-re-fetch from workers. Don't put frequently-changing values (scroll position,
-zoom) here; put those in `renderState` instead. See
-`adr-016-bicolorpivot-stays-in-worker.md` for the trade-off.
+`installPerRegionLifecycle` wraps the lower-level
+[`attachRenderingBackend`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#the-core-contract)
+contract (one upload autorun, one render autorun) and gives each region key its
+own upload autorun, avoiding the O(N²) re-upload when regions stream in one at a
+time. Only `LinearBasicDisplay` and alignments — which lay features into Y-rows
+_across_ regions — need the whole-map `laidOutDataMap` form instead; a display
+with independent regions should not reach for it.
+
+The model above omits `fetchNeeded` for brevity — add it exactly as on the
+Canvas2D path
+([Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model)):
+it calls `fetchEachRegion` and writes each region's result through `setRpcData`.
+The fetch wiring is identical on both paths and is documented in full in
+[the data fetching pipeline](/docs/developer_guides/data_fetching).
+
+`rpcProps()` is watched by the `SettingsInvalidate` autorun, so any change
+triggers a full re-fetch from workers. Don't put frequently-changing values
+(scroll position, zoom) here; put those in `renderState` instead. When settings
+drive a main-thread buffer _re-encode_ that needs no refetch (e.g. a color or
+scale change on already-fetched data), split those out into a `gpuProps()`
+method instead of `rpcProps()` — see the
+[`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern)
+and `adr-016-bicolorpivot-stays-in-worker.md` for the trade-off.
 
 ## Step 7: React component
 
+Render the canvas through the shared `DisplayChrome` — the wrapper that supplies
+a display's _chrome_ (the UI framing around your canvas: loading scrim, error
+bar, "region too large" banner, in the same sense as "browser chrome"). It is
+the **only** place `useRenderingBackend` is called — a display must not call the
+hook itself. This is a hard invariant of the
+[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#the-api):
+because the chrome owns the backend hook, it also owns every terminal state
+(loading overlay, render-error and region-too-large banners) and WebGL/WebGPU
+context-loss recovery in one place. `DisplayChrome` takes a render-prop child so
+it's agnostic to how many canvases a display draws.
+
 ```tsx
 // components/MyComponent.tsx
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
-import { useRenderingBackend } from '@jbrowse/core/util'
 
 import { MyRendererFactory } from './MyRendererFactory.ts'
 
 import type { LinearMyDisplayModel } from '../model.ts'
 
-const MyComponent = observer(({ model }: { model: LinearMyDisplayModel }) => {
-  const { canvasRef, error } = useRenderingBackend(MyRendererFactory, model)
-
+const MyComponent = observer(function MyComponent({
+  model,
+}: {
+  model: LinearMyDisplayModel
+}) {
   return (
-    <div
-      style={{ position: 'relative', height: model.height, overflow: 'hidden' }}
+    <DisplayChrome
+      model={model}
+      factory={MyRendererFactory}
+      testid="my-display"
+      style={{ width: '100%', height: model.height }}
     >
-      <canvas ref={canvasRef} style={{ width: '100%', height: '100%' }} />
-      {error ? <DisplayErrorBar model={model} /> : null}
-    </div>
+      {({ canvasRef }) => (
+        <canvas
+          ref={canvasRef}
+          style={{ width: '100%', height: '100%', display: 'block' }}
+        />
+      )}
+    </DisplayChrome>
   )
 })
 
 export default MyComponent
 ```
 
-`useRenderingBackend` creates the HAL, calls `model.startRenderingBackend()`,
-and returns a `canvasRef` to attach to the `<canvas>` element.
+`DisplayChrome` creates the HAL via `useRenderingBackend`, calls
+`model.startRenderingBackend(backend)` once the backend is live, and hands back
+the `canvasRef` to attach to your `<canvas>`. This is the same component the
+Canvas2D display in
+[Plotting features](/docs/developer_guides/plotting_features#step-5-the-react-component)
+uses — the two paths share it unchanged.
 
 ## Step 8: Register the display
 
@@ -423,8 +510,22 @@ full registration pattern).
   do not scale by `devicePixelRatio` before writing them.
 - Never edit `*.generated.ts`. Always edit `.slang` and run `pnpm gen:shaders`;
   CI enforces this with `git diff --exit-code`.
+- Renderers stay stateless. Don't cache per-region data on the renderer class
+  (`private regions = new Map()`); the model's `rpcDataMap` is the single source
+  of truth and is passed into `renderBlocks`. Delegate GPU buffer lifecycle to
+  `hal.pruneRegions(active)`.
+- Render the canvas through `DisplayChrome`, never by calling
+  `useRenderingBackend` in your own component.
+
+The
+[What NOT to do](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#what-not-to-do)
+section of the architecture spec is the full quick-scan list.
 
 ## See also
+
+- [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
+  - the canonical reference for the render lifecycle, mixins, upload patterns,
+    HAL, and shaders that this guide walks through
 
 - [Data fetching pipeline](/docs/developer_guides/data_fetching) - the
   `MultiRegionDisplayMixin` autorun chain, `rpcProps`, and `renderState`

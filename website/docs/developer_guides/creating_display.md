@@ -57,7 +57,10 @@ the full set of slots. Useful in-tree references:
 
 The display owns view-specific state, menu items, and overlays; the
 [renderer](/docs/developer_guides/renderer_architecture) it invokes does the
-per-feature drawing.
+per-feature drawing. Which foundation mixin a display composes
+(`MultiRegionDisplayMixin` for per-region data, `GlobalDataDisplayMixin` for a
+single whole-view dataset like a heatmap) is spelled out in the
+[architecture spec's display-stacks table](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks).
 
 ## Pairing displays with tracks and views
 
@@ -85,6 +88,9 @@ In-tree references:
 
 ## See also
 
+- [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
+  - the canonical reference for display stacks, the render lifecycle, and fetch
+    pipeline
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
   - for large or dense datasets
 - [Data fetching pipeline](/docs/developer_guides/data_fetching) - how a display

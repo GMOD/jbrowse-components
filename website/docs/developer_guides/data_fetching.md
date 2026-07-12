@@ -50,15 +50,57 @@ trigger a new fetch.
 
 ## Implementing fetchNeeded
 
-`fetchNeeded` is the hook you override in your display to make RPC calls.
-`MultiRegionDisplayMixin` provides `fetchRegions()` which handles cancellation,
-stop tokens, and byte estimation. Your job is to call it with a work callback:
+`fetchNeeded` is the hook you override in your display to make RPC calls. The
+mixin's primitive is `fetchRegions(needed, work)`, which handles cancellation,
+stop tokens, and byte estimation. But most displays don't call it directly —
+they use the `fetchEachRegion` wrapper, which runs one RPC per region in
+parallel and applies the two `ctx.isStale()` guards for you. Forgetting either
+guard is a stale-data write, so the wrapper is a correctness primitive, not just
+a convenience — prefer it:
+
+```ts
+import { getRpcSessionId, getSession } from '@jbrowse/core/util'
+import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
+
+// Inside your display's .actions(self => ({ ... }))
+async fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
+  const { adapterConfig } = self
+  const sessionId = getRpcSessionId(self)
+  const { rpcManager } = getSession(self)
+  await fetchEachRegion(self, needed, {
+    call: (region, ctx, displayedRegionIndex) =>
+      rpcManager.call(sessionId, 'MyRpcMethod', {
+        sessionId,
+        adapterConfig,
+        ...self.rpcProps(),
+        region,
+        stopToken: ctx.stopToken,
+        statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
+      }),
+    onResult: (idx, result) => {
+      self.setRpcData(idx, result)
+    },
+  })
+},
+```
+
+`call` keeps the literal RPC method name at the call site so its typed args and
+return survive, and `makeRegionStatusCallback` aggregates every region's
+progress into one bar. A batched counterpart, `fetchAllRegions`, hands all
+regions to a single RPC call (use it when the adapter serves the whole set in
+one pass more efficiently, e.g. BigWig coalescing adjacent blocks).
+
+### The raw `fetchRegions` primitive
+
+Drop to `fetchRegions` directly only when a display's fetch genuinely diverges
+from one-call-per-region — canvas prunes and folds a too-large result, MAF
+fetches summary vs detail, alignments builds a chain payload. You then own both
+`ctx.isStale()` guards by hand:
 
 ```ts
 import { getRpcSessionId, getSession, isAlive } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
-// Inside your display's .actions(self => ({ ... }))
 fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
   const view = getContainingView(self) as LinearGenomeViewModel
   const sessionId = getRpcSessionId(self)
@@ -90,7 +132,9 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
 
 `ctx.isStale()` returns `true` if the user panned/zoomed or settings changed
 while the fetch was in flight. Always check it before writing results to the
-model, since stale writes trigger unnecessary re-renders.
+model, since stale writes trigger unnecessary re-renders. The
+[architecture spec's data fetching pipeline](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#data-fetching-pipeline)
+covers the byte gate, `regionTooLarge`, and the refetch-loop traps in depth.
 
 ## rpcProps: the cache key
 
@@ -227,6 +271,9 @@ visibleRegions changes → FetchVisibleRegions (600ms) → fetchNeeded(needed)
 
 ## See also
 
+- [Architecture spec: data fetching pipeline](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#data-fetching-pipeline)
+  - the canonical reference: the byte gate, imperative vs. derived
+    `regionTooLarge`, and the `rpcProps()` loop trap
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
   - the rendering side that consumes this fetched data
 - [RPC and worker system](/docs/developer_guides/rpc_workers) - implementing the

@@ -1,4 +1,4 @@
-// Validates two kinds of code references in the docs so they can't go stale:
+// Validates three kinds of code references in the docs so they can't go stale:
 //
 //   1. Every `@jbrowse/*` import in a fenced code block, resolved against the
 //      actual workspace package `exports` maps / on-disk files. Catches e.g. a
@@ -7,10 +7,16 @@
 //   2. Every repo file-path reference in prose (`packages/...`, `plugins/...`,
 //      `products/...`, `agent-docs/...`), checked to exist on disk. Catches a
 //      path left behind when code moves (e.g. `packages/core/src/gpu`).
+//   3. Every GitHub `blob/<ref>/<path>#<anchor>` link into this repo, checked so
+//      the file exists and — when it's a markdown target — a heading slugifies
+//      to the anchor. Catches a cross-doc deep link (e.g. the developer guides
+//      pointing at `agent-docs/ARCHITECTURE.md#three-upload-patterns`, and the
+//      reverse) left dangling by a renamed heading.
 //
-// Both are the same failure — a plausible-looking reference that no longer
-// resolves — and nothing else in CI reads doc code fences or prose paths. Scans
-// both the website guides (website/docs) and the agent-docs knowledge base.
+// All three are the same failure — a plausible-looking reference that no longer
+// resolves — and nothing else in CI reads doc code fences, prose paths, or blob
+// anchors. Scans both the website guides (website/docs) and the agent-docs
+// knowledge base.
 //
 // Only workspace-local `@jbrowse/*` specifiers are checked; third-party and
 // out-of-workspace scopes are skipped, as are relative imports. Path references
@@ -206,6 +212,11 @@ function scanFilePaths(path: string, lines: string[]): Problem[] {
       if (match[0].includes('...')) {
         continue
       }
+      // A path embedded in a GitHub blob URL is owned by scanBlobAnchors (which
+      // also validates its anchor); skip it here so it isn't reported twice.
+      if (/\/blob\/[^/]+\/$/.test(line.slice(0, match.index))) {
+        continue
+      }
       const ref = match[0].replace(/[./]+$/, '')
       // Only hold a path to account when its package anchor really exists —
       // otherwise it's a placeholder/example path, not a live repo reference.
@@ -215,6 +226,85 @@ function scanFilePaths(path: string, lines: string[]): Problem[] {
           line: i + 1,
           specifier: ref,
           reason: `path does not exist in the repo`,
+        })
+      }
+    }
+  })
+  return problems
+}
+
+// GitHub's heading-anchor algorithm (github-slugger, ASCII subset): lowercase,
+// drop html + punctuation (keeping word chars, spaces, hyphens), then spaces →
+// hyphens with NO run-collapsing — so a heading with ` / ` yields a double
+// hyphen. Matches what the guides link to.
+function slugify(heading: string) {
+  return heading
+    .toLowerCase()
+    .replaceAll(/<[^>]+>/g, '')
+    .replaceAll(/[^\w\s-]/g, '')
+    .trim()
+    .replaceAll(/\s/g, '-')
+}
+
+// Cache heading-slug sets so a doc linked many times is read once.
+const slugCache = new Map<string, Set<string>>()
+
+function headingSlugs(absPath: string): Set<string> {
+  const cached = slugCache.get(absPath)
+  if (cached) {
+    return cached
+  }
+  const set = new Set<string>()
+  const counts = new Map<string, number>()
+  let inFence = false
+  for (const line of readFileSync(absPath, 'utf8').split('\n')) {
+    if (/^\s*```/.test(line)) {
+      inFence = !inFence
+    } else if (!inFence) {
+      const m = /^(#{1,6})\s+(.*?)\s*#*\s*$/.exec(line)
+      if (m) {
+        const base = slugify(m[2]!)
+        const n = counts.get(base) ?? 0
+        counts.set(base, n + 1)
+        // github-slugger appends -1, -2 … to repeated slugs; the first keeps
+        // the bare form.
+        set.add(n === 0 ? base : `${base}-${n}`)
+      }
+    }
+  }
+  slugCache.set(absPath, set)
+  return set
+}
+
+const MD_EXT = /\.mdx?$/
+// GitHub blob links into this repo: capture the repo-relative path (the class
+// excludes `#`, `)`, and quotes, so it stops cleanly) and an optional anchor.
+const BLOB =
+  /github\.com\/GMOD\/jbrowse-components\/blob\/[^/]+\/([A-Za-z0-9_./-]+)(#[A-Za-z0-9._-]+)?/g
+
+function scanBlobAnchors(path: string, lines: string[]): Problem[] {
+  const problems: Problem[] = []
+  lines.forEach((line, i) => {
+    for (const match of line.matchAll(BLOB)) {
+      const ref = match[1]!.replace(/[./]+$/, '')
+      const anchor = match[2]?.slice(1).toLowerCase()
+      if (!repoPathExists(ref)) {
+        problems.push({
+          file: path,
+          line: i + 1,
+          specifier: `${ref}${match[2] ?? ''}`,
+          reason: `linked repo file does not exist`,
+        })
+      } else if (
+        anchor &&
+        MD_EXT.test(ref) &&
+        !headingSlugs(join(root, ref)).has(anchor)
+      ) {
+        problems.push({
+          file: path,
+          line: i + 1,
+          specifier: `${ref}#${anchor}`,
+          reason: `no heading in ${ref} slugifies to "#${anchor}"`,
         })
       }
     }
@@ -259,7 +349,9 @@ const problems = [
   const lines = readFileSync(file, 'utf8').split('\n')
   return [
     ...scanImports(file, lines),
-    ...(isAutogen(file) ? [] : scanFilePaths(file, lines)),
+    ...(isAutogen(file)
+      ? []
+      : [...scanFilePaths(file, lines), ...scanBlobAnchors(file, lines)]),
   ]
 })
 

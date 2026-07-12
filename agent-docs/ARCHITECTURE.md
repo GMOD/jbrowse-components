@@ -80,6 +80,17 @@ Terms used throughout this doc:
 - **Adding a new GPU display type** — the checklist.
 - **What NOT to do** — the invariants, as a quick-scan list.
 
+**Public developer guides mirror this spec.** The hand-written walkthroughs at
+[website/docs/developer_guides/plotting_features.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/plotting_features.md)
+(Canvas2D),
+[creating_gpu_display.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/creating_gpu_display.md)
+(GPU), and
+[data_fetching.md](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/data_fetching.md)
+turn the sections below into step-by-step tutorials and link back to them. When
+the lifecycle, mixins, or upload patterns here change, update those guides in
+the same pass — `pnpm check-doc-imports` validates the cross-links both ways but
+not the prose.
+
 ---
 
 ## Display stacks
@@ -117,6 +128,11 @@ work on a float32 GPU is in [reference/BP_PRECISION.md](reference/BP_PRECISION.m
 ---
 
 ## Data fetching pipeline
+
+The public
+[data fetching pipeline guide](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/data_fetching.md)
+is the tutorial version of this section (the `fetchNeeded` → `fetchEachRegion`
+wrapper, `rpcProps`, cancellation, byte gate).
 
 `MultiRegionDisplayMixin` (in
 `plugins/linear-genome-view/src/BaseLinearDisplay/`) drives RPC fetches for all
@@ -973,6 +989,12 @@ tuple of two displayedRegion indices.
 ---
 
 ## Adding a new GPU display type
+
+The public
+[GPU displays guide](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/creating_gpu_display.md)
+walks this checklist step by step (and
+[Plotting features](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/plotting_features.md)
+does the Canvas2D-only version); keep them in step with any change here.
 
 - **Types** — `MyData`, `MyRenderState`, `MyRenderingBackend`.
 - **Shader** — author `my.slang`; `pnpm gen:shaders` emits `my.generated.ts`.
