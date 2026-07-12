@@ -7,7 +7,10 @@ import {
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 
-import type { FeatureLabelData } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type {
+  FeatureDataResult,
+  FeatureLabelData,
+} from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 // Overlapping features so the packer stacks them into rows taller than the
 // track height, giving the fit something to shrink. Each spans 800bp (64px at the
@@ -70,6 +73,59 @@ function labeledStackedRegionData(rows: number, heightPx: number) {
     }
   }
   return makeFeatureData({ ...base, floatingLabelsData })
+}
+
+// Narrow boxes (5px, at the test model's 1 bp/px) whose 40px names far outrun
+// them, spaced with a start-to-start step that RAMPS from 6bp to 6+2·count so
+// each feature has a distinct amount of overhang room. `fitWidth` keeps a name
+// where its box + neighbor gap >= labelWidth·factor (see keepFeatureLabel), so
+// distinct rooms make decimation gradual — the crowded (small-room) names shed
+// first, the roomier ones last — and the solve can fill the height a name at a
+// time. The uniform-wide `labeledStackedRegionData` can't show this: every name
+// there has infinite room, so decimated always equals labels.
+function mixedWidthRegionData(count: number) {
+  const features: {
+    featureId: string
+    startBp: number
+    endBp: number
+    height: number
+  }[] = []
+  let pos = 100
+  for (let i = 0; i < count; i++) {
+    features.push({ featureId: `m${i}`, startBp: pos, endBp: pos + 5, height: 10 })
+    pos += 6 + 2 * i
+  }
+  const floatingLabelsData: Record<string, FeatureLabelData> = {}
+  for (const f of features) {
+    floatingLabelsData[f.featureId] = {
+      featureId: f.featureId,
+      minX: f.startBp,
+      maxX: f.endBp,
+      topY: 0,
+      featureHeight: f.height,
+      nameLabel: { text: f.featureId, relativeY: 0, color: '#000', textWidth: 40 },
+    }
+  }
+  return makeFeatureData({
+    flatbushItems: features.map(f =>
+      makeFlatbushItem({
+        featureId: f.featureId,
+        type: 'feature',
+        startBp: f.startBp,
+        endBp: f.endBp,
+        bottomPx: f.height,
+        featureHeightPx: f.height,
+      }),
+    ),
+    rectPositions: new Uint32Array(features.flatMap(f => [f.startBp, f.endBp])),
+    rectYs: new Float32Array(features.length),
+    rectHeights: new Float32Array(features.map(f => f.height)),
+    rectColors: new Uint32Array(features.length),
+    rectStrands: new Float32Array(features.length),
+    rectDensityFade: new Uint32Array(features.length),
+    rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
+    floatingLabelsData,
+  })
 }
 
 const ctgA = {
@@ -403,8 +459,9 @@ describe('canvas display fit escalation ladder', () => {
   // Dropping a reservation shrinks each feature's reserved box in both height
   // and width, which can only shrink (never grow) the packed stack. The ladder's
   // "least reduction that fits" logic rests on this monotonic ordering
-  // (full >= labels >= decimated >= bodies), so pin it across a range of feature
-  // counts, not just the representative one.
+  // (full >= labels >= bodies, with the height-solved `decimated` rung landing
+  // between labels and bodies — see the mixed-width test), so pin it across a
+  // range of feature counts, not just the representative one.
   it('never grows the unscaled stack when a reservation is dropped', () => {
     for (const rows of [1, 2, 5, 15, 40]) {
       const { createDisplay } = createTestEnvironment()
@@ -417,11 +474,9 @@ describe('canvas display fit escalation ladder', () => {
       )
       const fullH = maxBottom(display.baseLaidOutDataMap)
       const labelsH = maxBottom(display.fitLabelsOnlyLayout)
-      const decimatedH = maxBottom(display.fitDecimatedLayout)
       const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
       expect(fullH).toBeGreaterThanOrEqual(labelsH)
-      expect(labelsH).toBeGreaterThanOrEqual(decimatedH)
-      expect(decimatedH).toBeGreaterThanOrEqual(bodiesH)
+      expect(labelsH).toBeGreaterThanOrEqual(bodiesH)
       expect(bodiesH).toBeGreaterThan(0)
     }
   })
@@ -438,7 +493,6 @@ describe('canvas display fit escalation ladder', () => {
     display.setRpcData(0, labeledStackedRegionData(10, 10), view.bpPerPx, ctgA)
     const fullH = maxBottom(display.baseLaidOutDataMap)
     const labelsH = maxBottom(display.fitLabelsOnlyLayout)
-    const decimatedH = maxBottom(display.fitDecimatedLayout)
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
     display.setHeightMode('fit')
     // Config-derived, stable across the sweep: the scale bounds the fill may reach
@@ -447,10 +501,13 @@ describe('canvas display fit escalation ladder', () => {
     const maxScale = display.fitMaxScale
 
     // Least-reduced rung whose unscaled stack fits h; bodies is the fallback.
+    // This data is uniform-wide (all names have infinite overhang room), so the
+    // height-solved `decimated` rung always keeps every name and equals `labels`
+    // — it is never selected distinctly here (the mixed-width test covers that);
+    // when labels overflows so does decimated, dropping straight to bodies.
     const rungs = [
       ['full', fullH],
       ['labels', labelsH],
-      ['decimated', decimatedH],
       ['bodies', bodiesH],
     ] as const
     const expectedLevel = (h: number) =>
@@ -463,9 +520,7 @@ describe('canvas display fit escalation ladder', () => {
       bodiesH - 1,
       bodiesH,
       bodiesH + 1,
-      Math.round((bodiesH + decimatedH) / 2),
-      decimatedH,
-      Math.round((decimatedH + labelsH) / 2),
+      Math.round((bodiesH + labelsH) / 2),
       labelsH - 1,
       labelsH,
       labelsH + 1,
@@ -521,6 +576,68 @@ describe('canvas display fit escalation ladder', () => {
         display.showLabels && level !== 'bodies',
       )
     }
+  })
+
+  // The height-solved `decimated` rung (fitDecimatedSolved) on crowded
+  // mixed-room features: it keeps as many non-overlapping names as fit the track,
+  // fills the height without overflowing, and — critically — keeps MORE names as
+  // the track grows taller. This is the fix for the old ladder, which dropped
+  // straight to a sparse fixed rung and left the surplus height as whitespace
+  // (plateau). Uniform-wide data can't show this (every name fits).
+  //
+  // It also guards the probe/commit invariant: the solve measures a stack's
+  // height (a probe) then commits a stack, and those two must be the identical
+  // packing — else the committed stack overflows the height the probe fit and the
+  // ladder falls through to `bodies`, hiding every name exactly on the taller
+  // tracks that should show the most. So every swept height must stay on
+  // `decimated`, never regressing to `bodies`.
+  it('fills the decimated rung with more names as the track grows', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    const total = 40
+    // Force labels on: the auto density gate (orthogonal to the fit ladder) would
+    // otherwise hide all labels at this feature count.
+    display.setShowLabels('on')
+    display.setRpcData(0, mixedWidthRegionData(total), view.bpPerPx, ctgA)
+    const labelsH = maxBottom(display.fitLabelsOnlyLayout)
+    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
+    // Decimation must actually bite: the all-names stack towers over bodies.
+    expect(labelsH).toBeGreaterThan(bodiesH * 1.5)
+    display.setHeightMode('fit')
+
+    const keptAt = (frac: number) => {
+      const h = Math.round(bodiesH + (labelsH - bodiesH) * frac)
+      display.setHeight(h)
+      const layout: Map<number, FeatureDataResult> = display.fitStage.layout
+      let kept = 0
+      for (const region of layout.values()) {
+        for (const label of Object.values(region.floatingLabelsData)) {
+          if (label.nameLabel) {
+            kept++
+          }
+        }
+      }
+      return { level: display.fitStage.level, kept, maxY: display.maxY, h }
+    }
+
+    const sweep = [0.2, 0.35, 0.5, 0.65, 0.8].map(keptAt)
+    for (const s of sweep) {
+      // Every height between bodies and labels lands on the solved decimated rung
+      // (never regressing to `bodies` — the probe/commit invariant)...
+      expect(s.level).toBe('decimated')
+      // ...an intermediate set of names, not none and not all...
+      expect(s.kept).toBeGreaterThan(0)
+      expect(s.kept).toBeLessThan(total)
+      // ...and the solved stack fills without overflowing the track.
+      expect(s.maxY).toBeLessThanOrEqual(s.h + 0.5)
+    }
+    // Kept names never shrink as the track grows (monotonic)...
+    for (let i = 1; i < sweep.length; i++) {
+      expect(sweep[i]!.kept).toBeGreaterThanOrEqual(sweep[i - 1]!.kept)
+    }
+    // ...and the tallest track keeps strictly more than the shortest (no plateau
+    // — the whole point of solving the factor to the height).
+    expect(sweep.at(-1)!.kept).toBeGreaterThan(sweep[0]!.kept)
   })
 
   // A stack so dense that fitting it would shrink feature boxes below
