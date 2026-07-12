@@ -29,6 +29,7 @@ function isActive(href: string) {
 }
 // CSS module access is always defined; ! silences noUncheckedIndexedAccess
 const navActive = styles.navActive!
+const year = new Date().getFullYear()
 ---
 
 <!doctype html>
@@ -287,7 +288,7 @@ const navActive = styles.navActive!
         </div>
       </div>
       <div class={styles.footerBottom}>
-        Copyright &copy; 2026 Evolutionary Software Foundation, Inc.
+        Copyright &copy; {year} Evolutionary Software Foundation, Inc.
       </div>
     </footer>
 

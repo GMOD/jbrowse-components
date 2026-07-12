@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { IconButton, Tooltip, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -12,6 +14,12 @@ import type { SessionDefaultControl } from '../configuration/promotableDefaults.
 // promotable slot, a pin to make the current value the session-wide default.
 // `getValue` is a thunk read inside the observer so the slider tracks the model
 // while the menu stays open (a captured number would go stale mid-drag).
+//
+// `commitOnRelease` is for callers whose onChange is expensive (e.g. the
+// alignments modification threshold fires a tier-1 worker refetch): the thumb
+// follows a local drag value and only calls onChange when the drag ends. While
+// not dragging, dragValue is undefined so the row still reflects the model
+// (including external resets).
 const SizeSliderRow = observer(function SizeSliderRow({
   title,
   getValue,
@@ -20,6 +28,7 @@ const SizeSliderRow = observer(function SizeSliderRow({
   step,
   unit,
   isDefault,
+  commitOnRelease,
   onChange,
   onReset,
   sessionDefault,
@@ -31,11 +40,14 @@ const SizeSliderRow = observer(function SizeSliderRow({
   step: number
   unit: string
   isDefault: boolean
+  commitOnRelease?: boolean
   onChange: (n: number) => void
   onReset: () => void
   sessionDefault?: SessionDefaultControl
 }) {
-  const value = getValue()
+  const modelValue = getValue()
+  const [dragValue, setDragValue] = useState<number | undefined>(undefined)
+  const value = dragValue ?? modelValue
   const slug = title.toLowerCase().replaceAll(' ', '-')
   return (
     <div style={{ width: 220, padding: '0 8px' }}>
@@ -72,8 +84,20 @@ const SizeSliderRow = observer(function SizeSliderRow({
         valueLabelDisplay="auto"
         valueLabelFormat={(v: number) => `${v}${unit}`}
         onChange={v => {
-          onChange(v)
+          if (commitOnRelease) {
+            setDragValue(v)
+          } else {
+            onChange(v)
+          }
         }}
+        onChangeCommitted={
+          commitOnRelease
+            ? v => {
+                onChange(v)
+                setDragValue(undefined)
+              }
+            : undefined
+        }
       />
     </div>
   )
@@ -94,6 +118,7 @@ export function makeSizeMenu(opts: {
   max?: number
   step?: number
   unit?: string
+  commitOnRelease?: boolean
   onChange: (n: number) => void
   onReset: () => void
   sessionDefault?: SessionDefaultControl
@@ -107,6 +132,7 @@ export function makeSizeMenu(opts: {
     max = 12,
     step = 0.5,
     unit = 'px',
+    commitOnRelease,
     onChange,
     onReset,
     sessionDefault,
@@ -123,6 +149,7 @@ export function makeSizeMenu(opts: {
         step={step}
         unit={unit}
         isDefault={isDefault}
+        commitOnRelease={commitOnRelease}
         onChange={onChange}
         onReset={onReset}
         sessionDefault={sessionDefault}

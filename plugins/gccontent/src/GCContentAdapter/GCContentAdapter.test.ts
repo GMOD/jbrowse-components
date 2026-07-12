@@ -110,7 +110,9 @@ test('skew mode: balanced GC sequence gives skew 0', async () => {
 test('overlapping windows (windowDelta < windowSize) score correctly', async () => {
   // 'AC' repeated is exactly 50% GC in every 10bp window at any phase, so the
   // overlapping-window (windowDelta 2 < windowSize 10) path must still give 0.5
-  const scores = await getScores(makeAdapter('AC'.repeat(100), 'content', 10, 2))
+  const scores = await getScores(
+    makeAdapter('AC'.repeat(100), 'content', 10, 2),
+  )
   expect(scores.length).toBeGreaterThan(0)
   for (const s of scores) {
     expect(s).toBeCloseTo(0.5)

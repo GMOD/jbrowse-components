@@ -60,7 +60,10 @@ const GCContentParamsSliders = observer(function GCContentParamsSliders({
         label="Window size"
         value={model.windowSize}
         onCommit={windowSize => {
-          model.setGCContentParams({ windowSize, windowDelta: model.windowDelta })
+          model.setGCContentParams({
+            windowSize,
+            windowDelta: model.windowDelta,
+          })
         }}
       />
       <LogBpSlider
@@ -68,7 +71,10 @@ const GCContentParamsSliders = observer(function GCContentParamsSliders({
         value={model.windowDelta}
         maxBp={model.windowSize}
         onCommit={windowDelta => {
-          model.setGCContentParams({ windowSize: model.windowSize, windowDelta })
+          model.setGCContentParams({
+            windowSize: model.windowSize,
+            windowDelta,
+          })
         }}
       />
     </>

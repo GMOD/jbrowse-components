@@ -1,8 +1,8 @@
 ---
 title: Cookbook
 description:
-  Copy-paste recipes for the most common JBrowse 2 configuration tasks: colors,
-  labels, tooltips, tracks, themes, and more
+  'Copy-paste recipes for the most common JBrowse 2 configuration tasks: colors,
+  labels, tooltips, tracks, themes, and more'
 ---
 
 A collection of short, copy-paste recipes for the things people configure most
