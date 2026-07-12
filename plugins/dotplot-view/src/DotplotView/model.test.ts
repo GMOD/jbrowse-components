@@ -1,3 +1,4 @@
+import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
@@ -80,9 +81,10 @@ test('highlight actions add/remove and toggle visibility', () => {
   const h = { refName: 'ctgA', start: 0, end: 10, assemblyName: 'volvox' }
   model.addToHighlights(h)
   expect(model.highlight.length).toBe(1)
-  expect(model.highlightsVisible).toBe(true)
-  model.setHighlightsVisible(false)
-  expect(model.highlightsVisible).toBe(false)
+  const session = getSession(model)
+  expect(session.highlightsVisible).toBe(true)
+  session.setHighlightsVisible(false)
+  expect(session.highlightsVisible).toBe(false)
   model.removeHighlight(model.highlight[0])
   expect(model.highlight.length).toBe(0)
 })

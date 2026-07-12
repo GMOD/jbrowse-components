@@ -1737,13 +1737,10 @@ describe('highlights', () => {
     expect(model.highlight.length).toBe(0)
   })
 
-  test('visibility and label toggles default to true and can be flipped', () => {
+  test('label toggle defaults to true and can be flipped', () => {
     const model = setupHighlightModel()
-    expect(model.highlightsVisible).toBe(true)
     expect(model.labelsVisible).toBe(true)
-    model.setHighlightsVisible(false)
     model.setLabelsVisible(false)
-    expect(model.highlightsVisible).toBe(false)
     expect(model.labelsVisible).toBe(false)
   })
 

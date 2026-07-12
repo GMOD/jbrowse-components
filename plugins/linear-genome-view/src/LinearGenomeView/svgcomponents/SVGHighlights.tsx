@@ -1,3 +1,4 @@
+import { getSession } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -17,7 +18,7 @@ const SVGHighlights = observer(function SVGHighlights({
   height: number
 }) {
   const theme = useTheme()
-  return model.highlightsVisible
+  return getSession(model).highlightsVisible
     ? model.highlight.map((h, idx) => {
         const coords = model.getHighlightCoords(h)
         return coords ? (

@@ -1,4 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
@@ -80,7 +81,7 @@ test('native highlights render and respect highlightsVisible', () => {
   const { container, rerender } = renderSvg(<DotplotHighlights model={model} />)
   expect(container.querySelectorAll('rect').length).toBeGreaterThan(0)
 
-  model.setHighlightsVisible(false)
+  getSession(model).setHighlightsVisible(false)
   rerender(
     <ThemeProvider theme={createJBrowseTheme()}>
       <svg>

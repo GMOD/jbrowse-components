@@ -130,6 +130,10 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   themeOptions?: SerializableThemeArgs
   animationMode: AnimationMode
   scrollZoom: boolean
+  // whether region highlight bands (URL/view highlights and bookmark overlays)
+  // are drawn; one session-wide toggle shared by all views
+  highlightsVisible: boolean
+  setHighlightsVisible: (arg: boolean) => void
   getPreference: (key: string) => unknown
   setPreferenceOverride?: (key: string, value: unknown) => void
   clearPreferenceOverrides?: () => void

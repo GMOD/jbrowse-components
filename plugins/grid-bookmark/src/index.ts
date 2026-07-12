@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { getSession, isAbstractMenuManager } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
 import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
@@ -20,7 +19,6 @@ import type {
   ViewType,
 } from '@jbrowse/core/pluggableElementTypes'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 import type { DotplotViewStateModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -29,29 +27,6 @@ export default class GridBookmarkPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     GridBookmarkWidgetF(pluginManager)
-
-    // whether saved bookmarks are drawn as highlight overlays on views. A
-    // single session-level flag (not per-view, not on the widget) so every
-    // view's overlays share it and it survives without the widget existing.
-    pluginManager.addToExtensionPoint(
-      'Core-extendSession',
-      (session: IAnyModelType) =>
-        session
-          .props({
-            /**
-             * #property
-             */
-            bookmarkHighlightsVisible: types.stripDefault(types.boolean, true),
-          })
-          .actions(self => ({
-            /**
-             * #action
-             */
-            setBookmarkHighlightsVisible(arg: boolean) {
-              self.bookmarkHighlightsVisible = arg
-            },
-          })),
-    )
 
     pluginManager.addToExtensionPoint(
       'Core-extendPluggableElement',
@@ -276,19 +251,18 @@ export default class GridBookmarkPlugin extends Plugin {
               }
               const {
                 // strip dead per-view flags from any pre-existing snapshots:
-                // bookmark-highlight visibility is now a widget-level setting,
-                // and labels are controlled by base LGV labelsVisible
+                // highlight visibility is now a single session-wide flag, and
+                // labels are controlled by base LGV labelsVisible
                 bookmarkHighlightsVisible: _bhv,
                 bookmarkLabelsVisible: _blv,
-                // strip LGV defaults here too — postProcessSnapshot chain
+                highlightsVisible: _hv,
+                // strip the LGV default here too — postProcessSnapshot chain
                 // ordering isn't guaranteed, so we guard in both places
-                highlightsVisible,
                 labelsVisible,
                 ...rest
               } = snap as unknown as Record<string, unknown>
               return {
                 ...rest,
-                ...(!highlightsVisible ? { highlightsVisible } : {}),
                 ...(!labelsVisible ? { labelsVisible } : {}),
               } as typeof snap
             })

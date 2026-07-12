@@ -1,3 +1,4 @@
+import { getSession } from '@jbrowse/core/util'
 import CloseIcon from '@mui/icons-material/Close'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { useTheme } from '@mui/material'
@@ -47,7 +48,7 @@ const Highlight = observer(function Highlight({
               label: 'Turn off highlights',
               icon: VisibilityOffIcon,
               onClick: () => {
-                model.setHighlightsVisible(false)
+                getSession(model).setHighlightsVisible(false)
               },
             },
             ...model.highlightMenuItems(highlight),

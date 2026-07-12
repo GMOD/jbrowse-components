@@ -39,7 +39,7 @@ test('bookmark bands render and respect bookmarkHighlightsVisible', () => {
   )
   expect(container.querySelectorAll('rect').length).toBeGreaterThan(0)
 
-  session.setBookmarkHighlightsVisible(false)
+  session.setHighlightsVisible(false)
   rerender(
     <svg>
       <LGVHighlightSVG model={model} height={100} />

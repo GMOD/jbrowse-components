@@ -51,6 +51,12 @@ export function BaseSessionModel<
        * used to keep track of which view is in focus
        */
       focusedViewId: types.maybe(types.string),
+      /**
+       * #property
+       * one session-wide toggle for all region highlight bands (URL/view
+       * highlights and bookmark overlays)
+       */
+      highlightsVisible: types.optional(types.boolean, true),
     })
     .volatile(() => ({
       /**
@@ -210,6 +216,13 @@ export function BaseSessionModel<
        */
       setHovered(thing: unknown) {
         self.hovered = thing
+      },
+      /**
+       * #action
+       * toggle all region highlight bands across every view
+       */
+      setHighlightsVisible(arg: boolean) {
+        self.highlightsVisible = arg
       },
       /**
        * #action

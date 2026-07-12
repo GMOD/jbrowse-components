@@ -1,7 +1,7 @@
 import { Suspense, lazy, useRef } from 'react'
 import type { ReactNode } from 'react'
 
-import { getEnv } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -138,7 +138,7 @@ const HighlightGroup = observer(function HighlightGroup({
 }: {
   model: LGV
 }) {
-  return model.highlightsVisible && model.highlight.length ? (
+  return getSession(model).highlightsVisible && model.highlight.length ? (
     <Suspense fallback={null}>
       {model.highlight.map((highlight, idx) => (
         <Highlight
@@ -159,7 +159,7 @@ const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
   const theme = useTheme()
   const { pluginManager } = getEnv(model)
   const { classes } = useStyles()
-  const viewBands = model.highlightsVisible
+  const viewBands = getSession(model).highlightsVisible
     ? model.highlight.map((h, idx) => {
         const coords = model.getHighlightCoords(h)
         return coords ? (

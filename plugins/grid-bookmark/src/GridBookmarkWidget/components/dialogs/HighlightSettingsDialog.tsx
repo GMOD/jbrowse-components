@@ -1,4 +1,5 @@
 import { Dialog } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import {
   Button,
   DialogActions,
@@ -9,8 +10,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getBookmarkSession } from '../../../bookmarkViewUtils.ts'
-
 import type { GridBookmarkModel } from '../../model.ts'
 
 const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
@@ -20,7 +19,7 @@ const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
   onClose: () => void
   model: GridBookmarkModel
 }) {
-  const session = getBookmarkSession(model)
+  const session = getSession(model)
   return (
     <Dialog open onClose={onClose} title="Settings">
       <DialogContent>
@@ -34,14 +33,12 @@ const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
         <Stack direction="row" sx={{ alignItems: 'center' }}>
           <Switch
             data-testid="toggle_highlight_all_switch"
-            checked={session.bookmarkHighlightsVisible}
+            checked={session.highlightsVisible}
             onChange={() => {
-              session.setBookmarkHighlightsVisible(
-                !session.bookmarkHighlightsVisible,
-              )
+              session.setHighlightsVisible(!session.highlightsVisible)
             }}
           />
-          <Typography>Show bookmarks as highlights on views</Typography>
+          <Typography>Show highlights on views</Typography>
         </Stack>
       </DialogContent>
       <DialogActions>

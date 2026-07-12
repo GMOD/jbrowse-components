@@ -31,11 +31,11 @@ function setup() {
     end: 200,
     label: 'my region',
   })
-  return model
+  return { model, session }
 }
 
 test('native highlight bands render and respect highlightsVisible', () => {
-  const model = setup()
+  const { model, session } = setup()
   const { container, rerender } = render(
     <ThemeProvider theme={theme}>
       <svg>
@@ -46,7 +46,7 @@ test('native highlight bands render and respect highlightsVisible', () => {
   expect(container.querySelectorAll('rect').length).toBeGreaterThan(0)
   expect(container.textContent).toContain('my region')
 
-  model.setHighlightsVisible(false)
+  session.setHighlightsVisible(false)
   rerender(
     <ThemeProvider theme={theme}>
       <svg>

@@ -1,4 +1,5 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
@@ -67,7 +68,7 @@ const HighlightChip = observer(function HighlightChip({
 
 const DotplotHighlightChipOverlay = observer(
   function DotplotHighlightChipOverlay({ model }: { model: DotplotViewModel }) {
-    return model.highlightsVisible && model.showHighlightChips
+    return getSession(model).highlightsVisible && model.showHighlightChips
       ? model.highlight.map((h, i) => (
           <HighlightChip key={highlightKey(h, i)} model={model} highlight={h} />
         ))

@@ -30,7 +30,7 @@ function setup() {
   return { session, widget }
 }
 
-test('bookmarkHighlightsVisible is a single session-level flag gating overlays', () => {
+test('highlightsVisible is a single session-level flag gating overlays', () => {
   const { session, widget } = setup()
   widget.addBookmark({
     assemblyName: 'volvox',
@@ -41,11 +41,11 @@ test('bookmarkHighlightsVisible is a single session-level flag gating overlays',
   const view = session.views[0] as IExtendedLGV
 
   // on by default, so the view's bookmark overlay resolves the bookmark
-  expect(session.bookmarkHighlightsVisible).toBe(true)
+  expect(session.highlightsVisible).toBe(true)
   expect(getBookmarkHighlights(view).bookmarks).toHaveLength(1)
 
   // flipping the one flag hides overlays everywhere
-  session.setBookmarkHighlightsVisible(false)
+  session.setHighlightsVisible(false)
   expect(getBookmarkHighlights(view).bookmarks).toHaveLength(0)
 })
 

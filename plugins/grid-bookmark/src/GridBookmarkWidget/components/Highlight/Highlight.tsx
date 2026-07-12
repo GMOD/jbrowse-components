@@ -7,7 +7,6 @@ import {
 import { observer } from 'mobx-react'
 
 import { getBookmarkHighlights } from './getBookmarkHighlights.ts'
-import { getBookmarkSession } from '../../../bookmarkViewUtils.ts'
 
 import type { IExtendedLGV } from '../../model.ts'
 
@@ -45,11 +44,9 @@ const Highlight = observer(function Highlight({
                     },
                   },
                   {
-                    label: 'Turn off bookmark highlights',
+                    label: 'Turn off highlights',
                     onClick: () => {
-                      getBookmarkSession(model).setBookmarkHighlightsVisible(
-                        false,
-                      )
+                      session.setHighlightsVisible(false)
                     },
                   },
                   {

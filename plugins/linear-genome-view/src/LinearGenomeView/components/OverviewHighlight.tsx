@@ -1,4 +1,4 @@
-import { notEmpty } from '@jbrowse/core/util'
+import { getSession, notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -20,7 +20,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
 
   // gate on highlightsVisible to match the main-view band, scalebar band, and
   // SVG export — otherwise "Turn off highlights" leaves the overview bands up
-  return model.highlightsVisible
+  return getSession(model).highlightsVisible
     ? model.highlight
         .map(highlight => {
           const coords = model.getOverviewHighlightCoords(highlight)

@@ -35,28 +35,16 @@ interface ChipToggleableView {
   setShowHighlightChips: (arg: boolean) => void
 }
 
-// bookmark-highlight visibility is a single session-level flag added by this
-// plugin's Core-extendSession, shared by every view's overlays
-export interface SessionWithBookmarkHighlights {
-  bookmarkHighlightsVisible: boolean
-  setBookmarkHighlightsVisible: (arg: boolean) => void
-}
-
-export function getBookmarkSession(node: IAnyStateTreeNode) {
-  return getSession(node) as ReturnType<typeof getSession> &
-    SessionWithBookmarkHighlights
-}
-
-// single checkbox for the one session-level highlight-visibility flag
+// single checkbox for the one session-wide highlight-visibility flag
 export function toggleHighlightsMenuItem(self: IAnyStateTreeNode): MenuItem {
-  const session = getBookmarkSession(self)
+  const session = getSession(self)
   return {
     label: 'Toggle highlights',
     icon: HighlightIcon,
     type: 'checkbox',
-    checked: session.bookmarkHighlightsVisible,
+    checked: session.highlightsVisible,
     onClick: () => {
-      session.setBookmarkHighlightsVisible(!session.bookmarkHighlightsVisible)
+      session.setHighlightsVisible(!session.highlightsVisible)
     },
   }
 }
@@ -66,13 +54,13 @@ export function toggleHighlightsMenuItem(self: IAnyStateTreeNode): MenuItem {
 export function toggleHighlightChipsMenuItem(
   self: IAnyStateTreeNode & ChipToggleableView,
 ): MenuItem {
-  const session = getBookmarkSession(self)
+  const session = getSession(self)
   return {
     label: 'Show highlight chips',
     icon: HighlightIcon,
     type: 'checkbox',
     checked: self.showHighlightChips,
-    disabled: !session.bookmarkHighlightsVisible,
+    disabled: !session.highlightsVisible,
     onClick: () => {
       self.setShowHighlightChips(!self.showHighlightChips)
     },

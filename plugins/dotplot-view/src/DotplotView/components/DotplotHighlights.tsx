@@ -1,3 +1,4 @@
+import { getSession } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -12,7 +13,7 @@ const DotplotHighlights = observer(function DotplotHighlights({
   model: DotplotViewModel
 }) {
   const theme = useTheme()
-  return model.highlightsVisible
+  return getSession(model).highlightsVisible
     ? model.highlight.map((h, i) => (
         <DotplotHighlightBands
           key={highlightKey(h, i)}

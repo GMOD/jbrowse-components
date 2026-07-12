@@ -380,12 +380,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * controls whether view.highlight entries are rendered
-         */
-        highlightsVisible: types.stripDefault(types.boolean, true),
-
-        /**
-         * #property
          * controls whether the interactive highlight chip (link icon + context
          * menu) is drawn on each highlight band; off by default
          */
@@ -1036,12 +1030,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (idx !== -1) {
           self.highlight[idx] = { ...old, ...updates }
         }
-      },
-      /**
-       * #action
-       */
-      setHighlightsVisible(arg: boolean) {
-        self.highlightsVisible = arg
       },
       /**
        * #action
