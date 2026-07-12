@@ -15,13 +15,16 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const featuresSpecs: ScreenshotSpec[] = [
   {
-    // Single frame showing the session-wide feature-height default on alignments
-    // tracks. featureHeight/featureSpacing are promotable slots (getConfResolved:
-    // track value → session default → schema default). Each height row in the
-    // "Set feature height..." submenu carries its own pin (endAdornment); clicking
-    // the Compact row's pin selects Compact for this track *and* promotes it as
-    // the session-wide default, so the second (un-pinned) track follows via
-    // inherit. The submenu is left open with the now-filled Compact pin ringed.
+    // The session-wide feature-height default on alignments tracks.
+    // featureHeight/featureSpacing are promotable slots (getConfResolved: track
+    // value → session default → schema default). Each height row in the "Set
+    // feature height..." submenu carries a trailing pin (DefaultForAllAdornment,
+    // aria-label "manage default for <preset>") that opens the manage-default
+    // dialog for that preset. The dialog stages two choices — set the default for
+    // future tracks of this type, and apply it to the currently-open tracks that
+    // differ — applied together on submit. Here Compact's dialog is left open with
+    // both boxes ticked, so the figure shows exactly how a height becomes the
+    // session default and reaches the two open alignments tracks.
     mode: 'url',
     name: 'feature_height_default_pin',
     url: lgvSession(VOLVOX, {
@@ -37,45 +40,39 @@ export const featuresSpecs: ScreenshotSpec[] = [
     viewportHeight: 700,
     // alignments pileups keep re-laying-out while reads stream in; wait long
     // enough that the menu geometry is stable before the click sequence
-    settleMs: 14000,
+    settleMs: 8000,
     hideTooltip: true,
-    // the pin click fires a "Pinned as the default…" snackbar and leaves the
-    // pin's MUI hover tooltip up; hide both so the frame shows just the menu
-    hideSelectors: ['.MuiSnackbar-root', '.MuiTooltip-popper'],
-    // The Compact row's pin does both jobs at once (promotableRadioItem: pinning
-    // an unpinned value selects it first) and stopPropagation keeps the submenu
-    // open, so one click both compacts this track and promotes Compact — the
-    // second track compacts via inherit. The pin's stable aria-label targets it
-    // for both the click and the callout ring.
     actions: [
       trackMenuIcon('volvox_alignments_pileup_coverage'),
       ...openFeatureHeightSubmenu(),
+      // the pin opens the manage-default dialog (it no longer toggles inline);
+      // its stable aria-label carries the preset name so sibling pins are distinct
       {
         type: 'click',
-        selector: '[aria-label="make Compact the default for all tracks"]',
+        selector: '[aria-label="manage default for Compact"]',
       },
-      // pinning Compact re-lays-out both tracks; the old fixed 800ms delay
-      // sometimes captured a mid-render "Loading" panel. Let the re-render kick
-      // in, then wait for the in-track loading indicators to clear before capture.
-      { type: 'delay', ms: 1000 },
-      { type: 'waitForText', text: 'Loading', hidden: true },
-      { type: 'delay', ms: 500 },
+      { type: 'waitForText', text: 'Default: Compact' },
+      { type: 'delay', ms: 400 },
+      // tick both promotion scopes so the frame shows the full effect: future
+      // tracks pick Compact up, and the two already-open alignments tracks (which
+      // differ from Compact) are updated too
+      { type: 'click', text: 'Apply to future tracks' },
+      { type: 'click', text: 'currently open track' },
+      { type: 'delay', ms: 400 },
     ],
     annotations: [
       {
-        type: 'circle',
-        anchor: {
-          selector: '[aria-label="make Compact the default for all tracks"]',
-        },
+        type: 'box',
+        anchor: { text: 'currently open track' },
         strokeWidth: 3,
       },
       {
         type: 'text',
-        x: 560,
+        x: 250,
         y: 34,
-        maxWidth: 480,
+        maxWidth: 560,
         fontSize: 15,
-        text: 'Click a height’s pin to make it the default for every alignments track. Any track you haven’t set by hand picks up the new default automatically.',
+        text: 'A height’s pin opens this dialog. Making Compact the default sets it for future alignments tracks and, when ticked, applies it to the tracks already open.',
       },
     ],
   },
@@ -282,7 +279,10 @@ export const featuresSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Collapse introns' },
       { type: 'waitForText', text: 'Replace current view' },
       { type: 'delay', ms: 600 },
-      { type: 'click', text: 'Replace current view' },
+      // the dialog's help paragraph also contains the literal phrase "Replace
+      // current view", so a bare text click resolves to that (unclickable) prose
+      // first and the dialog never closes. Scope the click to the actual button.
+      { type: 'click', selector: 'button::-p-text(Replace current view)' },
       { type: 'waitForText', text: 'Replace current view', hidden: true },
       // let the reshaped view kick off its refetch, then wait for the (now tiny,
       // sliced) RNA BAM to load so the sashimi arcs are present in the capture

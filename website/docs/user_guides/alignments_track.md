@@ -129,11 +129,11 @@ settings.
 <Figure caption="The same reads at a compact feature height." src="/img/alignments/compact.png" />
 
 The **Set feature height** submenu offers Normal, Compact, and Super-compact
-presets (plus a custom value). Choosing **Use "…" as the default for alignments
-tracks** promotes the current height to a session-wide default, so every other
-alignments track that hasn't been individually pinned follows it.
+presets (plus a custom value). Each preset's trailing pin opens a dialog to make
+that height the session-wide default for alignments tracks — applied to future
+tracks and, optionally, to the ones already open.
 
-<Figure caption="Setting the feature height. The submenu shows the height presets; enabling 'use current height as the default for alignments tracks' promotes the chosen height (here Compact) to a session default, so every un-pinned alignments track in the session follows it." src="/img/feature_height_default_pin.png" />
+<Figure caption="Making Compact the default feature height. Clicking a preset's pin opens this dialog; ticking both boxes sets Compact as the default for new alignments tracks and applies it to the two tracks already open." src="/img/feature_height_default_pin.png" />
 
 ## Insertion and clipping indicators
 
