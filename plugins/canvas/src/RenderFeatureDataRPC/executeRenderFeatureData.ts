@@ -83,7 +83,20 @@ export async function executeRenderFeatureData({
   // downloading the whole region. Only runs when maxFeatureDensity is set — the
   // model leaves it undefined below AUTO_FORCE_LOAD_BP and when force-loaded, so
   // small/forced renders skip it. The post-fetch count below is the backstop.
-  if (maxFeatureDensity !== undefined) {
+  //
+  // Skipped when an admission filter (jexlFilters / showOnlyGenes / solo /
+  // hidden) is active: the sample fetches raw features and doesn't apply
+  // admission, so it counts the pre-filter population and would false-reject a
+  // filtered view that renders fine (e.g. showOnlyGenes at whole-chromosome zoom
+  // over a dense GFF). Those modes fetch the whole region to extract the
+  // admitted subset anyway, so the exact post-fetch gate — measuring the
+  // admitted count — is the correct gate there.
+  const hasAdmissionFilter =
+    !!showOnlyGenes ||
+    !!soloFeatureIds?.length ||
+    !!hiddenFeatureIds?.length ||
+    displayConfig.jexlFilters.length > 0
+  if (maxFeatureDensity !== undefined && !hasAdmissionFilter) {
     const tooLarge = await samplePreFetchDensity({
       dataAdapter,
       region,
