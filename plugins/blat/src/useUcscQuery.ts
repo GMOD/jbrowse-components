@@ -6,7 +6,11 @@ import {
   localStorageSetItem,
 } from '@jbrowse/core/util'
 
-import { BlatChallengeError } from './blatQuery.ts'
+import {
+  BlatChallengeError,
+  challengeError,
+  isChallengePage,
+} from './blatQuery.ts'
 import { desktopBlatFetch, openBlatChallenge } from './desktopBlat.ts'
 import { addResultTrack, resolveUcscDb } from './ucscShared.ts'
 
@@ -18,6 +22,26 @@ import type {
 // the apiKey is a per-user UCSC account credential, not session state, so it's
 // persisted across dialog opens
 const API_KEY_STORAGE = 'ucsc-blat-apiKey'
+
+// a browser fetch straight to genome.ucsc.edu is CORS-blocked and surfaces as
+// an opaque TypeError; rethrow with the proxy requirement spelled out
+async function browserUcscFetch(urlBase: string, body: string) {
+  const response = await fetch(urlBase, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  }).catch((e: unknown) => {
+    throw new Error(
+      `Could not reach the UCSC server at ${urlBase}. In the browser this must ` +
+        `be a CORS-enabled proxy, not genome.ucsc.edu directly (${e}).`,
+    )
+  })
+  return {
+    ok: response.ok,
+    status: response.status,
+    text: await response.text(),
+  }
+}
 
 // Runs one UCSC query, routing through the desktop main process (to bypass the
 // renderer's CORS restriction and reuse a solved-challenge cookie) or a direct
@@ -32,31 +56,19 @@ export async function runUcscFetch({
   body: string
   parse: (text: string) => SimpleFeatureSerialized[]
 }) {
-  if (isElectron) {
-    const { ok, status, text } = await desktopBlatFetch({ url: urlBase, body })
-    if (!ok) {
-      throw new Error(`UCSC request failed (${status})`)
+  const { ok, status, text } = isElectron
+    ? await desktopBlatFetch({ url: urlBase, body })
+    : await browserUcscFetch(urlBase, body)
+  // the Cloudflare Turnstile challenge can arrive with a non-2xx status, so
+  // probe the body for a challenge before failing generically — otherwise the
+  // solve-CAPTCHA affordance never appears. A 2xx challenge is caught by parse().
+  if (!ok) {
+    if (isChallengePage(text)) {
+      throw challengeError()
     }
-    return parse(text)
+    throw new Error(`UCSC request failed (${status}): ${text}`)
   }
-  // a browser fetch straight to genome.ucsc.edu is CORS-blocked and surfaces as
-  // an opaque TypeError; rethrow with the proxy requirement spelled out
-  const response = await fetch(urlBase, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
-  }).catch((e: unknown) => {
-    throw new Error(
-      `Could not reach the UCSC server at ${urlBase}. In the browser this must ` +
-        `be a CORS-enabled proxy, not genome.ucsc.edu directly (${e}).`,
-    )
-  })
-  if (!response.ok) {
-    throw new Error(
-      `UCSC request failed (${response.status}): ${await response.text()}`,
-    )
-  }
-  return parse(await response.text())
+  return parse(text)
 }
 
 // Shared state and lifecycle for the BLAT and in-silico PCR dialogs: the UCSC
