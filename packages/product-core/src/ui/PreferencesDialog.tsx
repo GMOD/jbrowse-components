@@ -17,9 +17,11 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import PreferencesResetDialog from './PreferencesResetDialog.tsx'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ThemeMap } from '@jbrowse/core/ui'
-import type { AnimationMode } from '@jbrowse/core/util'
+import type { AnimationMode, TrackConfigChange } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   container: {
@@ -31,13 +33,6 @@ const useStyles = makeStyles()({
   field: {
     marginTop: 16,
     display: 'block',
-  },
-  actions: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  spacer: {
-    flexGrow: 1,
   },
 })
 
@@ -51,7 +46,45 @@ export interface PreferencesDialogSession {
   setUseWorkspaces: (useWorkspaces: boolean) => void
   animationMode: AnimationMode
   setPreferenceOverride: (key: string, value: unknown) => void
+  clearPreferenceOverride: (key: string) => void
   clearPreferenceOverrides: () => void
+  setDisplayTypeDefault: (
+    displayType: string,
+    slot: string,
+    value: unknown,
+  ) => void
+  getPreferenceChanges: () => TrackConfigChange[]
+}
+
+// every preference that currently differs from the default `resetAllPreferences`
+// reverts it to, across the three independent subsystems, so the confirmation
+// dialog shows the full effect of a reset. The preference-override map
+// (animationMode, scrollZoom, promoted display-type defaults) is enumerated by
+// the session; the theme and the layout flags are read here since each is its
+// own mixin with its own default.
+function collectPreferenceChanges(
+  session: PreferencesDialogSession,
+): TrackConfigChange[] {
+  const changes = [...session.getPreferenceChanges()]
+  const { themeName } = session
+  if (themeName && themeName !== 'default') {
+    changes.push({ path: ['theme'], from: 'default', to: themeName })
+  }
+  if (!session.stickyViewHeaders) {
+    changes.push({
+      path: ['stickyViewHeaders'],
+      from: true,
+      to: session.stickyViewHeaders,
+    })
+  }
+  if (session.useWorkspaces) {
+    changes.push({
+      path: ['useWorkspaces'],
+      from: false,
+      to: session.useWorkspaces,
+    })
+  }
+  return changes
 }
 
 // declarative user-preference rows backed by the session preferences-override
@@ -104,9 +137,9 @@ const PreferencesDialog = observer(function PreferencesDialog({
   pluginManager: PluginManager
 }) {
   const { classes } = useStyles()
-  // two-click confirm so an accidental click can't wipe every preference; the
-  // arming state resets naturally when the dialog closes (unmount)
-  const [confirmingReset, setConfirmingReset] = useState(false)
+  // a confirmation dialog (showing the exact diff) guards the destructive reset,
+  // instead of an accidental single click wiping every preference
+  const [resetDialogOpen, setResetDialogOpen] = useState(false)
 
   // Reset every preference this dialog exposes back to its default. The three
   // subsystems persist independently, so each is reset through its own setter:
@@ -118,6 +151,26 @@ const PreferencesDialog = observer(function PreferencesDialog({
     session.setThemeName('default')
     session.setStickyViewHeaders(true)
     session.setUseWorkspaces(false)
+  }
+
+  // Revert a single change row (see `collectPreferenceChanges`) to its default,
+  // routing to the subsystem that owns that preference: the theme and the two
+  // layout flags each have their own setter, a promoted per-display-type default
+  // clears through `setDisplayTypeDefault(...undefined)`, and every other row is
+  // a scalar override dropped from the override map by key.
+  function resetPreferenceChange(change: TrackConfigChange) {
+    const [head, displayType, slot] = change.path
+    if (head === 'theme') {
+      session.setThemeName('default')
+    } else if (head === 'stickyViewHeaders') {
+      session.setStickyViewHeaders(true)
+    } else if (head === 'useWorkspaces') {
+      session.setUseWorkspaces(false)
+    } else if (head === 'displayTypeDefaults' && displayType && slot) {
+      session.setDisplayTypeDefault(displayType, slot, undefined)
+    } else if (head) {
+      session.clearPreferenceOverride(head)
+    }
   }
 
   const extraPanels = pluginManager.evaluateExtensionPoint(
@@ -191,23 +244,16 @@ const PreferencesDialog = observer(function PreferencesDialog({
           </div>
         ))}
       </DialogContent>
-      <DialogActions className={classes.actions}>
+      <DialogActions>
         <Button
-          color="warning"
+          variant="contained"
+          color="secondary"
           onClick={() => {
-            if (confirmingReset) {
-              resetAllPreferences()
-              setConfirmingReset(false)
-            } else {
-              setConfirmingReset(true)
-            }
+            setResetDialogOpen(true)
           }}
         >
-          {confirmingReset
-            ? 'Click again to confirm reset'
-            : 'Reset to defaults'}
+          Reset to defaults…
         </Button>
-        <div className={classes.spacer} />
         <Button
           variant="contained"
           onClick={() => {
@@ -217,6 +263,20 @@ const PreferencesDialog = observer(function PreferencesDialog({
           Close
         </Button>
       </DialogActions>
+      {resetDialogOpen ? (
+        <PreferencesResetDialog
+          changes={collectPreferenceChanges(session)}
+          onReset={() => {
+            resetAllPreferences()
+          }}
+          onResetRow={change => {
+            resetPreferenceChange(change)
+          }}
+          onClose={() => {
+            setResetDialogOpen(false)
+          }}
+        />
+      ) : null}
     </Dialog>
   )
 })

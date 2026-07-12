@@ -1,15 +1,10 @@
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, SettingsChangesTable } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   DialogActions,
   DialogContent,
   DialogContentText,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -20,17 +15,6 @@ const useStyles = makeStyles()(theme => ({
   content: {
     minWidth: 500,
   },
-  value: {
-    fontFamily: 'monospace',
-    wordBreak: 'break-word',
-    whiteSpace: 'pre-wrap',
-  },
-  path: {
-    fontWeight: 'bold',
-  },
-  defaultCell: {
-    color: theme.palette.text.secondary,
-  },
   section: {
     marginTop: theme.spacing(2),
   },
@@ -39,60 +23,6 @@ const useStyles = makeStyles()(theme => ({
     marginBottom: theme.spacing(0.5),
   },
 }))
-
-// Many config values are `{ type: 'x' }` discriminated unions (colorBy,
-// groupBy, sortedBy, ...). Show just the type when that is the whole object so
-// the dialog reads "methylation" rather than `{"type":"methylation"}`; richer
-// objects keep full JSON so no detail is hidden.
-function isSoleTypeObject(v: object): v is { type: string } {
-  return (
-    'type' in v && typeof v.type === 'string' && Object.keys(v).length === 1
-  )
-}
-
-function formatValue(value: unknown): string {
-  return value === undefined
-    ? '(default)'
-    : typeof value === 'string'
-      ? value
-      : typeof value === 'object' && value !== null && isSoleTypeObject(value)
-        ? value.type
-        : JSON.stringify(value)
-}
-
-const ChangesTable = observer(function ChangesTable({
-  changes,
-}: {
-  changes: TrackConfigChange[]
-}) {
-  const { classes } = useStyles()
-  return (
-    <Table size="small">
-      <TableHead>
-        <TableRow>
-          <TableCell>Setting</TableCell>
-          <TableCell>Default</TableCell>
-          <TableCell>Current</TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {changes.map(change => (
-          <TableRow key={change.path.join('.')}>
-            <TableCell className={classes.path}>
-              {change.path.join(' › ')}
-            </TableCell>
-            <TableCell className={`${classes.value} ${classes.defaultCell}`}>
-              {formatValue(change.from)}
-            </TableCell>
-            <TableCell className={classes.value}>
-              {formatValue(change.to)}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )
-})
 
 // Lists both sources that make a track's effective settings differ from its
 // configured defaults: per-track edits (`changes`, resettable) and settings
@@ -134,7 +64,7 @@ const TrackSettingsChangesDialog = observer(
               <DialogContentText>
                 These settings differ from the track's default configuration.
               </DialogContentText>
-              <ChangesTable changes={changes} />
+              <SettingsChangesTable changes={changes} />
             </>
           ) : null}
           {sessionDefaults.length ? (
@@ -146,7 +76,7 @@ const TrackSettingsChangesDialog = observer(
                 These come from a default you set for all tracks of this type,
                 not from an edit to this track.
               </DialogContentText>
-              <ChangesTable changes={sessionDefaults} />
+              <SettingsChangesTable changes={sessionDefaults} />
             </div>
           ) : null}
           {changes.length || sessionDefaults.length ? null : (

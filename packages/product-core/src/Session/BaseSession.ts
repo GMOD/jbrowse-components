@@ -7,7 +7,11 @@ import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { AnimationMode, DialogComponentType } from '@jbrowse/core/util'
+import type {
+  AnimationMode,
+  DialogComponentType,
+  TrackConfigChange,
+} from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 type DoneCallback = (
@@ -175,6 +179,41 @@ export function BaseSessionModel<
         const forType = isRecord(all) ? all[displayType] : undefined
         return isRecord(forType) ? forType[slot] : undefined
       },
+      /**
+       * #method
+       * every runtime preference-override that currently differs from its
+       * config/admin default, as `{ path, from, to }` rows — the exact set
+       * `clearPreferenceOverrides` reverts. Backs the confirmation diff shown
+       * before "Reset to defaults" (mirrors the per-track changes dialog). A
+       * scalar pref (animationMode, scrollZoom) whose override equals the
+       * default is omitted (reverting it is a no-op); each promoted
+       * per-display-type default is always a difference from the un-promoted
+       * state, so `from` reads "(default)".
+       */
+      getPreferenceChanges(): TrackConfigChange[] {
+        const changes: TrackConfigChange[] = []
+        for (const [key, value] of Object.entries(self.preferencesOverrides)) {
+          if (key === 'displayTypeDefaults') {
+            const byType = isRecord(value) ? value : {}
+            for (const [displayType, slots] of Object.entries(byType)) {
+              const slotMap = isRecord(slots) ? slots : {}
+              for (const [slot, slotValue] of Object.entries(slotMap)) {
+                changes.push({
+                  path: ['displayTypeDefaults', displayType, slot],
+                  from: undefined,
+                  to: slotValue,
+                } as TrackConfigChange)
+              }
+            }
+          } else {
+            const dflt = getConf(self, ['preferences', key])
+            if (value !== dflt) {
+              changes.push({ path: [key], from: dflt, to: value } as TrackConfigChange)
+            }
+          }
+        }
+        return changes
+      },
     }))
     .views(self => ({
       /**
@@ -244,6 +283,16 @@ export function BaseSessionModel<
        */
       clearPreferenceOverrides() {
         self.preferencesOverrides = {}
+      },
+      /**
+       * #action
+       * clear a single runtime preference override (see `getPreference`) so it
+       * falls back to its config/admin default. Backs the per-entry reset in the
+       * Preferences dialog "Reset to defaults" confirmation.
+       */
+      clearPreferenceOverride(key: string) {
+        const { [key]: _dropped, ...rest } = self.preferencesOverrides
+        self.preferencesOverrides = rest
       },
       /**
        * #action

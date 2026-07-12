@@ -219,4 +219,61 @@ describe('JBrowseWebSessionModel', () => {
       expect(session.animationMode).toBe('enabled')
     })
   })
+
+  describe('getPreferenceChanges (reset-to-defaults diff)', () => {
+    // PreferencesSessionMixin persists preferencesOverrides to localStorage and
+    // reloads them on attach, so a prior test's overrides would otherwise leak
+    // into the next session
+    beforeEach(() => {
+      localStorage.clear()
+    })
+
+    it('reports nothing on a fresh session', () => {
+      const session = createTestSession()
+      expect(session.getPreferenceChanges()).toEqual([])
+    })
+
+    it('reports a scalar override against its config default', () => {
+      const session = createTestSession()
+      session.setScrollZoom(true)
+      expect(session.getPreferenceChanges()).toEqual([
+        { path: ['scrollZoom'], from: false, to: true },
+      ])
+    })
+
+    it('omits an override equal to its default (reset is a no-op)', () => {
+      const session = createTestSession()
+      session.setPreferenceOverride('animationMode', 'enabled')
+      expect(session.getPreferenceChanges()).toEqual([])
+    })
+
+    it('reports a promoted per-display-type default with a (default) from', () => {
+      const session = createTestSession()
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+      expect(session.getPreferenceChanges()).toEqual([
+        {
+          path: ['displayTypeDefaults', 'LinearBasicDisplay', 'displayMode'],
+          from: undefined,
+          to: 'compact',
+        },
+      ])
+    })
+
+    it('empties once cleared', () => {
+      const session = createTestSession()
+      session.setScrollZoom(true)
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+      expect(session.getPreferenceChanges()).toHaveLength(2)
+      session.clearPreferenceOverrides()
+      expect(session.getPreferenceChanges()).toEqual([])
+    })
+  })
 })
