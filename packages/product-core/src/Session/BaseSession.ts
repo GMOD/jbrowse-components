@@ -56,7 +56,7 @@ export function BaseSessionModel<
        * one session-wide toggle for all region highlight bands (URL/view
        * highlights and bookmark overlays)
        */
-      highlightsVisible: types.optional(types.boolean, true),
+      highlightsVisible: types.stripDefault(types.boolean, true),
     })
     .volatile(() => ({
       /**

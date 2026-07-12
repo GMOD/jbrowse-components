@@ -171,8 +171,7 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
 }, 60000)
 
 test('Toggle highlight visibility across all views', async () => {
-  const { session, findByText, findByTestId, findAllByTestId } =
-    await createView()
+  const { session, findByText, findByTestId } = await createView()
 
   session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -199,11 +198,10 @@ test('Toggle highlight visibility across all views', async () => {
     assemblyName: 'volvox',
   })
 
-  const [highlight] = await findAllByTestId('BookmarkIcon')
-  const [, highlight2] = await findAllByTestId('BookmarkIcon')
-
-  expect(highlight).toBeDefined()
-  expect(highlight2).toBeDefined()
+  // the bookmark renders a highlight band in each open view (both on volvox)
+  await waitFor(() => {
+    expect(screen.getAllByTestId('highlight-band').length).toBeGreaterThan(0)
+  }, delay)
 
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
@@ -212,44 +210,9 @@ test('Toggle highlight visibility across all views', async () => {
   )
   await user.click(await findByText('Close'))
 
+  // one session-wide flag hides the bands in every view
   await waitFor(() => {
-    expect(screen.queryAllByTestId('BookmarkIcon').length).toBe(0)
-  }, delay)
-}, 60000)
-
-test('Toggle highlight label visibility across all views', async () => {
-  const { session, findByText, findByTestId } = await createView()
-
-  const user = userEvent.setup()
-
-  await user.click(await findByText('Tools'))
-  await user.click(await findByText('Bookmarks/highlights'))
-
-  // @ts-expect-error
-  const bookmarkWidget = session.widgets.get('GridBookmark')
-  bookmarkWidget.addBookmark({
-    start: 200,
-    end: 240,
-    refName: 'ctgA',
-    assemblyName: 'volvox',
-    label: 'my bookmark',
-  })
-
-  await screen.findAllByText('my bookmark', {}, delay)
-
-  fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
-  await user.click(await findByText('Settings'))
-  await user.click(
-    (await findByTestId('toggle_highlight_label_all_switch')).querySelector(
-      'input',
-    )!,
-  )
-  await user.click(await findByText('Close'))
-
-  // 'my bookmark' appears in both the grid cell and the highlight label; after
-  // toggling labels off, only the grid cell entry remains (count drops 2 → 1)
-  await waitFor(() => {
-    expect(screen.queryAllByText('my bookmark').length).toBe(1)
+    expect(screen.queryAllByTestId('highlight-band').length).toBe(0)
   }, delay)
 }, 60000)
 

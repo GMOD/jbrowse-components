@@ -48,6 +48,7 @@ export default function HighlightBand({
     ) : null)
   return (
     <div
+      data-testid="highlight-band"
       className={classes.highlight}
       style={{
         transform: `translateX(${coords.left}px)`,
