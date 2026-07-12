@@ -8,15 +8,20 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
   model: {
     setFeatureHeight: (arg?: number) => void
     setFeatureSpacing: (arg?: number) => void
-    featureHeight: number
-    featureSpacing: number
+    configuredFeatureHeight: number
+    configuredFeatureSpacing: number
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const [height, setHeight] = useState<number | undefined>(model.featureHeight)
+  // Seed from the configured (fixed-mode) size, not the resolved `featureHeight`
+  // — in Compressed mode that resolves to the fractional fit pitch, so editing
+  // would start from and bake the squeezed value.
+  const [height, setHeight] = useState<number | undefined>(
+    model.configuredFeatureHeight,
+  )
   const [spacing, setSpacing] = useState<number | undefined>(
-    model.featureSpacing,
+    model.configuredFeatureSpacing,
   )
   const ok = height !== undefined && spacing !== undefined
 
@@ -37,7 +42,7 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
         feature height to 1 and spacing to 0 makes the display very compact.
       </Typography>
       <NumberTextField
-        defaultValue={model.featureHeight}
+        defaultValue={model.configuredFeatureHeight}
         onValueChange={setHeight}
         label="Feature height (px)"
         autoFocus
@@ -45,7 +50,7 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
         errorText="Must be a non-negative number"
       />
       <NumberTextField
-        defaultValue={model.featureSpacing}
+        defaultValue={model.configuredFeatureSpacing}
         onValueChange={setSpacing}
         label="Feature spacing (px)"
         min={0}

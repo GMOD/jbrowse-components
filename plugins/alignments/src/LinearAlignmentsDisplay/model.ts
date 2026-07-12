@@ -777,7 +777,7 @@ export default function stateModelFactory(
         get featureHeight(): number {
           return this.isFitting
             ? self.fittedHeightPx - this.featureSpacing
-            : getConfResolved(self, 'featureHeight')
+            : this.configuredFeatureHeight
         },
 
         /**
@@ -791,7 +791,25 @@ export default function stateModelFactory(
             ? self.fittedHeightPx > 3
               ? 1
               : 0
-            : getConfResolved(self, 'featureSpacing')
+            : this.configuredFeatureSpacing
+        },
+
+        /**
+         * #getter
+         */
+        // The configured fixed-mode read size, independent of the fit squeeze.
+        // Consumers that EDIT the size (the "Set feature height" dialog) must
+        // start from the pinned value, not the fractional fit pitch that
+        // `featureHeight`/`featureSpacing` resolve to in fit mode — otherwise
+        // opening the dialog while compressed would bake the squeezed height.
+        get configuredFeatureHeight(): number {
+          return getConfResolved(self, 'featureHeight')
+        },
+        /**
+         * #getter
+         */
+        get configuredFeatureSpacing(): number {
+          return getConfResolved(self, 'featureSpacing')
         },
 
         /**
@@ -1795,9 +1813,12 @@ export default function stateModelFactory(
           const rows = self.groupOrder
             .filter(g => !self.collapsedGroups.has(g.key))
             .reduce((sum, { key }) => sum + (counts.get(key) ?? 0), 0)
+          // rows === 0 (no groups) already short-circuits to 0 below, so
+          // groupOrder.length is >= 1 whenever this product matters — matching the
+          // layout's `groupCount * overhead`.
           const pileupSpace =
             self.fitTargetHeight -
-            Math.max(1, self.groupOrder.length) * self.coverageDisplayHeight
+            self.groupOrder.length * self.coverageDisplayHeight
           return rows > 0 && pileupSpace > 0
             ? Math.max(1, pileupSpace / rows)
             : 0
@@ -2380,22 +2401,6 @@ export default function stateModelFactory(
           setMaxHeight(height?: number) {
             self.configuration.setSlot('maxHeight', height)
             self.scrollTop = 0
-          },
-
-          /**
-           * #action
-           * Enter/leave "fit to display height" mode. Entering resets the two
-           * bits of transient state that a uniform fit contradicts — per-group
-           * height overrides (a drag opts a group out of the fit budget) and the
-           * scroll offset (a fitted stack doesn't scroll). These clears are tied
-           * to the explicit user action on purpose: a track that inherits `fit`
-           * passively from a session-wide default keeps its overrides, so setting
-           * an unrelated default can't silently wipe a group the user dragged. The
-           * afterAttach autorun then keeps `featureHeight` sized to fit as the
-           * display/data change, regardless of how fit was entered.
-           */
-          setFitHeightToDisplay(fit: boolean) {
-            this.setHeightMode(fit ? 'fit' : 'fixed')
           },
 
           /**

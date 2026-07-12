@@ -512,9 +512,9 @@ describe('alignments fit-to-display-height session default', () => {
     expect(display.fitHeightToDisplay).toBe(false)
   })
 
-  it('setFitHeightToDisplay(true) enters fit mode', () => {
+  it("setHeightMode('fit') enters fit mode", () => {
     const { display } = createDisplay()
-    display.setFitHeightToDisplay(true)
+    display.setHeightMode('fit')
     expect(display.fitHeightToDisplay).toBe(true)
   })
 
@@ -545,11 +545,28 @@ describe('alignments fit-to-display-height session default', () => {
 
   it('setFeatureHeight escapes fit mode', () => {
     const { display } = createDisplay()
-    display.setFitHeightToDisplay(true)
+    display.setHeightMode('fit')
     expect(display.fitHeightToDisplay).toBe(true)
 
     display.setFeatureHeight(20)
     expect(display.fitHeightToDisplay).toBe(false)
+  })
+
+  // The "Set feature height" dialog edits the fixed config, so it must seed from
+  // `configuredFeature*` — the resolved `featureHeight`/`featureSpacing` become
+  // the fractional fit pitch in Compressed mode, which the dialog would then bake.
+  it('exposes configured feature size independent of the fit squeeze', () => {
+    const { display } = createDisplay()
+    display.setHeightMode('fit')
+    display.setFittedHeightPx(4)
+
+    // resolved size follows the fit pitch (4px pitch = 3px body + 1px spacing)
+    expect(display.featureHeight).toBe(3)
+    expect(display.featureSpacing).toBe(1)
+
+    // ...but the configured size the dialog edits stays at the config defaults
+    expect(display.configuredFeatureHeight).toBe(7)
+    expect(display.configuredFeatureSpacing).toBe(1)
   })
 
   it('ignores a malformed (non-enum) session default', () => {
@@ -722,7 +739,7 @@ describe('alignments grow (auto-height) mode', () => {
 describe('alignments fit-to-display-height split', () => {
   it('with nothing to fit, fittedFeatureHeight is 0 and size falls back to config', () => {
     const { display } = createDisplay()
-    display.setFitHeightToDisplay(true)
+    display.setHeightMode('fit')
     // no fetched reads -> no rows -> nothing to fit
     expect(display.fittedFeatureHeight).toBe(0)
     expect(display.featureHeight).toBe(7)
@@ -731,7 +748,7 @@ describe('alignments fit-to-display-height split', () => {
 
   it('spares a 1px gap once the pitch clears 3px, body fills the rest', () => {
     const { display } = createDisplay()
-    display.setFitHeightToDisplay(true)
+    display.setHeightMode('fit')
     display.setFittedHeightPx(10)
     expect(display.featureSpacing).toBe(1)
     expect(display.featureHeight).toBe(9)
@@ -741,7 +758,7 @@ describe('alignments fit-to-display-height split', () => {
 
   it('keeps reads flush (no spacing) at a 3px pitch or tighter', () => {
     const { display } = createDisplay()
-    display.setFitHeightToDisplay(true)
+    display.setHeightMode('fit')
     display.setFittedHeightPx(3)
     expect(display.featureSpacing).toBe(0)
     expect(display.featureHeight).toBe(3)
@@ -753,7 +770,7 @@ describe('alignments fit-to-display-height split', () => {
 
   it('splits a fractional pitch without losing the fill (body stays fractional)', () => {
     const { display } = createDisplay()
-    display.setFitHeightToDisplay(true)
+    display.setHeightMode('fit')
     display.setFittedHeightPx(3.5)
     expect(display.featureSpacing).toBe(1)
     expect(display.featureHeight).toBe(2.5)
@@ -762,13 +779,13 @@ describe('alignments fit-to-display-height split', () => {
 
   it('ignores a stale fit cache once fit is off', () => {
     const { display } = createDisplay()
-    display.setFitHeightToDisplay(true)
+    display.setHeightMode('fit')
     display.setFittedHeightPx(10)
     expect(display.featureHeight).toBe(9)
 
     // leaving fit doesn't reset the cache, but the getters gate on fit mode so
     // the config values win again
-    display.setFitHeightToDisplay(false)
+    display.setHeightMode('fixed')
     expect(display.featureHeight).toBe(7)
     expect(display.featureSpacing).toBe(1)
   })
