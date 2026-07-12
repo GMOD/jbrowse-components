@@ -233,13 +233,6 @@ export const gallerySections: readonly GallerySection[] = [
           'A phased trio genotype matrix: child, mother, and father each as two haplotype rows, so matching blocks reveal which parental haplotype the child inherited.',
       },
       {
-        label: 'Selective sweep: Fst peak over a diversity valley (Drosophila Cyp6g1)',
-        spec: 'popgen/combined_cyp6g1_dest',
-        guide: 'tutorials/population_genomics#between-populations',
-        description:
-          'African vs cosmopolitan Fst spikes at the Cyp6g1 insecticide-resistance gene while cosmopolitan diversity collapses and African diversity holds — the textbook local-adaptation signature, from DEST Pool-Seq allele frequencies.',
-      },
-      {
         label: 'HG002 diploid assembly (dipcall hap1 + hap2 vs GRCh38)',
         spec: 'gallery/hg002_dipcall',
         description:

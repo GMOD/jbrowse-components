@@ -2,8 +2,7 @@
 title: Population genomics
 description:
   Windowed Fst, nucleotide diversity, and Tajima's D scans plus a genotype
-  matrix, LD heatmap, and a between-population sweep from real Drosophila data —
-  a fully reproducible pipeline
+  matrix, a fully reproducible pipeline from a single Drosophila genotype VCF
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
@@ -62,11 +61,9 @@ The pipeline uses these standard command-line tools:
   sample list
 - [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) — UCSC
   utility that packs a bedGraph into an indexed bigWig
-- [PLINK](https://www.cog-genomics.org/plink/) — pairwise LD (`--r2`) for the
-  linkage-disequilibrium section
 
 All are on [bioconda](https://bioconda.github.io/):
-`conda install -c bioconda vcftools bcftools ucsc-bedgraphtobigwig plink`.
+`conda install -c bioconda vcftools bcftools ucsc-bedgraphtobigwig`.
 
 ## Get the data
 
@@ -342,13 +339,13 @@ read as genuinely elevated rather than a baseline with nothing to compare it to.
 
 Then use the search box to jump to **`Cyp6g1`** (on `2R`) and add the **Tajima's
 D** track from the pipeline alongside π. Both statistics dip together in the
-same window. π collapses to under a tenth of the arm-wide average — but where π
+same window. π drops to under a tenth of the arm-wide average, but where π
 only tells you diversity is low, Tajima's D tells you _why_: at Cyp6g1 it falls
 sharply negative while sitting near zero genome-wide, the excess of rare alleles
 accumulating on the swept background. Two statistics dropping in the same window
 is the diagnostic hard-sweep signature, not the ambiguity of either alone.
 
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across a 1 Mb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Both statistics dip together at the locus: Tajima's D falls to about -2 against a genome-wide-neutral baseline near zero, and π collapses to under a tenth of the arm-wide background in the same window. The joint dip — a diversity valley skewed toward rare alleles — is the classic footprint of the hard sweep at this insecticide-resistance gene."/>
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across a 1 Mb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Both statistics dip together at the locus: Tajima's D falls to about -2 against a genome-wide-neutral baseline near zero, and π drops to under a tenth of the arm-wide background in the same window. The joint dip, reduced diversity skewed toward rare alleles, is the expected footprint of a hard sweep at this insecticide-resistance gene."/>
 
 Other resistance and selection loci can be examined the same way, reading the
 signal against the gene:
@@ -371,76 +368,6 @@ with its phenotype to scan `3R` the same way.
 | High | High in both, high dxy | Long-standing divergence (e.g. an inversion)     |
 | Low  | High                   | Shared variation / gene flow                     |
 
-## Between populations: the Cyp6g1 sweep {#between-populations}
-
-The In(2L)t scan above contrasts two _arrangements_ within one panel. Reading
-the same statistics across two _populations_ picks out the top row of the table
-directly. [DEST](https://dest.bio) publishes Pool-Seq allele frequencies for _D.
-melanogaster_ populations worldwide on dm6, spanning the ancestral African range
-and the derived cosmopolitan range where the Cyp6g1 resistance allele swept.
-
-Grouping the sub-Saharan African samples against the North American samples and
-scanning the Cyp6g1 region produces that first-row pattern in a single figure:
-Fst peaks at the gene, and diversity collapses in the cosmopolitan population
-while the African population holds at background.
-
-<Figure src="/img/popgen/combined_cyp6g1_dest.png" caption="Fst between African and cosmopolitan populations (top) and each population's nucleotide diversity (middle) across a 500 kb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Fst rises to its regional maximum (~0.37) at the gene, and in the same window cosmopolitan diversity (red) collapses while African diversity (blue) stays at background. A differentiation peak sitting on a population-specific diversity valley is the signature of local adaptation — the resistance allele swept in the cosmopolitan range but not in Africa. Allele frequencies from DEST; windowed statistics from this section's pipeline, hosted at jbrowse.org/demos/popgen."/>
-
-DEST reports a per-pool alternate-allele frequency (`FREQ`) rather than
-individual genotypes, so the scan works from frequencies directly: tabix the
-region, average `FREQ` within each population group, then take windowed
-[Hudson](https://doi.org/10.1093/genetics/132.2.583) Fst and per-group expected
-heterozygosity (a diversity proxy that pooled data supports).
-
-```bash
-DEST=https://berglandlab.pods.uvarc.io/vcf/dest.all.PoolSNP.001.50.24Aug2024.ann.vcf.gz
-tabix -h "$DEST" 2R:11700000-12700000 | bgzip > dest_cyp.vcf.gz   # ~44k SNPs
-```
-
-The `FORMAT` is `GT:RD:AD:DP:FREQ`; `FREQ` is the pool's alternate-allele
-frequency and `DP` its depth. Average `FREQ` within each group, then write
-windowed statistics as bedGraphs:
-
-```python
-import gzip, collections
-AFR = {'ET','ZA','ZW','ZM','UG','RW','NG','KE','GN','GA'}   # sub-Saharan
-grp = lambda s: 'AFR' if s.split('_')[0] in AFR else ('US' if s.startswith('US_') else None)
-WIN = 10000
-lines = (l for l in gzip.open('dest_cyp.vcf.gz','rt'))
-samples = next(l for l in lines if l.startswith('#CHROM')).split('\t')[9:]
-groups = [grp(s.strip()) for s in samples]
-fnum = collections.defaultdict(float); fden = collections.defaultdict(float)
-het = collections.defaultdict(lambda: [0.,0.,0])
-for line in lines:
-    f = line.split('\t'); pos = int(f[1]); fmt = f[8].split(':')
-    fi, di = fmt.index('FREQ'), fmt.index('DP')
-    af, us = [], []
-    for g, cell in zip(groups, f[9:]):
-        p = cell.split(':')
-        if g and p[di].isdigit() and int(p[di]) >= 10:   # require depth >= 10
-            (af if g == 'AFR' else us).append(float(p[fi]))
-    if len(af) >= 5 and len(us) >= 5:                    # both groups covered
-        p1, p2 = sum(af)/len(af), sum(us)/len(us); w = pos//WIN*WIN
-        fnum[w] += (p1-p2)**2; fden[w] += p1*(1-p2) + p2*(1-p1)   # Hudson Fst
-        h = het[w]; h[0] += 2*p1*(1-p1); h[1] += 2*p2*(1-p2); h[2] += 1
-for name, val in [('fst', lambda w: fnum[w]/fden[w]),
-                  ('div_african', lambda w: het[w][0]/het[w][2]),
-                  ('div_cosmopolitan', lambda w: het[w][1]/het[w][2])]:
-    with open(f'{name}.bg','w') as o:
-        for w in sorted(w for w in het if het[w][2] >= 20):      # SNP-dense windows
-            o.write(f'2R\t{w}\t{w+WIN}\t{val(w):.5f}\n')
-```
-
-```bash
-for f in fst div_african div_cosmopolitan; do
-  bedGraphToBigWig "$f.bg" dm6.chrom.sizes "dest_cyp6g1_$f.bw"
-done
-```
-
-Load the Fst bigWig as a `QuantitativeTrack` and the two diversity bigWigs as
-one `MultiWiggleAdapter` track (shared scale — same statistic on both rows) to
-reproduce the figure.
-
 ## Per-sample view: the inversion genotyped across the panel
 
 The windowed Fst scan _summarizes_ the inversion into one number per window. To
@@ -449,8 +376,8 @@ structural-variant call — one `<INV>` record spanning the In(2L)t breakpoints
 (`2L:2,225,744–13,154,180`) — genotyped across every karyotyped line, and load
 it as a [multi-sample variant matrix](/docs/user_guides/multivariant_track). A
 per-SNP matrix can't hold a ~13 Mb inversion on screen: zoom out far enough to
-see both breakpoints and the individual marker columns collapse to nothing. One
-SV call sidesteps that — the inversion is a single feature no matter how wide it
+see both breakpoints and the individual marker columns shrink to nothing. One
+SV call sidesteps that: the inversion is a single feature no matter how wide it
 is.
 
 First subset the panel to the karyotyped lines over `2L` (this biallelic-SNP
@@ -532,69 +459,6 @@ cleanest per-line view of _who_ carries the inversion. The independent evidence
 that ordinary SNPs across the region co-segregate with it — the reason the
 arrangement behaves as one recombination-suppressed block — is exactly what the
 Fst scan above quantifies.
-
-## Linkage disequilibrium
-
-That suppression is itself measurable, as **linkage disequilibrium** (LD) — the
-non-random association of alleles at different sites. Where recombination is
-free, LD between two SNPs decays as they get farther apart; where recombination
-is suppressed (or a sweep is recent), it persists. JBrowse draws pairwise LD as
-a triangular heatmap. Pre-compute it with PLINK's `--r2` and load it through the
-`PlinkLDTabixAdapter`:
-
-```bash
-# pairwise r2 among common SNPs in a window (PLINK reads the VCF directly)
-plink --vcf dgrp_In2Lt_2L.vcf.gz --double-id --allow-extra-chr \
-  --set-missing-var-ids '@:#' --maf 0.1 \
-  --r2 --ld-window-kb 400 --ld-window 999999 --ld-window-r2 0 \
-  --out ld
-# tab-delimit, sort by BP_A, bgzip and tabix (columns: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2)
-tail -n +2 ld.ld | awk 'BEGIN{OFS="\t"}{print $1,$2,$3,$4,$5,$6,$7}' \
-  | sort -k1,1 -k2,2n | bgzip > ld.ld.gz
-tabix -s1 -b2 -e2 ld.ld.gz
-```
-
-Unlike the bigWig and VCF tracks above, the LD-heatmap track does **not** apply
-[refname aliasing](/docs/developer_guides/refname_aliasing) — it matches
-chromosome names literally — so name the `CHR_A`/`CHR_B` columns to match your
-loaded assembly. The demo dm6 hub uses UCSC-style `chr2R`, so prefix the FlyBase
-`2R` names from the VCF:
-
-```bash
-tail -n +2 ld.ld \
-  | awk 'BEGIN{OFS="\t"}{print "chr"$1,$2,$3,"chr"$4,$5,$6,$7}' \
-  | sort -k1,1 -k2,2n | bgzip > ld_chr.ld.gz
-tabix -s1 -b2 -e2 ld_chr.ld.gz
-```
-
-`ld.ld.gz` (literal FlyBase names) is an intermediate; the track loads
-`ld_chr.ld.gz`, the UCSC-prefixed file built just above.
-
-```json
-{
-  "type": "LDTrack",
-  "trackId": "dgrp_ld",
-  "name": "LD (r²)",
-  "assemblyNames": ["dm6"],
-  "adapter": {
-    "type": "PlinkLDTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/ld_chr.ld.gz"
-  }
-}
-```
-
-In a freely recombining region the triangle is bright along its top edge (nearby
-SNP pairs are correlated) and fades into the body as pairs get farther apart —
-the LD **decay** that sets how far a single tag SNP's signal reaches, and hence
-the resolution of association mapping.
-
-Inside the `In(2L)t` inversion the picture is different: because recombination
-between arrangements is suppressed, LD does **not** decay the same way — pairs
-megabases apart stay associated, the flip side of the single co-inherited block
-the genotype matrix above shows. Note that with the inversion at only ~10%
-frequency in this panel, that persistence is clearest among the
-arrangement-informative markers (and in `D'`) rather than as a bright
-genome-wide r² block.
 
 ## Unbiased π and dxy with pixy {#unbiased-pi-and-dxy-with-pixy}
 

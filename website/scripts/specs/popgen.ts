@@ -82,58 +82,6 @@ const TAJD_TRACK = {
   },
 }
 
-// Between-population Fst (African vs cosmopolitan) across the Cyp6g1 region,
-// computed from DEST Pool-Seq allele frequencies (dm6). The African group pools
-// the sub-Saharan samples (ancestral range); the cosmopolitan group is the North
-// American (US) samples (derived range where the insecticide-resistance allele
-// swept). Windowed Hudson Fst, hosted as a bigWig — a single QuantitativeTrack so
-// it auto-scales to its own domain and the Cyp6g1 peak reads at full height.
-const FST_DEST_TRACK = {
-  type: 'QuantitativeTrack',
-  trackId: 'dest_fst_afr_cosmo',
-  name: 'Fst (African vs cosmopolitan)',
-  assemblyNames: ['dm6'],
-  adapter: {
-    type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/demos/popgen/dest_cyp6g1_fst.bw',
-  },
-}
-
-// The two populations' nucleotide diversity (expected heterozygosity) as a
-// two-row multi-wiggle sharing one y-domain, so the sweep reads as a split: the
-// cosmopolitan row collapses in the Cyp6g1 window while the African row holds at
-// background. Same statistic on both rows, so a shared scale is correct here
-// (unlike Fst-vs-π, which differ ~50x).
-const DIVERSITY_DEST_TRACK = {
-  type: 'MultiQuantitativeTrack',
-  trackId: 'dest_diversity_afr_cosmo',
-  name: 'Nucleotide diversity (African vs cosmopolitan)',
-  assemblyNames: ['dm6'],
-  adapter: {
-    type: 'MultiWiggleAdapter',
-    subadapters: [
-      {
-        type: 'BigWigAdapter',
-        source: 'African (ancestral)',
-        color: '#377eb8',
-        bigWigLocation: {
-          uri: 'https://jbrowse.org/demos/popgen/dest_cyp6g1_div_african.bw',
-          locationType: 'UriLocation',
-        },
-      },
-      {
-        type: 'BigWigAdapter',
-        source: 'Cosmopolitan (derived)',
-        color: '#e41a1c',
-        bigWigLocation: {
-          uri: 'https://jbrowse.org/demos/popgen/dest_cyp6g1_div_cosmopolitan.bw',
-          locationType: 'UriLocation',
-        },
-      },
-    ],
-  },
-}
-
 export const popgenSpecs: ScreenshotSpec[] = [
   // Genome-wide (all six dm6 arms): the In(2L)t Fst track rises into a tall
   // elevated block across the whole left arm of chromosome 2 — the
@@ -194,7 +142,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
 
   // Tajima's D + π at Cyp6g1 (chr2R:12,185,667): the two-part hard-sweep signature
   // read against the gene. Both statistics dip together in the swept window — π
-  // collapses (diversity removed by the hitchhiking haplotype) and Tajima's D goes
+  // drops (diversity removed by the hitchhiking haplotype) and Tajima's D goes
   // sharply negative (to about -2, an excess of rare alleles on the swept
   // background) — against a genome-wide-neutral Tajima's D baseline near zero.
   // Seeing both drop at the same window is what distinguishes a sweep from a plain
@@ -255,78 +203,5 @@ export const popgenSpecs: ScreenshotSpec[] = [
     // tajd(200) + pi(180) + grow gene track + 3 headers + ruler/overview
     viewportHeight: 960,
     settleMs: 12000,
-  },
-
-  // The payoff combined figure: at the Cyp6g1 insecticide-resistance sweep, three
-  // inter-related population-genetic signals converge in one window between an
-  // ancestral African and a derived cosmopolitan population (DEST Pool-Seq, dm6).
-  // Fst (top) spikes to its regional maximum — the resistance haplotype swept in
-  // the cosmopolitan population but not in Africa, so the two diverge sharply here.
-  // Below, the two diversity rows split: cosmopolitan diversity (red) collapses in
-  // the same window (the hitchhiking hard sweep), while African diversity (blue)
-  // stays at background (no sweep there). A peak of differentiation sitting exactly
-  // on top of a population-specific diversity valley is the textbook signature of
-  // local adaptation — and it lands on the gene the tutorial already features.
-  {
-    mode: 'url',
-    name: 'popgen/combined_cyp6g1_dest',
-    url: `${DM6_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [FST_DEST_TRACK, DIVERSITY_DEST_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'dm6',
-          // full extent of the DEST slice (tabix'd 2R:11.7-12.7 Mb) so the Fst
-          // peak + cosmopolitan diversity valley read against the widest
-          // background the data covers (reviewer: zoom out more)
-          loc: 'chr2R:11,700,000-12,700,000',
-          highlight: [
-            {
-              refName: 'chr2R',
-              start: 12_130_000,
-              end: 12_190_000,
-              assemblyName: 'dm6',
-              label: 'Cyp6g1',
-            },
-          ],
-          tracks: [
-            {
-              trackId: 'dest_fst_afr_cosmo',
-              type: 'LinearWiggleDisplay',
-              height: 180,
-            },
-            {
-              trackId: 'dest_diversity_afr_cosmo',
-              type: 'MultiLinearWiggleDisplay',
-              height: 200,
-              defaultRendering: 'multiline',
-            },
-            {
-              trackId: 'dm6-ncbiRefSeqCurated',
-              type: 'LinearBasicDisplay',
-              height: 90,
-              showOnlyGenes: true,
-            },
-          ],
-        },
-      ],
-    })}&sessionName=Screenshot`,
-    readySelector: '[data-testid="wiggle-display-done"]',
-    readyText: 'cosmopolitan',
-    readyTimeout: 90000,
-    // fst(180) + diversity(200) + gene(90) + 3 headers + ruler/overview; taller
-    // so the stacked wiggles are less cramped (reviewer)
-    viewportHeight: 820,
-    settleMs: 12000,
-    annotations: [
-      {
-        type: 'text',
-        x: 300,
-        y: 150,
-        maxWidth: 300,
-        fontSize: 15,
-        text: 'Fst peaks where cosmopolitan diversity (red) collapses but African (blue) holds.',
-      },
-    ],
   },
 ]
