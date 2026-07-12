@@ -53,7 +53,7 @@ interface ReadSpec {
   insertSize?: number
 }
 
-function makeRegion(reads: ReadSpec[]) {
+function makeRegion(reads: ReadSpec[], ys?: number[]) {
   const n = reads.length
   const readPositions = new Uint32Array(n * 2)
   const readStrands = new Int8Array(n)
@@ -78,7 +78,7 @@ function makeRegion(reads: ReadSpec[]) {
   }
   return {
     readPositions,
-    readYs: new Uint16Array(n),
+    readYs: ys ? Uint16Array.from(ys) : new Uint16Array(n),
     readStrands,
     readFlags,
     readPairOrientations: new Uint8Array(n),
@@ -173,6 +173,52 @@ test('paired read with a wide-enough span keeps the arrowhead', () => {
   // 2 * 10 = 20 >= 10px gate
   const svg = draw([{ ...wideFwd, flags: 1, insertSize: 2 }])
   expect(svg).toContain('<path')
+})
+
+// Deep-coverage scroll cost guard: drawReads must draw only the rows that reach
+// the canvas band [0, canvasHeight], not every fetched row — otherwise a deep
+// pileup redraws thousands of rects per scroll frame. If a future refactor drops
+// the pileupRowOffCanvas guard, the first two expectations blow past their bound.
+describe('drawReads visible-row-band cull', () => {
+  const rows = 1000
+  // strand 0 => plain rect (no chevron path), one <rect> per drawn row.
+  const reads = Array.from({ length: rows }, () => ({
+    start: 10,
+    end: 50,
+    strand: 0,
+  }))
+  const region = makeRegion(
+    reads,
+    Array.from({ length: rows }, (_, i) => i),
+  )
+  const block: DrawBlock = { start: 0, end: 100, screenStartPx: 0 }
+  // rowHeight 10 => 1000 rows span 10000px of content.
+  const count = (over: Partial<RenderState>) => {
+    const ctx = new SvgCanvas()
+    drawReads(ctx, region, block, 100, 1000, {
+      featureHeight: 10,
+      featureSpacing: 0,
+      pileupTopOffset: 0,
+      scrollTop: 0,
+      linkedReads: 'off',
+      colorScheme: ColorScheme.strand,
+      colors: palette,
+      showOutline: false,
+      canvasHeight: 100,
+      ...over,
+    } as unknown as RenderState)
+    return (ctx.getSerializedSvg().match(/<rect/g) ?? []).length
+  }
+
+  test('at the top, only the ~10 rows in the 100px canvas draw', () => {
+    expect(count({})).toBeLessThan(20)
+  })
+  test('scrolled to the middle, still only the visible band draws', () => {
+    expect(count({ scrollTop: 5000 })).toBeLessThan(20)
+  })
+  test('a canvas tall enough for every row draws them all (cull is a no-op)', () => {
+    expect(count({ canvasHeight: 100000 })).toBe(rows)
+  })
 })
 
 // Independent reimplementation of read.slang `showChev`, kept separate so a

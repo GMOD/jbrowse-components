@@ -116,3 +116,35 @@ describe('drawMismatches quality fade', () => {
     expect(drawOne(baseState({ mismatchAlpha: true }), 0)).toBe('rgb(255,0,0)')
   })
 })
+
+// Deep-coverage scroll cost guard: the per-base mismatch pass must fill only the
+// rows that reach the canvas band, not every fetched mismatch. Drops off if the
+// pileupRowOffCanvas guard is removed.
+describe('drawMismatches visible-row-band cull', () => {
+  const rows = 1000
+  // one 'A' mismatch per row, all at bp 100 (inside BLOCK); rowHeight 10.
+  const deep: MismatchUploadData = {
+    mismatchPositions: new Uint32Array(rows).fill(100),
+    mismatchYs: Uint16Array.from({ length: rows }, (_, i) => i),
+    mismatchBases: new Uint8Array(rows).fill(65),
+    mismatchFrequencies: new Uint8Array(rows).fill(255),
+    mismatchQuals: new Uint8Array(rows).fill(60),
+  }
+  const count = (state: RenderState) => {
+    const { ctx, fills } = recordingCtx()
+    drawMismatches(ctx, deep, BLOCK, BP_LENGTH, BLOCK_WIDTH, state)
+    return fills.length
+  }
+
+  test('only the ~10 rows in the 100px canvas fill', () => {
+    expect(count(baseState({ canvasHeight: 100 }))).toBeLessThan(20)
+  })
+  test('scrolled to the middle, still only the visible band fills', () => {
+    expect(count(baseState({ canvasHeight: 100, scrollTop: 5000 }))).toBeLessThan(
+      20,
+    )
+  })
+  test('a canvas tall enough for every row fills them all (cull is a no-op)', () => {
+    expect(count(baseState({ canvasHeight: 100000 }))).toBe(rows)
+  })
+})
