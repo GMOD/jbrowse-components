@@ -33,8 +33,10 @@ export function ensureBookmarkWidget(node: IAnyStateTreeNode) {
 interface HighlightToggleable {
   bookmarkHighlightsVisible: boolean
   highlightsVisible: boolean
+  showHighlightChips: boolean
   setBookmarkHighlightsVisible: (arg: boolean) => void
   setHighlightsVisible: (arg: boolean) => void
+  setShowHighlightChips: (arg: boolean) => void
 }
 
 // single checkbox that flips both bookmark-highlight and view.highlight
@@ -49,6 +51,24 @@ export function toggleHighlightsMenuItem(self: HighlightToggleable): MenuItem {
       const next = !(self.bookmarkHighlightsVisible || self.highlightsVisible)
       self.setBookmarkHighlightsVisible(next)
       self.setHighlightsVisible(next)
+    },
+  }
+}
+
+// single checkbox for the interactive chip (link icon + context menu) drawn on
+// each band; showHighlightChips is one shared prop, so bookmark and view
+// highlights stay synchronized. Disabled while no highlights are visible
+export function toggleHighlightChipsMenuItem(
+  self: HighlightToggleable,
+): MenuItem {
+  return {
+    label: 'Show highlight chips',
+    icon: HighlightIcon,
+    type: 'checkbox',
+    checked: self.showHighlightChips,
+    disabled: !(self.bookmarkHighlightsVisible || self.highlightsVisible),
+    onClick: () => {
+      self.setShowHighlightChips(!self.showHighlightChips)
     },
   }
 }

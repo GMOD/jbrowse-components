@@ -9,6 +9,7 @@ import GridBookmarkWidgetF from './GridBookmarkWidget/index.ts'
 import {
   activateBookmarkWidget,
   ensureBookmarkWidget,
+  toggleHighlightChipsMenuItem,
   toggleHighlightsMenuItem,
 } from './bookmarkViewUtils.ts'
 
@@ -117,6 +118,7 @@ export default class GridBookmarkPlugin extends Plugin {
                           },
                         },
                         toggleHighlightsMenuItem(self),
+                        toggleHighlightChipsMenuItem(self),
                         {
                           label: 'Toggle labels',
                           icon: LabelIcon,
@@ -320,6 +322,7 @@ export default class GridBookmarkPlugin extends Plugin {
                           onClick: () => self.activateBookmarkWidget(),
                         },
                         toggleHighlightsMenuItem(self),
+                        toggleHighlightChipsMenuItem(self),
                       ],
                     },
                   ]

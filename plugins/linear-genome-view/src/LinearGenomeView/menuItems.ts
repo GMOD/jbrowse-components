@@ -212,27 +212,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
             self.setShowGridlines(!self.showGridlines)
           },
         },
-        ...(self.highlight.length
-          ? [
-              {
-                label: 'Show highlights',
-                type: 'checkbox' as const,
-                checked: self.highlightsVisible,
-                onClick: () => {
-                  self.setHighlightsVisible(!self.highlightsVisible)
-                },
-              },
-              {
-                label: 'Show highlight chips',
-                type: 'checkbox' as const,
-                checked: self.showHighlightChips,
-                disabled: !self.highlightsVisible,
-                onClick: () => {
-                  self.setShowHighlightChips(!self.showHighlightChips)
-                },
-              },
-            ]
-          : []),
         {
           label: 'Scroll zoom on WebGL tracks',
           type: 'checkbox',

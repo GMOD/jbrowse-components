@@ -1080,27 +1080,6 @@ export default function stateModelFactory(pm: PluginManager) {
                 ])
               },
             },
-            ...(self.highlight.length
-              ? [
-                  {
-                    label: 'Show highlights',
-                    type: 'checkbox' as const,
-                    checked: self.highlightsVisible,
-                    onClick: () => {
-                      self.setHighlightsVisible(!self.highlightsVisible)
-                    },
-                  },
-                  {
-                    label: 'Show highlight chips',
-                    type: 'checkbox' as const,
-                    checked: self.showHighlightChips,
-                    disabled: !self.highlightsVisible,
-                    onClick: () => {
-                      self.setShowHighlightChips(!self.showHighlightChips)
-                    },
-                  },
-                ]
-              : []),
             ...(self.hasLodCapableAdapter
               ? [
                   {
