@@ -36,16 +36,19 @@ const MSAA_SAMPLE_COUNT: 1 | 4 = 4
 function gpuBlendState(bs: BlendState): GPUBlendState {
   // RGB uses the caller-supplied factors; alpha always uses ONE / ONE_MINUS_SRC_ALPHA
   // so the destination alpha accumulates correctly (matches webgl2Hal.applyBlendState).
+  // 'max' applies to both components (factors ignored by the max operation), so
+  // same-color overlaps take the higher coverage instead of accumulating.
+  const operation = bs.op ?? 'add'
   return {
     color: {
       srcFactor: bs.srcFactor,
       dstFactor: bs.dstFactor,
-      operation: 'add',
+      operation,
     },
     alpha: {
       srcFactor: 'one',
       dstFactor: 'one-minus-src-alpha',
-      operation: 'add',
+      operation,
     },
   }
 }

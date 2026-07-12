@@ -221,6 +221,9 @@ export function drawLineCenter({
   }
   ctx.strokeStyle = rgb
   ctx.lineWidth = lineWidth
+  // Round joins/caps match the GPU capsule so sharp bends don't nick.
+  ctx.lineJoin = 'round'
+  ctx.lineCap = 'round'
   ctx.beginPath()
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const positions = source.featurePositions

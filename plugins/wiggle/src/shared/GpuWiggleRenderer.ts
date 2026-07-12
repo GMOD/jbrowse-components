@@ -3,7 +3,10 @@ import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRend
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as wiggleShader from './shaders/wiggle.generated.ts'
-import { RENDERING_TYPE_LINE } from './wiggleComponentUtils.ts'
+import {
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
+} from './wiggleComponentUtils.ts'
 import { interleaveInstances } from './wiggleInstanceBuffer.ts'
 
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
@@ -17,15 +20,16 @@ import type {
 
 const PASS_FILL = 'fill'
 const PASS_LINE = 'line'
+const PASS_LINE_CENTER = 'lineCenter'
 
 const U = wiggleShader.UNIFORM_OFFSET_F32
 
-// One shader, two triangle-list passes sharing the same vertex buffer.
-// PASS_FILL draws xyplot / density / scatter / linecenter as 6-vert quads (the
-// center-line's one ribbon per feature fits the same 6-vert quad); PASS_LINE
-// draws the thick step-line as 18 verts per feature (3 square-capped quad segments)
-// so stroke thickness honors the lineWidth uniform (line-list topology can't —
-// its width is hard-locked to 1px on WebGPU/WebGL).
+// One shader, three triangle-list passes sharing the same vertex buffer.
+// PASS_FILL draws xyplot / density / scatter as 6-vert quads; PASS_LINE draws
+// the thick step-line as 18 verts per feature (3 square-capped quad segments) so
+// stroke thickness honors the lineWidth uniform (line-list topology can't — its
+// width is hard-locked to 1px on WebGPU/WebGL); PASS_LINE_CENTER draws the
+// connect-points line as a 6-vert capsule per feature under max blend.
 const LINE_VERTS_PER_INSTANCE = 18
 
 export const WIGGLE_PASSES: PassDescriptor[] = [
@@ -39,6 +43,17 @@ export const WIGGLE_PASSES: PassDescriptor[] = [
     mod: wiggleShader,
     topology: 'triangle-list',
     verticesPerInstance: LINE_VERTS_PER_INSTANCE,
+  }),
+  // Center-line: one 6-vert quad per feature (shares PASS_FILL's buffer). Drawn
+  // with premultiplied MAX blend so the analytic-AA ribbon's overlapping
+  // segments and caps union (take the higher coverage) instead of accumulating
+  // into dark seams under standard src-over. Valid because the target clears to
+  // transparent black and only this pass draws in center-line mode.
+  slangPass({
+    id: PASS_LINE_CENTER,
+    mod: wiggleShader,
+    topology: 'triangle-list',
+    blendState: { srcFactor: 'one', dstFactor: 'one', op: 'max' },
   }),
 ]
 
@@ -76,7 +91,11 @@ export class GpuWiggleRenderer
     state: WiggleGPURenderState,
   ) {
     const passId =
-      state.renderingType === RENDERING_TYPE_LINE ? PASS_LINE : PASS_FILL
+      state.renderingType === RENDERING_TYPE_LINE
+        ? PASS_LINE
+        : state.renderingType === RENDERING_TYPE_LINE_CENTER
+          ? PASS_LINE_CENTER
+          : PASS_FILL
 
     const [bpHi, bpLo, bpLen] = bpRangeXTuple(clip, block.reversed)
     this.uniformF32[U.bpRangeX] = bpHi

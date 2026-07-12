@@ -1,9 +1,11 @@
 // Wiggle track renderer. One shader covers five rendering modes (xyplot,
 // density, line, linecenter, scatter) branched on the `renderingType` uniform,
-// plus linear/log scale branch. Same shader is bound to two triangle-list
-// passes reading the same per-instance vertex buffer: PASS_FILL draws 6-vert
-// quads (xyplot/density/scatter/linecenter); PASS_LINE draws 18-vert thick
-// step-lines (3 square-capped quad segments per feature honoring u.lineWidth).
+// plus linear/log scale branch. Bound to three triangle-list passes over the
+// same per-instance vertex buffer: PASS_FILL draws 6-vert quads
+// (xyplot/density/scatter); PASS_LINE draws 18-vert thick step-lines (3
+// square-capped quad segments per feature); PASS_LINE_CENTER draws linecenter as
+// a 6-vert capsule per feature under premultiplied max-blend (round-joined SDF
+// line — see the RENDERING_TYPE_LINE_CENTER branch).
 //! targets: wgsl, glsl
 
 import hpmath;
@@ -29,6 +31,10 @@ static const uint NO_PREV_MID = 0xffffffffu;
 // module so they stay in lockstep with manhattan.slang.
 static const float SHAPE_SOLID = 0.0;
 static const float SHAPE_DISC = 1.0;
+// Antialiased line ribbon (linecenter). localPos.x = signed px distance from the
+// centerline; the fragment turns it into angle-uniform analytic coverage and
+// outputs premultiplied alpha for the max-blend PASS_LINE_CENTER.
+static const float SHAPE_LINE = 2.0;
 
 struct WiggleInstance {
   uint2 startEnd  : ATTR0;
@@ -63,11 +69,13 @@ float bpToClipX(uint bp, Uniforms u) {
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
-  // scatter-only: local quad coord (-1..1) for disc AA, and the shape selector.
-  // SHAPE_SOLID for every non-scatter mode so the fragment shader returns a flat
-  // fill.
+  // scatter: local quad coord (-1..1) for disc AA. center-line (SHAPE_LINE):
+  // segment_coord — signed px distance (along, perp) from the SEGMENT CENTER, so
+  // the fragment can evaluate the capsule SDF. shape selects the fragment path;
+  // segHalfLen is the segment's half-length in px (the capsule body extent).
   float2 localPos : TEXCOORD0;
   float  shape    : TEXCOORD1;
+  float  segHalfLen : TEXCOORD2;
 };
 
 float normalizeScore(float score, float domainMin, float domainMax, int scaleType) {
@@ -108,6 +116,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   float sy;
   float shape = SHAPE_SOLID;
   float2 localPos = float2(0.0, 0.0);
+  float segHalfLen = 0.0;
 
   if (u.renderingType == RENDERING_TYPE_LINE) {
     // Thick step-line: each feature draws 3 triangle-quad segments (18 verts,
@@ -140,12 +149,17 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       sy = lerp(min(clipScoreY, clipNextY) - hwy, max(clipScoreY, clipNextY) + hwy, q.y);
     }
   } else if (u.renderingType == RENDERING_TYPE_LINE_CENTER) {
-    // Point-to-point line: one thick quad per feature from the previous
-    // feature's bp midpoint (prevMidBp, prevScoreLine) to this one's (midX,
-    // score), connecting every consecutive pair in the source. The ribbon is
-    // offset along the segment's px-space normal so lineWidth is honored on
-    // diagonals. NO_PREV_MID (source start) collapses both endpoints to a
-    // zero-length point that produces no pixels.
+    // Point-to-point line drawn as one CAPSULE per feature: the segment from the
+    // previous feature's bp midpoint (prevMidBp, prevScoreLine) to this one's
+    // (midX, score), thickened to lineWidth with round caps of radius = half
+    // width, connecting every consecutive pair in the source. Because adjacent
+    // capsules share a round cap centred on the joint vertex, the max-blend
+    // PASS_LINE_CENTER unions them into a seamless round join at ANY angle
+    // (square caps left nicks on sharp diagonal bends; a zero-length degenerate
+    // at a source start just draws a dot). The fragment reads segment_coord
+    // (localPos) + segHalfLen to evaluate the capsule SDF. Standard instanced
+    // SDF-line technique: https://github.com/rreusser/webgpu-instanced-lines /
+    // https://almarklein.org/line_rendering.html.
     bool hasPrev = inst.prevMidBp != NO_PREV_MID;
     float midCurrX = (sx1 + sx2) * 0.5;
     float midPrevX = hasPrev ? bpToClipX(inst.prevMidBp, u) : midCurrX;
@@ -153,37 +167,27 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     float prevYpx = hasPrev
       ? scoreToY(inst.prevScoreLine, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop
       : currYpx;
-    float clipCurrY = 1.0 - currYpx * pxToClip;
-    float clipPrevY = 1.0 - prevYpx * pxToClip;
-    // Tangent/normal in px space (clip x → px via viewportWidth) so both the
-    // width offset and cap extension are isotropic despite the differing
-    // per-axis px→clip scales.
+    // Build the capsule in px space (clip x → px via viewportWidth) so it stays
+    // isotropic despite the differing per-axis px→clip scales, then convert the
+    // per-vertex offset from the segment center back to clip.
+    float centerClipX = (midPrevX + midCurrX) * 0.5;
+    float centerYpx = (prevYpx + currYpx) * 0.5;
     float dxPx = (midCurrX - midPrevX) * u.viewportWidth * 0.5;
     float dyPx = currYpx - prevYpx;
-    float len = max(sqrt(dxPx * dxPx + dyPx * dyPx), 1e-6);
-    float tx = dxPx / len;
-    float ty = dyPx / len;
-    float nx = -ty;
-    float ny = tx;
-    float halfPx = u.lineWidth * 0.5;
-    // Opaque ribbon exactly lineWidth wide; the multisampled target (4x MSAA on
-    // WebGPU, antialias:true on WebGL2) antialiases the diagonal edges, same as
-    // the opaque step-line. Drawing opaque — not an alpha-blended stroke — keeps
-    // overlapping segments and caps from double-blending into uneven dark/faint
-    // seams at the joints (src-over accumulates; opaque just replaces).
-    float offX = nx * halfPx * 2.0 / u.viewportWidth;
-    float offY = ny * halfPx * pxToClip;
-    // Square end-caps: extend halfPx along the segment so consecutive segments
-    // overlap at their shared center and fill the joint wedge (same trick as the
-    // step-line's caps). At true run ends this over-draws a harmless half-width.
-    float capX = tx * halfPx * 2.0 / u.viewportWidth;
-    float capY = ty * halfPx * pxToClip;
+    float len = sqrt(dxPx * dxPx + dyPx * dyPx);
+    float2 dir = len > 1e-4 ? float2(dxPx, dyPx) / len : float2(1.0, 0.0);
+    float2 nrm = float2(-dir.y, dir.x);
+    // Quad bounds the capsule: half-length + (radius + AA pad) along the segment,
+    // (radius + AA pad) across it. localPos (segment_coord) is measured from center.
+    float rad = u.lineWidth * 0.5 + AA_PAD_PX;
     float2 q = quadLocal(vid);
-    float side = q.y * 2.0 - 1.0;
-    float along = q.x * 2.0 - 1.0;
-    sx = lerp(midPrevX, midCurrX, q.x) + side * offX + along * capX;
-    sy = lerp(clipPrevY, clipCurrY, q.x) + side * offY + along * capY;
-    // shape stays SHAPE_SOLID → flat opaque fill, MSAA handles the edges.
+    float la = (q.x * 2.0 - 1.0) * (len * 0.5 + rad);
+    float lp = (q.y * 2.0 - 1.0) * rad;
+    sx = centerClipX + (dir.x * la + nrm.x * lp) * 2.0 / u.viewportWidth;
+    sy = 1.0 - (centerYpx + dir.y * la + nrm.y * lp) * pxToClip;
+    localPos = float2(la, lp);
+    segHalfLen = len * 0.5;
+    shape = SHAPE_LINE;
   } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
     // Point plot: every feature is a point marker centered on the bp midpoint,
     // never a bar (unlike manhattan.slang, which bars wide bins). scatterPointSize
@@ -256,6 +260,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   o.color = outColor;
   o.localPos = localPos;
   o.shape = shape;
+  o.segHalfLen = segHalfLen;
   return o;
 }
 
@@ -268,9 +273,27 @@ float4 fs_main(VsOut fragIn) : SV_Target {
       discard;
     }
     outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
+  } else if (fragIn.shape == SHAPE_LINE) {
+    // Capsule SDF: distance from this fragment to the segment's centerLINE, in
+    // px. localPos = segment_coord (along, perp) from the segment center;
+    // clamping the along-overhang past ±segHalfLen to 0 gives rounded caps of
+    // radius halfPx. Coverage = halfPx − dist, divided by the true gradient
+    // magnitude (=1, a proper SDF) for an angle-uniform 1px AA edge. Round caps
+    // on adjacent capsules coincide at the shared vertex, so the max-blend pass
+    // unions them into a seamless round join at any angle. PREMULTIPLIED output
+    // so same-color overlaps union (max) rather than accumulating.
+    float alongOver = max(abs(fragIn.localPos.x) - fragIn.segHalfLen, 0.0);
+    float dist = length(float2(alongOver, fragIn.localPos.y));
+    float halfPx = u.lineWidth * 0.5;
+    float aa = max(length(float2(ddx(dist), ddy(dist))), 1e-4);
+    float alpha = clamp((halfPx - dist) / aa + 0.5, 0.0, 1.0);
+    if (alpha <= 0.0) {
+      discard;
+    }
+    outColor = float4(fragIn.color.rgb * alpha, alpha);
   } else {
-    // Solid modes (xyplot/density/step-line/center-line) and the wide-bin bar
-    // are flat fills; the multisampled target antialiases their edges.
+    // Solid modes (xyplot/density/step-line) and the wide-bin bar are flat fills;
+    // the multisampled target antialiases their edges.
     outColor = fragIn.color;
   }
   return outColor;
