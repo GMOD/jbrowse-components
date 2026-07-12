@@ -736,11 +736,12 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        // colorBy is a plain promotable slot: an un-pinned track (colorBy at its
-        // `normal` default) follows the session-wide color default (e.g. "color
-        // every alignments track by methylation"); any other scheme pins this
-        // track, and picking "Normal" un-pins it. getConfResolved walks the
-        // cascade.
+        // colorBy is a sentinel promotable slot: an un-pinned track (colorBy at
+        // its `{type:'inherit'}` default) follows the session-wide color default
+        // (e.g. "color every alignments track by methylation"), resolving to the
+        // `promotedBase` `{type:'normal'}` when nothing is promoted; picking any
+        // scheme — `normal` included — pins this track over that default.
+        // getConfResolved walks the cascade and never surfaces `inherit`.
         get colorBy(): ColorBy {
           return getConfResolved<ColorBy>(self, 'colorBy')
         },
@@ -2616,10 +2617,13 @@ export default function stateModelFactory(
               const currentType = self.colorBy.type
               if (mode === 'off') {
                 // Leaving pairs: pairing-only schemes no longer have meaning, so
-                // fall back to plain coloring — but preserve any explicit
-                // non-pairing choice (tag, methylation, base quality, ...).
+                // un-pin colorBy back to inherit — falling back to the
+                // session-wide color default, else the `normal` promotedBase.
+                // This cleanly undoes the enter-pairs pin rather than pinning
+                // `normal` over a default. Explicit non-pairing choices (tag,
+                // methylation, base quality, ...) are preserved by the gate.
                 if (PAIRING_COLOR_SCHEMES.has(currentType)) {
-                  self.configuration.setSlot('colorBy', { type: 'normal' })
+                  self.configuration.setSlot('colorBy', { type: 'inherit' })
                 }
               } else if (currentType === 'normal') {
                 // Entering pairs: nudge the plain default to the SV-signal
