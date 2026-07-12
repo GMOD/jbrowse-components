@@ -16,42 +16,14 @@ export interface SvgExportable {
 }
 
 /**
- * Off-screen export should never hang forever if a display's `svgReady` never
- * resolves (a fetch that never settles, or a display that omits its
- * `dataLoaded` / `svgReady` override). Past this bound we reject with a
- * diagnostic error — which surfaces as a failed export / `SVGErrorBox` — rather
- * than a silent infinite wait (invisible in headless jbrowse-img / CI).
- */
-const SVG_READY_TIMEOUT_MS = 60000
-
-/**
  * Off-screen renderers (SVG export, headless jbrowse-img) must wait until the
  * display reaches a terminal state before reading its data. That whole policy
  * lives in `svgReady`; this is the one shared way to await it, so renderers
- * never re-inline `data != null || error || …`.
+ * never re-inline `data != null || error || …`. No time bound: `svgReady` is a
+ * terminal state (data loaded, or error / too-large), so it resolves once the
+ * fetch it observes settles. If a throwing `svgReady` getter rejects the wait,
+ * that error propagates faithfully rather than being masked.
  */
-export async function awaitSvgReady(
-  model: Pick<SvgExportable, 'svgReady'>,
-  timeout = SVG_READY_TIMEOUT_MS,
-) {
-  try {
-    await when(() => model.svgReady, { timeout })
-  } catch (e) {
-    // `when` rejects with `WHEN_TIMEOUT` only on the timeout; if the `svgReady`
-    // getter itself throws (e.g. a view-derived read before init) that error
-    // rejects here too. Relabeling both as a timeout would report a real,
-    // instant failure as a 60s hang — actively misleading in headless
-    // jbrowse-img / CI where this message is the sole diagnostic. So keep the
-    // timeout copy for the timeout, and rethrow any other error faithfully.
-    if (e instanceof Error && e.message === 'WHEN_TIMEOUT') {
-      throw new Error(
-        `SVG export timed out after ${timeout}ms: the display never became ready ` +
-          `for export (svgReady stayed false). This usually means it never reached ` +
-          `a terminal state — a fetch that never resolves, or a display missing its ` +
-          `dataLoaded / svgReady override.`,
-        { cause: e },
-      )
-    }
-    throw e
-  }
+export async function awaitSvgReady(model: Pick<SvgExportable, 'svgReady'>) {
+  await when(() => model.svgReady)
 }
