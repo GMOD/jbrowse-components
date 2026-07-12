@@ -160,15 +160,26 @@ export function RenderLifecycleMixin() {
               if (b === undefined) {
                 return
               }
-              cbs.upload(b)
-              // Force the render autorun to re-fire after each upload.
-              // Needed when the render callback's observable dependencies
-              // stay identity-stable across an upload (e.g. renderState
-              // returning undefined before and after the first data
-              // arrives because autoscale hasn't resolved). Without this,
-              // first paint can be delayed until a user interaction
-              // shifts a render dep.
-              self.renderNow()
+              // A throw in the upload callback (malformed worker data, a bad
+              // buffer-packing edge case) is routed to `renderError` for the
+              // same reason as the render autorun below: an uncaught reaction
+              // error would skip `renderNow()`, never flip `canvasDrawn`, and
+              // strand the display on 'loading' forever with no retry. Setting
+              // `renderError` unmounts the canvas and disposes the backend, so
+              // this can't re-fire into a loop.
+              try {
+                cbs.upload(b)
+                // Force the render autorun to re-fire after each upload.
+                // Needed when the render callback's observable dependencies
+                // stay identity-stable across an upload (e.g. renderState
+                // returning undefined before and after the first data
+                // arrives because autoscale hasn't resolved). Without this,
+                // first paint can be delayed until a user interaction
+                // shifts a render dep.
+                self.renderNow()
+              } catch (e) {
+                self.setRenderError(e)
+              }
             },
             { name: 'RenderLifecycle:upload' },
           ),

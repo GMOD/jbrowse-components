@@ -161,6 +161,28 @@ test('a throw in the render callback sets renderError instead of escaping (no in
   expect(model.canvasDrawn).toBe(false)
 })
 
+test('a throw in the upload callback sets renderError instead of escaping (no infinite loading)', () => {
+  const model = TestModel.create()
+  const backend: FakeRenderingBackend = { uploads: [], renders: 0 }
+
+  expect(model.renderError).toBeUndefined()
+
+  const err = new Error('malformed upload data')
+  model.attachRenderingBackend<FakeRenderingBackend>(backend, {
+    upload: () => {
+      throw err
+    },
+    // upload never populated GPU buffers, so there is nothing to draw
+    render: () => false,
+  })
+
+  // The upload throw is caught and routed to renderError (driving the
+  // 'renderError' display phase) instead of escaping as an uncaught reaction
+  // error; canvasDrawn never flips.
+  expect(model.renderError).toBe(err)
+  expect(model.canvasDrawn).toBe(false)
+})
+
 test('canvasDrawn resets to false when directly cleared (clearAllRpcData contract)', () => {
   const model = TestModel.create()
   const backend: FakeRenderingBackend = { uploads: [], renders: 0 }

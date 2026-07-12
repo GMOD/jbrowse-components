@@ -193,6 +193,33 @@ test('backend swap (context-loss recovery) routes uploads to new backend', () =>
   expect(b.uploads.map(u => u.key).sort()).toEqual([0, 1])
 })
 
+test('a throw in encode/upload routes to renderError instead of escaping', () => {
+  const model = TestModel.create()
+  const { backend, uploads } = makeFakeRenderingBackend()
+  const data = observable.map<number, number>(undefined, { deep: false })
+
+  const err = new Error('bad region encode')
+  installPerRegionLifecycle(
+    model,
+    data,
+    backend,
+    () => {
+      throw err
+    },
+    () => false,
+  )
+
+  runInAction(() => {
+    data.set(0, 10)
+  })
+
+  // The per-key autorun's throw is caught and routed to renderError (the
+  // 'renderError' terminal phase) rather than escaping as an uncaught reaction
+  // error that would strand the display on 'loading'; nothing was uploaded.
+  expect(model.renderError).toBe(err)
+  expect(uploads).toHaveLength(0)
+})
+
 test('render callback receives the cached encoded map', () => {
   const model = TestModel.create()
   const { backend } = makeFakeRenderingBackend()

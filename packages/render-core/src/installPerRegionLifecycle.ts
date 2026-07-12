@@ -8,6 +8,7 @@ import type { ObservableMap } from 'mobx'
 export interface LifecycleHost extends IAnyStateTreeNode {
   attachRenderingBackend: <B>(b: B, cbs: RenderingBackendCallbacks<B>) => void
   renderNow: () => void
+  setRenderError: (error: unknown) => void
   currentRenderingBackend: unknown
 }
 
@@ -83,11 +84,20 @@ export function installPerRegionLifecycle<
               const data = rpcDataMap.get(key)
               const bCurrent = self.currentRenderingBackend as B | undefined
               if (data !== undefined && bCurrent !== undefined) {
-                const encoded = encode(data)
-                if (encoded !== undefined) {
-                  encodedRegions.set(key, encoded)
-                  bCurrent.uploadRegion(key, encoded)
-                  self.renderNow()
+                // A throw in `encode`/`uploadRegion` is routed to renderError
+                // (same rationale as RenderLifecycleMixin's upload/render
+                // autoruns): uncaught here it would strand the display on
+                // 'loading' with no retry. renderError unmounts the canvas and
+                // disposes the backend, so it can't loop.
+                try {
+                  const encoded = encode(data)
+                  if (encoded !== undefined) {
+                    encodedRegions.set(key, encoded)
+                    bCurrent.uploadRegion(key, encoded)
+                    self.renderNow()
+                  }
+                } catch (e) {
+                  self.setRenderError(e)
                 }
               }
             }),
