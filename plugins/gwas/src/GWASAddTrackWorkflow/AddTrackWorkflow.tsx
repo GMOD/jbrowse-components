@@ -14,6 +14,7 @@ import { observer } from 'mobx-react'
 
 import { locationName } from './ldAdapterConfig.ts'
 import { buildGwasTrackConfig, canSubmit } from './util.ts'
+import ScoreColumnFields from '../GWASAdapter/ScoreColumnFields.tsx'
 import { DEFAULT_SCORE_COLUMN } from '../GWASAdapter/configSchema.ts'
 
 import type { AbstractRootModel } from '@jbrowse/core/util'
@@ -45,6 +46,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
   const [gwasLocation, setGwasLocation] = useState<FileLocation>()
   const [gwasIndexLocation, setGwasIndexLocation] = useState<FileLocation>()
   const [scoreColumn, setScoreColumn] = useState(DEFAULT_SCORE_COLUMN)
+  const [scoreTransform, setScoreTransform] = useState('none')
   const [ldLocation, setLdLocation] = useState<FileLocation>()
   const [ldIndexLocation, setLdIndexLocation] = useState<FileLocation>()
   const [trackName, setTrackName] = useState(() => `GWAS${Date.now()}`)
@@ -67,6 +69,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           gwasLocation,
           gwasIndexLocation,
           scoreColumn,
+          scoreTransform,
           ldLocation,
           ldIndexLocation,
           displayId,
@@ -106,14 +109,11 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
             setGwasIndexLocation(loc)
           }}
         />
-        <TextField
-          label="Score column"
-          helperText="BED column to read as the Manhattan score (e.g. 'neg_log_pvalue', 'pvalue')"
-          value={scoreColumn}
-          onChange={e => {
-            setScoreColumn(e.target.value)
-          }}
-          fullWidth
+        <ScoreColumnFields
+          scoreColumn={scoreColumn}
+          setScoreColumn={setScoreColumn}
+          scoreTransform={scoreTransform}
+          setScoreTransform={setScoreTransform}
         />
       </div>
 

@@ -1,8 +1,20 @@
+import createJexlInstance from '@jbrowse/core/util/jexl'
+
 import { getScoreTransform } from './scoreTransforms.ts'
 
 test('none is identity (no transform returned)', () => {
   expect(getScoreTransform('none')).toBeUndefined()
   expect(getScoreTransform('')).toBeUndefined()
+})
+
+test('a jexl expression transforms the score column value', () => {
+  const jexl = createJexlInstance()
+  const t = getScoreTransform('jexl:score * 2 + 1', jexl)!
+  expect(t(3)).toBe(7)
+})
+
+test('a jexl expression without a jexl instance falls through (no transform)', () => {
+  expect(getScoreTransform('jexl:score * 2')).toBeUndefined()
 })
 
 test('negLog10 maps a raw p-value to -log10(p)', () => {

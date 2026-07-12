@@ -22,6 +22,7 @@ export default class GWASAdapter extends BedTabixAdapter {
   getFeatures(region: Region, opts?: BaseOptions) {
     const transform = getScoreTransform(
       readConfObject(this.config, 'scoreTransform'),
+      this.pluginManager?.jexl,
     )
     const features = super.getFeatures(region, opts)
     return transform

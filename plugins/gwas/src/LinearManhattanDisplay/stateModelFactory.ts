@@ -296,11 +296,17 @@ export function stateModelFactory(
        * single-region analysis, so "found in no loaded region" means missing.
        */
       get indexSnpMissing(): boolean {
-        const ldActive = self.colorBy === 'ld' && self.indexSnp !== undefined
+        let anyIndexFound = false
+        for (const d of self.rpcDataMap.values()) {
+          if (d.indexFound) {
+            anyIndexFound = true
+          }
+        }
         return (
-          ldActive &&
+          self.colorBy === 'ld' &&
+          self.indexSnp !== undefined &&
           self.rpcDataMap.size > 0 &&
-          !Array.from(self.rpcDataMap.values()).some(d => d.indexFound)
+          !anyIndexFound
         )
       },
       /**

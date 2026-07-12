@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 import { bedTabixConfigSchema } from '@jbrowse/plugin-bed'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -7,6 +6,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // Default -log10 p-value column, shared with the add-track UIs so the schema
 // default and the form pre-fill can't drift apart.
 export const DEFAULT_SCORE_COLUMN = 'neg_log_pvalue'
+
+// Native (fast-path) score-transform presets offered by the add-track UIs. The
+// `scoreTransform` slot also accepts an arbitrary `jexl:...` expression, so this
+// is the preset list, not the exhaustive domain.
+export const SCORE_TRANSFORMS = ['none', 'negLog10', 'negLog10FromLn'] as const
+export type ScoreTransform = (typeof SCORE_TRANSFORMS)[number]
 
 /**
  * #config GWASAdapter
@@ -30,16 +35,13 @@ const GWASAdapterConfigSchema = ConfigurationSchema(
      * #slot
      * transform applied to `scoreColumn` to produce the Manhattan -log10(p)
      * value: `none` (column is already -log10, e.g. Pan-UKBB neglog10_pval_*),
-     * `negLog10` (column is a raw p-value), or `negLog10FromLn` (column is a
-     * natural-log p-value, e.g. Pan-UKBB Hail `ln P`)
+     * `negLog10` (column is a raw p-value), `negLog10FromLn` (column is a
+     * natural-log p-value, e.g. Pan-UKBB Hail `ln P`), or a `jexl:...`
+     * expression of `score` for anything else (e.g. `jexl:-log10(score)`) —
+     * arbitrary but slower than the native modes, so opt-in only
      */
     scoreTransform: {
-      type: 'stringEnum',
-      model: types.enumeration('GwasScoreTransform', [
-        'none',
-        'negLog10',
-        'negLog10FromLn',
-      ]),
+      type: 'string',
       description: 'transform applied to the score column',
       defaultValue: 'none',
     },

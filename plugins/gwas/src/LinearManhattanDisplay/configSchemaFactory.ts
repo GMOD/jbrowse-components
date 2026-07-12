@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
 
+import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 import { DEFAULT_MANHATTAN_COLOR } from '../ManhattanRPC/rpcTypes.ts'
 
 // Reuses LinearWiggleDisplay's schema, but overrides `color` so we don't
@@ -87,7 +88,7 @@ export function configSchemaFactory() {
        */
       scatterPointSize: {
         type: 'number',
-        defaultValue: 4,
+        defaultValue: DEFAULT_POINT_DIAMETER_PX,
         description: 'Diameter in px of Manhattan points',
         promotable: true,
       },

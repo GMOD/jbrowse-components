@@ -1,3 +1,7 @@
+import { isJexl, stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
+
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+
 // Native per-value transforms mapping a GWAS feature's raw score column into
 // the Manhattan plot y value (-log10 p). Deliberately native, not jexl:
 // benchmarked at ~0.34M jexl evals/s vs ~390M/s native, and millions of SNPs
@@ -15,6 +19,15 @@ const transforms: Record<string, (score: number) => number> = {
   negLog10FromLn: lnp => -lnp / Math.LN10,
 }
 
-export function getScoreTransform(mode: string) {
+// Resolves the `scoreTransform` config into a per-value function, or undefined
+// for the `none` fast path (adapter skips wrapping the stream entirely). A
+// `jexl:...` expression is an arbitrary escape hatch — slower than the native
+// modes, so opt-in only — evaluated with the raw column value bound to `score`
+// (e.g. `jexl:-log10(score)`, `jexl:score/log(10)`).
+export function getScoreTransform(mode: string, jexl?: JexlInstance) {
+  if (jexl && isJexl(mode)) {
+    const expr = stringToJexlExpression(mode, jexl)
+    return (score: number) => Number(expr.eval({ score }))
+  }
   return transforms[mode]
 }

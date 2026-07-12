@@ -25,6 +25,7 @@ export function buildGwasTrackConfig({
   gwasLocation,
   gwasIndexLocation,
   scoreColumn,
+  scoreTransform,
   ldLocation,
   ldIndexLocation,
   displayId,
@@ -35,6 +36,7 @@ export function buildGwasTrackConfig({
   gwasLocation: FileLocation
   gwasIndexLocation: FileLocation | undefined
   scoreColumn: string
+  scoreTransform: string
   ldLocation: FileLocation | undefined
   ldIndexLocation: FileLocation | undefined
   displayId: string
@@ -52,6 +54,10 @@ export function buildGwasTrackConfig({
         location: gwasIndexLocation ?? deriveTbiLocation(gwasLocation),
       },
       scoreColumn,
+      // 'none' is the schema default, so omit it to keep the genome-wide
+      // (already -log10) adapter config minimal; only a raw/ln p-value column
+      // needs the transform baked in.
+      ...(scoreTransform === 'none' ? {} : { scoreTransform }),
     },
     ...(ldLocation
       ? {
