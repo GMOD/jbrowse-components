@@ -124,7 +124,9 @@ type SessionStateModel = ReturnType<typeof sessionModelFactory>
 // and each capability contract this embedded view relies on. AbstractSessionModel
 // marks these capabilities optional, so it can't catch a member drifting out of
 // sync with the SessionWith* interface plugins narrow to — these do.
-export type _AssertSessionModel = AssertSessionModel<Instance<SessionStateModel>>
+export type _AssertSessionModel = AssertSessionModel<
+  Instance<SessionStateModel>
+>
 export type _AssertDrawerWidgets = AssertExtends<
   Instance<SessionStateModel>,
   SessionWithDrawerWidgets

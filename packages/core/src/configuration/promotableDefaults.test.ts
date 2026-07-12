@@ -80,9 +80,9 @@ function createDisplays(
     .model('TestSession', {
       rpcManager: types.frozen({}),
       configuration: types.frozen({}),
-      displayTypeDefaults: types.frozen<Record<string, Record<string, unknown>>>(
-        {},
-      ),
+      displayTypeDefaults: types.frozen<
+        Record<string, Record<string, unknown>>
+      >({}),
       displays: types.array(Display),
     })
     .views(self => ({
@@ -165,8 +165,9 @@ describe('apply a promoted default to open tracks', () => {
       .model('TestSession', {
         rpcManager: types.frozen({}),
         configuration: types.frozen({}),
-        displayTypeDefaults:
-          types.frozen<Record<string, Record<string, unknown>>>({}),
+        displayTypeDefaults: types.frozen<
+          Record<string, Record<string, unknown>>
+        >({}),
         views: types.array(View),
       })
       .views(self => ({
@@ -175,7 +176,11 @@ describe('apply a promoted default to open tracks', () => {
         },
       }))
       .actions(self => ({
-        setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
+        setDisplayTypeDefault(
+          displayType: string,
+          slot: string,
+          value: unknown,
+        ) {
           const forType = { ...self.displayTypeDefaults[displayType] }
           if (value === undefined) {
             delete forType[slot]

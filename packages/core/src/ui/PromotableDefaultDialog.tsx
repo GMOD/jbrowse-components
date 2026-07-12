@@ -1,6 +1,11 @@
 import { useState } from 'react'
 
-import { Checkbox, FormControlLabel, FormGroup, Typography } from '@mui/material'
+import {
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  Typography,
+} from '@mui/material'
 
 import SubmitDialog from './SubmitDialog.tsx'
 import {

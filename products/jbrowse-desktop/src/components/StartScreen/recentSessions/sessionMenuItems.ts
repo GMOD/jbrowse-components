@@ -81,7 +81,9 @@ export function sessionMenuItems({
       label: 'Show in folder',
       icon: FolderOpenIcon,
       onClick: () => {
-        ipcRenderer.invoke('showItemInFolder', session.path).catch(console.error)
+        ipcRenderer
+          .invoke('showItemInFolder', session.path)
+          .catch(console.error)
       },
     },
   ]

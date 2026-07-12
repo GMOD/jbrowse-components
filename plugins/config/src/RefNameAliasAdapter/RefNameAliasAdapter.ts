@@ -41,7 +41,9 @@ export default class RefNameAliasAdapter
         // a blank refName column (short/ragged row, leading tab) would map every
         // alias to an empty canonical name in buildRefNameMaps; drop such rows
         const refName = cols[headerCol]?.trim()
-        return refName ? [{ refName, aliases: cols.filter(f => !!f.trim()) }] : []
+        return refName
+          ? [{ refName, aliases: cols.filter(f => !!f.trim()) }]
+          : []
       })
   }
 }

@@ -176,7 +176,9 @@ function resolveSubfeature(
   feature: FlatbushItem,
 ): SubfeatureInfo | null {
   if (indexes.subfeature) {
-    const idx = topmostMatch(indexes.subfeature.search(bpPos, yPos, bpPos, yPos))
+    const idx = topmostMatch(
+      indexes.subfeature.search(bpPos, yPos, bpPos, yPos),
+    )
     if (idx !== undefined) {
       const candidate = data.subfeatureInfos[idx]!
       if (candidate.parentFeatureId === feature.featureId) {
@@ -228,7 +230,13 @@ export function performMultiRegionHitDetection(
               // of two same-row features an ungated subfeature could pair with
               // the other feature — showing its isoform tooltip while select
               // acts on this one.
-              subfeature: resolveSubfeature(data, indexes, bpPos, yPos, feature),
+              subfeature: resolveSubfeature(
+                data,
+                indexes,
+                bpPos,
+                yPos,
+                feature,
+              ),
               peptide: findPeptideAt(data, bpPos, yPos),
               displayedRegionIndex: vr.displayedRegionIndex,
             }

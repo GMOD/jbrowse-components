@@ -37,8 +37,9 @@ function createSession(displayConfigsPerView: Record<string, unknown>[][]) {
     .model('TestSession', {
       rpcManager: types.frozen({}),
       configuration: types.frozen({}),
-      displayTypeDefaults:
-        types.frozen<Record<string, Record<string, unknown>>>({}),
+      displayTypeDefaults: types.frozen<
+        Record<string, Record<string, unknown>>
+      >({}),
       views: types.array(View),
     })
     .views(self => ({
@@ -101,13 +102,18 @@ describe('PromotableDefaultDialog', () => {
     fireEvent.click(getByLabelText(/Apply to future tracks/))
     fireEvent.click(getByText('Submit'))
 
-    expect(session.getDisplayTypeDefault('TestDisplay', 'customHeight')).toBe(10)
+    expect(session.getDisplayTypeDefault('TestDisplay', 'customHeight')).toBe(
+      10,
+    )
     expect(handleClose).toHaveBeenCalledTimes(1)
   })
 
   it('names the differing open-track count and applies to them on submit', () => {
     // self is 10; a second open track pinned to 20 differs from the promoted 10
-    const session = createSession([[{ customHeight: 10 }], [{ customHeight: 20 }]])
+    const session = createSession([
+      [{ customHeight: 10 }],
+      [{ customHeight: 20 }],
+    ])
     const other = session.views[1]!.tracks[0]!.displays[0]!
     const { getByLabelText, getByText } = renderDialog(session, 10)
 
@@ -122,8 +128,8 @@ describe('PromotableDefaultDialog', () => {
   it('disables the open-tracks option when nothing differs', () => {
     const session = createSession([[{ customHeight: 10 }]])
     const { getByLabelText } = renderDialog(session, 10)
-    expect(
-      (getByLabelText(/already match/) as HTMLInputElement).disabled,
-    ).toBe(true)
+    expect((getByLabelText(/already match/) as HTMLInputElement).disabled).toBe(
+      true,
+    )
   })
 })

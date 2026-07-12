@@ -28,7 +28,9 @@ export function promotableToggleItem({
     onClick: () => {
       onToggle()
     },
-    endAdornment: <DefaultForAllAdornment label={label} control={sessionDefault} />,
+    endAdornment: (
+      <DefaultForAllAdornment label={label} control={sessionDefault} />
+    ),
   }
 }
 

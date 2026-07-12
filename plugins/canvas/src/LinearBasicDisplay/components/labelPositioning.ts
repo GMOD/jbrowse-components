@@ -38,9 +38,7 @@ function computeLabelLeftPx(textWidth: number, bounds: FeatureBoundsPx) {
   const fitsInFeature = textWidth <= featureRightPx - featureLeftPx
   const visibleStart = Math.max(screenStartPx, featureLeftPx, 0)
   const rightEdgeLimit = featureRightPx - textWidth
-  return fitsInFeature
-    ? Math.min(visibleStart, rightEdgeLimit)
-    : featureLeftPx
+  return fitsInFeature ? Math.min(visibleStart, rightEdgeLimit) : featureLeftPx
 }
 
 // Places a label under its feature. The vertical position stacks name over
