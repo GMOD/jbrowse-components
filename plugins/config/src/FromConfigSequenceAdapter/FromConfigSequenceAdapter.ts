@@ -1,7 +1,5 @@
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import FromConfigAdapter, {
   mergeFeaturesToRegions,
@@ -21,28 +19,25 @@ export default class FromConfigSequenceAdapter
    * @returns Observable of Feature objects in the region
    */
   getFeatures(region: NoAssemblyRegion) {
-    return ObservableCreate<Feature>(async observer => {
-      const feats = await firstValueFrom(
-        super.getFeatures(region).pipe(toArray()),
-      )
-      const feat = feats[0]
-      if (!feat) {
-        observer.complete()
-        return
+    const { refName, start, end } = region
+    return ObservableCreate<Feature>(observer => {
+      const feats = this.features.get(refName) ?? []
+      const feat = feats.find(f => f.get('end') > start && f.get('start') < end)
+      if (feat) {
+        const featStart = feat.get('start')
+        observer.next(
+          new SimpleFeature({
+            ...feat.toJSON(),
+            uniqueId: `${feat.id()}:${start}-${end}`,
+            start,
+            end,
+            seq: (feat.get('seq') as string).slice(
+              Math.max(start - featStart, 0),
+              Math.max(end - featStart, 0),
+            ),
+          }),
+        )
       }
-      observer.next(
-        new SimpleFeature({
-          ...feat.toJSON(),
-          uniqueId: `${feat.id()}:${region.start}-${region.end}`,
-          end: region.end,
-          start: region.start,
-          seq: (feat.get('seq') as string).slice(
-            Math.max(region.start - feat.get('start'), 0),
-            Math.max(region.end - feat.get('start'), 0),
-          ),
-        }),
-      )
-
       observer.complete()
     })
   }
