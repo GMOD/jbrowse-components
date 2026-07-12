@@ -272,8 +272,8 @@ visibleRegions changes → FetchVisibleRegions (600ms) → fetchNeeded(needed)
 ## See also
 
 - [Architecture spec: data fetching pipeline](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#data-fetching-pipeline)
-  - the canonical reference: the byte gate, imperative vs. derived
-    `regionTooLarge`, and the `rpcProps()` loop trap
+  - the byte gate, derived `regionTooLarge`, and the `rpcProps()` loop trap in
+    depth
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
   - the rendering side that consumes this fetched data
 - [RPC and worker system](/docs/developer_guides/rpc_workers) - implementing the

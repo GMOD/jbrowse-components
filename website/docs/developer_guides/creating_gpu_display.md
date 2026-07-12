@@ -15,15 +15,13 @@ which uses the shader-free Canvas2D path. The two share the same model, fetch
 chain, and lifecycle; only the renderer differs, so moving up later is a small
 change.
 
-This guide is the practitioner's walkthrough; the canonical source of truth for
-the lifecycle, mixins, and invariants is the
-[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md),
-whose
+The
+[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
+is the source of truth for the lifecycle, mixins, and invariants; its
 [GPU rendering architecture](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#gpu-rendering-architecture)
 and
 [Adding a new GPU display type](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#adding-a-new-gpu-display-type)
-sections mirror the steps below. Where this guide and the spec disagree, the
-spec wins.
+sections mirror the steps below.
 
 :::
 
@@ -416,40 +414,33 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
 `installPerRegionLifecycle` wraps the lower-level
 [`attachRenderingBackend`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#the-core-contract)
-contract (one upload autorun, one render autorun) and gives each region key its
-own upload autorun, avoiding the O(N²) re-upload when regions stream in one at a
-time. Only `LinearBasicDisplay` and alignments — which lay features into Y-rows
-_across_ regions — need the whole-map `laidOutDataMap` form instead; a display
-with independent regions should not reach for it.
+contract (one upload autorun, one render autorun), giving each region key its
+own upload autorun to avoid O(N²) re-uploads as regions stream in. Only displays
+that lay features into Y-rows _across_ regions (`LinearBasicDisplay`,
+alignments) need the whole-map `laidOutDataMap` form instead.
 
-The model above omits `fetchNeeded` for brevity — add it exactly as on the
-Canvas2D path
-([Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model)):
-it calls `fetchEachRegion` and writes each region's result through `setRpcData`.
-The fetch wiring is identical on both paths and is documented in full in
-[the data fetching pipeline](/docs/developer_guides/data_fetching).
+The model omits `fetchNeeded` for brevity; add it exactly as on the Canvas2D
+path
+([Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model))
+— it calls `fetchEachRegion` and writes each region through `setRpcData`. Full
+detail: [the data fetching pipeline](/docs/developer_guides/data_fetching).
 
-`rpcProps()` is watched by the `SettingsInvalidate` autorun, so any change
-triggers a full re-fetch from workers. Don't put frequently-changing values
-(scroll position, zoom) here; put those in `renderState` instead. When settings
-drive a main-thread buffer _re-encode_ that needs no refetch (e.g. a color or
-scale change on already-fetched data), split those out into a `gpuProps()`
-method instead of `rpcProps()` — see the
-[`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern)
-and `adr-016-bicolorpivot-stays-in-worker.md` for the trade-off.
+Any change to `rpcProps()` triggers a full worker re-fetch (via
+`SettingsInvalidate`), so keep frequently-changing values (scroll, zoom) in
+`renderState`, not here. Settings that drive a main-thread buffer _re-encode_
+with no refetch (a color or scale change) go in a separate `gpuProps()` method —
+see the
+[`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern).
 
 ## Step 7: React component
 
 Render the canvas through the shared `DisplayChrome` — the wrapper that supplies
-a display's _chrome_ (the UI framing around your canvas: loading scrim, error
-bar, "region too large" banner, in the same sense as "browser chrome"). It is
-the **only** place `useRenderingBackend` is called — a display must not call the
-hook itself. This is a hard invariant of the
-[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#the-api):
-because the chrome owns the backend hook, it also owns every terminal state
-(loading overlay, render-error and region-too-large banners) and WebGL/WebGPU
-context-loss recovery in one place. `DisplayChrome` takes a render-prop child so
-it's agnostic to how many canvases a display draws.
+a display's _chrome_: the UI framing around your canvas (loading scrim, error
+bar, "region too large" banner, in the sense of "browser chrome") plus
+WebGL/WebGPU context-loss recovery. It is the **only** place
+`useRenderingBackend` is called — a display must not call the hook itself
+([a hard invariant](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#the-api)).
+Its render-prop child makes it agnostic to how many canvases a display draws.
 
 ```tsx
 // components/MyComponent.tsx
@@ -524,8 +515,7 @@ section of the architecture spec is the full quick-scan list.
 ## See also
 
 - [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
-  - the canonical reference for the render lifecycle, mixins, upload patterns,
-    HAL, and shaders that this guide walks through
+  - the canonical spec this guide walks through
 
 - [Data fetching pipeline](/docs/developer_guides/data_fetching) - the
   `MultiRegionDisplayMixin` autorun chain, `rpcProps`, and `renderState`

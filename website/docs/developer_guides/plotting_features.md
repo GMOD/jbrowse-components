@@ -55,10 +55,10 @@ is the fuller list):
 
 The simplest complete in-tree reference is
 `plugins/sequence/src/LinearReferenceSequenceDisplay/`, a Canvas2D-only display
-whose renderer is ~30 lines. This guide mirrors its shape. The
+whose renderer is ~30 lines; this guide mirrors its shape. The
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
-is the canonical reference for the lifecycle and mixins below — in particular
-[Canvas2D is the floor, GPU is the optional accelerator](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator).
+is the canonical reference for the lifecycle below (see
+[Canvas2D is the floor, GPU is the optional accelerator](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator)).
 
 ## Files to create
 
@@ -504,8 +504,7 @@ you add a GPU renderer and swap `createCanvas2DBackend` for
 ## See also
 
 - [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
-  - the canonical reference for the render lifecycle, display stacks, and upload
-    patterns this guide walks through
+  - the canonical spec this guide walks through
 - [Data fetching pipeline](/docs/developer_guides/data_fetching) - the autorun
   chain, `rpcProps`, cancellation, and `regionTooLarge` behind `fetchNeeded`
 - [RPC and worker system](/docs/developer_guides/rpc_workers) - implementing the

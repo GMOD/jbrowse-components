@@ -48,8 +48,7 @@ track types should use the GPU path above rather than emitting SVG per feature.
 ## See also
 
 - [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
-  - the canonical reference for the render lifecycle, display stacks, upload
-    patterns, HAL, and shaders
+  - the canonical spec behind this page
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
 - [Data fetching pipeline](/docs/developer_guides/data_fetching) - the
   worker-fetch side that feeds the renderer

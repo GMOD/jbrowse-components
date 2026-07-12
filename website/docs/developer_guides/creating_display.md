@@ -89,8 +89,7 @@ In-tree references:
 ## See also
 
 - [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
-  - the canonical reference for display stacks, the render lifecycle, and fetch
-    pipeline
+  - the canonical spec behind this page
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
   - for large or dense datasets
 - [Data fetching pipeline](/docs/developer_guides/data_fetching) - how a display

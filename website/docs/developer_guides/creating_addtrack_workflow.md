@@ -10,7 +10,7 @@ example: it produces a textbox where you can paste a list of files.
 
 A simple addition to the add track workflow:
 
-```js
+```ts
 // plugins/wiggle/src/MultiWiggleAddTrackWorkflow/index.ts
 
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -35,7 +35,7 @@ export default (pm: PluginManager) => {
 
 ...and ensure you install this component into your larger plugin:
 
-```js
+```ts
 // plugins/wiggle/src/index.ts
 
 import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow'

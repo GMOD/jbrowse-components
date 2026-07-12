@@ -16,7 +16,7 @@ remote resource, for example importing a UCSC Track Hub.
 Connections are a pluggable element, installed with the plugin manager via
 `addConnectionType`:
 
-```js
+```ts
 pluginManager.addConnectionType(
   () =>
     new ConnectionType({
@@ -63,7 +63,7 @@ The state model composes `BaseConnectionModelFactory` and implements
 `connect()`, which reads the connection's configuration, fetches the data, and
 adds the resulting tracks:
 
-```js
+```ts
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -71,7 +71,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 import configSchema from './configSchema'
 import { fetchData, transformData } from './myStuff'
 
-export default function modelFactory(pluginManager) {
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+export default function modelFactory(pluginManager: PluginManager) {
   return types
     .compose(
       'MyConnection',
