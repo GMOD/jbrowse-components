@@ -4,14 +4,12 @@ import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import {
   applyPromotableDefault,
-  areSlotsAtSessionDefault,
   clearPinsToInherit,
   getConfResolved,
   isPromotableDefault,
   isSlotPinned,
   makeCurrentValueSessionDefaultControl,
   resolvePromotableConfigSnapshot,
-  setSlotsSessionDefault,
   tracksDifferingFrom,
 } from './promotableDefaults.ts'
 
@@ -312,6 +310,12 @@ describe('promotable maybeNumber slot', () => {
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 'tall')
     expect(getConfResolved(display, 'customHeight')).toBeUndefined()
   })
+
+  test('ignores a non-finite (NaN) session default rather than passing it on', () => {
+    const { session, display } = createDisplay(configSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'customHeight', NaN)
+    expect(getConfResolved(display, 'customHeight')).toBeUndefined()
+  })
 })
 
 // A promotable `maybeBoolean` slot: its `undefined` default is the "unset —
@@ -358,15 +362,19 @@ describe('promotable maybeBoolean slot', () => {
     expect(getConfResolved(display, 'chevrons')).toBe(false)
   })
 
-  test('setSlotsSessionDefault promotes and clears the current resolved value', () => {
+  test('promote-current control stores the symmetric false and clears it', () => {
     const { session, display } = createDisplay(configSchema, {
       chevrons: false,
     })
-    setSlotsSessionDefault(display, ['chevrons'], true)
+    const control = makeCurrentValueSessionDefaultControl(display, ['chevrons'])
+    expect(control.active).toBe(false)
+    control.toggle()
     expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(false)
-    expect(areSlotsAtSessionDefault(display, ['chevrons'])).toBe(true)
+    expect(
+      makeCurrentValueSessionDefaultControl(display, ['chevrons']).active,
+    ).toBe(true)
 
-    setSlotsSessionDefault(display, ['chevrons'], false)
+    makeCurrentValueSessionDefaultControl(display, ['chevrons']).toggle()
     expect(
       session.getDisplayTypeDefault('TestDisplay', 'chevrons'),
     ).toBeUndefined()
@@ -429,28 +437,32 @@ describe('promotable frozen slot structural equality', () => {
 
   test('recognizes a pinned value as the session default regardless of key order', () => {
     const { session, display } = createDisplay(configSchema, {
-      // keys in the opposite order from how the default will be promoted below
+      // keys in the opposite order from how the default is promoted below
       colorBy: { tag: 'XT', type: 'tag' },
     })
     session.setDisplayTypeDefault('TestDisplay', 'colorBy', {
       type: 'tag',
       tag: 'XT',
     })
-    expect(areSlotsAtSessionDefault(display, ['colorBy'])).toBe(true)
+    expect(
+      makeCurrentValueSessionDefaultControl(display, ['colorBy']).active,
+    ).toBe(true)
   })
 
-  test('setSlotsSessionDefault promotes and clears a structurally-equal value', () => {
+  test('promote-current control stores and clears a structurally-equal value', () => {
     const { session, display } = createDisplay(configSchema, {
       colorBy: { tag: 'XT', type: 'tag' },
     })
-    setSlotsSessionDefault(display, ['colorBy'], true)
+    makeCurrentValueSessionDefaultControl(display, ['colorBy']).toggle()
     expect(session.getDisplayTypeDefault('TestDisplay', 'colorBy')).toEqual({
       tag: 'XT',
       type: 'tag',
     })
-    expect(areSlotsAtSessionDefault(display, ['colorBy'])).toBe(true)
+    expect(
+      makeCurrentValueSessionDefaultControl(display, ['colorBy']).active,
+    ).toBe(true)
 
-    setSlotsSessionDefault(display, ['colorBy'], false)
+    makeCurrentValueSessionDefaultControl(display, ['colorBy']).toggle()
     expect(
       session.getDisplayTypeDefault('TestDisplay', 'colorBy'),
     ).toBeUndefined()

@@ -90,15 +90,23 @@ function isConcreteValue(def: ConfigSlotDefinition, value: unknown): boolean {
 // a new promotable slot type needs no change here.
 function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
   const { type, model, defaultValue } = def
-  return type === 'stringEnum' && model
-    ? typeof value === 'string' && getEnumerationValues(model).includes(value)
-    : // `maybeNumber`/`maybeBoolean` default to `undefined` (their "unset"
-      // state — see ConfigSlot), so their shape is keyed on the declared `type`,
-      // not `defaultValue` — `typeof value === typeof undefined` would reject
-      // every real value
-      type === 'maybeNumber'
-      ? typeof value === 'number'
-      : type === 'maybeBoolean'
+  return type === 'stringEnum'
+    ? // a `stringEnum` with no `model` can't be membership-checked; reject
+      // rather than fall through to the primitive branch, which would admit
+      // any string
+      !!model &&
+        typeof value === 'string' &&
+        getEnumerationValues(model).includes(value)
+    : // numeric slots must be a *finite* number: `typeof value === 'number'`
+      // (or the primitive fallback below) would admit `NaN`/`±Infinity`, which
+      // no slot legitimately holds. `maybeNumber` is grouped here — its
+      // `undefined` default can't key the shape (`typeof value === typeof
+      // undefined` rejects every real value), so it's matched on `type`.
+      type === 'maybeNumber' || type === 'number' || type === 'integer'
+      ? Number.isFinite(value)
+      : // `maybeBoolean` likewise keys on `type`: its `undefined` default can't
+        // key the shape
+        type === 'maybeBoolean'
         ? typeof value === 'boolean'
         : typeof defaultValue === 'object' && defaultValue !== null
           ? // object/array slot (e.g. `colorBy`): match null-ness and array-ness
@@ -186,78 +194,6 @@ export function resolvePromotableConfigSnapshot(
   return snap
 }
 
-/**
- * true when every listed slot's resolved value already equals its session-wide
- * promoted default. Module-internal — backs `makeCurrentValueSessionDefaultControl`.
- */
-export function areSlotsAtSessionDefault(
-  self: PromotableDisplay,
-  slots: string[],
-): boolean {
-  return slots.every(slot => {
-    const { promoted, value } = resolveSlot(self, slot)
-    return promoted !== undefined && deepEqual(value, promoted)
-  })
-}
-
-/**
- * Explicit setter for a group of slots' session-wide default: `promote` stores
- * each slot's current resolved value as the default for this display type;
- * `!promote` clears it so sibling tracks fall back to their own config. The
- * caller decides direction — pass `!areSlotsAtSessionDefault(...)` to toggle at
- * the point of use. Grouping (e.g. featureHeight + featureSpacing) keeps a
- * multi-slot setting behind one "make default" item. Module-internal — backs
- * `makeCurrentValueSessionDefaultControl`.
- */
-export function setSlotsSessionDefault(
-  self: PromotableDisplay,
-  slots: string[],
-  promote: boolean,
-): void {
-  const session = getSession(self)
-  for (const slot of slots) {
-    session.setDisplayTypeDefault?.(
-      self.type,
-      slot,
-      promote ? getConfResolved(self, slot) : undefined,
-    )
-  }
-}
-
-/**
- * Whether a *specific* value is the session-wide promoted default for this slot,
- * independent of the track's current value. Backs the always-visible per-value
- * "make this the default" controls (`makeSessionDefaultControl` /
- * `makeSlotsValueSessionDefaultControl`), whose meaning is "promote this
- * on-value" rather than the value-dependent `areSlotsAtSessionDefault` used by
- * "promote whatever is current" controls. Module-internal.
- */
-export function isSlotValueSessionDefault(
-  self: PromotableDisplay,
-  slot: string,
-  value: unknown,
-): boolean {
-  return deepEqual(resolveSlot(self, slot).promoted, value)
-}
-
-/**
- * Promote a specific value as the session-wide default for this slot (`on`), or
- * clear the default (`!on`). Pair with `isSlotValueSessionDefault`.
- * Module-internal — backs the per-value `make*Control` factories.
- */
-export function setSlotValueSessionDefault(
-  self: PromotableDisplay,
-  slot: string,
-  value: unknown,
-  on: boolean,
-): void {
-  getSession(self).setDisplayTypeDefault?.(
-    self.type,
-    slot,
-    on ? value : undefined,
-  )
-}
-
 /** one slot value a promotable-default control promotes */
 export interface PromotableEntry {
   slot: string
@@ -336,7 +272,7 @@ export function isPromotableDefault(
   entries: PromotableEntry[],
 ): boolean {
   return entries.every(({ slot, value }) =>
-    isSlotValueSessionDefault(self, slot, value),
+    deepEqual(resolveSlot(self, slot).promoted, value),
   )
 }
 
@@ -351,8 +287,9 @@ export function setPromotableDefault(
   entries: PromotableEntry[],
   on: boolean,
 ): void {
+  const session = getSession(self)
   for (const { slot, value } of entries) {
-    setSlotValueSessionDefault(self, slot, value, on)
+    session.setDisplayTypeDefault?.(self.type, slot, on ? value : undefined)
   }
 }
 
@@ -405,9 +342,16 @@ export function applyPromotableDefault(
   }
 }
 
-// Shared control builder: `active` reflects whether this exact value combination
-// is the current default; `toggle` flips it (set/clear, non-destructive).
-function makePromotableControl(
+/**
+ * #api core/configuration
+ * Per-value control over a *group* of slots: "make this exact combination of
+ * slot values the session default". `active` reflects whether this exact
+ * combination is the current default; `toggle` flips it (set/clear,
+ * non-destructive). Each row of a preset radio group (e.g. a feature-height
+ * preset = height + spacing + mode) gets its own independent control. The base
+ * builder the single-value / promote-current wrappers below delegate to.
+ */
+export function makeSlotsValueSessionDefaultControl(
   self: PromotableDisplay,
   entries: PromotableEntry[],
 ): SessionDefaultControl {
@@ -434,7 +378,7 @@ export function makeSessionDefaultControl(
   slot: string,
   onValue: unknown,
 ): SessionDefaultControl {
-  return makePromotableControl(self, [{ slot, value: onValue }])
+  return makeSlotsValueSessionDefaultControl(self, [{ slot, value: onValue }])
 }
 
 /**
@@ -448,25 +392,10 @@ export function makeCurrentValueSessionDefaultControl(
   self: PromotableDisplay,
   slots: string[],
 ): SessionDefaultControl {
-  return makePromotableControl(
+  return makeSlotsValueSessionDefaultControl(
     self,
     slots.map(slot => ({ slot, value: getConfResolved(self, slot) })),
   )
-}
-
-/**
- * #api core/configuration
- * Per-value control over a *group* of slots: "make this exact combination of
- * slot values the session default". Like `makeSessionDefaultControl` but for a
- * multi-slot value (e.g. a feature-height preset = height + spacing + mode), so
- * each row of a preset radio group gets its own independent control whose
- * `active` reflects that specific combination being the current default.
- */
-export function makeSlotsValueSessionDefaultControl(
-  self: PromotableDisplay,
-  entries: PromotableEntry[],
-): SessionDefaultControl {
-  return makePromotableControl(self, entries)
 }
 
 /**
