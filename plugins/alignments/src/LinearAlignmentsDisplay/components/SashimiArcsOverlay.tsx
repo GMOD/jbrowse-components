@@ -6,7 +6,11 @@ import { observer } from 'mobx-react'
 
 import SashimiArcLabel from './SashimiArcLabel.tsx'
 import { openSashimiWidget } from './detailWidgets.ts'
-import { computeSashimiArcsFromModel, sashimiArcKey } from './sashimiArcs.ts'
+import {
+  computeSashimiArcsFromModel,
+  sashimiArcKey,
+  sashimiSelectionKey,
+} from './sashimiArcs.ts'
 import { bandScreenTop } from './sectionScreen.ts'
 import { formatSashimiTooltip } from './tooltipUtils.ts'
 
@@ -27,6 +31,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 const SashimiSubBand = observer(function SashimiSubBand({
   model,
   arcs,
+  groupKey,
   screenTop,
   height,
   width,
@@ -36,6 +41,7 @@ const SashimiSubBand = observer(function SashimiSubBand({
 }: {
   model: LinearAlignmentsDisplayModel
   arcs: SashimiArc[]
+  groupKey: string
   screenTop: number
   height: number
   width: number
@@ -61,7 +67,8 @@ const SashimiSubBand = observer(function SashimiSubBand({
     >
       {arcs.map(arc => {
         const arcKey = sashimiArcKey(arc)
-        const isSelected = arcKey === selectedArcKey
+        const selKey = sashimiSelectionKey(groupKey, arc)
+        const isSelected = selKey === selectedArcKey
         const wide = isSelected || arcKey === hoveredArcKey
         return (
           <g key={arcKey}>
@@ -88,7 +95,7 @@ const SashimiSubBand = observer(function SashimiSubBand({
                 model.clearMouseoverState()
               }}
               onClick={() => {
-                onSelect(isSelected ? null : arcKey)
+                onSelect(isSelected ? null : selKey)
                 openSashimiWidget(model, arc)
               }}
             />
@@ -111,6 +118,7 @@ const SashimiSubBand = observer(function SashimiSubBand({
 const SashimiBand = observer(function SashimiBand({
   model,
   view,
+  groupKey,
   rpcDataMap,
   coverageScreenTop,
   sashimiScreenTop,
@@ -119,6 +127,7 @@ const SashimiBand = observer(function SashimiBand({
 }: {
   model: LinearAlignmentsDisplayModel
   view: LinearGenomeViewModel
+  groupKey: string
   rpcDataMap: ReadonlyMap<number, PileupDataResult>
   coverageScreenTop: number
   sashimiScreenTop: number
@@ -131,6 +140,7 @@ const SashimiBand = observer(function SashimiBand({
       <SashimiSubBand
         model={model}
         arcs={arcs.filter(a => a.side === 'up')}
+        groupKey={groupKey}
         screenTop={coverageScreenTop}
         height={model.coverageHeight - YSCALEBAR_LABEL_OFFSET}
         width={view.width}
@@ -141,6 +151,7 @@ const SashimiBand = observer(function SashimiBand({
       <SashimiSubBand
         model={model}
         arcs={arcs.filter(a => a.side === 'down')}
+        groupKey={groupKey}
         screenTop={sashimiScreenTop}
         height={model.sashimiArcsHeight}
         width={view.width}
@@ -173,6 +184,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
           key={section.groupKey}
           model={model}
           view={view}
+          groupKey={section.groupKey}
           rpcDataMap={section.rpcDataMap}
           coverageScreenTop={bandScreenTop(section.coverageOverlayTop, scroll)}
           sashimiScreenTop={bandScreenTop(section.sashimiBandTop, scroll)}

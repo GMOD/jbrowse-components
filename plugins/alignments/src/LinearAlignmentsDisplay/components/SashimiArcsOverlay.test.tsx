@@ -1,4 +1,4 @@
-import { sashimiArcKey } from './sashimiArcs.ts'
+import { sashimiArcKey, sashimiSelectionKey } from './sashimiArcs.ts'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
 
@@ -37,5 +37,19 @@ describe('sashimiArcKey', () => {
     const fwd = sashimiArcKey(makeArc({ strand: 1 }))
     const rev = sashimiArcKey(makeArc({ strand: -1 }))
     expect(fwd).not.toBe(rev)
+  })
+})
+
+describe('sashimiSelectionKey', () => {
+  it('scopes the same junction by group so selection does not bleed across groups', () => {
+    const arc = makeArc({})
+    expect(sashimiSelectionKey('sampleA', arc)).not.toBe(
+      sashimiSelectionKey('sampleB', arc),
+    )
+  })
+
+  it('matches for the same junction within one group (ungrouped key is empty)', () => {
+    const arc = makeArc({})
+    expect(sashimiSelectionKey('', arc)).toBe(sashimiSelectionKey('', arc))
   })
 })
