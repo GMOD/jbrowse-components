@@ -30,64 +30,45 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
   private async calculateGCContent(
     query: Region,
     opts?: BaseOptions,
-  ): Promise<{ starts: number[]; ends: number[]; scores: number[] }> {
+  ): Promise<Feature[]> {
     const { statusCallback = () => {}, stopToken } = opts ?? {}
     const sequenceAdapter = await this.configure()
     const windowSize = this.getConf('windowSize')
     const windowDelta = this.getConf('windowDelta')
     const gcMode = this.getConf('gcMode')
-    const halfWindowSize = windowSize === 1 ? 1 : Math.ceil(windowSize / 2)
-    const isWindowSizeOneBp = windowSize === 1
+    const halfWindowSize = Math.ceil(windowSize / 2)
 
+    // windowSize 1 is a single-base window; wider windows are centered on the
+    // feature position, spanning [i - halfWindowSize, i + halfWindowSize)
+    const leftHalf = windowSize === 1 ? 0 : halfWindowSize
+    const rightHalf = windowSize === 1 ? 1 : halfWindowSize
+
+    // snap the fetched region to a windowSize grid so a given genomic window
+    // scores identically no matter which block requested it
     const qs = Math.max(
       0,
       Math.floor((query.start - halfWindowSize) / windowSize) * windowSize,
     )
     const qe = Math.ceil((query.end + halfWindowSize) / windowSize) * windowSize
 
-    if (qe < 0 || qs > qe) {
-      return { starts: [], ends: [], scores: [] }
-    }
-
     const residues =
       (await sequenceAdapter.getSequence(
-        {
-          ...query,
-          start: qs,
-          end: qe,
-        },
+        { ...query, start: qs, end: qe },
         opts,
       )) ?? ''
 
     return updateStatus('Calculating GC', statusCallback, () => {
-      const starts: number[] = []
-      const ends: number[] = []
-      const scores: number[] = []
+      const features: Feature[] = []
+      const stopTokenCheck = createStopTokenChecker(stopToken)
 
-      // Initialize the first window
+      // Monotonic two-pointer sliding window: lo/hi only advance, so each base
+      // is added once as it enters the window and removed once as it leaves,
+      // giving O(residues) regardless of window overlap.
       let nc = 0
       let ng = 0
       let len = 0
-      const stopTokenCheck = createStopTokenChecker(stopToken)
-
-      // Calculate initial window
-      const startIdx = halfWindowSize
-      for (
-        let j = startIdx - halfWindowSize;
-        j < startIdx + halfWindowSize;
-        j++
-      ) {
-        const letter = residues[j]
-        if (letter === 'c' || letter === 'C') {
-          nc++
-        } else if (letter === 'g' || letter === 'G') {
-          ng++
-        }
-        if (letter !== 'N') {
-          len++
-        }
-      }
-
+      let lo = 0
+      let hi = 0
       for (
         let i = halfWindowSize;
         i < residues.length - halfWindowSize;
@@ -95,48 +76,29 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
       ) {
         checkStopToken2(stopTokenCheck)
 
-        // For windowSize === 1, just get the single character
-        if (isWindowSizeOneBp) {
-          const letter = residues[i]
-          nc = letter === 'c' || letter === 'C' ? 1 : 0
-          ng = letter === 'g' || letter === 'G' ? 1 : 0
-          len = letter !== 'N' ? 1 : 0
-        } else if (i > halfWindowSize) {
-          // Rolling window: remove characters that are no longer in window
-          // and add new characters that entered the window
-          const prevStart = i - windowDelta - halfWindowSize
-          const prevEnd = i - windowDelta + halfWindowSize
-          const currStart = i - halfWindowSize
-          const currEnd = i + halfWindowSize
-
-          // Remove old characters
-          for (let j = prevStart; j < Math.min(prevEnd, currStart); j++) {
-            if (j >= 0 && j < residues.length) {
-              const letter = residues[j]
-              if (letter === 'c' || letter === 'C') {
-                nc--
-              } else if (letter === 'g' || letter === 'G') {
-                ng--
-              }
-              if (letter !== 'N') {
-                len--
-              }
-            }
+        const winEnd = i + rightHalf
+        while (hi < winEnd) {
+          const letter = residues[hi++]
+          if (letter === 'c' || letter === 'C') {
+            nc++
+          } else if (letter === 'g' || letter === 'G') {
+            ng++
           }
+          if (letter !== 'N' && letter !== 'n') {
+            len++
+          }
+        }
 
-          // Add new characters
-          for (let j = Math.max(prevEnd, currStart); j < currEnd; j++) {
-            if (j >= 0 && j < residues.length) {
-              const letter = residues[j]
-              if (letter === 'c' || letter === 'C') {
-                nc++
-              } else if (letter === 'g' || letter === 'G') {
-                ng++
-              }
-              if (letter !== 'N') {
-                len++
-              }
-            }
+        const winStart = i - leftHalf
+        while (lo < winStart) {
+          const letter = residues[lo++]
+          if (letter === 'c' || letter === 'C') {
+            nc--
+          } else if (letter === 'g' || letter === 'G') {
+            ng--
+          }
+          if (letter !== 'N' && letter !== 'n') {
+            len--
           }
         }
 
@@ -145,31 +107,26 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
             ? (ng - nc) / (ng + nc || 1)
             : (ng + nc) / (len || 1)
 
-        starts.push(qs + i)
-        ends.push(qs + i + windowDelta)
-        scores.push(score)
+        features.push(
+          new SimpleFeature({
+            uniqueId: `${this.id}_${qs + i}`,
+            refName: query.refName,
+            start: qs + i,
+            end: qs + i + windowDelta,
+            score,
+          }),
+        )
       }
 
-      return { starts, ends, scores }
+      return features
     })
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {
     return ObservableCreate<Feature>(async observer => {
-      const result = await this.calculateGCContent(query, opts)
-
-      for (let i = 0; i < result.starts.length; i++) {
-        observer.next(
-          new SimpleFeature({
-            uniqueId: `${this.id}_${result.starts[i]}`,
-            refName: query.refName,
-            start: result.starts[i]!,
-            end: result.ends[i]!,
-            score: result.scores[i],
-          }),
-        )
+      for (const feature of await this.calculateGCContent(query, opts)) {
+        observer.next(feature)
       }
-
       observer.complete()
     })
   }
