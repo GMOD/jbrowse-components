@@ -1,3 +1,9 @@
+import {
+  colorFwdStrand,
+  colorNostrand,
+  colorRevStrand,
+} from '@jbrowse/core/ui/theme'
+
 import { computeSashimiArcs } from './computeOverlay.ts'
 
 import type { ComputeSashimiArcsOpts } from './computeOverlay.ts'
@@ -77,6 +83,22 @@ test('suppresses the count label on sub-pixel-narrow junctions', () => {
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   expect(arcs[0]!.showLabel).toBe(false)
   expect(arcs[1]!.showLabel).toBe(true)
+})
+
+test('tints arcs with the read-alignment strand colors', () => {
+  // colorType 0/1/2 -> strand fwd/rev/unknown; each arc reuses the matching
+  // read strand color so a junction reads the same hue as its supporting reads.
+  const data = {
+    sashimiX1: new Uint32Array([100, 300, 500]),
+    sashimiX2: new Uint32Array([200, 400, 600]),
+    sashimiCounts: new Uint32Array([5, 5, 5]),
+    sashimiColorTypes: new Uint8Array([0, 1, 2]),
+  } as unknown as PileupDataResult
+  const arcs = computeSashimiArcs(baseOpts(data, 0))
+  const strokeByStart = new Map(arcs.map(a => [a.start, a.stroke]))
+  expect(strokeByStart.get(100)).toBe(colorFwdStrand)
+  expect(strokeByStart.get(300)).toBe(colorRevStrand)
+  expect(strokeByStart.get(500)).toBe(colorNostrand)
 })
 
 test('up/down modes force every arc to one side', () => {
