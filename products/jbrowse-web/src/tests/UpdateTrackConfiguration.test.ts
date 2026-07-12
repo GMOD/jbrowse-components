@@ -396,6 +396,49 @@ test('a config-editor widget edit persists as a delta via its debounced autorun 
   }
 })
 
+test('a shorthand-uri track edit does not pin the expanded adapter into the delta', () => {
+  // Regression: BaseTrackModel persists getSnapshot(configuration) — the
+  // *hydrated* form, where a `uri`-shorthand adapter has been expanded to
+  // bamLocation/index (+baseUri) and {type, displayId} display stubs injected.
+  // The base jbrowse.tracks entry is the raw config-file object still holding
+  // the `uri` shorthand, so diffing the two normal forms made the whole
+  // expanded adapter (and the stub-only displays array) read as a user edit and
+  // pinned them into the delta — bloat, and worse it masks a later admin
+  // adapter-URL fix. Normalizing the base through the track schema before
+  // diffing cancels everything untouched, leaving only the real edit.
+  const SHORTHAND_TRACK = 'volvox_alignments'
+  const { rootModel } = getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession
+  const view = session.views[0]!
+
+  // sanity-check the fixture actually uses the shorthand form this guards
+  const rawBase = session.jbrowse.tracks.find(t => t.trackId === SHORTHAND_TRACK)!
+  expect((rawBase.adapter as { uri?: string }).uri).toBeDefined()
+
+  view.showTrack(SHORTHAND_TRACK)
+  const openConfig = () =>
+    view.tracks.find(t => t.configuration.trackId === SHORTHAND_TRACK)!
+      .configuration as AnyConfigurationModel & {
+      setSlot: (slot: string, value: unknown) => void
+    }
+
+  // edit one slot, then persist exactly as BaseTrackModel's reaction would:
+  // a snapshot of the hydrated (expanded) config node
+  openConfig().setSlot('name', 'Edited name')
+  session.updateTrackConfiguration(
+    getSnapshot(openConfig()) as unknown as PlainConfig,
+  )
+
+  const delta = session.trackConfigDeltas[SHORTHAND_TRACK]!
+  expect(delta).toBeDefined()
+  expect(delta.adapter).toBeUndefined()
+  expect(delta.displays).toBeUndefined()
+  expect(Object.keys(delta).sort()).toEqual(['name', 'trackId'])
+  // and the merge still resolves the untouched adapter from the base
+  const resolved = session.tracks.find(t => t.trackId === SHORTHAND_TRACK)!
+  expect(readConfObject(resolved, 'name')).toBe('Edited name')
+})
+
 test('hiding then re-showing a track keeps its edit (delta is the source of truth)', () => {
   const { rootModel } = getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession

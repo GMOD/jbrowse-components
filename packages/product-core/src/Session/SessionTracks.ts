@@ -30,24 +30,6 @@ export interface PlainTrackConfig {
   [key: string]: unknown
 }
 
-// diffTrackConfig/mergeTrackConfig operate on plain config snapshots. This
-// mixin is composed over two jbrowse config models: app-core's (web/desktop),
-// whose `tracks` is a types.frozen array of plain objects, and product-core's
-// (embedded react views), whose `tracks` is a types.array of MST config nodes.
-// Normalize the base to a plain snapshot so the delta math is correct for both;
-// a plain object passes through untouched.
-//
-// The two casts are load-bearing, don't "simplify" them: our MST fork types
-// `isStateTreeNode`'s parameter as a state-tree node (not `unknown`), so `base`
-// (a plain interface) must widen through `unknown` to be passed, and
-// `getSnapshot` of that returns `unknown`. eslint's type service and `tsc`
-// disagree on which assertions are redundant here; this exact form is the one
-// both accept.
-function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
-  const node = base as unknown
-  return isStateTreeNode(node) ? (getSnapshot(node) as PlainTrackConfig) : base
-}
-
 // jbrowse.tracks holds frozen plain objects (app-core, web/desktop) or MST
 // config nodes (product-core, embedded react views); the delta math reads both
 // as plain track configs. Single site for that documented cast — per-node
@@ -85,6 +67,45 @@ function withoutDelta(
  * #stateModel SessionTracksManagerSessionMixin
  */
 export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
+  // A jbrowse.tracks base entry and a shown track's persisted snapshot are in
+  // two different config "normal forms". A base (app-core web/desktop) is the
+  // raw config-file object: shorthand `uri`, no injected display stubs. But a
+  // shown track's snapshot comes from a live hydrated config node, so it is
+  // post-preProcessSnapshot: the `uri` shorthand is expanded to
+  // bamLocation/index, `baseUri` is propagated into those locations, and a
+  // {type, displayId} stub is injected per compatible display type. Diffing or
+  // merging across those two forms makes every expanded/injected field read as
+  // a user edit — pinning whole adapters and content-free display stubs into
+  // deltas, and defeating the delta's purpose (a later admin adapter-URL fix
+  // would then be masked by the pinned copy). Normalize a base to the hydrated
+  // form by running it through the same track schema, so diff/merge compare
+  // like with like and cancel everything untouched. Memoized per frozen-base
+  // identity (stable until a jbrowse.tracks write). A base that is already an
+  // MST config node (product-core embedded views) is snapshotted directly — it
+  // is already in the hydrated form.
+  //
+  // The isStateTreeNode/getSnapshot casts are load-bearing, don't "simplify"
+  // them: our MST fork types `isStateTreeNode`'s parameter as a state-tree node
+  // (not `unknown`), so `base` (a plain interface) must widen through `unknown`
+  // to be passed, and `getSnapshot` of that returns `unknown`.
+  const canonicalBaseCache = new WeakMap<object, PlainTrackConfig>()
+  function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
+    const node = base as unknown
+    if (isStateTreeNode(node)) {
+      return getSnapshot(node) as PlainTrackConfig
+    }
+    const cached = canonicalBaseCache.get(base)
+    if (cached) {
+      return cached
+    }
+    const schema = pluginManager.pluggableConfigSchemaType('track')
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- tsc7 sees getSnapshot here as unknown (eslint's TS6 service disagrees; see header note)
+    const hydrated = getSnapshot(
+      schema.create(base, { pluginManager }),
+    ) as unknown as PlainTrackConfig
+    canonicalBaseCache.set(base, hydrated)
+    return hydrated
+  }
   return TracksManagerSessionMixin(pluginManager)
     .named('SessionTracksManagerSessionMixin')
     .props({
@@ -182,7 +203,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         getTrackConfigChanges(trackId: string) {
           const delta = self.trackConfigDeltas[trackId]
           const base = baseTracks(self).find(t => t.trackId === trackId)
-          return delta && base ? flattenTrackConfigDelta(base, delta) : []
+          return delta && base
+            ? flattenTrackConfigDelta(toPlainConfig(base), delta)
+            : []
         },
         /**
          * #method
