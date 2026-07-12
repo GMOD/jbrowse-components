@@ -43,7 +43,7 @@ Each assembly contains:
   separate `id` field — the `name` is the id, usually a short machine-readable
   string like `hg38`
 - `displayName` - optional human-readable label shown in the assembly selector
-  (e.g. `"Homo sapiens (hg38)"`) while `name` stays a short id like `hg38`
+  (e.g. `"Homo sapiens (hg38)"`)
 - `aliases` - alternate names for the assembly (e.g. hg19/GRCh37). Aliases are
   most useful when connecting to a UCSC trackHub, which specifies assembly names
   that may differ from your own
@@ -52,12 +52,14 @@ Each assembly contains:
   (fasta.fa.gz + fasta.fa.gz.fai + fasta.fa.gz.gzi), `TwoBitAdapter` (UCSC
   .2bit), `UnindexedFastaAdapter` (plain .fa, no index), and `ChromSizesAdapter`
   (chromosome names only, no sequence)
-- `refNameAliases` - maps chromosomes named differently across files to the same
-  sequence (see below)
+- `refNameAliases` - maps differently-named chromosomes to the same sequence
+  (see below)
 - `cytobands` - optional ideogram banding data, shown by views that draw
   ideograms (see below)
 - `refNameColors` - optional list of colors cycled across the reference
   sequences
+- `geneticCodes` - optional per-refName translation-table override for codon
+  and protein translation (see below)
 
 ## Configuring reference name aliasing
 
@@ -155,10 +157,8 @@ for the slot reference.
 
 Rather than writing this config by hand, the `jbrowse add-assembly` command
 generates it for you (and copies the files into place). See the
-[web quick start](/docs/quickstart_web/) for the full walkthrough, the
-[CLI guide](/docs/cli/#jbrowse-add-assembly) for the `add-assembly` options, or
-the [admin server quick start](/docs/quickstart_adminserver/) to add assemblies
-graphically through the assembly manager.
+[web quick start](/docs/quickstart_web/) for the full walkthrough, or the
+[CLI guide](/docs/cli/#jbrowse-add-assembly) for the `add-assembly` options.
 
 ## BgzipFastaAdapter
 
@@ -255,21 +255,25 @@ options).
 ### FASTA metadata
 
 Attach free-form metadata via `metadataLocation` on an IndexedFastaAdapter or
-BgzipFastaAdapter. One option for the contents of this metadata is the FFRGS
-(Fair Formatted Reference Genome Standard) header specification for FASTA files,
-found [here](https://github.com/FFRGS/FFRGS-Specification). The raw plaintext is
-displayed as-is, so the format is not strict from JBrowse's perspective.
+BgzipFastaAdapter. One documented option is the
+[FFRGS (Fair Formatted Reference Genome Standard) specification](https://github.com/FFRGS/FFRGS-Specification).
+The raw plaintext is displayed as-is, so the format is not strict from JBrowse's
+perspective.
 
 ```json
+{
+  "type": "IndexedFastaAdapter",
+  "uri": "https://example.com/genome.fa",
   "metadataLocation": {
     "uri": "https://raw.githubusercontent.com/FFRGS/FFRGS-Specification/main/examples/example.yaml"
   }
+}
 ```
 
 ## TwoBitAdapter
 
-The UCSC twoBit adapter is also supported. 2bit has a longer startup time than
-other adapters due to upfront parsing.
+The UCSC twoBit format has a longer startup time than other adapters due to
+upfront parsing.
 
 ```json
 {
@@ -308,8 +312,7 @@ loading a FASTA), use a `.chrom.sizes` file (tab-separated `name<TAB>length`).
 The longhand form uses a `chromSizesLocation` slot — see the
 [ChromSizesAdapter config docs](/docs/config/chromsizesadapter) for all options.
 
-The reference sequence track displays no base-level sequence with this adapter,
-since there is none to show.
+The reference sequence track displays no base-level sequence with this adapter.
 
 ## Configuring cytoband ideograms
 
