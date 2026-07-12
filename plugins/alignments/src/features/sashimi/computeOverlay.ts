@@ -1,4 +1,9 @@
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
+import {
+  colorFwdStrand,
+  colorNostrand,
+  colorRevStrand,
+} from '@jbrowse/core/ui/theme'
 
 import { colorTypeToStrand } from './compute.ts'
 
@@ -52,16 +57,17 @@ export interface ComputeSashimiArcsOpts {
   minSashimiScore: number
 }
 
-const FWD_ARC_COLOR = 'rgba(255,170,170,0.7)'
-const REV_ARC_COLOR = 'rgba(160,160,255,0.7)'
-const UNKNOWN_ARC_COLOR = 'rgba(200,200,200,0.7)'
-
+// Sashimi arcs reuse the read-alignment strand colors (theme.ts) so a junction
+// is tinted the same as the reads supporting it. Opaque hex (not rgba/alpha):
+// the arc strokes are thin and the count label carries its own white halo, so
+// they stay legible over the coverage histogram, and plain 6-digit hex
+// serializes into the SVG export with the widest tool compatibility.
 function getArcColor(strand: number) {
   return strand === 1
-    ? FWD_ARC_COLOR
+    ? colorFwdStrand
     : strand === -1
-      ? REV_ARC_COLOR
-      : UNKNOWN_ARC_COLOR
+      ? colorRevStrand
+      : colorNostrand
 }
 
 // Screen-px span below which the count label can't fit and is suppressed.
