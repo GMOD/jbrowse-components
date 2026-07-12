@@ -79,20 +79,11 @@ ArcPoint evalArcPoint(float t, Instance inst, Uniforms u) {
   float availH = u.arcBandH - ARC_HEIGHT_MARGIN;
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
 
-  // Y scale: availH pixels = arcsYDomainBp genomic bp. CPU chooses the
-  // domain (zoom-proportional for arcs, autoscaled |tlen| for samplot).
-  // Samplot uses a base-2 LOG scale (arcsYLog) so small inserts spread out near
-  // the baseline instead of collapsing onto it (matches origin/main's
-  // d3.scaleLog().base(2)); arc mode stays linear (yBp is a genomic radius).
-  // SYNC: must stay byte-identical to arcYFraction() in arcYScale.ts (the
-  // JS/Canvas2D path) — the golden values in arcYScale.test.ts pin this formula
-  // on both sides; change one and the test flags the other. The linear branch
-  // guards a zero domain (arcsYDomainBp > 0.0 ? ... : 0.0) so a zero domain
-  // yields 0 here just like the JS twin, instead of dividing to +inf.
-  float frac = (u.arcsYLog > 0.5)
-    ? log2(max(1.0, float(inst.yBp))) / log2(max(2.0, u.arcsYDomainBp))
-    : (u.arcsYDomainBp > 0.0 ? float(inst.yBp) / u.arcsYDomainBp : 0.0);
-  float destY = min(availH, frac * availH);
+  // Y position of the apex (arc) / flat line: availH px maps arcsYDomainBp bp,
+  // the CPU-chosen domain (zoom-proportional for arcs, autoscaled |tlen| for
+  // samplot). arcBandDestY (alignmentsUniforms) is the shared formula — the same
+  // one arcMarker.slang uses so the endpoint squares land on the flat line.
+  float destY = arcBandDestY(inst.yBp, availH, u);
 
   ArcPoint ap;
   if (inst.shapeType > 0.5) {

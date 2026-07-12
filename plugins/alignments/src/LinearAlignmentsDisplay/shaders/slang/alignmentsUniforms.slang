@@ -231,6 +231,21 @@ public float3 arcMarkerColorByIndex(uint idx, Uniforms u) {
   return arcColorByIndex(idx, u);
 }
 
+// Samplot/arc flat-line Y offset (unsigned px) within an `availH`-tall band.
+// arcsYLog picks a base-2 log scale (samplot read cloud, so small inserts spread
+// near the baseline instead of collapsing) vs linear (arc mode, yBp is a genomic
+// radius); the linear branch guards a zero domain so it yields 0, not +inf.
+// Shared by arc.slang (flat line + dome apex) and arcMarker.slang so a samplot
+// endpoint square lands exactly on its flat line. SYNC: must stay byte-identical
+// to arcYFraction() in arcYScale.ts (the JS/Canvas2D path) — the golden values
+// in arcYScale.test.ts pin this formula on both sides.
+public float arcBandDestY(uint yBp, float availH, Uniforms u) {
+  float frac = (u.arcsYLog > 0.5)
+    ? log2(max(1.0, float(yBp))) / log2(max(2.0, u.arcsYDomainBp))
+    : (u.arcsYDomainBp > 0.0 ? float(yBp) / u.arcsYDomainBp : 0.0);
+  return min(availH, frac * availH);
+}
+
 // Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip
 // 3=hardclip (anything else falls through to hardclip). Uses the *Indicator
 // colors — coverage-track marks sit on the dark track background, where the
@@ -327,5 +342,23 @@ public ColorVsOut discardVertex() {
 // Shared by snpCoverage and modCoverage so the formula can't drift between them.
 public float covBarScale(float relDepth, Uniforms u) {
   return normalizeDepth(relDepth, u) * effHeight(u) / u.canvasH * 2.0;
+}
+
+// Coverage-strip stacked-segment quad (SNP + modification coverage). A 1bp-wide
+// rect whose bottom/top are the yOffset / yOffset+segHeight fractions of this
+// position's coverage bar (covBarScale(relDepth)). Shared so the two passes'
+// geometry can't drift — they differ only in how each colors the segment.
+public float4 covSegQuad(uint position, float yOffset, float segHeight,
+                         float relDepth, float2 local, Uniforms u) {
+  float2 xx = expandMinWidthX(
+    bpToClipX(position, u), bpToClipX(position + 1u, u), u.canvasW);
+  float bottom = covBottom(u);
+  float k = covBarScale(relDepth, u);
+  float segBot = bottom + yOffset * k;
+  float segTop = segBot + segHeight * k;
+  return float4(
+    flipX(lerp(xx.x, xx.y, local.x), u),
+    lerp(segBot, segTop, local.y),
+    0.0, 1.0);
 }
 

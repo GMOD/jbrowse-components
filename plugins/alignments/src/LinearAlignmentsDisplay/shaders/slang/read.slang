@@ -285,7 +285,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
       else if (v == 7u) { sx = sx1 - chevronClip; sy = syMid; lx = 0.0; ly = 0.0; }
       else              { sx = sx1; sy = syBot; lx = alt; ly = 0.0; }
     } else {
-      // degenerate — fold chevron verts to a single point offscreen-marker.
+      // degenerate — fold chevron verts to one zero-area (culled) point.
       lx = 999.0; ly = 999.0; sx = sx1; sy = syTop;
     }
   } else {

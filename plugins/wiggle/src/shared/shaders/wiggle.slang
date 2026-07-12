@@ -196,10 +196,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     // is the disc diameter; tiny points draw as a crisp square like manhattan.
     float midX = (sx1 + sx2) * 0.5;
     float scoreYPx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
-    float centerClipY = 1.0 - scoreYPx * pxToClip;
     float2 q = quadLocal(vid);
-    float2 local = q * 2.0 - float2(1.0, 1.0);
-    float radiusPx = u.scatterPointSize * 0.5;
     if (u.scatterPointSize <= SMALL_POINT_MAX_DIAMETER) {
       // tiny point: pixel-snapped crisp filled square (SHAPE_SOLID), no AA disc
       float2 centerPx = float2((midX + 1.0) * 0.5 * u.viewportWidth, scoreYPx);
@@ -209,10 +206,12 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       shape = SHAPE_SOLID;
     } else {
       // expand the quad by the AA pad so the disc's fade edge isn't clipped
+      float radiusPx = u.scatterPointSize * 0.5;
+      float2 local = q * 2.0 - float2(1.0, 1.0);
       float expand = discExpand(radiusPx);
       float halfPx = radiusPx * expand;
       sx = midX + local.x * halfPx * 2.0 / u.viewportWidth;
-      sy = centerClipY + local.y * halfPx * pxToClip;
+      sy = (1.0 - scoreYPx * pxToClip) + local.y * halfPx * pxToClip;
       shape = SHAPE_DISC;
       localPos = local * expand;
     }

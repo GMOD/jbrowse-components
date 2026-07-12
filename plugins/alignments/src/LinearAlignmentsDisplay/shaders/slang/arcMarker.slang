@@ -30,12 +30,10 @@ struct Instance {
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
-  // Y of the flat line at this insert size — identical formula to arc.slang.
+  // Y of the flat line at this insert size — shared arcBandDestY formula, so it
+  // stays byte-identical to arc.slang's flat path and the square lands on the line.
   float availH = u.arcBandH - ARC_MARKER_HEIGHT_MARGIN;
-  float frac = (u.arcsYLog > 0.5)
-    ? log2(max(1.0, float(inst.yBp))) / log2(max(2.0, u.arcsYDomainBp))
-    : float(inst.yBp) / u.arcsYDomainBp;
-  float destY = min(availH, frac * availH);
+  float destY = arcBandDestY(inst.yBp, availH, u);
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
   float cy = destY * yDir;
 

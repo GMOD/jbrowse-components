@@ -24,23 +24,8 @@ struct Instance {
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
-  float2 local = quadLocal(vid);
-
-  float2 xx = expandMinWidthX(
-    bpToClipX(inst.position, u),
-    bpToClipX(inst.position + 1u, u),
-    u.canvasW);
-  float x1 = xx.x;
-  float x2 = xx.y;
-
-  float bottom = covBottom(u);
-  float k = covBarScale(inst.relDepth, u);
-  float segBot = bottom + inst.yOffset * k;
-  float segTop = segBot + inst.segHeight * k;
-  o.position = float4(
-    flipX(lerp(x1, x2, local.x), u),
-    lerp(segBot, segTop, local.y),
-    0.0, 1.0);
+  o.position = covSegQuad(inst.position, inst.yOffset, inst.segHeight,
+                          inst.relDepth, quadLocal(vid), u);
   o.color = unpackRGBA(inst.packedColor);
   return o;
 }
