@@ -142,6 +142,11 @@ export default class GridBookmarkPlugin extends Plugin {
                   return [
                     ...superHighlightMenuItems(highlight),
                     {
+                      label: 'Open bookmark widget',
+                      icon: BookmarksIcon,
+                      onClick: () => self.activateBookmarkWidget(),
+                    },
+                    {
                       label: 'Convert highlight to bookmark',
                       icon: BookmarkIcon,
                       onClick: () => {

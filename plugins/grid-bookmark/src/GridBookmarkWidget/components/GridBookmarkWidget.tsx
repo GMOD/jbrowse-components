@@ -3,13 +3,13 @@ import { lazy } from 'react'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
 import GetApp from '@mui/icons-material/GetApp'
+import LocalOffer from '@mui/icons-material/LocalOffer'
 import Menu from '@mui/icons-material/Menu'
 import Publish from '@mui/icons-material/Publish'
 import Settings from '@mui/icons-material/Settings'
 import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import AssemblySelector from './AssemblySelector.tsx'
 import BookmarkGrid from './BookmarkGrid.tsx'
 import HighlightGrid from './HighlightGrid.tsx'
 
@@ -58,6 +58,17 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               },
             },
             {
+              label: 'Show highlight chips',
+              icon: LocalOffer,
+              type: 'checkbox',
+              checked: model.areHighlightChipsShownOnAllOpenViews,
+              onClick: () => {
+                model.setShowHighlightChips(
+                  !model.areHighlightChipsShownOnAllOpenViews,
+                )
+              },
+            },
+            {
               label: 'Settings',
               icon: Settings,
               onClick: () => {
@@ -72,7 +83,6 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
           <Menu />
         </CascadingMenuButton>
 
-        <AssemblySelector model={model} />
         <ToggleButtonGroup
           size="small"
           exclusive
@@ -85,13 +95,11 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
         >
           <ToggleButton value="bookmarks">Bookmarks</ToggleButton>
           <ToggleButton value="highlights">Highlights</ToggleButton>
+          <ToggleButton value="both">Both</ToggleButton>
         </ToggleButtonGroup>
       </Stack>
-      {model.gridView === 'bookmarks' ? (
-        <BookmarkGrid model={model} />
-      ) : (
-        <HighlightGrid model={model} />
-      )}
+      {model.gridView !== 'highlights' ? <BookmarkGrid model={model} /> : null}
+      {model.gridView !== 'bookmarks' ? <HighlightGrid model={model} /> : null}
     </div>
   )
 })

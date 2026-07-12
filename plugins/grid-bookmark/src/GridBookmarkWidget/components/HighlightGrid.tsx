@@ -58,7 +58,7 @@ const HighlightGrid = observer(function HighlightGrid({
   const theme = useTheme()
   const session = getSession(model)
   const [selectedIds, setSelectedIds] = useState(() => new Set<GridRowId>())
-  const selectedSet = new Set(model.selectedAssemblies)
+  const { assembliesInViews } = model
   const rows = session.views
     .filter(
       (v): v is IExtendedLGV =>
@@ -79,10 +79,10 @@ const HighlightGrid = observer(function HighlightGrid({
         }
       }),
     )
-    // honor the AssemblySelector in the widget header. highlights without an
-    // assemblyName (pre-init session JSON) always pass through so they're not
-    // hidden by the filter
-    .filter(r => !r.assemblyName || selectedSet.has(r.assemblyName))
+    // only show highlights whose assembly is open in a view. highlights
+    // without an assemblyName (pre-init session JSON) always pass through so
+    // they're not hidden by the filter
+    .filter(r => !r.assemblyName || assembliesInViews.has(r.assemblyName))
 
   return (
     <DataGridFlexContainer>

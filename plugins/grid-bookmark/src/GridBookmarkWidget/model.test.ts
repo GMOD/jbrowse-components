@@ -51,3 +51,37 @@ test('setBookmarkHighlightsVisible toggles every view', () => {
     true,
   )
 })
+
+test('setShowHighlightChips toggles every view and getter aggregates', () => {
+  const { session, widget } = setup()
+  // chips are opt-in, so off on all views by default
+  expect(widget.areHighlightChipsShownOnAllOpenViews).toBe(false)
+
+  widget.setShowHighlightChips(true)
+  expect(session.views.every((v: any) => v.showHighlightChips)).toBe(true)
+  expect(widget.areHighlightChipsShownOnAllOpenViews).toBe(true)
+
+  session.views[1].setShowHighlightChips(false)
+  expect(widget.areHighlightChipsShownOnAllOpenViews).toBe(false)
+})
+
+test('visibleBookmarks only includes assemblies open in a view', () => {
+  const { widget } = setup()
+  expect([...widget.assembliesInViews]).toEqual(['volvox'])
+
+  widget.addBookmark({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  })
+  widget.addBookmark({
+    assemblyName: 'other-asm',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  })
+
+  expect(widget.bookmarks).toHaveLength(2)
+  expect(widget.visibleBookmarks.map(b => b.assemblyName)).toEqual(['volvox'])
+})

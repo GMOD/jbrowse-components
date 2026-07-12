@@ -34,9 +34,22 @@ interface BookmarkRow extends IExtendedLabeledRegionModel {
   locString: string
 }
 
-function NoBookmarksOverlay() {
+// lets us pass a context-aware empty message through DataGrid's noRowsOverlay
+// slotProps
+declare module '@mui/x-data-grid' {
+  interface NoRowsOverlayPropsOverrides {
+    message?: string
+  }
+}
+
+function NoBookmarksOverlay({ message }: { message?: string }) {
   return (
-    <EmptyState message="No bookmarks yet. Drag across a view to bookmark a region, or import from the menu." />
+    <EmptyState
+      message={
+        message ??
+        'No bookmarks yet. Drag across a view to bookmark a region, or import from the menu.'
+      }
+    />
   )
 }
 
@@ -47,27 +60,24 @@ const BookmarkGrid = observer(function BookmarkGrid({
 }) {
   const { classes } = useCellStyles()
   const apiRef = useGridApiRef()
-  const {
-    bookmarks,
-    bookmarksWithValidAssemblies,
-    selectedAssemblies,
-    selectedBookmarks,
-  } = model
+  const { visibleBookmarks, selectedBookmarks } = model
 
   const session = getSession(model)
-  const selectedSet = new Set(selectedAssemblies)
-  const rows = bookmarks
-    .filter(r => selectedSet.has(r.assemblyName))
-    .map((region, index): BookmarkRow => {
-      const { assemblyName, ...rest } = region
-      return {
-        ...region,
-        id: index,
-        assemblyName,
-        locString: assembleLocString(rest),
-        correspondingObj: region,
-      }
-    })
+  const hiddenCount = model.bookmarks.length - visibleBookmarks.length
+  const emptyMessage =
+    hiddenCount > 0
+      ? `${hiddenCount} bookmark${hiddenCount === 1 ? '' : 's'} hidden because ${hiddenCount === 1 ? 'its' : 'their'} assembly is not open in a view. Open a view on that assembly to see ${hiddenCount === 1 ? 'it' : 'them'}.`
+      : undefined
+  const rows = visibleBookmarks.map((region, index): BookmarkRow => {
+    const { assemblyName, ...rest } = region
+    return {
+      ...region,
+      id: index,
+      assemblyName,
+      locString: assembleLocString(rest),
+      correspondingObj: region,
+    }
+  })
 
   return (
     <DataGridFlexContainer>
@@ -90,6 +100,7 @@ const BookmarkGrid = observer(function BookmarkGrid({
         onCellClick={startLabelEditOnClick(apiRef)}
         hideFooterPagination={rows.length <= DEFAULT_PAGE_SIZE}
         slots={{ noRowsOverlay: NoBookmarksOverlay }}
+        slotProps={{ noRowsOverlay: { message: emptyMessage } }}
         rows={rows}
         columns={[
           { ...GRID_CHECKBOX_SELECTION_COL_DEF, width: 50 },
@@ -121,7 +132,7 @@ const BookmarkGrid = observer(function BookmarkGrid({
         }}
         checkboxSelection
         onRowSelectionModelChange={newRowSelectionModel => {
-          if (bookmarksWithValidAssemblies.length > 0) {
+          if (visibleBookmarks.length > 0) {
             const ids = resolveSelectedIds(
               newRowSelectionModel,
               rows.map(r => r.id),

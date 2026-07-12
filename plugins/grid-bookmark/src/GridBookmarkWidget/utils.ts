@@ -122,11 +122,9 @@ export async function downloadBookmarkFile(
   fileFormat: string,
   model: GridBookmarkModel,
 ) {
-  const { selectedBookmarks, bookmarksWithValidAssemblies } = model
+  const { selectedBookmarks, visibleBookmarks } = model
   const bookmarksToDownload =
-    selectedBookmarks.length === 0
-      ? bookmarksWithValidAssemblies
-      : selectedBookmarks
+    selectedBookmarks.length === 0 ? visibleBookmarks : selectedBookmarks
 
   const { saveAs } = await import('@jbrowse/core/util')
 

@@ -55,7 +55,7 @@ const sampleBookmarks = [
 function makeModel(selected: typeof sampleBookmarks = []) {
   return {
     selectedBookmarks: selected,
-    bookmarksWithValidAssemblies: sampleBookmarks,
+    visibleBookmarks: sampleBookmarks,
   } as unknown as GridBookmarkModel
 }
 

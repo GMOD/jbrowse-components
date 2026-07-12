@@ -40,10 +40,13 @@ const LabeledRegionModel = types
 
 interface HighlightToggleView {
   id: string
+  assemblyNames?: string[]
   bookmarkHighlightsVisible?: boolean
   labelsVisible?: boolean
+  showHighlightChips?: boolean
   setBookmarkHighlightsVisible?: (arg: boolean) => void
   setLabelsVisible?: (arg: boolean) => void
+  setShowHighlightChips?: (arg: boolean) => void
   views?: HighlightToggleView[]
 }
 
@@ -137,11 +140,6 @@ export default function f(_pluginManager: PluginManager) {
       selectedBookmarks: [] as IExtendedLabeledRegionModel[],
       /**
        * #volatile
-       * undefined = "all valid assemblies"; an array = explicit filter
-       */
-      selectedAssembliesPre: undefined as string[] | undefined,
-      /**
-       * #volatile
        * which grid tab is visible: bookmarks or highlights
        */
       gridView: 'bookmarks',
@@ -166,6 +164,20 @@ export default function f(_pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * assemblies currently displayed in any open view; the grids only show
+       * bookmarks/highlights belonging to these
+       */
+      get assembliesInViews() {
+        const names = new Set<string>()
+        forEachView(getSession(self).views, view => {
+          for (const name of view.assemblyNames ?? []) {
+            names.add(name)
+          }
+        })
+        return names
+      },
+      /**
+       * #getter
        */
       get areBookmarksHighlightedOnAllOpenViews() {
         return everyView(getSession(self).views, v =>
@@ -182,14 +194,23 @@ export default function f(_pluginManager: PluginManager) {
           'labelsVisible' in v ? !!v.labelsVisible : true,
         )
       },
+      /**
+       * #getter
+       */
+      get areHighlightChipsShownOnAllOpenViews() {
+        return everyView(getSession(self).views, v =>
+          'showHighlightChips' in v ? !!v.showHighlightChips : true,
+        )
+      },
     }))
     .views(self => ({
       /**
        * #getter
+       * bookmarks belonging to an assembly currently open in a view
        */
-      get bookmarksWithValidAssemblies() {
+      get visibleBookmarks() {
         return self.bookmarks.filter(e =>
-          self.validAssemblies.has(e.assemblyName),
+          self.assembliesInViews.has(e.assemblyName),
         )
       },
     }))
@@ -197,26 +218,8 @@ export default function f(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      setSelectedAssemblies(assemblies?: string[]) {
-        self.selectedAssembliesPre = assemblies
-      },
-      /**
-       * #action
-       */
-      setGridView(arg: 'bookmarks' | 'highlights') {
+      setGridView(arg: 'bookmarks' | 'highlights' | 'both') {
         self.gridView = arg
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get selectedAssemblies() {
-        return (
-          self.selectedAssembliesPre?.filter(f =>
-            self.validAssemblies.has(f),
-          ) ?? [...self.validAssemblies]
-        )
       },
     }))
     .actions(self => ({
@@ -284,6 +287,14 @@ export default function f(_pluginManager: PluginManager) {
       setBookmarkLabelsVisible(arg: boolean) {
         forEachView(getSession(self).views, view => {
           view.setLabelsVisible?.(arg)
+        })
+      },
+      /**
+       * #action
+       */
+      setShowHighlightChips(arg: boolean) {
+        forEachView(getSession(self).views, view => {
+          view.setShowHighlightChips?.(arg)
         })
       },
     }))
