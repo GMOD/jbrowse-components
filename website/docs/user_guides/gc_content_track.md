@@ -41,12 +41,12 @@ adapter's initial mode is the
 
 ## Adjusting the window
 
-**Change GC parameters** in the track menu opens a dialog for the two
-sliding-window settings:
+The track menu's **GC parameters** submenu has two sliders for the
+sliding-window settings, each with a reset button:
 
 - Window size is how many bases each point averages over. Larger windows smooth
   the signal and suppress local noise; smaller windows resolve finer structure.
-- Window delta is the step between successive windows. Making the delta smaller
+- Step size is the distance between successive windows. Making the step smaller
   than the window size produces _overlapping_ windows, which gives a smoother,
   more finely-sampled curve (at the cost of more points to compute).
 

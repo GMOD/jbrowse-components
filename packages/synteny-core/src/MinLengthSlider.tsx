@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
-import { SingleSlider } from '@jbrowse/core/ui'
+import { SingleSlider, sliderScale } from '@jbrowse/core/ui'
 import { toLocale } from '@jbrowse/core/util'
 
-import SliderTooltip from './SliderTooltip.tsx'
+const { toSlider, fromSlider, sliderStep } = sliderScale('log')
 
 // Log2-scaled slider for minimum alignment length in bp. Drag state is held
-// locally; the model is only updated on commit so dragging doesn't refetch.
+// locally in slider space; the model is only updated on commit so dragging
+// doesn't refetch.
 export default function MinLengthSlider({
   value,
   onCommit,
@@ -17,7 +18,7 @@ export default function MinLengthSlider({
   maxBp?: number
 }) {
   const [dragValue, setDragValue] = useState<number | null>(null)
-  const sliderValue = dragValue ?? Math.log2(Math.max(1, value)) * 100
+  const sliderValue = dragValue ?? toSlider(value)
   return (
     <SingleSlider
       value={sliderValue}
@@ -26,14 +27,14 @@ export default function MinLengthSlider({
       }}
       onChangeCommitted={v => {
         setDragValue(null)
-        onCommit(Math.round(2 ** (v / 100)))
+        onCommit(fromSlider(v))
       }}
       min={0}
-      max={Math.log2(maxBp) * 100}
+      max={toSlider(maxBp)}
+      step={sliderStep}
       valueLabelDisplay="auto"
-      valueLabelFormat={v => toLocale(Math.round(2 ** (v / 100)))}
+      valueLabelFormat={v => toLocale(fromSlider(v))}
       size="small"
-      slots={{ valueLabel: SliderTooltip }}
     />
   )
 }

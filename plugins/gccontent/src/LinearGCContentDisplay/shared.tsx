@@ -1,11 +1,15 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { makeSizeMenu } from '@jbrowse/core/ui'
+import { toLocale } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 
-import GCContentParamsSliders from './components/GCContentParamsSliders.tsx'
-
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+
+const WINDOW_SIZE_DEFAULT = 100
+const WINDOW_DELTA_DEFAULT = 100
+const formatBp = (n: number) => `${toLocale(n)} bp`
 
 /**
  * #stateModel SharedGCContentModel
@@ -59,11 +63,52 @@ export default function SharedModelF(
               label: 'GC parameters',
               type: 'subMenu',
               subMenu: [
-                {
-                  label: 'GC parameter sliders',
-                  type: 'custom',
-                  render: () => <GCContentParamsSliders model={self} />,
-                },
+                makeSizeMenu({
+                  label: 'Window size',
+                  title: 'Window',
+                  scale: 'log',
+                  min: 1,
+                  max: 100_000,
+                  format: formatBp,
+                  commitOnRelease: true,
+                  getValue: () => self.windowSize,
+                  isDefault: self.windowSize === WINDOW_SIZE_DEFAULT,
+                  onChange: windowSize => {
+                    self.setGCContentParams({
+                      windowSize,
+                      windowDelta: self.windowDelta,
+                    })
+                  },
+                  onReset: () => {
+                    self.setGCContentParams({
+                      windowSize: WINDOW_SIZE_DEFAULT,
+                      windowDelta: self.windowDelta,
+                    })
+                  },
+                }),
+                makeSizeMenu({
+                  label: 'Step size',
+                  title: 'Step',
+                  scale: 'log',
+                  min: 1,
+                  max: self.windowSize,
+                  format: formatBp,
+                  commitOnRelease: true,
+                  getValue: () => self.windowDelta,
+                  isDefault: self.windowDelta === WINDOW_DELTA_DEFAULT,
+                  onChange: windowDelta => {
+                    self.setGCContentParams({
+                      windowSize: self.windowSize,
+                      windowDelta,
+                    })
+                  },
+                  onReset: () => {
+                    self.setGCContentParams({
+                      windowSize: self.windowSize,
+                      windowDelta: WINDOW_DELTA_DEFAULT,
+                    })
+                  },
+                }),
               ],
             },
             {

@@ -60,7 +60,7 @@ describe('sashimi menu', () => {
       'Show sashimi arcs',
       'Show labels',
       'Arc placement',
-      'Filter by score...',
+      'Filter by score',
     ])
   })
 

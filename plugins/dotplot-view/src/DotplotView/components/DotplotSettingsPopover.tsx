@@ -5,7 +5,6 @@ import {
   OpacitySlider,
   SettingRow,
   SettingsPopover,
-  SliderTooltip,
 } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
@@ -56,7 +55,6 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
             step={0.5}
             valueLabelDisplay="auto"
             size="small"
-            slots={{ valueLabel: SliderTooltip }}
           />
         </SettingRow>
         <SettingRow label="Min length:">

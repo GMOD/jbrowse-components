@@ -11,7 +11,6 @@ import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { SliderValueLabelProps } from '@mui/material'
 
 const RegionWidthEditorDialog = lazy(
   () => import('./RegionWidthEditorDialog.tsx'),
@@ -28,21 +27,6 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.text.secondary,
   },
 }))
-
-function ValueLabelComponent(props: SliderValueLabelProps) {
-  const { children, open, value } = props
-  return (
-    <Tooltip
-      open={open}
-      enterTouchDelay={0}
-      placement="top"
-      title={value}
-      arrow
-    >
-      {children}
-    </Tooltip>
-  )
-}
 
 function getZoomMenuItems(model: LinearGenomeViewModel) {
   return [
@@ -116,9 +100,6 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
         valueLabelFormat={newValue =>
           `Window size: ${getBpDisplayStr(2 ** (-newValue / 100) * width)}`
         }
-        slots={{
-          valueLabel: ValueLabelComponent,
-        }}
         onChange={val => {
           // Take over from any in-flight animated zoom as soon as the user
           // grabs the thumb, so the view stops lurching underneath the drag.

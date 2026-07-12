@@ -1,7 +1,8 @@
-import { lazy } from 'react'
-
-import { promotableRadioItem, promotableToggleItem } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import {
+  makeSizeMenu,
+  promotableRadioItem,
+  promotableToggleItem,
+} from '@jbrowse/core/ui'
 import AltRouteIcon from '@mui/icons-material/AltRoute'
 
 import { checkboxItem } from './menuHelpers.ts'
@@ -9,10 +10,6 @@ import { checkboxItem } from './menuHelpers.ts'
 import type { SashimiArcsMode } from '../constants.ts'
 import type { SessionDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-const SetSashimiScoreDialog = lazy(
-  () => import('../dialogs/SetSashimiScoreDialog.tsx'),
-)
 
 // 'up' is the base/un-pinned value (mirrors readConnections's 'off'), so it
 // carries no session-default control — only 'down' and 'auto' are pinnable.
@@ -82,15 +79,25 @@ export function getSashimiMenuItem(model: SashimiModel) {
               }),
             ),
           },
-          {
-            label: 'Filter by score...',
-            onClick: () => {
-              getSession(model).queueDialog(handleClose => [
-                SetSashimiScoreDialog,
-                { model, handleClose },
-              ])
+          makeSizeMenu({
+            label: 'Filter by score',
+            title: 'Min read support',
+            // read support spans small integers to thousands on deep RNA-seq,
+            // so log-scale; 0 (default) shows every arc. Recomputes arcs on the
+            // main thread (tier 3), so a live onChange is fine.
+            scale: 'log',
+            min: 0,
+            max: 10_000,
+            format: n => `${n}`,
+            getValue: () => model.minSashimiScore,
+            isDefault: model.minSashimiScore === 0,
+            onChange: score => {
+              model.setMinSashimiScore(score)
             },
-          },
+            onReset: () => {
+              model.setMinSashimiScore(0)
+            },
+          }),
         ]
       : []),
   ]

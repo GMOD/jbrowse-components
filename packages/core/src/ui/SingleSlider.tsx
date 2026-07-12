@@ -1,5 +1,7 @@
 import { Slider } from '@mui/material'
 
+import SliderTooltip from './SliderTooltip.tsx'
+
 import type { SliderProps } from '@mui/material'
 
 // MUI's Slider is multi-thumb-capable, so its `onChange`/`onChangeCommitted`
@@ -16,10 +18,11 @@ type Props = Omit<
 }
 
 export default function SingleSlider(props: Props) {
-  const { onChange, onChangeCommitted, ...rest } = props
+  const { onChange, onChangeCommitted, slots, ...rest } = props
   return (
     <Slider
       {...rest}
+      slots={{ valueLabel: SliderTooltip, ...slots }}
       onChange={(_, value) => {
         onChange?.(typeof value === 'number' ? value : value[0])
       }}

@@ -5,7 +5,6 @@ import {
   SettingCheckbox,
   SettingRow,
   SettingsPopover,
-  SliderTooltip,
 } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
@@ -68,7 +67,6 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
             valueLabelDisplay="auto"
             size="small"
             valueLabelFormat={(val: number) => `${val}px`}
-            slots={{ valueLabel: SliderTooltip }}
           />
         </SettingRow>
         <SettingCheckbox

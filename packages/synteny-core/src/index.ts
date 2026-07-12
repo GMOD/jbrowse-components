@@ -45,7 +45,6 @@ export type {
 } from './colorLegend.ts'
 export type { SyntenyViewSharedInit } from './SyntenyViewInit.ts'
 export { launchSyntenyView } from './launchSyntenyView.ts'
-export { default as SliderTooltip } from './SliderTooltip.tsx'
 export { default as SettingsPopover } from './SettingsPopover.tsx'
 export { default as SettingRow } from './SettingRow.tsx'
 export { default as SettingCheckbox } from './SettingCheckbox.tsx'
