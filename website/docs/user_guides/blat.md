@@ -29,5 +29,5 @@ the same database-selection and apiKey/proxy options as BLAT search.
 
 ## See also
 
-- [Sequence track](/docs/user_guides/sequence_track) — searching the reference
+- [Sequence track](/docs/user_guides/sequence_track) - searching the reference
   for sequence patterns and CRISPR guide RNAs from within the view

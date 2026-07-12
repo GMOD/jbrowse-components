@@ -7,12 +7,12 @@ guide_category: Track types
 A VCF can contain genotypes for many samples. JBrowse shows them with one of two
 displays, switchable from the track menu:
 
-- **Multi-sample variant display (regular)** — variants drawn at their true
-  genomic positions, one row per sample
-- **Multi-sample variant display (matrix)** — variants laid out as a heatmap,
-  one row per sample and one column per variant
+- Multi-sample variant display (regular) - variants drawn at their true genomic
+  positions, one row per sample
+- Multi-sample variant display (matrix) - variants laid out as a heatmap, one
+  row per sample and one column per variant
 
-## Regular — best for full SV detail
+## Regular: best for full SV detail
 
 Each variant is drawn at its real genomic position. This is the only
 multi-sample display that renders structural variants at the right scale;
@@ -21,7 +21,7 @@ overlapping calls use slight transparency so you can still tell them apart.
 If overlaps overwhelm the view, use "Edit filters" in the track menu to hide
 variants by size, name, or any Jexl expression.
 
-## Matrix — best for SNP/indel patterns
+## Matrix: best for SNP/indel patterns
 
 Each visible variant gets one column and each sample gets one row, regardless of
 how far apart the variants are on the genome. A thin black line connects each
@@ -33,7 +33,7 @@ homozygosity, and population structure become visible at a glance.
 
 <Figure caption="A phased trio as a matrix display: one column per variant, one row per haplotype (two per sample), each cell shaded reference vs alt allele. Inherited haplotype blocks read as contiguous vertical bands shared across parent and child rows." src="/img/trio-matrix-phased-clean.png" />
 
-## Genotype coloring — allele dosage vs phased
+## Genotype coloring: allele dosage vs phased
 
 Both the regular and matrix displays color each genotype cell, and how they
 color it is set by the
@@ -68,23 +68,23 @@ If the VCF's `INFO` field carries SnpEff `ANN` or VEP `CSQ` annotations, each
 variant's alt-carrying cells can be colored by the severity of its most severe
 predicted consequence instead of by genotype. From the track menu, open **Color
 cells by** and choose **Consequence impact** (this option only appears once the
-track detects real annotations in the loaded data — it's hidden, not just
+track detects real annotations in the loaded data, it's hidden, not just
 disabled, for unannotated VCFs).
 
 Every annotation is bucketed into one of four impact tiers and painted with a
 fixed color, so the legend is the same across tracks:
 
-- **HIGH** (red) — e.g. `stop_gained`, `frameshift_variant`, `exon_loss_variant`
-- **MODERATE** (orange) — e.g. `missense_variant`, `inframe_deletion`
-- **LOW** (yellow) — e.g. `synonymous_variant`, `splice_region_variant`
-- **MODIFIER** (grey) — e.g. `intron_variant`, `intergenic_region`
+- HIGH (red) - e.g. `stop_gained`, `frameshift_variant`, `exon_loss_variant`
+- MODERATE (orange) - e.g. `missense_variant`, `inframe_deletion`
+- LOW (yellow) - e.g. `synonymous_variant`, `splice_region_variant`
+- MODIFIER (grey) - e.g. `intron_variant`, `intergenic_region`
 
-This works for both SNVs/indels and structural variants — SnpEff's SV-specific
+This works for both SNVs/indels and structural variants. SnpEff's SV-specific
 consequence terms (`exon_loss_variant`, `transcript_ablation`, `gene_fusion`,
 ...) map onto the same four tiers, so a deletion that removes an exon reads as
 HIGH the same way a stop-gained SNV does.
 
-<Figure caption="1000 Genomes phase 3 chr1 genotypes (2,504 samples) colored by consequence impact. Real SnpEff annotations against a real Ensembl database — red columns are stop-gained/splice-site variants, orange missense, yellow synonymous/splice-region, and grey (the majority) intronic or intergenic." src="/img/variants/consequence_impact_1000g.png" />
+<Figure caption="1000 Genomes phase 3 chr1 genotypes (2,504 samples) colored by consequence impact from SnpEff annotations. Red columns are stop-gained/splice-site variants, orange missense, yellow synonymous/splice-region, and grey (the majority) intronic or intergenic." src="/img/variants/consequence_impact_1000g.png" />
 
 Set it declaratively in the display configuration with the built-in
 `impactColor` Jexl function:
@@ -100,21 +100,21 @@ Set it declaratively in the display configuration with the built-in
 }
 ```
 
-`featureColor` accepts any per-feature Jexl expression, not just this preset —
-the same slot backs a plain CSS color or a custom expression referencing
+`featureColor` accepts any per-feature Jexl expression, not just this preset.
+The same slot backs a plain CSS color or a custom expression referencing
 `feature` attributes, same as the single-sample `color` slot.
 
 ## Coloring and grouping by sample metadata
 
-Samples can be grouped and colored by metadata — population, phenotype, sex, or
+Samples can be grouped and colored by metadata: population, phenotype, sex, or
 any attribute you supply. Add a samples TSV to the adapter with
 `samplesTsvLocation`: its first column is the sample name (matching the VCF
 header) and each remaining column is a metadata attribute. Setting `colorBy` on
 the display configuration to one of those columns groups and colors the
 per-sample rows by that attribute the first time the track loads.
 
-The JBrowse demo wires up the 1000 Genomes phase 3 chr1 callset — 2,504 samples
-across 26 population codes — this way:
+The JBrowse demo wires up the 1000 Genomes phase 3 chr1 callset (2,504 samples
+across 26 population codes) this way:
 
 ```json
 {
@@ -149,7 +149,7 @@ HG01880	ACB
 NA20525	TSI
 ```
 
-<Figure caption="The 1000 Genomes phase 3 chr1 callset as a multi-sample variant display. All 2,504 samples are sorted and colored by their population code — the colored strip down the left edge resolves into contiguous population blocks — while each genotype cell is shaded by allele dosage." src="/img/variants/population_1000genomes.png" />
+<Figure caption="The 1000 Genomes phase 3 chr1 callset as a multi-sample variant display. All 2,504 samples are sorted and colored by their population code (the colored strip down the left edge resolves into contiguous population blocks), while each genotype cell is shaded by allele dosage." src="/img/variants/population_1000genomes.png" />
 
 You can also change the grouping attribute and colors interactively after the
 track is open.
@@ -160,9 +160,9 @@ Samples can be reordered by genotype similarity using hierarchical clustering.
 From the track menu, select **Cluster by genotype**. A dialog opens with two
 modes:
 
-- **Auto** — runs hierarchical clustering (hclust via JavaScript) directly in
-  the browser. Works well for a few hundred samples; larger cohorts may be slow.
-- **Manual** — downloads an R script that builds the genotype matrix and runs
+- Auto - runs hierarchical clustering (hclust via JavaScript) directly in the
+  browser. Works well for a few hundred samples; larger cohorts may be slow.
+- Manual - downloads an R script that builds the genotype matrix and runs
   `hclust`. Run the script in R, then paste the resulting sample ordering back
   into the dialog and click **Apply clustering**.
 
@@ -183,7 +183,7 @@ a region with informative variants for the best separation.
 
 ### Encoding a clustering result in a session URL
 
-A clustering result can be embedded directly in a session snapshot — useful for
+A clustering result can be embedded directly in a session snapshot, useful for
 sharing a pre-computed clustering via URL. Set `layout` and `clusterTree` (and
 optionally `treeAreaWidth` / `subtreeFilter`) in the display's `displaySnapshot`
 (see
@@ -193,15 +193,15 @@ have the full field reference.
 
 ## See also
 
-- [Variant track](/docs/user_guides/variant_track) — single-sample VCF display
+- [Variant track](/docs/user_guides/variant_track) - single-sample VCF display
   and the per-sample genotype table
-- [Phased trio analysis](/docs/tutorials/analyze_trio) — matrix display with a
+- [Phased trio analysis](/docs/tutorials/analyze_trio) - matrix display with a
   phased SNP trio
-- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) — regular
+- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) - regular
   display across a large SV cohort
-- [Variant track configuration](/docs/config_guides/variant_track) — config-file
+- [Variant track configuration](/docs/config_guides/variant_track) - config-file
   options
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) —
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) -
   the featureColor/Jexl mechanism behind the impactColor example above
-- [Gallery: variants and populations](/gallery/#variants) — live multi-sample
+- [Gallery: variants and populations](/gallery/#variants) - live multi-sample
   trio and cohort examples to open and explore

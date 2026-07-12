@@ -8,7 +8,7 @@ guide_category: Advanced topics
 PIF (Pairwise Indexed Format) is a tabix-indexed variant of
 [PAF](https://github.com/lh3/minimap2/blob/master/doc/minimap2.1). Unlike plain
 PAF, which must be loaded entirely into memory, PIF splits each alignment into
-two indexed records — one per genome — so JBrowse fetches only the alignments
+two indexed records (one per genome), so JBrowse fetches only the alignments
 overlapping the current viewport, and can query from either assembly's
 perspective.
 
@@ -43,8 +43,8 @@ in either assembly with a single region query.
 PAF CIGARs are from the query's perspective. The q-line adjusts them so `I`/`D`
 operations are consistent with the q-line's column order (query is primary):
 
-- **Plus strand**: swap all `I` and `D` operations
-- **Minus strand**: reverse the CIGAR string and swap `I` and `D` operations
+- On the plus strand, swap all `I` and `D` operations
+- On the minus strand, reverse the CIGAR string and swap `I` and `D` operations
 
 The t-line carries the original PAF CIGAR unchanged.
 
@@ -112,8 +112,8 @@ the `PairwiseIndexedPAFAdapter`.
 ### Level-of-detail coarse tier
 
 By default `make-pif` also writes a second, no-CIGAR "coarse" tier of the same
-alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom — whole
-genome or whole chromosome — the `PairwiseIndexedPAFAdapter` serves this tier
+alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom (whole genome
+or whole chromosome), the `PairwiseIndexedPAFAdapter` serves this tier
 automatically (controlled by the
 [`coarseBpPerPxThreshold`](/docs/config/pairwiseindexedpafadapter/#slot-coarsebpperpxthreshold)
 slot, in bp/px), so the renderer draws clean ribbons without downloading or
@@ -148,8 +148,8 @@ minimap2 -cx asm5 --eqx reference.fa query.fa \
   | jbrowse make-pif /dev/stdin --out alignment.pif.gz
 ```
 
-This is entirely optional — rustybam-produced tags pass through `make-pif` and
-are available to the renderer, but `make-pif` alone is sufficient. The
+This is entirely optional. The rustybam-produced tags pass through `make-pif`
+and are available to the renderer, but `make-pif` alone is sufficient. The
 [SafFire](https://github.com/mrvollger/SafFire) viewer documents the rationale
 for each rustybam step.
 
@@ -193,7 +193,7 @@ whole-genome comparisons PIF is strongly preferred.
 - Adapter config reference:
   [PairwiseIndexedPAFAdapter](/docs/config/pairwiseindexedpafadapter) and
   [PAFAdapter](/docs/config/pafadapter)
-- [Creating custom view types](/docs/developer_guides/creating_view) — the
+- [Creating custom view types](/docs/developer_guides/creating_view) - the
   dotplot and linear synteny views that render PIF data
-- [Synteny track](/docs/config_guides/synteny_track) — the user-facing config
+- [Synteny track](/docs/config_guides/synteny_track) - the user-facing config
   guide for tracks that consume PIF/PAF data

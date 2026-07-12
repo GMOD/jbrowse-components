@@ -6,18 +6,18 @@ guide_category: Tutorials
 tutorial_category: Getting started
 ---
 
-Track display settings — height, color scheme, display type, score range, and so
-on — live in two places:
+Track display settings (height, color scheme, display type, score range, and so
+on) live in two places:
 
-- **Persistent defaults** in `config.json`, on the track's `displays` array.
+- Persistent defaults live in `config.json`, on the track's `displays` array.
   These apply every time the track opens, in every session.
-- **Per-session settings** on a track entry in a session spec. These set the
+- Per-session settings live on a track entry in a session spec. These set the
   track's _initial_ state when a particular link or embedded view loads, and
   override the `config.json` defaults.
 
-Both use the same setting names — the per-session settings are just a
-per-session override of the fields you can bake in as defaults with `displays`.
-This tutorial shows the three places you set them.
+Both use the same setting names. The per-session settings are a per-session
+override of the fields you can bake in as defaults with `displays`. This
+tutorial shows the three places you set them.
 
 ## Finding a setting's name
 
@@ -25,7 +25,7 @@ The per-session setting keys match the display model's own settings (the same
 names you'd put in a config `displays` entry). Two ways to discover them:
 
 - Configure the track interactively (height, color scheme, etc.), then use the
-  **Share** button to generate a session link — the shared session records each
+  **Share** button to generate a session link. The shared session records each
   track's `displays` settings under those exact key names.
 - Look up the display in the auto-generated
   [config schema docs](/docs/config_guide) (e.g.
@@ -90,19 +90,19 @@ with `trackId` plus the display settings written directly alongside it:
 
 URL-encoded onto the end of a JBrowse link. Append this query string to your own
 JBrowse instance's base URL (e.g. `https://jbrowse.org/code/jb2/latest/`), and
-swap `config` and the `trackId` values for ones in your config —
-`volvox_sv_cram` here is an example track from the bundled volvox demo data:
+swap `config` and the `trackId` values for ones in your config. `volvox_sv_cram`
+here is an example track from the bundled volvox demo data:
 
 ```
 ?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","height":250,"showSoftClipping":true,"linkedReads":"normal","colorBy":{"type":"insertSizeAndOrientation"}}]}]}
 ```
 
 The **Share** button and these `?session=spec-{...}` URLs are a JBrowse Web
-feature. JBrowse Desktop has no session-URL server — persist a track's startup
+feature. JBrowse Desktop has no session-URL server. Persist a track's startup
 state there through `config.json` (the
 [defaults](#in-configjson-persistent-defaults) above) instead.
 
-<Figure caption="What that link opens: the volvox-sv (cram) track at ctgA:1–10,000 — a 250px-tall pileup, soft-clipping shown, and reads viewed as pairs, so each read links to its mate and is colored by insert size and orientation. The colored cluster at the left flags a structural variant, while concordant pairs stay grey." src="/img/display_settings_url_snapshot.png" />
+<Figure caption="What that link opens: the volvox-sv (cram) track at ctgA:1–10,000 as a 250px-tall pileup, soft-clipping shown, and reads viewed as pairs, so each read links to its mate and is colored by insert size and orientation. The colored cluster at the left flags a structural variant, while concordant pairs stay grey." src="/img/display_settings_url_snapshot.png" />
 
 The display settings can equivalently be nested under an explicit
 `displaySnapshot` key
@@ -163,10 +163,10 @@ specific state.
 
 ## See also
 
-- [Configuring tracks](/docs/config_guides/tracks) — the full `displays` array
+- [Configuring tracks](/docs/config_guides/tracks) - the full `displays` array
   and other track config
-- [URL parameters](/docs/urlparams) — the session-spec format, including
+- [URL parameters](/docs/urlparams) - the session-spec format, including
   `trackSnapshot` and multi-view specs
-- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) — passing
+- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - passing
   snapshots through an embedded component
-- [Config schema docs](/docs/config_guide) — every display type's settable keys
+- [Config schema docs](/docs/config_guide) - every display type's settable keys

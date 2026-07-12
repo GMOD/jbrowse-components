@@ -47,12 +47,12 @@ instruction rather than persistent state, so a saved session never retains it.
 - Link to JBrowse Web at a location with
   [URL query parameters](/docs/urlparams).
 - Embed a view in your own page or app by passing `location` (and related
-  fields) to `createViewState` — see
+  fields) to `createViewState`, see
   [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view).
-- Ship a preset view in a config file with a `defaultSession` in config.json —
+- Ship a preset view in a config file with a `defaultSession` in config.json,
   see [Default session](/docs/config_guides/default_session).
 - Open a preset session programmatically with a session spec, which is an `init`
-  block inside a view snapshot — see
+  block inside a view snapshot, see
   [URL params → session spec](/docs/urlparams).
 
 All of these set the same `init` fields, so navigation, track opening, and
@@ -70,7 +70,7 @@ See [URL query parameter API](/docs/urlparams) for every parameter, session
 specs for all view types, and shareable/encoded sessions.
 
 Embedded components (`@jbrowse/react-linear-genome-view2`,
-`@jbrowse/react-app2`) make no assumptions about URL parameters — that logic is
+`@jbrowse/react-app2`) make no assumptions about URL parameters. That logic is
 up to the host application.
 
 ## Embedded components (`createViewState`)
@@ -141,7 +141,7 @@ the same way. Their fields are documented per view type in the
 ## Headless / puppeteer
 
 When you want a static image of a view, reach for
-[@jbrowse/img](/docs/jbrowse-img) first — it renders SVG/PNG/PDF from the
+[@jbrowse/img](/docs/jbrowse-img) first, as it renders SVG/PNG/PDF from the
 command line without a browser.
 
 Drive the full JBrowse Web app with puppeteer (or Playwright) when you need
@@ -194,8 +194,8 @@ await browser.close()
 ```
 
 For a longer-form session (multiple views, per-track display options) encode a
-full session spec rather than individual params — see the session-spec section
-of the [URL query parameter API](/docs/urlparams).
+full session spec rather than individual params. See the session-spec section of
+the [URL query parameter API](/docs/urlparams).
 
 This repo's own screenshot generator does all of this and handles several
 finicky details: freezing CSS animations so menus and popovers aren't caught
@@ -210,9 +210,9 @@ and the reusable wait helpers (`waitForLoadingComplete`, `waitForDisplaysDone`,
 
 ## See also
 
-- [Embedded components](/docs/embedded_components) — choosing a package before
+- [Embedded components](/docs/embedded_components) - choosing a package before
   wiring up `init`
-- [Default session](/docs/config_guides/default_session) — the config-file
+- [Default session](/docs/config_guides/default_session) - the config-file
   equivalent of shipping an `init` block
-- [URL query parameter API](/docs/urlparams) — full parameter and session-spec
+- [URL query parameter API](/docs/urlparams) - full parameter and session-spec
   reference for every view type

@@ -6,8 +6,8 @@ guide_category: Track types
 
 An alignments track shows BAM/CRAM reads two ways at once: a coverage histogram
 on top (read depth at each position) and a pileup below (one box per read). Open
-a track, zoom to base level, and most of what you need is already on screen —
-the sections below cover the track-menu options you'll reach for most often.
+a track, zoom to base level, and most of what you need is already on screen. The
+sections below cover the track-menu options you'll reach for most often.
 
 <Figure caption="An alignments track: coverage histogram on top, pileup below. Reads are grey; mismatches to the reference show as colored ticks in the pileup and as colored segments inside the coverage bars." src="/img/volvox_alignments.png" />
 
@@ -16,7 +16,7 @@ mismatch (e.g. a `T` where the reference has an `A`) at that position. In the
 pileup, the same mismatches appear as colored ticks on the otherwise-grey reads.
 
 The track menu's **Show coverage** and **Show pileup** toggles turn either panel
-off independently — dropping the pileup leaves a compact coverage-only track
+off independently. Dropping the pileup leaves a compact coverage-only track
 (handy for surveying depth across many samples), while dropping the coverage row
 reclaims that vertical space for the reads.
 
@@ -51,26 +51,25 @@ The track menu's **Color by...** offers several schemes.
 
 Three schemes surface per-read or per-base signal directly on the pileup:
 
-- **Mapping quality** shades each read by its MAPQ, so poorly-mapped reads
-  (often in repeats or segmental duplications) fade out and confidently-placed
-  reads stay solid.
-- **Per-base quality** colors every base by its Phred score on a
-  red→yellow→green ramp — low-quality bases run red, high-quality bases green —
-  which is the quickest way to tell a real variant from a run of low-confidence
-  base calls.
-- **Per-base lettering** draws every aligned base in its nucleotide color, not
-  just the mismatches, turning the whole pileup into a colored base grid at
-  base-pair resolution.
+- Mapping quality shades each read by its MAPQ, so poorly-mapped reads (often in
+  repeats or segmental duplications) fade out and confidently-placed reads stay
+  solid.
+- Per-base quality colors every base by its Phred score on a red→yellow→green
+  ramp (low-quality bases run red, high-quality bases green), which is the
+  quickest way to tell a real variant from a run of low-confidence base calls.
+- Per-base lettering draws every aligned base in its nucleotide color, not just
+  the mismatches, turning the whole pileup into a colored base grid at base-pair
+  resolution.
 
 ### Modifications and methylation
 
 If a BAM/CRAM carries MM-tag modification calls (common in nanopore and PacBio
 data), **Color by → Base modifications** paints them. There are two modes:
 
-- **Modification type** draws a mark _only_ where the MM tag reports a modified
+- Modification type draws a mark _only_ where the MM tag reports a modified
   base, so an unmethylated region looks empty. Choose "All modification types"
   or a single type such as 5mC.
-- **Methylation** draws every CpG — methylated red, unmethylated blue. The blue
+- Methylation draws every CpG, methylated red and unmethylated blue. The blue
   positions aren't in the MM tag; JBrowse infers them from the reference CpG
   context. That's why a hypomethylated island fills with solid blue here but
   looks nearly empty in modification-type mode.
@@ -84,18 +83,18 @@ modified-base workflow.
 ### Pair orientation and insert size
 
 For paired-end data, **Color by → Pair orientation** and **Color by → Insert
-size** highlight discordant pairs — the main way to scan short reads for
+size** highlight discordant pairs, the main way to scan short reads for
 structural variants. Reads with an unexpectedly large insert turn red, smaller
 turn pink, and abnormal pair orientations get their own colors. The combined
 **Insert size and orientation** mode prioritizes the strongest cue: a short
 insert always paints pink (an insertion is here), otherwise abnormal orientation
 wins, otherwise a large insert paints red (deletion). Insert-size thresholds are
 robust to the long tail of large inserts (`median ± 3·1.4826·MAD`) so the
-short-insert signal isn't washed out — see the
+short-insert signal isn't washed out. See the
 [SV visualization guide](/docs/user_guides/sv_visualization) for the full color
 tables.
 
-<Figure caption="Reads colored by pair orientation at an inverted duplication. Most pairs are concordant LR (grey); the discordant ones cluster at the breakpoints — teal RL pairs (mates pointing away) flag the tandem duplication, while green LL and dark blue RR same-direction pairs flag the inversion." src="/img/inverted_duplication.png" />
+<Figure caption="Reads colored by pair orientation at an inverted duplication. Most pairs are concordant LR (grey); the discordant ones cluster at the breakpoints: teal RL pairs (mates pointing away) flag the tandem duplication, while green LL and dark blue RR same-direction pairs flag the inversion." src="/img/inverted_duplication.png" />
 
 The [SV visualization guide](/docs/user_guides/sv_visualization) has the full
 color tables and worked examples on real structural variants.
@@ -111,14 +110,14 @@ more clearly than coloring alone. The
 ## Grouping reads
 
 The track menu's **Group by...** splits the pileup into one coverage+pileup
-section per value of a chosen dimension — strand, read group (RG), or any tag
+section per value of a chosen dimension: strand, read group (RG), or any tag
 such as `HP`. Each group gets a divider label and the groups share one coverage
 scale, so they read independently. Grouping a phased BAM by `HP` turns it into
 one pileup per haplotype.
 
 <Figure caption="Group by... opens a dialog where you pick the dimension (here the HP haplotype tag) and can color by the same tag." src="/img/alignments/haplotype_groupby.png" />
 
-<Figure caption="HG002 ONT reads grouped and colored by the HP tag — the pileup splits into one tinted section per haplotype, so phased reads and their haplotype-correlated SNPs read at a glance." src="/img/alignments/haplotype.png" />
+<Figure caption="HG002 ONT reads grouped and colored by the HP tag. The pileup splits into one tinted section per haplotype, so phased reads and their haplotype-correlated SNPs read at a glance." src="/img/alignments/haplotype.png" />
 
 <Figure caption="A 27 bp heterozygous deletion in HG002 ONT reads, grouped by HP into haplotype 1 (pink) and haplotype 2 (blue). The deletion-supporting reads concentrate in a single haplotype." src="/img/smalldel.png" />
 
@@ -155,7 +154,7 @@ coverage, to suppress noise).
 
 <Figure caption="Clip indicators above the coverage track: blue marks soft clips, red marks hard clips." src="/img/alignment_clipping_indicators.png" />
 
-Insertions larger than 10bp also draw a purple rectangle in the pileup — most
+Insertions larger than 10bp also draw a purple rectangle in the pileup, most
 visible with long reads, which span larger insertions.
 
 <Figure caption="A large insertion across nanopore, PacBio, and Illumina reads: long reads span it as a dense column of purple insertion rectangles." src="/img/insertion.png" />
@@ -172,10 +171,10 @@ structural-variant breakpoint.
 
 ## Filtering reads
 
-The track menu's **Filter by...** hides reads by SAM flag — for example,
-excluding duplicates and secondary alignments to clean up a dense pileup, or
-keeping only properly-paired reads. You can also filter to a specific read name
-or tag value (`HP:1` for one haplotype, `HP:*` for any read carrying the tag).
+The track menu's **Filter by...** hides reads by SAM flag, for example excluding
+duplicates and secondary alignments to clean up a dense pileup, or keeping only
+properly-paired reads. You can also filter to a specific read name or tag value
+(`HP:1` for one haplotype, `HP:*` for any read carrying the tag).
 
 <Figure caption="The Filter by dialog. The two flag columns are an include/exclude bitmask; by default unmapped, QC-fail, and duplicate reads are excluded." src="/img/alignments/filter_dialog.png" />
 
@@ -208,23 +207,23 @@ available height.
 
 _Show read cloud_ lays pairs out on the Y axis by the **log distance between
 mates**, making the insert-size distribution visible at a glance. Patterns that
-arcs flatten separate clearly — for example, short-insert (insertion-supporting)
+arcs flatten separate clearly, for example short-insert (insertion-supporting)
 pairs drawn pink lift away from the background.
 
 <Figure caption="Read cloud on a synthetic SV dataset. Reads are stratified by log distance between mates, surfacing insertion pairs (pink) against the background." src="/img/alignments/read_cloud.png" />
 
 ## See also
 
-- [Structural variant visualization](/docs/user_guides/sv_visualization) —
+- [Structural variant visualization](/docs/user_guides/sv_visualization) -
   interpreting SV signals across alignment colorings, arcs, read clouds, and the
   breakpoint split view
-- [SV inspector](/docs/user_guides/sv_inspector_view) — whole-genome SV triage
-- [Variant track](/docs/user_guides/variant_track) — inspect the VCF call behind
+- [SV inspector](/docs/user_guides/sv_inspector_view) - whole-genome SV triage
+- [Variant track](/docs/user_guides/variant_track) - inspect the VCF call behind
   the read evidence
-- [Alignments track configuration](/docs/config_guides/alignments_track) —
+- [Alignments track configuration](/docs/config_guides/alignments_track) -
   config-file options
-- [LinearAlignmentsDisplay config schema](/docs/config/linearalignmentsdisplay)
-  — every display slot, autogenerated from source
-- [Gallery: alignments and long reads](/gallery/#alignments) — live
+- [LinearAlignmentsDisplay config schema](/docs/config/linearalignmentsdisplay) -
+  every display slot, autogenerated from source
+- [Gallery: alignments and long reads](/gallery/#alignments) - live
   haplotype-sorted deletions, multi-platform insertions, RNA-seq junctions, and
   fiber-seq examples to open and explore

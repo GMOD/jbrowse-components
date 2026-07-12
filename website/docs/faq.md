@@ -88,7 +88,7 @@ can help extract track definitions from a JBrowse 1 config.
 JBrowse 2 also has a built-in **JBrowse 1 connection** feature that can connect
 directly to a running JBrowse 1 data directory and read its `trackList.json`,
 letting you browse your existing JBrowse 1 tracks without a full migration. This
-is not recommended for most purposes — it is limited in functionality and is
+is not recommended for most purposes. It is limited in functionality and is
 mainly useful as a temporary bridge.
 
 ### How do I cite JBrowse 2
@@ -109,8 +109,8 @@ It is free for both academic and commercial use.
 
 ### What web server do I need to run JBrowse 2
 
-JBrowse 2 is just static JS/CSS/HTML — no backend required. Deploy by copying
-the folder to your web server (e.g. `/var/www/html/`) or Amazon S3.
+JBrowse 2 is just static JS/CSS/HTML, no backend required. Deploy by copying the
+folder to your web server (e.g. `/var/www/html/`) or Amazon S3.
 
 If you use Django, put jbrowse-web in the static resources folder, but serve
 data files from a separate server (Django's static resources folder won't serve
@@ -129,15 +129,15 @@ BGZF-compressed file (BAM, VCF.gz, GFF.gz, BED.gz, .fa.gz, etc.).
 BGZF looks like gzip to the server, so content-sniffers like Apache's
 `mod_mime_magic`, PHP's `mime_content_type`, and some CDN auto-rules add the
 header. The browser then silently decompresses the file before JavaScript sees
-it. JBrowse needs the raw bytes — it does its own BGZF decompression and seeks
-into the file using offsets from `.bai`/`.tbi`/`.csi`/`.gzi` — so reads fail
-with truncated data, "invalid BGZF block", or random gaps. Byte range requests
-break for the same reason.
+it. JBrowse needs the raw bytes. It does its own BGZF decompression and seeks
+into the file using offsets from `.bai`/`.tbi`/`.csi`/`.gzi`, so reads fail with
+truncated data, "invalid BGZF block", or random gaps. Byte range requests break
+for the same reason.
 
 **The fix:** don't set `Content-Encoding` on these files. Serve them as opaque
 binary.
 
-- **Apache** — disable `mod_mime_magic`, or scope it. To keep it on elsewhere,
+- On Apache, disable `mod_mime_magic`, or scope it. To keep it on elsewhere,
   unset the header for genomic extensions:
 
   ```apache
@@ -146,19 +146,19 @@ binary.
   </FilesMatch>
   ```
 
-- **Nginx** — only `gzip` text MIME types (the default `gzip_types` is fine;
-  don't add `application/octet-stream` or `application/gzip`). Don't enable
+- On Nginx, only `gzip` text MIME types (the default `gzip_types` is fine; don't
+  add `application/octet-stream` or `application/gzip`). Don't enable
   `gzip_static` for genomic files.
 
-- **S3 / CloudFront** — don't upload with `--content-encoding gzip`. Fix a bad
+- On S3 / CloudFront, don't upload with `--content-encoding gzip`. Fix a bad
   upload with `aws s3 cp --content-encoding "" ...`.
 
-- **PHP / app servers** — disable auto-content-type middleware on these paths.
+- On PHP / app servers, disable auto-content-type middleware on these paths.
 
 To check, open dev tools' Network tab, request the file, and confirm no
 `Content-Encoding: gzip` header on the response.
 
-Compressing `config.json` with `Content-Encoding: gzip` is fine — that's just a
+Compressing `config.json` with `Content-Encoding: gzip` is fine, that's just a
 text file. The rule only applies to BGZF binary files. See also
 [How do I reduce config.json download size?](#how-do-i-reduce-configjson-download-size).
 
@@ -177,7 +177,7 @@ it.
 
 This adds a `jbrowse` command to your PATH (assuming a standard Node.js
 installation via nodesource or nvm). Note: the CLI only prepares your
-config.json — it **does not run server-side code**.
+config.json. It **does not run server-side code**.
 
 ### How can I make a header on a jbrowse-web instance
 
@@ -202,15 +202,15 @@ If you've manually downloaded jbrowse-web, the newest releases can be found
 
 ### How can I setup JBrowse 2 without the CLI tools
 
-The CLI is the easiest way to add assemblies and tracks — `jbrowse add-track`
-will figure out the track type, index files, and config entries for you — so we
+The CLI is the easiest way to add assemblies and tracks (`jbrowse add-track`
+will figure out the track type, index files, and config entries for you), so we
 recommend it for most setups. But it's optional.
 
 To set up JBrowse without the CLI, download a zip from the
 [releases page](https://github.com/GMOD/jbrowse-components/releases) and unzip
 it into your web directory. From there you can:
 
-- edit `config.json` in a text editor — see the
+- edit `config.json` in a text editor, see the
   [config guide](/docs/config_guide) and
   [config basics](/docs/config_guides/intro)
 - use the [admin server](/docs/quickstart_adminserver), which provides a GUI for
@@ -295,8 +295,8 @@ With the CLI, supply that `displays` entry via `--config`:
 jbrowse add-track genes.gff.gz --load copy --config '{"displays":[{"type":"LinearBasicDisplay","color":"green"}]}'
 ```
 
-**In a URL:** set `color` in a track's `displaySnapshot` in the session spec —
-see [URL parameters](/docs/urlparams/#live-example-feature-track-color).
+**In a URL:** set `color` in a track's `displaySnapshot` in the session spec.
+See [URL parameters](/docs/urlparams/#live-example-feature-track-color).
 
 ### How do I color features by an attribute (color callback)
 
@@ -393,13 +393,13 @@ JBrowse 1 the app menu operated directly on the single view.
 
 With the view focused (click it first):
 
-- `Ctrl`/`Cmd` + `↑` / `↓` — zoom in / out
-- `Ctrl`/`Cmd` + `←` / `→` — pan left / right
-- `Ctrl` + mouse wheel — zoom (trackpad pinch also works)
-- `Shift` + click-drag — rubberband-select a region
-- `Shift` (held, no drag) — show a red vertical guide bar
-- `Ctrl`/`Cmd` + `Z` — undo; `Ctrl`/`Cmd` + `Shift` + `Z` (or `Ctrl` + `Y`) —
-  redo
+- `Ctrl`/`Cmd` + `↑` / `↓` - zoom in / out
+- `Ctrl`/`Cmd` + `←` / `→` - pan left / right
+- `Ctrl` + mouse wheel - zoom (trackpad pinch also works)
+- `Shift` + click-drag - rubberband-select a region
+- `Shift` (held, no drag) - show a red vertical guide bar
+- `Ctrl`/`Cmd` + `Z` for undo, `Ctrl`/`Cmd` + `Shift` + `Z` (or `Ctrl` + `Y`)
+  for redo
 
 See [Basic usage](/docs/user_guides/basic_usage#zooming) for the scroll-to-zoom
 toggle and other navigation controls.
@@ -539,8 +539,8 @@ Sessions can grow too large to fit in a URL, so JBrowse stores the session in
 sessionStorage/IndexedDB and keeps only the session ID in the URL bar. Use the
 Share button to generate a proper shareable link.
 
-`@jbrowse/react-linear-genome-view2` makes no attempt to access URL query params
-— that logic must be implemented by the embedding application.
+`@jbrowse/react-linear-genome-view2` makes no attempt to access URL query
+params. That logic must be implemented by the embedding application.
 
 Pasting the URL bar into another tab on the same computer restores the session
 from sessionStorage (same tab) or IndexedDB (new tab), but those sessions are
@@ -563,15 +563,15 @@ The DynamoDB contents cannot be decrypted even by JBrowse administrators.
 
 ### Are my share links reproducible
 
-It depends which link you mean — there are two, and they behave differently:
+It depends which link you mean. There are two, and they behave differently:
 
-- The **short link** (`&session=share-<ID>&password=<KEY>`) is _not_
-  reproducible. Each click of the Share button mints a new random encryption key
-  and uploads a new encrypted blob, so you get a new `<ID>`/`<KEY>` pair every
-  time — even for the exact same view. This is by design: the short link is just
-  a key into our hosted store.
+- The short link (`&session=share-<ID>&password=<KEY>`) is _not_ reproducible.
+  Each click of the Share button mints a new random encryption key and uploads a
+  new encrypted blob, so you get a new `<ID>`/`<KEY>` pair every time, even for
+  the exact same view. This is by design: the short link is just a key into our
+  hosted store.
 
-- The **long URL** _is_ reproducible. Click the gear icon in the Share dialog to
+- The long URL _is_ reproducible. Click the gear icon in the Share dialog to
   switch to "Long URL" mode; this encodes the entire session as JSON directly in
   the URL, with no server round-trip and no minted password. The same view
   produces the same long URL (given the same config), and it keeps working even
@@ -580,8 +580,8 @@ It depends which link you mean — there are two, and they behave differently:
 The one thing that can break reproducibility is your **config**, not the link. A
 restored session references tracks by `trackId`, so if a redeploy regenerates
 `config.json` with different `trackId`s, the link can no longer find those
-tracks. Keep `trackId`s deterministic across builds and shared links stay stable
-— see
+tracks. Keep `trackId`s deterministic across builds and shared links stay
+stable. See
 [keeping trackIds stable](/docs/config_guides/deploying/#keep-trackids-stable-for-reproducible-links)
 and
 [why a saved session fails to load](/docs/faq/#why-does-my-saved-session-fail-to-load).
@@ -604,7 +604,7 @@ differently than your assembly (e.g. `chr1` vs `1`, or `NC_000001.11` vs
 show up on a region the assembly calls `1`.
 
 To check, open the track menu and click "About track" to see the reference names
-the file actually contains. Compare those against your assembly's names — the
+the file actually contains. Compare those against your assembly's names, the
 name in the location box, or the sequence names in your FASTA/`.fai`. If they
 don't match, add
 [reference name aliasing](/docs/config_guides/assemblies#configuring-reference-name-aliasing)
@@ -625,13 +625,13 @@ an error rather than rendering blank, so that shows up differently.)
 
 This happens when JBrowse is served from a different domain than your data (e.g.
 JBrowse on one host, data on a separate S3 / MinIO bucket). JBrowse cannot work
-around CORS restrictions — the fix must be on the data server.
+around CORS restrictions. The fix must be on the data server.
 
 At minimum the data server must:
 
 - return `Access-Control-Allow-Origin` matching your JBrowse origin (or `*`),
 - allow the `Range` request header (`Access-Control-Allow-Headers: Range`), and
-- honor byte-range requests — respond `206 Partial Content` with the requested
+- honor byte-range requests: respond `206 Partial Content` with the requested
   bytes (not `200` with the whole file).
 
 You do **not** need to expose `Content-Range`. JBrowse detects end-of-file from
@@ -685,8 +685,8 @@ export MINIO_API_CORS_ALLOW_ORIGIN="https://your-jbrowse-host.example.com"
 
 ### Why does my saved session fail to load
 
-Changing or deleting a track's ID breaks any saved session that references it —
-the whole session fails, not just that track. Make these changes carefully.
+Changing or deleting a track's ID breaks any saved session that references it.
+The whole session fails, not just that track. Make these changes carefully.
 
 ### What should I do if the Share system isn't working
 

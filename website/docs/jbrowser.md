@@ -29,7 +29,7 @@ You describe the browser with plain values; helper constructors build the
 config. There are no JSON strings to assemble and nothing imperative to wire up.
 
 Name a hosted genome and the assembly, reference-name aliases, cytobands, and
-gene-name search all come preconfigured — `location` can be a gene symbol:
+gene-name search all come preconfigured, and `location` can be a gene symbol:
 
 ```r
 library(JBrowseR)
@@ -76,6 +76,6 @@ Full documentation is at
 
 ## See also
 
-- [JBrowse Jupyter](/docs/jbrowse_jupyter) — the Python/Jupyter equivalent
-- [Embedded components](/docs/embedded_components) — the underlying JS/React
+- [JBrowse Jupyter](/docs/jbrowse_jupyter) - the Python/Jupyter equivalent
+- [Embedded components](/docs/embedded_components) - the underlying JS/React
   linear genome view this wraps

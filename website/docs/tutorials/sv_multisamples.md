@@ -15,8 +15,8 @@ analyses:
 - Examining SV inheritance in a parent–child trio
 - Characterizing a large chromosomal inversion on chr19
 
-For SNP-level trio analysis — phased genotypes, IBD blocks, and crossing-over
-visualization — see the companion
+For SNP-level trio analysis (phased genotypes, IBD blocks, and crossing-over
+visualization) see the companion
 [Phased trio analysis](/docs/tutorials/analyze_trio) tutorial.
 
 Prefer a notebook? The
@@ -49,7 +49,7 @@ selector (top-left menu icon of any linear view):
 
 [Open the 1000 Genomes demo](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json)
 
-In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset — under
+In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset, under
 **1000 Genomes → SV callsets**, listed by its file name,
 **1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf**. A track of orange SV bars
 will appear across the genome.
@@ -78,7 +78,7 @@ sorted and filtered by any column.
 Useful filters to try:
 
 - Type `DEL` in the SVTYPE column to isolate deletions
-- Type `INV` to isolate inversions — these appear as arcs within a single
+- Type `INV` to isolate inversions, which appear as arcs within a single
   chromosome arm rather than inter-chromosomal chords
 - Click any row to jump directly to that locus in the linear view
 
@@ -88,7 +88,7 @@ For a full walkthrough of loading data into the SV inspector, see the
 ## Per-sample genotypes
 
 With the SV track loaded in the linear view, click any variant bar to open its
-feature details panel. Scroll to the **SAMPLES** section — this lists every
+feature details panel. Scroll to the **SAMPLES** section, which lists every
 sample in the cohort with its genotype (GT), read depth, and other per-sample
 fields.
 
@@ -111,12 +111,12 @@ and the corresponding read tracks:
 
 <Figure caption="Multi-sample SV view with trio alignment tracks loaded. The top track shows the 1KGP SV callset, and the three alignment tracks below are the mother, child, and father. The feature details panel on the right shows the BREAKENDS section (with a link to open the breakpoint split view) and the SAMPLES table listing each sample's GT, depth, and other per-sample fields." src="/img/multi-sv-trio.png" />
 
-| Genotype pattern            | Interpretation                               |
-| --------------------------- | -------------------------------------------- |
-| Child 0/1, both parents 0/0 | Candidate de novo SV                         |
-| Child 0/1, one parent 0/1   | Inherited from that parent                   |
-| Child 1/1, both parents 0/1 | Homozygous — inherited copy from each parent |
-| Child 0/0                   | Not present in this individual               |
+| Genotype pattern            | Interpretation                              |
+| --------------------------- | ------------------------------------------- |
+| Child 0/1, both parents 0/0 | Candidate de novo SV                        |
+| Child 0/1, one parent 0/1   | Inherited from that parent                  |
+| Child 1/1, both parents 0/1 | Homozygous, inherited copy from each parent |
+| Child 0/0                   | Not present in this individual              |
 
 The trio alignment tracks let you verify read-level support for each genotype.
 Look for coverage changes, soft-clipped reads, or orientation anomalies in each
@@ -128,7 +128,7 @@ the [Phased trio analysis](/docs/tutorials/analyze_trio) tutorial.
 
 ## The chr19 large inversion
 
-The 1KGP SV callset includes a large inversion call on chromosome 19 —
+The 1KGP SV callset includes a large inversion call on chromosome 19:
 `HGSV_72999`, a ~730 kb inversion spanning roughly chr19:41,797,752–42,527,236.
 It is an imprecise, manually-flagged call that overlaps neighboring complex
 (CPX) events, which makes it a good case for reading the read-level evidence at
@@ -137,12 +137,10 @@ the breakpoints rather than trusting the call outright. Navigate to
 
 At this scale the variant track shows the inversion call as a wide bar spanning
 the region. Use the **Cluster by genotype** option in the track menu to group
-samples into ref/ref (0/0), het (0/1), and hom-alt (1/1) rows. The grouping
-shows the population frequency of the inversion directly: most samples are
-reference homozygous, with a subset carrying one or two copies of the inverted
-allele.
+samples into ref/ref (0/0), het (0/1), and hom-alt (1/1) rows, showing the
+inversion's frequency across the cohort at a glance.
 
-<Figure caption="chr19 region containing the large inversion shown in the 1KGP SV callset alongside pileup tracks from multiple samples. The dense colored variation in the alignment tracks reflects the two orientations of the inverted segment segregating in the population. The track selector panel on the right shows the 1000 Genomes track categories, and enabling 1000 Genomes → Alignments adds coverage and pileup panels per sample." src="/img/multisv.png" />
+<Figure caption="chr19 region containing the large inversion shown in the 1KGP SV callset alongside pileup tracks from multiple samples. The track selector panel on the right shows the 1000 Genomes track categories, and enabling 1000 Genomes → Alignments adds coverage and pileup panels per sample." src="/img/multisv.png" />
 
 ### Read orientation evidence at the breakpoints
 
@@ -150,12 +148,12 @@ Zoom in to one of the inversion breakpoints (the call's endpoints, roughly
 chr19:41,797,752 and chr19:42,527,236) and enable pair-orientation coloring on a
 BAM track from the track menu. At the breakpoint you will see:
 
-- **Green (LL)** pairs — both mates mapping to the forward strand — and **dark
-  blue (RR)** pairs — both mates mapping to the reverse strand — clustering at
-  the junction. These are the hallmark orientation signal of an inversion: reads
-  that straddle the breakpoint change from the normal LR orientation to same-
-  direction LL or RR.
-- **Soft-clipped reads** at the exact breakpoint edge, where reads cannot align
+- Green (LL) pairs, both mates mapping to the forward strand, and dark blue (RR)
+  pairs, both mates mapping to the reverse strand, cluster at the junction.
+  These are the hallmark orientation signal of an inversion: reads that straddle
+  the breakpoint change from the normal LR orientation to same-direction LL or
+  RR.
+- Soft-clipped reads at the exact breakpoint edge, where reads cannot align
   through the junction sequence
 
 Enable paired arcs from the track menu's **Read connections** submenu to see
@@ -163,24 +161,23 @@ long-range connections spanning the inversion. Arcs with LL/RR coloring that
 span the inverted interval confirm the rearrangement.
 
 See the
-[SV visualization guide — Inversion section](/docs/user_guides/sv_visualization#inversion)
+[SV visualization guide, Inversion section](/docs/user_guides/sv_visualization#inversion)
 for diagrams of these orientation patterns.
 
 For a cleaner signal, the demo also includes Oxford Nanopore long-read
-alignments for 1,019 samples — the
+alignments for 1,019 samples, the
 [1KG ONT Vienna resource](https://www.internationalgenome.org/data-portal/data-collection/1kg_ont_vienna)
-([Schloissnig et al., 2025](https://doi.org/10.1038/s41586-025-09290-7)) — under
+([Schloissnig et al., 2025](https://doi.org/10.1038/s41586-025-09290-7)), under
 **1000 Genomes → Alignments → ONT (Vienna long-read)**. `HGSV_72999` is a
 heterozygous call in 274 of the 3,202 samples, 72 of which have ONT data, so
-pick a carrier and load its ONT track — for example **HG00637 ONT (Vienna)**.
+pick a carrier and load its ONT track, for example **HG00637 ONT (Vienna)**.
 Where a short read can only imply the rearrangement through pair orientation, a
 single ONT read reads straight through a breakpoint: the part before the
 junction aligns forward and the part after aligns to the reverse strand (shown
 as a supplementary/split alignment), so one read directly records the strand
-flip that defines the inversion. This is exactly the read-level evidence that
-lets you trust an imprecise, manually-flagged call like this one.
+flip that defines the inversion.
 
-<Figure caption="HG00637 ONT (Vienna) long reads at the left breakpoint of the chr19 inversion (chr19:41,797,752), below the 1KGP ensemble SV calls (HGSV_72998/72999 begin at the junction). Reads from the inverted haplotype clip at the breakpoint and continue as a reverse-strand (red) supplementary alignment, so a single long read records the strand flip directly — the evidence that short-read pair orientation can only infer." src="/img/multisv_ont_inversion.png" />
+<Figure caption="HG00637 ONT (Vienna) long reads at the left breakpoint of the chr19 inversion (chr19:41,797,752), below the 1KGP ensemble SV calls (HGSV_72998/72999 begin at the junction). Reads from the inverted haplotype clip at the breakpoint and continue as a reverse-strand (red) supplementary alignment, so a single long read records the strand flip that short-read pair orientation can only infer." src="/img/multisv_ont_inversion.png" />
 
 ### Breakpoint split view
 
@@ -207,13 +204,13 @@ For more on navigating the breakpoint split view, see
 
 ## See also
 
-- [SV visualization guide](/docs/user_guides/sv_visualization) — reference for
+- [SV visualization guide](/docs/user_guides/sv_visualization) - reference for
   all SV display types and SV-type read signatures
-- [SV inspector guide](/docs/user_guides/sv_inspector_view) — loading data into
+- [SV inspector guide](/docs/user_guides/sv_inspector_view) - loading data into
   the SV inspector
-- [Multi-sample variant displays](/docs/user_guides/multivariant_track) —
+- [Multi-sample variant displays](/docs/user_guides/multivariant_track) -
   regular and matrix display mode details
-- [Phased trio analysis](/docs/tutorials/analyze_trio) — SNP-level trio phasing
+- [Phased trio analysis](/docs/tutorials/analyze_trio) - SNP-level trio phasing
   and IBD block analysis
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) — end-to-end SV
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - end-to-end SV
   workflow with a cancer dataset

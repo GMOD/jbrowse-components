@@ -13,10 +13,10 @@ the corresponding residue on the structure or alignment.
 
 This functionality is provided by two plugins:
 
-- [jbrowse-plugin-protein3d](https://github.com/GMOD/jbrowse-plugin-protein3d) —
+- [jbrowse-plugin-protein3d](https://github.com/GMOD/jbrowse-plugin-protein3d) -
   embeds [Mol\*](https://molstar.org/) 3D structure views and can query
   AlphaFold DB and UniProt
-- [jbrowse-plugin-msaview](https://github.com/GMOD/jbrowse-plugin-msaview) —
+- [jbrowse-plugin-msaview](https://github.com/GMOD/jbrowse-plugin-msaview) -
   embeds [react-msaview](https://github.com/GMOD/react-msaview) for MSA and tree
   views, and can run NCBI BLAST
 
@@ -40,7 +40,7 @@ across all three. It is part of the
 project.
 
 The same plugins come preconfigured on the public genome browsers at
-[genomes.jbrowse.org](https://genomes.jbrowse.org) — pick a genome (for example
+[genomes.jbrowse.org](https://genomes.jbrowse.org). Pick a genome (for example
 [hg38](https://jbrowse.org/code/jb2/latest/?config=/ucsc/hg38/config.json)),
 search for a gene, right-click it, and launch the 3D protein-structure view or
 the MSA (multiple sequence alignment) view from its menu.
@@ -61,7 +61,7 @@ BRAF (UniProt P15056) directly in the hg38 browser:
 
 ## Installing the plugins
 
-You only need this to add the feature to your **own** JBrowse — both plugins are
+You only need this to add the feature to your **own** JBrowse. Both plugins are
 already deployed on the public browsers at
 [genomes.jbrowse.org](https://genomes.jbrowse.org), so if you just want to use
 them, open a genome there and skip this section. To add the feature to your own
@@ -74,7 +74,7 @@ JBrowse 2:
 
 ## Viewing a 3D structure
 
-First open a genome that has a gene track — the public browsers at
+First open a genome that has a gene track. The public browsers at
 [genomes.jbrowse.org](https://genomes.jbrowse.org) come with one, or add your
 own. The lookup needs a gene feature carrying a recognizable protein or
 transcript ID (as the RefSeq gene tracks on those browsers do), so an arbitrary
@@ -93,7 +93,7 @@ Launching the protein viewer from a gene keeps the two linked: hovering a
 position in the genome highlights the corresponding residue on the structure
 (and on the sequence alignment), and hovering the structure highlights the
 genomic position. This lets you read a coding variant straight onto the folded
-protein — for example, to see whether a ClinVar missense variant lands in a
+protein, for example to see whether a ClinVar missense variant lands in a
 functional domain or is buried in the core.
 
 <Figure caption="A connected session on human TP53 (UniProt P04637). The genome view (left) shows the NCBI RefSeq gene models and ClinVar variants, while the protein view (right) shows the AlphaFold structure together with the genome-to-structure sequence alignment and per-residue tracks (pLDDT confidence, domains, helices, hydrophobicity). Hovering a variant in the genome highlights the matching residue on the structure." src="/img/protein/connected.png" />
@@ -123,17 +123,17 @@ for details.
 
 ## See also
 
-- [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/) —
+- [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/) -
   hosted one-click demo linking an MSA, AlphaFold 3D structure, and linear
   genome view for any human gene
-- [Proteins in the Genome Browser](https://github.com/GMOD/proteinbrowser) —
+- [Proteins in the Genome Browser](https://github.com/GMOD/proteinbrowser) -
   metapage linking the Protein3d and MSAView plugins, their developer docs, and
   demos
-- [Proteins in the Genome Browser paper](https://doi.org/10.1016/j.jmb.2026.169645)
-  — the methods behind these plugins
-- [Gene tracks](/docs/user_guides/gene_track) — color-by-CDS reading frames and
+- [Proteins in the Genome Browser paper](https://doi.org/10.1016/j.jmb.2026.169645) -
+  the methods behind these plugins
+- [Gene tracks](/docs/user_guides/gene_track) - color-by-CDS reading frames and
   peptide lettering on the linear gene track
-- [Variant tracks](/docs/user_guides/variant_track) — loading and filtering VCFs
+- [Variant tracks](/docs/user_guides/variant_track) - loading and filtering VCFs
   such as ClinVar
-- [Plugin store](/docs/user_guides/plugin_store) — installing Protein3d,
+- [Plugin store](/docs/user_guides/plugin_store) - installing Protein3d,
   MSAView, and other plugins

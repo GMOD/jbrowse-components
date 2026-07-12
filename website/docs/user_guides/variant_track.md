@@ -16,7 +16,7 @@ VCFs (like 1000 Genomes) can contain thousands of samples.
 
 <Figure caption="Feature details panel for an SNV (C→T), with a per-sample genotype table in the SAMPLES section." src="/img/variant_panel.png" />
 
-[Live demo — example showing a deletion in a trio](https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-tzYolAQWOK&password=HGZA4)
+[Live demo: example showing a deletion in a trio](https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-tzYolAQWOK&password=HGZA4)
 
 The SAMPLES section lists every sample with its genotype (GT) and other
 per-sample fields, and each column has its own filter box accepting plain text
@@ -27,23 +27,23 @@ allele.
 
 ## Multi-sample variant matrix display
 
-For multi-sample VCFs, the matrix display renders genotypes as a dense heatmap —
-each row a sample, each column a variant — making shared variants, population
+For multi-sample VCFs, the matrix display renders genotypes as a dense heatmap
+(each row a sample, each column a variant), making shared variants, population
 structure, and runs of homozygosity visible at a glance. See
 [Multi-sample variant displays](/docs/user_guides/multivariant_track) for the
 full walkthrough of the regular and matrix multi-sample displays.
 
 ## See also
 
-- [Multi-sample variant display](/docs/user_guides/multivariant_track) —
+- [Multi-sample variant display](/docs/user_guides/multivariant_track) -
   population-scale VCFs as per-sample rows or a genotype matrix
-- [Structural variant visualization](/docs/user_guides/sv_visualization) —
+- [Structural variant visualization](/docs/user_guides/sv_visualization) -
   interpreting SV calls across views
-- [Alignments track](/docs/user_guides/alignments_track) — inspect the read
+- [Alignments track](/docs/user_guides/alignments_track) - inspect the read
   evidence behind a call
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track) — r² LD coloring to an
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track) - r² LD coloring to an
   index SNP, the same linkage concept behind variant LD displays
-- [Variant track configuration](/docs/config_guides/variant_track) — SVTYPE
+- [Variant track configuration](/docs/config_guides/variant_track) - SVTYPE
   coloring, multi-sample display defaults, and LD displays
-- [Gallery: variants and populations](/gallery/#variants) — live trio,
+- [Gallery: variants and populations](/gallery/#variants) - live trio,
   diploid-assembly, and GWAS LD examples to open and explore

@@ -9,16 +9,16 @@ tutorial_category: Synteny & comparative genomics
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. This tutorial builds a
 three-way grape / peach / cacao view from a single
-[jcvi](https://github.com/tanghaibao/jcvi) MCScan **`.blocks`** file — the
+[jcvi](https://github.com/tanghaibao/jcvi) MCScan **`.blocks`** file, the
 standard way the comparative-genomics community encodes a cross-species,
 gene-level ortholog table.
 
-For closely related genomes — strains or accessions of one species — a
+For closely related genomes (strains or accessions of one species), a
 whole-genome all-vs-all PAF is usually a better source. See
 [Synteny all-vs-all](/docs/tutorials/allvsall_synteny).
 
-Every figure below links to the live session that produced it — open the
-finished stacked view from its caption to explore it yourself.
+Every figure below links to the live session that produced it. Open the finished
+stacked view from its caption to explore it yourself.
 
 ## What a `.blocks` file is
 
@@ -91,7 +91,7 @@ python -m jcvi.formats.base join grape.peach.i1.blocks grape.cacao.i1.blocks \
 ```
 
 The `cut -f1,2,4` keeps the grape gene (col 1), its peach ortholog (col 2), and
-its cacao ortholog (col 4), dropping col 3 — the duplicate grape column the join
+its cacao ortholog (col 4), dropping col 3, the duplicate grape column the join
 emits from the second table.
 
 You now have `grape.blocks` plus `grape.bed`, `peach.bed`, and `cacao.bed`. The
@@ -119,7 +119,7 @@ equivalent JSON.
 ## Loading it in JBrowse with MCScanBlocksAdapter
 
 A synteny band draws one pair of genomes, but a `.blocks` file describes N. The
-`MCScanBlocksAdapter` bridges this: **one `.blocks` file — and one track — backs
+`MCScanBlocksAdapter` bridges this: **one `.blocks` file, and one track, backs
 every band of the stacked view.** List all the genomes in `assemblyNames`. The
 view tells the adapter which pair each band draws, and the adapter pulls those
 two columns from the table.
@@ -147,8 +147,8 @@ The `blockAssemblies` slot names every column in order (column 0 first), and
 }
 ```
 
-`bedLocations` is a per-column array and `blockAssemblies` names those columns —
-neither is expressible as a `jbrowse add-track` flag. To add this track from the
+`bedLocations` is a per-column array and `blockAssemblies` names those columns.
+Neither is expressible as a `jbrowse add-track` flag. To add this track from the
 CLI, save the JSON above to a file and hand it to `jbrowse add-track-json`,
 which inserts a full track config verbatim (any adapter shape works):
 
@@ -156,7 +156,7 @@ which inserts a full track config verbatim (any adapter shape works):
 jbrowse add-track-json blocks_track.json --out /path/to/jb2
 ```
 
-Unlike `add-track`, `add-track-json` only writes the config — it does not copy
+Unlike `add-track`, `add-track-json` only writes the config and does not copy
 data files, so put `grape.blocks.gz` and the BED files where their `uri`s point
 (e.g. the config directory) or reference them by URL.
 
@@ -171,7 +171,7 @@ a row and the one track is wired to back every adjacent band. The
 through this same quick start step by step.
 
 To open the stack automatically on load, add a top-level `defaultSession` key to
-your `config.json` holding the view snapshot — the declarative way JBrowse opens
+your `config.json` holding the view snapshot, the declarative way JBrowse opens
 a view, with no clicks or imperative setup. This demo stacks them peach – cacao
 – grape:
 
@@ -204,7 +204,7 @@ a view, with no clicks or imperative setup. This demo stacks them peach – caca
 ```
 
 `tracks` is one entry per band: `tracks[0]` connects rows 0–1 (peach–cacao) and
-`tracks[1]` connects rows 1–2 (cacao–grape) — both served by the same track,
+`tracks[1]` connects rows 1–2 (cacao–grape), both served by the same track,
 which lists all three genomes in `assemblyNames` so it can back any pair.
 `displayName` and `showColorLegend` are ordinary view properties and sit beside
 `type`; the one-time load settings (row order, tracks, `colorBy`,
@@ -213,11 +213,11 @@ which lists all three genomes in `assemblyNames` so it can back any pair.
 `autoDiagonalize` reorders and flips each row's chromosomes on load so the
 ribbons run along the diagonal instead of crossing into a hairball. It sweeps
 top-down: the top row stays put, the middle row is reordered to follow it, then
-the bottom row is reordered to follow the _reordered_ middle row — so the
+the bottom row is reordered to follow the _reordered_ middle row, so the
 diagonal cascades down the whole stack.
 
-`colorBy: "reference"` anchors every band on the shared middle row — cacao, the
-one genome both bands touch — so a cacao chromosome keeps a single color as its
+`colorBy: "reference"` anchors every band on the shared middle row (cacao, the
+one genome both bands touch) so a cacao chromosome keeps a single color as its
 orthologs trace up into peach and down into grape. The view's **Color by** menu
 offers the other modes (`query`, `strand`, `identity`, …).
 
@@ -227,22 +227,20 @@ offers the other modes (`query`, `strand`, `identity`, …).
 
 Because a `.blocks` table is reference-anchored on grape (column 0), only pairs
 that **include** grape are direct alignments. The adapter still serves a pair
-where neither side is the reference — e.g. peach–cacao above — by joining the
-two columns on their shared grape gene: a **transitive** ortholog link, not a
-direct alignment. So row order is a choice — when one genome dominates (grape's
-19 chromosomes vs peach's 8 / cacao's 10) put the cleaner pair on top; otherwise
+where neither side is the reference (e.g. peach–cacao above) by joining the two
+columns on their shared grape gene: a **transitive** ortholog link, not a direct
+alignment. So row order is a choice. When one genome dominates (grape's 19
+chromosomes vs peach's 8 / cacao's 10) put the cleaner pair on top, otherwise
 put the reference in the **middle** (peach – grape – cacao) so every band is
 direct.
 
 ## Zooming to a conserved block
 
-A whole-genome multi-way view is busy by nature: grape's lineage underwent an
-ancestral triplication, so several grape segments map to each peach or cacao
-segment and the ribbons genuinely cross. Zooming to a single conserved block
-tells the clearer story. Grape chromosome 11 and its homeologs — peach G7 and
-cacao IX — descend from one ancestral eudicot chromosome, so this one segment
-stays collinear across all three genomes. Putting grape in the middle makes both
-bands direct MCScan pairs.
+A whole-genome multi-way view is busy: several grape segments map to each peach
+or cacao segment, so the ribbons genuinely cross. Zooming to a single conserved
+block tells the clearer story. Grape chromosome 11 and its homeologs (peach G7
+and cacao IX) stay collinear across all three genomes. Putting grape in the
+middle makes both bands direct MCScan pairs.
 
 At the gene level, the ribbons connect individual orthologous genes. Turning on
 each genome's gene track (with **Show only genes** so each locus collapses to
@@ -253,13 +251,13 @@ grape, peach, and cacao.
 
 ## See also
 
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) — the whole-genome,
+- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - the whole-genome,
   complete-graph workflow for strains and accessions of one species
-- [Synteny visualization](/docs/tutorials/synteny_visualization) — pairwise
+- [Synteny visualization](/docs/tutorials/synteny_visualization) - pairwise
   dotplot and linear synteny basics
-- [Linear synteny view](/docs/user_guides/linear_synteny_view) — full reference
+- [Linear synteny view](/docs/user_guides/linear_synteny_view) - full reference
   for the multi-row `views`/`tracks` structure used above
-- [Synteny track config guide](/docs/config_guides/synteny_track) — adapter and
+- [Synteny track config guide](/docs/config_guides/synteny_track) - adapter and
   display options for synteny tracks in general
-- [MCScanBlocksAdapter config](/docs/config/mcscanblocksadapter) — full schema
+- [MCScanBlocksAdapter config](/docs/config/mcscanblocksadapter) - full schema
   for the adapter used above

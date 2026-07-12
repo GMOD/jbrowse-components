@@ -8,8 +8,8 @@ guide_category: Creating pluggable elements
 :::note
 
 This guide covers the GPU rendering path introduced in the WebGL/WebGPU
-migration — the scale-up path for large or dense datasets (roughly ≳100K
-features per frame). For typical annotation tracks, start with
+migration, the scale-up path for large or dense datasets (roughly ≳100K features
+per frame). For typical annotation tracks, start with
 [Plotting features in a custom display](/docs/developer_guides/plotting_features),
 which uses the shader-free Canvas2D path. The two share the same model, fetch
 chain, and lifecycle; only the renderer differs, so moving up later is a small
@@ -32,20 +32,20 @@ executeRender()  →    rpcDataMap (per region)   →    upload autorun
 The model keeps two autoruns running at all times (owned by
 `RenderLifecycleMixin`):
 
-- **Upload autorun** — fires when `laidOutDataMap` or the backend changes; calls
-  `backend.uploadRegion()` for regions that changed.
-- **Render autorun** — fires when `renderTick` bumps (after every upload) or
-  when frame-level state like scroll position changes; calls
+- The upload autorun fires when `laidOutDataMap` or the backend changes; it
+  calls `backend.uploadRegion()` for regions that changed.
+- The render autorun fires when `renderTick` bumps (after every upload) or when
+  frame-level state like scroll position changes; it calls
   `backend.renderBlocks()`.
 
 The backend is a HAL (Hardware Abstraction Layer) that dispatches to WebGPU,
-WebGL2, or Canvas2D at runtime. Your renderer code talks to the HAL — it never
+WebGL2, or Canvas2D at runtime. Your renderer code talks to the HAL. It never
 calls WebGPU or WebGL2 directly.
 
 See `agent-docs/ARCHITECTURE.md` for the full lifecycle spec and
 `packages/render-core/CLAUDE.md` for HAL invariants.
 
-The simplest concrete reference is `plugins/canvas/src/LinearBasicDisplay/` — a
+The simplest concrete reference is `plugins/canvas/src/LinearBasicDisplay/`, a
 generic feature display with four shader passes (rectangles, lines, chevrons,
 arrows).
 
@@ -96,7 +96,7 @@ export type MyRenderingBackend = PerRegionRenderingBackend<
 
 ## Step 2: Write the shaders
 
-Create a `.slang` file — JBrowse uses a Slang-derived shader language that
+Create a `.slang` file. JBrowse uses a Slang-derived shader language that
 compiles to both WGSL (WebGPU) and GLSL (WebGL2):
 
 Modules are referenced by bare name (`import hpmath;`), not by file path. The
@@ -145,15 +145,15 @@ Run `pnpm gen:shaders` after every edit. This emits `my.generated.ts` with:
 **Never hand-edit `*.generated.ts`.**
 
 Use `bpHi`/`bpLo` (high/low float32 split) for genomic positions in shader code.
-In TypeScript outside shader uniform writes, use plain `bp - bpStart` — the
-hi/lo split is only needed inside the shader.
+In TypeScript outside shader uniform writes, use plain `bp - bpStart`. The hi/lo
+split is only needed inside the shader.
 
-The `canvas_width` / `canvas_height` uniforms are CSS pixels — do not scale by
+The `canvas_width` / `canvas_height` uniforms are CSS pixels, so do not scale by
 `devicePixelRatio` in your uniform writes.
 
 ## Step 3: GPU renderer
 
-The base class `GpuPerRegionRenderingBackend` owns the per-frame scaffold —
+The base class `GpuPerRegionRenderingBackend` owns the per-frame scaffold:
 `resize`, `beginFrame`/`endFrame`, and the per-block scissor/viewport clip. You
 implement only two methods: `uploadRegion` (pack a region's features into a HAL
 buffer) and `drawRegion` (write uniforms and issue the draw pass for one
@@ -370,7 +370,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 }
 ```
 
-`rpcProps()` is watched by the fetch autorun — any change triggers a full
+`rpcProps()` is watched by the fetch autorun, so any change triggers a full
 re-fetch from workers. Don't put frequently-changing values (scroll position,
 zoom) here; put those in `renderState` instead. See
 `adr-016-bicolorpivot-stays-in-worker.md` for the trade-off.
@@ -414,25 +414,25 @@ full registration pattern).
 
 ## Key invariants
 
-- **Absolute uint32 coordinates** — all worker output uses absolute genomic
-  positions, not region-relative. float32 cannot hold 3 Gbp; use uint32 for
-  positions crossing the worker boundary.
-- **`rpcProps` must not contain fetch results** — `SettingsInvalidate` watches
+- All worker output uses absolute genomic uint32 coordinates, not
+  region-relative. float32 cannot hold 3 Gbp; use uint32 for positions crossing
+  the worker boundary.
+- `rpcProps` must not contain fetch results. `SettingsInvalidate` watches
   `rpcProps()`; putting derived cell data there creates an infinite fetch loop.
-- **Shader uniforms use CSS pixels** — `canvas_width`/`canvas_height` are CSS
-  pixels; do not scale by `devicePixelRatio` before writing them.
-- **Never edit `*.generated.ts`** — always edit `.slang` and run
-  `pnpm gen:shaders`; CI enforces this with `git diff --exit-code`.
+- Shader uniforms use CSS pixels. `canvas_width`/`canvas_height` are CSS pixels;
+  do not scale by `devicePixelRatio` before writing them.
+- Never edit `*.generated.ts`. Always edit `.slang` and run `pnpm gen:shaders`;
+  CI enforces this with `git diff --exit-code`.
 
 ## See also
 
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) — the
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) - the
   `MultiRegionDisplayMixin` autorun chain, `rpcProps`, and `renderState`
-- [RPC and worker system](/docs/developer_guides/rpc_workers) — the worker that
+- [RPC and worker system](/docs/developer_guides/rpc_workers) - the worker that
   packs the upload buffers this display renders
 - [Renderer architecture](/docs/developer_guides/renderer_architecture)
-- [Creating custom display types](/docs/developer_guides/creating_display) — the
+- [Creating custom display types](/docs/developer_guides/creating_display) - the
   Canvas2D-only path and display registration
 - [Adding SVG export to a display](/docs/developer_guides/svg_export)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) - overview of
   all element types, including displays

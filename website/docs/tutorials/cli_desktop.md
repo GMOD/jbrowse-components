@@ -2,15 +2,15 @@
 title: Building a config with the CLI for Desktop
 description:
   Use the jbrowse CLI to assemble a config.json plus local data files, then open
-  it directly in JBrowse Desktop — the same config also serves on the web
+  it directly in JBrowse Desktop. The same config also serves on the web
 guide_category: Tutorials
 tutorial_category: Getting started
 ---
 
 The [`@jbrowse/cli`](/docs/cli) lets you build a JBrowse configuration from the
 command line instead of clicking through the **Add track** form. You run a few
-commands and end up with one folder — a `config.json` sitting next to your data
-files — that you can **open directly in JBrowse Desktop** _or_ **serve on the
+commands and end up with one folder (a `config.json` sitting next to your data
+files) that you can **open directly in JBrowse Desktop** _or_ **serve on the
 web**, unchanged.
 
 It works in both places because the CLI records each file by a path _relative_
@@ -29,8 +29,8 @@ jbrowse --version
 
 ## Prepare your files first
 
-The CLI references and copies your data — it does **not** compress or index it,
-and JBrowse reads only indexed, compressed formats. So get each input into a
+The CLI references and copies your data, but it does **not** compress or index
+it, and JBrowse reads only indexed, compressed formats. So get each input into a
 JBrowse-ready form first, using [samtools](http://www.htslib.org/) / htslib:
 
 ```bash
@@ -68,15 +68,15 @@ on a track is its label in the track list.
 `--load` says how the CLI places a **local** file relative to the config (omit
 it for a remote URL, which is referenced in place):
 
-| `--load`  | What it does                                                        |
-| --------- | ------------------------------------------------------------------- |
-| `copy`    | Copy the file (and its index) into the config directory.            |
-| `move`    | Move it into the config directory.                                  |
-| `symlink` | Symlink it into the config directory (no data duplicated).          |
-| `inPlace` | Reference a file already staged in the directory; no file ops.      |
-| _(omit)_  | For a remote `https://…` URL — referenced directly, nothing copied. |
+| `--load`  | What it does                                                       |
+| --------- | ------------------------------------------------------------------ |
+| `copy`    | Copy the file (and its index) into the config directory.           |
+| `move`    | Move it into the config directory.                                 |
+| `symlink` | Symlink it into the config directory (no data duplicated).         |
+| `inPlace` | Reference a file already staged in the directory; no file ops.     |
+| _(omit)_  | For a remote `https://…` URL, referenced directly, nothing copied. |
 
-Now `myproject/` is self-contained — the config next to every file it needs:
+Now `myproject/` is self-contained, with the config next to every file it needs:
 
 ```
 myproject/
@@ -87,7 +87,7 @@ myproject/
 ```
 
 Inside `config.json`, the CLI referenced each file by its bare relative name
-(you don't need to edit this — it's just what the CLI wrote):
+(you don't need to edit this, it's just what the CLI wrote):
 
 ```json
 "adapter": {
@@ -102,32 +102,31 @@ Inside `config.json`, the CLI referenced each file by its bare relative name
 In JBrowse Desktop, choose **File → Open config.json or .jbrowse file…** (or the
 **Open config.json or .jbrowse file** button on the start screen) and pick
 `myproject/config.json`. Desktop resolves each relative path against the
-config's own folder, loading the copied files straight from local disk — no web
-server, no re-adding tracks through the UI.
+config's own folder, loading the copied files straight from local disk, with no
+web server and no re-adding tracks through the UI.
 
-(Prefer the GUI for a one-off file? Desktop's **Add track** picker still works —
-this CLI route shines when you want a scripted, repeatable setup, or the same
+(Prefer the GUI for a one-off file? Desktop's **Add track** picker still works.
+This CLI route is best when you want a scripted, repeatable setup, or the same
 config on both Desktop and the web.)
 
 ## Also use it on the web
 
-The same config and data work on the web too — the relative paths just resolve
-against the served config's URL instead of a local folder. JBrowse Web is a
-separate app, though, so serving `myproject/` on its own only hosts the files;
-you still need the browser app. Two ways to get there:
+The same config and data work on the web too. The relative paths resolve against
+the served config's URL instead of a local folder. JBrowse Web is a separate
+app, though, so serving `myproject/` on its own only hosts the files; you still
+need the browser app. Two ways to get there:
 
-- **Build into a JBrowse Web install.** Run `jbrowse create jbrowse2` first and
-  pass `--out jbrowse2` on the commands above, so the app and your config live
-  in one served folder. This is exactly the
-  [web quickstart](/docs/quickstart_web).
-- **Point an existing deployment at your config.** Host `myproject/` anywhere
-  (e.g. `npx serve myproject`) and open your JBrowse Web instance with its URL
+- Build into a JBrowse Web install: run `jbrowse create jbrowse2` first and pass
+  `--out jbrowse2` on the commands above, so the app and your config live in one
+  served folder. This is exactly the [web quickstart](/docs/quickstart_web).
+- Point an existing deployment at your config: host `myproject/` anywhere (e.g.
+  `npx serve myproject`) and open your JBrowse Web instance with its URL
   appended: `https://your-jbrowse/?config=http://localhost:3000/config.json`.
 
 ## Index gene names for search
 
-To make the location box search by gene name, index the text of your gene tracks
-— this also writes into the same directory:
+To make the location box search by gene name, index the text of your gene
+tracks. This also writes into the same directory:
 
 ```bash
 jbrowse text-index --out myproject
@@ -135,9 +134,9 @@ jbrowse text-index --out myproject
 
 ## See also
 
-- [CLI command reference](/docs/cli) — every `jbrowse` command and flag
-- [Desktop quickstart](/docs/quickstart_desktop) — installing and using JBrowse
+- [CLI command reference](/docs/cli) - every `jbrowse` command and flag
+- [Desktop quickstart](/docs/quickstart_desktop) - installing and using JBrowse
   Desktop
-- [Web quickstart](/docs/quickstart_web) — serving a config directory on the web
+- [Web quickstart](/docs/quickstart_web) - serving a config directory on the web
 - [Configuring assemblies](/docs/config_guides/assemblies) and
-  [tracks](/docs/config_guides/tracks) — the config the CLI writes, by hand
+  [tracks](/docs/config_guides/tracks) - the config the CLI writes, by hand

@@ -10,12 +10,12 @@ once and its tracks become available in the track selector.
 
 JBrowse supports three built-in connection types:
 
-- **UCSC Track Hub** — any
+- UCSC Track Hub - any
   [UCSC Genome Browser track hub](https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html)
   reachable over the network
-- **JB2 Track Hub** — a track hub based on a
+- JB2 Track Hub - a track hub based on a
   [JBrowse 2 config file](/docs/config_guides/from_config)
-- **JBrowse 1 data directory** — a legacy JBrowse 1 data directory with a
+- JBrowse 1 data directory - a legacy JBrowse 1 data directory with a
   `trackList.json`
 
 ## Connections in the track selector
@@ -26,7 +26,7 @@ below your regular tracks and named after the connection.
 A connection is loaded **lazily**: expanding its category is what fetches the
 hub's track list. This keeps large hubs (which can contain thousands of tracks)
 out of the way until you actually want them, and means you no longer have to
-"turn on" each connection separately — just expand it to browse.
+"turn on" each connection separately. Expand it to browse.
 
 Once expanded, the connection's tracks appear underneath it and you open them
 with their checkboxes like any other track.
@@ -46,7 +46,7 @@ loaded right away, so its tracks appear immediately.
 ## Connections and saved sessions
 
 When you open a track from a connection, that track is remembered in your
-session. After a page reload the track reopens immediately — with no need to
+session. After a page reload the track reopens immediately, with no need to
 re-fetch the whole hub. The connection's category is shown collapsed; expand it
 again whenever you want to browse the rest of its tracks.
 
@@ -69,7 +69,7 @@ https://hgdownload.soe.ucsc.edu/hubs/GCA/009/914/755/GCA_009914755.4/hub.txt
 
 Public hubs are listed in the
 [UCSC Public Hub directory](https://genome.ucsc.edu/cgi-bin/hgHubConnect). Each
-hub listed there has a "URL" column — paste that URL into the connection form.
+hub listed there has a "URL" column. Paste that URL into the connection form.
 
 JBrowse matches hub tracks to assemblies by genome ID. If the hub targets an
 assembly not already configured in your JBrowse instance, those tracks will not
@@ -102,13 +102,13 @@ See `jbrowse add-connection --help` or the
 
 ## See also
 
-- [Configuring connections](/docs/config_guides/connections) — the connection
+- [Configuring connections](/docs/config_guides/connections) - the connection
   config format and how connections are stored in config vs. the session
-- [Basic usage: opening tracks](/docs/user_guides/basic_usage#opening-tracks) —
+- [Basic usage: opening tracks](/docs/user_guides/basic_usage#opening-tracks) -
   opening individual tracks and connections from the menu
-- [Plugin store](/docs/user_guides/plugin_store) — add new connection and
+- [Plugin store](/docs/user_guides/plugin_store) - add new connection and
   adapter types
-- [Text searching configuration](/docs/config_guides/text_searching) — indexing
+- [Text searching configuration](/docs/config_guides/text_searching) - indexing
   feature names for the search box
-- [Live demos: full instances and hubs](/demos/#instances) — a UCSC GenArk hub
+- [Live demos: full instances and hubs](/demos/#instances) - a UCSC GenArk hub
   imported live in the app, plus a full multi-track demo instance

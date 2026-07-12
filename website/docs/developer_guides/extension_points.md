@@ -330,9 +330,9 @@ interface props {
 ```
 
 See also: `Core-extraFeaturePanel`. Unlike that point (which accumulates an
-array of additive panels), `Core-replaceWidget` is singular — one widget renders
-— so it stays a single-component fold: return your own component to replace/wrap
-the default, or return the default unchanged to opt out.
+array of additive panels), `Core-replaceWidget` is singular (one widget
+renders), so it stays a single-component fold: return your own component to
+replace/wrap the default, or return the default unchanged to opt out.
 
 Return value: The new React component you want to use
 
@@ -340,9 +340,9 @@ Note: Core-replaceWidget is called any time any widget opens, so if you are
 trying to only customize e.g. the feature details widget, you can filter on
 `model.trackId` because only feature detail widgets have a `trackId` field. You
 can also filter on `model.type` (e.g. `'AlignmentsFeatureWidget'`), but the type
-string varies depending on track type. To match a track id robustly — including
+string varies depending on track type. To match a track id robustly (including
 "user copies" of a track, which get a timestamp and `-sessionTrack` suffix
-appended — use the `matchTrackId` helper with a `RegExp`:
+appended), use the `matchTrackId` helper with a `RegExp`:
 
 ```tsx
 import { matchTrackId } from '@jbrowse/core/util'
@@ -385,7 +385,7 @@ Therefore, we check `model.trackId` that produced the popup instead.
 
 **Matching "user copy" tracks:** if you want e.g. a "User copy" of your track to
 get the same treatment, match the trackId with a `RegExp` via `matchTrackId`
-(shown above) rather than an exact compare — the copy of a track has a timestamp
+(shown above) rather than an exact compare. The copy of a track has a timestamp
 and `-sessionTrack` appended to its id.
 
 ### Core-extraFeaturePanel
@@ -417,7 +417,7 @@ The `model` has `model.trackId`, `model.trackType`, and `model.track`, though
 remain defined either way). Derive the session with `getSession(model)` if you
 need it.
 
-A panel decides for itself whether it applies by returning `null` — this is
+A panel decides for itself whether it applies by returning `null`. This is
 idiomatic React and keeps the registration trivial:
 
 ```tsx
@@ -437,8 +437,8 @@ pluginManager.addToExtensionPoint(
 ```
 
 Or scope at registration so you only append when the track matches. Use
-`matchTrackId` (accepts a `RegExp`) so a "user copy" of the track — which gets a
-timestamp and `-sessionTrack` suffix appended to its id — still matches:
+`matchTrackId` (accepts a `RegExp`) so a "user copy" of the track, which gets a
+timestamp and `-sessionTrack` suffix appended to its id, still matches:
 
 ```tsx
 import { matchTrackId } from '@jbrowse/core/util'
@@ -455,7 +455,7 @@ pluginManager.addToExtensionPoint(
 :::note
 
 This extension point previously folded to a **single** component. It now
-accumulates an **array** — append your component (`[...panels, MyPanel]`) and
+accumulates an **array**. Append your component (`[...panels, MyPanel]`) and
 return the array. A legacy callback that returns a bare component is still
 tolerated (it's normalized into the array), but to compose with other plugins'
 panels you must append rather than replace.
@@ -513,7 +513,7 @@ in the hierarchical track selector. The default dialog shows a faceted track
 selector scoped to the tracks in that category. Use this extension point to
 provide a custom UI for a specific category.
 
-- `args` - a React component — the default `DefaultFolderDialog`
+- `args` - a React component (the default `DefaultFolderDialog`)
 - `props` - an object of the type below
 
 ```typescript
@@ -611,7 +611,7 @@ A more complete example using this extension point is in
 type: async
 
 Launches a linear genome view. Rarely extended directly, but useful as a
-reference for implementing a `LaunchView-*` point for your own view type — see
+reference for implementing a `LaunchView-*` point for your own view type. See
 [Creating view types](/docs/developer_guides/creating_view).
 
 - `args` - an object with the following format
@@ -768,7 +768,7 @@ bookmark highlights. Append to the array and return it.
 
 type: async
 
-- `args` - `undefined` (notification point — no accumulator)
+- `args` - `undefined` (notification point, no accumulator)
 - `props` - an object of the type below
 
 ```typescript
@@ -921,7 +921,7 @@ type: synchronous
 
 Same as `DotplotView-SyntenyFileFormats` but for the LinearSyntenyView import
 form. Includes `selectedRow` context in props but the `Component` interface is
-identical — the parent handles `selectedRow` internally.
+identical. The parent handles `selectedRow` internally.
 
 ### LinearSyntenyView-ImportFormSyntenyOptions
 
@@ -1013,12 +1013,12 @@ avoid collisions.
 
 ## See also
 
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) - overview of
   every element type, including extension points
-- [Custom view types](/docs/developer_guides/creating_view) — the
+- [Custom view types](/docs/developer_guides/creating_view) - the
   `LaunchView-<type>` pattern referenced above
-- [Top-level menu items](/docs/developer_guides/menus) — a worked example using
+- [Top-level menu items](/docs/developer_guides/menus) - a worked example using
   `Core-extendPluggableElement` to add context menu items
-- [Add-track workflows](/docs/developer_guides/creating_addtrack_workflow) —
+- [Add-track workflows](/docs/developer_guides/creating_addtrack_workflow) -
   where `Core-guessAdapterForLocation`/`Core-guessTrackTypeForLocation` fit into
   adding tracks

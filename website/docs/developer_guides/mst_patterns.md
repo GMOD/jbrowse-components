@@ -40,7 +40,7 @@ const MyCanvas = observer(({ model }: { model: MyDisplayModel }) => {
 })
 ```
 
-Prefer `autorun` over `reaction` for drawing — `autorun` runs immediately and
+Prefer `autorun` over `reaction` for drawing. `autorun` runs immediately and
 tracks dependencies automatically. Use `reaction` only when you need to
 explicitly separate the tracked expression from the effect.
 
@@ -111,7 +111,7 @@ const MyModel = types
   }))
 ```
 
-Use multiple blocks when a getter depends on another getter — this makes the
+Use multiple blocks when a getter depends on another getter. This makes the
 dependency explicit through ordering.
 
 ## types.frozen
@@ -133,8 +133,8 @@ Frozen values are compared by reference. MST does not track individual fields
 inside them. If you need reactive access to a field inside a frozen value, copy
 it out into a regular MST property or a `.volatile()` field.
 
-For iterating a `types.frozen` field inside an autorun to track changes, just
-`void` the field — you don't need to enumerate its properties:
+For iterating a `types.frozen` field inside an autorun to track changes, `void`
+the field. You don't need to enumerate its properties:
 
 ```ts
 autorun(() => {
@@ -147,7 +147,7 @@ autorun(() => {
 
 Inside a `.views(self => ...)` block, reference sibling views via `self.X`
 rather than `this.X`. `this` works at runtime but breaks when a subclass
-overrides the getter — `self` dispatches to the override, `this` doesn't:
+overrides the getter. `self` dispatches to the override, `this` doesn't:
 
 ```ts
 .views(self => ({
@@ -184,15 +184,15 @@ flags, cached computed values, maps that are rebuilt from props):
 }))
 ```
 
-Observable maps (`.map<K, V>()`) give you reactive key-level tracking — an
+Observable maps (`.map<K, V>()`) give you reactive key-level tracking. An
 autorun that reads `map.get(key)` re-fires when that specific key changes, not
 on every map write.
 
 ## See also
 
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) — these
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) - these
   patterns in action across the fetch autoruns
-- [Configuration schema](/docs/developer_guides/configuration_schema) —
+- [Configuration schema](/docs/developer_guides/configuration_schema) -
   `ConfigurationReference` and `getConf` in models
-- [Creating custom view types](/docs/developer_guides/creating_view) — the view
+- [Creating custom view types](/docs/developer_guides/creating_view) - the view
   state model

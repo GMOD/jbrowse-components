@@ -14,7 +14,7 @@ normal genome comparison, see the
 
 You can follow along in a live demo built from three _Helicobacter pylori_
 strains (26695, J99, and CHC155) with all pairwise whole-genome alignments and
-gene annotations preloaded —
+gene annotations preloaded:
 [open the H. pylori synteny demo](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json).
 The two views below open directly into that data.
 
@@ -65,9 +65,8 @@ passed to `add-assembly`:
 jbrowse add-track alignment.paf -a query,reference --load copy
 ```
 
-The `-a` order is the reverse of the minimap2 argument order — the query
-assembly comes first: `minimap2 reference.fa query.fa` →
-`add-track -a query,reference`.
+The `-a` order is the reverse of the minimap2 argument order. The query assembly
+comes first: `minimap2 reference.fa query.fa` → `add-track -a query,reference`.
 
 ## Dotplot view
 
@@ -79,18 +78,18 @@ off-diagonal if there are rearrangements).
 
 From the main JBrowse start screen, click **Dotplot view**, select two
 assemblies (one per axis), and pick the synteny track. The query assembly goes
-in the first box and the target in the second — the same query/target order as
+in the first box and the target in the second, the same query/target order as
 the PAF columns.
 
 <Figure caption="The dotplot import form. The red callouts point at the two assembly selectors: choose a query (X-axis) and target (Y-axis) assembly, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
 
 ### Reading the dotplot
 
-- **Diagonal lines** (slope ≈ 1) represent collinear aligned regions.
-- **Off-diagonal lines** indicate rearrangements: inversions, translocations, or
+- Diagonal lines (slope ≈ 1) represent collinear aligned regions.
+- Off-diagonal lines indicate rearrangements: inversions, translocations, or
   duplications.
-- **Scattered points** represent short local alignments or repetitive regions.
-- **Gaps** suggest missing or misaligned sequence.
+- Scattered points represent short local alignments or repetitive regions.
+- Gaps suggest missing or misaligned sequence.
 
 <Figure caption="A dotplot of the H. pylori J99 (X-axis) vs 26695 (Y-axis) whole-genome alignment. The long diagonal is the collinear backbone, and the off-diagonal segments are rearrangements between the two strains." src="/img/sv_synteny/dotplot.png" />
 
@@ -105,18 +104,18 @@ linear synteny view, showing the alignment at base resolution.
 
 The linear synteny view stacks two or more genomic regions vertically, one above
 another, with ribbons connecting matching sequence blocks between adjacent
-genomes. It is not limited to two genomes — the screenshots below stack all
-three _H. pylori_ strains in a single multi-way view.
+genomes. It is not limited to two genomes. The screenshots below stack all three
+_H. pylori_ strains in a single multi-way view.
 
 ### Launching the linear synteny view
 
 You can launch a linear synteny view in two ways:
 
-- **From the dotplot** — select a region and choose **Open linear synteny view**
-  (as shown above).
-- **From the start screen** — click **Linear synteny view**, then pick an
-  assembly for each row and the synteny track to display between adjacent rows.
-  Use **Add row** to stack a third (or more) genome for a multi-way comparison.
+- From the dotplot, select a region and choose **Open linear synteny view** (as
+  shown above).
+- From the start screen, click **Linear synteny view**, then pick an assembly
+  for each row and the synteny track to display between adjacent rows. Use **Add
+  row** to stack a third (or more) genome for a multi-way comparison.
 
 ### Configuring the linear synteny view
 
@@ -135,15 +134,15 @@ for building a linear synteny view from a session-spec URL.
 The palette button in the synteny track header sets how the connecting ribbons
 are colored:
 
-- **Default** — colors each ribbon by its CIGAR operations (matches, mismatches,
+- Default colors each ribbon by its CIGAR operations (matches, mismatches,
   insertions, deletions).
-- **Strand** — forward and inverted alignments get different colors, so a ribbon
+- Strand gives forward and inverted alignments different colors, so a ribbon
   that twists between the panels stands out as an inversion.
-- **Identity** — colors by per-alignment sequence identity (warmer = higher),
+- Identity colors by per-alignment sequence identity (warmer = higher),
   highlighting conserved versus divergent blocks. This requires identity
   information in the file, which the `--eqx` minimap2 flag above provides.
-- **Query** and **Mapping quality** color by query sequence name and by PAF
-  MAPQ, respectively.
+- Query and Mapping quality color by query sequence name and by PAF MAPQ,
+  respectively.
 
 The synteny settings also include a **Fade by identity** toggle, which modulates
 ribbon opacity by identity independently of the color mode so low-identity
@@ -155,7 +154,7 @@ The ribbons connect aligned _sequence_, but the gene tracks on each genome can
 be colored independently. On a gene track, the **Color by attribute** dialog
 (track menu) assigns each unique value of a feature attribute a distinct,
 deterministic color. Coloring every strain's gene track by the gene symbol
-(`gene` attribute, effectively the ortholog id in bacteria — NCBI uses
+(`gene` attribute, effectively the ortholog id in bacteria, since NCBI uses
 standardized symbols across strains) makes orthologous genes share a color in
 every panel, so a gene's synteny is legible by color alone.
 
@@ -182,12 +181,11 @@ See the [PIF format guide](/docs/developer_guides/pif_format) for details.
 
 ## Next steps
 
-- **Overlay annotations** — load gene GFF/GTF files on both sides to identify
+- Overlay annotations by loading gene GFF/GTF files on both sides to identify
   conserved genes and orthologs.
-- **Compare multiple organisms** — load several pairwise alignments to build a
-  phylogenetic perspective on genome evolution.
-- **Multiway alignment** — for visualizing MAF (Multiple Alignment Format) data
-  across more than two genomes, see the
+- Compare multiple organisms by loading several pairwise alignments.
+- To visualize MAF (Multiple Alignment Format) data across more than two genomes
+  (multiway alignment), see the
   [MAF track config guide](/docs/config_guides/maf_track).
 
 The [gallery](/gallery) has a grape-vs-peach linear synteny example (genes plus
@@ -196,19 +194,19 @@ whole-genome human-vs-mouse comparison.
 
 ## See also
 
-- [Synteny track config guide](/docs/config_guides/synteny_track) — adapter and
+- [Synteny track config guide](/docs/config_guides/synteny_track) - adapter and
   display options for dotplot/synteny tracks
-- [Dotplot view](/docs/user_guides/dotplot_view) — full reference for the
+- [Dotplot view](/docs/user_guides/dotplot_view) - full reference for the
   dotplot view covered above
-- [Linear synteny view](/docs/user_guides/linear_synteny_view) — full reference
+- [Linear synteny view](/docs/user_guides/linear_synteny_view) - full reference
   for the linear synteny view covered above
-- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) — stacking closely
+- [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - stacking closely
   related strains from a single all-vs-all PAF
-- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) — the
+- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - the
   cross-species, gene-level `.blocks` workflow for N-way synteny
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) — the same
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab) - the same
   dotplot/synteny views applied to a tumor de novo assembly
-- [PIF format](/docs/developer_guides/pif_format) — the indexed alignment format
+- [PIF format](/docs/developer_guides/pif_format) - the indexed alignment format
   for large genomes, introduced above
 
 ## References

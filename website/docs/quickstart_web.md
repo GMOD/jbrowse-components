@@ -9,9 +9,9 @@ genome browser you host and share via a URL.
 
 Other ways to run JBrowse:
 
-- [JBrowse desktop](/docs/quickstart_desktop) — open local files without a web
+- [JBrowse desktop](/docs/quickstart_desktop) - open local files without a web
   server
-- [Embedded components](/docs/embedded_components) — embed a view in your own
+- [Embedded components](/docs/embedded_components) - embed a view in your own
   web app
 
 The `config.json` directory you build in this guide isn't web-only: the same
@@ -31,7 +31,7 @@ See [Building a config with the CLI for Desktop](/docs/tutorials/cli_desktop).
 
 ## Prerequisites
 
-- Node.js 18+ — use [NodeSource](https://github.com/nodesource) or
+- Node.js 18+ - use [NodeSource](https://github.com/nodesource) or
   [NVM](https://github.com/nvm-sh/nvm), not `apt` (tends to install old
   versions)
 - [samtools](http://www.htslib.org/): `sudo apt install samtools` or
@@ -63,7 +63,7 @@ manually from https://github.com/GMOD/jbrowse-components/releases.
 
 ## Running JBrowse 2
 
-JBrowse 2 requires a web server — opening `index.html` directly in your browser
+JBrowse 2 requires a web server. Opening `index.html` directly in your browser
 won't work.
 
 To verify locally:
@@ -73,7 +73,7 @@ cd jbrowse2/
 npx serve -S .
 ```
 
-The `-S` flag tells `serve` to resolve symlinks rather than return a 404 —
+The `-S` flag tells `serve` to resolve symlinks rather than return a 404,
 relevant if you later add tracks with `--load symlink`.
 
 Navigate to `http://localhost:3000`. Click the sample config to confirm the
@@ -82,7 +82,7 @@ install works.
 For production, place the folder in your web server's static directory (e.g.
 `/var/www/html/jbrowse2/`) and visit `http://yourserver/jbrowse2`.
 
-<Figure caption="The JBrowse 2 fresh-install screen, shown when no config.json is present yet — an 'It worked!' banner plus a list of sample configs and demo sessions to try" src="/img/config_not_found.png"/>
+<Figure caption="The JBrowse 2 fresh-install screen, shown when no config.json is present yet. An 'It worked!' banner plus a list of sample configs and demo sessions to try." src="/img/config_not_found.png"/>
 
 <Figure caption="JBrowse 2 screen with a sample configuration" src="/img/sample_config.png"/>
 
@@ -90,9 +90,8 @@ For production, place the folder in your web server's static directory (e.g.
 
 The examples below run from inside `jbrowse2/`, so they omit `--out` (which
 defaults to the current directory). To write elsewhere, add
-`--out /var/www/html/jbrowse2` — either a directory containing `config.json` or
-a path to a specific config file. Run `jbrowse add-track --help` for all
-options.
+`--out /var/www/html/jbrowse2`, either a directory containing `config.json` or a
+path to a specific config file. Run `jbrowse add-track --help` for all options.
 
 For the full list of supported formats and the adapter each maps to, see
 [Supported file types](/docs/config_guides/file_types).
@@ -183,7 +182,7 @@ jbrowse add-assembly grape.fa --load copy -n grape
 jbrowse add-assembly peach.fa --load copy -n peach
 ```
 
-Note: `--assemblyNames` takes `query,target` — the **reverse** of minimap2's
+Note: `--assemblyNames` takes `query,target`, the **reverse** of minimap2's
 `target query` order. Above, `minimap2 grape.fa peach.fa` makes peach the query,
 so load with `--assemblyNames peach,grape`:
 
@@ -202,7 +201,7 @@ for moderately diverged ones. See the
 
 Other supported synteny formats: `.delta` (MUMmer/NUCmer), `.chain` (UCSC),
 `.anchors` and `.anchors.simple` (MCScan), and `.out` (MashMap). Add them the
-same way — `jbrowse add-track alignment.delta --assemblyNames query,target ...`.
+same way: `jbrowse add-track alignment.delta --assemblyNames query,target ...`.
 For large alignments, convert to indexed PIF first with `jbrowse make-pif`.
 
 See also the [linear synteny view](/docs/user_guides/linear_synteny_view),
@@ -236,13 +235,13 @@ can be typed directly into the location search box. See the
 
 ## See also
 
-- [User guide](/docs/user_guide) — track types, views, and UI features
-- [Supported file types](/docs/config_guides/file_types) — every format and its
+- [User guide](/docs/user_guide) - track types, views, and UI features
+- [Supported file types](/docs/config_guides/file_types) - every format and its
   adapter
-- [Config guide](/docs/config_guide) — advanced track and assembly configuration
-- [CLI reference](/docs/cli) — full reference for all CLI commands
-- [FAQ](/docs/faq) — common questions including text searching
-- [CORS errors](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files) —
+- [Config guide](/docs/config_guide) - advanced track and assembly configuration
+- [CLI reference](/docs/cli) - full reference for all CLI commands
+- [FAQ](/docs/faq) - common questions including text searching
+- [CORS errors](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files) -
   if tracks fail to load from remote URLs
 
 ## Tips

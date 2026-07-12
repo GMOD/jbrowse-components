@@ -44,7 +44,7 @@ Examples of pluggable types include:
 - Text search adapter types
 - Add track workflow
 
-Elements are composable — adapters can wrap other adapters, views can contain
+Elements are composable. Adapters can wrap other adapters, views can contain
 sub-views, and tracks can contain other tracks.
 
 ## View types
@@ -113,7 +113,7 @@ which has two display methods
 
 ## Rendering
 
-Drawing is owned by the **display** — there is no separate renderer pluggable
+Drawing is owned by the **display**. There is no separate renderer pluggable
 element. High-volume track types (alignments, wiggle, features, variants) draw
 on the main thread with GPU/Canvas2D from worker-fetched data; a few low-volume
 displays (the arc and circular-chord displays) draw with plain main-thread SVG.
@@ -124,7 +124,7 @@ How views, tracks, and displays relate:
 
 - A view is a container that typically _has tracks_
 - A track controls _what_ data (adapter) and _how_ it's displayed (display)
-- A display is a specific way to draw a track's data, and owns the drawing — a
+- A display is a specific way to draw a track's data and owns the drawing. A
   track may have multiple displays for different view types
 
 ## Widgets
@@ -180,18 +180,18 @@ menu items.
 
 ## See also
 
-- [Custom track and display types](/docs/developer_guides/creating_display) —
+- [Custom track and display types](/docs/developer_guides/creating_display) -
   define new track categories and control how a track renders in a given view
   type
-- [Custom view types](/docs/developer_guides/creating_view) — add entirely new
+- [Custom view types](/docs/developer_guides/creating_view) - add entirely new
   view panels such as `DotplotView` or `CircularView`
-- [Custom widgets](/docs/developer_guides/creating_widget) — add new
+- [Custom widgets](/docs/developer_guides/creating_widget) - add new
   drawer/panel UI components
-- [Configuration schema](/docs/developer_guides/configuration_schema) — config
+- [Configuration schema](/docs/developer_guides/configuration_schema) - config
   slot types, defaults, and how configuration schemas work
-- [Writing a plugin](/docs/developer_guides/simple_plugin) — scaffold a plugin
+- [Writing a plugin](/docs/developer_guides/simple_plugin) - scaffold a plugin
   that registers pluggable elements from an official template
-- [Text search adapters](/docs/developer_guides/creating_text_search_adapter) —
+- [Text search adapters](/docs/developer_guides/creating_text_search_adapter) -
   implement a custom backend for the search box
-- [Custom connections](/docs/developer_guides/creating_connection) — add a new
+- [Custom connections](/docs/developer_guides/creating_connection) - add a new
   way to import remote/external data sources

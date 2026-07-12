@@ -31,56 +31,55 @@ Each genome panel is a full linear genome view and is controlled independently:
 - scroll, zoom, and pan either panel on its own; ribbons redraw to follow
 - type a region or gene name into a panel's search box to jump it there
 - add tracks (genes, alignments, coverage) to either side from its track
-  selector — useful for reading what a syntenic block actually contains
+  selector, useful for reading what a syntenic block actually contains
 
 ## Interacting with the ribbons
 
-- **Hover** a ribbon to see a tooltip with the alignment's coordinates on both
+- Hover a ribbon to see a tooltip with the alignment's coordinates on both
   genomes and, when zoomed in, the CIGAR operation under the cursor
-- **Click** a ribbon to highlight it across both panels
-- **Right-click** a ribbon for a context menu with **Center on feature**, which
+- Click a ribbon to highlight it across both panels
+- Right-click a ribbon for a context menu with **Center on feature**, which
   recenters both panels on that alignment
 
 ## View options
 
 The view's hamburger menu controls how the ribbons are drawn:
 
-- **Show curved lines** — draw ribbons as bezier curves instead of straight
+- Show curved lines - draw ribbons as bezier curves instead of straight
   connectors
-- **CIGAR display mode** — how per-base insertions and deletions inside each
+- CIGAR display mode - how per-base insertions and deletions inside each
   alignment are shown: **Colored indels** paints them, **Transparent indels**
   leaves them as see-through gaps in the ribbon, and **None** draws blocks only
-- **Show location markers** — vertical guides marking each alignment's endpoints
-- **Show all regions** — fit both whole assemblies into view
-- **Square view** — equalize the horizontal scale of the two panels
-- **Add assembly row** — compare three or more assemblies stacked vertically
+- Show location markers - vertical guides marking each alignment's endpoints
+- Show all regions - fit both whole assemblies into view
+- Square view - equalize the horizontal scale of the two panels
+- Add assembly row - compare three or more assemblies stacked vertically
 
-<Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length ~6 kb L1HS (the youngest, human-specific LINE-1 subfamily) inserted in the human lineage: it is absent at the orthologous chimp intron, which retains only the shared L1ME3A and MER21C flanks. The 'Colored indels' CIGAR display mode paints the insertion as a wedge in the ribbon, and RepeatMasker names the element at the indel." src="/img/synteny_human_chimp_cigar_modes.png" />
+<Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length ~6 kb L1HS present in human is absent at the orthologous chimp intron. The 'Colored indels' CIGAR display mode paints the insertion as a wedge in the ribbon, with RepeatMasker naming the element at the indel." src="/img/synteny_human_chimp_cigar_modes.png" />
 
 ### More lineage-specific insertions
 
-The same human/chimp synteny plus RepeatMasker resolves other transposons that
-inserted in the human lineage — each is a gap in the alignment with the element
-named at the indel. The RB1 case above is a LINE-1; a full-length SVA and a
-short Alu look the same way at different scales:
+The same human/chimp synteny plus RepeatMasker resolves other lineage-specific
+transposon insertions. Each is a gap in the alignment with the element named at
+the indel:
 
-<Figure caption="A human-specific SVA_F (~2 kb) in an intron of VAPB: present in human, absent at the orthologous chimp intron, between conserved AluSz6 and UCON33 anchors." src="/img/synteny_te_vapb_sva.png" />
+<Figure caption="A human-specific SVA_F (~2 kb) in an intron of VAPB, present in human and absent at the orthologous chimp intron." src="/img/synteny_te_vapb_sva.png" />
 
-<Figure caption="A human-specific AluYb8 (~0.3 kb) in PICALM, inserted downstream of a conserved AluY that is present in both species — a small insertion still reads clearly as an indel." src="/img/synteny_te_picalm_alu.png" />
+<Figure caption="A human-specific AluYb8 (~0.3 kb) in PICALM, inserted downstream of a conserved AluY present in both species. A small insertion still reads clearly as an indel." src="/img/synteny_te_picalm_alu.png" />
 
 ## See also
 
-- [Dotplot view](/docs/user_guides/dotplot_view) — whole-genome synteny overview
+- [Dotplot view](/docs/user_guides/dotplot_view) - whole-genome synteny overview
   that can launch this view from a selection
-- [Synteny visualization tutorial](/docs/tutorials/synteny_visualization) —
+- [Synteny visualization tutorial](/docs/tutorials/synteny_visualization) -
   loading assemblies and generating a PAF with minimap2
-- [Synteny/dotplot configuration](/docs/config_guides/synteny_track) —
+- [Synteny/dotplot configuration](/docs/config_guides/synteny_track) -
   config-file options for synteny tracks
-- [LinearSyntenyDisplay config schema](/docs/config/linearsyntenydisplay) —
+- [LinearSyntenyDisplay config schema](/docs/config/linearsyntenydisplay) -
   every display slot, autogenerated from source
-- [Multi-way synteny tutorial](/docs/tutorials/multiway_synteny) — worked
+- [Multi-way synteny tutorial](/docs/tutorials/multiway_synteny) - worked
   example of the "Add assembly row" 3+-genome workflow
-- [MAF track](/docs/user_guides/maf_track) — multi-species alignment against one
+- [MAF track](/docs/user_guides/maf_track) - multi-species alignment against one
   reference, complementary to this pairwise view
-- [Gallery: synteny examples](/gallery/#synteny) — live grape-vs-peach,
+- [Gallery: synteny examples](/gallery/#synteny) - live grape-vs-peach,
   human-vs-mouse, and multi-way synteny views to open and explore

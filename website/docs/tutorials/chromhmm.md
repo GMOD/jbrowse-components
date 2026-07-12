@@ -11,7 +11,7 @@ tutorial_category: Epigenomics & single cell
 states (active promoter, strong enhancer, heterochromatin, …) from combinations
 of histone-mark ChIP-seq. A segmentation is produced _per cell type_, so a
 useful browser track stacks many cell types on top of each other at the same
-locus — one labeled row per cell type, each painted with the ChromHMM state
+locus, one labeled row per cell type, each painted with the ChromHMM state
 colors.
 
 This tutorial shows how the gallery's ChromHMM figure is built: how to pack many
@@ -19,7 +19,7 @@ per-cell-type segmentation BEDs into a single **multi-row BED**, and how to
 configure the **multi-row feature display** so the file draws as one color-coded
 row per cell type.
 
-<Figure src="/img/chromhmm.png" caption="The multi-row feature display showing dense ChromHMM chromatin-state annotations from ENCODE. Each row is a cell type, and each feature is colored by its chromatin state via the BED itemRgb field. The white regions aren't gaps — Quiescent/Low, the most common state genome-wide, is white in the standard 15-state palette (the same convention UCSC and other browsers use)."/>
+<Figure src="/img/chromhmm.png" caption="The multi-row feature display showing dense ChromHMM chromatin-state annotations from ENCODE. Each row is a cell type, each feature colored by its chromatin state via the BED itemRgb field. White regions are the Quiescent/Low state, which is white in the standard 15-state palette."/>
 
 ## The idea: one file, one row per cell type
 
@@ -59,13 +59,13 @@ for f in wgEncodeBroadHmm*HMM.bed.gz; do
 done | sort -k1,1 -k2,2n > wgEncodeBroadHmm.multirow.bed
 ```
 
-Each line is now standard BED9 plus one trailing string field — the cell-type
+Each line is now standard BED9 plus one trailing string field, the cell-type
 label that becomes a row. Those labels are what `rowOrder` references below.
 
 ## Compress and index
 
 The combine step already emitted a coordinate-sorted BED, so just bgzip and
-tabix it. JBrowse fetches any region on demand — no bigBed conversion, no
+tabix it. JBrowse fetches any region on demand, with no bigBed conversion, no
 autoSql schema, and no chrom.sizes file needed:
 
 ```bash
@@ -79,8 +79,8 @@ Add a `FeatureTrack` with a `BedTabixAdapter`, and give it a
 `LinearMultiRowFeatureDisplay` that partitions on the `cellType` field. The
 adapter's `columnNames` names each BED column so the display can resolve column
 9 `itemRgb` (the state color) and the extra column 10 `cellType` (the field to
-split rows on). The track references the `hg19` assembly — set it up first if
-you haven't, see the
+split rows on). The track references the `hg19` assembly. Set it up first if you
+haven't, see the
 [assemblies configuration guide](/docs/config_guides/assemblies):
 
 ```json
@@ -135,19 +135,19 @@ you haven't, see the
 
 The fields that drive the display:
 
-- **`columnNames`** (on the adapter) — names each column of the BED, so the
-  standard `itemRgb` and the extra `cellType` field resolve as feature
-  attributes the display below reads.
-- **`partitionField`** — the feature attribute to split rows by. Every distinct
+- `columnNames` (on the adapter) - names each column of the BED, so the standard
+  `itemRgb` and the extra `cellType` field resolve as feature attributes the
+  display below reads.
+- `partitionField` - the feature attribute to split rows by. Every distinct
   `cellType` value becomes its own labeled sub-row, so a 9-cell-type file draws
   as 9 stacked rows.
-- **`color`** — a [jexl](/docs/config_guides/jexl) callback. Here it turns the
-  BED `itemRgb` triple (e.g. `255,0,0`) into a CSS `rgb(255,0,0)`, so each
-  feature is painted with its ChromHMM state color straight from the file.
-- **`rowOrder`** — pins the sub-rows to a chosen order. Omit it and rows fall
-  back to the order the partition values are first seen.
+- `color` - a [jexl](/docs/config_guides/jexl) callback. Here it turns the BED
+  `itemRgb` triple (e.g. `255,0,0`) into a CSS `rgb(255,0,0)`, so each feature
+  is painted with its ChromHMM state color straight from the file.
+- `rowOrder` - pins the sub-rows to a chosen order. Omit it and rows fall back
+  to the order the partition values are first seen.
 
-**Using JBrowse Desktop?** These steps work unchanged — Desktop opens
+**Using JBrowse Desktop?** These steps work unchanged. Desktop opens
 `wgEncodeBroadHmm.multirow.bed.gz` straight from your local disk (point
 `bedGzLocation` at the local path), no web server needed. See the
 [desktop quickstart](/docs/quickstart_desktop). (A bigBed loaded with a
@@ -158,7 +158,7 @@ tabix-indexed BED just skips the conversion and chrom.sizes step.)
 
 The same recipe scales to the
 [Roadmap Epigenomics](https://egg2.wustl.edu/roadmap/web_portal/chr_state_learning.html)
-15-state model across 127 epigenomes — the only difference is 127 input BEDs and
+15-state model across 127 epigenomes. The only difference is 127 input BEDs and
 a longer `rowOrder`. Because the multi-row display fetches and lays out one
 file, 127 cell types is the same one track, not 127 tracks. This is the second
 ChromHMM track in the JBrowse demo config.
@@ -170,12 +170,12 @@ state** categories.
 
 ## See also
 
-- [Phased trio analysis](/docs/tutorials/analyze_trio) — another multi-row
+- [Phased trio analysis](/docs/tutorials/analyze_trio) - another multi-row
   feature display use case, painting hap-ibd inheritance blocks
-- [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk) — the
+- [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk) - the
   continuous-signal analog of this one-row-per-group pattern, using MultiWiggle
   instead of discrete features
-- [jexl](/docs/config_guides/jexl) — the color callback syntax used to map
+- [jexl](/docs/config_guides/jexl) - the color callback syntax used to map
   itemRgb to a CSS color
-- [Configuring tracks](/docs/config_guides/tracks) — general
+- [Configuring tracks](/docs/config_guides/tracks) - general
   FeatureTrack/BedTabixAdapter config referenced above

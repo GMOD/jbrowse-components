@@ -9,14 +9,14 @@ description:
 [`jbrowse-anywidget`](https://github.com/GMOD/jbrowse-anywidget) renders a
 JBrowse 2 linear genome view as an [anywidget](https://anywidget.dev), drawn on
 the GPU. One bundle runs in Jupyter, JupyterLab, VS Code, and Google Colab, with
-two-way sync of the visible region between Python and the view — set
+two-way sync of the visible region between Python and the view: set
 `view.location` to navigate, read it back to get where the user panned.
 
 It is the modern replacement for the older Dash-based `jbrowse-jupyter` +
 `dash_jbrowse` stack: no Dash server, no component-generation step, just a
 prebuilt ESM bundle loaded by anywidget.
 
-Install from GitHub for now (below) — a PyPI release is planned, after which
+Install from GitHub for now (below). A PyPI release is planned, after which
 `pip install jbrowse-anywidget` will work directly. The example notebooks each
 open in Colab with one click.
 
@@ -37,7 +37,7 @@ output.enable_custom_widget_manager()
 
 Assemblies, tracks, and sessions are the same
 [JSON-like config](/docs/config_guide) JBrowse uses everywhere, handed straight
-to the view — so every track type and adapter works with no Python wrapper to
+to the view, so every track type and adapter works with no Python wrapper to
 keep in sync.
 
 ```python
@@ -64,8 +64,8 @@ little assembly boilerplate).
 
 For human and model-organism data, `fetch_hub("hg38")` (also `hg19`, `mm10`, or
 a GenArk `GCA_...`) returns a ready, CORS-enabled assembly config from
-[genomes.jbrowse.org](https://genomes.jbrowse.org) — sequence, refName aliases,
-cytobands, a gene-name search index, and a catalog of hosted tracks — as plain
+[genomes.jbrowse.org](https://genomes.jbrowse.org) (sequence, refName aliases,
+cytobands, a gene-name search index, and a catalog of hosted tracks) as plain
 JSON you pass in. Because the assembly carries refName aliases, your own tracks
 line up even when they name chromosomes differently (`chr17` vs `17`).
 
@@ -84,11 +84,11 @@ Each opens in Colab and runs top-to-bottom.
 | [Differential expression → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/07_differential_expression.ipynb) | Counts → log2FC / t-test → a gene track colored by call         |
 | [Hosted assembly hub](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/08_hosted_assembly_hub.ipynb)                | `fetch_hub` for easy human data; navigate by gene name          |
 
-The "→ view" notebooks are the core loop — **run an analysis in Python, load the
-result onto the genome** — with everything computed in the notebook.
+The "→ view" notebooks are the core loop: **run an analysis in Python, load the
+result onto the genome**, with everything computed in the notebook.
 
 ## See also
 
-- [Embedded components](/docs/embedded_components) — the underlying JS/React
+- [Embedded components](/docs/embedded_components) - the underlying JS/React
   linear genome view this wraps
-- [JBrowseR](/docs/jbrowser) — the R/Shiny equivalent
+- [JBrowseR](/docs/jbrowser) - the R/Shiny equivalent

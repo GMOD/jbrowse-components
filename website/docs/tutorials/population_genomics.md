@@ -7,27 +7,20 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-Population-genetic scans — **Fst** (differentiation between groups),
-**nucleotide diversity (π)** within a group, and **dxy** (divergence between
-groups) — are per-window statistics along the genome, the same form as a wiggle
-track. Once you compute them from a multi-sample VCF you can load them into
-JBrowse and read the peaks and troughs against genes.
+Population-genetic scans, **Fst** (differentiation between groups), **nucleotide
+diversity (π)** within a group, and **dxy** (divergence between groups), are
+per-window statistics along the genome, the same form as a wiggle track. Once
+you compute them from a multi-sample VCF you can load them into JBrowse and read
+the peaks and troughs against genes.
 
-No single statistic is decisive, and the mindset this tutorial builds is to read
-them **together**. Fst asks how different two groups are; π asks how much
-variation a group carries; Tajima's D asks what shape its allele frequencies
-take. A real event — a selective sweep, an inversion, gene flow — leaves a
-_coordinated_ signature across all of them, and it is where the signals line up
-that tells the processes apart. A low-diversity window on its own could be a
-sweep or just low recombination, but a diversity valley that also sits under an
-Fst peak and a negative Tajima's D is a sweep. That is why the figures below
-stack the statistics on a shared genomic axis: the interpretation lives in the
-overlap.
+No single statistic is decisive; the tutorial reads Fst, π, and Tajima's D
+together, stacking them on a shared genomic axis so a coordinated signature (a
+selective sweep, an inversion, gene flow) stands out where the signals line up.
 
 Working in a notebook? The
 [Jupyter selection-scan example](/docs/jbrowse_jupyter) runs this same
-compute-then-view loop in Python — a windowed Fst scan loaded straight from a
-DataFrame — and opens in Colab with one click.
+compute-then-view loop in Python (a windowed Fst scan loaded straight from a
+DataFrame) and opens in Colab with one click.
 
 JBrowse does no population-genetic inference itself. It draws the windowed
 statistic your tool produced. This tutorial is a reproducible pipeline: every
@@ -37,29 +30,28 @@ from the [Drosophila Genetic Reference Panel](http://dgrp2.gnets.ncsu.edu/)
 (DGRP), a panel of 205 inbred lines from a single Raleigh, North Carolina
 population ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)):
 
-- **Fst across the `In(2L)t` inversion** — lines carrying the cosmopolitan
-  `In(2L)t` inversion are strongly differentiated from standard-arrangement
-  lines across the whole inverted region of chromosome arm `2L`, because the
-  inversion suppresses recombination there
+- Fst across the `In(2L)t` inversion: lines carrying the cosmopolitan `In(2L)t`
+  inversion are strongly differentiated from standard-arrangement lines across
+  the whole inverted region of chromosome arm `2L`, because the inversion
+  suppresses recombination there
   ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)).
-- **Genome-wide nucleotide diversity (π)** — the diversity landscape, dropping
-  in low-recombination regions near the centromeres and at loci under selection
-  such as `Cyp6g1`, the insecticide-resistance cytochrome P450 whose resistance
-  haplotype segregates at high frequency in this derived population
+- Genome-wide nucleotide diversity (π): the diversity landscape, dropping in
+  low-recombination regions near the centromeres and at loci under selection
+  such as `Cyp6g1`, an insecticide-resistance gene
   ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
 
-The same workflow applies to any species and any grouping — swap in your own
+The same workflow applies to any species and any grouping. Swap in your own
 populations or your own VCF and the JBrowse side is identical.
 
 ## Tools
 
 The pipeline uses these standard command-line tools:
 
-- [vcftools](https://vcftools.github.io/) — windowed Fst, π, and Tajima's D from
+- [vcftools](https://vcftools.github.io/) - windowed Fst, π, and Tajima's D from
   a VCF
-- [bcftools](https://samtools.github.io/bcftools/) — reading the VCF header and
+- [bcftools](https://samtools.github.io/bcftools/) - reading the VCF header and
   sample list
-- [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) — UCSC
+- [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) - UCSC
   utility that packs a bedGraph into an indexed bigWig
 
 All are on [bioconda](https://bioconda.github.io/):
@@ -85,7 +77,7 @@ curl -Lo In2Lt.tsv https://dgrpool.epfl.ch/phenotypes/1520/download
 ```
 
 Derive `chrom.sizes` straight from the VCF header so the contig names are
-**guaranteed** to match — the usual cause of an empty track is a name mismatch:
+**guaranteed** to match (the usual cause of an empty track is a name mismatch):
 
 ```bash
 bcftools view -h "$VCF" \
@@ -173,16 +165,14 @@ VCF**. For calibrated absolute π and dxy you need an allSites VCF below.
 
 π measures how much diversity a window holds; **Tajima's D**
 ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) measures the _shape_
-of that diversity — whether the allele-frequency spectrum is skewed toward rare
-or common variants relative to the neutral expectation. A hard selective sweep
-leaves a characteristic signature: as a favored haplotype fixes it strips out
-diversity (low π), then new mutations accumulate on that swept background as an
-excess of **rare** alleles, driving Tajima's D **negative**. Seeing π and
-Tajima's D drop in the same window is what separates a sweep from a region that
-is simply low-diversity for other reasons.
+of that diversity, whether the allele-frequency spectrum is skewed toward rare
+or common variants relative to the neutral expectation. A hard sweep drives it
+**negative** (an excess of rare alleles on the swept background), so seeing π
+and Tajima's D drop in the same window is what separates a sweep from a region
+that is simply low-diversity for other reasons.
 
-`vcftools` computes it in fixed windows straight from the VCF — no group split
-needed, it is a whole-panel statistic:
+`vcftools` computes it in fixed windows straight from the VCF, with no group
+split needed since it is a whole-panel statistic:
 
 ```bash
 vcftools --gzvcf "$VCF" --TajimaD 2000 --out tajd_all
@@ -190,7 +180,7 @@ vcftools --gzvcf "$VCF" --TajimaD 2000 --out tajd_all
 ```
 
 Convert to bigWig. Take `TajimaD` (column 4), skip `nan` windows, and keep
-negative values (unlike Fst, Tajima's D is meaningfully signed — the negative
+negative values (unlike Fst, Tajima's D is meaningfully signed, and the negative
 excursions are the signal):
 
 ```bash
@@ -201,13 +191,13 @@ bedGraphToBigWig tajd_all.bedgraph dm6.chrom.sizes tajd_all.bw
 ```
 
 `vcftools --TajimaD` reports `BIN_START` 0-based, so it maps directly to the
-0-based half-open bedGraph coordinate — no `-1` shift, unlike the 1-based
+0-based half-open bedGraph coordinate, with no `-1` shift, unlike the 1-based
 `--window-pi` output above.
 
 ## Full pipeline
 
-The complete pipeline as one script — save as `popgen.sh` and run it in an empty
-directory:
+The complete pipeline as one script. Save it as `popgen.sh` and run it in an
+empty directory:
 
 ```bash
 #!/usr/bin/env bash
@@ -266,7 +256,7 @@ in JBrowse Desktop).
 ## Loading in JBrowse
 
 You need a dm6 assembly loaded, ideally with a FlyBase or RefSeq gene track so
-gene-name search works — see
+gene-name search works. See
 [configuring assemblies](/docs/config_guides/assemblies) and
 [gene tracks](/docs/user_guides/gene_track). Each scan loads as an ordinary
 [quantitative track](/docs/user_guides/quantitative_track), which auto-scales to
@@ -330,22 +320,20 @@ arrangements is stronger in the Fst scan than in within-group π.
 
 Zoom out to the **whole genome** (all six arms). The `In(2L)t` Fst track rises
 into a tall block of differentiation across the entire left arm of chromosome 2
-— roughly `2L:2,200,000–13,200,000`, the inverted region — while every other arm
+(roughly `2L:2,200,000–13,200,000`, the inverted region) while every other arm
 sits at low background Fst. Seeing all the arms at once is what makes the signal
 read as genuinely elevated rather than a baseline with nothing to compare it to.
-(The inversion suppresses recombination between arrangements across this span.)
 
-<Figure src="/img/popgen/fst_in2lt_2L.png" caption="Genome-wide view of all six dm6 arms, each track auto-scaled to its own data. Top: the In(2L)t inversion extent. Middle: Fst between In(2L)t-inverted and standard-arrangement lines — a tall elevated block across the whole left arm of chromosome 2 (the inverted region, ~2.2–13.2 Mb) that stands out against low background Fst on every other arm. Bottom: whole-panel nucleotide diversity (π), near-uniform across arms — the expected contrast to the localized Fst spike. Output from this tutorial's pipeline, hosted at jbrowse.org/demos/popgen."/>
+<Figure src="/img/popgen/fst_in2lt_2L.png" caption="Genome-wide view of all six dm6 arms, each track auto-scaled to its own data. Top: the In(2L)t inversion extent. Middle: Fst between In(2L)t-inverted and standard-arrangement lines, a tall elevated block across the whole left arm of chromosome 2 (the inverted region, ~2.2–13.2 Mb) that stands out against low background Fst on every other arm. Bottom: whole-panel nucleotide diversity (π), near-uniform across arms. Output from this tutorial's pipeline, hosted at jbrowse.org/demos/popgen."/>
 
 Then use the search box to jump to **`Cyp6g1`** (on `2R`) and add the **Tajima's
 D** track from the pipeline alongside π. Both statistics dip together in the
-same window. π drops to under a tenth of the arm-wide average, but where π
-only tells you diversity is low, Tajima's D tells you _why_: at Cyp6g1 it falls
-sharply negative while sitting near zero genome-wide, the excess of rare alleles
-accumulating on the swept background. Two statistics dropping in the same window
-is the diagnostic hard-sweep signature, not the ambiguity of either alone.
+same window: π drops to under a tenth of the arm-wide average and Tajima's D
+falls sharply negative while sitting near zero genome-wide. Two statistics
+dropping in the same window is the diagnostic hard-sweep signature, not the
+ambiguity of either alone.
 
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across a 1 Mb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Both statistics dip together at the locus: Tajima's D falls to about -2 against a genome-wide-neutral baseline near zero, and π drops to under a tenth of the arm-wide background in the same window. The joint dip, reduced diversity skewed toward rare alleles, is the expected footprint of a hard sweep at this insecticide-resistance gene."/>
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across a 1 Mb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Both statistics dip together at the locus: Tajima's D falls to about -2 against a genome-wide-neutral baseline near zero, and π drops to under a tenth of the arm-wide background in the same window. The joint dip is the expected footprint of a hard sweep at this insecticide-resistance gene."/>
 
 Other resistance and selection loci can be examined the same way, reading the
 signal against the gene:
@@ -357,7 +345,7 @@ signal against the gene:
 | `CHKov1`      | 3R  | Organophosphate / viral resistance, from a transposon insert  |
 | `In(3R)Payne` | 3R  | Cosmopolitan inversion under clinal / latitudinal selection   |
 
-`In(3R)Payne` is typed in the same DGRPool table set — repeat the grouping step
+`In(3R)Payne` is typed in the same DGRPool table set. Repeat the grouping step
 with its phenotype to scan `3R` the same way.
 
 ## Interpreting the combination
@@ -372,13 +360,12 @@ with its phenotype to scan `3R` the same way.
 
 The windowed Fst scan _summarizes_ the inversion into one number per window. To
 see which lines actually carry it, represent the whole arrangement as a single
-structural-variant call — one `<INV>` record spanning the In(2L)t breakpoints
-(`2L:2,225,744–13,154,180`) — genotyped across every karyotyped line, and load
-it as a [multi-sample variant matrix](/docs/user_guides/multivariant_track). A
+structural-variant call, one `<INV>` record spanning the In(2L)t breakpoints
+(`2L:2,225,744–13,154,180`), genotyped across every karyotyped line, and load it
+as a [multi-sample variant matrix](/docs/user_guides/multivariant_track). A
 per-SNP matrix can't hold a ~13 Mb inversion on screen: zoom out far enough to
-see both breakpoints and the individual marker columns shrink to nothing. One
-SV call sidesteps that: the inversion is a single feature no matter how wide it
-is.
+see both breakpoints and the individual marker columns shrink to nothing. One SV
+call sidesteps that: the inversion is a single feature no matter how wide it is.
 
 First subset the panel to the karyotyped lines over `2L` (this biallelic-SNP
 subset also feeds the LD step below) and write a `samples.tsv` so the matrix can
@@ -397,8 +384,8 @@ tabix -p vcf dgrp_In2Lt_2L.vcf.gz
   awk '{print $1"\tStandard"}' In2Lt_STD.txt; } > dgrp_In2Lt_samples.tsv
 ```
 
-Then build a one-record SV VCF straight from those karyotype calls — `1/1` for
-the In(2L)t lines, `0/0` for the standard lines:
+Then build a one-record SV VCF straight from those karyotype calls, using `1/1`
+for the In(2L)t lines and `0/0` for the standard lines:
 
 ```bash
 samples=$(tail -n +2 dgrp_In2Lt_samples.tsv | cut -f1 | paste -sd'\t')
@@ -456,8 +443,8 @@ block below, with the karyotype strip down the sidebar.
 
 The genotypes here are the arrangement karyotypes themselves, so this is the
 cleanest per-line view of _who_ carries the inversion. The independent evidence
-that ordinary SNPs across the region co-segregate with it — the reason the
-arrangement behaves as one recombination-suppressed block — is exactly what the
+that ordinary SNPs across the region co-segregate with it (the reason the
+arrangement behaves as one recombination-suppressed block) is exactly what the
 Fst scan above quantifies.
 
 ## Unbiased π and dxy with pixy {#unbiased-pi-and-dxy-with-pixy}
@@ -466,7 +453,7 @@ The vcftools `--window-pi` scan above is fine for relative comparisons, but
 variant-only VCFs and missing data bias absolute π and dxy estimates.
 [pixy](https://pixy.readthedocs.io/)
 ([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)) computes π,
-dxy, and Fst together without that bias — at the cost of needing an **allSites
+dxy, and Fst together without that bias, at the cost of needing an **allSites
 VCF** that includes invariant sites (the DGRP2 SNPs-only file above does not
 have these, so you would call your own allSites VCF with `bcftools mpileup` or
 GATK):
@@ -488,32 +475,32 @@ rows.
 
 ## Notes
 
-- **Window size** trades resolution for smoothness. The scans above use 2 kb
-  windows — with the DGRP panel's dense SNPs (~1 site per 70 bp) each window
+- Window size trades resolution for smoothness. The scans above use 2 kb
+  windows. With the DGRP panel's dense SNPs (~1 site per 70 bp) each window
   still holds tens of segregating sites, so a single-gene sweep like Cyp6g1
   resolves sharply. Widen toward 5–10 kb for smoother, broad genome-wide
   overviews, or narrow further only where SNP density stays high.
-- **Negative Fst** estimates are an expected artifact of the Weir & Cockerham
+- Negative Fst estimates are an expected artifact of the Weir & Cockerham
   estimator at low-differentiation sites. Flooring at 0 for display (as above)
   is conventional.
-- **Heterozygous karyotypes** were dropped from both groups above. Contrasting
+- Heterozygous karyotypes were dropped from both groups above. Contrasting
   homozygous arrangements gives the clearest inversion signal.
-- **Haplotype-based selection statistics** (iHS, XP-EHH, e.g. from
+- Haplotype-based selection statistics (iHS, XP-EHH, e.g. from
   [selscan](https://github.com/szpiech/selscan)) capture sweeps that Fst misses
   and, being per-site or per-window scores, load as bigWig quantitative tracks
   the same way.
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track) — loading and
+- [Quantitative track](/docs/user_guides/quantitative_track) - loading and
   displaying a single bigWig signal
-- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) —
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) -
   stacking the Fst and π scans as one track
-- [Multi-sample variant track](/docs/user_guides/multivariant_track) — the
+- [Multi-sample variant track](/docs/user_guides/multivariant_track) - the
   genotype-matrix display, grouping and coloring samples by metadata
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track) — the same
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track) - the same
   genome-wide-statistic-as-track pattern for association scans
-- [Configuring assemblies](/docs/config_guides/assemblies) — loading a non-human
+- [Configuring assemblies](/docs/config_guides/assemblies) - loading a non-human
   reference such as dm6
 
 ## References

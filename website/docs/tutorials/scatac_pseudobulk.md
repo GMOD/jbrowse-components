@@ -9,12 +9,12 @@ tutorial_category: Epigenomics & single cell
 
 JBrowse does not process single-cell data itself. To view single-cell ATAC-seq
 (scATAC-seq) the way the gallery's "Single-cell ATAC by cell type (CATlas)" card
-does — one coverage row per cell type — you first **pseudobulk** the data
-outside JBrowse: group cells by cluster or cell-type label, sum their reads into
-one coverage track per group, and save each as a BigWig. You then load all the
+does (one coverage row per cell type), you first **pseudobulk** the data outside
+JBrowse: group cells by cluster or cell-type label, sum their reads into one
+coverage track per group, and save each as a BigWig. You then load all the
 BigWigs as a single **MultiWiggle** track, which stacks one row per file.
 
-<Figure caption="The CATlas single-cell ATAC atlas as pseudobulk rows: one coverage BigWig per cell type, loaded as a single MultiWiggle track (multirowxy) across the imprinted INS/IGF2 region on 11p15.5, where the insulin-producing Beta cell row shows accessibility over INS." src="/img/gallery/scatac_catlas.png" />
+<Figure caption="The CATlas single-cell ATAC atlas as pseudobulk rows: one coverage BigWig per cell type, loaded as a single MultiWiggle track (multirowxy) across the INS/IGF2 region on 11p15.5, where the Beta cell row shows accessibility over INS." src="/img/gallery/scatac_catlas.png" />
 
 This guide covers producing the per-group BigWigs and configuring the JBrowse
 track. It assumes you already have clustered scATAC data (a fragments file or a
@@ -28,7 +28,7 @@ the [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
 
 ## The pseudobulk idea
 
-A scATAC experiment is a sparse per-cell signal — too sparse to plot per cell.
+A scATAC experiment is a sparse per-cell signal, too sparse to plot per cell.
 Pseudobulking collapses each group of cells (a cluster or annotated cell type)
 into one aggregated coverage profile, giving a dense, bulk-ATAC-like track per
 group. With one BigWig per group loaded as rows of a single track, open
@@ -94,10 +94,10 @@ getGroupBW(
 
 ### Split a BAM by cell type, then deepTools (Signac / Cell Ranger / generic)
 
-If you have a position-sorted BAM with cell barcodes in a tag (e.g. `CB`) — the
-Cell Ranger ATAC output, or what a Signac workflow starts from — split it into
-one BAM per cell type using a barcode→label table, then run `bamCoverage` on
-each.
+If you have a position-sorted BAM with cell barcodes in a tag (e.g. `CB`), such
+as the Cell Ranger ATAC output or what a Signac workflow starts from, split it
+into one BAM per cell type using a barcode→label table, then run `bamCoverage`
+on each.
 
 ```bash
 # barcodes.tsv: two columns, "<barcode><TAB><cell_type>"
@@ -238,7 +238,7 @@ https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/<CellType>.bw
 
 for example `.../bw/Beta_1.bw`, `.../bw/Alpha_1.bw`, `.../bw/Acinar.bw`. Each
 subadapter is a `BigWigAdapter` with a `name`, a `group` (islet / exocrine /
-immune / …), a `color`, and that URI — the same structure as the example above,
+immune / …), a `color`, and that URI, the same structure as the example above,
 so you can point a `MultiWiggleAdapter` straight at them without regenerating
 anything.
 
@@ -246,17 +246,17 @@ anything.
 
 The display is a `MultiLinearWiggleDisplay`. Its
 [`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
-slot chooses how the subtracks are drawn — set it under the track's `displays`
+slot chooses how the subtracks are drawn. Set it under the track's `displays`
 (or the `displayDefaults` shorthand), or switch it live from the track menu.
 
-- **`multirowxy`** — one stacked XY-plot row per cell type. This is the "one
+- `multirowxy` - one stacked XY-plot row per cell type. This is the "one
   coverage row per cell type" look of the gallery card, and is best for
   comparing peak shape across many groups.
-- **`multirowdensity`** — one row per cell type, but score mapped to color
-  intensity instead of bar height. Compact, and good for a heatmap-style view of
-  many cell types at once.
-- **`multixyplot`** — all cell types overlaid in a single shared plot (one Y
-  axis). Good for a few groups you want superimposed rather than stacked.
+- `multirowdensity` - one row per cell type, but score mapped to color intensity
+  instead of bar height. Compact, and good for a heatmap-style view of many cell
+  types at once.
+- `multixyplot` - all cell types overlaid in a single shared plot (one Y axis).
+  Good for a few groups you want superimposed rather than stacked.
 - `multirowline` / `multirowscatter` and `multiline` / `multiscatter` are the
   line and scatter variants of the stacked and overlapping layouts.
 
@@ -266,16 +266,16 @@ are automatically remapped to their multi-row equivalents, so an accidental
 
 Other useful controls:
 
-- **height** — total track height in pixels (the
+- `height` - total track height in pixels (the
   [`height`](/docs/config/multilinearwiggledisplay/#slot-height) slot). Raise it
   when you have many rows.
-- **summaryScoreMode** — `avg`, `min`, `max`, or `whiskers` (the
+- `summaryScoreMode` - `avg`, `min`, `max`, or `whiskers` (the
   [`summaryScoreMode`](/docs/config/multilinearwiggledisplay/#slot-summaryscoremode)
   slot) for how each bin's summary is drawn when zoomed out.
-- **Clustering → "Cluster rows by score..."** — a track-menu action that
-  reorders the rows by hierarchical clustering of the score matrix over the
-  region in view, drawing a dendrogram in the sidebar. Cell types with similar
-  accessibility profiles at that locus sort next to each other. See the
+- The **Clustering → "Cluster rows by score..."** track-menu action reorders the
+  rows by hierarchical clustering of the score matrix over the region in view,
+  drawing a dendrogram in the sidebar. Cell types with similar accessibility
+  profiles at that locus sort next to each other. See the
   [multi-quantitative track guide](/docs/config_guides/multiquantitative_track)
   for the clustering workflow.
 
@@ -295,12 +295,12 @@ Example display config that starts taller and in density mode:
 ## See also
 
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
-  — the MultiWiggle track type in depth, including in-app clustering
-- [MultiWiggleAdapter config](/docs/config/multiwiggleadapter) — the subadapter
+  - the MultiWiggle track type in depth, including in-app clustering
+- [MultiWiggleAdapter config](/docs/config/multiwiggleadapter) - the subadapter
   schema used above
-- [MultiLinearWiggleDisplay model](/docs/models/multilinearwiggledisplay) — the
+- [MultiLinearWiggleDisplay model](/docs/models/multilinearwiggledisplay) - the
   rendering-mode options detailed in this tutorial
-- [ChromHMM chromatin states](/docs/tutorials/chromhmm) — the discrete-interval
+- [ChromHMM chromatin states](/docs/tutorials/chromhmm) - the discrete-interval
   analog of this one-row-per-group pattern, using multi-row feature display
   instead of MultiWiggle
 
@@ -309,7 +309,7 @@ Example display config that starts taller and in density mode:
 Pseudobulk / coverage tools:
 
 - [SnapATAC2 `export_coverage`](https://scverse.org/SnapATAC2/version/dev/api/_autosummary/snapatac2.ex.export_coverage.html)
-- [ArchR — exporting pseudobulk BigWigs (`getGroupBW`)](https://www.archrproject.com/bookdown/exporting-pseudo-bulked-data-to-a-bigwig-file.html)
+- [ArchR: exporting pseudobulk BigWigs (`getGroupBW`)](https://www.archrproject.com/bookdown/exporting-pseudo-bulked-data-to-a-bigwig-file.html)
 - [deepTools `bamCoverage`](https://deeptools.readthedocs.io/en/develop/content/tools/bamCoverage.html)
   and its
   [normalization methods](https://github.com/deeptools/deepTools/wiki/Normalizations)
@@ -317,5 +317,5 @@ Pseudobulk / coverage tools:
 
 Reference dataset:
 
-- [CATlas — a single-cell atlas of chromatin accessibility in the human genome (Zhang et al., Cell 2021)](https://www.sciencedirect.com/science/article/pii/S0092867421012794)
+- [CATlas: a single-cell atlas of chromatin accessibility in the human genome (Zhang et al., Cell 2021)](https://www.sciencedirect.com/science/article/pii/S0092867421012794)
   · [resource portal](https://www.catlas.org/)

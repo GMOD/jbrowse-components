@@ -77,16 +77,16 @@ displayMode: {
 Because slots are typed, the configuration editor renders an appropriate control
 for each one:
 
-- `stringEnum` — dropdown box
-- `color` — color picker
-- `boolean` — checkbox
-- `number` / `integer` — numeric input
-- `string` — text input
-- `text` — textarea
-- `frozen` — textarea holding arbitrary JSON
-- `fileLocation` — URL, local file path (desktop), or file blob (browser)
-- `stringArray` — "todolist" editor to add/remove entries
-- `stringArrayMap` / `numberMap` — key-value editors
+- `stringEnum` - dropdown box
+- `color` - color picker
+- `boolean` - checkbox
+- `number` / `integer` - numeric input
+- `string` - text input
+- `text` - textarea
+- `frozen` - textarea holding arbitrary JSON
+- `fileLocation` - URL, local file path (desktop), or file blob (browser)
+- `stringArray` - "todolist" editor to add/remove entries
+- `stringArrayMap` / `numberMap` - key-value editors
 
 ## Schema inheritance with baseConfiguration
 
@@ -115,7 +115,7 @@ collide.
 ## preProcessSnapshot
 
 Use `preProcessSnapshot` to normalize incoming config JSON before the MST model
-is created — for example, to support a shorthand URI syntax:
+is created, for example to support a shorthand URI syntax:
 
 ```ts
 ConfigurationSchema(
@@ -203,7 +203,7 @@ types.model('LinearMyDisplay', {
 ```
 
 `ConfigurationReference` is a union of a string ID reference and the full config
-snapshot. At runtime it resolves to the MST config node — either by looking up
+snapshot. At runtime it resolves to the MST config node, either by looking up
 the ID in the session's config registry, or by hydrating the inline snapshot.
 
 The resolution dispatch is based on `explicitIdentifier` in the schema options:
@@ -215,7 +215,7 @@ The resolution dispatch is based on `explicitIdentifier` in the schema options:
 ## Frozen track hydration
 
 `jbrowse.tracks` is stored as `types.frozen` (plain JS objects) for performance
-with thousands of tracks. Track configs become MST nodes lazily — only when a
+with thousands of tracks. Track configs become MST nodes lazily, only when a
 track is opened and `TrackConfigurationReference.get()` is called. The hydrated
 node is cached by identity so the same frozen object always produces the same
 MST node.
@@ -271,8 +271,8 @@ configurations descend from a single root, `root.configuration`.
          Slot  Slot
 ```
 
-A schema can nest a sub-schema as a slot — e.g. `BamAdapter` embeds its index
-config:
+A schema can nest a sub-schema as a slot. For example, `BamAdapter` embeds its
+index config:
 
 ```js
 ConfigurationSchema(
@@ -308,15 +308,15 @@ const indexType = readConfObject(config, ['index', 'indexType'])
 ```
 
 Avoid reading properties directly off the result (e.g.
-`readConfObject(config, ['index']).indexType`) — that bypasses default-value
+`readConfObject(config, ['index']).indexType`), which bypasses default-value
 resolution.
 
 ## See also
 
-- [Configuration API reference](/docs/api/core-configuration) — `getConf`,
+- [Configuration API reference](/docs/api/core-configuration) - `getConf`,
   `readConfObject`, `ConfigurationReference` signatures
 - [jexl config callbacks](/docs/config_guides/jexl)
-- [MST patterns](/docs/developer_guides/mst_patterns) — `types.frozen` and model
+- [MST patterns](/docs/developer_guides/mst_patterns) - `types.frozen` and model
   composition
-- [Custom track and display types](/docs/developer_guides/creating_display) — a
+- [Custom track and display types](/docs/developer_guides/creating_display) - a
   concrete pluggable element that declares a `configSchema` like the ones above

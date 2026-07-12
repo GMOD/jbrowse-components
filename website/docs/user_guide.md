@@ -42,15 +42,15 @@ sidebar_label: Overview
 
 - [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - Stack strains or accessions in a linear synteny view from a single all-vs-all PAF
 - [Phased trio analysis](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
-- [Bisulfite / EM-seq methylation](/docs/tutorials/bisulfite) - A full Arabidopsis WGBS pipeline — SRA reads through bisulfite alignment to per-read CpG/CHG/CHH methylation coloring in JBrowse 2
-- [QTL mapping in the BXD family](/docs/tutorials/bxd_qtl) - Systems genetics with real GeneNetwork BXD data — a chromosome-painting multi-row track and a QTL Manhattan plot from the same mouse recombinant-inbred panel
+- [Bisulfite / EM-seq methylation](/docs/tutorials/bisulfite) - A full Arabidopsis WGBS pipeline, from SRA reads through bisulfite alignment to per-read CpG/CHG/CHH methylation coloring in JBrowse 2
+- [QTL mapping in the BXD family](/docs/tutorials/bxd_qtl) - Systems genetics with real GeneNetwork BXD data, using a chromosome-painting multi-row track and a QTL Manhattan plot from the same mouse recombinant-inbred panel
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm) - Painting many-cell-type ChromHMM segmentations in one track with the multi-row feature display
-- [Building a config with the CLI for Desktop](/docs/tutorials/cli_desktop) - Use the jbrowse CLI to assemble a config.json plus local data files, then open it directly in JBrowse Desktop — the same config also serves on the web
+- [Building a config with the CLI for Desktop](/docs/tutorials/cli_desktop) - Use the jbrowse CLI to assemble a config.json plus local data files, then open it directly in JBrowse Desktop. The same config also serves on the web
 - [Display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
 - [DNA methylation](/docs/tutorials/methylation) - Per-read, aggregate, allele-specific, and chromatin-accessibility (6mA) methylation from ONT/PacBio long reads and modkit
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes in a linear synteny view from a jcvi MCScan .blocks file
-- [Population genomics](/docs/tutorials/population_genomics) - Windowed Fst, nucleotide diversity, and Tajima's D scans plus a genotype matrix, LD heatmap, and a between-population sweep from real Drosophila data — a fully reproducible pipeline
+- [Population genomics](/docs/tutorials/population_genomics) - Windowed Fst, nucleotide diversity, and Tajima's D scans plus a genotype matrix, a fully reproducible pipeline from a single Drosophila genotype VCF
 - [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
 - [RNA-seq visualization](/docs/tutorials/rnaseq) - Understand what RNA-seq looks like in the genome browser, from spliced reads and splice arcs to alternative splicing and strand-specific coverage
 - [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk) - Aggregate single-cell ATAC into per-cell-type coverage BigWigs and load them as one MultiWiggle track

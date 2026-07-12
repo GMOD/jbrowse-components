@@ -20,10 +20,9 @@ click.
 
 ## What RNA-seq looks like in the genome browser
 
-The example gene here is **ACTB** (β-actin), a cytoskeletal protein expressed so
-highly and uniformly across cell types that it's one of the standard
-housekeeping genes used to normalize expression experiments — which makes it a
-clean first look at RNA-seq: deep, even read coverage over a compact gene.
+The example gene here is **ACTB** (β-actin), a highly-expressed housekeeping
+gene, which makes it a clean first look at RNA-seq: deep, even read coverage
+over a compact gene.
 
 Each grey box below is a **read**. The thin teal lines jumping across a gap are
 **spliced alignments**, where a read maps partly to one exon and partly to the
@@ -42,14 +41,14 @@ read count, so tall coverage flags a highly-transcribed gene.
 Turn on the **compact** display (in the track menu) to pack the full read stack
 into view:
 
-<Figure caption="The compact display packing the full read stack over a gene. Coverage depth broadly tracks expression, though an accurate expression estimate requires normalization (for gene length, library size, and mapping biases) via tools like HTSeq." src="/img/rnaseq/compact_stacked.png" />
+<Figure caption="The compact display packing the full read stack over a gene. Coverage depth broadly tracks expression level." src="/img/rnaseq/compact_stacked.png" />
 
 ## Spliced reads, CIGAR strings, and splice arcs
 
 RNA is spliced before sequencing, so a read mapped back to the genome can skip
 across the introns that were removed. A spliced aligner like
 [STAR](https://github.com/alexdobin/STAR) records this by split-mapping the read
-— part aligns to one exon, part to the next — and encodes the skip in the read's
+(part aligns to one exon, part to the next) and encodes the skip in the read's
 CIGAR string (Compact Idiosyncratic Gapped Alignment Report, the field in a
 SAM/BAM record that summarizes how a read aligns to the reference).
 
@@ -70,7 +69,7 @@ each as an arc. It also reads the splice signal (the GT/AG dinucleotides
 flanking the intron) to determine strand: red arcs are forward-strand splice
 events, blue arcs are reverse-strand. Zoom in on the pileup (compact display
 off) and each individual spliced read shows its two exon-aligned ends as grey
-boxes joined by a thin **teal** line across the skipped intron — a per-read
+boxes joined by a thin **teal** line across the skipped intron, a per-read
 connector distinct from the red/blue strand-colored arcs. Mouse over any read to
 inspect it.
 
@@ -82,26 +81,25 @@ each read's transcript came from. That matters wherever genes sit close together
 or overlap on opposite strands: without strand information you can't tell which
 gene a read belongs to.
 
-The **surfeit locus** is the extreme case — the most tightly-packed gene cluster
-in the vertebrate genome, with genes alternating strands (RPL7A, SURF1, SURF2,
-SURF4) and sharing bidirectional promoters. Coloring each read by its fragment's
+The **surfeit locus** is a tightly-packed gene cluster with genes alternating
+strands (RPL7A, SURF1, SURF2, SURF4). Coloring each read by its fragment's
 strand cleanly separates them:
 
-<Figure caption="The surfeit locus with reads colored by fragment strand. The strongly-transcribed RPL7A reads take one color and the neighboring opposite-strand SURF genes take the other, so every read is assigned to the correct gene even where their transcripts abut." src="/img/rnaseq/strand_specific.png" />
+<Figure caption="The surfeit locus with reads colored by fragment strand. RPL7A reads take one color and the neighboring opposite-strand SURF genes take the other, so every read is assigned to the correct gene even where their transcripts abut." src="/img/rnaseq/strand_specific.png" />
 
 ## Short reads vs long reads
 
 Short-read RNA-seq (usually Illumina, ~150 bp per read) fragments each
 transcript and is reassembled from many overlapping reads. Long-read RNA-seq
 (PacBio IsoSeq, Nanopore) often spans a whole transcript in one read, so a
-single read can align across every exon — its CIGAR carries one `N` skip per
+single read can align across every exon: its CIGAR carries one `N` skip per
 intron, and JBrowse derives the same splice arcs and per-read connectors from
 those skips:
 
 <Figure caption="Long-read (IsoSeq) RNA-seq in JBrowse 2. A long read often spans all of a transcript's exons at once, producing a long, clean spliced alignment." src="/img/rnaseq/longread_isoseq.png" />
 
 Because a long read carries a whole isoform end-to-end, long-read RNA-seq makes
-alternative splicing even more direct — each read _is_ one isoform, no inference
+alternative splicing even more direct: each read _is_ one isoform, no inference
 across junctions required.
 
 ## Loading your own RNA-seq data
@@ -123,8 +121,8 @@ JBrowse Web from **Add track**, or add it to a config as an `AlignmentsTrack`:
 ```
 
 The track's `assemblyNames` must match an assembly already configured in
-JBrowse; if you don't have `hg38` set up yet, add it first — see the
-[assemblies configuration guide](/docs/config_guides/assemblies). (Reads come
+JBrowse; if you don't have `hg38` set up yet, add it first (see the
+[assemblies configuration guide](/docs/config_guides/assemblies)). (Reads come
 from a spliced aligner such as STAR, then `samtools sort` + `samtools index` so
 the `.bai` sits beside the BAM.)
 
@@ -139,11 +137,11 @@ strand-specific BigWig produced by your aligner), load it separately as a
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track) — splice arcs,
+- [Alignments track](/docs/user_guides/alignments_track) - splice arcs,
   soft-clipping, coloring, and the other display options for BAM/CRAM
-- [Quantitative track](/docs/user_guides/quantitative_track) — loading a
+- [Quantitative track](/docs/user_guides/quantitative_track) - loading a
   precomputed coverage signal such as a strand-specific BigWig
-- [Gene tracks](/docs/user_guides/gene_track) — displaying the reference gene
+- [Gene tracks](/docs/user_guides/gene_track) - displaying the reference gene
   annotations that RNA-seq reads are compared against
-- [Gallery: alignments and long reads](/gallery/#alignments) — the RNA-seq
+- [Gallery: alignments and long reads](/gallery/#alignments) - the RNA-seq
   splice-junction example alongside other long-read alignment views

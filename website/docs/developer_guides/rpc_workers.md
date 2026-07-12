@@ -134,16 +134,16 @@ const result = await rpcManager.call(sessionId, 'MyRpcMethod', {
 
 The worker boundary uses the [Structured Clone Algorithm][sca]. Safe types:
 
-- Primitives — `string`, `number`, `boolean`, `null`, `undefined`
-- `ArrayBuffer`, typed arrays (`Uint8Array`, `Float32Array`, …) — use
+- Primitives - `string`, `number`, `boolean`, `null`, `undefined`
+- `ArrayBuffer`, typed arrays (`Uint8Array`, `Float32Array`, …) - use
   `rpcResult` transfer list to avoid copying
 - `File`, `Blob`
 - Plain objects and arrays (recursively)
 - `Map`, `Set`, `Date`, `RegExp`
 
-**Not safe** — filtered out automatically:
+**Not safe**, filtered out automatically:
 
-- Functions (including callbacks) — use `statusCallback` mechanism below
+- Functions (including callbacks) - use `statusCallback` mechanism below
 - MST model nodes or observables
 - Circular references
 
@@ -206,13 +206,13 @@ shape is still read and hoisted to the flat `workerCount` slot on load.)
 
 ## See also
 
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) — the
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) - the
   main-thread caller side that drives `rpcManager.call` from `fetchNeeded`
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
-  — RPC methods that pack and transfer GPU buffers with `rpcResult`
-- [Creating custom adapters](/docs/developer_guides/creating_adapter) — adapters
+  - RPC methods that pack and transfer GPU buffers with `rpcResult`
+- [Creating custom adapters](/docs/developer_guides/creating_adapter) - adapters
   run inside these workers
-- [RefName aliasing](/docs/developer_guides/refname_aliasing) — what
+- [RefName aliasing](/docs/developer_guides/refname_aliasing) - what
   `renameRegions` resolves before args cross the worker boundary
 - [Renderer architecture](/docs/developer_guides/renderer_architecture)
 

@@ -2,22 +2,22 @@
 title: Plotting features in a custom display
 description:
   Build a plugin that fetches features in a worker and plots them on the main
-  thread with Canvas2D — no shaders required
+  thread with Canvas2D, no shaders required
 guide_category: Creating pluggable elements
 ---
 
 This guide walks through a custom display that draws your own features into a
-linear genome view — the common case where you have a data file and want to plot
+linear genome view, the common case where you have a data file and want to plot
 each feature as a box, point, line, or any other mark. It uses the **Canvas2D
 path**, which needs no shader authoring and is the right choice for gene-scale
 annotation tracks (hundreds to thousands of features per frame).
 
 If you profile your display and Canvas2D can't hold 60fps at your real feature
-counts (roughly ≳100K features per frame — whole-genome GWAS, dense methylation,
-million-point scatters), move to the GPU path in
+counts (roughly ≳100K features per frame, e.g. whole-genome GWAS, dense
+methylation, million-point scatters), move to the GPU path in
 [GPU displays](/docs/developer_guides/creating_gpu_display). The two paths share
-the same model shape, the same fetch chain, and the same lifecycle — only the
-renderer differs — so starting on Canvas2D never boxes you in.
+the same model shape, the same fetch chain, and the same lifecycle (only the
+renderer differs), so starting on Canvas2D never boxes you in.
 
 ## The mental model
 
@@ -31,17 +31,16 @@ pack into plain/typed data       compute renderState each frame (no fetch)
 return (absolute uint32 bp)  →   draw the visible blocks into a <canvas>
 ```
 
-- The **worker** fetches and returns compact data — never pixels. All genomic
-  positions crossing the worker boundary are **absolute** (not region-relative).
-- The **model** owns the fetched data (`rpcDataMap`), a cheap per-frame
+- The worker fetches and returns compact data, never pixels. All genomic
+  positions crossing the worker boundary are absolute (not region-relative).
+- The model owns the fetched data (`rpcDataMap`), a cheap per-frame
   `renderState`, and the fetch/draw wiring. Mixins supply the fetch lifecycle
   and the draw lifecycle; you don't write autoruns by hand.
-- The **renderer** is a small class that paints the visible blocks with an
-  ordinary `CanvasRenderingContext2D`. The same pure draw function backs SVG
-  export.
+- The renderer is a small class that paints the visible blocks with an ordinary
+  `CanvasRenderingContext2D`. The same pure draw function backs SVG export.
 
 The simplest complete in-tree reference is
-`plugins/sequence/src/LinearReferenceSequenceDisplay/` — a Canvas2D-only display
+`plugins/sequence/src/LinearReferenceSequenceDisplay/`, a Canvas2D-only display
 whose renderer is ~30 lines. This guide mirrors its shape.
 
 ## Files to create
@@ -253,7 +252,7 @@ export type LinearScoreDisplayModel = Instance<LinearScoreDisplayStateModel>
 ```
 
 `renderBlocks` (the list of visible blocks with their pixel spans) comes from
-`MultiRegionDisplayMixin` — you don't compute it. The fetch chain
+`MultiRegionDisplayMixin`, so you don't compute it. The fetch chain
 (`fetchNeeded`, `rpcProps`, cancellation, `regionTooLarge`) is documented in
 full in [the data fetching pipeline](/docs/developer_guides/data_fetching).
 
@@ -445,7 +444,7 @@ how displays attach to a track type.
 
 ## Hit-testing (clicks and hovers)
 
-Hit-testing is plugin-owned and runs on the main thread — it is not part of
+Hit-testing is plugin-owned and runs on the main thread. It is not part of
 rendering. Build a spatial index (e.g.
 [`Flatbush`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/flatbush/index.ts))
 from `rpcDataMap` in a cached view, and query it from your React mouse handlers
@@ -455,42 +454,42 @@ worked example.
 ## SVG export
 
 Because `drawScoreBlocks` takes a `Ctx2D`, SVG export calls the exact same
-function with an `SvgCanvas` and emits vector output — no second rendering
+function with an `SvgCanvas` and emits vector output, with no second rendering
 implementation. Add a `renderSvg` action per
 [SVG export](/docs/developer_guides/svg_export).
 
 ## When to move to the GPU path
 
 Stay on Canvas2D until a profile shows it can't keep up. The GPU path (WebGPU
-with WebGL2/Canvas2D fallback) becomes worth its extra cost — a `.slang` shader,
-an instance packer, a GPU backend class — only at high feature counts. The
-model, fetch chain, `renderState`, and hit-testing you wrote here carry over
-unchanged; you add a GPU renderer and swap `createCanvas2DBackend` for
+with WebGL2/Canvas2D fallback) becomes worth its extra cost (a `.slang` shader,
+an instance packer, a GPU backend class) only at high feature counts. The model,
+fetch chain, `renderState`, and hit-testing you wrote here carry over unchanged;
+you add a GPU renderer and swap `createCanvas2DBackend` for
 `createRenderingBackend`. See
 [GPU displays](/docs/developer_guides/creating_gpu_display).
 
 ## In-tree references
 
-- `plugins/sequence/src/LinearReferenceSequenceDisplay/` — the simplest
+- `plugins/sequence/src/LinearReferenceSequenceDisplay/` - the simplest
   Canvas2D-only display (this guide mirrors it)
-- `plugins/gwas/src/LinearManhattanDisplay/` — a real feature-plotting display
-  (scored scatter) that ships **both** a Canvas2D renderer and a GPU renderer
-  behind one model, plus hit-testing and LD coloring
-- `plugins/canvas/src/LinearBasicDisplay/` — the fullest reference: the generic
+- `plugins/gwas/src/LinearManhattanDisplay/` - a real feature-plotting display
+  (scored scatter) that ships both a Canvas2D renderer and a GPU renderer behind
+  one model, plus hit-testing and LD coloring
+- `plugins/canvas/src/LinearBasicDisplay/` - the fullest reference: the generic
   feature display with the dual GPU + Canvas2D path
 
 ## See also
 
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) — the autorun
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) - the autorun
   chain, `rpcProps`, cancellation, and `regionTooLarge` behind `fetchNeeded`
-- [RPC and worker system](/docs/developer_guides/rpc_workers) — implementing the
+- [RPC and worker system](/docs/developer_guides/rpc_workers) - implementing the
   `GetScoreData` method the model calls
-- [GPU displays](/docs/developer_guides/creating_gpu_display) — the scale-up
+- [GPU displays](/docs/developer_guides/creating_gpu_display) - the scale-up
   path for dense datasets
 - [Adding SVG export to a display](/docs/developer_guides/svg_export)
-- [Custom track and display types](/docs/developer_guides/creating_display) —
+- [Custom track and display types](/docs/developer_guides/creating_display) -
   track vs display, registration, and view pairing
-- [Configuration schema](/docs/developer_guides/configuration_schema) — defining
+- [Configuration schema](/docs/developer_guides/configuration_schema) - defining
   the `color`/`height` slots this display reads
-- [Writing a plugin](/docs/developer_guides/simple_plugin) — scaffolding and
+- [Writing a plugin](/docs/developer_guides/simple_plugin) - scaffolding and
   build setup

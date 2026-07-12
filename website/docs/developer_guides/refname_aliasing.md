@@ -6,8 +6,8 @@ guide_category: Advanced topics
 ---
 
 RefName aliasing lets JBrowse treat different naming conventions for the same
-chromosome — e.g. `chr1` vs `1` vs `NC_000001.11` — as a single sequence. When
-an alias adapter is configured on an assembly, JBrowse automatically translates
+chromosome (e.g. `chr1` vs `1` vs `NC_000001.11`) as a single sequence. When an
+alias adapter is configured on an assembly, JBrowse automatically translates
 refNames so that tracks using different conventions all line up and display
 together.
 
@@ -15,16 +15,16 @@ together.
 
 It helps to keep three distinct names in mind:
 
-- **canonical name** — the name JBrowse displays and uses for navigation. Every
+- canonical name - the name JBrowse displays and uses for navigation. Every
   alias of a sequence resolves to its canonical name. By default this is the
   name in your FASTA / sequence adapter.
-- **sequence-adapter (FASTA) name** — the name your reference sequence file
-  actually uses. Usually the same as the canonical name, but it can differ (see
+- sequence-adapter (FASTA) name - the name your reference sequence file actually
+  uses. Usually the same as the canonical name, but it can differ (see
   `useNameOverride` below).
-- **track refName** — the name an individual track's data file uses. Each
-  track's regions are translated from the canonical name into that track's own
-  naming scheme before querying it, so a BAM that uses `1` and a VCF that uses
-  `chr1` both work against a `chr1` canonical assembly.
+- track refName - the name an individual track's data file uses. Each track's
+  regions are translated from the canonical name into that track's own naming
+  scheme before querying it, so a BAM that uses `1` and a VCF that uses `chr1`
+  both work against a `chr1` canonical assembly.
 
 When a track adapter is queried, the resolved track refName is passed as
 `refName`, and the sequence-adapter name is passed as `originalRefName` (used by
@@ -66,10 +66,10 @@ column is the first one; use `refNameColumn` (below) to pick a different column.
 
 **Options:**
 
-- [`refNameColumn`](/docs/config/refnamealiasadapter/#slot-refnamecolumn) —
+- [`refNameColumn`](/docs/config/refnamealiasadapter/#slot-refnamecolumn) -
   zero-based index of the column that matches your FASTA. In the example above,
   the first column (`chr1`/`chr2`) is the one that must match your FASTA.
-- `refNameColumnHeaderName` (string) — alternative to `refNameColumn`. If your
+- `refNameColumnHeaderName` (string) - alternative to `refNameColumn`. If your
   file has a `#`-prefixed header line, select the primary column by its header
   name instead of by index. If the named column is not found, the adapter throws
   rather than silently producing no aliases.
@@ -109,13 +109,13 @@ back to `Sequence name`; all four columns become aliases for it.
 **Options:**
 
 - [`useNameOverride`](/docs/config/ncbisequencereportaliasadapter/#slot-usenameoverride)
-  — controls which name is canonical (displayed) when your FASTA does **not**
-  use UCSC names:
-  - **`true`** — show UCSC-style names (`chr1`) even though your FASTA uses
-    RefSeq accessions (`NC_000001.11`). JBrowse displays `chr1` and still
-    fetches reference bases from the FASTA under `NC_000001.11` behind the
-    scenes. This is the common case for NCBI FASTAs.
-  - **`false`** — keep your FASTA's own names canonical. JBrowse displays
+  controls which name is canonical (displayed) when your FASTA does **not** use
+  UCSC names:
+  - `true` - show UCSC-style names (`chr1`) even though your FASTA uses RefSeq
+    accessions (`NC_000001.11`). JBrowse displays `chr1` and still fetches
+    reference bases from the FASTA under `NC_000001.11` behind the scenes. This
+    is the common case for NCBI FASTAs.
+  - `false` - keep your FASTA's own names canonical. JBrowse displays
     `NC_000001.11`, and `chr1` resolves to it as a searchable alias.
 
 ## Troubleshooting
@@ -138,5 +138,5 @@ back to `Sequence name`; all four columns become aliases for it.
   [RefNameAliasAdapter](/docs/config/refnamealiasadapter) and
   [NcbiSequenceReportAliasAdapter](/docs/config/ncbisequencereportaliasadapter)
 - [Creating custom adapters](/docs/developer_guides/creating_adapter)
-- [RPC and worker system](/docs/developer_guides/rpc_workers) — documents
+- [RPC and worker system](/docs/developer_guides/rpc_workers) - documents
   `renameRegions`, the resolution mechanism described above

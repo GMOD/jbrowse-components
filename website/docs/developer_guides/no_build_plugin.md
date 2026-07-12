@@ -221,7 +221,7 @@ includes a build step, bundler, and type checking.
 ## Note: UMD vs ESM module syntax
 
 This guide uses ESM modules (exporting a plain class), which all modern browsers
-support. For legacy browser compatibility you can also use UMD modules — see
+support. For legacy browser compatibility you can also use UMD modules. See
 [this example](https://github.com/GMOD/jbrowse-components/blob/76ce3660c9192f071d23e2478c756fff42ec533a/test_data/volvox/umd_plugin.js#L1-L127),
 which defines a specific global variable rather than exporting a class.
 
@@ -252,15 +252,15 @@ example in the `@jbrowse/react-app2` examples site for a live example.
 
 ## See also
 
-- [Writing a plugin](/docs/developer_guides/simple_plugin) — the build-step
+- [Writing a plugin](/docs/developer_guides/simple_plugin) - the build-step
   alternative, needed for JSX, TypeScript, or bundled dependencies
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) — the full
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) - the full
   list of element types a no-build plugin can also register
-- [Top-level menu items](/docs/developer_guides/menus) — a fuller worked example
+- [Top-level menu items](/docs/developer_guides/menus) - a fuller worked example
   of the menu registration used above
-- [Custom widgets](/docs/developer_guides/creating_widget) — the `WidgetType`
+- [Custom widgets](/docs/developer_guides/creating_widget) - the `WidgetType`
   API used in the citation-widget example
-- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports) —
+- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports) -
   what `jbrequire` can and can't load in a no-build plugin
-- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) —
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) -
   a common motivation for writing a no-build plugin's jexl callback

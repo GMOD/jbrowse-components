@@ -7,7 +7,7 @@ guide_category: Core concepts
 Every linear display that fetches data composes `MultiRegionDisplayMixin`, which
 installs four autoruns that collectively manage fetch lifecycle, cancellation,
 and cache invalidation. Understanding this chain is essential for writing a
-custom display that doesn't use the GPU path — and for debugging unexpected
+custom display that doesn't use the GPU path, and for debugging unexpected
 refetches in one that does.
 
 ## The four autoruns
@@ -25,7 +25,7 @@ visibleRegions        →  ClearBlockingStateOnViewportChange → clearAllRpcDat
 `error`. It also bumps `fetchGeneration`, which causes `FetchVisibleRegions` to
 re-fire and start fresh fetches.
 
-## FetchVisibleRegions — the core fetch trigger
+## FetchVisibleRegions: the core fetch trigger
 
 This autorun fires 600 ms after any change to the viewport. For each visible
 region block it checks whether the data is already loaded and still valid:
@@ -52,7 +52,7 @@ trigger a new fetch.
 
 `fetchNeeded` is the hook you override in your display to make RPC calls.
 `MultiRegionDisplayMixin` provides `fetchRegions()` which handles cancellation,
-stop tokens, and byte estimation — your job is to call it with a work callback:
+stop tokens, and byte estimation. Your job is to call it with a work callback:
 
 ```ts
 import { getRpcSessionId, getSession, isAlive } from '@jbrowse/core/util'
@@ -90,9 +90,9 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
 
 `ctx.isStale()` returns `true` if the user panned/zoomed or settings changed
 while the fetch was in flight. Always check it before writing results to the
-model — stale writes trigger unnecessary re-renders.
+model, since stale writes trigger unnecessary re-renders.
 
-## rpcProps — the cache key
+## rpcProps: the cache key
 
 `SettingsInvalidate` tracks every observable read inside `rpcProps()`. When any
 of those values changes, it calls `clearAllRpcData()` and restarts the fetch
@@ -111,11 +111,11 @@ rpcProps() {
 }
 ```
 
-**Do not include** values that change every frame (scroll position, zoom level)
-— those belong in `renderState` (for GPU displays) or re-read inside the work
+**Do not include** values that change every frame (scroll position, zoom level).
+Those belong in `renderState` (for GPU displays) or re-read inside the work
 callback. Putting them in `rpcProps` causes a refetch on every pixel of scroll.
 
-**Do not include** the fetch results themselves — putting derived cell data or
+**Do not include** the fetch results themselves. Putting derived cell data or
 computed arrays in `rpcProps` creates an infinite fetch loop because storing
 results triggers another settings change.
 
@@ -162,7 +162,7 @@ to set `userByteSizeLimit` to the observed byte count.
 `regionTooLarge` is automatically cleared when the user pans or zooms to a
 different region, allowing a retry.
 
-## FetchMixin — cancellation and staleness
+## FetchMixin: cancellation and staleness
 
 `MultiRegionDisplayMixin` composes `FetchMixin`, which owns the stop-token
 lifecycle. Each call to `fetchRegions()` rotates the stop token:
@@ -171,7 +171,7 @@ lifecycle. Each call to `fetchRegions()` rotates the stop token:
 - The prior token is signaled to stop (any in-flight adapter calls abort)
 - `fetchGeneration` is captured at the start of the fetch
 - `isStale()` returns `true` if `fetchGeneration` has advanced since the token
-  was created — i.e., if a newer fetch has started
+  was created (i.e. if a newer fetch has started)
 - On completion (success or error), `fetchGeneration` increments once,
   re-triggering `FetchVisibleRegions` to check if anything still needs loading
 
@@ -228,10 +228,10 @@ visibleRegions changes → FetchVisibleRegions (600ms) → fetchNeeded(needed)
 ## See also
 
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
-  — the rendering side that consumes this fetched data
-- [RPC and worker system](/docs/developer_guides/rpc_workers) — implementing the
+  - the rendering side that consumes this fetched data
+- [RPC and worker system](/docs/developer_guides/rpc_workers) - implementing the
   `MyRpcMethod` the work callback calls
-- [MST patterns](/docs/developer_guides/mst_patterns) — autoruns, `untracked`,
+- [MST patterns](/docs/developer_guides/mst_patterns) - autoruns, `untracked`,
   the super-capture pattern, and volatile maps used here
 - [Creating custom display types](/docs/developer_guides/creating_display)
 - [Renderer architecture](/docs/developer_guides/renderer_architecture)

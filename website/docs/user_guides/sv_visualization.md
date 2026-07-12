@@ -6,8 +6,8 @@ guide_category: Views
 
 This guide covers how to interpret structural variant (SV) signals across
 JBrowse's views. A typical workflow starts in the
-[SV inspector](/docs/user_guides/sv_inspector_view) — a combined variant table
-and whole-genome circular overview — to triage candidates, then drills into the
+[SV inspector](/docs/user_guides/sv_inspector_view) (a combined variant table
+and whole-genome circular overview) to triage candidates, then drills into the
 alignments at each breakpoint to examine read-level evidence.
 
 SV calls load as [variant tracks](/docs/user_guides/variant_track) (VCF), reads
@@ -15,9 +15,9 @@ as [alignments tracks](/docs/user_guides/alignments_track) (BAM/CRAM). The
 [alignments track guide](/docs/user_guides/alignments_track) covers the general
 features; this page focuses on what to look for when interpreting SVs.
 
-For the read-level signals behind these displays — how split (supplementary)
+For the read-level signals behind these displays (how split (supplementary)
 alignments, the `SA` tag, pair orientation, `TLEN`, and clipping encode SV
-evidence in the SAM format — see
+evidence in the SAM format), see
 [Structural variants and the SAM format](https://cmdcolin.github.io/posts/2022-02-06-sv-sam/).
 
 For end-to-end walkthroughs, see
@@ -31,22 +31,22 @@ tumor/normal PacBio HiFi + C-GIAB SV/CNV calls) and
 The standard alignments track gives you several SV-relevant signals without any
 extra steps:
 
-- **Soft clipping** — reads that extend past a breakpoint have their overhanging
+- Soft clipping - reads that extend past a breakpoint have their overhanging
   bases soft-clipped; enabling Show soft clipping from the track menu makes
   these bases visible at breakpoint edges
 
-<Figure caption="Soft-clipped reads at a breakpoint edge (right side, ~position 2,700). The dense cluster of colored nucleotide bases marks where many reads terminate at a common breakpoint; those colored bases are the overhanging sequence that could not be aligned to the reference." src="/img/alignments_soft_clipped.png" />
+<Figure caption="Soft-clipped reads at a breakpoint edge (right side, ~position 2,700). The dense cluster of colored bases marks where many reads terminate at a common breakpoint." src="/img/alignments_soft_clipped.png" />
 
-- **Insertion/clipping indicators** — a purple triangle marks positions where a
+- Insertion/clipping indicators - a purple triangle marks positions where a
   depth-dependent fraction of reads (roughly 30% at high coverage) carry an
   insertion; blue/red triangles mark clipping; larger purple rectangles appear
   for insertions >10 bp
 
 <Figure caption="Clipping and insertion indicators visible as colored vertical marks above the coverage track. The tall vertical colored lines (blue = soft clip, red = hard clip, purple = insertion) flag positions where many reads carry an SV signal, even without zooming into the pileup." src="/img/alignment_clipping_indicators.png" />
 
-- **Color by pair orientation** — abnormally oriented pairs produce
-  characteristic colors described in the table below
-- **Color by insert size** — pairs with unexpectedly large or small inserts are
+- Color by pair orientation - abnormally oriented pairs produce characteristic
+  colors described in the table below
+- Color by insert size - pairs with unexpectedly large or small inserts are
   highlighted
 
 For descriptions of these features in general use, see the
@@ -54,7 +54,7 @@ For descriptions of these features in general use, see the
 
 ### Pair orientation color scheme
 
-JBrowse uses the same color scheme as IGV — see the
+JBrowse uses the same color scheme as IGV. See the
 [IGV paired-end alignments guide](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/)
 for background. Set the color scheme to Pair orientation from the track menu.
 Orientation coloring assumes standard `fr` (Illumina) read pairs; SOLiD-style
@@ -73,25 +73,22 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 
-<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) with two overlapping orientation signals, shown twice: a compact overview (top frame) and the same locus at the normal feature height (bottom frame), where individual read pairs and their orientation colors are easier to follow. Teal reads are RL-oriented (mates pointing away from each other, as if ← →), a signature of tandem duplication. Green LL reads (→→) and dark blue RR reads (←←) point the same direction, a signature of an inversion. The orientation-colored reads are a minority of the pileup — most pairs are concordant LR (light grey) — so they cluster at the breakpoints rather than filling the view." src="/img/inverted_duplication.png" />
+<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) shown twice: a compact overview (top frame) and the same locus at normal feature height (bottom frame). Teal RL reads (mates pointing away) flag the tandem duplication; green LL and dark blue RR same-direction reads flag the inversion. These orientation-colored reads are a minority of an otherwise concordant grey pileup, so they cluster at the breakpoints." src="/img/inverted_duplication.png" />
 
 #### Short reads vs. long reads
 
 Short paired-end reads can only _infer_ an inversion: because neither mate spans
-the breakpoint, the evidence is indirect — a cluster of same-orientation (LL/RR)
-or split pairs arcing across the two junctions, a minority signal in an
-otherwise concordant (grey) pileup. Long reads span the whole event, so a single
-read crosses both breakpoints and splits into a forward and a reverse-strand
-alignment. With View as pairs / link supplementary alignments on, those split
-segments chain onto one row: the inverted middle segment paints the flipped
-(reverse-strand) color while the flanks stay forward, so the inverted interval
-reads out as a colored block, and the split junctions are joined by a magenta
-inversion arc (the split-read color scheme, shared with the pileup fill and the
-linked-read connectors). The figure below shows the same ~1.2 kb inversion in
-one 1000 Genomes sample (HG00151) with both technologies — Illumina
-high-coverage on top, Oxford Nanopore below.
+the breakpoint, the evidence is indirect, a cluster of same-orientation (LL/RR)
+or split pairs arcing across the two junctions in an otherwise concordant (grey)
+pileup. Long reads span the whole event, so a single read crosses both
+breakpoints and splits into forward and reverse-strand alignments. With View as
+pairs / link supplementary alignments on, those segments chain onto one row: the
+inverted middle paints the reverse-strand color between forward-strand flanks,
+and the split junctions are joined by a magenta inversion arc. The figure below
+shows the same ~1.2 kb inversion in one 1000 Genomes sample (HG00151) with both
+technologies: Illumina high-coverage on top, Oxford Nanopore below.
 
-<Figure caption="The same inversion (HGSV_10047, chr1:197,787,660-197,788,855) shown with short and long reads from one sample, both with supplementary alignments linked. Top (Illumina paired-end): the inversion is only inferred — a minority of same-orientation pairs and split-read arcs cluster at the breakpoints in an otherwise concordant grey pileup. Bottom (Oxford Nanopore): each long read spans the whole inverted segment, so its reverse-strand middle paints a distinct color between forward-strand flanks and the split junctions arc in magenta — the inversion is read out directly rather than triangulated." src="/img/inversion_long_read.png" />
+<Figure caption="The same inversion (HGSV_10047, chr1:197,787,660-197,788,855) shown with short and long reads from one sample, both with supplementary alignments linked. Top (Illumina paired-end): the inversion is only inferred, a minority of same-orientation pairs and split-read arcs clustering at the breakpoints. Bottom (Oxford Nanopore): each long read spans the whole segment, its reverse-strand middle painting a distinct color between forward-strand flanks with magenta split-read arcs at the junctions." src="/img/inversion_long_read.png" />
 
 ### Insert size color scheme
 
@@ -115,25 +112,21 @@ menu), the Insert size option uses threshold-based coloring:
 <!-- COLOR_TABLE alignments-insert-size END -->
 
 The "expected" range is a robust band around the typical insert size,
-`median ± 3·1.4826·MAD`, rather than `mean ± 3σ`. Real insert-size distributions
-are a tight bulk plus a long right tail of large inserts (deletions, SVs); that
-tail inflates the standard deviation, which pushes the `mean − 3σ` lower bound
-below zero so that nothing is ever flagged as a short insert and the insertion
-signal silently disappears. The median and MAD measure the spread of the
-normal-insert bulk and ignore the tail, so the short-insert (pink) threshold
-stays positive and meaningful, and moderate deletions aren't masked by a few
-very large outliers.
+`median ± 3·1.4826·MAD`, rather than `mean ± 3σ`. The long right tail of large
+inserts (deletions, SVs) inflates the standard deviation, pushing a `mean − 3σ`
+lower bound below zero so short inserts are never flagged; the median and MAD
+ignore that tail, keeping the short-insert (pink) threshold meaningful.
 
 Insert size and orientation combines both signals and is often the most
 informative setting for a general SV scan. The two signals are prioritized so
 that the strongest cue wins:
 
 - Short insert always paints pink, even if the pair orientation is abnormal. At
-  a short insert the useful signal is simply "an insertion is here" —
-  distinguishing orientation adds little, so pink takes priority.
+  a short insert the useful signal is simply "an insertion is here", so
+  distinguishing orientation adds little and pink takes priority.
 - Otherwise an abnormal pair orientation wins (teal RL → tandem duplication;
   green LL / dark blue RR → inversion).
-- A large insert with normal orientation paints red — the classic deletion
+- A large insert with normal orientation paints red, the classic deletion
   signature.
 
 ## SV-type signatures
@@ -173,7 +166,7 @@ is a useful companion reference.
 
 ### Inversion
 
-- LL (green) and RR (dark blue) read pairs at a boundary suggest an inversion —
+- LL (green) and RR (dark blue) read pairs at a boundary suggest an inversion:
   normally LR-oriented reads become same-direction across the junction
 - If you're zoomed into the inverted region itself, interior reads may look
   concordant
@@ -211,7 +204,7 @@ connections (drawn as vertical lines at the view edge) flag translocations. Set
 the color scheme to insert size, orientation, or combined coloring from the
 track menu.
 
-<Figure caption="Read arcs over a deletion in the 1000 Genomes Kinh-Vietnamese trio (child, mother, father; Illumina reads), with the 1KGP ensemble SV call on top. The red arcs are pairs spanning the deleted region — drawn red for a larger-than-expected insert size — and they line up with the called breakpoints across all three samples." src="/img/multi-sv-trio.png" />
+<Figure caption="Read arcs over a deletion in the 1000 Genomes Kinh-Vietnamese trio (child, mother, father; Illumina reads), with the 1KGP ensemble SV call on top. The red arcs are pairs spanning the deleted region (drawn red for a larger-than-expected insert size), lining up with the called breakpoints across all three samples." src="/img/multi-sv-trio.png" />
 
 With View as pairs on, each mate pair collapses onto a single row joined by its
 own bezier curve, colored here by pair orientation. The abnormal
@@ -219,17 +212,16 @@ same-orientation pairs of an inverted duplication then read as a coherent bundle
 of curves rather than scattered singleton pileup rows.
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
-— HG002 deletion with Nanopore and Illumina reads in arc mode
+
+- HG002 deletion with Nanopore and Illumina reads in arc mode
 
 A read can look concordant (light-grey LR fill) yet still carry a dark-blue
 connector. That happens when the read itself crosses the inversion breakpoint:
-it is split into a primary alignment and a strand-flipped supplementary
-alignment, and the arc joining those two segments is colored for the inversion —
-the same dark blue as an RR pair. This is not an aberrant mate pair. It is a
-second, independent line of evidence for the same inversion, from a single split
-read rather than a pair, so the shared color is corroboration. Hover any
-connector to read its classification (for example, _Split-read inversion_ versus
-_RR — both mates reverse strand_).
+it splits into a primary and a strand-flipped supplementary alignment, and the
+arc joining them is colored for the inversion, the same dark blue as an RR pair.
+This is a second, independent line of evidence for the inversion, from a single
+split read rather than a pair. Hover any connector to read its classification
+(for example, _Split-read inversion_ versus _RR, both mates reverse strand_).
 
 ## Linked reads
 
@@ -241,7 +233,8 @@ supplementary alignments are connected by an orange line.
 <Figure caption="Linked reads on an SV dataset: reads are drawn as horizontal lines stratified on the Y axis by the log distance between mates. The bar on the bottom row marks an abnormally large insert, flagging the structural-variant event." src="/img/alignments/read_cloud.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-ofjI26CNas&password=ohqlR)
-— inversion example in linked reads mode
+
+- inversion example in linked reads mode
 
 The Edit filters option in the track menu lets you show or hide proper pairs and
 singletons. The color scheme provides insert size, orientation, or combined
@@ -252,11 +245,11 @@ coloring.
 Right-clicking any read opens a context menu with two single-read inspection
 options:
 
-- **Linear read vs ref** — opens a synteny-style split view showing how that
-  read aligns to the reference, with the read sequence on one panel and the
-  reference on the other
-- **Dotplot of read vs ref** — opens a dotplot of the read against the
-  reference, which can reveal complex rearrangements as diagonal segments
+- Linear read vs ref - opens a synteny-style split view showing how that read
+  aligns to the reference, with the read sequence on one panel and the reference
+  on the other
+- Dotplot of read vs ref - opens a dotplot of the read against the reference,
+  which can reveal complex rearrangements as diagonal segments
 
 Both are most useful on long reads where a single read spans a breakpoint.
 
@@ -269,31 +262,32 @@ centered on one breakpoint locus. Splines connect supporting reads across both
 panels, and the variant call is drawn as a colored line with feet indicating
 directionality.
 
-<Figure caption="Breakpoint split view for an interchromosomal translocation. The two panels are each centered on one breakpoint locus. Black splines connect supporting reads that span the junction — each spline represents a single read seen in both panels. The green line with arrowheads ('feet') is the variant call drawn across both panels to indicate directionality." src="/img/breakpoint_split_view.png" />
+<Figure caption="Breakpoint split view for an interchromosomal translocation. The two panels are each centered on one breakpoint locus. Black splines connect supporting reads that span the junction (each spline represents a single read seen in both panels). The green line with arrowheads ('feet') is the variant call drawn across both panels to indicate directionality." src="/img/breakpoint_split_view.png" />
 
 The header bar accepts location searches directly in either panel.
 
 ### Launching the breakpoint split view
 
-- **From the SV inspector** — click a feature in the circular overview or the
+- From the SV inspector - click a feature in the circular overview or the
   triangle dropdown on any table row. See the
   [SV inspector guide](/docs/user_guides/sv_inspector_view).
-- **From variant feature details** — click a BND or TRA variant in a variant
-  track; the feature details panel has a button to open the split view,
-  automatically loading any open alignment tracks.
-- **From alignment feature details** — click any read with a supplementary
+- From variant feature details - click a BND or TRA variant in a variant track;
+  the feature details panel has a button to open the split view, automatically
+  loading any open alignment tracks.
+- From alignment feature details - click any read with a supplementary
   alignment; the feature details panel includes an option to open the split view
   centered on that read and its supplementary partner.
-- **From the circular genome view** — click a chord's feature details and use
-  its "Launch breakpoint split view" action.
+- From the circular genome view - click a chord's feature details and use its
+  "Launch breakpoint split view" action.
 
-<Figure caption="Feature details panel for a TRA variant. The BREAKENDS section at the bottom contains 'Launch split views with breakend source and target' — clicking that link (e.g. '14:84871468 // 17:74803924 (split view)') opens both breakpoint loci simultaneously in the breakpoint split view, with any open alignment tracks pre-loaded." src="/img/link_to_split_view.png" />
+<Figure caption="Feature details panel for a TRA variant. The BREAKENDS section at the bottom contains 'Launch split views with breakend source and target'; clicking that link (e.g. '14:84871468 // 17:74803924 (split view)') opens both breakpoint loci simultaneously in the breakpoint split view, with any open alignment tracks pre-loaded." src="/img/link_to_split_view.png" />
 
 The view also supports multi-hop events where a single read has multiple
 supplementary alignments, connecting more than two breakpoints simultaneously.
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fbreakpoint%2Fconfig.json&session=share-xeUuLRakik&password=vh0ca)
-— multi-hop split read connection in breakpoint split view
+
+- multi-hop split read connection in breakpoint split view
 
 ## Phasing heterozygous SVs
 
@@ -310,7 +304,8 @@ haplotypes.
 <Figure caption="Reads colored and sorted by haplotype. Coloring by the HP tag gives one color per haplotype, and sorting by the HP tag stacks each haplotype's reads into contiguous rows, making it easy to see which haplotype carries the variant." src="/img/alignments/haplotype.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-psOr2x2efp&password=bErZE)
-— heterozygous small deletion in GIAB colored and sorted by HP tag
+
+- heterozygous small deletion in GIAB colored and sorted by HP tag
 
 Grouping by the `HP` tag from the track menu will split the track into separate
 sub-tracks per haplotype for an even clearer visual separation. Note that group
@@ -329,12 +324,12 @@ inter-chromosomal SVs, a better approach is:
 - Use a BigWig coverage track (or a
   [multi-quantitative track](/docs/user_guides/multiquantitative_track) for
   tumor vs normal comparison) instead of a full alignments track when surveying
-  the region — it loads at any scale and makes copy-number changes immediately
+  the region. It loads at any scale and makes copy-number changes immediately
   visible
 - Load the SV call set as a variant track for a compact overview of all calls;
   clicking a feature navigates directly to it
-- Open the breakpoint split view to inspect the breakpoint loci themselves —
-  each panel shows only a local window around one end of the SV, so the
+- Open the breakpoint split view to inspect the breakpoint loci themselves. Each
+  panel shows only a local window around one end of the SV, so the
   inter-breakpoint distance doesn't matter
 - Use the SV inspector for whole-genome triage before drilling into individual
   calls
@@ -342,12 +337,13 @@ inter-chromosomal SVs, a better approach is:
 <Figure caption="COLO829 melanoma tumor (red) and matched normal (blue) whole-genome coverage as a multi-quantitative BigWig track. Copy-number changes are visible at chromosome scale without loading any reads." src="/img/cnv.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-AcZSrC_yOb&password=e7b64)
-— COLO829 tumor vs normal whole-genome coverage
+
+- COLO829 tumor vs normal whole-genome coverage
 
 ## Whole-genome assembly comparison
 
-When a de novo assembly of the sample is available — for example, a phased tumor
-assembly from PacBio HiFi or ONT data — aligning it back to the reference with a
+When a de novo assembly of the sample is available (for example, a phased tumor
+assembly from PacBio HiFi or ONT data), aligning it back to the reference with a
 tool like [minimap2](https://github.com/lh3/minimap2) and loading the resulting
 PAF as a [synteny track](/docs/tutorials/synteny_visualization) gives a
 chromosome-scale view of rearrangements that read-level displays cannot. Complex
@@ -393,14 +389,14 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 
 ## See also
 
-- [Alignments track](/docs/user_guides/alignments_track) — sorting, coloring,
+- [Alignments track](/docs/user_guides/alignments_track) - sorting, coloring,
   grouping, and filtering reads in general use
-- [SV inspector](/docs/user_guides/sv_inspector_view) — whole-genome SV triage
-- [Circular genome view](/docs/user_guides/circular_view) — plot a single SV
+- [SV inspector](/docs/user_guides/sv_inspector_view) - whole-genome SV triage
+- [Circular genome view](/docs/user_guides/circular_view) - plot a single SV
   track as chords and launch the breakpoint split view from one
-- [Variant track](/docs/user_guides/variant_track) — VCF display and the
+- [Variant track](/docs/user_guides/variant_track) - VCF display and the
   per-sample genotype table
-- [Alignments track configuration](/docs/config_guides/alignments_track) —
+- [Alignments track configuration](/docs/config_guides/alignments_track) -
   config-file options for color and filter defaults
-- [Gallery: structural variant examples](/gallery/#sv) — live breakpoint split
+- [Gallery: structural variant examples](/gallery/#sv) - live breakpoint split
   views, read-vs-reference insertions, and inversions to open and explore

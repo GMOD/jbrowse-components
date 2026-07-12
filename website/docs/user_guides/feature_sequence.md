@@ -12,21 +12,20 @@ selected feature, with options that vary by feature type.
 For gene or transcript features, the feature detail sidebar stitches the
 subfeature sequences together. The available types are:
 
-- **CDS** — the stitched-together coding sequences
-- **Protein** — protein translation of the CDS. The standard genetic code (NCBI
+- CDS - the stitched-together coding sequences
+- Protein - protein translation of the CDS. The standard genetic code (NCBI
   table 1) is used by default, but if the CDS has a `transl_table` attribute in
   the GFF (e.g. `transl_table=2` for vertebrate mitochondria) the matching
   alternative codon table is applied, including start-codon and `transl_except`
   handling
-- **cDNA** — the complementary DNA of the transcript, formed from the exon
-  sequences
-- **Genomic w/ full introns** — the entire gene region including introns, with
-  UTR and CDS highlighted
-- **Genomic w/ full introns +/- Nbp up+down stream** — the above plus N bases
+- cDNA - the complementary DNA of the transcript, formed from the exon sequences
+- Genomic w/ full introns - the entire gene region including introns, with UTR
+  and CDS highlighted
+- Genomic w/ full introns +/- Nbp up+down stream - the above plus N bases
   upstream and downstream
-- **Genomic w/ Nbp intron** — the exon sequence plus N intronic bases flanking
-  each splice site
-- **Genomic w/ Nbp intron +/- Nbp up+down stream** — combines the
+- Genomic w/ Nbp intron - the exon sequence plus N intronic bases flanking each
+  splice site
+- Genomic w/ Nbp intron +/- Nbp up+down stream - combines the
   upstream/downstream extension with the splice-site flanks
 
 The sequence type is chosen from the dropdown at the top of the panel. The
@@ -37,11 +36,10 @@ configurable from the gear icon.
 
 When the **Protein** type is selected, residues whose translation was overridden
 by a `transl_except` attribute are highlighted (amber) and summarized in a
-legend. The example below is the selenoprotein SELENOP, whose ten in-frame UGA
-stop codons are annotated by NCBI RefSeq as `transl_except=(...,aa:Sec)`, so
-they translate to selenocysteine (U) instead of terminating the protein.
+legend. The example below is SELENOP, whose ten in-frame UGA stop codons are
+annotated as `transl_except=(...,aa:Sec)` and translate to selenocysteine (U).
 
-<Figure caption="Protein translation of SELENOP: the ten selenocysteine (U) residues recoded from in-frame UGA stop codons via transl_except are highlighted amber, with a legend summarizing the overrides." src="/img/feature_detail_protein.png" />
+<Figure caption="Protein translation of SELENOP: the ten selenocysteine (U) residues recoded via transl_except are highlighted amber, with a legend summarizing the overrides." src="/img/feature_detail_protein.png" />
 
 <Figure caption="Choosing the sequence type for a volvox gene: the dropdown is set to 'Genomic w/ full introns +/- 100bp up+down stream', so the panel shows the upstream flank, the exons and introns, and the downstream flank." src="/img/upstream_downstream_details.png" />
 
@@ -53,9 +51,9 @@ bases is configurable from the gear icon.
 
 ## See also
 
-- [Sequence track](/docs/user_guides/sequence_track) — the reference sequence
+- [Sequence track](/docs/user_guides/sequence_track) - the reference sequence
   and six-frame translation
-- [Gene track](/docs/user_guides/gene_track) — color-by-CDS and peptide
+- [Gene track](/docs/user_guides/gene_track) - color-by-CDS and peptide
   lettering directly on the track
-- [Assembly configuration: alternative genetic codes](/docs/config_guides/assemblies#configuring-alternative-genetic-codes-translation-tables)
-  — `transl_table` and per-sequence translation tables
+- [Assembly configuration: alternative genetic codes](/docs/config_guides/assemblies#configuring-alternative-genetic-codes-translation-tables) -
+  `transl_table` and per-sequence translation tables

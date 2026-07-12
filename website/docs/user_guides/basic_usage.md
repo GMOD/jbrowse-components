@@ -60,7 +60,7 @@ The location search box at the top of the LGV accepts several search formats:
   `chr1:1-100[rev]`
 - Gene name or feature keyword (if a text index is configured), e.g. `BRCA1`
 
-Name searching requires a text index — see the
+Name searching requires a text index. See the
 [text searching configuration guide](/docs/config_guides/text_searching) for
 setup.
 
@@ -102,7 +102,7 @@ manually for local files or non-standard names.
 
 To load a batch of tracks in one step, click **Add multiple tracks** in the "Add
 a track" form (or **Add a single track instead** to switch back). Paste a list
-of file URLs — one per line — or drop a set of local files. JBrowse auto-detects
+of file URLs (one per line) or drop a set of local files. JBrowse auto-detects
 each track's type from its extension and pairs index files (`.bai`, `.csi`,
 `.tbi`, `.crai`) with their data file automatically, so you can paste data and
 index URLs together without matching them up by hand. A preview table shows the
@@ -163,7 +163,7 @@ You can undo any action via Tools → Undo/Redo, or with the keyboard shortcuts
 On JBrowse Web, the "Share" button in the main menu bar generates a URL you can
 send to other users.
 
-The address-bar URL does not capture full session state — always use the Share
+The address-bar URL does not capture full session state, so always use the Share
 button to get a shareable link.
 
 Sharing sessions is not available for JBrowse Desktop.
@@ -209,7 +209,7 @@ The track menu provides access to the "About track" dialog.
 ## Editing track configs
 
 You can edit the settings of any track directly from the track menu's **Track
-actions → Settings** item — there is no longer any need to copy the track first.
+actions → Settings** item. There is no longer any need to copy the track first.
 For non-admin users, the edits are saved as a "session track" override that
 shadows the original, so they persist with (and are shareable via) your session
 without modifying the underlying admin-owned track. Admin users editing in admin
@@ -226,8 +226,8 @@ your edits and revert to the underlying config.
 
 ### Pinning a setting as your default
 
-Many track-menu settings — color-by scheme, feature height mode, soft-clipping,
-group-by, and more — carry a small **pin** next to them. Clicking the pin
+Many track-menu settings (color-by scheme, feature height mode, soft-clipping,
+group-by, and more) carry a small **pin** next to them. Clicking the pin
 promotes that setting as the default for every track of the same type in your
 session, not just the one track. Pinned defaults ride along in the session, so
 they travel with a shared session link, and every track a default affects is
@@ -246,16 +246,16 @@ rubberband-select a region.
 The chromosome (reference sequence) names drawn along the scale bar are
 clickable. Clicking a name opens a menu with:
 
-- **Focus on `<name>`** — navigate to that entire region
-- **Actions** submenu:
-  - **Reverse region** — reverse-complement just that region, in place
-  - **Horizontally flip view** — reverse-complement the whole view (the same as
-    the header-bar flip described below)
-  - **Move left** / **Move right** and **Move to far left** / **Move to far
-    right** — reorder the region relative to the others when multiple regions
-    are displayed (the "far" options appear only when they would land somewhere
-    different from a single-step move)
-  - **Remove this region from view**
+- Focus on `<name>` - navigate to that entire region
+- Actions submenu:
+  - Reverse region - reverse-complement just that region, in place
+  - Horizontally flip view - reverse-complement the whole view (the same as the
+    header-bar flip described below)
+  - Move left / Move right and Move to far left / Move to far right - reorder
+    the region relative to the others when multiple regions are displayed (the
+    "far" options appear only when they would land somewhere different from a
+    single-step move)
+  - Remove this region from view
 
 ## Track label positioning
 
@@ -299,15 +299,15 @@ See the [configuration guide](/docs/config_guides/track_selector) for more.
 
 ## See also
 
-- [Connections](/docs/user_guides/connections) — load an entire UCSC or JBrowse
+- [Connections](/docs/user_guides/connections) - load an entire UCSC or JBrowse
   track hub at once
-- [Bookmark widget](/docs/user_guides/bookmark_widget) — save and revisit
+- [Bookmark widget](/docs/user_guides/bookmark_widget) - save and revisit
   regions
-- [Plugin store](/docs/user_guides/plugin_store) — add new track, view, and
+- [Plugin store](/docs/user_guides/plugin_store) - add new track, view, and
   adapter types
-- [Track selector configuration](/docs/config_guides/track_selector) — metadata
+- [Track selector configuration](/docs/config_guides/track_selector) - metadata
   columns and faceted filtering
-- [Avoiding stale config](/docs/config_guides/avoiding_stale_config) — how admin
+- [Avoiding stale config](/docs/config_guides/avoiding_stale_config) - how admin
   edits and session-track overrides interact
-- [Supported file types](/docs/config_guides/file_types) — the config-level
+- [Supported file types](/docs/config_guides/file_types) - the config-level
   companion to the format list above

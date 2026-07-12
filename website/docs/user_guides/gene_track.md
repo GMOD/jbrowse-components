@@ -16,12 +16,12 @@ directly off the track to reshaping the view around a gene's exons.
 Genes with many isoforms can stack into tall, hard-to-read blocks. The **Gene
 glyph** option in the track menu controls how a gene's transcripts are drawn:
 
-- **Auto** (default) — stacks every transcript when you are zoomed in, but
-  collapses each gene to its single longest coding transcript when you are
-  zoomed out, so dense regions stay legible.
-- **All transcripts** — always draws every transcript on its own row.
-- **Longest coding transcript** — always draws only the longest coding isoform
-  of each gene.
+- Auto (default) - stacks every transcript when you are zoomed in, but collapses
+  each gene to its single longest coding transcript when you are zoomed out, so
+  dense regions stay legible.
+- All transcripts - always draws every transcript on its own row.
+- Longest coding transcript - always draws only the longest coding isoform of
+  each gene.
 
 ## Collapsing introns
 
@@ -32,7 +32,7 @@ placed side by side, dropping the introns. A window-size setting controls how
 many base pairs of flanking sequence to keep around each splice boundary. By
 default the union of exons across all transcripts is used; you can instead pick
 a single transcript from the dialog. This makes it easy to read a gene's coding
-sequence — or inspect reads spanning it — without scrolling past large introns.
+sequence (or inspect reads spanning it) without scrolling past large introns.
 
 This pairs especially well with an [RNA-seq track](/docs/tutorials/rnaseq): the
 spliced reads draw **sashimi arcs** connecting splice donors and acceptors, and
@@ -44,13 +44,13 @@ with the introns collapsed those arcs span directly between the adjacent exons.
 
 Several track-menu toggles tune how gene glyphs are drawn:
 
-- **Display mode** — _Normal_, _Compact_, or _Super-compact_ progressively
-  shrink each feature's height to fit more rows in dense regions.
-- **Show subfeature labels** — draws each transcript's name on its row, not just
-  the gene name.
-- **Show chevrons** — directional chevrons along the intron lines indicating the
+- Display mode - _Normal_, _Compact_, or _Super-compact_ progressively shrink
+  each feature's height to fit more rows in dense regions.
+- Show subfeature labels - draws each transcript's name on its row, not just the
+  gene name.
+- Show chevrons - directional chevrons along the intron lines indicating the
   strand (on by default).
-- **Show only genes** — hides non-gene features in the track.
+- Show only genes - hides non-gene features in the track.
 
 ## Color by CDS
 
@@ -62,14 +62,14 @@ Enable it from the linear genome view's hamburger menu → **Color by CDS and dr
 amino acids**. The setting applies to every gene track in that view and is
 remembered across sessions.
 
-<Figure caption="Turning on Color by CDS for the human BRCA1 gene (hg19, NCBI RefSeq). Top: the view's hamburger menu with the 'Color by CDS and draw amino acids' toggle. Bottom: the result at base-pair resolution — each CDS codon is tinted by its reading frame with its amino acid drawn over it, lined up to the codons in the reference sequence track above." src="/img/gene_track_color_by_cds.png" />
+<Figure caption="Turning on Color by CDS for the human BRCA1 gene (hg19, NCBI RefSeq). Top: the view's hamburger menu with the 'Color by CDS and draw amino acids' toggle. Bottom: the result at base-pair resolution, each CDS codon tinted by its reading frame with its amino acid drawn over it, lined up to the codons in the reference sequence track above." src="/img/gene_track_color_by_cds.png" />
 
 ## Peptide lettering
 
 The same menu option also draws the translated protein. As you zoom in, the
 amino acids are first drawn as a colored background band over the CDS, and once
 you are zoomed in far enough (roughly base-pair resolution) the single-letter
-amino acid code is drawn over each codon — as in the lower frame of the figure
+amino acid code is drawn over each codon, as in the lower frame of the figure
 above. The letters line up with the codons in the reference sequence track, so
 you can read the genomic sequence, the codons, and the resulting peptide in
 register. The translation uses the standard genetic code (NCBI table 1).
@@ -78,7 +78,7 @@ The translation follows the transcript's strand and CDS phase, and codons that
 straddle an exon boundary are split across the two exons. When a CDS carries a
 `transl_table` attribute in the GFF (the NCBI convention, e.g. `transl_table=2`
 for the vertebrate mitochondrial code), that alternative genetic code is used
-for the translation — so a mitochondrial gene translates `TGA` as tryptophan
+for the translation, so a mitochondrial gene translates `TGA` as tryptophan
 rather than a stop. The first codon of the CDS is shown as `M` when it is a
 valid start codon for that table (including alternative initiators such as `GTG`
 or `TTG`), and `transl_except` overrides (e.g. selenocysteine `U`) are applied
@@ -122,8 +122,8 @@ structure viewer to open an interactive 3D structure (from AlphaFold DB or
 UniProt) linked to the genome view: hovering a position in the genome highlights
 the corresponding residue on the structure, and vice versa. Color-by-CDS and the
 peptide lettering give you the protein in the linear track, while Protein3d
-shows where each residue sits in the folded structure — useful for seeing
-whether a coding variant lands in a functional domain.
+shows where each residue sits in the folded structure, useful for seeing whether
+a coding variant lands in a functional domain.
 
 See the
 [Protein structures and multiple sequence alignments tutorial](/docs/tutorials/protein_structure)
@@ -131,13 +131,13 @@ for installation and connected-view examples.
 
 ## See also
 
-- [Sequence track](/docs/user_guides/sequence_track) — the reference sequence
+- [Sequence track](/docs/user_guides/sequence_track) - the reference sequence
   and six-frame translation the peptide lettering lines up against
-- [Feature sequence panel](/docs/user_guides/feature_sequence) — extract a
+- [Feature sequence panel](/docs/user_guides/feature_sequence) - extract a
   transcript's protein, CDS, or cDNA
-- [RNA-seq tutorial](/docs/tutorials/rnaseq) — sashimi arcs and collapsing
+- [RNA-seq tutorial](/docs/tutorials/rnaseq) - sashimi arcs and collapsing
   introns with spliced alignments
-- [Track configuration](/docs/config_guides/tracks) — config-file options for
+- [Track configuration](/docs/config_guides/tracks) - config-file options for
   tracks and displays
-- [Gallery: genes and proteins](/gallery/#genes) — live polyprotein,
+- [Gallery: genes and proteins](/gallery/#genes) - live polyprotein,
   selenoprotein, and flipped-view examples to open and explore

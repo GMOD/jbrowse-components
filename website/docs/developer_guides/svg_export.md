@@ -33,7 +33,7 @@ and embeds the result as a `<image>` PNG in the SVG. When false it draws to
 `<text>`, `<path>` etc. The same paint callback works for both.
 
 Pass `undefined` instead of `opts` to force vector output regardless of user
-preference — always do this for text and labels so they stay crisp.
+preference. Always do this for text and labels so they stay crisp.
 
 ## Implementing renderSvg
 
@@ -106,15 +106,15 @@ export async function renderSvg(
 SVG export renders the entire visible span, not just the scrolled viewport, so
 the coordinate space differs slightly from on-screen rendering:
 
-- `view.totalWidthPx` — total pixel width across all visible regions (use this
+- `view.totalWidthPx` - total pixel width across all visible regions (use this
   as your canvas width, not `view.width` which is the viewport width)
-- `view.visibleRegions` — list of displayed regions
+- `view.visibleRegions` - list of displayed regions
 - Y axis runs from 0 (top) to `model.height` (bottom), same as on-screen
 
 Use `buildRenderBlocks(view.visibleRegions)` (imported from
 `@jbrowse/render-core/renderBlock`) to get `{ startPx, endPx }` offsets per
-region — these map genomic coordinates into pixels in the full export canvas.
-The display model also exposes a `renderBlocks` getter via
+region. These map genomic coordinates into pixels in the full export canvas. The
+display model also exposes a `renderBlocks` getter via
 `MultiRegionDisplayMixin`.
 
 ## Reusing on-screen drawing code
@@ -139,20 +139,20 @@ export function drawFeatures(ctx: Ctx2D, data: FeatureData, opts: DrawOpts) {
 
 From simplest to most complex:
 
-- `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` — text
+- `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` - text
   only
-- `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` — score plot with scale
+- `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` - score plot with scale
   bar
-- `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` — features + labels
+- `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` - features + labels
   layers
-- `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` — coverage,
+- `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` - coverage,
   pileup, arcs
 
 ## See also
 
-- [Creating custom display types](/docs/developer_guides/creating_display) —
+- [Creating custom display types](/docs/developer_guides/creating_display) -
   `renderSvg` is a display-model action
-- [Renderer architecture](/docs/developer_guides/renderer_architecture) —
+- [Renderer architecture](/docs/developer_guides/renderer_architecture) -
   `paintLayer` is the shared on-screen/export draw path
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
-  — `buildRenderBlocks`/`renderBlocks` come from the same GPU render-block utils
+  - `buildRenderBlocks`/`renderBlocks` come from the same GPU render-block utils

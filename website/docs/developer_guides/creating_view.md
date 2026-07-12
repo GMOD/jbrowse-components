@@ -6,8 +6,8 @@ guide_category: Creating pluggable elements
 
 View types are top-level "panels" that the session can contain alongside the
 built-in `LinearGenomeView`, `DotplotView`, `CircularView`, `SpreadsheetView`,
-and others. A view defines its own state model and React component — it does not
-have to display genomic tracks, though most do.
+and others. A view defines its own state model and React component, and it does
+not have to display genomic tracks, though most do.
 
 ## When to add a custom view type
 
@@ -26,8 +26,8 @@ abstraction instead.
 ## Minimal walkthrough
 
 The [plugin templates](/docs/developer_guides/simple_plugin) give you a complete
-scaffold and build setup to register a view via `pluginManager.addViewType(...)`
-— start there.
+scaffold and build setup to register a view via
+`pluginManager.addViewType(...)`. Start there.
 
 A view registration looks roughly like:
 
@@ -65,10 +65,10 @@ Read these alongside the simple plugin tutorial when designing your own.
 
 ## See also
 
-- [Custom track and display types](/docs/developer_guides/creating_display) — if
+- [Custom track and display types](/docs/developer_guides/creating_display) - if
   you only need to render features differently inside an existing view, or for
   views like `DotplotView`/`LinearSyntenyView` that host tracks
-- [Extension points](/docs/developer_guides/extension_points) — the
+- [Extension points](/docs/developer_guides/extension_points) - the
   `LaunchView-*` points are a reference for launching your own view type
 - [MST patterns](/docs/developer_guides/mst_patterns)
 - [Pluggable elements](/docs/developer_guides/pluggable_elements)

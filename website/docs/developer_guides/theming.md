@@ -14,11 +14,11 @@ of changing colors, dark mode, the logo, and sizing, see the
 
 Set `configuration.theme` to one of these names:
 
-- `default` — uses config-supplied colors merged with stock defaults
-- `lightStock` — light mode with stock JBrowse palette
-- `lightMinimal` — light mode with greyscale chrome
-- `darkStock` — dark mode with stock palette
-- `darkMinimal` — dark mode with greyscale chrome
+- `default` - uses config-supplied colors merged with stock defaults
+- `lightStock` - light mode with stock JBrowse palette
+- `lightMinimal` - light mode with greyscale chrome
+- `darkStock` - dark mode with stock palette
+- `darkMinimal` - dark mode with greyscale chrome
 
 ## Custom palette properties
 
@@ -114,7 +114,7 @@ in `theme.ts`, so it never drifts from the actual values.
 ```
 
 `primary`/`secondary`/`tertiary`/`quaternary`/`highlight` accept either a full
-MUI `PaletteColorOptions` object or just `{ "main": "<hex>" }` — light/dark
+MUI `PaletteColorOptions` object or just `{ "main": "<hex>" }`. Light/dark
 variants are derived automatically.
 
 ## Adding theme colors in plugins
@@ -128,10 +128,10 @@ Colors shared with worker code must be exported as plain `const` strings from
 
 ## See also
 
-- [Coloring/theming](/docs/config_guides/theme) — the end-user walkthrough for
+- [Coloring/theming](/docs/config_guides/theme) - the end-user walkthrough for
   changing colors, dark mode, the logo, and sizing via config
-- [Writing a plugin](/docs/developer_guides/simple_plugin) — where a plugin
+- [Writing a plugin](/docs/developer_guides/simple_plugin) - where a plugin
   would register the palette augmentation described above
 - [Renderer architecture](/docs/developer_guides/renderer_architecture) and
-  [RPC and worker system](/docs/developer_guides/rpc_workers) — why worker code
+  [RPC and worker system](/docs/developer_guides/rpc_workers) - why worker code
   has no MUI theme context, motivating the plain-constant color exports

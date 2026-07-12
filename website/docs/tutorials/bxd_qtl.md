@@ -1,7 +1,7 @@
 ---
 title: QTL mapping in the BXD family
 description:
-  Systems genetics with real GeneNetwork BXD data — a chromosome-painting
+  Systems genetics with real GeneNetwork BXD data, using a chromosome-painting
   multi-row track and a QTL Manhattan plot from the same mouse
   recombinant-inbred panel
 guide_category: Tutorials
@@ -11,7 +11,7 @@ tutorial_category: Population genomics
 The [BXD family](https://www.genenetwork.org) is a panel of ~200 mouse
 recombinant-inbred (RI) strains bred from a cross of **C57BL/6J** (the "B"
 parent) and **DBA/2J** (the "D" parent). After many generations of inbreeding
-each strain's genome is a fixed **mosaic of B and D haplotype blocks** — and
+each strain's genome is a fixed **mosaic of B and D haplotype blocks**, and
 because the same strains have been phenotyped for thousands of traits at
 [GeneNetwork](https://www.genenetwork.org), the panel is a workhorse for
 _systems genetics_: map a trait to the genome by asking which haplotype blocks
@@ -34,13 +34,13 @@ here also render inline through the
 [JBrowseR](/docs/jbrowser) in R), so you can run the scan and view the peak in
 one Python or R session.
 
-<Figure src="/img/qtl/bxd_overview.png" caption="Whole chr4. Top: the BXD coat-color QTL scan, peaking at ~80 Mb. Bottom: the 198-strain painting (blue = B, red = D, grey = het, blank = unknown), rows sorted by each strain's genotype at the peak. Directly under the peak the strains split into a red block over a blue block — the B/D contrast the scan is scoring — and the split frays with distance as strains recombine."/>
+<Figure src="/img/qtl/bxd_overview.png" caption="Whole chr4. Top: the BXD coat-color QTL scan, peaking at ~80 Mb. Bottom: the 198-strain painting (blue = B, red = D, grey = het, blank = unknown), rows sorted by each strain's genotype at the peak. Directly under the peak the strains split into a red block over a blue block, the B/D contrast the scan is scoring."/>
 
 ## The data: BXD consensus genotypes
 
 GeneNetwork distributes the consensus BXD genotypes as a plain-text `.geno`
 file. Each row is a marker (with a `cM` genetic-map and an mm10 `Mb` physical
-position — we use `Mb`); each column is a strain, with a one-letter genotype —
+position, we use `Mb`); each column is a strain, with a one-letter genotype,
 `B`, `D`, `H` (heterozygous) or `U` (unknown):
 
 ```
@@ -57,19 +57,19 @@ Download it from
 (please cite
 [Wang et al. 2016, _Nat Commun_ 7:10464](https://doi.org/10.1038/ncomms10464)).
 
-The two Python scripts used below live in the JBrowse repo — clone
+The two Python scripts used below live in the JBrowse repo. Clone
 [jbrowse-components](https://github.com/GMOD/jbrowse-components), or just
 download the linked `bxd_geno_to_painting_bed.py` and `bxd_qtl_scan.py`, and run
 them from where you saved them. You'll also need Python 3 (with `pandas` for the
 phenotype step and `numpy`/`scipy` for the scan) and htslib for `bgzip`/`tabix`.
 On JBrowse Desktop, add the `.bed.gz`/`.tsv.gz` files you build through **Add
-track** by choosing the local files — no hosting step needed
+track** by choosing the local files, with no hosting step needed
 ([desktop quickstart](/docs/quickstart_desktop)).
 
 ## Track 1: chromosome painting
 
-The painting is a [multi-row feature display](/docs/tutorials/chromhmm) — one
-row per strain, each block colored by genotype. To make it, walk each strain's
+The painting is a [multi-row feature display](/docs/tutorials/chromhmm): one row
+per strain, each block colored by genotype. To make it, walk each strain's
 markers along every chromosome and emit one BED interval per run of consecutive
 same-genotype markers (run-length encoding), coloring `B`/`D`/`H` and writing
 the strain name into an extra `sample` column:
@@ -96,7 +96,7 @@ tabix -p bed bxd_painting.bed.gz
 
 Then configure a `FeatureTrack` whose `LinearMultiRowFeatureDisplay` partitions
 on the `sample` column and colors each block from its `itemRgb` field. Both
-tracks reference the `mm10` assembly, so set that up first if you haven't — see
+tracks reference the `mm10` assembly, so set that up first if you haven't. See
 the [assemblies configuration guide](/docs/config_guides/assemblies).
 
 ```json
@@ -129,16 +129,16 @@ the [assemblies configuration guide](/docs/config_guides/assemblies).
 }
 ```
 
-- **`partitionField: "sample"`** splits the one file into one labeled row per
+- `partitionField: "sample"` splits the one file into one labeled row per
   strain.
-- **`color`** is a [jexl](/docs/config_guides/jexl) callback turning the BED
+- `color` is a [jexl](/docs/config_guides/jexl) callback turning the BED
   `itemRgb` triple (e.g. `65,105,225`) into a CSS `rgb(...)`, so every block is
   painted with its genotype color straight from the file.
-- **`showTree: true`** adds a clustering sidebar that groups strains by genotype
-  similarity — related substrains and F1s fall next to each other.
-- **`disableGeneHeuristic: true`** keeps the BED adapter from reading each block
-  as a gene — the `thickStart`/`thickEnd` columns would otherwise trip its BED12
-  transcript detection.
+- `showTree: true` adds a clustering sidebar that groups strains by genotype
+  similarity, and related substrains and F1s fall next to each other.
+- `disableGeneHeuristic: true` keeps the BED adapter from reading each block as
+  a gene, since the `thickStart`/`thickEnd` columns would otherwise trip its
+  BED12 transcript detection.
 
 ## Track 2: the QTL Manhattan
 
@@ -163,8 +163,8 @@ The
 script runs the regression on the same `.geno` plus a two-column `strain,value`
 phenotype file. Build that file by pulling one trait column out of the qtl2data
 [`bxd_pheno.csv`](https://github.com/rqtl/qtl2data/tree/master/BXD): its columns
-are GeneNetwork trait IDs (described in `bxd_phenocovar.csv` — ID `10678` is
-"Hair coat color"), and its first column, `id`, holds the strain names:
+are GeneNetwork trait IDs (described in `bxd_phenocovar.csv`, where ID `10678`
+is "Hair coat color"), and its first column, `id`, holds the strain names:
 
 ```bash
 python3 - <<'PY'
@@ -223,12 +223,11 @@ set `scoreColumn` and
 Scanning ~7,300 markers against BXD **coat color** puts the tallest peak on
 chr4, over **_Tyrp1_** (the coat-color gene). The painting is sorted by genotype
 at that peak, so the clean B/D split directly beneath it is exactly the contrast
-the scan scores — and it breaks up into a recombinant mosaic away from the
-locus.
+the scan scores, and it breaks up into a recombinant mosaic away from the locus.
 
-<Figure src="/img/qtl/bxd_sort_before_after.png" links="Input order=qtl/bxd_painting_input_order,Sorted at peak=qtl/bxd_painting_sorted" caption="The same whole-chr4 view with the painting's row sort toggled. Top: strains in default (alphabetical) order — salt-and-pepper under the peak. Bottom: sorted by genotype at the peak, resolving into a clean, wide red-over-blue split directly beneath the Manhattan peak. Strains that share the peak allele share long flanking haplotypes (linkage), so the split is wide and fades with distance — that coherence, aligned with the independent QTL signal, is the mapping result, not an artifact of the sort."/>
+<Figure src="/img/qtl/bxd_sort_before_after.png" links="Input order=qtl/bxd_painting_input_order,Sorted at peak=qtl/bxd_painting_sorted" caption="The same whole-chr4 view with the painting's row sort toggled. Top: strains in default (alphabetical) order, salt-and-pepper under the peak. Bottom: sorted by genotype at the peak, resolving into a clean, wide red-over-blue split directly beneath the Manhattan peak."/>
 
-<Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4 (~156 Mb): the coat-color association rises to a sharp peak at ~80 Mb over Tyrp1, and the haplotype painting — sorted by genotype at that peak — resolves into a clean B (red) over D (blue) split that localizes the QTL to the gene."/>
+<Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4 (~156 Mb): the coat-color association rises to a sharp peak at ~80 Mb over Tyrp1, and the haplotype painting (sorted by genotype at that peak) resolves into a clean B (red) over D (blue) split at the gene."/>
 
 A second scan in the demo config maps **brain weight** to a subtler QTL on
 chr19.
@@ -239,16 +238,16 @@ or click the **Open in JBrowse** link under any figure above.
 
 ## See also
 
-- [ChromHMM chromatin states](/docs/tutorials/chromhmm) — the same multi-row
+- [ChromHMM chromatin states](/docs/tutorials/chromhmm) - the same multi-row
   feature display, one row per cell type instead of per strain
-- [Phased trio analysis](/docs/tutorials/analyze_trio) — multi-row painting of
+- [Phased trio analysis](/docs/tutorials/analyze_trio) - multi-row painting of
   inheritance blocks in a human trio
-- [Population genomics](/docs/tutorials/population_genomics) — more variant- and
+- [Population genomics](/docs/tutorials/population_genomics) - more variant- and
   cohort-scale visualizations
-- [GWAS / Manhattan track](/docs/user_guides/gwas_track) — the same
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track) - the same
   `LinearManhattanDisplay` driven by human GWAS summary statistics, with
   LocusZoom-style LD coloring
-- [GWAS track configuration](/docs/config_guides/gwas_track) — preparing GWAS
+- [GWAS track configuration](/docs/config_guides/gwas_track) - preparing GWAS
   and LD files, `scoreColumn`/`scoreTransform`, and significance thresholds
-- [jexl](/docs/config_guides/jexl) — the color-callback syntax used for the
+- [jexl](/docs/config_guides/jexl) - the color-callback syntax used for the
   painting

@@ -6,7 +6,7 @@ sidebar_label: URL parameters
 JBrowse Web supports URL parameters for initializing a session.
 
 Embedded components like @jbrowse/react-linear-genome-view2 make no assumptions
-about URL parameters — that logic must be implemented by the consuming
+about URL parameters. That logic must be implemented by the consuming
 application.
 
 ## Linear genome view (simple)
@@ -214,7 +214,7 @@ Intended to load one or more UCSC track hubs as a session (multiple hubs as a
 comma-separated list), typically combined with `?config=none` since the hub
 supplies its own assemblies and tracks.
 
-This parameter is experimental and may not be fully functional — verify it works
+This parameter is experimental and may not be fully functional. Verify it works
 for your use case before relying on it.
 
 ### Navigating within the default session
@@ -233,7 +233,7 @@ With `&extendSession=true`, `&loc=` (and `&tracks=`, `&highlight=`, `&nav=`,
 `&assembly=` isn't needed.
 
 Note that `&sessionTracks=` (dynamically-added track configs) is not layered
-onto the default session — use a full [session spec](#session-spec) for that.
+onto the default session. Use a full [session spec](#session-spec) for that.
 
 ## Session spec
 
@@ -268,9 +268,9 @@ from the remaining fields. This is also how plugins add launchable view types
 ```
 
 The `views` array accepts multiple views opened simultaneously. Each can specify
-`loc`, `tracks`, `assembly`, and view type. `loc` is optional — omitting it
-shows the whole genome. Different view types accept different params — dotplot,
-for example, takes two assemblies.
+`loc`, `tracks`, `assembly`, and view type. `loc` is optional, omitting it shows
+the whole genome. Different view types accept different params: dotplot, for
+example, takes two assemblies.
 
 A `LinearGenomeView` view object accepts the same fields as the simple params
 above: `nav`, `tracklist`, `highlight`, plus `showCenterLine`, `colorByCDS`, and
@@ -304,7 +304,7 @@ simple URL:
 A top-level `sessionAssemblies` array registers assemblies into the session, the
 counterpart to `sessionTracks`. Assemblies are added _before_ the tracks and
 views, so `sessionTracks` and each view's `assembly` can reference them by name.
-This makes a spec fully self-contained — a novel assembly, its tracks, and the
+This makes a spec fully self-contained, a novel assembly, its tracks, and the
 views over them, with nothing baked into the served config (pair it with
 `?config=none`):
 
@@ -394,7 +394,7 @@ Each track object supports the following properties:
 - `trackSnapshot` (optional): Initial track state such as `pinned: true`
 
 The `displaySnapshot` fields can also be written directly on the track object as
-a shorthand —
+a shorthand:
 `{ "trackId": "my_bam_track", "type": "LinearAlignmentsDisplay", "height": 300 }`
 is equivalent to the `displaySnapshot` form above. Any key other than `trackId`
 and `trackSnapshot` is treated as a display setting. Use the explicit
@@ -403,7 +403,7 @@ visually separated.
 
 #### Live example: alignments display settings
 
-`displaySnapshot` is not limited to overriding the display `type` — it can set
+`displaySnapshot` is not limited to overriding the display `type`. It can set
 any of the display's own settings. This opens an alignments track colored by
 pair orientation, with soft-clipped bases shown and an enlarged height:
 
@@ -462,7 +462,7 @@ orientations easy to pick out:
 #### Live example: feature track color
 
 Setting a track's color is one of the most common things people want to do. For
-a feature track (genes, BED, GFF), put `color` in the `displaySnapshot` — it
+a feature track (genes, BED, GFF), put `color` in the `displaySnapshot`. It
 accepts a plain CSS color, or a `jexl:` expression to color per-feature. This
 opens the genes track colored green:
 
@@ -492,7 +492,7 @@ To color by a feature attribute, use a jexl expression, e.g.
 ### Circular view
 
 The circular view shows the whole genome, so it takes only `assembly` and
-`tracks` — there is no `loc`.
+`tracks`. There is no `loc`.
 
 ```json live config=test_data/volvox/config.json
 {
@@ -580,7 +580,7 @@ The dotplot view accepts a `highlight` array in the same way the linear genome
 view does (see [&highlight=](#highlight)). Each entry is a loc string (or a
 URL-encoded `HighlightType` JSON object with optional `color`/`label`). A region
 is drawn as a translucent **vertical** band when its assembly matches the
-horizontal axis and as a **horizontal** band when it matches the vertical axis —
+horizontal axis and as a **horizontal** band when it matches the vertical axis,
 so on a self-vs-self plot it appears on both axes:
 
 ```json live config=test_data/volvox/config_main_thread.json
@@ -684,14 +684,14 @@ Supported init fields:
 
 - `colorBy`: one of `default`, `strand`, `query`, `target`, `identity`,
   `identityDiverging`, `meanQueryIdentity`, `meanQueryMappingQuality`,
-  `mappingQuality`. `query`/`target` paint ribbons by source/target chromosome —
+  `mappingQuality`. `query`/`target` paint ribbons by source/target chromosome,
   useful for whole-genome views where the default grey blends ribbons into mud.
 - `drawCurves`: render ribbons as bezier curves rather than straight chords.
   Reads better at whole-genome scale where straight crossings stack into noise.
 - `alpha`: per-feature opacity in `[0,1]` (default `0.2`, tuned for dense
   hairballs). Raise it (~`0.4`) when `minAlignmentLength` has thinned the view.
-- `minAlignmentLength`: hide chains shorter than this many bp at the renderer —
-  cuts the genome-scale hairball down to the large syntenic blocks.
+- `minAlignmentLength`: hide chains shorter than this many bp at the renderer,
+  cutting the genome-scale hairball down to the large syntenic blocks.
 - `autoDiagonalize`: after tracks load, reorder the bottom axis to follow the
   top axis so the main diagonal lines up (shown behind a "Reordering
   chromosomes…" spinner). Best for whole-genome all-vs-all views.
@@ -729,7 +729,7 @@ tracks.
 
 ### Linear synteny view (multi-way)
 
-The `tracks` field is a multidimensional array — each sub-array corresponds to
+The `tracks` field is a multidimensional array. Each sub-array corresponds to
 the synteny tracks at one level of the multi-way view:
 
 ```json live config=test_data/volvox/config.json
@@ -756,12 +756,12 @@ Once the plugin is loaded (via the config's `plugins`, `&session=json-`
 `sessionPlugins`, or a hosted config), a session spec can launch its view by
 `type`. Their spec fields are documented by each plugin, not here:
 
-- **ProteinView** (3D structures) — `jbrowse-plugin-protein3d`. Fields such as
+- `ProteinView` (3D structures) from `jbrowse-plugin-protein3d`. Fields such as
   `uniprotId`, `transcriptId`, `url`, and `connectedView` are documented in the
   plugin's
   [DEVELOPERS.md](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md).
   See also the [protein structures tutorial](/docs/tutorials/protein_structure).
-- **MsaView** (multiple sequence alignments) — `jbrowse-plugin-msaview`. Fields
+- `MsaView` (multiple sequence alignments) from `jbrowse-plugin-msaview`. Fields
   such as `msaFileLocation`, `treeFileLocation`, and `connectedViewId` are
   documented in the plugin's
   [DEVELOPERS.md](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/DEVELOPERS.md).
@@ -772,8 +772,8 @@ You can use the `layout` parameter in a session spec to arrange multiple views
 into a tiled workspace layout. The `layout` parameter uses a nested structure
 where each node is either:
 
-- A **panel** (has `views` array) - displays views stacked vertically
-- A **container** (has `children` array) - arranges children horizontally or
+- A panel (has `views` array) displays views stacked vertically
+- A container (has `children` array) arranges children horizontally or
   vertically
 
 #### Horizontal split example
@@ -809,8 +809,8 @@ where each node is either:
 
 This creates a left-right split:
 
-- **Left panel** contains views 0 and 1 stacked vertically
-- **Right panel** contains view 2
+- Left panel contains views 0 and 1 stacked vertically
+- Right panel contains view 2
 
 #### Custom panel sizes
 
@@ -907,9 +907,8 @@ You can create more complex layouts by nesting containers:
 
 This creates:
 
-- **Left panel** with views 0 and 1 stacked
-- **Right side** split vertically into two panels (view 2 on top, view 3 on
-  bottom)
+- Left panel with views 0 and 1 stacked
+- Right side split vertically into two panels (view 2 on top, view 3 on bottom)
 
 The `layout` parameter:
 
@@ -926,7 +925,7 @@ The `layout` parameter:
 
 Like encoded sessions but more readable, `&session=json-` takes a plain JSON
 snapshot of a session. Unlike a session spec (which runs extra logic to build
-the session), a JSON session is a literal snapshot — the same shape produced by
+the session), a JSON session is a literal snapshot, the same shape produced by
 "Export session...".
 
 Example
@@ -976,11 +975,11 @@ See
 
 ## See also
 
-- [Automating JBrowse](/docs/automating) — the shared `init` model behind every
+- [Automating JBrowse](/docs/automating) - the shared `init` model behind every
   launch surface
-- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) —
+- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) -
   `createViewState`/`location` as an alternative to URL params
-- [Default session](/docs/config_guides/default_session) — baking a session spec
+- [Default session](/docs/config_guides/default_session) - baking a session spec
   into config.json instead of a URL
-- [Extension points](/docs/developer_guides/extension_points) — how plugins
+- [Extension points](/docs/developer_guides/extension_points) - how plugins
   register `LaunchView-<type>` handlers

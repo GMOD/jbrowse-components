@@ -92,7 +92,7 @@ test('adds a view and a track', () => {
 ```
 
 `createTestSession` accepts `sessionSnapshot`, `jbrowseConfig`, `adminMode`, and
-preloaded `runtimePlugins` — enough to reproduce most session states. The
+preloaded `runtimePlugins`, enough to reproduce most session states. The
 returned object is the session model, so `session.addView`, `addWidget`,
 `showWidget`, `addTrackConf`, etc. are all available.
 
@@ -124,7 +124,7 @@ height to render any rows (mock `useMeasure` to return a large height).
 
 Puppeteer tests in `products/jbrowse-web/browser-tests/` drive the built app and
 compare rendered canvases against committed PNGs. Because rendering is
-asynchronous, never assert on a fixed timeout — wait on a signal instead:
+asynchronous, never assert on a fixed timeout. Wait on a signal instead:
 
 - `data-testid="loading-overlay"` count reaching `0` means all tracks in a view
   finished loading.
@@ -137,15 +137,15 @@ Run the suite with `pnpm test:browser` (builds `@jbrowse/web` first), or
 
 ## Running tests
 
-- `pnpm test <directory>` — run Jest for a subtree (prefer this over the full
+- `pnpm test <directory>` - run Jest for a subtree (prefer this over the full
   suite while iterating).
-- `pnpm test:browser` — build and run the Puppeteer suite.
+- `pnpm test:browser` - build and run the Puppeteer suite.
 
 ## See also
 
-- [Creating a simple plugin](/docs/developer_guides/simple_plugin) — the
+- [Creating a simple plugin](/docs/developer_guides/simple_plugin) - the
   template ships with the Jest setup used above
-- [Creating a data adapter](/docs/developer_guides/creating_adapter) — the
+- [Creating a data adapter](/docs/developer_guides/creating_adapter) - the
   adapter tests above test-construct from its config schema
-- [Creating a widget](/docs/developer_guides/creating_widget) — the component
+- [Creating a widget](/docs/developer_guides/creating_widget) - the component
   tests above render a widget's `ReactComponent`

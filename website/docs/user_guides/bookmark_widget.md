@@ -62,7 +62,7 @@ on. Only bookmarks valid for the currently loaded assemblies are shown.
 
 ## See also
 
-- [Basic usage: sharing sessions](/docs/user_guides/basic_usage#sharing-sessions)
-  — share your whole session, bookmarks included, via a link
-- [Basic usage: rubberband selection](/docs/user_guides/basic_usage#rubberband-selection)
-  — the same click-and-drag-on-scalebar gesture used to create a bookmark
+- [Basic usage: sharing sessions](/docs/user_guides/basic_usage#sharing-sessions) -
+  share your whole session, bookmarks included, via a link
+- [Basic usage: rubberband selection](/docs/user_guides/basic_usage#rubberband-selection) -
+  the same click-and-drag-on-scalebar gesture used to create a bookmark

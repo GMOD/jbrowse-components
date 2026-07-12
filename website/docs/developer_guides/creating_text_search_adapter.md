@@ -10,8 +10,8 @@ framework handles fuzzy matching, ranking, and navigation.
 
 The built-in adapters are `TrixTextSearchAdapter` (pre-built trix indexes) and
 `JBrowse1TextSearchAdapter` (JBrowse 1 `names/` indexes). You can add your own
-to search against any data source — an API, a local file, a SQLite database,
-etc.
+to search against any data source, such as an API, a local file, or a SQLite
+database.
 
 ## The interface
 
@@ -130,7 +130,7 @@ const MyTextSearchAdapter = ConfigurationSchema(
 export default MyTextSearchAdapter
 ```
 
-`assemblyNames` is required — the TextSearchManager uses it to decide which
+`assemblyNames` is required. The TextSearchManager uses it to decide which
 adapters to query for a given assembly.
 
 ## Plugin registration
@@ -200,9 +200,9 @@ Per-track:
 
 ## See also
 
-- [Creating custom adapters](/docs/developer_guides/creating_adapter) — feature,
+- [Creating custom adapters](/docs/developer_guides/creating_adapter) - feature,
   region, and sequence adapters
-- [Configuration schema](/docs/developer_guides/configuration_schema) — slot
+- [Configuration schema](/docs/developer_guides/configuration_schema) - slot
   types and `explicitIdentifier`
 - Built-in adapter configs:
   [TrixTextSearchAdapter](/docs/config/trixtextsearchadapter) and

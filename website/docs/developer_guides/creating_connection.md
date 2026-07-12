@@ -9,7 +9,7 @@ guide_category: Creating pluggable elements
 A connection is a way to add data to a JBrowse session in bulk. At its simplest
 a connection adds a pre-configured set of tracks pointing at some publicly
 available data. More powerfully, it can dynamically create tracks by querying a
-remote resource — for example, importing a UCSC Track Hub.
+remote resource, for example importing a UCSC Track Hub.
 
 ## Adding a connection type
 
@@ -100,10 +100,10 @@ export default function modelFactory(pluginManager) {
 ## See also
 
 - [Creating custom add-track workflows](/docs/developer_guides/creating_addtrack_workflow)
-  — another way to add tracks with custom UI
-- [Configuration schema](/docs/developer_guides/configuration_schema) — define
+  - another way to add tracks with custom UI
+- [Configuration schema](/docs/developer_guides/configuration_schema) - define
   the connection's config slots
-- [MST patterns](/docs/developer_guides/mst_patterns) — `types.compose` and
+- [MST patterns](/docs/developer_guides/mst_patterns) - `types.compose` and
   model factories
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) - overview of
   all element types a plugin can register, including connections

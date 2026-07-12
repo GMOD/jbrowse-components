@@ -8,10 +8,10 @@ A multi-quantitative track combines several quantitative signals (typically
 BigWig files) into one track with a shared Y axis. The track menu's
 renderer-type submenu offers two families of rendering mode:
 
-- **Multi-row** (`Multi-row XY plot`, `Multi-row density`, `Multi-row line`,
-  `Multi-row scatter`) — one plot per subtrack, stacked
-- **Overlapping** (`Overlapping XY plot`, `Overlapping lines`,
-  `Overlapping scatter`) — all subtracks drawn together
+- Multi-row modes (`Multi-row XY plot`, `Multi-row density`, `Multi-row line`,
+  `Multi-row scatter`) draw one plot per subtrack, stacked
+- Overlapping modes (`Overlapping XY plot`, `Overlapping lines`,
+  `Overlapping scatter`) draw all subtracks together
 
 <Figure caption="The track menu lists the available renderer types." src="/img/multiwig/multi_renderer_types.png" />
 
@@ -28,11 +28,11 @@ track menu.
 
 Three ways to create one:
 
-- **"Add a track" form** — paste a list of BigWig URLs, or open multiple BigWig
-  files from your machine
-- **Track selector** — multi-select existing tracks and combine them into a
-  multi-quantitative track from your selection
-- **Hand-edit the config** — see the
+- The "Add a track" form lets you paste a list of BigWig URLs, or open multiple
+  BigWig files from your machine
+- The track selector lets you multi-select existing tracks and combine them into
+  a multi-quantitative track
+- Hand-edit the config, described in the
   [multi-quantitative track configuration](/docs/config_guides/multiquantitative_track/)
   guide
 
@@ -42,7 +42,7 @@ Three ways to create one:
 ## Loading bedMethyl as a multi-quantitative track
 
 [modkit](https://github.com/nanoporetech/modkit) pileup produces a
-[bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) file — a
+[bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) file, a
 tab-separated BED format where each row reports the methylation fraction at a
 single CpG position for one modification type (e.g. 5mC or 5hmC). It loads as
 `BedTabixAdapter` and naturally maps to `MultiQuantitativeTrack`, with one
@@ -65,8 +65,8 @@ fraction). Omit it for separate 5mC and 5hmC rows.
 ### Add-track UI
 
 In the "Add a track" form, paste the URL to your `.bedmethyl.gz` file. JBrowse
-detects the `.bedmethyl.gz` extension and selects **BedTabixAdapter** and
-**MultiQuantitativeTrack** automatically.
+detects the `.bedmethyl.gz` extension and selects `BedTabixAdapter` and
+`MultiQuantitativeTrack` automatically.
 
 ### Config example
 
@@ -105,9 +105,9 @@ Subtracks can be reordered by signal similarity using hierarchical clustering.
 From the track menu, select **Cluster rows by score**. A dialog opens with two
 modes:
 
-- **Auto** — runs hierarchical clustering (hclust via JavaScript) directly in
-  the browser, sampling signal values at each pixel across the visible region.
-- **Manual** — downloads an R script that builds the score matrix and runs
+- Auto mode runs hierarchical clustering (hclust via JavaScript) directly in the
+  browser, sampling signal values at each pixel across the visible region.
+- Manual mode downloads an R script that builds the score matrix and runs
   `hclust`. Run the script in R, then paste the resulting row ordering back into
   the dialog and click **Apply clustering**.
 
@@ -124,7 +124,7 @@ interest before running it.
 
 ### Encoding a clustering result in a session URL
 
-A clustering result can be embedded directly in a session snapshot — useful for
+A clustering result can be embedded directly in a session snapshot, useful for
 sharing a pre-computed clustering via URL. Set `layout`, `clusterTree`,
 `treeAreaWidth`, and `subtreeFilter` in the display's `displaySnapshot` (see
 [URL parameters → advanced track configuration](/docs/urlparams#advanced-track-configuration)).
@@ -133,11 +133,11 @@ the display's full config reference.
 
 ## See also
 
-- [Quantitative track](/docs/user_guides/quantitative_track) — single-signal
+- [Quantitative track](/docs/user_guides/quantitative_track) for single-signal
   BigWig/BedGraph display
-- [Methylation tutorial](/docs/tutorials/methylation) — loading modkit bedMethyl
-  as signal
+- [Methylation tutorial](/docs/tutorials/methylation) for loading modkit
+  bedMethyl as signal
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
-  — config-file options
-- [Gallery: coverage, copy number, and epigenomics](/gallery/#quantitative) —
+  for config-file options
+- [Gallery: coverage, copy number, and epigenomics](/gallery/#quantitative) for
   live CNV tumor/normal and clustered copy-number examples to open and explore

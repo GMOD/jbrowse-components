@@ -15,7 +15,7 @@ existing menus and sub-menus. Sub-menus can be arbitrarily deep.
 <Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `Add` menu provides quick access to adding a view via the UI; this is a good place to consider adding your own custom view type."/>
 
 You add menus in the `configure` method of your plugin. Not all JBrowse products
-have top-level menus — Web and Desktop do, embeddable views like JBrowse Linear
+have top-level menus. Web and Desktop do, embeddable views like JBrowse Linear
 View don't. Check support with `isAbstractMenuManager` in the `configure`
 method, so the rest of the plugin still works if there is no menu. Here's an
 example that adds an "Open My View" item to the `Add` menu.
@@ -143,14 +143,14 @@ icon, action, and other attributes.
 
 Types of `MenuItem`s:
 
-- **Normal**: a standard menu item that performs an action when clicked
-- **Checkbox**: a menu item that has a checkbox
-- **Radio**: a menu item that has a radio button icon
-- **Divider**: a horizontal line (not clickable) that can be used to visually
+- Normal - a standard menu item that performs an action when clicked
+- Checkbox - a menu item that has a checkbox
+- Radio - a menu item that has a radio button icon
+- Divider - a horizontal line (not clickable) that can be used to visually
   divide menus
-- **SubHeader**: text (not clickable) that can be used to visually label a
-  section of a menu
-- **SubMenu**: contains menu items, for making nested menus
+- SubHeader - text (not clickable) that can be used to visually label a section
+  of a menu
+- SubMenu - contains menu items, for making nested menus
 
 | Name     | Description                                                                                                                                                                                              |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -228,7 +228,7 @@ Here is an example array of MenuItems and the resulting menu:
 
 ## Root model Menu API
 
-The root model exposes actions for customizing the top-level menus at runtime —
+The root model exposes actions for customizing the top-level menus at runtime,
 typically called from a plugin's `configure()`, guarded by
 `isAbstractMenuManager` as shown above. Each takes a `menuName`/`menuPath` and
 (for the `insert*` variants) a `position` that counts from the end when
@@ -237,24 +237,24 @@ descriptions are auto-generated from the model, so see the
 [`RootAppMenuMixin` state model](/docs/models/rootappmenumixin) for the
 authoritative reference:
 
-- [`appendMenu`](/docs/models/rootappmenumixin/#action-appendmenu) — add a
+- [`appendMenu`](/docs/models/rootappmenumixin/#action-appendmenu) - add a
   top-level menu
-- [`insertMenu`](/docs/models/rootappmenumixin/#action-insertmenu) — insert a
+- [`insertMenu`](/docs/models/rootappmenumixin/#action-insertmenu) - insert a
   top-level menu at a position
-- [`appendToMenu`](/docs/models/rootappmenumixin/#action-appendtomenu) — add an
+- [`appendToMenu`](/docs/models/rootappmenumixin/#action-appendtomenu) - add an
   item to a top-level menu
-- [`insertInMenu`](/docs/models/rootappmenumixin/#action-insertinmenu) — insert
+- [`insertInMenu`](/docs/models/rootappmenumixin/#action-insertinmenu) - insert
   an item into a top-level menu at a position
-- [`appendToSubMenu`](/docs/models/rootappmenumixin/#action-appendtosubmenu) —
+- [`appendToSubMenu`](/docs/models/rootappmenumixin/#action-appendtosubmenu) -
   add an item to a sub-menu
-- [`insertInSubMenu`](/docs/models/rootappmenumixin/#action-insertinsubmenu) —
+- [`insertInSubMenu`](/docs/models/rootappmenumixin/#action-insertinsubmenu) -
   insert an item into a sub-menu at a position
 
 ## See also
 
-- [Extension points](/docs/developer_guides/extension_points) —
+- [Extension points](/docs/developer_guides/extension_points) -
   `Core-extendPluggableElement` and the full extension-point API
-- [Custom track and display types](/docs/developer_guides/creating_display) —
+- [Custom track and display types](/docs/developer_guides/creating_display) -
   where `trackMenuItems` / `contextMenuItems` live
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) — menus are
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) - menus are
   one of the element types surveyed there

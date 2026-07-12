@@ -6,8 +6,8 @@ description:
 guide_category: Creating pluggable elements
 ---
 
-A **track** owns the high-level identity — an ID, a name, a default set of
-displays — while **display types** do the work of showing that track inside a
+A **track** owns the high-level identity (an ID, a name, a default set of
+displays), while **display types** do the work of showing that track inside a
 particular view, and **renderers** turn features into pixels.
 
 ```
@@ -17,7 +17,7 @@ Track  ─owns→  Display(s)  ─call→  Renderer
 Tracks are deliberately thin. For example:
 
 - `AlignmentsTrack` owns `LinearAlignmentsDisplay`, which internally combines a
-  pileup row and an SNP-coverage row — both ways of looking at BAM/CRAM data
+  pileup row and an SNP-coverage row, both ways of looking at BAM/CRAM data
   inside a `LinearGenomeView`.
 - `VariantTrack` owns `LinearVariantDisplay` (registered against
   `LinearGenomeView`) and `ChordVariantDisplay` (registered against
@@ -63,7 +63,7 @@ per-feature drawing.
 
 A display registers itself as compatible with one view type. For example
 `LinearVariantDisplay` is registered against `LinearGenomeView`, while
-`ChordVariantDisplay` is registered against `CircularView` — both belong to the
+`ChordVariantDisplay` is registered against `CircularView`. Both belong to the
 same `VariantTrack`.
 
 ## Walkthroughs
@@ -86,15 +86,15 @@ In-tree references:
 ## See also
 
 - [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
-  — for large or dense datasets
-- [Data fetching pipeline](/docs/developer_guides/data_fetching) — how a display
+  - for large or dense datasets
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) - how a display
   fetches its data via the autorun chain
 - [Adding SVG export to a display](/docs/developer_guides/svg_export)
 - [Renderer architecture](/docs/developer_guides/renderer_architecture)
-- [Creating custom adapters](/docs/developer_guides/creating_adapter) — a track
+- [Creating custom adapters](/docs/developer_guides/creating_adapter) - a track
   combines an adapter with its displays
-- [Configuration schema](/docs/developer_guides/configuration_schema) — define a
+- [Configuration schema](/docs/developer_guides/configuration_schema) - define a
   custom config schema for a track category
 - [Creating custom widgets](/docs/developer_guides/creating_widget)
-- [Pluggable elements](/docs/developer_guides/pluggable_elements) — overview of
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) - overview of
   all element types, including tracks and displays

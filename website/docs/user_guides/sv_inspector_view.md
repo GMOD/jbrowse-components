@@ -24,15 +24,15 @@ The following formats are supported:
 
 ## What the SV inspector is good for
 
-The SV inspector is best for long-range SV records — VCF entries with
+The SV inspector is best for long-range SV records: VCF entries with
 `SVTYPE=BND` (breakends; the VCF-spec way to encode translocations) or the
 caller-specific `SVTYPE=TRA` used by some tools. Single-locus deletions and
 duplications load fine but don't show up usefully in the circular overview.
 
 Compatible variant callers include:
 
-- **Short-read** — Manta, Delly, Lumpy
-- **Long-read** — pbsv, Sniffles
+- Short-read - Manta, Delly, Lumpy
+- Long-read - pbsv, Sniffles
 
 ## Example workflow
 
@@ -60,23 +60,23 @@ Table filters are reflected in the circular view.
 Click a feature in the circular view, or the triangle dropdown on any table row,
 to open the
 [breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view)
-for that variant — two stacked linear genome views, each centered on one
+for that variant: two stacked linear genome views, each centered on one
 breakpoint. It opens with empty views; add alignment tracks to both via their
 track selectors, and the read arcs and splines connecting supporting reads
 appear automatically.
 
 ## See also
 
-- [Circular genome view](/docs/user_guides/circular_view) — the whole-genome
+- [Circular genome view](/docs/user_guides/circular_view) - the whole-genome
   chord overview on its own, for plotting a single SV track without the table
-- [Spreadsheet view](/docs/user_guides/spreadsheet_view) — the tabular half on
+- [Spreadsheet view](/docs/user_guides/spreadsheet_view) - the tabular half on
   its own, for importing CSV/TSV/BED/VCF as a searchable feature table
-- [Structural variant visualization](/docs/user_guides/sv_visualization) —
+- [Structural variant visualization](/docs/user_guides/sv_visualization) -
   interpreting SV signals across alignment colorings, arcs, and the breakpoint
   split view
-- [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab) —
+- [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab) -
   end-to-end workflow on real tumor/normal data
-- [Multi-sample SVs (1000 Genomes) tutorial](/docs/tutorials/sv_multisamples) —
+- [Multi-sample SVs (1000 Genomes) tutorial](/docs/tutorials/sv_multisamples) -
   population-scale SV genotypes
-- [Gallery: structural variant examples](/gallery/#sv) — the live SV inspector,
+- [Gallery: structural variant examples](/gallery/#sv) - the live SV inspector,
   breakpoint split view, and inversion sessions to open and explore
