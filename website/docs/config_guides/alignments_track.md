@@ -44,22 +44,25 @@ See the [BamAdapter config docs](/docs/config/bamadapter) for all options.
 
 ## CramAdapter configuration options
 
-- `cramLocation` - a 'file location' for the CRAM
-- `craiLocation` - a 'file location' for the CRAI
+The `uri` shorthand assumes the index sits next to the data file at
+`<uri>.crai`. The sequence adapter is supplied automatically from the enclosing
+assembly — you do not need to set `sequenceAdapter` manually. Spell out the
+location slots only when the index is named differently:
 
-The sequence adapter is automatically supplied from the enclosing assembly — you
-do not need to set `sequenceAdapter` manually. See the
-[CramAdapter config docs](/docs/config/cramadapter) for all options.
+- `cramLocation` - file location of the CRAM
+- `craiLocation` - file location of the CRAI
 
 ```json
 { "type": "CramAdapter", "uri": "https://yourhost/file.cram" }
 ```
 
+See the [CramAdapter config docs](/docs/config/cramadapter) for all options.
+
 ## Display options
 
 Display settings — `colorBy`, `height`, `featureHeight`, `filterBy`, and the
 coverage `autoscale`/`minScore`/`maxScore` — are slots on the
-`LinearAlignmentsDisplay`, not on the track. Reads are a solid grey until you
+`LinearAlignmentsDisplay`, not on the track. Reads are a solid gray until you
 pick a coloring scheme via the
 [`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby) slot. To change
 a default, set it with the track's `displayDefaults` shorthand:

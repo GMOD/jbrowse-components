@@ -79,7 +79,7 @@ individual bases are no longer legible anyway — and the actual bases come back
 when you zoom in. It is computed from the alignment (no extra files) and set
 from the track menu, with two styles:
 
-- **Heatmap** shades each row band by its local identity on a red→grey→blue ramp
+- **Heatmap** shades each row band by its local identity on a red→gray→blue ramp
   (red = divergent, blue = conserved).
 - **X-Y plot** draws a per-species identity wiggle: a bar per pixel whose height
   is that position's identity to the reference, like one conservation band per
