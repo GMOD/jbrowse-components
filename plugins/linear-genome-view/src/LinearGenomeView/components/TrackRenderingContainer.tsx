@@ -1,6 +1,6 @@
 import { Suspense, useCallback } from 'react'
 
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { LoadingOverlay } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -84,7 +84,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
             className={classes.renderingComponentContainer}
             style={{ left: showTrackOutlines ? -1 : 0 }}
           >
-            <Suspense fallback={<LoadingEllipses />}>
+            <Suspense fallback={<LoadingOverlay isVisible immediate />}>
               <RenderingComponent
                 model={display}
                 onHorizontalScroll={model.horizontalScroll}
