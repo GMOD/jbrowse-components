@@ -22,8 +22,8 @@ function makeSelf(resolution: number) {
 function renderStepper(resolution: number) {
   const self = makeSelf(resolution)
   const item = makeResolutionSubMenu(self)[0]!
-  const custom = 'subMenu' in item ? item.subMenu![0]! : undefined
-  const node = custom && 'render' in custom ? custom.render!({}) : null
+  const custom = 'subMenu' in item ? item.subMenu[0]! : undefined
+  const node = custom && 'render' in custom ? custom.render(() => {}) : null
   const utils = render(<div>{node}</div>)
   const [coarser, finer, reset] = utils.getAllByRole('button')
   return { self, coarser: coarser!, finer: finer!, reset: reset!, ...utils }
