@@ -23,7 +23,8 @@ const transforms: Record<string, (score: number) => number> = {
 // for the `none` fast path (adapter skips wrapping the stream entirely). A
 // `jexl:...` expression is an arbitrary escape hatch — slower than the native
 // modes, so opt-in only — evaluated with the raw column value bound to `score`
-// (e.g. `jexl:-log10(score)`, `jexl:score/log(10)`).
+// (e.g. `jexl:-log10(score)`; note jexl's `log` is a console.log passthrough,
+// not a math function, so use `log10`).
 export function getScoreTransform(mode: string, jexl?: JexlInstance) {
   if (jexl && isJexl(mode)) {
     const expr = stringToJexlExpression(mode, jexl)
