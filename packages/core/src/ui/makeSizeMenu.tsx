@@ -1,16 +1,34 @@
 import { useState } from 'react'
 
-import RestartAltIcon from '@mui/icons-material/RestartAlt'
-import { IconButton, Tooltip, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
+import {
+  INLINE_MENU_ROW_WIDTH,
+  ResetToDefaultButton,
+} from './InlineMenuControls.tsx'
 import SingleSlider from './SingleSlider.tsx'
 import { sliderScale } from './sliderScale.ts'
+import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { MenuItem } from './MenuTypes.ts'
 import type { SliderScale } from './sliderScale.ts'
 import type { SessionDefaultControl } from '../configuration/promotableDefaults.ts'
+
+const useStyles = makeStyles()(theme => ({
+  root: {
+    width: INLINE_MENU_ROW_WIDTH,
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+  },
+  label: {
+    flex: 1,
+  },
+}))
 
 // One inline menu row: the live value/slider with a reset button and, for a
 // promotable slot, a pin to make the current value the session-wide default.
@@ -49,31 +67,28 @@ const SizeSliderRow = observer(function SizeSliderRow({
   onReset: () => void
   sessionDefault?: SessionDefaultControl
 }) {
+  const { classes } = useStyles()
   const modelValue = getValue()
   const [dragValue, setDragValue] = useState<number | undefined>(undefined)
   const value = dragValue ?? modelValue
   const { toSlider, fromSlider, sliderStep } = sliderScale(scale)
   const slug = title.toLowerCase().replaceAll(' ', '-')
   return (
-    <div style={{ width: 220 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <Typography variant="caption" color="textSecondary" style={{ flex: 1 }}>
+    <div className={classes.root}>
+      <div className={classes.header}>
+        <Typography
+          variant="caption"
+          color="textSecondary"
+          className={classes.label}
+        >
           {title}: {format(value)}
         </Typography>
-        <Tooltip title="Reset to default">
-          <span>
-            <IconButton
-              size="small"
-              sx={{ p: 0.25 }}
-              disabled={isDefault}
-              onClick={() => {
-                onReset()
-              }}
-            >
-              <RestartAltIcon fontSize="small" />
-            </IconButton>
-          </span>
-        </Tooltip>
+        <ResetToDefaultButton
+          disabled={isDefault}
+          onClick={() => {
+            onReset()
+          }}
+        />
         {sessionDefault ? (
           // include the current value so the manage-default dialog/tooltip read
           // as a concrete value ("Line width (2px)") — the copy assumes the
@@ -95,7 +110,7 @@ const SizeSliderRow = observer(function SizeSliderRow({
         data-testid={`${slug}-slider`}
         valueLabelDisplay="auto"
         valueLabelFormat={(v: number) => format(fromSlider(v))}
-        sx={{ py: '4px', display: 'block' }}
+        sx={{ py: 0.5, display: 'block' }}
         onChange={v => {
           const n = fromSlider(v)
           if (commitOnRelease) {

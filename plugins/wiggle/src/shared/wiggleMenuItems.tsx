@@ -1,5 +1,10 @@
 import { makeCurrentValueSessionDefaultControl } from '@jbrowse/core/configuration'
 import {
+  INLINE_MENU_ROW_WIDTH,
+  ResetToDefaultButton,
+} from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import {
   makeRadioSubMenu,
   makeScatterPointSizeMenuItem,
   makeSizeMenu,
@@ -7,7 +12,6 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import LineWeightIcon from '@mui/icons-material/LineWeight'
 import RemoveIcon from '@mui/icons-material/Remove'
-import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -16,6 +20,19 @@ import { observer } from 'mobx-react'
 
 import type { PromotableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
+
+const useStyles = makeStyles()(theme => ({
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    width: INLINE_MENU_ROW_WIDTH,
+  },
+  value: {
+    flex: 1,
+    textAlign: 'center',
+  },
+}))
 
 const SCATTER_POINT_SIZE_DEFAULT = 2
 const LINE_WIDTH_DEFAULT = 1
@@ -171,9 +188,10 @@ const ResolutionStepper = observer(function ResolutionStepper({
   onCoarser: () => void
   onReset: () => void
 }) {
+  const { classes } = useStyles()
   const value = getValue()
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: 220 }}>
+    <div className={classes.row}>
       <Tooltip title="Coarser resolution">
         <span>
           <IconButton
@@ -191,7 +209,7 @@ const ResolutionStepper = observer(function ResolutionStepper({
       <Typography
         variant="caption"
         color="textSecondary"
-        style={{ flex: 1, textAlign: 'center' }}
+        className={classes.value}
       >
         Resolution: {formatResolution(value)}
       </Typography>
@@ -209,20 +227,13 @@ const ResolutionStepper = observer(function ResolutionStepper({
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title="Reset to default resolution">
-        <span>
-          <IconButton
-            size="small"
-            sx={{ p: 0.25 }}
-            disabled={value === 1}
-            onClick={() => {
-              onReset()
-            }}
-          >
-            <RestartAltIcon fontSize="small" />
-          </IconButton>
-        </span>
-      </Tooltip>
+      <ResetToDefaultButton
+        title="Reset to default resolution"
+        disabled={value === 1}
+        onClick={() => {
+          onReset()
+        }}
+      />
     </div>
   )
 })

@@ -30,6 +30,10 @@ export { default as ShareLinkField } from './ShareLinkField.tsx'
 export { default as SingleSlider } from './SingleSlider.tsx'
 export { default as SliderTooltip } from './SliderTooltip.tsx'
 export { makeSizeMenu } from './makeSizeMenu.tsx'
+export {
+  INLINE_MENU_ROW_WIDTH,
+  ResetToDefaultButton,
+} from './InlineMenuControls.tsx'
 export { sliderScale } from './sliderScale.ts'
 export type { SliderScale } from './sliderScale.ts'
 export { default as ErrorBar } from './ErrorBar.tsx'
