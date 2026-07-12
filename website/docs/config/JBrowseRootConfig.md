@@ -28,8 +28,8 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [internetAccounts](#slot-internetaccounts)                       |      | configuration for internet accounts, see InternetAccounts                                                                                                                                                                                        |
 | [aggregateTextSearchAdapters](#slot-aggregatetextsearchadapters) |      | configuration for aggregate text search adapters (created by e.g. jbrowse text-index, but can be a pluggable TextSearchAdapter type)                                                                                                             |
 | [connections](#slot-connections)                                 |      | configuration for connections                                                                                                                                                                                                                    |
-| [defaultSession](#slot-defaultsession)                           |      |                                                                                                                                                                                                                                                  |
-| [preConfiguredSessions](#slot-preconfiguredsessions)             |      |                                                                                                                                                                                                                                                  |
+| [defaultSession](#slot-defaultsession)                           |      | the session loaded when no session is otherwise specified, e.g. the initial view shown on first load                                                                                                                                             |
+| [preConfiguredSessions](#slot-preconfiguredsessions)             |      | named sessions bundled with the config that a user can open from the session selector                                                                                                                                                            |
 
 <details>
 <summary>JBrowseRootConfig - Slots</summary>
@@ -97,6 +97,9 @@ types.array(pluginManager.pluggableConfigSchemaType('connection'))
 
 #### slot: defaultSession
 
+the session loaded when no session is otherwise specified, e.g. the initial view
+shown on first load
+
 ```js
 types.optional(types.frozen(), {
   name: 'New Session',
@@ -104,6 +107,9 @@ types.optional(types.frozen(), {
 ```
 
 #### slot: preConfiguredSessions
+
+named sessions bundled with the config that a user can open from the session
+selector
 
 ```js
 types.array(types.frozen())

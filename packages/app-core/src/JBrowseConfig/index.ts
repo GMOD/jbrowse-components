@@ -88,6 +88,8 @@ export function JBrowseConfigF({
 
     /**
      * #slot
+     * the session loaded when no session is otherwise specified, e.g. the
+     * initial view shown on first load
      */
     defaultSession: types.optional(types.frozen(), {
       name: 'New Session',
@@ -95,6 +97,8 @@ export function JBrowseConfigF({
 
     /**
      * #slot
+     * named sessions bundled with the config that a user can open from the
+     * session selector
      */
     preConfiguredSessions: types.array(types.frozen()),
 

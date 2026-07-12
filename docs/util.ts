@@ -104,6 +104,7 @@ export function extractWithComment(
   const program = ts.createProgram(fileNames, options)
   const checker = program.getTypeChecker()
   const blindSpots: BlindSpot[] = []
+  const slotGaps: ConfigSlotGap[] = []
 
   for (const sourceFile of program.getSourceFiles()) {
     // Test files are excluded outright: their fixtures (a `#config` fixture
@@ -112,18 +113,25 @@ export function extractWithComment(
     const isTestFile = /\.test\.tsx?$/.test(sourceFile.fileName)
     if (!sourceFile.isDeclarationFile && !isTestFile) {
       // Structural member detection only runs in files that document a
-      // #stateModel, so non-model helper files with their own .views()/
-      // .actions() chains don't contribute spurious members.
-      const isStateModel = hasTag(sourceFile.getFullText(), 'stateModel')
-      ts.forEachChild(sourceFile, node => visit(node, isStateModel))
+      // #stateModel, and the untagged-slot audit only in files that document a
+      // #config, so helper files with their own .actions() chains or internal
+      // ConfigurationSchema calls don't contribute spurious members/gaps.
+      const text = sourceFile.getFullText()
+      const isStateModel = hasTag(text, 'stateModel')
+      const isConfig = hasTag(text, 'config')
+      ts.forEachChild(sourceFile, node => visit(node, isStateModel, isConfig))
     }
   }
   reportBlindSpots(blindSpots)
+  reportConfigSlotGaps(slotGaps)
 
-  function visit(node: ts.Node, isStateModel: boolean) {
+  function visit(node: ts.Node, isStateModel: boolean, isConfig: boolean) {
     const link = displayTrackLink(node)
     if (link) {
       onDisplayLink(link)
+    }
+    if (isConfig) {
+      collectUntaggedSlots(node, slotGaps)
     }
     const comment = getOwnJSDocText(node)
     const tags = comment ? TAG_TYPES.filter(t => hasTag(comment, t)) : []
@@ -156,7 +164,72 @@ export function extractWithComment(
       // is examined here, so no member is ever emitted twice.
       emitUntaggedMember(checker, node, comment, cb, blindSpots)
     }
-    ts.forEachChild(node, n => visit(n, isStateModel))
+    ts.forEachChild(node, n => visit(n, isStateModel, isConfig))
+  }
+}
+
+// A config slot that a #config schema declares but never tags with #slot, so it
+// is silently absent from the generated docs (the failure mode that hid
+// configuration.shareURL when its comment used /* instead of /**).
+interface ConfigSlotGap {
+  filename: string
+  schema: string
+  slot: string
+}
+
+function isConfigurationSchemaCall(node: ts.Node): node is ts.CallExpression {
+  return (
+    ts.isCallExpression(node) &&
+    ts.isIdentifier(node.expression) &&
+    node.expression.text === 'ConfigurationSchema'
+  )
+}
+
+// Audit one `ConfigurationSchema('Name', { ...slots })` call: every own property
+// of the slots object should carry a #slot tag. A property whose value is itself
+// an inline `ConfigurationSchema(...)` is a grouping sub-schema (its children are
+// the slots, e.g. hierarchical.sort), so it is skipped; spreads (plugin/extra
+// slot injection) are skipped too.
+function collectUntaggedSlots(node: ts.Node, gaps: ConfigSlotGap[]) {
+  if (isConfigurationSchemaCall(node)) {
+    const schema = ts.isStringLiteralLike(node.arguments[0])
+      ? node.arguments[0].text
+      : '(anonymous)'
+    const slots = node.arguments[1]
+    if (slots && ts.isObjectLiteralExpression(slots)) {
+      for (const prop of slots.properties) {
+        if (
+          ts.isPropertyAssignment(prop) &&
+          ts.isIdentifier(prop.name) &&
+          !isConfigurationSchemaCall(prop.initializer) &&
+          !containsTag(jsDocText(prop), 'slot')
+        ) {
+          gaps.push({
+            filename: prop.getSourceFile().fileName,
+            schema,
+            slot: prop.name.text,
+          })
+        }
+      }
+    }
+  }
+}
+
+function reportConfigSlotGaps(gaps: ConfigSlotGap[]) {
+  if (gaps.length) {
+    console.warn(
+      `${gaps.length} config slot(s) in a #config schema have no #slot tag, so they are silently missing from the generated docs. Add a /** #slot */ comment (a single-star /* comment is ignored):`,
+    )
+    const byFile = new Map<string, ConfigSlotGap[]>()
+    for (const gap of gaps) {
+      const file = repoRelative(gap.filename)
+      byFile.set(file, [...(byFile.get(file) ?? []), gap])
+    }
+    for (const [file, list] of byFile) {
+      console.warn(
+        `  ${file}: ${list.map(g => `${g.schema}.${g.slot}`).join(', ')}`,
+      )
+    }
   }
 }
 
@@ -1184,7 +1257,8 @@ export function collapsible(
 // be present for completeness but stay out of the way — e.g. the full signatures
 // of undocumented plumbing members, which a compact table links down into.
 // Fragment navigation to a heading inside auto-expands the <details> in modern
-// browsers, so the anchor links still land (same behavior memberLine relies on).
+// browsers, so the anchor links still land (same behavior the member index table
+// relies on).
 export function collapsibleClosed(
   summary: string,
   ...parts: (string | false | 0 | undefined)[]

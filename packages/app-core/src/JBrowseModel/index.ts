@@ -146,7 +146,6 @@ export function JBrowseModelF({
         const { trackId } = trackConf
         const idx = self.tracks.findIndex(t => t.trackId === trackId)
         if (idx !== -1) {
-          // Replace the track at that index
           const newTracks = [...self.tracks]
           newTracks[idx] = trackConf
           self.tracks = newTracks
