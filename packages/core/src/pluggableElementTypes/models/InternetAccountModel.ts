@@ -137,12 +137,6 @@ export const InternetAccount = types
     /**
      * #action
      */
-    removeToken() {
-      sessionStorage.removeItem(self.tokenKey)
-    },
-    /**
-     * #action
-     */
     retrieveToken() {
       return sessionStorage.getItem(self.tokenKey)
     },
@@ -166,7 +160,20 @@ export const InternetAccount = types
   }))
   .actions(self => {
     let tokenPromise: Promise<string> | undefined = undefined
+    function clearToken() {
+      sessionStorage.removeItem(self.tokenKey)
+      tokenPromise = undefined
+    }
     return {
+      /**
+       * #action
+       * Clears the stored token. Also drops the in-memory cached promise so a
+       * subsequent `getToken` re-prompts / re-derives rather than handing back
+       * the token that was just invalidated.
+       */
+      removeToken() {
+        clearToken()
+      },
       /**
        * #action
        * Try to get the token from the location pre-auth, from local storage,
@@ -202,7 +209,7 @@ export const InternetAccount = types
               resolve(token)
             },
             error => {
-              self.removeToken()
+              clearToken()
               reject(error)
             },
           )
@@ -230,6 +237,18 @@ export const InternetAccount = types
     },
     /**
      * #action
+     * Fetch a token and, when a location is supplied, run it through
+     * `validateToken` so subclasses can refresh an expired token before it is
+     * used. Shared by the auth-aware fetchers.
+     *
+     * @param loc - UriLocation of the resource
+     */
+    async getValidatedToken(loc?: UriLocation) {
+      const token = await self.getToken(loc)
+      return loc ? self.validateToken(token, loc) : token
+    },
+    /**
+     * #action
      * Gets the token and returns it along with the information needed to
      * create a new internetAccount.
      *
@@ -238,19 +257,17 @@ export const InternetAccount = types
      */
     async getPreAuthorizationInformation(location: UriLocation) {
       const authToken = await self.getToken(location)
-      let validatedToken: string | undefined
       try {
-        validatedToken = await self.validateToken(authToken, location)
+        return {
+          internetAccountType: self.type,
+          authInfo: {
+            token: await self.validateToken(authToken, location),
+            configuration: getConf(self),
+          },
+        }
       } catch (error) {
         self.removeToken()
         throw error
-      }
-      return {
-        internetAccountType: self.type,
-        authInfo: {
-          token: validatedToken,
-          configuration: getConf(self),
-        },
       }
     },
   }))

@@ -49,9 +49,7 @@ const stateModelFactory = (
        */
       getFetcher(location?: UriLocation) {
         return async (input: RequestInfo, init?: RequestInit) => {
-          const authToken = location
-            ? await self.validateToken(await self.getToken(location), location)
-            : await self.getToken(location)
+          const authToken = await self.getValidatedToken(location)
           const newInit = self.addAuthHeaderToInit(
             { ...init, method: 'POST' },
             authToken,

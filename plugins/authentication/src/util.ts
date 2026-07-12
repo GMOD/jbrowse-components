@@ -35,7 +35,7 @@ export async function getResponseError({
 export async function getError(response: Response) {
   try {
     return await response.text()
-  } catch (e) {
+  } catch {
     return response.statusText
   }
 }

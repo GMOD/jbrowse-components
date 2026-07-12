@@ -4,7 +4,6 @@ import LGVHighlightSVG from './LGVHighlightSVG.tsx'
 import OverviewHighlight from './OverviewHighlight.tsx'
 import ScalebarHighlight from './ScalebarHighlight.tsx'
 
-import type { IExtendedDotplotView, IExtendedLGV } from '../../model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function AddHighlightModelF(pluginManager: PluginManager) {
@@ -12,7 +11,7 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
     'LinearGenomeView-TracksContainerComponent',
     (rest, { model }) => [
       ...rest,
-      <Highlight key="highlight_grid_bookmark" model={model as IExtendedLGV} />,
+      <Highlight key="highlight_grid_bookmark" model={model} />,
     ],
   )
   pluginManager.addToExtensionPoint(
@@ -21,7 +20,7 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
       ...rest,
       <ScalebarHighlight
         key="scalebar_highlight_grid_bookmark"
-        model={model as IExtendedLGV}
+        model={model}
       />,
     ],
   )
@@ -31,7 +30,7 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
       ...rest,
       <OverviewHighlight
         key="overview_highlight_grid_bookmark"
-        model={model as IExtendedLGV}
+        model={model}
       />,
     ],
   )
@@ -39,10 +38,7 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
     'DotplotView-OverlaySVGComponent',
     (rest, { model }) => [
       ...rest,
-      <DotplotHighlight
-        key="dotplot_highlight_grid_bookmark"
-        model={model as IExtendedDotplotView}
-      />,
+      <DotplotHighlight key="dotplot_highlight_grid_bookmark" model={model} />,
     ],
   )
   pluginManager.addToExtensionPoint(
@@ -51,7 +47,7 @@ export default function AddHighlightModelF(pluginManager: PluginManager) {
       ...rest,
       <LGVHighlightSVG
         key="lgv_highlight_svg_grid_bookmark"
-        model={model as IExtendedLGV}
+        model={model}
         height={height}
       />,
     ],

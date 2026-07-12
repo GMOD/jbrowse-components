@@ -74,9 +74,7 @@ export default function stateModelFactory(
             searchParams.append('alt', 'media')
           }
           driveUrl.search = searchParams.toString()
-          const authToken = location
-            ? await self.validateToken(await self.getToken(location), location)
-            : await self.getToken(location)
+          const authToken = await self.getValidatedToken(location)
           const response = await fetch(
             driveUrl,
             self.addAuthHeaderToInit(

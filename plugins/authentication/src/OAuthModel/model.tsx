@@ -279,6 +279,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               url: url.toString(),
             },
           )
+          // the main process resolves undefined when the user closes the auth
+          // window without completing the flow
+          if (electronRedirectUri === undefined) {
+            throw new Error('OAuth flow was cancelled')
+          }
           const event = new MessageEvent('message', {
             data: { name: eventName, redirectUri: electronRedirectUri },
           })
@@ -354,9 +359,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        */
       getFetcher(loc?: UriLocation) {
         return async (input: RequestInfo, init?: RequestInit) => {
-          const token = loc
-            ? await self.validateToken(await self.getToken(loc), loc)
-            : await self.getToken()
+          const token = await self.getValidatedToken(loc)
           return fetch(input, self.addAuthHeaderToInit(init, token))
         }
       },
