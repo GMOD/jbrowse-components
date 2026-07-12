@@ -201,9 +201,9 @@ export function drawLine({
 }
 
 // Point-to-point line: connects the score at each feature's bp midpoint to its
-// neighbor's, instead of the stepped bar-tops drawLine traces. A run breaks
-// (moveTo, no connecting segment) wherever the next feature isn't bp-adjacent,
-// so gaps in the data show as gaps in the line rather than drops to zero.
+// neighbor's, instead of the stepped bar-tops drawLine traces. Connects every
+// consecutive pair within the layer (moveTo only at the first), so sporadic
+// non-tiling bins in reduced data don't dash the line.
 export function drawLineCenter({
   ctx,
   source,
@@ -245,8 +245,7 @@ export function drawLineCenter({
     )
     const cx = (x1 + x2) / 2
     const cy = scoreToY(scores[i]!) + rowTop
-    const adjToPrev = i > 0 && positions[i * 2 - 1] === positions[i * 2]
-    if (adjToPrev) {
+    if (i > 0) {
       ctx.lineTo(cx, cy)
     } else {
       ctx.moveTo(cx, cy)

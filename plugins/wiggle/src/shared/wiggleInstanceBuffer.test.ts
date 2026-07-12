@@ -34,6 +34,7 @@ function readInstance(buf: ArrayBuffer, i: number) {
     prevScore: f32[base + FIELD_OFFSET_F32.prevScore]!,
     nextScore: f32[base + FIELD_OFFSET_F32.nextScore]!,
     prevMidBp: u32[base + FIELD_OFFSET_F32.prevMidBp]!,
+    prevScoreLine: f32[base + FIELD_OFFSET_F32.prevScoreLine]!,
   }
 }
 
@@ -131,40 +132,45 @@ describe('interleaveInstances', () => {
     expect(f2.nextScore).toBe(0)
   })
 
-  // prevMidBp drives the center-line (RENDERING_TYPE_LINE_CENTER) pass, which
-  // draws a segment from the previous feature's bp midpoint to this one's.
-  describe('prevMidBp (center-line)', () => {
+  // prevMidBp + prevScoreLine drive the center-line (RENDERING_TYPE_LINE_CENTER)
+  // pass, which connects each feature's bp midpoint to the previous feature's.
+  // It links *every* consecutive pair in a source (only the first is a run
+  // start), so sporadic non-tiling bins don't dash the line.
+  describe('center-line (prevMidBp / prevScoreLine)', () => {
     test('first feature has no previous → sentinel', () => {
-      const buf = interleaveInstances([makeSource([5], [0], [100])], 1)
-      expect(readInstance(buf, 0).prevMidBp).toBe(NO_PREV_MID)
+      const f = readInstance(interleaveInstances([makeSource([5], [0], [100])], 1), 0)
+      expect(f.prevMidBp).toBe(NO_PREV_MID)
+      expect(f.prevScoreLine).toBe(0)
     })
 
-    test('adjacent feature carries the previous midpoint (floored)', () => {
+    test('adjacent feature carries the previous midpoint (floored) and score', () => {
       // prev [0,100] midpoint = 50; [100,201] midpoint = 150 (floored from 150.5)
-      const buf = interleaveInstances(
-        [makeSource([5, 8], [0, 100], [100, 201])],
-        2,
-      )
+      const buf = interleaveInstances([makeSource([5, 8], [0, 100], [100, 201])], 2)
       expect(readInstance(buf, 0).prevMidBp).toBe(NO_PREV_MID)
       expect(readInstance(buf, 1).prevMidBp).toBe(50)
+      expect(readInstance(buf, 1).prevScoreLine).toBe(5)
     })
 
-    test('gap before a feature → sentinel, breaking the line', () => {
-      // gap between bp 100 and 200
+    test('non-adjacent (gapped) features still connect: prev midpoint + real score', () => {
+      // gap between bp 100 and 200; the center-line bridges it rather than break
+      const buf = interleaveInstances([makeSource([5, 8], [0, 200], [100, 300])], 2)
+      expect(readInstance(buf, 1).prevMidBp).toBe(50) // prev [0,100] midpoint
+      expect(readInstance(buf, 1).prevScoreLine).toBe(5) // real prev score, not 0
+    })
+
+    test('each source restarts the run (first feature = sentinel)', () => {
       const buf = interleaveInstances(
-        [makeSource([5, 8], [0, 200], [100, 300])],
+        [makeSource([5], [0], [100]), makeSource([8], [0], [100])],
         2,
       )
+      expect(readInstance(buf, 0).prevMidBp).toBe(NO_PREV_MID)
       expect(readInstance(buf, 1).prevMidBp).toBe(NO_PREV_MID)
     })
 
     test('large coordinates near uint32 range keep an exact floored midpoint', () => {
       const a = 4_000_000_000
       const b = 4_000_000_100
-      const buf = interleaveInstances(
-        [makeSource([5, 8], [a, b], [b, b + 100])],
-        2,
-      )
+      const buf = interleaveInstances([makeSource([5, 8], [a, b], [b, b + 100])], 2)
       expect(readInstance(buf, 1).prevMidBp).toBe(Math.floor((a + b) / 2))
     })
   })

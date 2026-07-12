@@ -29,10 +29,6 @@ static const uint NO_PREV_MID = 0xffffffffu;
 // module so they stay in lockstep with manhattan.slang.
 static const float SHAPE_SOLID = 0.0;
 static const float SHAPE_DISC = 1.0;
-// Antialiased line ribbon (linecenter mode). localPos.x is the signed
-// cross-ribbon coord with the true edge at |x|=1; the fragment fades it like
-// the disc's SDF (see fs_main).
-static const float SHAPE_LINE = 2.0;
 
 struct WiggleInstance {
   uint2 startEnd  : ATTR0;
@@ -42,6 +38,7 @@ struct WiggleInstance {
   uint  color     : ATTR4;
   float rowIndex  : ATTR5;
   uint  prevMidBp : ATTR6;
+  float prevScoreLine : ATTR7;
 };
 
 struct Uniforms {
@@ -144,16 +141,17 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     }
   } else if (u.renderingType == RENDERING_TYPE_LINE_CENTER) {
     // Point-to-point line: one thick quad per feature from the previous
-    // feature's bp midpoint (prevMidBp, prevScore) to this one's (midX, score).
-    // The ribbon is offset along the segment's px-space normal so lineWidth is
-    // honored on diagonals. NO_PREV_MID (run start / gap) collapses both
-    // endpoints to a zero-length point that produces no pixels.
+    // feature's bp midpoint (prevMidBp, prevScoreLine) to this one's (midX,
+    // score), connecting every consecutive pair in the source. The ribbon is
+    // offset along the segment's px-space normal so lineWidth is honored on
+    // diagonals. NO_PREV_MID (source start) collapses both endpoints to a
+    // zero-length point that produces no pixels.
     bool hasPrev = inst.prevMidBp != NO_PREV_MID;
     float midCurrX = (sx1 + sx2) * 0.5;
     float midPrevX = hasPrev ? bpToClipX(inst.prevMidBp, u) : midCurrX;
     float currYpx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
     float prevYpx = hasPrev
-      ? scoreToY(inst.prevScore, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop
+      ? scoreToY(inst.prevScoreLine, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop
       : currYpx;
     float clipCurrY = 1.0 - currYpx * pxToClip;
     float clipPrevY = 1.0 - prevYpx * pxToClip;
@@ -168,12 +166,13 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     float nx = -ty;
     float ny = tx;
     float halfPx = u.lineWidth * 0.5;
-    // Quad half-extent = stroke half-width + AA pad so the fragment's 1px
-    // coverage ramp has room; localPos.x carries the signed px distance from the
-    // centerline for that ramp (see fs_main).
-    float halfExtentPx = halfPx + AA_PAD_PX;
-    float offX = nx * halfExtentPx * 2.0 / u.viewportWidth;
-    float offY = ny * halfExtentPx * pxToClip;
+    // Opaque ribbon exactly lineWidth wide; the multisampled target (4x MSAA on
+    // WebGPU, antialias:true on WebGL2) antialiases the diagonal edges, same as
+    // the opaque step-line. Drawing opaque — not an alpha-blended stroke — keeps
+    // overlapping segments and caps from double-blending into uneven dark/faint
+    // seams at the joints (src-over accumulates; opaque just replaces).
+    float offX = nx * halfPx * 2.0 / u.viewportWidth;
+    float offY = ny * halfPx * pxToClip;
     // Square end-caps: extend halfPx along the segment so consecutive segments
     // overlap at their shared center and fill the joint wedge (same trick as the
     // step-line's caps). At true run ends this over-draws a harmless half-width.
@@ -184,8 +183,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     float along = q.x * 2.0 - 1.0;
     sx = lerp(midPrevX, midCurrX, q.x) + side * offX + along * capX;
     sy = lerp(clipPrevY, clipCurrY, q.x) + side * offY + along * capY;
-    localPos = float2(side * halfExtentPx, 0.0);
-    shape = SHAPE_LINE;
+    // shape stays SHAPE_SOLID → flat opaque fill, MSAA handles the edges.
   } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
     // Point plot: every feature is a point marker centered on the bp midpoint,
     // never a bar (unlike manhattan.slang, which bars wide bins). scatterPointSize
@@ -270,23 +268,9 @@ float4 fs_main(VsOut fragIn) : SV_Target {
       discard;
     }
     outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
-  } else if (fragIn.shape == SHAPE_LINE) {
-    // Analytic line AA: localPos.x is the signed px distance from the
-    // centerline. Dividing the edge distance by the true gradient magnitude
-    // (length of the screen-space derivative, = 1 for all angles since localPos.x
-    // is a unit-rate distance) gives a 1px coverage ramp whose core stays fully
-    // opaque even for a 1px stroke — a symmetric smoothstep feather never would,
-    // and its width would vary with segment angle (uneven faintness).
-    float2 grad = float2(ddx(fragIn.localPos.x), ddy(fragIn.localPos.x));
-    float aa = max(length(grad), 1e-4);
-    float halfPx = u.lineWidth * 0.5;
-    float alpha = clamp((halfPx - abs(fragIn.localPos.x)) / aa + 0.5, 0.0, 1.0);
-    if (alpha <= 0.0) {
-      discard;
-    }
-    outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
   } else {
-    // Solid modes (xyplot/density/step-line) and the wide-bin bar are flat fills.
+    // Solid modes (xyplot/density/step-line/center-line) and the wide-bin bar
+    // are flat fills; the multisampled target antialiases their edges.
     outColor = fragIn.color;
   }
   return outColor;
