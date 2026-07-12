@@ -1021,6 +1021,20 @@ export default function baseStateModelFactory(
             pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
           }
         },
+        /**
+         * #getter
+         * Whether features can be laid out: data is fetched, in-bounds, and the
+         * view is measured. The shared readiness guard for every layout getter —
+         * an empty stack until then, so the GPU upload autorun has nothing to
+         * push and view-geometry getters aren't read before the view is measured.
+         */
+        get layoutReady() {
+          return (
+            !self.regionTooLarge &&
+            getView(self).initialized &&
+            self.rpcDataMap.size > 0
+          )
+        },
       }))
       .views(self => ({
         /**
@@ -1037,18 +1051,15 @@ export default function baseStateModelFactory(
           labelDecimation: LabelDecimation = 'all',
           labelRoomFactor = 1,
         ): Map<number, FeatureDataResult> {
-          const view = getView(self)
-          return self.regionTooLarge ||
-            !view.initialized ||
-            self.rpcDataMap.size === 0
-            ? new Map<number, FeatureDataResult>()
-            : memo(self.rpcDataMap, {
+          return self.layoutReady
+            ? memo(self.rpcDataMap, {
                 ...self.layoutInputs,
                 showLabels,
                 showDescriptions,
                 labelDecimation,
                 labelRoomFactor,
               })
+            : new Map<number, FeatureDataResult>()
         },
       }))
       .views(self => ({
@@ -1101,12 +1112,7 @@ export default function baseStateModelFactory(
          * still overflows and `resolveFitLadder` descends to `bodies`.
          */
         get fitDecimatedSolved(): Map<number, FeatureDataResult> {
-          const view = getView(self)
-          if (
-            self.regionTooLarge ||
-            !view.initialized ||
-            self.rpcDataMap.size === 0
-          ) {
+          if (!self.layoutReady) {
             return new Map<number, FeatureDataResult>()
           }
           const trackHeight = self.fitTargetHeight
@@ -1118,17 +1124,29 @@ export default function baseStateModelFactory(
               labelDecimation: 'fitWidth',
               labelRoomFactor,
             })
+          // Binary-search the whitespace factor: `lo` overflows (factor 0 keeps
+          // every name — the `labels` stack, which already overflowed to reach
+          // this rung), `hi` fits. Keep the fitting probe's OWN map as the
+          // committed layout, so the stack the ladder measured IS the stack it
+          // renders — the probe/commit identity the solve depends on becomes the
+          // same object, not a re-run that has to match. `hiLayout` stays
+          // undefined only when nothing fit; then the most-decimated stack
+          // (factor FIT_MAX_ROOM_FACTOR) is returned still overflowing, so
+          // resolveFitLadder descends to `bodies`.
           let lo = 0
           let hi = FIT_MAX_ROOM_FACTOR
+          let hiLayout: Map<number, FeatureDataResult> | undefined
           for (let i = 0; i < FIT_SOLVE_ITERS; i++) {
             const mid = (lo + hi) / 2
-            if (maxBottom(layoutAtFactor(mid)) <= trackHeight) {
+            const layout = layoutAtFactor(mid)
+            if (maxBottom(layout) <= trackHeight) {
               hi = mid
+              hiLayout = layout
             } else {
               lo = mid
             }
           }
-          return layoutAtFactor(hi)
+          return hiLayout ?? layoutAtFactor(hi)
         },
         /**
          * #getter
