@@ -31,26 +31,12 @@ const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
         <Stack direction="row" sx={{ alignItems: 'center' }}>
           <Switch
             data-testid="toggle_highlight_all_switch"
-            checked={model.areBookmarksHighlightedOnAllOpenViews}
+            checked={model.bookmarkHighlightsVisible}
             onChange={() => {
-              model.setBookmarkHighlightsVisible(
-                !model.areBookmarksHighlightedOnAllOpenViews,
-              )
+              model.setBookmarkHighlightsVisible(!model.bookmarkHighlightsVisible)
             }}
           />
-          <Typography>Toggle bookmark highlights on all open views</Typography>
-        </Stack>
-        <Stack direction="row" sx={{ alignItems: 'center' }}>
-          <Switch
-            data-testid="toggle_highlight_label_all_switch"
-            checked={model.areBookmarksHighlightLabelsOnAllOpenViews}
-            onChange={() => {
-              model.setBookmarkLabelsVisible(
-                !model.areBookmarksHighlightLabelsOnAllOpenViews,
-              )
-            }}
-          />
-          <Typography>Toggle highlight labels on all open views</Typography>
+          <Typography>Show bookmarks as highlights on views</Typography>
         </Stack>
       </DialogContent>
       <DialogActions>

@@ -1,8 +1,15 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 
-import type { GridBookmarkModel } from './model.ts'
+import { getBookmarkHighlights } from './components/Highlight/getBookmarkHighlights.ts'
+
+import type { GridBookmarkModel, IExtendedLGV } from './model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+// bookmarks are localStorage-backed, so isolate tests from each other
+beforeEach(() => {
+  localStorage.clear()
+})
 
 function setup() {
   const view = {
@@ -23,46 +30,23 @@ function setup() {
   return { session, widget }
 }
 
-test('visibility getters aggregate across every open view, not just the first', () => {
+test('bookmarkHighlightsVisible is a single widget-level flag gating overlays', () => {
   const { session, widget } = setup()
-  expect(widget.areBookmarksHighlightedOnAllOpenViews).toBe(true)
+  widget.addBookmark({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+  })
+  const view = session.views[0] as IExtendedLGV
 
-  // toggling the SECOND view alone must flip the getter; a getter that only
-  // inspected views[0] would miss this (the bug the everyView traversal fixes)
-  session.views[1].setBookmarkHighlightsVisible(false)
-  expect(widget.areBookmarksHighlightedOnAllOpenViews).toBe(false)
+  // on by default, so the view's bookmark overlay resolves the bookmark
+  expect(widget.bookmarkHighlightsVisible).toBe(true)
+  expect(getBookmarkHighlights(view).bookmarks).toHaveLength(1)
 
-  session.views[1].setBookmarkHighlightsVisible(true)
-  expect(widget.areBookmarksHighlightedOnAllOpenViews).toBe(true)
-})
-
-test('label-visibility getter likewise aggregates across all views', () => {
-  const { session, widget } = setup()
-  expect(widget.areBookmarksHighlightLabelsOnAllOpenViews).toBe(true)
-
-  session.views[1].setLabelsVisible(false)
-  expect(widget.areBookmarksHighlightLabelsOnAllOpenViews).toBe(false)
-})
-
-test('setBookmarkHighlightsVisible toggles every view', () => {
-  const { session, widget } = setup()
+  // flipping the one flag hides overlays everywhere
   widget.setBookmarkHighlightsVisible(false)
-  expect(session.views.every((v: any) => !v.bookmarkHighlightsVisible)).toBe(
-    true,
-  )
-})
-
-test('setShowHighlightChips toggles every view and getter aggregates', () => {
-  const { session, widget } = setup()
-  // chips are opt-in, so off on all views by default
-  expect(widget.areHighlightChipsShownOnAllOpenViews).toBe(false)
-
-  widget.setShowHighlightChips(true)
-  expect(session.views.every((v: any) => v.showHighlightChips)).toBe(true)
-  expect(widget.areHighlightChipsShownOnAllOpenViews).toBe(true)
-
-  session.views[1].setShowHighlightChips(false)
-  expect(widget.areHighlightChipsShownOnAllOpenViews).toBe(false)
+  expect(getBookmarkHighlights(view).bookmarks).toHaveLength(0)
 })
 
 test('visibleBookmarks only includes assemblies open in a view', () => {

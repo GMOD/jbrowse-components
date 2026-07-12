@@ -38,23 +38,16 @@ const LabeledRegionModel = types
     },
   }))
 
-interface HighlightToggleView {
-  id: string
+interface ViewWithAssemblies {
   assemblyNames?: string[]
-  bookmarkHighlightsVisible?: boolean
-  labelsVisible?: boolean
-  showHighlightChips?: boolean
-  setBookmarkHighlightsVisible?: (arg: boolean) => void
-  setLabelsVisible?: (arg: boolean) => void
-  setShowHighlightChips?: (arg: boolean) => void
-  views?: HighlightToggleView[]
+  views?: ViewWithAssemblies[]
 }
 
 // recurse the view/subview tree applying fn; mst walk() over the whole session
 // blows the stack ('too much recursion') so we only descend through .views
 function forEachView(
-  views: HighlightToggleView[],
-  fn: (view: HighlightToggleView) => void,
+  views: ViewWithAssemblies[],
+  fn: (view: ViewWithAssemblies) => void,
 ) {
   for (const view of views) {
     fn(view)
@@ -64,26 +57,9 @@ function forEachView(
   }
 }
 
-// like forEachView but short-circuits; used by the "all open views" getters so
-// they observe the same view/subview tree the setters mutate
-function everyView(
-  views: HighlightToggleView[],
-  fn: (view: HighlightToggleView) => boolean,
-): boolean {
-  return views.every(
-    view => fn(view) && (view.views ? everyView(view.views, fn) : true),
-  )
-}
+export type IExtendedLGV = LinearGenomeViewModel
 
-export interface IExtendedLGV extends LinearGenomeViewModel {
-  bookmarkHighlightsVisible: boolean
-  setBookmarkHighlightsVisible: (arg: boolean) => void
-}
-
-export interface IExtendedDotplotView extends DotplotViewModel {
-  bookmarkHighlightsVisible: boolean
-  setBookmarkHighlightsVisible: (arg: boolean) => void
-}
+export type IExtendedDotplotView = DotplotViewModel
 
 export interface ILabeledRegionModel extends SnapshotIn<
   typeof LabeledRegionModel
@@ -132,6 +108,11 @@ export default function f(_pluginManager: PluginManager) {
       bookmarks: types.optional(types.array(LabeledRegionModel), () =>
         localStorageGetJSON(localStorageKeyF(), []),
       ),
+      /**
+       * #property
+       * whether saved bookmarks are drawn as highlight overlays on views
+       */
+      bookmarkHighlightsVisible: types.optional(types.boolean, true),
     })
     .volatile(() => ({
       /**
@@ -175,32 +156,6 @@ export default function f(_pluginManager: PluginManager) {
           }
         })
         return names
-      },
-      /**
-       * #getter
-       */
-      get areBookmarksHighlightedOnAllOpenViews() {
-        return everyView(getSession(self).views, v =>
-          'bookmarkHighlightsVisible' in v
-            ? !!v.bookmarkHighlightsVisible
-            : true,
-        )
-      },
-      /**
-       * #getter
-       */
-      get areBookmarksHighlightLabelsOnAllOpenViews() {
-        return everyView(getSession(self).views, v =>
-          'labelsVisible' in v ? !!v.labelsVisible : true,
-        )
-      },
-      /**
-       * #getter
-       */
-      get areHighlightChipsShownOnAllOpenViews() {
-        return everyView(getSession(self).views, v =>
-          'showHighlightChips' in v ? !!v.showHighlightChips : true,
-        )
       },
     }))
     .views(self => ({
@@ -277,25 +232,7 @@ export default function f(_pluginManager: PluginManager) {
        * #action
        */
       setBookmarkHighlightsVisible(arg: boolean) {
-        forEachView(getSession(self).views, view => {
-          view.setBookmarkHighlightsVisible?.(arg)
-        })
-      },
-      /**
-       * #action
-       */
-      setBookmarkLabelsVisible(arg: boolean) {
-        forEachView(getSession(self).views, view => {
-          view.setLabelsVisible?.(arg)
-        })
-      },
-      /**
-       * #action
-       */
-      setShowHighlightChips(arg: boolean) {
-        forEachView(getSession(self).views, view => {
-          view.setShowHighlightChips?.(arg)
-        })
+        self.bookmarkHighlightsVisible = arg
       },
     }))
     .actions(self => ({

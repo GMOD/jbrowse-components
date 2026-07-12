@@ -25,9 +25,8 @@ export function getBookmarkWidget(model: IExtendedLGV | IExtendedDotplotView) {
 export function getBookmarkHighlights(model: IExtendedLGV) {
   const { session, bookmarkWidget } = getBookmarkWidget(model)
   const viewAssemblies = new Set(model.assemblyNames)
-  const bookmarks =
-    model.bookmarkHighlightsVisible && bookmarkWidget
-      ? bookmarkWidget.bookmarks.filter(r => viewAssemblies.has(r.assemblyName))
-      : []
+  const bookmarks = bookmarkWidget?.bookmarkHighlightsVisible
+    ? bookmarkWidget.bookmarks.filter(r => viewAssemblies.has(r.assemblyName))
+    : []
   return { session, bookmarkWidget, bookmarks }
 }

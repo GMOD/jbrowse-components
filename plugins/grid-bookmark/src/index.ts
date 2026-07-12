@@ -35,19 +35,7 @@ export default class GridBookmarkPlugin extends Plugin {
           const { stateModel } = pluggableElement as ViewType
           const lgv = stateModel as LinearGenomeViewStateModel
           const newStateModel = lgv
-            .props({
-              /**
-               * #property
-               */
-              bookmarkHighlightsVisible: true,
-            })
             .actions(self => ({
-              /**
-               * #action
-               */
-              setBookmarkHighlightsVisible(arg: boolean) {
-                self.bookmarkHighlightsVisible = arg
-              },
               /**
                * #action
                */
@@ -262,10 +250,11 @@ export default class GridBookmarkPlugin extends Plugin {
                 return snap
               }
               const {
-                bookmarkHighlightsVisible,
-                // strip dead bookmarkLabelsVisible from any pre-existing
-                // snapshots; labels are now controlled by base LGV labelsVisible
-                bookmarkLabelsVisible: _ignored,
+                // strip dead per-view flags from any pre-existing snapshots:
+                // bookmark-highlight visibility is now a widget-level setting,
+                // and labels are controlled by base LGV labelsVisible
+                bookmarkHighlightsVisible: _bhv,
+                bookmarkLabelsVisible: _blv,
                 // strip LGV defaults here too — postProcessSnapshot chain
                 // ordering isn't guaranteed, so we guard in both places
                 highlightsVisible,
@@ -274,9 +263,6 @@ export default class GridBookmarkPlugin extends Plugin {
               } = snap as unknown as Record<string, unknown>
               return {
                 ...rest,
-                ...(bookmarkHighlightsVisible === false
-                  ? { bookmarkHighlightsVisible }
-                  : {}),
                 ...(!highlightsVisible ? { highlightsVisible } : {}),
                 ...(!labelsVisible ? { labelsVisible } : {}),
               } as typeof snap
@@ -288,19 +274,7 @@ export default class GridBookmarkPlugin extends Plugin {
           const { stateModel } = pluggableElement as ViewType
           const dotplot = stateModel as DotplotViewStateModel
           const newStateModel = dotplot
-            .props({
-              /**
-               * #property
-               */
-              bookmarkHighlightsVisible: true,
-            })
             .actions(self => ({
-              /**
-               * #action
-               */
-              setBookmarkHighlightsVisible(arg: boolean) {
-                self.bookmarkHighlightsVisible = arg
-              },
               /**
                * #action
                */
@@ -339,20 +313,6 @@ export default class GridBookmarkPlugin extends Plugin {
                 ensureBookmarkWidget(self)
               },
             }))
-            .postProcessSnapshot(snap => {
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-              if (!snap) {
-                return snap
-              }
-              const { bookmarkHighlightsVisible, ...rest } =
-                snap as unknown as Record<string, unknown>
-              return {
-                ...rest,
-                ...(bookmarkHighlightsVisible === false
-                  ? { bookmarkHighlightsVisible }
-                  : {}),
-              } as typeof snap
-            })
 
           ;(pluggableElement as ViewType).stateModel = newStateModel
         }

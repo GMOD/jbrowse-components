@@ -11,12 +11,11 @@ const DotplotHighlight = observer(function DotplotHighlight({
 }: {
   model: IExtendedDotplotView
 }) {
-  const { bookmarkHighlightsVisible } = model
   const { bookmarkWidget } = getBookmarkWidget(model)
 
   // unlike the LGV overlays there is no assembly filter: a dotplot draws two
   // assemblies and DotplotHighlightBands resolves which axis a region maps to
-  return bookmarkHighlightsVisible && bookmarkWidget
+  return bookmarkWidget?.bookmarkHighlightsVisible
     ? bookmarkWidget.bookmarks.map((r, idx) => (
         <DotplotHighlightBands
           key={highlightKey(r, idx)}

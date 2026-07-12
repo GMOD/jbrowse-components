@@ -38,11 +38,11 @@ function setup() {
     start: 100,
     end: 200,
   })
-  return session.views[0]
+  return { model: session.views[0], widget }
 }
 
 test('bookmark bands render and respect bookmarkHighlightsVisible', () => {
-  const model = setup()
+  const { model, widget } = setup()
   const { container, rerender } = render(
     <svg>
       <DotplotHighlight model={model} />
@@ -50,7 +50,7 @@ test('bookmark bands render and respect bookmarkHighlightsVisible', () => {
   )
   expect(container.querySelectorAll('rect').length).toBeGreaterThan(0)
 
-  model.setBookmarkHighlightsVisible(false)
+  widget.setBookmarkHighlightsVisible(false)
   rerender(
     <svg>
       <DotplotHighlight model={model} />
