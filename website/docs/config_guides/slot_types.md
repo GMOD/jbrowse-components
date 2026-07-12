@@ -24,8 +24,10 @@ A numeric value (integer or decimal), e.g. a pixel height or a score threshold.
 
 ## maybeNumber
 
-A number or unset, where unset is a distinct state that defers to a higher-tier
-default (see `maybeBoolean`).
+A number or unset. Leaving it unset is a distinct third state: the slot defers
+to a higher-tier default (the display-type or session default) instead of
+pinning a value, the same way [`maybeBoolean`](#maybeboolean) works for
+booleans.
 
 ## integer
 

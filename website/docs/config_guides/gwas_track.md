@@ -6,7 +6,10 @@ description:
 guide_category: Track types
 ---
 
-[Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_gwas.json)
+A `GWASTrack` renders association results as a Manhattan plot, optionally
+colored by linkage disequilibrium to an index SNP.
+
+<Figure src="/img/gwas/manhattan.png" caption="A GWAS track rendered as a Manhattan plot: each point is a variant, plotted by genomic position (X) and -log₁₀(p-value) (Y), so association peaks rise above the background."/>
 
 ## Preparing the GWAS file
 

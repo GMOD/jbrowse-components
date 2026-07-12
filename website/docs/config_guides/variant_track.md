@@ -62,7 +62,7 @@ field via `feature.INFO.SVTYPE` and maps it to a color:
     "uri": "https://yourhost/svs.vcf.gz"
   },
   "displayDefaults": {
-    "color": "jexl:({'DEL':'red','INS':'blue','DUP':'green','INV':'orange','BND':'purple','TRA':'purple'})[feature.INFO.SVTYPE[0]] || 'gray'"
+    "color": "jexl:{'DEL':'red','INS':'blue','DUP':'green','INV':'orange','BND':'purple','TRA':'purple'}[feature.INFO.SVTYPE[0]] || 'gray'"
   }
 }
 ```
@@ -226,31 +226,14 @@ variants. There are two ways to supply the data:
 
 ### Generating the PLINK file
 
-Produce the `.ld` file with PLINK's `--r2` report, from a PLINK binary fileset
-(`.bed`/`.bim`/`.fam`) or directly from a VCF:
-
-```bash
-plink --vcf study.vcf.gz --r2 dprime with-freqs \
-  --ld-window 99999 --ld-window-kb 1000 --ld-window-r2 0 \
-  --out study
-```
-
-This writes `study.ld` (columns `CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2`, plus
-`DP`/`MAF_A`/`MAF_B` from the `dprime`/`with-freqs` flags), which
-`PlinkLDAdapter` reads directly. For a chromosome-scale or genome-wide file,
-bgzip and tabix it first so it can be used with `PlinkLDTabixAdapter`:
-
-```bash
-# preserve the header, sort the rest by CHR_A then BP_A
-(head -1 study.ld; tail -n +2 study.ld | sort -k1,1 -k2,2n) > study.sorted.ld
-bgzip study.sorted.ld
-tabix -s 1 -b 2 -e 2 -c C study.sorted.ld.gz
-```
-
-The
+The `.ld` file is PLINK's `--r2` report (columns
+`CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2`, plus `DP`/`MAF_A`/`MAF_B` with the
+`dprime`/`with-freqs` flags). `PlinkLDAdapter` reads the plain file directly;
+for a chromosome-scale or genome-wide file, bgzip and tabix it so it works with
+`PlinkLDTabixAdapter`. The
 [GWAS track guide → Preparing the LD file](/docs/config_guides/gwas_track#preparing-the-ld-file)
-explains these flags in full. The same `.ld` file is used both for coloring GWAS
-points by LD and for the standalone LD track here.
+gives the exact `plink`, `bgzip`, and `tabix` commands. The same `.ld` file is
+used both for coloring GWAS points by LD and for the standalone LD track here.
 
 ### Pre-computed LD track (plain `.ld`)
 
