@@ -6,7 +6,7 @@ import {
   isSlotDefinitionEntry,
 } from './util.ts'
 import { deepEqual } from '../util/deepEqual.ts'
-import { getSession } from '../util/index.ts'
+import { getSession, isViewContainer } from '../util/index.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
@@ -270,18 +270,72 @@ export interface SessionDefaultControl {
   toggle: () => void
 }
 
-// Setting/clearing a session-wide default is otherwise a silent state change, so
-// surface it as a snackbar — the user asked for the pin click to be unmistakable.
-function notifyDefaultToggled(
+// A view whose open tracks we can enumerate. The generic view interface doesn't
+// surface `tracks`, so narrow structurally (mirrors OverrideBadge) — the
+// declared display shape is the same PromotableDisplay the cascade already
+// operates on.
+function hasOpenTracks<T extends object>(
+  view: T,
+): view is T & { tracks: { displays: PromotableDisplay[] }[] } {
+  return 'tracks' in view && Array.isArray(view.tracks)
+}
+
+// Every open track showing this display type, across all open views — the full
+// set "apply to all open tracks" reaches (session-wide, matching the promoted
+// default's own reach). Views that don't show tracks (e.g. dotplot) drop out via
+// the structural guard. In practice a track has one display (`replaceDisplay`
+// swaps in place, `activeDisplay` is `displays[0]`), so the inner flatMap just
+// collects each track's display without relying on multiple-per-track.
+function openDisplaysOfType(self: PromotableDisplay): PromotableDisplay[] {
+  const session = getSession(self)
+  const views = isViewContainer(session) ? session.views : []
+  return views
+    .filter(hasOpenTracks)
+    .flatMap(view => view.tracks)
+    .flatMap(track => track.displays)
+    .filter(display => display.type === self.type)
+}
+
+/**
+ * Clear each display's own value on `slots` back to the slot default, so it
+ * un-pins and inherits the session-wide promoted default instead of baking in a
+ * value that wouldn't track a later default change. Displays already at the
+ * default are skipped. Takes the display set explicitly so it's unit-testable;
+ * exported for promotableDefaults.test.ts (like isSlotPinned).
+ */
+export function clearPinsToInherit(
+  displays: PromotableDisplay[],
+  slots: string[],
+): void {
+  for (const display of displays) {
+    for (const slot of slots) {
+      const def = getSlotDefinition(display.configuration, slot)
+      if (!deepEqual(getConf(display, slot), def.defaultValue)) {
+        display.configuration.setSlot(slot, def.defaultValue)
+      }
+    }
+  }
+}
+
+// Clicking a promotable pin means "make every open track of this type look like
+// this now, and keep it the default for tracks opened later." Promoting does
+// both: the caller has already set the session-wide default (future + un-pinned
+// tracks inherit it), and here we clear every open track's own value on these
+// slots so any track that pinned a different value drops onto that one default
+// too. Clearing the default just un-forces it — open tracks fall back to their
+// own config as before — so only the promote direction sweeps.
+function applyDefaultToggle(
   self: PromotableDisplay,
   promoted: boolean,
+  slots: string[],
 ): void {
-  getSession(self).notify(
-    promoted
-      ? 'Pinned as the default for all tracks of this type'
-      : 'Cleared the default for all tracks of this type',
-    'info',
-  )
+  const session = getSession(self)
+  if (promoted) {
+    clearPinsToInherit(openDisplaysOfType(self), slots)
+    session.notify('Applied to all open tracks of this type', 'info')
+  } else {
+    session.notify('Cleared the default for all tracks of this type', 'info')
+  }
 }
 
 /**
@@ -301,7 +355,7 @@ export function makeSessionDefaultControl(
     active,
     toggle: () => {
       setSlotValueSessionDefault(self, slot, onValue, !active)
-      notifyDefaultToggled(self, !active)
+      applyDefaultToggle(self, !active, [slot])
     },
   }
 }
@@ -322,7 +376,7 @@ export function makeCurrentValueSessionDefaultControl(
     active,
     toggle: () => {
       setSlotsSessionDefault(self, slots, !active)
-      notifyDefaultToggled(self, !active)
+      applyDefaultToggle(self, !active, slots)
     },
   }
 }
@@ -348,7 +402,7 @@ export function makeSlotsValueSessionDefaultControl(
       for (const { slot, value } of entries) {
         setSlotValueSessionDefault(self, slot, value, !active)
       }
-      notifyDefaultToggled(self, !active)
+      applyDefaultToggle(self, !active, entries.map(e => e.slot))
     },
   }
 }

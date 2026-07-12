@@ -4,8 +4,10 @@ import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import {
   areSlotsAtSessionDefault,
+  clearPinsToInherit,
   getConfResolved,
   isSlotPinned,
+  makeCurrentValueSessionDefaultControl,
   resolvePromotableConfigSnapshot,
   setSlotsSessionDefault,
 } from './promotableDefaults.ts'
@@ -59,6 +61,169 @@ function createDisplay(
   )
   return { session, display: session.display }
 }
+
+// Session holding several sibling displays of one type, so clearPinsToInherit
+// (the "apply a promoted default to the tracks that pin their own value" sweep)
+// can be exercised over a real sibling set.
+function createDisplays(
+  configSchema: ReturnType<typeof ConfigurationSchema>,
+  displayConfigs: Record<string, unknown>[],
+) {
+  const Display = types.model('TestDisplay', {
+    type: types.literal('TestDisplay'),
+    configuration: configSchema,
+  })
+  const Session = types
+    .model('TestSession', {
+      rpcManager: types.frozen({}),
+      configuration: types.frozen({}),
+      displayTypeDefaults: types.frozen<Record<string, Record<string, unknown>>>(
+        {},
+      ),
+      displays: types.array(Display),
+    })
+    .views(self => ({
+      getDisplayTypeDefault(displayType: string, slot: string): unknown {
+        return self.displayTypeDefaults[displayType]?.[slot]
+      },
+    }))
+    .actions(self => ({
+      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
+        const forType = { ...self.displayTypeDefaults[displayType] }
+        if (value === undefined) {
+          delete forType[slot]
+        } else {
+          forType[slot] = value
+        }
+        self.displayTypeDefaults = {
+          ...self.displayTypeDefaults,
+          [displayType]: forType,
+        }
+      },
+    }))
+  const session = Session.create(
+    {
+      displays: displayConfigs.map(configuration => ({
+        type: 'TestDisplay' as const,
+        configuration,
+      })),
+    },
+    { pluginManager },
+  )
+  return { session, displays: session.displays }
+}
+
+describe('apply a promoted default to open tracks', () => {
+  const configSchema = ConfigurationSchema('SiblingDisplay', {
+    customHeight: {
+      type: 'maybeNumber',
+      defaultValue: undefined,
+      promotable: true,
+    },
+  })
+
+  test('clears a track pinned to a different value so it inherits the default', () => {
+    const { session, displays } = createDisplays(configSchema, [
+      { customHeight: 10 }, // self: pinned the value being promoted
+      { customHeight: 20 }, // pinned a different value
+    ])
+    const other = displays[1]!
+    session.setDisplayTypeDefault('TestDisplay', 'customHeight', 10)
+
+    expect(isSlotPinned(other, 'customHeight')).toBe(true)
+    clearPinsToInherit(displays, ['customHeight'])
+    expect(isSlotPinned(other, 'customHeight')).toBe(false)
+    expect(getConfResolved(other, 'customHeight')).toBe(10)
+  })
+
+  test('leaves an already-inheriting track untouched', () => {
+    const { session, displays } = createDisplays(configSchema, [
+      { customHeight: 10 },
+      {}, // un-pinned -> already inherits
+    ])
+    const other = displays[1]!
+    session.setDisplayTypeDefault('TestDisplay', 'customHeight', 10)
+
+    clearPinsToInherit(displays, ['customHeight'])
+    expect(isSlotPinned(other, 'customHeight')).toBe(false)
+    expect(getConfResolved(other, 'customHeight')).toBe(10)
+  })
+
+  // Session shaped as the real one is (isViewContainer + tracks-with-displays),
+  // so a pin toggle exercises the full wired path: set the default, then sweep
+  // openDisplaysOfType across EVERY open view.
+  function createViews(displayConfigsPerView: Record<string, unknown>[][]) {
+    const Display = types.model('TestDisplay', {
+      type: types.literal('TestDisplay'),
+      configuration: configSchema,
+    })
+    const Track = types.model('TestTrack', { displays: types.array(Display) })
+    const View = types.model('TestView', { tracks: types.array(Track) })
+    const Session = types
+      .model('TestSession', {
+        rpcManager: types.frozen({}),
+        configuration: types.frozen({}),
+        displayTypeDefaults:
+          types.frozen<Record<string, Record<string, unknown>>>({}),
+        views: types.array(View),
+      })
+      .views(self => ({
+        getDisplayTypeDefault(displayType: string, slot: string): unknown {
+          return self.displayTypeDefaults[displayType]?.[slot]
+        },
+      }))
+      .actions(self => ({
+        setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
+          const forType = { ...self.displayTypeDefaults[displayType] }
+          if (value === undefined) {
+            delete forType[slot]
+          } else {
+            forType[slot] = value
+          }
+          self.displayTypeDefaults = {
+            ...self.displayTypeDefaults,
+            [displayType]: forType,
+          }
+        },
+        // no-ops that just make the session shape match isViewContainer + notify
+        notify() {},
+        removeView() {},
+        addView() {},
+      }))
+    const session = Session.create(
+      {
+        views: displayConfigsPerView.map(configs => ({
+          tracks: configs.map(configuration => ({
+            displays: [{ type: 'TestDisplay' as const, configuration }],
+          })),
+        })),
+      },
+      { pluginManager },
+    )
+    const displayOf = (view: number, track: number) =>
+      session.views[view]!.tracks[track]!.displays[0]!
+    return { session, displayOf }
+  }
+
+  test('a pin sweeps pinned tracks in every open view, not just its own', () => {
+    // view 0 holds the track being pinned (value 10); view 1 holds a track the
+    // user customized to a different value (20)
+    const { displayOf } = createViews([
+      [{ customHeight: 10 }],
+      [{ customHeight: 20 }],
+    ])
+    const self = displayOf(0, 0)
+    const otherView = displayOf(1, 0)
+    expect(isSlotPinned(otherView, 'customHeight')).toBe(true)
+
+    // toggle the "make current value the default" pin on view 0's track
+    makeCurrentValueSessionDefaultControl(self, ['customHeight']).toggle()
+
+    // the track in the OTHER view was swept onto the promoted default
+    expect(isSlotPinned(otherView, 'customHeight')).toBe(false)
+    expect(getConfResolved(otherView, 'customHeight')).toBe(10)
+  })
+})
 
 // A promotable `maybeNumber` slot has no real `defaultValue` to type-check a
 // promoted value against (its default is the "unset" sentinel `undefined`) —
