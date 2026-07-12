@@ -11,9 +11,9 @@ returned by an API. Either can be the `adapter` value for any track type.
 
 ## FromConfigAdapter
 
-Each entry in `features` is a feature object; `refName`, `start`, `end`, and a
-unique `uniqueId` are required, and `type`, `name`, and any other attributes are
-optional. Use it with any feature track type (e.g. a `FeatureTrack`):
+Each entry in `features` is a feature object. `refName`, `start`, `end`, and a
+unique `uniqueId` are required. `type`, `name`, and any other attributes are
+optional. Use it with any feature track type, such as a `FeatureTrack`:
 
 ```json
 {

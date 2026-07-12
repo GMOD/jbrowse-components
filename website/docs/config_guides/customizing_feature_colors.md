@@ -4,12 +4,11 @@ description: Per-feature color callbacks using jexl or plugin code
 guide_category: Callbacks and customization
 ---
 
-If you have a color callback that has a lot of logic in it, then using
-[jexl](/docs/config_guides/jexl) to express all that logic may be hard. Instead,
-you can make a small plugin which adds a function to the jexl language, and call
-that function in your jexl callback.
+If a color callback has too much logic to express cleanly in
+[jexl](/docs/config_guides/jexl), add a function to the jexl language with a
+small plugin and call it from your jexl callback.
 
-For example, create a file named "myplugin.js" (see also the note below)
+For example, create a file named `myplugin.js`:
 
 ```js
 export default class MyPlugin {
@@ -31,7 +30,7 @@ export default class MyPlugin {
 }
 ```
 
-Put `myplugin.js` in the same folder as your config file and reference it:
+Put `myplugin.js` in the same directory as your config file and reference it:
 
 ```json
 {

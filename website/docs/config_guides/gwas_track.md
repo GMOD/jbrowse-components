@@ -13,12 +13,12 @@ guide_category: Track types
 `GWASAdapter` reads a bgzipped, tabix-indexed BED-like file with a `#`-prefixed
 header row whose score column is in **-log₁₀(p) units**.
 
-If your file stores raw p-values instead, don't transform them by hand — set the
+If your file stores raw p-values instead, don't transform them by hand. Set the
 adapter's [`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform) slot
 to `negLog10` (raw p-value) or `negLog10FromLn` (natural-log p-value, e.g. a
 Pan-UKBB `ln P` column) and the conversion happens at read time. To bake a
-`-log₁₀(p)` column into the file instead, add it first with awk (`$5` is the raw
-p-value column):
+`-log₁₀(p)` column into the file instead, add it first with awk, where `$5` is
+the raw p-value column:
 
 ```bash
 awk 'NR==1 {print $0"\tneg_log_pvalue"; next}
@@ -36,8 +36,8 @@ bgzip results.sorted.txt
 tabix -p bed results.sorted.txt.gz
 ```
 
-The `name` column (4th BED field) is the SNP identifier used for LD lookups; if
-absent, lookups fall back to `chr:bp` (1-based).
+The `name` column (4th BED field) is the SNP identifier used for LD lookups. If
+it is absent, lookups fall back to `chr:bp` (1-based).
 
 Example file:
 

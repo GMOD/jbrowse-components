@@ -23,7 +23,10 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
 
 The most important things to configure are your
 [assemblies](/docs/config_guides/assemblies) and your
-[tracks](/docs/config_guides/tracks).
+[tracks](/docs/config_guides/tracks). The optional top-level fields are
+`aggregateTextSearchAdapters` (see
+[text searching](/docs/config_guides/text_searching)) and `defaultSession` (see
+[default session](/docs/config_guides/default_session)).
 
 Looking for the complete list of options for a specific track or adapter type?
 The auto-generated [config reference](/docs/config_guide) has one page per type,
@@ -39,8 +42,8 @@ and for repetitive data you can
 [Deploying JBrowse Web](/docs/config_guides/deploying) for an end-to-end
 scripted setup.
 
-On jbrowse desktop, a "session" is a complete JBrowse config with a `.jbrowse`
-file extension.
+On jbrowse-desktop, saved sessions use this same config format, stored in a file
+with a `.jbrowse` extension.
 
 Embedded components (e.g. `@jbrowse/react-linear-genome-view2`) take a config
 object at runtime rather than a config file (see
@@ -56,7 +59,7 @@ if (!response.ok) {
 const config = await response.json()
 createViewState({
   ...config,
-  assembly: config.assemblies[0], // only one assembly used in embedded currently
+  assembly: config.assemblies[0], // the embedded LGV takes a single assembly
 })
 ```
 

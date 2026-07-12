@@ -65,8 +65,10 @@ In `config.json`:
 }
 ```
 
-The `defaultSession` value is exactly the `session` object you exported — copy
-it in verbatim.
+Any track opened in the default session must also be defined in the top-level
+`tracks` array (or by the assembly), so the session can resolve it by `trackId`.
+A session that references a track missing from the config will fail to open that
+track.
 
 To configure sessions via URL, see [URL parameters](/docs/urlparams).
 

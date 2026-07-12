@@ -89,8 +89,8 @@ export default class MyPlugin {
 }
 ```
 
-Then you can put myplugin.js in the same directory as your config file, and can
-use the custom `jexl` function in your config callbacks as follows:
+Put `myplugin.js` in the same directory as your config file, then use the custom
+`jexl` function in your config callbacks:
 
 ```json
 {
@@ -148,7 +148,7 @@ export default class MyPlugin {
 }
 ```
 
-Then in your config.json, the `formatDetails` callback is simply:
+Then in your config.json, the `formatDetails` callback is:
 
 ```json
 {
@@ -172,11 +172,10 @@ Then in your config.json, the `formatDetails` callback is simply:
 }
 ```
 
-The returned object is spread over the original feature attributes, so any keys
-you don't include are left unchanged. Setting a key to `undefined` hides it, and
-new keys with spaces or custom capitalization are added as-is. This approach
-scales better than the inline jexl syntax when you have many attributes to
-rename.
+As before, the returned object is shallow-merged onto the feature, and setting a
+key to `undefined` hides it. Unlike the inline jexl syntax, this scales cleanly
+when you have many attributes to rename, and new keys with spaces or custom
+capitalization are added as-is.
 
 ## Example: A generalized solution to dbxrefs
 
@@ -216,7 +215,7 @@ export default class MyPlugin {
 }
 ```
 
-And then in your config.json
+And then in your config.json:
 
 ```json
 {

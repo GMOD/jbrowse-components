@@ -26,8 +26,9 @@ Example QuantitativeTrack config:
 Scale, autoscale, and color options (`scaleType`, `autoscale`, `minScore`,
 `maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) are appearance
 settings. Put them in a `displayDefaults` object and JBrowse applies them to the
-wiggle display for you — no need to know the display's name
-(`LinearWiggleDisplay`):
+wiggle display for you, so you don't need to know the display's name
+(`LinearWiggleDisplay`). `defaultRendering` picks the plot style and accepts
+`xyplot` (the default), `density`, `line`, or `scatter`:
 
 ```json
 {

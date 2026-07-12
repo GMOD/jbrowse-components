@@ -5,10 +5,10 @@ guide_category: Other features
 ---
 
 Text searching comes in two forms. An **aggregate index** lives in the top-level
-`aggregateTextSearchAdapters` array and is searched across many tracks at once —
-use it for a genome-wide gene-name index shared by every track on an assembly. A
-**per-track index** attaches to a single track's `textSearching` slot — use it
-to make just one track searchable.
+`aggregateTextSearchAdapters` array and is searched across many tracks at once.
+Use it for a genome-wide gene-name index shared by every track on an assembly. A
+**per-track index** attaches to a single track's `textSearching` slot. Use it to
+make just one track searchable.
 
 An aggregate index looks like this:
 

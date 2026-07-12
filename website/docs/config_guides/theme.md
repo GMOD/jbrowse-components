@@ -70,11 +70,15 @@ documents.
 ## Extra themes and dark mode
 
 You can add extra themes via the config. In jbrowse-web and jbrowse-desktop,
-these show up in a "Preferences" dialog that the user can select from. Dark mode
-themes are also supported. Adding `"mode": "dark"` to your theme will use
-[MUI's dark mode](https://mui.com/material-ui/customization/dark-mode/).
+these show up in a "Preferences" dialog that the user can select from.
 
-Example
+Dark mode is enabled by adding `"mode": "dark"` inside a theme's `palette`, which
+switches it to
+[MUI's dark mode](https://mui.com/material-ui/customization/dark-mode/). This
+works both on an `extraThemes` entry and on the top-level `theme`, where it makes
+the default theme dark.
+
+Example:
 
 ```json
 {
@@ -82,8 +86,8 @@ Example
     "extraThemes": {
       "myTheme": {
         "name": "My theme",
-        "mode": "dark",
         "palette": {
+          "mode": "dark",
           "primary": {
             "main": "#311b92"
           },

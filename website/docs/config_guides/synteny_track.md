@@ -95,14 +95,14 @@ for more CLI options.
 ## Adapter reference
 
 All adapters accept `assemblyNames` as a two-element `["query", "target"]` array
-(query first — the reverse of the order minimap2/nucmer take their inputs, so
-double-check it). The alignment-file adapters (`PAFAdapter`, `DeltaAdapter`,
-`ChainAdapter`) also accept the named `queryAssembly`/`targetAssembly` fields;
-the MCScan adapters take only `assemblyNames`. All file locations accept
-gzip-compressed input. The PAF, delta, chain, and anchors adapters read the
-whole file into memory; for very large alignments use
-`PairwiseIndexedPAFAdapter` instead, which reads a tabix-indexed PIF region by
-region.
+(query first, which is the reverse of the order minimap2/nucmer take their
+inputs, so double-check it). The alignment-file adapters (`PAFAdapter`,
+`DeltaAdapter`, `ChainAdapter`) also accept the named
+`queryAssembly`/`targetAssembly` fields. The MCScan adapters take only
+`assemblyNames`. All file locations accept gzip-compressed input. The PAF,
+delta, chain, and anchors adapters read the whole file into memory. For very
+large alignments use `PairwiseIndexedPAFAdapter` instead, which reads a
+tabix-indexed PIF region by region.
 
 ### PAFAdapter
 

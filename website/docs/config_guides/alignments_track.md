@@ -46,7 +46,7 @@ See the [BamAdapter config docs](/docs/config/bamadapter) for all options.
 
 The `uri` shorthand assumes the index sits next to the data file at
 `<uri>.crai`. The sequence adapter is supplied automatically from the enclosing
-assembly — you do not need to set `sequenceAdapter` manually. Spell out the
+assembly, so you do not need to set `sequenceAdapter` manually. Spell out the
 location slots only when the index is named differently:
 
 - `cramLocation` - file location of the CRAM

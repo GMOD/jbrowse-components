@@ -21,6 +21,11 @@ External plugins can be added to the config.json file like so:
 }
 ```
 
+The `name` must match the name the plugin registers itself under in its source
+(e.g. `name = 'GDC'` in the plugin class). If it doesn't match, the plugin fails
+to load. The `url` (or one of the location fields below) points at the built
+plugin bundle.
+
 Our plugin store lists unpkg URLs for published plugins at
 [https://jbrowse.org/jb2/plugin_store/](https://jbrowse.org/jb2/plugin_store/).
 You can also download plugin files from those URLs to your own server.

@@ -10,7 +10,7 @@ callbacks.
 A Jexl configuration callback looks like this:
 
 ```json
-    "color": "jexl:feature.strand==-1?'red':'blue'"
+"color": "jexl:feature.strand==-1?'red':'blue'"
 ```
 
 **Feature operations**
@@ -31,13 +31,11 @@ jexl: feature.parent // parent feature, e.g. the gene of an mRNA (undefined if n
 ```
 
 `feature.start` (property access) and `get(feature,'start')` (function form) are
-equivalent, and both are fully supported — existing configs need no changes.
-
-The difference is compatibility: the `get()` form is the original and works on
+equivalent, and existing configs need no changes. The `get()` form works on
 every JBrowse release, while property access was added more recently. If your
-config must run on older JBrowse versions, prefer the `get()` form; if you are
-on a current release, use whichever reads more clearly (property access is
-usually shorter). The examples in this guide use property access.
+config must run on older versions, prefer `get()`. Otherwise use whichever reads
+more clearly, since property access is usually shorter. The examples in this
+guide use property access.
 
 ## Common patterns
 
@@ -143,7 +141,7 @@ jexl: feature.flags & 2 // bitwise and to check if BAM or CRAM feature flags has
 
 <!-- JEXL_CATALOG END -->
 
-The catalog above is generated from the `j.addFunction` registrations in
+The catalog above is generated from the jexl function definitions in
 `packages/core/src/util/jexl.ts`, so it never drifts from the available
 functions.
 
@@ -151,7 +149,7 @@ functions.
 
 Our jexl fork supports JavaScript-style template literals with backticks and
 `${...}` interpolation, which is often clearer than string concatenation. This
-is handy for building colors — for example, an HSL color derived from a feature
+is handy for building colors, for example an HSL color derived from a feature
 value:
 
 ```json

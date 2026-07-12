@@ -72,7 +72,7 @@ Example config.json:
 {
   "configuration": {
     "hierarchical": {
-      "defaultFolderCategories": ["Wiggle", "SNP/Coverage,Coverage"]
+      "defaultFolderCategories": ["Wiggle", "Alignments,Coverage"]
     }
   }
 }
