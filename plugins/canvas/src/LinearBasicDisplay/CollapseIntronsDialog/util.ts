@@ -74,13 +74,15 @@ export function buildCollapsedRegions({
     })),
     0,
   )
-  return bounds
-    ? merged.map(r => ({
-        ...r,
-        start: Math.max(bounds.start, r.start),
-        end: Math.min(bounds.end, r.end),
-      }))
-    : merged
+  // Interbase min is always 0, so clamp the low end even when the contig
+  // bounds are unknown (assembly.regions lazy/unpopulated, or a refName miss) —
+  // otherwise a gene within `padding` bp of position 0 gets a negative start.
+  // The high end is only clamped when we actually know the contig length.
+  return merged.map(r => ({
+    ...r,
+    start: Math.max(bounds?.start ?? 0, r.start),
+    end: bounds ? Math.min(bounds.end, r.end) : r.end,
+  }))
 }
 
 // The canvas displays expose a solo set ("show only these features"); other

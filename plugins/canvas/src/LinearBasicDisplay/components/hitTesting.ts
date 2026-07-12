@@ -165,6 +165,28 @@ function findPeptideAt(data: FeatureDataResult, bpPos: number, yPos: number) {
   return null
 }
 
+// The topmost subfeature under the cursor that belongs to `feature`. Gating on
+// parentFeatureId (the top-level feature id, see glyphEmitters) prevents a
+// subfeature of an overlapping neighbor from being paired with `feature`.
+function resolveSubfeature(
+  data: FeatureDataResult,
+  indexes: FlatbushRegionIndexes,
+  bpPos: number,
+  yPos: number,
+  feature: FlatbushItem,
+): SubfeatureInfo | null {
+  if (indexes.subfeature) {
+    const idx = topmostMatch(indexes.subfeature.search(bpPos, yPos, bpPos, yPos))
+    if (idx !== undefined) {
+      const candidate = data.subfeatureInfos[idx]!
+      if (candidate.parentFeatureId === feature.featureId) {
+        return candidate
+      }
+    }
+  }
+  return null
+}
+
 export function performMultiRegionHitDetection(
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>,
   flatbushIndexes: ReadonlyMap<number, FlatbushRegionIndexes>,
@@ -188,27 +210,25 @@ export function performMultiRegionHitDetection(
           ? vr.end - frac * bpSpan
           : vr.start + frac * bpSpan
 
-        let subfeature: SubfeatureInfo | null = null
-        if (indexes.subfeature) {
-          const idx = topmostMatch(
-            indexes.subfeature.search(bpPos, yPos, bpPos, yPos),
-          )
-          if (idx !== undefined) {
-            subfeature = data.subfeatureInfos[idx]!
-          }
-        }
-
         if (indexes.feature) {
-          // Like subfeatures: features' hit boxes are padded by label width and
-          // can overlap a neighbor's box, so pick the topmost (last-painted =
-          // largest index) rather than whatever Flatbush yields first.
+          // Features' hit boxes are padded by label width and can overlap a
+          // neighbor's box, so pick the topmost (last-painted = largest index)
+          // rather than whatever Flatbush yields first.
           const idx = topmostMatch(
             indexes.feature.search(bpPos, yPos, bpPos, yPos),
           )
           if (idx !== undefined) {
+            const feature = data.flatbushItems[idx]!
             return {
-              feature: data.flatbushItems[idx]!,
-              subfeature,
+              feature,
+              // Resolve the topmost subfeature the same way, but only keep it
+              // when it belongs to the chosen feature. The two indexes search
+              // independently and the feature boxes are widened by pad/label
+              // overhang while the subfeature index is not, so in the overlap
+              // of two same-row features an ungated subfeature could pair with
+              // the other feature — showing its isoform tooltip while select
+              // acts on this one.
+              subfeature: resolveSubfeature(data, indexes, bpPos, yPos, feature),
               peptide: findPeptideAt(data, bpPos, yPos),
               displayedRegionIndex: vr.displayedRegionIndex,
             }

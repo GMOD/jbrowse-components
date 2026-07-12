@@ -114,7 +114,9 @@ describe('CollapseIntrons utilities', () => {
     })
 
     it('merges exons whose padded windows overlap (intron < 2*padding)', () => {
-      // gap = 150, 2*padding = 200, so 150 < 200 -> windows overlap, merge
+      // gap = 150, 2*padding = 200, so 150 < 200 -> windows overlap, merge.
+      // The padded low end (0 - 100 = -100) is floored at 0 (interbase min)
+      // even though no chromosome bounds are passed here.
       const regions = buildCollapsedRegions({
         intervals: [
           { start: 0, end: 100 },
@@ -124,7 +126,7 @@ describe('CollapseIntrons utilities', () => {
         ...args,
       })
       expect(regions).toHaveLength(1)
-      expect(regions[0]).toMatchObject({ start: -100, end: 450 })
+      expect(regions[0]).toMatchObject({ start: 0, end: 450 })
     })
 
     it('keeps introns between 2*padding and 4*padding collapsed (regression: no double-padding)', () => {

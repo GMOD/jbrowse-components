@@ -37,14 +37,14 @@ interface TranscriptRow {
 
 function buildRows(transcripts: Feature[]): TranscriptRow[] {
   return transcripts
-    .map((transcript, idx) => {
+    .map(transcript => {
       const start = transcript.get('start')
       const end = transcript.get('end')
       const exonsAndCDS = getExonsAndCDS([transcript])
       const exonCount = exonsAndCDS.filter(f => isExon(f)).length
       return {
         transcript,
-        name: getFeatureName(transcript) ?? `Transcript ${idx + 1}`,
+        name: getFeatureName(transcript),
         type: transcript.get('type') || 'transcript',
         lengthBp: end - start,
         exonCount,
@@ -52,6 +52,12 @@ function buildRows(transcripts: Feature[]): TranscriptRow[] {
       }
     })
     .sort((a, b) => b.lengthBp - a.lengthBp)
+    .map((row, idx) => ({
+      ...row,
+      // Ordinal fallback for unnamed transcripts, assigned AFTER the length
+      // sort so "Transcript 1, 2, ..." reads top-to-bottom in the table.
+      name: row.name ?? `Transcript ${idx + 1}`,
+    }))
 }
 
 const TranscriptTable = observer(function TranscriptTable({
