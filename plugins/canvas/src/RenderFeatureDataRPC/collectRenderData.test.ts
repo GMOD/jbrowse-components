@@ -3,6 +3,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from './collectRenderData.ts'
+import { layoutSubfeatures } from './glyphs/subfeatures.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
 import type { FeatureLayout } from './types.ts'
@@ -607,6 +608,97 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
       type: 'regulatory_region',
       topPx: 15,
     })
+  })
+})
+
+describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
+  // A gene spanning 100..2500 with two equal-coding isoforms: tx0 at 100..500
+  // (CDS 100..200) and tx1 at 1100..1500 (CDS 1100..1200). longestCoding breaks
+  // the coding-length tie toward the later isoform (tx1), so the rendered glyph
+  // begins at 1100 — far right of the gene's own start (100). This reproduces
+  // the DPP6 case where the label floated left of the visible transcript.
+  function collapsedGeneLayout() {
+    const makeTx = (i: number) => {
+      const cds = mockFeature({
+        type: 'CDS',
+        id: `cds${i}`,
+        start: 100 + i * 1000,
+        end: 200 + i * 1000,
+      })
+      return mockFeature({
+        type: 'mRNA',
+        id: `tx${i}`,
+        start: 100 + i * 1000,
+        end: 500 + i * 1000,
+        subfeatures: [cds],
+      })
+    }
+    return mockFeature({
+      type: 'gene',
+      id: 'DPP6',
+      start: 100,
+      end: 2500,
+      subfeatures: [makeTx(0), makeTx(1)],
+    })
+  }
+
+  const labelConfig = (geneGlyphMode: 'auto' | 'all' | 'longestCoding') =>
+    mockDisplayConfig({
+      geneGlyphMode,
+      labels: { name: `jexl:get(feature,'id')`, description: '' },
+    })
+
+  it('anchors the label + hit box to the selected transcript when collapsed', () => {
+    const cfg = labelConfig('longestCoding')
+    const layout = layoutSubfeatures({
+      feature: collapsedGeneLayout(),
+      config: cfg,
+    })
+    expect(layout.isoformsCollapsed).toBe(true)
+
+    const result = collectRenderData(
+      [layout],
+      0,
+      Number.MAX_SAFE_INTEGER,
+      cfg,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
+
+    const label = result.floatingLabelsData.DPP6
+    expect(label).toBeDefined()
+    // not the gene start (100) — the selected transcript's extent
+    expect(label!.minX).toBe(1100)
+    expect(label!.maxX).toBe(1500)
+
+    const hit = result.flatbushItems.find(i => i.featureId === 'DPP6')
+    expect(hit).toMatchObject({ startBp: 1100, endBp: 1500 })
+  })
+
+  it('keeps the full gene extent when not collapsed (all mode)', () => {
+    const cfg = labelConfig('all')
+    const layout = layoutSubfeatures({
+      feature: collapsedGeneLayout(),
+      config: cfg,
+    })
+    expect(layout.isoformsCollapsed).toBeFalsy()
+
+    const result = collectRenderData(
+      [layout],
+      0,
+      Number.MAX_SAFE_INTEGER,
+      cfg,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
+
+    const label = result.floatingLabelsData.DPP6
+    expect(label!.minX).toBe(100)
+    expect(label!.maxX).toBe(2500)
   })
 })
 
