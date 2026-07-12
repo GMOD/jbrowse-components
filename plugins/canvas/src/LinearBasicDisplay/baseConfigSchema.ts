@@ -251,12 +251,18 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       labels: ConfigurationSchema('CanvasFeatureLabels', {
+        /**
+         * #slot labels.name
+         */
         name: {
           type: 'string',
           description: 'the primary name of the feature to show',
           defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
           contextVariable: ['feature'],
         },
+        /**
+         * #slot labels.description
+         */
         description: {
           type: 'string',
           description: 'the text description to show',

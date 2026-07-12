@@ -378,6 +378,7 @@ ConfigurationSchema('CanvasFeatureLabels', {
     defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
     contextVariable: ['feature'],
   },
+
   description: {
     type: 'string',
     description: 'the text description to show',
@@ -386,6 +387,43 @@ ConfigurationSchema('CanvasFeatureLabels', {
     contextVariable: ['feature'],
   },
 })
+```
+
+#### slot: labels.name
+
+the primary name of the feature to show
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'jexl:get(feature,'name') || get(feature,'id')'`
+
+```js
+{
+  type: 'string',
+  description: 'the primary name of the feature to show',
+  defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
+  contextVariable: ['feature'],
+}
+```
+
+#### slot: labels.description
+
+the text description to show
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')'`
+
+```js
+{
+  type: 'string',
+  description: 'the text description to show',
+
+
+
+
+
+  defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
+  contextVariable: ['feature'],
+}
 ```
 
 </details>

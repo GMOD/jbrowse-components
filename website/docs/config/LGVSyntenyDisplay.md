@@ -60,6 +60,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 | Slot                                           | Type      | Description                                                                                                                                                                                                 |
 | ---------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [mouseover](#slot-mouseover)                   | `string`  | Tooltip shown on hovering a synteny feature; the default jexl expression renders both mates' names and locations.                                                                                           |
 | [showCoverage](#slot-showcoverage)             | `boolean` | Synteny reads hide the coverage histogram by default; overrides the inherited base alignments display's `showCoverage` default of `true`.                                                                   |
 | [largeFeaturesFirst](#slot-largefeaturesfirst) | `boolean` | Synteny lays large alignments out first so big syntenic blocks cluster at the top instead of interleaving with small ones; overrides the base alignments display's `largeFeaturesFirst` default of `false`. |
 
@@ -74,6 +75,14 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 <details>
 <summary>LGVSyntenyDisplay - Slots</summary>
+
+#### slot: mouseover
+
+Tooltip shown on hovering a synteny feature; the default jexl expression renders
+both mates' names and locations.
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'jexl:lgvSyntenyTooltip(feature)'`
 
 #### slot: colorBy
 
@@ -530,25 +539,6 @@ specify one
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
 `1_000_000` · _advanced_
-
-#### slot: mouseover
-
-text to display when the cursor hovers over a feature
-
-**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
-
-```js
-{
-  type: 'string',
-  description: 'text to display when the cursor hovers over a feature',
-
-
-
-  defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
-  contextVariable: ['feature'],
-}
-```
 
 #### slot: jexlFilters
 

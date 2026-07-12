@@ -40,6 +40,8 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [subParts](#slot-subparts)                                     | `string`                                              | subparts for a glyph                                                                                                                                |
 | [impliedUTRs](#slot-impliedutrs)                               | `boolean`                                             | imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures                                                    |
 | [labels](#slot-labels)                                         |                                                       |                                                                                                                                                     |
+| [labels.name](#slot-labelsname)                                | `string`                                              | the primary name of the feature to show                                                                                                             |
+| [labels.description](#slot-labelsdescription)                  | `string`                                              | the text description to show                                                                                                                        |
 
 <details>
 <summary>Advanced slots (2)</summary>
@@ -362,6 +364,7 @@ ConfigurationSchema('CanvasFeatureLabels', {
     defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
     contextVariable: ['feature'],
   },
+
   description: {
     type: 'string',
     description: 'the text description to show',
@@ -370,6 +373,43 @@ ConfigurationSchema('CanvasFeatureLabels', {
     contextVariable: ['feature'],
   },
 })
+```
+
+#### slot: labels.name
+
+the primary name of the feature to show
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'jexl:get(feature,'name') || get(feature,'id')'`
+
+```js
+{
+  type: 'string',
+  description: 'the primary name of the feature to show',
+  defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
+  contextVariable: ['feature'],
+}
+```
+
+#### slot: labels.description
+
+the text description to show
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')'`
+
+```js
+{
+  type: 'string',
+  description: 'the text description to show',
+
+
+
+
+
+  defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
+  contextVariable: ['feature'],
+}
 ```
 
 </details>

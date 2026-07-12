@@ -61,6 +61,11 @@ function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LGVSyntenyDisplay',
     {
+      /**
+       * #slot
+       * Tooltip shown on hovering a synteny feature; the default jexl expression
+       * renders both mates' names and locations.
+       */
       mouseover: {
         type: 'string',
         defaultValue: 'jexl:lgvSyntenyTooltip(feature)',
