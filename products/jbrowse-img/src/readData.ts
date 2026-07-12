@@ -121,9 +121,11 @@ export function readData(
     sessionData = sessionData.session as Record<string, unknown>
   }
 
-  // only export first view (react-app2 sessions hold a `views` array)
-  if (sessionData?.views) {
-    sessionData.views = [(sessionData.views as Record<string, unknown>[])[0]]
+  // only export first view (react-app2 sessions hold a `views` array). Guard on
+  // a non-empty array so an empty `views: []` isn't rewritten to `[undefined]`,
+  // which would crash createViewState downstream.
+  if (Array.isArray(sessionData?.views) && sessionData.views.length > 0) {
+    sessionData.views = [sessionData.views[0]]
   }
 
   // The synteny tracks of a comparative view built from CLI args; pushed once

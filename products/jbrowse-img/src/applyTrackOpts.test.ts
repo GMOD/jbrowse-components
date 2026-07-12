@@ -233,3 +233,17 @@ test('unknown modifier warns and does nothing', () => {
   expect(warn).toHaveBeenCalledWith('Warning: unknown track option "colour"')
   warn.mockRestore()
 })
+
+// `index:` is consumed at config-build time (readData) but still rides in a
+// track's modifier list, so it must be a recognized no-op here rather than
+// warning like a typo.
+test('index: is a recognized no-op, not an unknown-option warning', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+  const { snap } = buildDisplaySnapshot('feature', [
+    'index:https://x/y.bed.gz.csi',
+    'height:100',
+  ])
+  expect(snap).toEqual({ height: 100 })
+  expect(warn).not.toHaveBeenCalled()
+  warn.mockRestore()
+})

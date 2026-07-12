@@ -443,6 +443,12 @@ function applyModifier(
       }
       break
     }
+    // `index:` locates the track's index file (.bai/.csi/.tbi). It's consumed at
+    // config-build time (readData), so it's a no-op here — listed only so it
+    // isn't mistaken for a typo and warned about.
+    case 'index': {
+      break
+    }
     case 'autoscale': {
       if (isScore) {
         snap.autoscale = val1
