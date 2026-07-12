@@ -14,13 +14,14 @@ export function renameRegionIfNeeded(
   region: Region | Instance<typeof MUIRegion>,
   getSeqAdapterRefName?: (refName: string) => string,
 ): Region & { originalRefName?: string } {
-  if (isStateTreeNode(region) && !isAlive(region)) {
+  const isNode = isStateTreeNode(region)
+  if (isNode && !isAlive(region)) {
     return region
   }
   const newRef = refNameMap?.[region.refName]
   if (newRef) {
     return {
-      ...(isStateTreeNode(region) ? getSnapshot(region) : region),
+      ...(isNode ? getSnapshot(region) : region),
       refName: newRef,
       originalRefName: getSeqAdapterRefName?.(region.refName) ?? region.refName,
     }

@@ -29,6 +29,14 @@ test('selects the refName column by header name', async () => {
   expect(result[0]!.aliases).toEqual(['chr1', '1', 'NC_000001.11'])
 })
 
+test('drops rows whose refName column is blank', async () => {
+  // a blank/whitespace refName column (all-empty row, leading-tab row) would
+  // otherwise map every alias to an empty canonical name in buildRefNameMaps
+  const result = await makeAdapter('ragged_alias.txt').getRefNameAliases()
+  expect(result).toHaveLength(1)
+  expect(result[0]!.refName).toBe('chr1')
+})
+
 test('throws when the named header column is absent', async () => {
   await expect(
     makeAdapter('header_alias.txt', {
