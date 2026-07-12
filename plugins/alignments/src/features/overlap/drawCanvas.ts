@@ -1,5 +1,6 @@
 import {
   bpToScreenX,
+  pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import {
@@ -51,6 +52,9 @@ export function drawOverlaps(
       const alpha = OVERLAP_ALPHA * smoothstep(FADE_LO_PX, FADE_HI_PX, w)
       if (w > 0 && alpha > 0) {
         const y = pileupRowY(region.overlapYs[i]!, state)
+        if (pileupRowOffCanvas(y, state)) {
+          continue
+        }
         ctx.fillStyle = `rgba(0,0,0,${alpha})`
         ctx.fillRect(left, y, w, fH)
       }

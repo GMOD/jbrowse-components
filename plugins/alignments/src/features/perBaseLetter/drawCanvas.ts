@@ -2,6 +2,7 @@ import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   pileupCellWidth,
+  pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { buildBaseColorTupleMap } from '../mismatch/baseColors.ts'
@@ -35,6 +36,9 @@ export function drawPerBaseLetter(
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.perBaseLetterYs[i]!
     const y = pileupRowY(yRow, state)
+    if (pileupRowOffCanvas(y, state)) {
+      continue
+    }
     ctx.fillStyle = rgb255(baseColors[region.perBaseLetterBases[i]!] ?? unknown)
     ctx.fillRect(x, y, w, fH)
   }

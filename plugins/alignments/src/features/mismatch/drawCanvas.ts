@@ -4,6 +4,7 @@ import {
   bpToScreenX,
   frequencyAlpha,
   pileupCellWidth,
+  pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -33,6 +34,9 @@ export function drawMismatches(
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.mismatchYs[i]!
     const y = pileupRowY(yRow, state)
+    if (pileupRowOffCanvas(y, state)) {
+      continue
+    }
     const base = region.mismatchBases[i]!
     const frequency = region.mismatchFrequencies[i]! / 255
     // N has a palette entry; any other non-A/C/G/T byte falls back to the N

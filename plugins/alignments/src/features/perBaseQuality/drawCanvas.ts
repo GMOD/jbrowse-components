@@ -2,6 +2,7 @@ import { qualityCssColors } from './colors.ts'
 import {
   bpToScreenX,
   pileupCellWidth,
+  pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -30,6 +31,9 @@ export function drawPerBaseQuality(
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.perBaseQualYs[i]!
     const y = pileupRowY(yRow, state)
+    if (pileupRowOffCanvas(y, state)) {
+      continue
+    }
     ctx.fillStyle = qualityCssColors[region.perBaseQualScores[i]!]!
     ctx.fillRect(x, y, w, fH)
   }

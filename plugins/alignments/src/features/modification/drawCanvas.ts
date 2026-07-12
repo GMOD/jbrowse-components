@@ -3,6 +3,7 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   bpToScreenX,
   pileupCellWidth,
+  pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -31,6 +32,9 @@ export function drawModifications(
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.modificationYs[i]!
     const y = pileupRowY(yRow, state)
+    if (pileupRowOffCanvas(y, state)) {
+      continue
+    }
     ctx.fillStyle = abgrToCssRgba(region.modificationColors[i]!)
     ctx.fillRect(x, y, w, fH)
   }

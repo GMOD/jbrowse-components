@@ -2,6 +2,7 @@ import { getReadColor } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { ColorScheme } from '../../LinearAlignmentsDisplay/constants.ts'
 import {
   bpToScreenX,
+  pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import {
@@ -166,6 +167,9 @@ export function drawReads(
     const xL = Math.min(xStart, xEnd)
     const xR = Math.max(xStart, xEnd)
     const y = pileupRowY(region.readYs[i]!, state)
+    if (pileupRowOffCanvas(y, state)) {
+      continue
+    }
     const w = Math.max(1, xR - xL)
     const outline = state.showOutline && w > 2
 

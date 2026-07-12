@@ -261,6 +261,20 @@ export function pileupRowY(yRow: number, state: RenderState) {
   )
 }
 
+// A pileup row painted at screen-Y `y` spans [y, y + featureHeight]. When that
+// band can't reach the drawing buffer [0, canvasHeight] the row is off-canvas:
+// the renderer's `ctx.clip()` already masks its pixels, so skipping the draw in
+// JS is output-identical. This is what keeps Canvas2D scroll cost proportional
+// to *visible* rows rather than *total* pileup depth — without it every
+// per-row/per-base draw pass issued a fill for all ~N rows every scroll frame
+// (the deep-coverage redraw cost). One extra featureHeight of slack on each edge
+// leaves marks that paint slightly past the nominal row band (chevrons,
+// outlines) untouched.
+export function pileupRowOffCanvas(y: number, state: RenderState) {
+  const fH = state.featureHeight
+  return y + 2 * fH < 0 || y - fH > state.canvasHeight
+}
+
 // Block geometry shared by every Canvas2D feature draw function. Defining
 // the shape here breaks an otherwise-cyclic dependency between the per-
 // feature drawCanvas modules and Canvas2DAlignmentsRenderer.

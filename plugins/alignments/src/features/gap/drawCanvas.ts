@@ -3,6 +3,7 @@ import {
   bpToScreenX,
   frequencyAlpha,
   intronAlpha,
+  pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -36,6 +37,9 @@ export function drawGaps(
     const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
     const yRow = region.gapYs[i]!
     const y = pileupRowY(yRow, state)
+    if (pileupRowOffCanvas(y, state)) {
+      continue
+    }
     const gapType = region.gapTypes[i]!
     // reversed (flipped) regions map startBp to the larger screen x, so anchor
     // at the smaller edge and use the absolute width

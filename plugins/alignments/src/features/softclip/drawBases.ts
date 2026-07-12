@@ -2,6 +2,7 @@ import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   pileupCellWidth,
+  pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { buildBaseColorTupleMap } from '../mismatch/baseColors.ts'
@@ -40,6 +41,9 @@ export function drawSoftclipBases(
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.softclipBaseYs[i]!
     const y = pileupRowY(yRow, state)
+    if (pileupRowOffCanvas(y, state)) {
+      continue
+    }
     const base = region.softclipBaseBases[i]!
     ctx.fillStyle = rgb255(baseColors[base] ?? unknownColor)
     ctx.fillRect(x, y, w, fH)

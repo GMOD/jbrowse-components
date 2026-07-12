@@ -5,6 +5,7 @@ import { LONG_INSERTION_MIN_LENGTH } from '../../LinearAlignmentsDisplay/constan
 import {
   bpToScreenX,
   frequencyAlpha,
+  pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -36,6 +37,9 @@ export function drawInsertions(
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = region.insertionYs[i]!
     const y = pileupRowY(yRow, state)
+    if (pileupRowOffCanvas(y, state)) {
+      continue
+    }
     const length = region.insertionLengths[i]!
     const frequency = region.insertionFrequencies[i]! / 255
 

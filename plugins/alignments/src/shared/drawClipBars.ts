@@ -1,6 +1,7 @@
 import { rgb255 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
+  pileupRowOffCanvas,
   pileupRowY,
 } from '../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -28,6 +29,9 @@ function drawClipBars(
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const yRow = ys[i]!
     const y = pileupRowY(yRow, state)
+    if (pileupRowOffCanvas(y, state)) {
+      continue
+    }
     ctx.fillRect(x - 0.5, y, 1, fH)
   }
 }
