@@ -32,14 +32,17 @@ export function useVariantVirtualScroll(
         },
       })
     } else if (!scrollZoom && !e.ctrlKey && !e.metaKey) {
-      const next = applyScroll(e, {
-        scrollTop: model.scrollTop,
-        viewportHeight: model.availableHeight,
-        scrollableHeight: model.scrollableHeight,
-      })
-      if (next !== null) {
-        model.setScrollTop(next)
-      }
+      applyScroll(
+        e,
+        {
+          scrollTop: model.scrollTop,
+          viewportHeight: model.availableHeight,
+          scrollableHeight: model.scrollableHeight,
+        },
+        n => {
+          model.setScrollTop(n)
+        },
+      )
     }
   })
 }

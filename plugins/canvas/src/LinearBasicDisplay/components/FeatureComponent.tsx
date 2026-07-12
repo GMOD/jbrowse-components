@@ -377,14 +377,17 @@ const FeatureBody = observer(function FeatureBody({
     if ((view.scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
       return
     }
-    const next = applyScroll(e, {
-      scrollTop: model.scrollTop,
-      viewportHeight: model.height,
-      scrollableHeight: model.scrollableHeight,
-    })
-    if (next !== null) {
-      model.setScrollTop(next)
-    }
+    applyScroll(
+      e,
+      {
+        scrollTop: model.scrollTop,
+        viewportHeight: model.height,
+        scrollableHeight: model.scrollableHeight,
+      },
+      n => {
+        model.setScrollTop(n)
+      },
+    )
   })
 
   // rAF clock for the feature-Y transition. The model decides when to morph

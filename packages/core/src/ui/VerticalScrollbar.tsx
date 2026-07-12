@@ -77,10 +77,9 @@ export default function VerticalScrollbar({
   // here (via useVirtualScrollWheel) consumes the vertical delta into
   // setScrollTop and stopPropagation keeps it from reaching that scroll-zoom.
   useVirtualScrollWheel(trackEl, (e, applyScroll) => {
-    const next = applyScroll(e, { scrollTop, viewportHeight, scrollableHeight })
-    if (next !== null) {
-      setScrollTop(next)
-    }
+    applyScroll(e, { scrollTop, viewportHeight, scrollableHeight }, n => {
+      setScrollTop(n)
+    })
     e.stopPropagation()
   })
 

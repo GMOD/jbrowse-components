@@ -83,14 +83,17 @@ const PileupBody = observer(function PileupBody({
     if ((scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
       return
     }
-    const next = applyScroll(e, {
-      scrollTop: model.scrollTop,
-      viewportHeight: model.pileupViewportHeight,
-      scrollableHeight: model.scrollableHeight,
-    })
-    if (next !== null) {
-      model.setScrollTop(next)
-    }
+    applyScroll(
+      e,
+      {
+        scrollTop: model.scrollTop,
+        viewportHeight: model.pileupViewportHeight,
+        scrollableHeight: model.scrollableHeight,
+      },
+      n => {
+        model.setScrollTop(n)
+      },
+    )
   })
 
   if (!width) {
