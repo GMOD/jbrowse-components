@@ -31,7 +31,6 @@ or whole-genome/synteny views where the base-level sequence isn't needed.
 ## Related links
 
 - **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
-- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
 - **Display:**
   [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 

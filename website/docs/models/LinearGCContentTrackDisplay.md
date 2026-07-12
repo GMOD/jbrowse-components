@@ -7,7 +7,7 @@ sidebar_label: Display -> LinearGCContentTrackDisplay
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
 see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `gccontent` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/stateModel2.ts).
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/LinearGCContentDisplay/stateModelTrack.ts).
 
 ## Example usage
 
@@ -50,11 +50,6 @@ ReferenceSequenceTrack
 | -------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | [type](#property-type)                 | Properties |                                                                                                                                         |
 | [adapterConfig](#getter-adapterconfig) | Getters    | the parent GCContentTrack's adapter is already a GCContentAdapter, so use it directly and apply the current display parameter overrides |
-
-### LinearGCContentTrackDisplay - Configuration
-
-The configuration slots for this model are documented on its
-[config schema page](../../config/lineargccontenttrackdisplay).
 
 ## Inherited members
 

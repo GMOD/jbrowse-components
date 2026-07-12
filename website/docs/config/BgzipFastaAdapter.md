@@ -29,7 +29,6 @@ _See the **Config slots** section below for all available configuration fields._
 ## Related links
 
 - **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
-- **Display:** [LinearGCContentDisplay](../lineargccontentdisplay)
 - **Display:**
   [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
 
