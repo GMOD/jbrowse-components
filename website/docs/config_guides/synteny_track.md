@@ -71,21 +71,38 @@ This produces a config entry like:
 }
 ```
 
+Or set the adapter's named `queryAssembly`/`targetAssembly` fields, which spell
+out the direction so it can't be read in the wrong order:
+
+```json
+{
+  "type": "SyntenyTrack",
+  "trackId": "alignment",
+  "assemblyNames": ["query", "target"],
+  "name": "alignment",
+  "adapter": {
+    "type": "PAFAdapter",
+    "pafLocation": { "uri": "alignment.paf" },
+    "queryAssembly": "query",
+    "targetAssembly": "target"
+  }
+}
+```
+
 See [adding a synteny track from a PAF file](/docs/quickstart_web/#synteny-paf)
 for more CLI options.
 
 ## Adapter reference
 
-All adapters accept `assemblyNames` as a two-element array `["query", "target"]`
-(query first). The alignment-file adapters (`PAFAdapter`, `DeltaAdapter`,
-`ChainAdapter`) also accept the `queryAssembly` and `targetAssembly` fields
-separately; the MCScan adapters take only `assemblyNames`. Query first is the
-reverse of the order minimap2/nucmer take their inputs (`target query`), so
-double-check it. All file locations accept gzip-compressed input. The
-plaintext-file adapters above are read into memory in full; for very large PAF
-alignments use `PairwiseIndexedPAFAdapter`, which reads a tabix-indexed PAF
-region by region instead (see the
-[PairwiseIndexedPAFAdapter config docs](/docs/config/pairwiseindexedpafadapter)).
+All adapters accept `assemblyNames` as a two-element `["query", "target"]` array
+(query first — the reverse of the order minimap2/nucmer take their inputs, so
+double-check it). The alignment-file adapters (`PAFAdapter`, `DeltaAdapter`,
+`ChainAdapter`) also accept the named `queryAssembly`/`targetAssembly` fields;
+the MCScan adapters take only `assemblyNames`. All file locations accept
+gzip-compressed input. The PAF, delta, chain, and anchors adapters read the
+whole file into memory; for very large alignments use
+`PairwiseIndexedPAFAdapter` instead, which reads a tabix-indexed PIF region by
+region.
 
 ### PAFAdapter
 
@@ -101,6 +118,26 @@ Used for `.paf` files from minimap2, wfmash, and similar aligners.
 
 A short form using `uri` directly is also accepted — see the
 [PAFAdapter config docs](/docs/config/pafadapter) for all options.
+
+### PairwiseIndexedPAFAdapter
+
+Used for large alignments: convert a PAF to a tabix-indexed PIF with
+`jbrowse make-pif alignment.paf` (writes `alignment.pif.gz` + `.tbi`), so only
+the visible region is read instead of loading the whole file into memory.
+
+```json
+{
+  "type": "PairwiseIndexedPAFAdapter",
+  "uri": "alignment.pif.gz",
+  "queryAssembly": "query",
+  "targetAssembly": "target"
+}
+```
+
+The `uri` shorthand auto-resolves the `.tbi` index (pass `"csi": true` for a
+`.csi` index). See the
+[PairwiseIndexedPAFAdapter config docs](/docs/config/pairwiseindexedpafadapter)
+for all options.
 
 ### DeltaAdapter
 
