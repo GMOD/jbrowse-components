@@ -1,4 +1,4 @@
-import { clampBlockScissor } from './canvas2dUtils.ts'
+import { clampBlockScissor, devicePxSpan } from './canvas2dUtils.ts'
 
 import type { BpRegionBounds } from './renderBlock.ts'
 
@@ -77,8 +77,7 @@ export function clipBlock(
   }
   const { scissorX, scissorEnd, scissorW } = clamp
 
-  const pxX = Math.round(scissorX * dpr)
-  const pxW = Math.round(scissorW * dpr)
+  const { start: pxX, width: pxW } = devicePxSpan(scissorX, scissorEnd, dpr)
   const pxH = Math.round(canvasHeight * dpr)
 
   const fullBlockWidth = block.screenEndPx - block.screenStartPx

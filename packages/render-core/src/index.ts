@@ -72,6 +72,7 @@ export {
   bpToScreenPx,
   clampBlockScissor,
   clipBlockForCanvas,
+  devicePxSpan,
   getDpr,
   getPreparedCanvas2D,
   lookupColorRamp,

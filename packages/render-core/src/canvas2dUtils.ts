@@ -102,6 +102,20 @@ export function getPreparedCanvas2D(
   return null
 }
 
+// Convert a CSS-px span [cssStart, cssEnd] to an integer device-px `{ start,
+// width }` rect by rounding each edge independently, then subtracting. Rounding
+// the *width* (`round((cssEnd-cssStart)*dpr)`) instead can push the right edge
+// one px past `round(cssEnd*dpr)`: that overflows the backing store for a span
+// touching the canvas edge (WebGPU rejects an out-of-bounds scissor and blanks
+// the frame) and opens 1px seams between adjacent spans. Edge-rounding pins the
+// right edge to `round(cssEnd*dpr)`, so one span's end always equals the next
+// span's start. The single source for every CSS→device-px scissor/viewport span
+// (`clipBlock` X, alignments `computeBlockGeom` X / `devBand` Y).
+export function devicePxSpan(cssStart: number, cssEnd: number, dpr: number) {
+  const start = Math.round(cssStart * dpr)
+  return { start, width: Math.round(cssEnd * dpr) - start }
+}
+
 // Integer scissor rect (CSS px) for a block clamped to the canvas. Shared by
 // the GPU (`clipBlock`) and Canvas2D (`clipBlockForCanvas`) clip paths so both
 // backends clip to the exact same pixel columns — the rounding lives in one

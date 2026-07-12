@@ -1,7 +1,11 @@
 import { coverageLayout } from '@jbrowse/alignments-core'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
-import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  clampBlockScissor,
+  devicePxSpan,
+  getDpr,
+} from '@jbrowse/render-core/canvas2dUtils'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { PILEUP_LAYERS } from './pileupLayers.ts'
@@ -369,23 +373,24 @@ interface DevBand {
 }
 
 // Convert a CSS-px vertical band [top, top+height] to a device-px scissor band,
-// clamped to the backing store. Rounding the top and bottom edges separately
-// (rather than top + round(height)) keeps the single-section case bit-exact
-// with the prior `bufH - round(top*dpr)` math.
+// clamped to the backing store. `devicePxSpan` rounds the top and bottom edges
+// separately (keeping the single-section case bit-exact with the prior
+// `bufH - round(top*dpr)` math); the clamp keeps a band that scrolled partly
+// off-screen inside [0, bufH].
 function devBand(
   top: number,
   height: number,
   dpr: number,
   bufH: number,
 ): DevBand {
-  const t = Math.max(0, Math.round(top * dpr))
-  const b = Math.min(bufH, Math.round((top + height) * dpr))
+  const span = devicePxSpan(top, top + height, dpr)
+  const t = Math.max(0, span.start)
+  const b = Math.min(bufH, span.start + span.width)
   return { top: t, height: Math.max(0, b - t) }
 }
 
 // Per-block screen geometry shared by every section: the on-screen scissor span
 // (CSS px), the genomic window that span maps to, and the device-px viewport.
-// `scissorW <= 0` means the block is fully off-screen and the caller skips it.
 interface BlockGeom {
   scissorX: number
   scissorW: number
@@ -399,14 +404,22 @@ interface BlockGeom {
 
 // Pure: clip a block to the canvas and derive the bp window of the visible
 // slice. `reversed` blocks measure the clipped offset from the right edge.
+// Returns null when the block is fully off-screen. Shares `clampBlockScissor`
+// with the standard `clipBlock` path so both clip to the exact same columns.
 function computeBlockGeom(
   block: RenderBlock,
   canvasWidth: number,
   dpr: number,
-): BlockGeom {
-  const scissorX = Math.max(0, Math.floor(block.screenStartPx))
-  const scissorEnd = Math.min(canvasWidth, Math.ceil(block.screenEndPx))
-  const scissorW = scissorEnd - scissorX
+): BlockGeom | null {
+  const clamp = clampBlockScissor(
+    block.screenStartPx,
+    block.screenEndPx,
+    canvasWidth,
+  )
+  if (!clamp) {
+    return null
+  }
+  const { scissorX, scissorEnd, scissorW } = clamp
 
   const fullBlockWidth = block.screenEndPx - block.screenStartPx
   const bpPerPx =
@@ -418,6 +431,7 @@ function computeBlockGeom(
   const clippedBpEnd = clippedBpStart + scissorW * bpPerPx
   const [bpHi, bpLo] = splitPositionWithFrac(clippedBpStart)
 
+  const { start: vpX, width: vpW } = devicePxSpan(scissorX, scissorEnd, dpr)
   return {
     scissorX,
     scissorW,
@@ -425,8 +439,8 @@ function computeBlockGeom(
     clippedBpEnd,
     bpHi,
     bpLo,
-    vpX: Math.round(scissorX * dpr),
-    vpW: Math.round(scissorW * dpr),
+    vpX,
+    vpW,
   }
 }
 
@@ -695,7 +709,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     let hasDrawn = false
     for (const block of blocks) {
       const geom = computeBlockGeom(block, canvasWidth, dpr)
-      if (geom.scissorW > 0) {
+      if (geom) {
         // Each stacked section sets its own vertical offsets and clip bands.
         // Section 0's region key equals the raw region index, so the ungrouped
         // (single-section) case reproduces the prior draw exactly.

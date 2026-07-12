@@ -1,5 +1,6 @@
 import {
   MAX_CANVAS_DIM_PX,
+  devicePxSpan,
   getPreparedCanvas2D,
   syncCanvasSize,
 } from './canvas2dUtils.ts'
@@ -47,6 +48,21 @@ test('returns the prepared context and applies the DPR backing-store sizing', ()
   expect(canvas.height).toBe(20)
   expect(calls.setTransform).toBe(1)
   expect(calls.clearRect).toBe(1)
+})
+
+test('devicePxSpan edge-rounds so the right edge never exceeds round(cssEnd*dpr)', () => {
+  // width-rounding round(3*1.5)=5 gives right edge 1496+5=1501; edge-rounding
+  // pins it to round(1000*1.5)=1500.
+  expect(devicePxSpan(997, 1000, 1.5)).toEqual({ start: 1496, width: 4 })
+})
+
+test('devicePxSpan produces abutting spans with no seam or overlap', () => {
+  const dpr = 1.5
+  for (let b = 100; b < 140; b++) {
+    const left = devicePxSpan(b - 1, b, dpr)
+    const right = devicePxSpan(b, b + 1, dpr)
+    expect(left.start + left.width).toBe(right.start)
+  }
 })
 
 test('clamps an oversized backing store to the safe max instead of throwing', () => {
