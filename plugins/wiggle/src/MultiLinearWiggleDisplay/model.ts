@@ -38,14 +38,14 @@ import {
   makeRenderState,
 } from '../shared/wiggleComponentUtils.ts'
 import {
+  makeGroupedRenderingTypeSubMenu,
   makeLineWidthMenuItems,
   makePointSizeMenuItems,
-  makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
   makeShowSubMenu,
   makeSummaryScoreModeSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
-import { MULTI_WIGGLE_RENDERINGS } from '../util.ts'
+import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
 
 import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -402,7 +402,7 @@ export default function stateModelFactory(
           ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
         ]
         return [
-          makeRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERINGS),
+          makeGroupedRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERING_GROUPS),
           {
             label: 'Clustering',
             icon: AccountTreeIcon,

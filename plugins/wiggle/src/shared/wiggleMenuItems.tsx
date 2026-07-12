@@ -46,6 +46,33 @@ export function makeRenderingTypeSubMenu(
   })
 }
 
+// Multi-wiggle variant: the plot-type cross-product is large, so nest it one
+// level by layout (Multi-row / Overlapping) instead of listing every
+// combination flat. Each layout group is its own radio submenu sharing the one
+// renderingType value.
+export function makeGroupedRenderingTypeSubMenu(
+  self: { renderingType: string; setRenderingType: (t: string) => void },
+  groups: readonly (readonly [
+    string,
+    readonly (readonly [string, string])[],
+  ])[],
+): MenuItem {
+  return {
+    label: 'Plot type',
+    icon: ShowChartIcon,
+    subMenu: groups.map(([groupLabel, options]) =>
+      makeRadioSubMenu({
+        label: groupLabel,
+        value: self.renderingType,
+        onChange: t => {
+          self.setRenderingType(t)
+        },
+        options,
+      }),
+    ),
+  }
+}
+
 // Top-level "Scatter point size" submenu, present only in scatter variants
 // ('scatter'/'multirowscatter'/'multiscatter') where point size applies. The
 // shared makeSizeMenu renders it as a single inline slider row with a promotable
