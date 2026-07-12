@@ -16,20 +16,20 @@ and exposes canUndo/canRedo with undo/redo actions.
 
 ## Members
 
-| Member                                           | Kind       | Description |
-| ------------------------------------------------ | ---------- | ----------- |
-| [undoIdx](#property-undoidx)                     | Properties |             |
-| [targetPath](#property-targetpath)               | Properties |             |
-| [history](#volatile-history)                     | Volatiles  |             |
-| [notTrackingUndo](#volatile-nottrackingundo)     | Volatiles  |             |
-| [canUndo](#getter-canundo)                       | Getters    |             |
-| [canRedo](#getter-canredo)                       | Getters    |             |
-| [stopTrackingUndo](#action-stoptrackingundo)     | Actions    |             |
-| [resumeTrackingUndo](#action-resumetrackingundo) | Actions    |             |
-| [addUndoState](#action-addundostate)             | Actions    |             |
-| [initialize](#action-initialize)                 | Actions    |             |
-| [undo](#action-undo)                             | Actions    |             |
-| [redo](#action-redo)                             | Actions    |             |
+| Member                                           | Kind       | Defined by    | Description |
+| ------------------------------------------------ | ---------- | ------------- | ----------- |
+| [undoIdx](#property-undoidx)                     | Properties | TimeTraveller |             |
+| [targetPath](#property-targetpath)               | Properties | TimeTraveller |             |
+| [history](#volatile-history)                     | Volatiles  | TimeTraveller |             |
+| [notTrackingUndo](#volatile-nottrackingundo)     | Volatiles  | TimeTraveller |             |
+| [canUndo](#getter-canundo)                       | Getters    | TimeTraveller |             |
+| [canRedo](#getter-canredo)                       | Getters    | TimeTraveller |             |
+| [stopTrackingUndo](#action-stoptrackingundo)     | Actions    | TimeTraveller |             |
+| [resumeTrackingUndo](#action-resumetrackingundo) | Actions    | TimeTraveller |             |
+| [addUndoState](#action-addundostate)             | Actions    | TimeTraveller |             |
+| [initialize](#action-initialize)                 | Actions    | TimeTraveller |             |
+| [undo](#action-undo)                             | Actions    | TimeTraveller |             |
+| [redo](#action-redo)                             | Actions    | TimeTraveller |             |
 
 <details>
 <summary>TimeTraveller - Properties</summary>

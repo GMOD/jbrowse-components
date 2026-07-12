@@ -15,33 +15,33 @@ status message, plus the list of queued indexing jobs.
 
 ## Members
 
-| Member                                                             | Kind      | Description                                                                                            |
-| ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------ |
-| [running](#volatile-running)                                       | Volatiles |                                                                                                        |
-| [statusMessage](#volatile-statusmessage)                           | Volatiles |                                                                                                        |
-| [jobName](#volatile-jobname)                                       | Volatiles |                                                                                                        |
-| [stopToken](#volatile-stoptoken)                                   | Volatiles | stop token for the currently running RPC indexing job, used to cancel                                  |
-| [aborted](#volatile-aborted)                                       | Volatiles | set when the user cancels, so the catch block reports a cancellation rather than an error              |
-| [jobsQueue](#volatile-jobsqueue)                                   | Volatiles |                                                                                                        |
-| [rpcManager](#getter-rpcmanager)                                   | Getters   |                                                                                                        |
-| [tracks](#getter-tracks)                                           | Getters   |                                                                                                        |
-| [session](#getter-session)                                         | Getters   |                                                                                                        |
-| [aggregateTextSearchAdapters](#getter-aggregatetextsearchadapters) | Getters   |                                                                                                        |
-| [getJobStatusWidget](#method-getjobstatuswidget)                   | Methods   |                                                                                                        |
-| [setRunning](#action-setrunning)                                   | Actions   |                                                                                                        |
-| [setJobName](#action-setjobname)                                   | Actions   |                                                                                                        |
-| [setStopToken](#action-setstoptoken)                               | Actions   |                                                                                                        |
-| [abortJob](#action-abortjob)                                       | Actions   | cancel the currently running indexing job; the RPC throws 'aborted', handled in runIndexingJob's catch |
-| [reportStatus](#action-reportstatus)                               | Actions   |                                                                                                        |
-| [setWidgetStatus](#action-setwidgetstatus)                         | Actions   |                                                                                                        |
-| [setStatusMessage](#action-setstatusmessage)                       | Actions   |                                                                                                        |
-| [queueJob](#action-queuejob)                                       | Actions   |                                                                                                        |
-| [dequeueJob](#action-dequeuejob)                                   | Actions   |                                                                                                        |
-| [clear](#action-clear)                                             | Actions   |                                                                                                        |
-| [runIndexingJob](#action-runindexingjob)                           | Actions   |                                                                                                        |
-| [runJob](#action-runjob)                                           | Actions   |                                                                                                        |
-| [addTrackTextSearchConf](#action-addtracktextsearchconf)           | Actions   |                                                                                                        |
-| [addAggregateTextSearchConf](#action-addaggregatetextsearchconf)   | Actions   |                                                                                                        |
+| Member                                                             | Kind      | Defined by  | Description                                                                                            |
+| ------------------------------------------------------------------ | --------- | ----------- | ------------------------------------------------------------------------------------------------------ |
+| [running](#volatile-running)                                       | Volatiles | JobsManager |                                                                                                        |
+| [statusMessage](#volatile-statusmessage)                           | Volatiles | JobsManager |                                                                                                        |
+| [jobName](#volatile-jobname)                                       | Volatiles | JobsManager |                                                                                                        |
+| [stopToken](#volatile-stoptoken)                                   | Volatiles | JobsManager | stop token for the currently running RPC indexing job, used to cancel                                  |
+| [aborted](#volatile-aborted)                                       | Volatiles | JobsManager | set when the user cancels, so the catch block reports a cancellation rather than an error              |
+| [jobsQueue](#volatile-jobsqueue)                                   | Volatiles | JobsManager |                                                                                                        |
+| [rpcManager](#getter-rpcmanager)                                   | Getters   | JobsManager |                                                                                                        |
+| [tracks](#getter-tracks)                                           | Getters   | JobsManager |                                                                                                        |
+| [session](#getter-session)                                         | Getters   | JobsManager |                                                                                                        |
+| [aggregateTextSearchAdapters](#getter-aggregatetextsearchadapters) | Getters   | JobsManager |                                                                                                        |
+| [getJobStatusWidget](#method-getjobstatuswidget)                   | Methods   | JobsManager |                                                                                                        |
+| [setRunning](#action-setrunning)                                   | Actions   | JobsManager |                                                                                                        |
+| [setJobName](#action-setjobname)                                   | Actions   | JobsManager |                                                                                                        |
+| [setStopToken](#action-setstoptoken)                               | Actions   | JobsManager |                                                                                                        |
+| [abortJob](#action-abortjob)                                       | Actions   | JobsManager | cancel the currently running indexing job; the RPC throws 'aborted', handled in runIndexingJob's catch |
+| [reportStatus](#action-reportstatus)                               | Actions   | JobsManager |                                                                                                        |
+| [setWidgetStatus](#action-setwidgetstatus)                         | Actions   | JobsManager |                                                                                                        |
+| [setStatusMessage](#action-setstatusmessage)                       | Actions   | JobsManager |                                                                                                        |
+| [queueJob](#action-queuejob)                                       | Actions   | JobsManager |                                                                                                        |
+| [dequeueJob](#action-dequeuejob)                                   | Actions   | JobsManager |                                                                                                        |
+| [clear](#action-clear)                                             | Actions   | JobsManager |                                                                                                        |
+| [runIndexingJob](#action-runindexingjob)                           | Actions   | JobsManager |                                                                                                        |
+| [runJob](#action-runjob)                                           | Actions   | JobsManager |                                                                                                        |
+| [addTrackTextSearchConf](#action-addtracktextsearchconf)           | Actions   | JobsManager |                                                                                                        |
+| [addAggregateTextSearchConf](#action-addaggregatetextsearchconf)   | Actions   | JobsManager |                                                                                                        |
 
 <details>
 <summary>JobsManager - Volatiles</summary>

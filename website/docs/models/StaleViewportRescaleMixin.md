@@ -24,11 +24,11 @@ The transform's formula is display-specific because it depends on what data-x =
 
 ## Members
 
-| Member                                               | Kind      | Description                                                   |
-| ---------------------------------------------------- | --------- | ------------------------------------------------------------- |
-| [lastDrawnOffsetPx](#volatile-lastdrawnoffsetpx)     | Volatiles | offsetPx of the viewport when the canvas was last fully drawn |
-| [lastDrawnBpPerPx](#volatile-lastdrawnbpperpx)       | Volatiles | bpPerPx of the viewport when the canvas was last fully drawn  |
-| [setLastDrawnViewport](#action-setlastdrawnviewport) | Actions   |                                                               |
+| Member                                               | Kind      | Defined by                | Description                                                   |
+| ---------------------------------------------------- | --------- | ------------------------- | ------------------------------------------------------------- |
+| [lastDrawnOffsetPx](#volatile-lastdrawnoffsetpx)     | Volatiles | StaleViewportRescaleMixin | offsetPx of the viewport when the canvas was last fully drawn |
+| [lastDrawnBpPerPx](#volatile-lastdrawnbpperpx)       | Volatiles | StaleViewportRescaleMixin | bpPerPx of the viewport when the canvas was last fully drawn  |
+| [setLastDrawnViewport](#action-setlastdrawnviewport) | Actions   | StaleViewportRescaleMixin |                                                               |
 
 <details>
 <summary>StaleViewportRescaleMixin - Volatiles</summary>

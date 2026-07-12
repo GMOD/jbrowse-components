@@ -7,6 +7,7 @@ import {
   collectTransitive,
   docPage,
   exampleSection,
+  filterUnseenByName,
   lookupByIdOrName,
   mapByKey,
   markdownTable,
@@ -207,71 +208,128 @@ function stateModelCategory(name: string, explicit?: string): string {
     : suffixCategory(name, explicit, MODEL_CATEGORIES)
 }
 
-// One inherited-member line, e.g.
-// "**Getters:** [width](../baseviewmodel#getter-width), ...". Each name links
-// straight to its `#### <tag>: <name>` heading on the model that defines it; the
-// anchor mirrors the github-slugger id Astro derives for that heading
-// (`<tag>-<name lowercased>`), so the link lands on the member — modern browsers
-// auto-expand the enclosing collapsed <details> on fragment navigation.
-function memberLine(modelId: string, def: MemberKind, members: Member[]) {
-  return members.length
-    ? `**${def.label}:** ${members
-        .map(
-          m => `[${m.name}](../${modelId}#${def.tag}-${m.name.toLowerCase()})`,
-        )
-        .join(', ')}`
-    : ''
+// A per-kind seen-by-name set seeded from a model's own members, so
+// inheritedSection can walk outward and show each member once, at its
+// most-specific definition (see filterUnseenByName). Built explicitly per kind
+// like emptyMembers() so it stays type-safe without a cast.
+function seenByKind(members: Record<MemberKey, Member[]>) {
+  return {
+    properties: new Set(members.properties.map(m => m.name)),
+    volatiles: new Set(members.volatiles.map(m => m.name)),
+    getters: new Set(members.getters.map(m => m.name)),
+    methods: new Set(members.methods.map(m => m.name)),
+    actions: new Set(members.actions.map(m => m.name)),
+  }
 }
 
-// A compact, single-page overview of every member reachable through
-// composition, grouped by the model that defines it, so a reader does not have
-// to traverse the whole inheritance chain to learn what is available.
-function inheritedSection(ancestors: ModelWithHeader[]) {
-  const blocks = ancestors.flatMap(model => {
-    const lines = MEMBER_KINDS.map(k =>
-      memberLine(model.header.id, k, model.members[k.key]),
-    ).filter(Boolean)
-    return lines.length
-      ? [
-          section(
-            `### Available via [${model.header.name}](../${model.header.id})`,
-            ...lines,
-          ),
-        ]
-      : []
-  })
+// One ancestor's contribution to a model after dedup: the ancestor itself, plus
+// the members it defines that no nearer model (this one, or a closer ancestor)
+// already declares.
+interface InheritedGroup {
+  model: ModelWithHeader
+  members: Record<MemberKey, Member[]>
+}
+
+// The members each ancestor contributes to a model, deduped left-to-right along
+// the composition chain: a member the model (or a closer ancestor) redeclares is
+// shown once, at its most-specific definition, and dropped from every farther
+// ancestor rather than repeated as a live alternative. Ancestors that contribute
+// nothing after dedup are dropped. Built once and shared by memberIndexSection
+// (the page's member table) and inheritedSection (the full entries) so the two
+// can never disagree about which inherited members exist. Mirrors the config
+// page's inheritedSlotsSection dedup.
+function collectInheritedMembers(
+  ownMembers: Record<MemberKey, Member[]>,
+  ancestors: ModelWithHeader[],
+): InheritedGroup[] {
+  const seen = seenByKind(ownMembers)
+  return ancestors
+    .map(model => ({
+      model,
+      members: {
+        properties: filterUnseenByName(
+          seen.properties,
+          model.members.properties,
+        ),
+        volatiles: filterUnseenByName(seen.volatiles, model.members.volatiles),
+        getters: filterUnseenByName(seen.getters, model.members.getters),
+        methods: filterUnseenByName(seen.methods, model.members.methods),
+        actions: filterUnseenByName(seen.actions, model.members.actions),
+      },
+    }))
+    .filter(g => MEMBER_KINDS.some(k => g.members[k.key].length))
+}
+
+// Full member entries for everything reachable through composition: one
+// folded-closed block per ancestor, members grouped inside under bold kind
+// labels, linked back to that ancestor's own page — so the page is
+// self-contained (a reader sees every available member in full, here) while a
+// deep chain collapses to one fold per ancestor instead of one per kind. The
+// documented/plumbing split memberSection draws for own members is dropped
+// here: the ## Members table above already carries that signal (its Description
+// column is empty exactly for plumbing). Renders the same (deduped) groups the
+// table indexes. Mirrors the config page's inheritedSlotsSection.
+function inheritedSection(inherited: InheritedGroup[]) {
+  const blocks = inherited.map(({ model, members }) =>
+    collapsibleClosed(
+      `Derived from ${model.header.name}`,
+      // a markdown link inside <summary> renders literally, so the link to the
+      // ancestor's own page leads the body instead
+      `[${model.header.name} →](../${model.header.id})`,
+      ...MEMBER_KINDS.flatMap(k =>
+        members[k.key].length
+          ? [`**${k.label}**`, ...members[k.key].map(m => memberEntry(k, m))]
+          : [],
+      ),
+    ),
+  )
   return blocks.length
     ? section(
         '## Inherited members',
-        'Available on this model via composition. Follow each link for full signatures and docs.',
+        'Members available on this model via composition, shown in full so this page is self-contained. A member redeclared by a more specific model is shown once, at its most-specific definition.',
         ...blocks,
       )
     : ''
 }
 
-// One row of the own-members table: name (linked to its full entry below),
-// kind, and a one-line description — empty for "plumbing" members that carry
-// no JSDoc, which itself is useful signal (nothing to read there).
-function memberRow(def: MemberKind, m: Member) {
-  return `| [${m.name}](#${def.tag}-${m.name.toLowerCase()}) | ${def.label} | ${tableCell(m.docs)} |`
+// One row of the members table: name (linked to its full entry below), kind,
+// the model that defines it, and a one-line description — empty for "plumbing"
+// members that carry no JSDoc, which itself is useful signal (nothing to read
+// there). `definedBy` is this model's own name for own members and a link to
+// the ancestor's page for inherited ones.
+function memberRow(def: MemberKind, m: Member, definedBy: string) {
+  return `| [${m.name}](#${def.tag}-${m.name.toLowerCase()}) | ${def.label} | ${definedBy} | ${tableCell(m.docs)} |`
 }
 
-// A real table of this model's own members (not inherited — see
-// inheritedSection for that): name, kind, and description at a glance, each
-// linking to its full entry below. The full entries are collapsed by default
-// (see memberSection) since a model can carry hundreds of them, so this table
-// — placed right under the intro prose — is both the fast way to find one and
-// the fast way to see what's actually documented, rather than scrolling past
-// every member; the site's own table of contents only goes down to h2/h3 and
-// misses these h4 member headings entirely.
-function memberIndexSection(members: Record<MemberKey, Member[]>) {
-  const rows = MEMBER_KINDS.flatMap(k =>
-    members[k.key].map(m => memberRow(k, m)),
+// A real table of every member available on this model — its own first, then
+// each ancestor's (deduped) contributions — with a "Defined by" column marking
+// the source, each row linking to its full entry below (own members render in
+// the sections directly under this table, inherited ones under "Inherited
+// members"). It is a true index of the whole self-contained page: the full
+// entries are collapsed by default (see memberSection) since a model can carry
+// hundreds of them, so this table — placed right under the intro prose — is both
+// the fast way to find one and the fast way to see what's documented, rather
+// than scrolling past every member; the site's own table of contents only goes
+// down to h2/h3 and misses these h4 member headings entirely.
+function memberIndexSection(
+  ownName: string,
+  ownMembers: Record<MemberKey, Member[]>,
+  inherited: InheritedGroup[],
+) {
+  const ownRows = MEMBER_KINDS.flatMap(k =>
+    ownMembers[k.key].map(m => memberRow(k, m, ownName)),
   )
+  const inheritedRows = inherited.flatMap(({ model, members }) => {
+    const link = `[${model.header.name}](../${model.header.id})`
+    return MEMBER_KINDS.flatMap(k =>
+      members[k.key].map(m => memberRow(k, m, link)),
+    )
+  })
+  const rows = [...ownRows, ...inheritedRows]
   return rows.length
     ? section(
         '## Members',
-        markdownTable(['Member', 'Kind', 'Description'], rows),
+        markdownTable(['Member', 'Kind', 'Defined by', 'Description'], rows),
       )
     : ''
 }
@@ -296,6 +354,7 @@ function renderModel(
   configNames: Set<string>,
 ): string {
   const { header, filename } = model
+  const inherited = collectInheritedMembers(model.members, ancestors)
   const sections = section(
     ...MEMBER_KINDS.map(k =>
       memberSection(header.name, k, model.members[k.key]),
@@ -305,10 +364,10 @@ function renderModel(
   const exSection = exampleSection(header.examples)
   const docsSection = overviewSection(
     header.docs,
-    memberIndexSection(model.members),
+    memberIndexSection(header.name, model.members, inherited),
     configLinkSection(header.name, header.id, configNames),
-    inheritedSection(ancestors),
     sections,
+    inheritedSection(inherited),
   )
 
   const category = stateModelCategory(header.name, header.category)

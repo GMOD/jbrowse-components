@@ -19,10 +19,10 @@ products, minus the Settings/Copy/Delete actions.
 
 ## Members
 
-| Member                                                     | Kind    | Description                                                 |
-| ---------------------------------------------------------- | ------- | ----------------------------------------------------------- |
-| [getTrackListMenuItems](#method-gettracklistmenuitems)     | Methods | flattened menu items for use in hierarchical track selector |
-| [getTrackActionMenuItems](#method-gettrackactionmenuitems) | Methods |                                                             |
+| Member                                                     | Kind    | Defined by            | Description                                                 |
+| ---------------------------------------------------------- | ------- | --------------------- | ----------------------------------------------------------- |
+| [getTrackListMenuItems](#method-gettracklistmenuitems)     | Methods | TrackMenuSessionMixin | flattened menu items for use in hierarchical track selector |
+| [getTrackActionMenuItems](#method-gettrackactionmenuitems) | Methods | TrackMenuSessionMixin |                                                             |
 
 <details>
 <summary>TrackMenuSessionMixin - Methods</summary>

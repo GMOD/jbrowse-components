@@ -18,25 +18,25 @@ see: formatDetails-\>feature,formatDetails-\>subfeatures
 
 ## Members
 
-| Member                                                     | Kind       | Description |
-| ---------------------------------------------------------- | ---------- | ----------- |
-| [id](#property-id)                                         | Properties |             |
-| [type](#property-type)                                     | Properties |             |
-| [featureData](#property-featuredata)                       | Properties |             |
-| [unformattedFeatureData](#property-unformattedfeaturedata) | Properties |             |
-| [view](#property-view)                                     | Properties |             |
-| [track](#property-track)                                   | Properties |             |
-| [trackId](#property-trackid)                               | Properties |             |
-| [trackType](#property-tracktype)                           | Properties |             |
-| [maxDepth](#property-maxdepth)                             | Properties |             |
-| [sequenceFeatureDetails](#property-sequencefeaturedetails) | Properties |             |
-| [descriptions](#property-descriptions)                     | Properties |             |
-| [error](#volatile-error)                                   | Volatiles  |             |
-| [setFeatureData](#action-setfeaturedata)                   | Actions    |             |
-| [clearFeatureData](#action-clearfeaturedata)               | Actions    |             |
-| [setFormattedData](#action-setformatteddata)               | Actions    |             |
-| [setExtra](#action-setextra)                               | Actions    |             |
-| [setError](#action-seterror)                               | Actions    |             |
+| Member                                                     | Kind       | Defined by        | Description |
+| ---------------------------------------------------------- | ---------- | ----------------- | ----------- |
+| [id](#property-id)                                         | Properties | BaseFeatureWidget |             |
+| [type](#property-type)                                     | Properties | BaseFeatureWidget |             |
+| [featureData](#property-featuredata)                       | Properties | BaseFeatureWidget |             |
+| [unformattedFeatureData](#property-unformattedfeaturedata) | Properties | BaseFeatureWidget |             |
+| [view](#property-view)                                     | Properties | BaseFeatureWidget |             |
+| [track](#property-track)                                   | Properties | BaseFeatureWidget |             |
+| [trackId](#property-trackid)                               | Properties | BaseFeatureWidget |             |
+| [trackType](#property-tracktype)                           | Properties | BaseFeatureWidget |             |
+| [maxDepth](#property-maxdepth)                             | Properties | BaseFeatureWidget |             |
+| [sequenceFeatureDetails](#property-sequencefeaturedetails) | Properties | BaseFeatureWidget |             |
+| [descriptions](#property-descriptions)                     | Properties | BaseFeatureWidget |             |
+| [error](#volatile-error)                                   | Volatiles  | BaseFeatureWidget |             |
+| [setFeatureData](#action-setfeaturedata)                   | Actions    | BaseFeatureWidget |             |
+| [clearFeatureData](#action-clearfeaturedata)               | Actions    | BaseFeatureWidget |             |
+| [setFormattedData](#action-setformatteddata)               | Actions    | BaseFeatureWidget |             |
+| [setExtra](#action-setextra)                               | Actions    | BaseFeatureWidget |             |
+| [setError](#action-seterror)                               | Actions    | BaseFeatureWidget |             |
 
 <details>
 <summary>BaseFeatureWidget - Properties</summary>

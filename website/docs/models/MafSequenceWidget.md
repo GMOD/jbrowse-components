@@ -16,16 +16,16 @@ connected view's regions, with per-row hover highlight state.
 
 ## Members
 
-| Member                                         | Kind       | Description |
-| ---------------------------------------------- | ---------- | ----------- |
-| [id](#property-id)                             | Properties |             |
-| [type](#property-type)                         | Properties |             |
-| [adapterConfig](#property-adapterconfig)       | Properties |             |
-| [samples](#property-samples)                   | Properties |             |
-| [regions](#property-regions)                   | Properties |             |
-| [connectedViewId](#property-connectedviewid)   | Properties |             |
-| [hoverHighlight](#volatile-hoverhighlight)     | Volatiles  |             |
-| [setHoverHighlight](#action-sethoverhighlight) | Actions    |             |
+| Member                                         | Kind       | Defined by        | Description |
+| ---------------------------------------------- | ---------- | ----------------- | ----------- |
+| [id](#property-id)                             | Properties | MafSequenceWidget |             |
+| [type](#property-type)                         | Properties | MafSequenceWidget |             |
+| [adapterConfig](#property-adapterconfig)       | Properties | MafSequenceWidget |             |
+| [samples](#property-samples)                   | Properties | MafSequenceWidget |             |
+| [regions](#property-regions)                   | Properties | MafSequenceWidget |             |
+| [connectedViewId](#property-connectedviewid)   | Properties | MafSequenceWidget |             |
+| [hoverHighlight](#volatile-hoverhighlight)     | Volatiles  | MafSequenceWidget |             |
+| [setHoverHighlight](#action-sethoverhighlight) | Actions    | MafSequenceWidget |             |
 
 <details>
 <summary>MafSequenceWidget - Properties</summary>

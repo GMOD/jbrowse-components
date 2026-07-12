@@ -13,12 +13,12 @@ JBrowse core.
 
 ## Members
 
-| Member                                                                   | Kind       | Description |
-| ------------------------------------------------------------------------ | ---------- | ----------- |
-| [internetAccounts](#property-internetaccounts)                           | Properties |             |
-| [initializeInternetAccount](#action-initializeinternetaccount)           | Actions    |             |
-| [createEphemeralInternetAccount](#action-createephemeralinternetaccount) | Actions    |             |
-| [findAppropriateInternetAccount](#action-findappropriateinternetaccount) | Actions    |             |
+| Member                                                                   | Kind       | Defined by            | Description |
+| ------------------------------------------------------------------------ | ---------- | --------------------- | ----------- |
+| [internetAccounts](#property-internetaccounts)                           | Properties | InternetAccountsMixin |             |
+| [initializeInternetAccount](#action-initializeinternetaccount)           | Actions    | InternetAccountsMixin |             |
+| [createEphemeralInternetAccount](#action-createephemeralinternetaccount) | Actions    | InternetAccountsMixin |             |
+| [findAppropriateInternetAccount](#action-findappropriateinternetaccount) | Actions    | InternetAccountsMixin |             |
 
 <details>
 <summary>InternetAccountsMixin - Properties</summary>

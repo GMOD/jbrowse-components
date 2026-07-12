@@ -13,16 +13,16 @@ JBrowse core.
 
 ## Members
 
-| Member                                             | Kind      | Description                              |
-| -------------------------------------------------- | --------- | ---------------------------------------- |
-| [mutableMenuActions](#volatile-mutablemenuactions) | Volatiles |                                          |
-| [setMenus](#action-setmenus)                       | Actions   |                                          |
-| [appendMenu](#action-appendmenu)                   | Actions   | Add a top-level menu                     |
-| [insertMenu](#action-insertmenu)                   | Actions   | Insert a top-level menu                  |
-| [appendToMenu](#action-appendtomenu)               | Actions   | Add a menu item to a top-level menu      |
-| [insertInMenu](#action-insertinmenu)               | Actions   | Insert a menu item into a top-level menu |
-| [appendToSubMenu](#action-appendtosubmenu)         | Actions   | Add a menu item to a sub-menu            |
-| [insertInSubMenu](#action-insertinsubmenu)         | Actions   | Insert a menu item into a sub-menu       |
+| Member                                             | Kind      | Defined by       | Description                              |
+| -------------------------------------------------- | --------- | ---------------- | ---------------------------------------- |
+| [mutableMenuActions](#volatile-mutablemenuactions) | Volatiles | RootAppMenuMixin |                                          |
+| [setMenus](#action-setmenus)                       | Actions   | RootAppMenuMixin |                                          |
+| [appendMenu](#action-appendmenu)                   | Actions   | RootAppMenuMixin | Add a top-level menu                     |
+| [insertMenu](#action-insertmenu)                   | Actions   | RootAppMenuMixin | Insert a top-level menu                  |
+| [appendToMenu](#action-appendtomenu)               | Actions   | RootAppMenuMixin | Add a menu item to a top-level menu      |
+| [insertInMenu](#action-insertinmenu)               | Actions   | RootAppMenuMixin | Insert a menu item into a top-level menu |
+| [appendToSubMenu](#action-appendtosubmenu)         | Actions   | RootAppMenuMixin | Add a menu item to a sub-menu            |
+| [insertInSubMenu](#action-insertinsubmenu)         | Actions   | RootAppMenuMixin | Insert a menu item into a sub-menu       |
 
 <details>
 <summary>RootAppMenuMixin - Volatiles</summary>

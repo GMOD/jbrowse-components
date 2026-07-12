@@ -18,39 +18,39 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 
 ## Members
 
-| Member                                               | Kind       | Description                        |
-| ---------------------------------------------------- | ---------- | ---------------------------------- |
-| [resolution](#property-resolution)                   | Properties |                                    |
-| [displayCrossHatches](#property-displaycrosshatches) | Properties |                                    |
-| [loadedBpPerPx](#volatile-loadedbpperpx)             | Volatiles  |                                    |
-| [scalebarOverlapLeft](#getter-scalebaroverlapleft)   | Getters    |                                    |
-| [posColor](#getter-poscolor)                         | Getters    |                                    |
-| [negColor](#getter-negcolor)                         | Getters    |                                    |
-| [bicolorPivot](#getter-bicolorpivot)                 | Getters    |                                    |
-| [scaleType](#getter-scaletype)                       | Getters    |                                    |
-| [autoscaleType](#getter-autoscaletype)               | Getters    |                                    |
-| [numStdDev](#getter-numstddev)                       | Getters    |                                    |
-| [scatterPointSize](#getter-scatterpointsize)         | Getters    |                                    |
-| [lineWidth](#getter-linewidth)                       | Getters    |                                    |
-| [summaryScoreMode](#getter-summaryscoremode)         | Getters    |                                    |
-| [renderingType](#getter-renderingtype)               | Getters    |                                    |
-| [minScore](#getter-minscore)                         | Getters    |                                    |
-| [maxScore](#getter-maxscore)                         | Getters    |                                    |
-| [minScoreBound](#getter-minscorebound)               | Getters    |                                    |
-| [maxScoreBound](#getter-maxscorebound)               | Getters    |                                    |
-| [hasResolution](#getter-hasresolution)               | Getters    |                                    |
-| [toggleCrossHatches](#action-togglecrosshatches)     | Actions    |                                    |
-| [setResolution](#action-setresolution)               | Actions    |                                    |
-| [setLoadedBpPerPx](#action-setloadedbpperpx)         | Actions    |                                    |
-| [setScaleType](#action-setscaletype)                 | Actions    |                                    |
-| [setMinScore](#action-setminscore)                   | Actions    |                                    |
-| [setMaxScore](#action-setmaxscore)                   | Actions    |                                    |
-| [setRenderingType](#action-setrenderingtype)         | Actions    |                                    |
-| [setSummaryScoreMode](#action-setsummaryscoremode)   | Actions    |                                    |
-| [setScatterPointSize](#action-setscatterpointsize)   | Actions    |                                    |
-| [setLineWidth](#action-setlinewidth)                 | Actions    |                                    |
-| [setAutoscale](#action-setautoscale)                 | Actions    |                                    |
-| [isCacheValid](#action-iscachevalid)                 | Actions    | Strict zoom equality: see adr-008. |
+| Member                                               | Kind       | Defined by             | Description                        |
+| ---------------------------------------------------- | ---------- | ---------------------- | ---------------------------------- |
+| [resolution](#property-resolution)                   | Properties | WiggleScoreConfigMixin |                                    |
+| [displayCrossHatches](#property-displaycrosshatches) | Properties | WiggleScoreConfigMixin |                                    |
+| [loadedBpPerPx](#volatile-loadedbpperpx)             | Volatiles  | WiggleScoreConfigMixin |                                    |
+| [scalebarOverlapLeft](#getter-scalebaroverlapleft)   | Getters    | WiggleScoreConfigMixin |                                    |
+| [posColor](#getter-poscolor)                         | Getters    | WiggleScoreConfigMixin |                                    |
+| [negColor](#getter-negcolor)                         | Getters    | WiggleScoreConfigMixin |                                    |
+| [bicolorPivot](#getter-bicolorpivot)                 | Getters    | WiggleScoreConfigMixin |                                    |
+| [scaleType](#getter-scaletype)                       | Getters    | WiggleScoreConfigMixin |                                    |
+| [autoscaleType](#getter-autoscaletype)               | Getters    | WiggleScoreConfigMixin |                                    |
+| [numStdDev](#getter-numstddev)                       | Getters    | WiggleScoreConfigMixin |                                    |
+| [scatterPointSize](#getter-scatterpointsize)         | Getters    | WiggleScoreConfigMixin |                                    |
+| [lineWidth](#getter-linewidth)                       | Getters    | WiggleScoreConfigMixin |                                    |
+| [summaryScoreMode](#getter-summaryscoremode)         | Getters    | WiggleScoreConfigMixin |                                    |
+| [renderingType](#getter-renderingtype)               | Getters    | WiggleScoreConfigMixin |                                    |
+| [minScore](#getter-minscore)                         | Getters    | WiggleScoreConfigMixin |                                    |
+| [maxScore](#getter-maxscore)                         | Getters    | WiggleScoreConfigMixin |                                    |
+| [minScoreBound](#getter-minscorebound)               | Getters    | WiggleScoreConfigMixin |                                    |
+| [maxScoreBound](#getter-maxscorebound)               | Getters    | WiggleScoreConfigMixin |                                    |
+| [hasResolution](#getter-hasresolution)               | Getters    | WiggleScoreConfigMixin |                                    |
+| [toggleCrossHatches](#action-togglecrosshatches)     | Actions    | WiggleScoreConfigMixin |                                    |
+| [setResolution](#action-setresolution)               | Actions    | WiggleScoreConfigMixin |                                    |
+| [setLoadedBpPerPx](#action-setloadedbpperpx)         | Actions    | WiggleScoreConfigMixin |                                    |
+| [setScaleType](#action-setscaletype)                 | Actions    | WiggleScoreConfigMixin |                                    |
+| [setMinScore](#action-setminscore)                   | Actions    | WiggleScoreConfigMixin |                                    |
+| [setMaxScore](#action-setmaxscore)                   | Actions    | WiggleScoreConfigMixin |                                    |
+| [setRenderingType](#action-setrenderingtype)         | Actions    | WiggleScoreConfigMixin |                                    |
+| [setSummaryScoreMode](#action-setsummaryscoremode)   | Actions    | WiggleScoreConfigMixin |                                    |
+| [setScatterPointSize](#action-setscatterpointsize)   | Actions    | WiggleScoreConfigMixin |                                    |
+| [setLineWidth](#action-setlinewidth)                 | Actions    | WiggleScoreConfigMixin |                                    |
+| [setAutoscale](#action-setautoscale)                 | Actions    | WiggleScoreConfigMixin |                                    |
+| [isCacheValid](#action-iscachevalid)                 | Actions    | WiggleScoreConfigMixin | Strict zoom equality: see adr-008. |
 
 <details>
 <summary>WiggleScoreConfigMixin - Properties</summary>

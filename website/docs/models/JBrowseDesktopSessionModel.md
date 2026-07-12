@@ -10,222 +10,1484 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 
 ## Overview
 
+## Members
+
+| Member                                                             | Kind       | Defined by                                                              | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------------------------------------------------------------------ | ---------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [getReferringMultiple](#method-getreferringmultiple)               | Methods    | [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)   | Walk the tree once and map each requested trackId to the nodes holding a `types.reference` that resolves to it (a view's track entry, a config editor widget). Track configs are matched by trackId, not identity, so a frozen base and its hydrated MST node compare equal.                                                                                                                                                                                                             |
+| [getReferring](#method-getreferring)                               | Methods    | [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)   | The nodes currently referring to `trackId` (see getReferringMultiple).                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [dereferenceTrack](#action-dereferencetrack)                       | Actions    | [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)   | Remove `trackId` from every view referring to it and close any config editor widget open on it. Runs immediately: the walk that produced `referring` has finished, so mutating those views here is safe.                                                                                                                                                                                                                                                                                 |
+| [connectionInstances](#property-connectioninstances)               | Properties | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [connectionTrackConfigs](#property-connectiontrackconfigs)         | Properties | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Persisted configs of connection tracks the user has opened, keyed by trackId. Unlike `connectionInstances` (stripped from snapshots, holds the whole fetched hub), this holds only the tracks in use, so an open connection track resolves synchronously on session load without re-establishing the connection.                                                                                                                                                                         |
+| [connections](#getter-connections)                                 | Getters    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [makeConnection](#action-makeconnection)                           | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [breakConnection](#action-breakconnection)                         | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Remove a live connection instance. Tolerant of an already-dormant connection (its instance is stripped from the session on reload). Leaves persisted open-track configs alone — the connect() error path calls this and the user's already-open tracks must survive a transient failure. Full removal goes through `deleteConnection`.                                                                                                                                                   |
+| [teardownConnection](#action-teardownconnection)                   | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Close every track a connection contributed — the live instance's tracks plus any persisted open-track configs (a dormant connection, never expanded this session, still renders its opened tracks from `connectionTrackConfigs`) — from all views/widgets, drop the live instance, and drop the persisted configs. The session is left as if the connection had never loaded.                                                                                                            |
+| [deleteConnection](#action-deleteconnection)                       | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Fully remove a connection: tear down its tracks and live instance, then delete its config.                                                                                                                                                                                                                                                                                                                                                                                               |
+| [addConnectionConf](#action-addconnectionconf)                     | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [clearConnections](#action-clearconnections)                       | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [captureConnectionTrack](#action-captureconnectiontrack)           | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Snapshot a just-opened connection track's config into `connectionTrackConfigs` so it survives session reload. No-op if the track isn't connection-provided or is already captured (edits go through `updateConnectionTrackConfig`).                                                                                                                                                                                                                                                      |
+| [updateConnectionTrackConfig](#action-updateconnectiontrackconfig) | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Persist an edit to an opened connection track. The full config is stored (not a delta): the connection's fetched "base" isn't present at load, so only a complete config resolves synchronously.                                                                                                                                                                                                                                                                                         |
+| [setConnectionTrackConfig](#action-setconnectiontrackconfig)       | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Upsert one opened connection track's persisted config.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [pruneConnectionTrackConfig](#action-pruneconnectiontrackconfig)   | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Drop a connection track's persisted config once no open view still references it, so the session doesn't accumulate closed tracks.                                                                                                                                                                                                                                                                                                                                                       |
+| [hydrateConnection](#action-hydrateconnection)                     | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Lazily establish a single connection by id if it isn't already live — used when its category is expanded in the track selector. Fetches silently (no view launch / success snackbar); already-open tracks keep rendering from `connectionTrackConfigs` meanwhile. Idempotent.                                                                                                                                                                                                            |
+| [sessionThemeName](#volatile-sessionthemename)                     | Volatiles  | [ThemeManagerSessionMixin](../thememanagersessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [themeName](#getter-themename)                                     | Getters    | [ThemeManagerSessionMixin](../thememanagersessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [themeOptions](#getter-themeoptions)                               | Getters    | [ThemeManagerSessionMixin](../thememanagersessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [theme](#getter-theme)                                             | Getters    | [ThemeManagerSessionMixin](../thememanagersessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [allThemes](#method-allthemes)                                     | Methods    | [ThemeManagerSessionMixin](../thememanagersessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [getActiveThemeOptions](#method-getactivethemeoptions)             | Methods    | [ThemeManagerSessionMixin](../thememanagersessionmixin)                 | Raw `ThemeOptions` for the active theme, or a named override (used by the SVG-export theme picker). Unlike `theme` (a built, non-serializable MUI theme), this is the plain options object every view's SVG export threads into each display's `renderSvg`, which rebuilds the theme via `createJBrowseTheme` outside React context.                                                                                                                                                     |
+| [setThemeName](#action-setthemename)                               | Actions    | [ThemeManagerSessionMixin](../thememanagersessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [tracks](#getter-tracks)                                           | Getters    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [getTracksById](#getter-gettracksbyid)                             | Getters    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               | Map of trackId → config for all tracks, assemblies, and connections. Frozen jbrowse.tracks are returned as plain objects here; hydration to MST models happens lazily in TrackConfigurationReference on first access. MobX caches this until any dependency changes.                                                                                                                                                                                                                     |
+| [tracksById](#getter-tracksbyid)                                   | Getters    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               | MobX-cached map of trackId → config for all tracks, assemblies, and connections. Recomputes only when dependencies change.                                                                                                                                                                                                                                                                                                                                                               |
+| [addTrackConf](#action-addtrackconf)                               | Actions    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [updateTrackConfiguration](#action-updatetrackconfiguration)       | Actions    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               | Persist edited track config back to the in-memory jbrowse config. The session-tracks mixin overrides this so a non-admin's edits become a shareable session-track override instead.                                                                                                                                                                                                                                                                                                      |
+| [deleteTrackConf](#action-deletetrackconf)                         | Actions    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [id](#property-id)                                                 | Properties | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [name](#property-name)                                             | Properties | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [margin](#property-margin)                                         | Properties | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [focusedViewId](#property-focusedviewid)                           | Properties | [BaseSessionModel](../basesessionmodel)                                 | used to keep track of which view is in focus                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [highlightsVisible](#property-highlightsvisible)                   | Properties | [BaseSessionModel](../basesessionmodel)                                 | one session-wide toggle for all region highlight bands (URL/view highlights and bookmark overlays)                                                                                                                                                                                                                                                                                                                                                                                       |
+| [selection](#volatile-selection)                                   | Volatiles  | [BaseSessionModel](../basesessionmodel)                                 | this is the globally "selected" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.                                                                                                                                                                                                                                                                                                                                            |
+| [hovered](#volatile-hovered)                                       | Volatiles  | [BaseSessionModel](../basesessionmodel)                                 | this is the globally "hovered" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.                                                                                                                                                                                                                                                                                                                                             |
+| [queueOfDialogs](#volatile-queueofdialogs)                         | Volatiles  | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [preferencesOverrides](#volatile-preferencesoverrides)             | Volatiles  | [BaseSessionModel](../basesessionmodel)                                 | runtime user-preference overrides keyed by preference id, resolved by `getPreference` against the `configuration.preferences` admin defaults. Empty here (config-only); products that let users edit preferences load and persist these via localStorage. A runtime override map layered over config defaults, kept off the snapshot since prefs are local UI.                                                                                                                           |
+| [root](#getter-root)                                               | Getters    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [jbrowse](#getter-jbrowse)                                         | Getters    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [rpcManager](#getter-rpcmanager)                                   | Getters    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [configuration](#getter-configuration)                             | Getters    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [adminMode](#getter-adminmode)                                     | Getters    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [textSearchManager](#getter-textsearchmanager)                     | Getters    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [assemblies](#getter-assemblies)                                   | Getters    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [DialogComponent](#getter-dialogcomponent)                         | Getters    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [DialogProps](#getter-dialogprops)                                 | Getters    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [animationMode](#getter-animationmode)                             | Getters    | [BaseSessionModel](../basesessionmodel)                                 | resolved feature-layout animation mode (never undefined)                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [scrollZoom](#getter-scrollzoom)                                   | Getters    | [BaseSessionModel](../basesessionmodel)                                 | resolved scroll-to-zoom preference. Global and personal (never shared in a session snapshot); every wheel-zoom view reads this single value.                                                                                                                                                                                                                                                                                                                                             |
+| [getPreference](#method-getpreference)                             | Methods    | [BaseSessionModel](../basesessionmodel)                                 | resolved value of a user preference: a runtime override if the user set one, otherwise the admin/embedder `configuration.preferences` default. The override map is empty unless the product loads it (web/desktop).                                                                                                                                                                                                                                                                      |
+| [getDisplayTypeDefault](#method-getdisplaytypedefault)             | Methods    | [BaseSessionModel](../basesessionmodel)                                 | resolved value of a per-display-type slot default the user promoted (see `setDisplayTypeDefault`); undefined when nothing was promoted.                                                                                                                                                                                                                                                                                                                                                  |
+| [setSelection](#action-setselection)                               | Actions    | [BaseSessionModel](../basesessionmodel)                                 | set the global selection, i.e. the globally-selected object. can be a feature, a view, just about anything                                                                                                                                                                                                                                                                                                                                                                               |
+| [clearSelection](#action-clearselection)                           | Actions    | [BaseSessionModel](../basesessionmodel)                                 | clears the global selection                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [setHovered](#action-sethovered)                                   | Actions    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setHighlightsVisible](#action-sethighlightsvisible)               | Actions    | [BaseSessionModel](../basesessionmodel)                                 | toggle all region highlight bands across every view                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [setPreferenceOverride](#action-setpreferenceoverride)             | Actions    | [BaseSessionModel](../basesessionmodel)                                 | set a runtime user-preference override (see `getPreference`). Mutates volatile state; products persist these to localStorage.                                                                                                                                                                                                                                                                                                                                                            |
+| [clearPreferenceOverrides](#action-clearpreferenceoverrides)       | Actions    | [BaseSessionModel](../basesessionmodel)                                 | clear every runtime preference override at once — scrollZoom, animationMode, and every promoted per-display-type default (see `setDisplayTypeDefault`) — so each falls back to its config/admin default. Backs the Preferences dialog "Reset to defaults" button.                                                                                                                                                                                                                        |
+| [setScrollZoom](#action-setscrollzoom)                             | Actions    | [BaseSessionModel](../basesessionmodel)                                 | set the global scroll-to-zoom preference (see the `scrollZoom` getter)                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [setDisplayTypeDefault](#action-setdisplaytypedefault)             | Actions    | [BaseSessionModel](../basesessionmodel)                                 | promote (or, with `value` undefined, clear) a per-display-type slot default. Stored under `preferencesOverrides.displayTypeDefaults` so the PreferencesSessionMixin persists it to localStorage like other prefs.                                                                                                                                                                                                                                                                        |
+| [setName](#action-setname)                                         | Actions    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setFocusedViewId](#action-setfocusedviewid)                       | Actions    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [removeActiveDialog](#action-removeactivedialog)                   | Actions    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [queueDialog](#action-queuedialog)                                 | Actions    | [BaseSessionModel](../basesessionmodel)                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [snackbarMessages](#volatile-snackbarmessages)                     | Volatiles  | [SnackbarModel](../snackbarmodel)                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [errorDialog](#volatile-errordialog)                               | Volatiles  | [SnackbarModel](../snackbarmodel)                                       | the error currently shown in the stack-trace dialog. Kept off the dialog queue so it can stack on top of an already-open dialog (e.g. the one whose action raised the error) instead of waiting behind it                                                                                                                                                                                                                                                                                |
+| [snackbarMessageSet](#getter-snackbarmessageset)                   | Getters    | [SnackbarModel](../snackbarmodel)                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [notify](#action-notify)                                           | Actions    | [SnackbarModel](../snackbarmodel)                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [notifyError](#action-notifyerror)                                 | Actions    | [SnackbarModel](../snackbarmodel)                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setErrorDialog](#action-seterrordialog)                           | Actions    | [SnackbarModel](../snackbarmodel)                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [pushSnackbarMessage](#action-pushsnackbarmessage)                 | Actions    | [SnackbarModel](../snackbarmodel)                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [popSnackbarMessage](#action-popsnackbarmessage)                   | Actions    | [SnackbarModel](../snackbarmodel)                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [removeSnackbarMessage](#action-removesnackbarmessage)             | Actions    | [SnackbarModel](../snackbarmodel)                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [sessionAssemblies](#property-sessionassemblies)                   | Properties | [AssembliesMixin](../assembliesmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [temporaryAssemblies](#property-temporaryassemblies)               | Properties | [AssembliesMixin](../assembliesmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [assemblyNames](#getter-assemblynames)                             | Getters    | [AssembliesMixin](../assembliesmixin)                                   | names of the assemblies returned by the `assemblies` getter                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [addSessionAssembly](#action-addsessionassembly)                   | Actions    | [AssembliesMixin](../assembliesmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [addAssembly](#action-addassembly)                                 | Actions    | [AssembliesMixin](../assembliesmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [removeAssembly](#action-removeassembly)                           | Actions    | [AssembliesMixin](../assembliesmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [removeSessionAssembly](#action-removesessionassembly)             | Actions    | [AssembliesMixin](../assembliesmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [addTemporaryAssembly](#action-addtemporaryassembly)               | Actions    | [AssembliesMixin](../assembliesmixin)                                   | used for read vs ref type assemblies.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [removeTemporaryAssembly](#action-removetemporaryassembly)         | Actions    | [AssembliesMixin](../assembliesmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [version](#getter-version)                                         | Getters    | [AppSessionMixin](../appsessionmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [gitCommit](#getter-gitcommit)                                     | Getters    | [AppSessionMixin](../appsessionmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [history](#getter-history)                                         | Getters    | [AppSessionMixin](../appsessionmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [assemblyManager](#getter-assemblymanager)                         | Getters    | [AppSessionMixin](../appsessionmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [menus](#method-menus)                                             | Methods    | [AppSessionMixin](../appsessionmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [renameCurrentSession](#action-renamecurrentsession)               | Actions    | [AppSessionMixin](../appsessionmixin)                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [getTrackActions](#method-gettrackactions)                         | Methods    | [DesktopSessionTrackMenuMixin](../desktopsessiontrackmenumixin)         | raw track actions (Settings, Copy, Delete, Index) without submenu wrapper                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [getTrackListMenuItems](#method-gettracklistmenuitems)             | Methods    | [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin)             | flattened menu items for use in hierarchical track selector                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [getTrackActionMenuItems](#method-gettrackactionmenuitems)         | Methods    | [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin)             | track menu with About + "Track actions" submenu for the in-view label                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [dockviewLayout](#property-dockviewlayout)                         | Properties | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Serialized dockview layout state                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [panelViewAssignments](#property-panelviewassignments)             | Properties | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Maps panel IDs to arrays of view IDs (for stacking views within a panel)                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [activePanelId](#property-activepanelid)                           | Properties | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | The currently active panel ID in dockview                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [init](#property-init)                                             | Properties | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | The initial nested layout to build dockview from (simple viewIds/ direction/size form, vs. the verbose `dockviewLayout` dockview emits). Set from URL params (spec layout) OR carried in a loaded session snapshot (e.g. the `encoded-` session param), then consumed once when the dockview container mounts — `createInitialPanels` reads it, `applyInitLayout` builds the panels, and it is cleared to undefined (stripped from snapshots) so it never re-applies on a later remount. |
+| [pendingMove](#volatile-pendingmove)                               | Volatiles  | [DockviewLayoutMixin](../dockviewlayoutmixin)                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [getViewIdsForPanel](#getter-getviewidsforpanel)                   | Getters    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Get view IDs for a specific panel                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [getPanelContainingView](#getter-getpanelcontainingview)           | Getters    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Find the panel containing a view, returning the panel ID, that panel's view-ID list, and the view's index within it (or undefined if unassigned)                                                                                                                                                                                                                                                                                                                                         |
+| [setDockviewLayout](#action-setdockviewlayout)                     | Actions    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Save the current dockview layout                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setActivePanelId](#action-setactivepanelid)                       | Actions    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Set the active panel ID                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [setInit](#action-setinit)                                         | Actions    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Set the initial layout configuration (from URL params)                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [setPendingMove](#action-setpendingmove)                           | Actions    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Queue a view move to be applied when the dockview container mounts                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| [assignViewToPanel](#action-assignviewtopanel)                     | Actions    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Assign a view to a panel (adds to the panel's view stack)                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [removeViewFromPanel](#action-removeviewfrompanel)                 | Actions    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Remove a view from its panel                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [removePanel](#action-removepanel)                                 | Actions    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Remove a panel and all its view assignments                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [moveViewUpInPanel](#action-moveviewupinpanel)                     | Actions    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Move a view up within its panel's view stack                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [moveViewDownInPanel](#action-moveviewdowninpanel)                 | Actions    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Move a view down within its panel's view stack                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [moveViewToTopInPanel](#action-moveviewtotopinpanel)               | Actions    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Move a view to the top of its panel's view stack                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [moveViewToBottomInPanel](#action-moveviewtobottominpanel)         | Actions    | [DockviewLayoutMixin](../dockviewlayoutmixin)                           | Move a view to the bottom of its panel's view stack                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [views](#property-views)                                           | Properties | [MultipleViewsSessionMixin](../multipleviewssessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [stickyViewHeaders](#property-stickyviewheaders)                   | Properties | [MultipleViewsSessionMixin](../multipleviewssessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [useWorkspaces](#property-useworkspaces)                           | Properties | [MultipleViewsSessionMixin](../multipleviewssessionmixin)               | enables the dockview-based tabbed/tiled workspace layout                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [moveViewDown](#action-moveviewdown)                               | Actions    | [MultipleViewsSessionMixin](../multipleviewssessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [moveViewUp](#action-moveviewup)                                   | Actions    | [MultipleViewsSessionMixin](../multipleviewssessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [moveViewToTop](#action-moveviewtotop)                             | Actions    | [MultipleViewsSessionMixin](../multipleviewssessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [moveViewToBottom](#action-moveviewtobottom)                       | Actions    | [MultipleViewsSessionMixin](../multipleviewssessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [addView](#action-addview)                                         | Actions    | [MultipleViewsSessionMixin](../multipleviewssessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [removeView](#action-removeview)                                   | Actions    | [MultipleViewsSessionMixin](../multipleviewssessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setStickyViewHeaders](#action-setstickyviewheaders)               | Actions    | [MultipleViewsSessionMixin](../multipleviewssessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setUseWorkspaces](#action-setuseworkspaces)                       | Actions    | [MultipleViewsSessionMixin](../multipleviewssessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [drawerPosition](#property-drawerposition)                         | Properties | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [drawerWidth](#property-drawerwidth)                               | Properties | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [widgets](#property-widgets)                                       | Properties | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [activeWidgets](#property-activewidgets)                           | Properties | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [minimized](#property-minimized)                                   | Properties | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [visibleWidget](#getter-visiblewidget)                             | Getters    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setDrawerPosition](#action-setdrawerposition)                     | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [updateDrawerWidth](#action-updatedrawerwidth)                     | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [resizeDrawer](#action-resizedrawer)                               | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [addWidget](#action-addwidget)                                     | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [showWidget](#action-showwidget)                                   | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [hideWidget](#action-hidewidget)                                   | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [minimizeWidgetDrawer](#action-minimizewidgetdrawer)               | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [showWidgetDrawer](#action-showwidgetdrawer)                       | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [hideAllWidgets](#action-hideallwidgets)                           | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [editConfiguration](#action-editconfiguration)                     | Actions    | [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)                 | opens a configuration editor to configure the given thing, and sets the current task to be configuring it                                                                                                                                                                                                                                                                                                                                                                                |
+
 ## Inherited members
 
-Available on this model via composition. Follow each link for full signatures
-and docs.
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
 
-### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
+<details>
+<summary>Derived from ReferenceManagementSessionMixin</summary>
 
-**Methods:**
-[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple),
-[getReferring](../referencemanagementsessionmixin#method-getreferring)
+[ReferenceManagementSessionMixin →](../referencemanagementsessionmixin)
 
-**Actions:**
-[dereferenceTrack](../referencemanagementsessionmixin#action-dereferencetrack)
+**Methods**
 
-### Available via [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
+#### method: getReferringMultiple
 
-**Properties:**
-[connectionInstances](../connectionmanagementsessionmixin#property-connectioninstances),
-[connectionTrackConfigs](../connectionmanagementsessionmixin#property-connectiontrackconfigs)
+Walk the tree once and map each requested trackId to the nodes holding a
+`types.reference` that resolves to it (a view's track entry, a config editor
+widget). Track configs are matched by trackId, not identity, so a frozen base
+and its hydrated MST node compare equal.
 
-**Getters:**
-[connections](../connectionmanagementsessionmixin#getter-connections)
+```ts
+type getReferringMultiple = (trackIds: string[]) => Map<string, ReferringNode[]>
+```
 
-**Actions:**
-[makeConnection](../connectionmanagementsessionmixin#action-makeconnection),
-[breakConnection](../connectionmanagementsessionmixin#action-breakconnection),
-[teardownConnection](../connectionmanagementsessionmixin#action-teardownconnection),
-[deleteConnection](../connectionmanagementsessionmixin#action-deleteconnection),
-[addConnectionConf](../connectionmanagementsessionmixin#action-addconnectionconf),
-[clearConnections](../connectionmanagementsessionmixin#action-clearconnections),
-[captureConnectionTrack](../connectionmanagementsessionmixin#action-captureconnectiontrack),
-[updateConnectionTrackConfig](../connectionmanagementsessionmixin#action-updateconnectiontrackconfig),
-[setConnectionTrackConfig](../connectionmanagementsessionmixin#action-setconnectiontrackconfig),
-[pruneConnectionTrackConfig](../connectionmanagementsessionmixin#action-pruneconnectiontrackconfig),
-[hydrateConnection](../connectionmanagementsessionmixin#action-hydrateconnection)
+#### method: getReferring
 
-### Available via [ThemeManagerSessionMixin](../thememanagersessionmixin)
+The nodes currently referring to `trackId` (see getReferringMultiple).
 
-**Volatiles:**
-[sessionThemeName](../thememanagersessionmixin#volatile-sessionthemename)
+```ts
+type getReferring = (trackId: string) => ReferringNode[]
+```
 
-**Getters:** [themeName](../thememanagersessionmixin#getter-themename),
-[themeOptions](../thememanagersessionmixin#getter-themeoptions),
-[theme](../thememanagersessionmixin#getter-theme)
+**Actions**
 
-**Methods:** [allThemes](../thememanagersessionmixin#method-allthemes),
-[getActiveThemeOptions](../thememanagersessionmixin#method-getactivethemeoptions)
+#### action: dereferenceTrack
 
-**Actions:** [setThemeName](../thememanagersessionmixin#action-setthemename)
+Remove `trackId` from every view referring to it and close any config editor
+widget open on it. Runs immediately: the walk that produced `referring` has
+finished, so mutating those views here is safe.
 
-### Available via [TracksManagerSessionMixin](../tracksmanagersessionmixin)
+```ts
+type dereferenceTrack = (trackId: string, referring: ReferringNode[]) => void
+```
 
-**Getters:** [tracks](../tracksmanagersessionmixin#getter-tracks),
-[getTracksById](../tracksmanagersessionmixin#getter-gettracksbyid),
-[tracksById](../tracksmanagersessionmixin#getter-tracksbyid)
+</details>
 
-**Actions:** [addTrackConf](../tracksmanagersessionmixin#action-addtrackconf),
-[updateTrackConfiguration](../tracksmanagersessionmixin#action-updatetrackconfiguration),
-[deleteTrackConf](../tracksmanagersessionmixin#action-deletetrackconf)
+<details>
+<summary>Derived from ConnectionManagementSessionMixin</summary>
 
-### Available via [BaseSessionModel](../basesessionmodel)
+[ConnectionManagementSessionMixin →](../connectionmanagementsessionmixin)
 
-**Properties:** [id](../basesessionmodel#property-id),
-[name](../basesessionmodel#property-name),
-[margin](../basesessionmodel#property-margin),
-[focusedViewId](../basesessionmodel#property-focusedviewid),
-[highlightsVisible](../basesessionmodel#property-highlightsvisible)
+**Properties**
 
-**Volatiles:** [selection](../basesessionmodel#volatile-selection),
-[hovered](../basesessionmodel#volatile-hovered),
-[queueOfDialogs](../basesessionmodel#volatile-queueofdialogs),
-[preferencesOverrides](../basesessionmodel#volatile-preferencesoverrides)
+#### property: connectionInstances
 
-**Getters:** [root](../basesessionmodel#getter-root),
-[jbrowse](../basesessionmodel#getter-jbrowse),
-[rpcManager](../basesessionmodel#getter-rpcmanager),
-[configuration](../basesessionmodel#getter-configuration),
-[adminMode](../basesessionmodel#getter-adminmode),
-[textSearchManager](../basesessionmodel#getter-textsearchmanager),
-[assemblies](../basesessionmodel#getter-assemblies),
-[DialogComponent](../basesessionmodel#getter-dialogcomponent),
-[DialogProps](../basesessionmodel#getter-dialogprops),
-[animationMode](../basesessionmodel#getter-animationmode),
-[scrollZoom](../basesessionmodel#getter-scrollzoom)
+```ts
+// type signature
+type connectionInstances = IOptionalIType<IArrayType<IAnyType>, [undefined]>
+// code
+connectionInstances: types.stripDefault(
+  types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
+  [],
+)
+```
 
-**Methods:** [getPreference](../basesessionmodel#method-getpreference),
-[getDisplayTypeDefault](../basesessionmodel#method-getdisplaytypedefault)
+#### property: connectionTrackConfigs
 
-**Actions:** [setSelection](../basesessionmodel#action-setselection),
-[clearSelection](../basesessionmodel#action-clearselection),
-[setHovered](../basesessionmodel#action-sethovered),
-[setHighlightsVisible](../basesessionmodel#action-sethighlightsvisible),
-[setPreferenceOverride](../basesessionmodel#action-setpreferenceoverride),
-[clearPreferenceOverrides](../basesessionmodel#action-clearpreferenceoverrides),
-[setScrollZoom](../basesessionmodel#action-setscrollzoom),
-[setDisplayTypeDefault](../basesessionmodel#action-setdisplaytypedefault),
-[setName](../basesessionmodel#action-setname),
-[setFocusedViewId](../basesessionmodel#action-setfocusedviewid),
-[removeActiveDialog](../basesessionmodel#action-removeactivedialog),
-[queueDialog](../basesessionmodel#action-queuedialog)
+Persisted configs of connection tracks the user has opened, keyed by trackId.
+Unlike `connectionInstances` (stripped from snapshots, holds the whole fetched
+hub), this holds only the tracks in use, so an open connection track resolves
+synchronously on session load without re-establishing the connection.
 
-### Available via [SnackbarModel](../snackbarmodel)
+```ts
+// type signature
+type connectionTrackConfigs = IOptionalIType<IType<Record<string, ConnectionTrackConfigEntry>, Record<string, ConnectionTrackConfigEntry>, Record<...>>, [...]>
+// code
+connectionTrackConfigs: types.stripDefault(
+        types.frozen<Record<string, ConnectionTrackConfigEntry>>(),
+        {},
+      )
+```
 
-**Volatiles:** [snackbarMessages](../snackbarmodel#volatile-snackbarmessages),
-[errorDialog](../snackbarmodel#volatile-errordialog)
+**Getters**
 
-**Getters:** [snackbarMessageSet](../snackbarmodel#getter-snackbarmessageset)
+#### getter: connections
 
-**Actions:** [notify](../snackbarmodel#action-notify),
-[notifyError](../snackbarmodel#action-notifyerror),
-[setErrorDialog](../snackbarmodel#action-seterrordialog),
-[pushSnackbarMessage](../snackbarmodel#action-pushsnackbarmessage),
-[popSnackbarMessage](../snackbarmodel#action-popsnackbarmessage),
-[removeSnackbarMessage](../snackbarmodel#action-removesnackbarmessage)
+```ts
+type connections = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```
 
-### Available via [AssembliesMixin](../assembliesmixin)
+**Actions**
 
-**Properties:**
-[sessionAssemblies](../assembliesmixin#property-sessionassemblies),
-[temporaryAssemblies](../assembliesmixin#property-temporaryassemblies)
+#### action: makeConnection
 
-**Getters:** [assemblies](../assembliesmixin#getter-assemblies),
-[assemblyNames](../assembliesmixin#getter-assemblynames)
+```ts
+type makeConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any
+```
 
-**Actions:** [addSessionAssembly](../assembliesmixin#action-addsessionassembly),
-[addAssembly](../assembliesmixin#action-addassembly),
-[removeAssembly](../assembliesmixin#action-removeassembly),
-[removeSessionAssembly](../assembliesmixin#action-removesessionassembly),
-[addTemporaryAssembly](../assembliesmixin#action-addtemporaryassembly),
-[removeTemporaryAssembly](../assembliesmixin#action-removetemporaryassembly)
+#### action: breakConnection
 
-### Available via [AppSessionMixin](../appsessionmixin)
+Remove a live connection instance. Tolerant of an already-dormant connection
+(its instance is stripped from the session on reload). Leaves persisted
+open-track configs alone — the connect() error path calls this and the user's
+already-open tracks must survive a transient failure. Full removal goes through
+`deleteConnection`.
 
-**Getters:** [root](../appsessionmixin#getter-root),
-[version](../appsessionmixin#getter-version),
-[gitCommit](../appsessionmixin#getter-gitcommit),
-[history](../appsessionmixin#getter-history),
-[assemblyManager](../appsessionmixin#getter-assemblymanager)
+```ts
+type breakConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
+```
 
-**Methods:** [menus](../appsessionmixin#method-menus)
+#### action: teardownConnection
 
-**Actions:**
-[renameCurrentSession](../appsessionmixin#action-renamecurrentsession)
+Close every track a connection contributed — the live instance's tracks plus any
+persisted open-track configs (a dormant connection, never expanded this session,
+still renders its opened tracks from `connectionTrackConfigs`) — from all
+views/widgets, drop the live instance, and drop the persisted configs. The
+session is left as if the connection had never loaded.
 
-### Available via [DesktopSessionTrackMenuMixin](../desktopsessiontrackmenumixin)
+```ts
+type teardownConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
+```
 
-**Methods:**
-[getTrackActions](../desktopsessiontrackmenumixin#method-gettrackactions)
+#### action: deleteConnection
 
-### Available via [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin)
+Fully remove a connection: tear down its tracks and live instance, then delete
+its config.
 
-**Methods:**
-[getTrackListMenuItems](../trackmenuitemssessionmixin#method-gettracklistmenuitems),
-[getTrackActionMenuItems](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)
+```ts
+type deleteConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```
 
-### Available via [DockviewLayoutMixin](../dockviewlayoutmixin)
+#### action: addConnectionConf
 
-**Properties:**
-[dockviewLayout](../dockviewlayoutmixin#property-dockviewlayout),
-[panelViewAssignments](../dockviewlayoutmixin#property-panelviewassignments),
-[activePanelId](../dockviewlayoutmixin#property-activepanelid),
-[init](../dockviewlayoutmixin#property-init)
+```ts
+type addConnectionConf = (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```
 
-**Volatiles:** [pendingMove](../dockviewlayoutmixin#volatile-pendingmove)
+#### action: clearConnections
 
-**Getters:**
-[getViewIdsForPanel](../dockviewlayoutmixin#getter-getviewidsforpanel),
-[getPanelContainingView](../dockviewlayoutmixin#getter-getpanelcontainingview)
+```ts
+type clearConnections = () => void
+```
 
-**Actions:**
-[setDockviewLayout](../dockviewlayoutmixin#action-setdockviewlayout),
-[setActivePanelId](../dockviewlayoutmixin#action-setactivepanelid),
-[setInit](../dockviewlayoutmixin#action-setinit),
-[setPendingMove](../dockviewlayoutmixin#action-setpendingmove),
-[assignViewToPanel](../dockviewlayoutmixin#action-assignviewtopanel),
-[removeViewFromPanel](../dockviewlayoutmixin#action-removeviewfrompanel),
-[removePanel](../dockviewlayoutmixin#action-removepanel),
-[moveViewUpInPanel](../dockviewlayoutmixin#action-moveviewupinpanel),
-[moveViewDownInPanel](../dockviewlayoutmixin#action-moveviewdowninpanel),
-[moveViewToTopInPanel](../dockviewlayoutmixin#action-moveviewtotopinpanel),
-[moveViewToBottomInPanel](../dockviewlayoutmixin#action-moveviewtobottominpanel)
+#### action: captureConnectionTrack
 
-### Available via [MultipleViewsSessionMixin](../multipleviewssessionmixin)
+Snapshot a just-opened connection track's config into `connectionTrackConfigs`
+so it survives session reload. No-op if the track isn't connection-provided or
+is already captured (edits go through `updateConnectionTrackConfig`).
 
-**Properties:** [views](../multipleviewssessionmixin#property-views),
-[stickyViewHeaders](../multipleviewssessionmixin#property-stickyviewheaders),
-[useWorkspaces](../multipleviewssessionmixin#property-useworkspaces)
+```ts
+type captureConnectionTrack = (trackId: string) => void
+```
 
-**Actions:** [moveViewDown](../multipleviewssessionmixin#action-moveviewdown),
-[moveViewUp](../multipleviewssessionmixin#action-moveviewup),
-[moveViewToTop](../multipleviewssessionmixin#action-moveviewtotop),
-[moveViewToBottom](../multipleviewssessionmixin#action-moveviewtobottom),
-[addView](../multipleviewssessionmixin#action-addview),
-[removeView](../multipleviewssessionmixin#action-removeview),
-[setStickyViewHeaders](../multipleviewssessionmixin#action-setstickyviewheaders),
-[setUseWorkspaces](../multipleviewssessionmixin#action-setuseworkspaces)
+#### action: updateConnectionTrackConfig
 
-### Available via [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+Persist an edit to an opened connection track. The full config is stored (not a
+delta): the connection's fetched "base" isn't present at load, so only a
+complete config resolves synchronously.
 
-**Properties:**
-[drawerPosition](../drawerwidgetsessionmixin#property-drawerposition),
-[drawerWidth](../drawerwidgetsessionmixin#property-drawerwidth),
-[widgets](../drawerwidgetsessionmixin#property-widgets),
-[activeWidgets](../drawerwidgetsessionmixin#property-activewidgets),
-[minimized](../drawerwidgetsessionmixin#property-minimized)
+```ts
+type updateConnectionTrackConfig = (
+  trackConf: Record<string, unknown> & { trackId: string },
+) => void
+```
 
-**Getters:** [visibleWidget](../drawerwidgetsessionmixin#getter-visiblewidget)
+#### action: setConnectionTrackConfig
 
-**Actions:**
-[setDrawerPosition](../drawerwidgetsessionmixin#action-setdrawerposition),
-[updateDrawerWidth](../drawerwidgetsessionmixin#action-updatedrawerwidth),
-[resizeDrawer](../drawerwidgetsessionmixin#action-resizedrawer),
-[addWidget](../drawerwidgetsessionmixin#action-addwidget),
-[showWidget](../drawerwidgetsessionmixin#action-showwidget),
-[hideWidget](../drawerwidgetsessionmixin#action-hidewidget),
-[minimizeWidgetDrawer](../drawerwidgetsessionmixin#action-minimizewidgetdrawer),
-[showWidgetDrawer](../drawerwidgetsessionmixin#action-showwidgetdrawer),
-[hideAllWidgets](../drawerwidgetsessionmixin#action-hideallwidgets),
-[editConfiguration](../drawerwidgetsessionmixin#action-editconfiguration)
+Upsert one opened connection track's persisted config.
+
+```ts
+type setConnectionTrackConfig = (
+  trackId: string,
+  connectionId: string,
+  config: Record<string, unknown>,
+) => void
+```
+
+#### action: pruneConnectionTrackConfig
+
+Drop a connection track's persisted config once no open view still references
+it, so the session doesn't accumulate closed tracks.
+
+```ts
+type pruneConnectionTrackConfig = (trackId: string) => void
+```
+
+#### action: hydrateConnection
+
+Lazily establish a single connection by id if it isn't already live — used when
+its category is expanded in the track selector. Fetches silently (no view launch
+/ success snackbar); already-open tracks keep rendering from
+`connectionTrackConfigs` meanwhile. Idempotent.
+
+```ts
+type hydrateConnection = (connectionId: string) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from ThemeManagerSessionMixin</summary>
+
+[ThemeManagerSessionMixin →](../thememanagersessionmixin)
+
+**Volatiles**
+
+#### volatile: sessionThemeName
+
+```ts
+// type signature
+type sessionThemeName = string
+// code
+sessionThemeName: localStorageGetItem('themeName') ?? 'default'
+```
+
+**Getters**
+
+#### getter: themeName
+
+```ts
+type themeName = string
+```
+
+#### getter: themeOptions
+
+```ts
+type themeOptions = SerializableThemeArgs
+```
+
+#### getter: theme
+
+```ts
+type theme = Theme
+```
+
+**Methods**
+
+#### method: allThemes
+
+```ts
+type allThemes = () => ThemeMap
+```
+
+#### method: getActiveThemeOptions
+
+Raw `ThemeOptions` for the active theme, or a named override (used by the
+SVG-export theme picker). Unlike `theme` (a built, non-serializable MUI theme),
+this is the plain options object every view's SVG export threads into each
+display's `renderSvg`, which rebuilds the theme via `createJBrowseTheme` outside
+React context.
+
+```ts
+type getActiveThemeOptions = (
+  name?: string | undefined,
+) => ThemeOptions & { name?: string | undefined }
+```
+
+**Actions**
+
+#### action: setThemeName
+
+```ts
+type setThemeName = (name: string) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from TracksManagerSessionMixin</summary>
+
+[TracksManagerSessionMixin →](../tracksmanagersessionmixin)
+
+**Getters**
+
+#### getter: tracks
+
+```ts
+type tracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```
+
+#### getter: getTracksById
+
+Map of trackId → config for all tracks, assemblies, and connections. Frozen
+jbrowse.tracks are returned as plain objects here; hydration to MST models
+happens lazily in TrackConfigurationReference on first access. MobX caches this
+until any dependency changes.
+
+```ts
+type getTracksById = () => Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
+```
+
+#### getter: tracksById
+
+MobX-cached map of trackId → config for all tracks, assemblies, and connections.
+Recomputes only when dependencies change.
+
+```ts
+type tracksById = Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
+```
+
+**Actions**
+
+#### action: addTrackConf
+
+```ts
+type addTrackConf = (trackConf: AnyConfiguration) => any
+```
+
+#### action: updateTrackConfiguration
+
+Persist edited track config back to the in-memory jbrowse config. The
+session-tracks mixin overrides this so a non-admin's edits become a shareable
+session-track override instead.
+
+```ts
+type updateTrackConfiguration = (trackConf: {
+  [key: string]: unknown
+  trackId: string
+}) => void
+```
+
+#### action: deleteTrackConf
+
+```ts
+type deleteTrackConf = (trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```
+
+</details>
+
+<details>
+<summary>Derived from BaseSessionModel</summary>
+
+[BaseSessionModel →](../basesessionmodel)
+
+**Properties**
+
+#### property: id
+
+```ts
+// type signature
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
+```
+
+#### property: name
+
+```ts
+// type signature
+type name = ISimpleType<string>
+// code
+name: types.string
+```
+
+#### property: margin
+
+```ts
+// type signature
+type margin = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+margin: types.stripDefault(types.number, 0)
+```
+
+#### property: focusedViewId
+
+used to keep track of which view is in focus
+
+```ts
+// type signature
+type focusedViewId = IMaybe<ISimpleType<string>>
+// code
+focusedViewId: types.maybe(types.string)
+```
+
+#### property: highlightsVisible
+
+one session-wide toggle for all region highlight bands (URL/view highlights and
+bookmark overlays)
+
+```ts
+// type signature
+type highlightsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+highlightsVisible: types.stripDefault(types.boolean, true)
+```
+
+**Volatiles**
+
+#### volatile: selection
+
+this is the globally "selected" object. can be anything. code that wants to deal
+with this should examine it to see what kind of thing it is.
+
+```ts
+// type signature
+type selection = unknown
+// code
+selection: undefined as unknown
+```
+
+#### volatile: hovered
+
+this is the globally "hovered" object. can be anything. code that wants to deal
+with this should examine it to see what kind of thing it is.
+
+```ts
+// type signature
+type hovered = unknown
+// code
+hovered: undefined as unknown
+```
+
+#### volatile: queueOfDialogs
+
+```ts
+// type signature
+type queueOfDialogs = [DialogComponentType, Record<string, unknown>][]
+// code
+queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][]
+```
+
+#### volatile: preferencesOverrides
+
+runtime user-preference overrides keyed by preference id, resolved by
+`getPreference` against the `configuration.preferences` admin defaults. Empty
+here (config-only); products that let users edit preferences load and persist
+these via localStorage. A runtime override map layered over config defaults,
+kept off the snapshot since prefs are local UI.
+
+```ts
+// type signature
+type preferencesOverrides = Record<string, unknown>
+// code
+preferencesOverrides: {} as Record<string, unknown>
+```
+
+**Getters**
+
+#### getter: root
+
+```ts
+type root = TypeOrStateTreeNodeToStateTreeNode<ROOT_MODEL_TYPE>
+```
+
+#### getter: jbrowse
+
+```ts
+type jbrowse = any
+```
+
+#### getter: rpcManager
+
+```ts
+type rpcManager = RpcManager
+```
+
+#### getter: configuration
+
+```ts
+type configuration = Instance<JB_CONFIG_SCHEMA>
+```
+
+#### getter: adminMode
+
+```ts
+type adminMode = boolean
+```
+
+#### getter: textSearchManager
+
+```ts
+type textSearchManager = TextSearchManager
+```
+
+#### getter: assemblies
+
+```ts
+type assemblies = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```
+
+#### getter: DialogComponent
+
+```ts
+type DialogComponent = DialogComponentType
+```
+
+#### getter: DialogProps
+
+```ts
+type DialogProps = Record<string, unknown>
+```
+
+#### getter: animationMode
+
+resolved feature-layout animation mode (never undefined)
+
+```ts
+type animationMode = AnimationMode
+```
+
+#### getter: scrollZoom
+
+resolved scroll-to-zoom preference. Global and personal (never shared in a
+session snapshot); every wheel-zoom view reads this single value.
+
+```ts
+type scrollZoom = boolean
+```
+
+**Methods**
+
+#### method: getPreference
+
+resolved value of a user preference: a runtime override if the user set one,
+otherwise the admin/embedder `configuration.preferences` default. The override
+map is empty unless the product loads it (web/desktop).
+
+```ts
+type getPreference = (key: string) => unknown
+```
+
+#### method: getDisplayTypeDefault
+
+resolved value of a per-display-type slot default the user promoted (see
+`setDisplayTypeDefault`); undefined when nothing was promoted.
+
+```ts
+type getDisplayTypeDefault = (displayType: string, slot: string) => unknown
+```
+
+**Actions**
+
+#### action: setSelection
+
+set the global selection, i.e. the globally-selected object. can be a feature, a
+view, just about anything
+
+```ts
+type setSelection = (thing: unknown) => void
+```
+
+#### action: clearSelection
+
+clears the global selection
+
+```ts
+type clearSelection = () => void
+```
+
+#### action: setHovered
+
+```ts
+type setHovered = (thing: unknown) => void
+```
+
+#### action: setHighlightsVisible
+
+toggle all region highlight bands across every view
+
+```ts
+type setHighlightsVisible = (arg: boolean) => void
+```
+
+#### action: setPreferenceOverride
+
+set a runtime user-preference override (see `getPreference`). Mutates volatile
+state; products persist these to localStorage.
+
+```ts
+type setPreferenceOverride = (key: string, value: unknown) => void
+```
+
+#### action: clearPreferenceOverrides
+
+clear every runtime preference override at once — scrollZoom, animationMode, and
+every promoted per-display-type default (see `setDisplayTypeDefault`) — so each
+falls back to its config/admin default. Backs the Preferences dialog "Reset to
+defaults" button.
+
+```ts
+type clearPreferenceOverrides = () => void
+```
+
+#### action: setScrollZoom
+
+set the global scroll-to-zoom preference (see the `scrollZoom` getter)
+
+```ts
+type setScrollZoom = (flag: boolean) => void
+```
+
+#### action: setDisplayTypeDefault
+
+promote (or, with `value` undefined, clear) a per-display-type slot default.
+Stored under `preferencesOverrides.displayTypeDefaults` so the
+PreferencesSessionMixin persists it to localStorage like other prefs.
+
+```ts
+type setDisplayTypeDefault = (
+  displayType: string,
+  slot: string,
+  value: unknown,
+) => void
+```
+
+#### action: setName
+
+```ts
+type setName = (str: string) => void
+```
+
+#### action: setFocusedViewId
+
+```ts
+type setFocusedViewId = (viewId: string) => void
+```
+
+#### action: removeActiveDialog
+
+```ts
+type removeActiveDialog = () => void
+```
+
+#### action: queueDialog
+
+```ts
+type queueDialog = (doneCallback: DoneCallback) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from SnackbarModel</summary>
+
+[SnackbarModel →](../snackbarmodel)
+
+**Volatiles**
+
+#### volatile: snackbarMessages
+
+```ts
+// type signature
+type snackbarMessages = IObservableArray<SnackbarMessage>
+// code
+snackbarMessages: observable.array<SnackbarMessage>()
+```
+
+#### volatile: errorDialog
+
+the error currently shown in the stack-trace dialog. Kept off the dialog queue
+so it can stack on top of an already-open dialog (e.g. the one whose action
+raised the error) instead of waiting behind it
+
+```ts
+// type signature
+type errorDialog = ErrorDialogState | undefined
+// code
+errorDialog: undefined as ErrorDialogState | undefined
+```
+
+**Getters**
+
+#### getter: snackbarMessageSet
+
+```ts
+type snackbarMessageSet = Map<string, SnackbarMessage>
+```
+
+**Actions**
+
+#### action: notify
+
+```ts
+type notify = (
+  message: string,
+  level?: NotificationLevel | undefined,
+  action?: SnackAction | SnackAction[] | undefined,
+) => void
+```
+
+#### action: notifyError
+
+```ts
+type notifyError = (
+  errorMessage: string,
+  error?: unknown,
+  extra?: unknown,
+  action?: SnackAction | undefined,
+) => void
+```
+
+#### action: setErrorDialog
+
+```ts
+type setErrorDialog = (state: ErrorDialogState | undefined) => void
+```
+
+#### action: pushSnackbarMessage
+
+```ts
+type pushSnackbarMessage = (
+  message: string,
+  level?: NotificationLevel | undefined,
+  actions?: SnackAction[] | undefined,
+) => void
+```
+
+#### action: popSnackbarMessage
+
+```ts
+type popSnackbarMessage = () => SnackbarMessage | undefined
+```
+
+#### action: removeSnackbarMessage
+
+```ts
+type removeSnackbarMessage = (message: string) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from AssembliesMixin</summary>
+
+[AssembliesMixin →](../assembliesmixin)
+
+**Properties**
+
+#### property: sessionAssemblies
+
+```ts
+// type signature
+type sessionAssemblies = IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>, ...
+// code
+sessionAssemblies: types.stripDefault(
+        types.array(assemblyConfigSchemasType),
+        [],
+      )
+```
+
+#### property: temporaryAssemblies
+
+```ts
+// type signature
+type temporaryAssemblies = IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>, ...
+// code
+temporaryAssemblies: types.stripDefault(
+        types.array(assemblyConfigSchemasType),
+        [],
+      )
+```
+
+**Getters**
+
+#### getter: assemblyNames
+
+names of the assemblies returned by the `assemblies` getter
+
+```ts
+type assemblyNames = string[]
+```
+
+**Actions**
+
+#### action: addSessionAssembly
+
+```ts
+type addSessionAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```
+
+#### action: addAssembly
+
+```ts
+type addAssembly = (conf: AnyConfiguration) => void
+```
+
+#### action: removeAssembly
+
+```ts
+type removeAssembly = (name: string) => void
+```
+
+#### action: removeSessionAssembly
+
+```ts
+type removeSessionAssembly = (assemblyName: string) => void
+```
+
+#### action: addTemporaryAssembly
+
+used for read vs ref type assemblies.
+
+```ts
+type addTemporaryAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```
+
+#### action: removeTemporaryAssembly
+
+```ts
+type removeTemporaryAssembly = (name: string) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from AppSessionMixin</summary>
+
+[AppSessionMixin →](../appsessionmixin)
+
+**Getters**
+
+#### getter: version
+
+```ts
+type version = string
+```
+
+#### getter: gitCommit
+
+```ts
+type gitCommit = string | undefined
+```
+
+#### getter: history
+
+```ts
+type history =
+  { canUndo: boolean; canRedo: boolean; undo(): void; redo(): void } | undefined
+```
+
+#### getter: assemblyManager
+
+```ts
+type assemblyManager = ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotCust...
+```
+
+**Methods**
+
+#### method: menus
+
+```ts
+type menus = () => Menu[]
+```
+
+**Actions**
+
+#### action: renameCurrentSession
+
+```ts
+type renameCurrentSession = (sessionName: string) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from DesktopSessionTrackMenuMixin</summary>
+
+[DesktopSessionTrackMenuMixin →](../desktopsessiontrackmenumixin)
+
+**Methods**
+
+#### method: getTrackActions
+
+raw track actions (Settings, Copy, Delete, Index) without submenu wrapper
+
+```ts
+type getTrackActions = (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
+```
+
+</details>
+
+<details>
+<summary>Derived from TrackMenuItemsSessionMixin</summary>
+
+[TrackMenuItemsSessionMixin →](../trackmenuitemssessionmixin)
+
+**Methods**
+
+#### method: getTrackListMenuItems
+
+flattened menu items for use in hierarchical track selector
+
+```ts
+type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
+```
+
+#### method: getTrackActionMenuItems
+
+track menu with About + "Track actions" submenu for the in-view label
+
+```ts
+type getTrackActionMenuItems = ({ config, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; view?: TrackActionView | undefined; }) => MenuItem[]
+```
+
+</details>
+
+<details>
+<summary>Derived from DockviewLayoutMixin</summary>
+
+[DockviewLayoutMixin →](../dockviewlayoutmixin)
+
+**Properties**
+
+#### property: dockviewLayout
+
+Serialized dockview layout state
+
+```ts
+// type signature
+type dockviewLayout = IOptionalIType<
+  IMaybe<IType<SerializedDockview, SerializedDockview, SerializedDockview>>,
+  [undefined]
+>
+// code
+dockviewLayout: types.stripDefault(
+  types.maybe(types.frozen<SerializedDockview>()),
+  undefined,
+)
+```
+
+#### property: panelViewAssignments
+
+Maps panel IDs to arrays of view IDs (for stacking views within a panel)
+
+```ts
+// type signature
+type panelViewAssignments = IOptionalIType<
+  IMapType<IArrayType<ISimpleType<string>>>,
+  [undefined]
+>
+// code
+panelViewAssignments: types.stripDefault(
+  types.map(types.array(types.string)),
+  {},
+)
+```
+
+#### property: activePanelId
+
+The currently active panel ID in dockview
+
+```ts
+// type signature
+type activePanelId = IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>
+// code
+activePanelId: types.stripDefault(types.maybe(types.string), undefined)
+```
+
+#### property: init
+
+The initial nested layout to build dockview from (simple viewIds/ direction/size
+form, vs. the verbose `dockviewLayout` dockview emits). Set from URL params
+(spec layout) OR carried in a loaded session snapshot (e.g. the `encoded-`
+session param), then consumed once when the dockview container mounts —
+`createInitialPanels` reads it, `applyInitLayout` builds the panels, and it is
+cleared to undefined (stripped from snapshots) so it never re-applies on a later
+remount.
+
+```ts
+// type signature
+type init = IOptionalIType<
+  IMaybe<IType<DockviewLayoutNode, DockviewLayoutNode, DockviewLayoutNode>>,
+  [undefined]
+>
+// code
+init: types.stripDefault(
+  types.maybe(types.frozen<DockviewLayoutNode>()),
+  undefined,
+)
+```
+
+**Volatiles**
+
+#### volatile: pendingMove
+
+```ts
+// type signature
+type pendingMove = undefined
+// code
+pendingMove: undefined
+```
+
+**Getters**
+
+#### getter: getViewIdsForPanel
+
+Get view IDs for a specific panel
+
+```ts
+type getViewIdsForPanel = (
+  panelId: string,
+) =>
+  | never[]
+  | (IMSTArray<ISimpleType<string>> &
+      IStateTreeNode<IArrayType<ISimpleType<string>>>)
+```
+
+#### getter: getPanelContainingView
+
+Find the panel containing a view, returning the panel ID, that panel's view-ID
+list, and the view's index within it (or undefined if unassigned)
+
+```ts
+type getPanelContainingView = (viewId: string) =>
+  | {
+      panelId: string
+      viewIds: IMSTArray<ISimpleType<string>> &
+        IStateTreeNode<IArrayType<ISimpleType<string>>>
+      idx: number
+    }
+  | undefined
+```
+
+**Actions**
+
+#### action: setDockviewLayout
+
+Save the current dockview layout
+
+```ts
+type setDockviewLayout = (layout: SerializedDockview | undefined) => void
+```
+
+#### action: setActivePanelId
+
+Set the active panel ID
+
+```ts
+type setActivePanelId = (panelId: string | undefined) => void
+```
+
+#### action: setInit
+
+Set the initial layout configuration (from URL params)
+
+```ts
+type setInit = (init: DockviewLayoutNode | undefined) => void
+```
+
+#### action: setPendingMove
+
+Queue a view move to be applied when the dockview container mounts
+
+```ts
+type setPendingMove = (pendingMove: PendingMove | undefined) => void
+```
+
+#### action: assignViewToPanel
+
+Assign a view to a panel (adds to the panel's view stack)
+
+```ts
+type assignViewToPanel = (panelId: string, viewId: string) => void
+```
+
+#### action: removeViewFromPanel
+
+Remove a view from its panel
+
+```ts
+type removeViewFromPanel = (viewId: string) => void
+```
+
+#### action: removePanel
+
+Remove a panel and all its view assignments
+
+```ts
+type removePanel = (panelId: string) => void
+```
+
+#### action: moveViewUpInPanel
+
+Move a view up within its panel's view stack
+
+```ts
+type moveViewUpInPanel = (viewId: string) => void
+```
+
+#### action: moveViewDownInPanel
+
+Move a view down within its panel's view stack
+
+```ts
+type moveViewDownInPanel = (viewId: string) => void
+```
+
+#### action: moveViewToTopInPanel
+
+Move a view to the top of its panel's view stack
+
+```ts
+type moveViewToTopInPanel = (viewId: string) => void
+```
+
+#### action: moveViewToBottomInPanel
+
+Move a view to the bottom of its panel's view stack
+
+```ts
+type moveViewToBottomInPanel = (viewId: string) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from MultipleViewsSessionMixin</summary>
+
+[MultipleViewsSessionMixin →](../multipleviewssessionmixin)
+
+**Properties**
+
+#### property: views
+
+```ts
+// type signature
+type views = IArrayType<IAnyType>
+// code
+views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
+```
+
+#### property: stickyViewHeaders
+
+```ts
+// type signature
+type stickyViewHeaders = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+stickyViewHeaders: types.optional(types.boolean, () =>
+  localStorageGetBoolean('stickyViewHeaders', true),
+)
+```
+
+#### property: useWorkspaces
+
+enables the dockview-based tabbed/tiled workspace layout
+
+```ts
+// type signature
+type useWorkspaces = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+useWorkspaces: types.optional(types.boolean, () =>
+  localStorageGetBoolean('useWorkspaces', false),
+)
+```
+
+**Actions**
+
+#### action: moveViewDown
+
+```ts
+type moveViewDown = (id: string) => void
+```
+
+#### action: moveViewUp
+
+```ts
+type moveViewUp = (id: string) => void
+```
+
+#### action: moveViewToTop
+
+```ts
+type moveViewToTop = (id: string) => void
+```
+
+#### action: moveViewToBottom
+
+```ts
+type moveViewToBottom = (id: string) => void
+```
+
+#### action: addView
+
+```ts
+type addView = (typeName: string, initialState?: any) => any
+```
+
+#### action: removeView
+
+```ts
+type removeView = (view: IBaseViewModel) => void
+```
+
+#### action: setStickyViewHeaders
+
+```ts
+type setStickyViewHeaders = (sticky: boolean) => void
+```
+
+#### action: setUseWorkspaces
+
+```ts
+type setUseWorkspaces = (useWorkspaces: boolean) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from DrawerWidgetSessionMixin</summary>
+
+[DrawerWidgetSessionMixin →](../drawerwidgetsessionmixin)
+
+**Properties**
+
+#### property: drawerPosition
+
+```ts
+// type signature
+type drawerPosition = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+drawerPosition: types.optional(
+  types.string,
+  () => localStorageGetItem('drawerPosition') ?? 'right',
+)
+```
+
+#### property: drawerWidth
+
+```ts
+// type signature
+type drawerWidth = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+drawerWidth: types.stripDefault(
+  types.refinement(types.integer, width => width >= minDrawerWidth),
+  384,
+)
+```
+
+#### property: widgets
+
+```ts
+// type signature
+type widgets = IOptionalIType<IMapType<IAnyType>, [undefined]>
+// code
+widgets: types.stripDefault(types.map(widgetStateModelType), {})
+```
+
+#### property: activeWidgets
+
+```ts
+// type signature
+type activeWidgets = IOptionalIType<
+  IMapType<IMaybe<IReferenceType<IAnyType>>>,
+  [undefined]
+>
+// code
+activeWidgets: types.stripDefault(
+  types.map(types.safeReference(widgetStateModelType)),
+  {},
+)
+```
+
+#### property: minimized
+
+```ts
+// type signature
+type minimized = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+minimized: types.stripDefault(types.boolean, false)
+```
+
+**Getters**
+
+#### getter: visibleWidget
+
+```ts
+type visibleWidget = any
+```
+
+**Actions**
+
+#### action: setDrawerPosition
+
+```ts
+type setDrawerPosition = (arg: string) => void
+```
+
+#### action: updateDrawerWidth
+
+```ts
+type updateDrawerWidth = (drawerWidth: number) => number
+```
+
+#### action: resizeDrawer
+
+```ts
+type resizeDrawer = (distance: number) => number
+```
+
+#### action: addWidget
+
+```ts
+type addWidget = (
+  typeName: string,
+  id: string,
+  initialState?: any,
+  conf?: unknown,
+) => any
+```
+
+#### action: showWidget
+
+```ts
+type showWidget = (widget: any) => void
+```
+
+#### action: hideWidget
+
+```ts
+type hideWidget = (widget: any) => void
+```
+
+#### action: minimizeWidgetDrawer
+
+```ts
+type minimizeWidgetDrawer = () => void
+```
+
+#### action: showWidgetDrawer
+
+```ts
+type showWidgetDrawer = () => void
+```
+
+#### action: hideAllWidgets
+
+```ts
+type hideAllWidgets = () => void
+```
+
+#### action: editConfiguration
+
+opens a configuration editor to configure the given thing, and sets the current
+task to be configuring it
+
+```ts
+type editConfiguration = (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }, opts?: { ...; } | undefined) => void
+```
+
+</details>

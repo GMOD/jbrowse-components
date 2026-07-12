@@ -16,6 +16,16 @@ token, prompting for the token via a dialog and optionally validating it with a
 HEAD request. See [TokenEntryInternetAccount](../tokenentryinternetaccount) for
 the shared behavior.
 
+## Members
+
+| Member                                       | Kind       | Defined by                                                | Description                                                                                                                   |
+| -------------------------------------------- | ---------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                       | Properties | [TokenEntryInternetAccount](../tokenentryinternetaccount) |                                                                                                                               |
+| [configuration](#property-configuration)     | Properties | [TokenEntryInternetAccount](../tokenentryinternetaccount) |                                                                                                                               |
+| [validateWithHEAD](#getter-validatewithhead) | Getters    | [TokenEntryInternetAccount](../tokenentryinternetaccount) | validate the token with a HEAD request before it is used                                                                      |
+| [getTokenFromUser](#action-gettokenfromuser) | Actions    | [TokenEntryInternetAccount](../tokenentryinternetaccount) | Prompt the user for a token via the account's dialog form, resolving with the entered token or rejecting if the user cancels. |
+| [validateToken](#action-validatetoken)       | Actions    | [TokenEntryInternetAccount](../tokenentryinternetaccount) | Optionally validate the token with a HEAD request before use, per the `validateWithHEAD` config slot.                         |
+
 ### ExternalTokenInternetAccount - Configuration
 
 The configuration slots for this model are documented on its
@@ -23,17 +33,66 @@ The configuration slots for this model are documented on its
 
 ## Inherited members
 
-Available on this model via composition. Follow each link for full signatures
-and docs.
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
 
-### Available via [TokenEntryInternetAccount](../tokenentryinternetaccount)
+<details>
+<summary>Derived from TokenEntryInternetAccount</summary>
 
-**Properties:** [type](../tokenentryinternetaccount#property-type),
-[configuration](../tokenentryinternetaccount#property-configuration)
+[TokenEntryInternetAccount →](../tokenentryinternetaccount)
 
-**Getters:**
-[validateWithHEAD](../tokenentryinternetaccount#getter-validatewithhead)
+**Properties**
 
-**Actions:**
-[getTokenFromUser](../tokenentryinternetaccount#action-gettokenfromuser),
-[validateToken](../tokenentryinternetaccount#action-validatetoken)
+#### property: type
+
+```ts
+// type signature
+type type = ISimpleType<Type>
+// code
+type: types.literal(typeName)
+```
+
+#### property: configuration
+
+```ts
+// type signature
+type configuration = ITypeUnion<any, any, any>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
+**Getters**
+
+#### getter: validateWithHEAD
+
+validate the token with a HEAD request before it is used
+
+```ts
+type validateWithHEAD = boolean
+```
+
+**Actions**
+
+#### action: getTokenFromUser
+
+Prompt the user for a token via the account's dialog form, resolving with the
+entered token or rejecting if the user cancels.
+
+```ts
+type getTokenFromUser = (
+  resolve: (token: string) => void,
+  reject: (error: Error) => void,
+) => void
+```
+
+#### action: validateToken
+
+Optionally validate the token with a HEAD request before use, per the
+`validateWithHEAD` config slot.
+
+```ts
+type validateToken = (token: string, location: UriLocation) => Promise<string>
+```
+
+</details>

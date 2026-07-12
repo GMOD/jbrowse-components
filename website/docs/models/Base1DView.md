@@ -16,38 +16,38 @@ dotplot use this
 
 ## Members
 
-| Member                                                     | Kind       | Description                                                                                                                  |
-| ---------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| [id](#property-id)                                         | Properties |                                                                                                                              |
-| [displayedRegions](#property-displayedregions)             | Properties |                                                                                                                              |
-| [bpPerPx](#property-bpperpx)                               | Properties |                                                                                                                              |
-| [offsetPx](#property-offsetpx)                             | Properties |                                                                                                                              |
-| [minimumBlockWidth](#property-minimumblockwidth)           | Properties |                                                                                                                              |
-| [volatileWidth](#volatile-volatilewidth)                   | Volatiles  |                                                                                                                              |
-| [width](#getter-width)                                     | Getters    |                                                                                                                              |
-| [minBpPerPx](#getter-minbpperpx)                           | Getters    | zoom-in floor; overridden by extensions (e.g. the dotplot axes)                                                              |
-| [maxBpPerPx](#getter-maxbpperpx)                           | Getters    | zoom-out ceiling; overridden by extensions (e.g. the dotplot axes)                                                           |
-| [assemblyNames](#getter-assemblynames)                     | Getters    |                                                                                                                              |
-| [displayedRegionsTotalPx](#getter-displayedregionstotalpx) | Getters    |                                                                                                                              |
-| [maxOffset](#getter-maxoffset)                             | Getters    |                                                                                                                              |
-| [minOffset](#getter-minoffset)                             | Getters    |                                                                                                                              |
-| [totalBp](#getter-totalbp)                                 | Getters    |                                                                                                                              |
-| [dynamicBlocks](#getter-dynamicblocks)                     | Getters    |                                                                                                                              |
-| [staticBlocks](#getter-staticblocks)                       | Getters    |                                                                                                                              |
-| [currBp](#getter-currbp)                                   | Getters    |                                                                                                                              |
-| [pxToBp](#method-pxtobp)                                   | Methods    |                                                                                                                              |
-| [bpToPx](#method-bptopx)                                   | Methods    |                                                                                                                              |
-| [setDisplayedRegions](#action-setdisplayedregions)         | Actions    |                                                                                                                              |
-| [setBpPerPx](#action-setbpperpx)                           | Actions    |                                                                                                                              |
-| [setVolatileWidth](#action-setvolatilewidth)               | Actions    |                                                                                                                              |
-| [showAllRegions](#action-showallregions)                   | Actions    | this makes a zoomed out view that shows all displayedRegions that makes the overview bar square with the scale bar           |
-| [zoomOut](#action-zoomout)                                 | Actions    |                                                                                                                              |
-| [zoomIn](#action-zoomin)                                   | Actions    |                                                                                                                              |
-| [zoomTo](#action-zoomto)                                   | Actions    |                                                                                                                              |
-| [scrollTo](#action-scrollto)                               | Actions    |                                                                                                                              |
-| [centerAt](#action-centerat)                               | Actions    |                                                                                                                              |
-| [scroll](#action-scroll)                                   | Actions    | note: the scroll is clamped to keep the view on the main screen                                                              |
-| [moveTo](#action-moveto)                                   | Actions    | offset is the base-pair-offset in the displayed region, index is the index of the displayed region in the linear genome view |
+| Member                                                     | Kind       | Defined by | Description                                                                                                                  |
+| ---------------------------------------------------------- | ---------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                         | Properties | Base1DView |                                                                                                                              |
+| [displayedRegions](#property-displayedregions)             | Properties | Base1DView |                                                                                                                              |
+| [bpPerPx](#property-bpperpx)                               | Properties | Base1DView |                                                                                                                              |
+| [offsetPx](#property-offsetpx)                             | Properties | Base1DView |                                                                                                                              |
+| [minimumBlockWidth](#property-minimumblockwidth)           | Properties | Base1DView |                                                                                                                              |
+| [volatileWidth](#volatile-volatilewidth)                   | Volatiles  | Base1DView |                                                                                                                              |
+| [width](#getter-width)                                     | Getters    | Base1DView |                                                                                                                              |
+| [minBpPerPx](#getter-minbpperpx)                           | Getters    | Base1DView | zoom-in floor; overridden by extensions (e.g. the dotplot axes)                                                              |
+| [maxBpPerPx](#getter-maxbpperpx)                           | Getters    | Base1DView | zoom-out ceiling; overridden by extensions (e.g. the dotplot axes)                                                           |
+| [assemblyNames](#getter-assemblynames)                     | Getters    | Base1DView |                                                                                                                              |
+| [displayedRegionsTotalPx](#getter-displayedregionstotalpx) | Getters    | Base1DView |                                                                                                                              |
+| [maxOffset](#getter-maxoffset)                             | Getters    | Base1DView |                                                                                                                              |
+| [minOffset](#getter-minoffset)                             | Getters    | Base1DView |                                                                                                                              |
+| [totalBp](#getter-totalbp)                                 | Getters    | Base1DView |                                                                                                                              |
+| [dynamicBlocks](#getter-dynamicblocks)                     | Getters    | Base1DView |                                                                                                                              |
+| [staticBlocks](#getter-staticblocks)                       | Getters    | Base1DView |                                                                                                                              |
+| [currBp](#getter-currbp)                                   | Getters    | Base1DView |                                                                                                                              |
+| [pxToBp](#method-pxtobp)                                   | Methods    | Base1DView |                                                                                                                              |
+| [bpToPx](#method-bptopx)                                   | Methods    | Base1DView |                                                                                                                              |
+| [setDisplayedRegions](#action-setdisplayedregions)         | Actions    | Base1DView |                                                                                                                              |
+| [setBpPerPx](#action-setbpperpx)                           | Actions    | Base1DView |                                                                                                                              |
+| [setVolatileWidth](#action-setvolatilewidth)               | Actions    | Base1DView |                                                                                                                              |
+| [showAllRegions](#action-showallregions)                   | Actions    | Base1DView | this makes a zoomed out view that shows all displayedRegions that makes the overview bar square with the scale bar           |
+| [zoomOut](#action-zoomout)                                 | Actions    | Base1DView |                                                                                                                              |
+| [zoomIn](#action-zoomin)                                   | Actions    | Base1DView |                                                                                                                              |
+| [zoomTo](#action-zoomto)                                   | Actions    | Base1DView |                                                                                                                              |
+| [scrollTo](#action-scrollto)                               | Actions    | Base1DView |                                                                                                                              |
+| [centerAt](#action-centerat)                               | Actions    | Base1DView |                                                                                                                              |
+| [scroll](#action-scroll)                                   | Actions    | Base1DView | note: the scroll is clamped to keep the view on the main screen                                                              |
+| [moveTo](#action-moveto)                                   | Actions    | Base1DView | offset is the base-pair-offset in the displayed region, index is the index of the displayed region in the linear genome view |
 
 <details>
 <summary>Base1DView - Properties</summary>

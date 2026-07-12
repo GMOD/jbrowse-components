@@ -44,256 +44,187 @@ displays: [
 
 ## Members
 
-| Member                                                                   | Kind       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ------------------------------------------------------------------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                                                   | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [configuration](#property-configuration)                                 | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [rowHeight](#property-rowheight)                                         | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [jexlFilters](#property-jexlfilters)                                     | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [lineZoneHeight](#property-linezoneheight)                               | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [runClustering](#property-runclustering)                                 | Properties |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [showLegend](#volatile-showlegend)                                       | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [dismissedLegendSections](#volatile-dismissedlegendsections)             | Volatiles  | Ids of legend sections the user has individually closed (e.g. 'genotypes' / 'group'); reset when the whole legend is re-shown.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| [contextMenuFeature](#volatile-contextmenufeature)                       | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [sourcesVolatile](#volatile-sourcesvolatile)                             | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [hoveredGenotype](#volatile-hoveredgenotype)                             | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [cellData](#volatile-celldata)                                           | Volatiles  | Single source of truth for fetched per-display data. hasPhased, sampleInfo, and featuresVolatile are derived from this via getters — fetchNeeded only needs to call setCellData(result).                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| [loadedBpPerPx](#volatile-loadedbpperpx)                                 | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [reloadCount](#volatile-reloadcount)                                     | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [pendingClusterTree](#volatile-pendingclustertree)                       | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [featuresVolatile](#getter-featuresvolatile)                             | Getters    | SimpleFeature instances derived from the simplifiedFeatures list in the most recent cellData payload. Cached by MobX while cellData is unchanged. Named `featuresVolatile` for backwards-compat with consumers that originally read it as a volatile field. These carry ONLY positional fields (id/start/end/refName/name) — not ALT or genotypes. Don't re-derive feature-level facts from them (`.get('ALT')` etc. returns undefined); summary facts are computed in the worker and exposed as scalars (hasPhased/hasSecondaryAlt/ hasUnphased), and per-feature genotype info lives in the cell-data featureGenotypeMap/featureData. |
-| [hasPhased](#getter-hasphased)                                           | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [hasSecondaryAlt](#getter-hassecondaryalt)                               | Getters    | Whether any visible site is multiallelic (drives the "Other alt allele" legend entry). Computed in the worker since the simplified features sent to the client don't carry ALT.                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [hasUnphased](#getter-hasunphased)                                       | Getters    | Whether any genotype call is unphased (drives the "Unphased" legend entry in phased mode).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| [hasConsequence](#getter-hasconsequence)                                 | Getters    | Whether any visible variant carries a SnpEff/VEP annotation, gating the "Color cells by consequence" menu option.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| [sampleInfo](#getter-sampleinfo)                                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [renderingMode](#getter-renderingmode)                                   | Getters    | Returns the rendering mode config slot value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| [colorBy](#getter-colorby)                                               | Getters    | The effective sample-grouping attribute (config default or runtime override). Drives the sidebar row coloring and the legend's group section; '' means no grouping.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [featureColor](#getter-featurecolor)                                     | Getters    | Optional per-variant cell color (jexl string or CSS color) applied to alt-carrying cells; '' means default genotype coloring. Reads the raw config value directly (not `getConf`, which evaluates a `jexl:...` string immediately with no `feature` bound) — this crosses the RPC boundary as-is and is evaluated once per feature in the worker (see `makeFeatureColor` in `executeVariantCellData.ts`).                                                                                                                                                                                                                               |
-| [featureWidgetType](#getter-featurewidgettype)                           | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [fetchSizeLimit](#getter-fetchsizelimit)                                 | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [minorAlleleFrequencyFilter](#getter-minorallelefrequencyfilter)         | Getters    | Returns the minor allele frequency filter config slot value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [maxMissingnessFilter](#getter-maxmissingnessfilter)                     | Getters    | Max fraction of no-call genotypes a variant may have before it's hidden; 1 keeps every variant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| [filters](#getter-filters)                                               | Getters    | The jexl filter expressions (from the Edit filters dialog) as a SerializableFilterChain, ready to pass as the RPC `filters` arg. MultiSampleVariantGet{CellData,GenotypeMatrix,ClusterGenotypeMatrix} all extend RpcMethodTypeWithFiltersAndRenameRegions, which serializes this to string[] and rebuilds it in the worker with pluginManager.jexl.                                                                                                                                                                                                                                                                                     |
-| [showSidebarLabels](#getter-showsidebarlabels)                           | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [showTree](#getter-showtree)                                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [showBranchLength](#getter-showbranchlength)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [referenceDrawingMode](#getter-referencedrawingmode)                     | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [colorByAttributes](#getter-colorbyattributes)                           | Getters    | Distinct sample-metadata attributes (from samplesTsv) the user can color rows by — every key the sources carry except internal plumbing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| [sourcesWithoutLayout](#getter-sourceswithoutlayout)                     | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [sourcesBase](#getter-sourcesbase)                                       | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [sources](#getter-sources)                                               | Getters    | sourcesBase expanded for phased rendering when sampleInfo is available. Sources already carrying HP (from clustering) pass through unchanged.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [editableSources](#getter-editablesources)                               | Getters    | Layout-merged, phased-expanded view for the Edit Color/Arrangement dialog. Does NOT apply the subtree filter — submitting the dialog persists every row back to `layout`, so filtered samples must be present or they would be wiped from layout on submit.                                                                                                                                                                                                                                                                                                                                                                             |
-| [sourceMap](#getter-sourcemap)                                           | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [genotypeSampleIndex](#getter-genotypesampleindex)                       | Getters    | sampleName -> column index into each feature's interned `genotypeCodes`. Rebuilt only when cellData changes. Used by the tooltips to decode a hovered cell's genotype (see genotypeCodec.ts).                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [availableHeight](#getter-availableheight)                               | Getters    | Available height for rows (total height minus lineZoneHeight)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [nrow](#getter-nrow)                                                     | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [autoRowHeight](#getter-autorowheight)                                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [effectiveRowHeight](#getter-effectiverowheight)                         | Getters    | Resolved per-row height. `rowHeight === 0` means auto-fit (computed from availableHeight / nrow); any positive value is a user-pinned height. `resizeHeight` scales pinned values proportionally so manual + display-resize stay in sync without snap-back fuzziness. Every consumer reads this, never the raw `rowHeight` property.                                                                                                                                                                                                                                                                                                    |
-| [hierarchy](#getter-hierarchy)                                           | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [spatialIndex](#getter-spatialindex)                                     | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [hoveredTooltipSource](#getter-hoveredtooltipsource)                     | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [canDisplayLabels](#getter-candisplaylabels)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [totalHeight](#getter-totalheight)                                       | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [hasOverflow](#getter-hasoverflow)                                       | Getters    | Whether the rows are taller than the viewport, i.e. the display scrolls. Drives native-scroll gating in displays that scroll their rows in a native overflow container (the plain display); auto-fit mode keeps this false since `rowHeight` derives from `availableHeight`.                                                                                                                                                                                                                                                                                                                                                            |
-| [scrollableHeight](#getter-scrollableheight)                             | Getters    | Max valid `scrollTop`: how far the rows can scroll before the bottom row reaches the viewport floor. Zero when the rows fit.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| [featuresReady](#getter-featuresready)                                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [rpcProps](#method-rpcprops)                                             | Methods    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [showSubmenuItems](#method-showsubmenuitems)                             | Methods    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [trackMenuItems](#method-trackmenuitems)                                 | Methods    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [contextMenuItems](#method-contextmenuitems)                             | Methods    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [getPortableSettings](#method-getportablesettings)                       | Methods    | Called by BaseTrackModel.replaceDisplay when switching between the regular and matrix variant displays. The config-slot settings (colorBy, renderingMode, etc.) now live on each display's own config-schema node rather than a display-instance override map, so porting them means writing directly into the _target_ display's config (via setSlot) rather than spreading them into the new display's instance snapshot — hence the `newDisplayId` param. Only genuine display-instance state (not config-backed) is returned for the instance-snapshot spread.                                                                      |
-| [legendSections](#method-legendsections)                                 | Methods    | Legend split into independently-closable sections: the genotype/cell coloring and (when colorBy is set) the sample-grouping coloring shown on the sidebar row labels. Dismissed sections are filtered out.                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| [setCellData](#action-setcelldata)                                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setContextMenuFeature](#action-setcontextmenufeature)                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setLoadedBpPerPx](#action-setloadedbpperpx)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [fetchMetadataDescriptions](#action-fetchmetadatadescriptions)           | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setJexlFilters](#action-setjexlfilters)                                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setShowLegend](#action-setshowlegend)                                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [dismissLegendSection](#action-dismisslegendsection)                     | Actions    | Close a single legend section (leaving the others visible).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [selectFeature](#action-selectfeature)                                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setRowHeight](#action-setrowheight)                                     | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setHoveredGenotype](#action-sethoveredgenotype)                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setSources](#action-setsources)                                         | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setColorBy](#action-setcolorby)                                         | Actions    | Recolor sample rows by a metadata attribute (e.g. 'population'), or pass '' to clear the grouping. Persists the colored arrangement as the layout and records the choice in the `colorBy` config slot so it survives a data refetch and serializes into the session.                                                                                                                                                                                                                                                                                                                                                                    |
-| [clearLayout](#action-clearlayout)                                       | Actions    | Restore the configured default arrangement — empties the layout and clears the cluster tree, then re-applies the `colorBy` palette if one is configured. Overrides the mixin's `clearLayout` so the user gets the same starting state they had on initial load.                                                                                                                                                                                                                                                                                                                                                                         |
-| [setMafFilter](#action-setmaffilter)                                     | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setMaxMissingnessFilter](#action-setmaxmissingnessfilter)               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setShowSidebarLabels](#action-setshowsidebarlabels)                     | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setShowTree](#action-setshowtree)                                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setShowBranchLength](#action-setshowbranchlength)                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setLayoutAndPendingClusterTree](#action-setlayoutandpendingclustertree) | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setRunClustering](#action-setrunclustering)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setPhasedMode](#action-setphasedmode)                                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setFitToHeight](#action-setfittoheight)                                 | Actions    | Enable fit-to-display-height mode: `rowHeight = 0` makes `effectiveRowHeight` divide `availableHeight` across the rows.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [resizeHeight](#action-resizeheight)                                     | Actions    | Override resizeHeight to scale a pinned row height proportionally when the display is vertically resized. Rows live in `availableHeight` (`height - lineZoneHeight`), not the full height, so scale by the available-height ratio — otherwise the visible fraction of rows drifts on resize whenever `lineZoneHeight` is non-zero (the matrix display).                                                                                                                                                                                                                                                                                 |
-| [setReferenceDrawingMode](#action-setreferencedrawingmode)               | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setFeatureColor](#action-setfeaturecolor)                               | Actions    | Set the per-variant cell color override (jexl string or CSS color), or '' to restore default genotype coloring. A fetch input — recomputes cells in the worker.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [sortByGenotype](#action-sortbygenotype)                                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [setScrollTop](#action-setscrolltop)                                     | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [clearDisplaySpecificData](#action-cleardisplayspecificdata)             | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [isCacheValid](#action-iscachevalid)                                     | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [getByteEstimateConfig](#action-getbyteestimateconfig)                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [fetchNeeded](#action-fetchneeded)                                       | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [reload](#action-reload)                                                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-
-## Inherited members
-
-Available on this model via composition. Follow each link for full signatures
-and docs.
-
-### Available via [BaseDisplay](../basedisplay)
-
-**Properties:** [id](../basedisplay#property-id),
-[type](../basedisplay#property-type),
-[rpcDriverName](../basedisplay#property-rpcdrivername)
-
-**Volatiles:** [error](../basedisplay#volatile-error),
-[statusMessage](../basedisplay#volatile-statusmessage),
-[statusProgress](../basedisplay#volatile-statusprogress)
-
-**Getters:** [parentTrack](../basedisplay#getter-parenttrack),
-[parentDisplay](../basedisplay#getter-parentdisplay),
-[RenderingComponent](../basedisplay#getter-renderingcomponent),
-[DisplayBlurb](../basedisplay#getter-displayblurb),
-[adapterConfig](../basedisplay#getter-adapterconfig),
-[isMinimized](../basedisplay#getter-isminimized),
-[effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent)
-
-**Methods:** [renderingProps](../basedisplay#method-renderingprops),
-[trackMenuItems](../basedisplay#method-trackmenuitems),
-[regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
-
-**Actions:** [setStatusMessage](../basedisplay#action-setstatusmessage),
-[setError](../basedisplay#action-seterror),
-[setRpcDriverName](../basedisplay#action-setrpcdrivername),
-[reload](../basedisplay#action-reload)
-
-### Available via [TrackHeightMixin](../trackheightmixin)
-
-**Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
-
-**Getters:** [height](../trackheightmixin#getter-height)
-
-**Actions:** [setScrollTop](../trackheightmixin#action-setscrolltop),
-[setHeight](../trackheightmixin#action-setheight),
-[resizeHeight](../trackheightmixin#action-resizeheight)
-
-### Available via [MultiRegionDisplayMixin](../multiregiondisplaymixin)
-
-**Volatiles:**
-[loadedRegions](../multiregiondisplaymixin#volatile-loadedregions)
-
-**Getters:** [isReady](../multiregiondisplaymixin#getter-isready),
-[viewportWithinLoadedData](../multiregiondisplaymixin#getter-viewportwithinloadeddata),
-[svgReady](../multiregiondisplaymixin#getter-svgready),
-[svgReadyExtraTerminal](../multiregiondisplaymixin#getter-svgreadyextraterminal),
-[renderBlocks](../multiregiondisplaymixin#getter-renderblocks),
-[displayPhase](../multiregiondisplaymixin#getter-displayphase)
-
-**Actions:**
-[setLoadedRegion](../multiregiondisplaymixin#action-setloadedregion),
-[clearDisplaySpecificData](../multiregiondisplaymixin#action-cleardisplayspecificdata),
-[clearAllRpcData](../multiregiondisplaymixin#action-clearallrpcdata),
-[reload](../multiregiondisplaymixin#action-reload),
-[invalidateLoadedRegions](../multiregiondisplaymixin#action-invalidateloadedregions),
-[fetchNeeded](../multiregiondisplaymixin#action-fetchneeded),
-[isCacheValid](../multiregiondisplaymixin#action-iscachevalid),
-[getByteEstimateConfig](../multiregiondisplaymixin#action-getbyteestimateconfig),
-[fetchRegions](../multiregiondisplaymixin#action-fetchregions),
-[afterAttach](../multiregiondisplaymixin#action-afterattach)
-
-### Available via [RegionTooLargeMixin](../regiontoolargemixin)
-
-**Properties:**
-[userByteSizeLimit](../regiontoolargemixin#property-userbytesizelimit)
-
-**Volatiles:**
-[regionTooLargeState](../regiontoolargemixin#volatile-regiontoolargestate),
-[regionTooLargeReasonState](../regiontoolargemixin#volatile-regiontoolargereasonstate),
-[featureDensityStats](../regiontoolargemixin#volatile-featuredensitystats)
-
-**Getters:** [regionTooLarge](../regiontoolargemixin#getter-regiontoolarge),
-[regionTooLargeReason](../regiontoolargemixin#getter-regiontoolargereason)
-
-**Methods:**
-[regionCannotBeRenderedText](../regiontoolargemixin#method-regioncannotberenderedtext)
-
-**Actions:**
-[setRegionTooLarge](../regiontoolargemixin#action-setregiontoolarge),
-[setFeatureDensityStats](../regiontoolargemixin#action-setfeaturedensitystats),
-[setFeatureDensityStatsLimit](../regiontoolargemixin#action-setfeaturedensitystatslimit),
-[reload](../regiontoolargemixin#action-reload),
-[forceLoad](../regiontoolargemixin#action-forceload)
-
-### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
-
-**Volatiles:** [canvasDrawn](../renderlifecyclemixin#volatile-canvasdrawn),
-[currentRenderingBackend](../renderlifecyclemixin#volatile-currentrenderingbackend),
-[renderTick](../renderlifecyclemixin#volatile-rendertick),
-[autorunsInstalled](../renderlifecyclemixin#volatile-autorunsinstalled),
-[renderError](../renderlifecyclemixin#volatile-rendererror)
-
-**Actions:** [markCanvasDrawn](../renderlifecyclemixin#action-markcanvasdrawn),
-[resetCanvasDrawn](../renderlifecyclemixin#action-resetcanvasdrawn),
-[stopRenderingBackend](../renderlifecyclemixin#action-stoprenderingbackend),
-[renderNow](../renderlifecyclemixin#action-rendernow),
-[setRenderError](../renderlifecyclemixin#action-setrendererror),
-[attachRenderingBackend](../renderlifecyclemixin#action-attachrenderingbackend)
-
-### Available via [FetchMixin](../fetchmixin)
-
-**Volatiles:** [activeStopToken](../fetchmixin#volatile-activestoptoken),
-[fetchGeneration](../fetchmixin#volatile-fetchgeneration),
-[error](../fetchmixin#volatile-error),
-[statusMessage](../fetchmixin#volatile-statusmessage),
-[statusProgress](../fetchmixin#volatile-statusprogress),
-[fetchCanceled](../fetchmixin#volatile-fetchcanceled),
-[regionStatuses](../fetchmixin#volatile-regionstatuses),
-[lastStatusMs](../fetchmixin#volatile-laststatusms)
-
-**Getters:** [isLoading](../fetchmixin#getter-isloading)
-
-**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
-[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
-
-**Actions:** [setError](../fetchmixin#action-seterror),
-[setStatusMessage](../fetchmixin#action-setstatusmessage),
-[throttleStatus](../fetchmixin#action-throttlestatus),
-[resetStatus](../fetchmixin#action-resetstatus),
-[stopActiveFetch](../fetchmixin#action-stopactivefetch),
-[setRegionStatus](../fetchmixin#action-setregionstatus),
-[cancelFetch](../fetchmixin#action-cancelfetch),
-[cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
-[runFetch](../fetchmixin#action-runfetch)
-
-### Available via [TreeSidebarMixin](../treesidebarmixin)
-
-**Properties:** [layout](../treesidebarmixin#property-layout),
-[clusterTree](../treesidebarmixin#property-clustertree),
-[treeAreaWidth](../treesidebarmixin#property-treeareawidth),
-[subtreeFilter](../treesidebarmixin#property-subtreefilter)
-
-**Volatiles:** [hoveredTreeNode](../treesidebarmixin#volatile-hoveredtreenode),
-[treeCanvas](../treesidebarmixin#volatile-treecanvas),
-[mouseoverCanvas](../treesidebarmixin#volatile-mouseovercanvas)
-
-**Getters:** [parsedTree](../treesidebarmixin#getter-parsedtree),
-[root](../treesidebarmixin#getter-root),
-[treeHasBranchLengths](../treesidebarmixin#getter-treehasbranchlengths)
-
-**Methods:** [willClearTree](../treesidebarmixin#method-willcleartree)
-
-**Actions:** [setLayout](../treesidebarmixin#action-setlayout),
-[clearLayout](../treesidebarmixin#action-clearlayout),
-[setClusterTree](../treesidebarmixin#action-setclustertree),
-[setLayoutAndClusterTree](../treesidebarmixin#action-setlayoutandclustertree),
-[setTreeAreaWidth](../treesidebarmixin#action-settreeareawidth),
-[setSubtreeFilter](../treesidebarmixin#action-setsubtreefilter),
-[setHoveredTreeNode](../treesidebarmixin#action-sethoveredtreenode),
-[setTreeCanvasRef](../treesidebarmixin#action-settreecanvasref),
-[setMouseoverCanvasRef](../treesidebarmixin#action-setmouseovercanvasref)
+| Member                                                                   | Kind       | Defined by                                            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------ | ---------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                                   | Properties | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [configuration](#property-configuration)                                 | Properties | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [rowHeight](#property-rowheight)                                         | Properties | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [jexlFilters](#property-jexlfilters)                                     | Properties | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [lineZoneHeight](#property-linezoneheight)                               | Properties | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [runClustering](#property-runclustering)                                 | Properties | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [showLegend](#volatile-showlegend)                                       | Volatiles  | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [dismissedLegendSections](#volatile-dismissedlegendsections)             | Volatiles  | MultiSampleVariantBaseModel                           | Ids of legend sections the user has individually closed (e.g. 'genotypes' / 'group'); reset when the whole legend is re-shown.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [contextMenuFeature](#volatile-contextmenufeature)                       | Volatiles  | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [sourcesVolatile](#volatile-sourcesvolatile)                             | Volatiles  | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [hoveredGenotype](#volatile-hoveredgenotype)                             | Volatiles  | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [cellData](#volatile-celldata)                                           | Volatiles  | MultiSampleVariantBaseModel                           | Single source of truth for fetched per-display data. hasPhased, sampleInfo, and featuresVolatile are derived from this via getters — fetchNeeded only needs to call setCellData(result).                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [loadedBpPerPx](#volatile-loadedbpperpx)                                 | Volatiles  | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [reloadCount](#volatile-reloadcount)                                     | Volatiles  | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [pendingClusterTree](#volatile-pendingclustertree)                       | Volatiles  | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [featuresVolatile](#getter-featuresvolatile)                             | Getters    | MultiSampleVariantBaseModel                           | SimpleFeature instances derived from the simplifiedFeatures list in the most recent cellData payload. Cached by MobX while cellData is unchanged. Named `featuresVolatile` for backwards-compat with consumers that originally read it as a volatile field. These carry ONLY positional fields (id/start/end/refName/name) — not ALT or genotypes. Don't re-derive feature-level facts from them (`.get('ALT')` etc. returns undefined); summary facts are computed in the worker and exposed as scalars (hasPhased/hasSecondaryAlt/ hasUnphased), and per-feature genotype info lives in the cell-data featureGenotypeMap/featureData. |
+| [hasPhased](#getter-hasphased)                                           | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [hasSecondaryAlt](#getter-hassecondaryalt)                               | Getters    | MultiSampleVariantBaseModel                           | Whether any visible site is multiallelic (drives the "Other alt allele" legend entry). Computed in the worker since the simplified features sent to the client don't carry ALT.                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [hasUnphased](#getter-hasunphased)                                       | Getters    | MultiSampleVariantBaseModel                           | Whether any genotype call is unphased (drives the "Unphased" legend entry in phased mode).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [hasConsequence](#getter-hasconsequence)                                 | Getters    | MultiSampleVariantBaseModel                           | Whether any visible variant carries a SnpEff/VEP annotation, gating the "Color cells by consequence" menu option.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| [sampleInfo](#getter-sampleinfo)                                         | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [renderingMode](#getter-renderingmode)                                   | Getters    | MultiSampleVariantBaseModel                           | Returns the rendering mode config slot value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [colorBy](#getter-colorby)                                               | Getters    | MultiSampleVariantBaseModel                           | The effective sample-grouping attribute (config default or runtime override). Drives the sidebar row coloring and the legend's group section; '' means no grouping.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [featureColor](#getter-featurecolor)                                     | Getters    | MultiSampleVariantBaseModel                           | Optional per-variant cell color (jexl string or CSS color) applied to alt-carrying cells; '' means default genotype coloring. Reads the raw config value directly (not `getConf`, which evaluates a `jexl:...` string immediately with no `feature` bound) — this crosses the RPC boundary as-is and is evaluated once per feature in the worker (see `makeFeatureColor` in `executeVariantCellData.ts`).                                                                                                                                                                                                                               |
+| [featureWidgetType](#getter-featurewidgettype)                           | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [fetchSizeLimit](#getter-fetchsizelimit)                                 | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [minorAlleleFrequencyFilter](#getter-minorallelefrequencyfilter)         | Getters    | MultiSampleVariantBaseModel                           | Returns the minor allele frequency filter config slot value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [maxMissingnessFilter](#getter-maxmissingnessfilter)                     | Getters    | MultiSampleVariantBaseModel                           | Max fraction of no-call genotypes a variant may have before it's hidden; 1 keeps every variant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [filters](#getter-filters)                                               | Getters    | MultiSampleVariantBaseModel                           | The jexl filter expressions (from the Edit filters dialog) as a SerializableFilterChain, ready to pass as the RPC `filters` arg. MultiSampleVariantGet{CellData,GenotypeMatrix,ClusterGenotypeMatrix} all extend RpcMethodTypeWithFiltersAndRenameRegions, which serializes this to string[] and rebuilds it in the worker with pluginManager.jexl.                                                                                                                                                                                                                                                                                     |
+| [showSidebarLabels](#getter-showsidebarlabels)                           | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [showTree](#getter-showtree)                                             | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [showBranchLength](#getter-showbranchlength)                             | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [referenceDrawingMode](#getter-referencedrawingmode)                     | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [colorByAttributes](#getter-colorbyattributes)                           | Getters    | MultiSampleVariantBaseModel                           | Distinct sample-metadata attributes (from samplesTsv) the user can color rows by — every key the sources carry except internal plumbing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [sourcesWithoutLayout](#getter-sourceswithoutlayout)                     | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [sourcesBase](#getter-sourcesbase)                                       | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [sources](#getter-sources)                                               | Getters    | MultiSampleVariantBaseModel                           | sourcesBase expanded for phased rendering when sampleInfo is available. Sources already carrying HP (from clustering) pass through unchanged.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [editableSources](#getter-editablesources)                               | Getters    | MultiSampleVariantBaseModel                           | Layout-merged, phased-expanded view for the Edit Color/Arrangement dialog. Does NOT apply the subtree filter — submitting the dialog persists every row back to `layout`, so filtered samples must be present or they would be wiped from layout on submit.                                                                                                                                                                                                                                                                                                                                                                             |
+| [sourceMap](#getter-sourcemap)                                           | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [genotypeSampleIndex](#getter-genotypesampleindex)                       | Getters    | MultiSampleVariantBaseModel                           | sampleName -> column index into each feature's interned `genotypeCodes`. Rebuilt only when cellData changes. Used by the tooltips to decode a hovered cell's genotype (see genotypeCodec.ts).                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [availableHeight](#getter-availableheight)                               | Getters    | MultiSampleVariantBaseModel                           | Available height for rows (total height minus lineZoneHeight)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [nrow](#getter-nrow)                                                     | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [autoRowHeight](#getter-autorowheight)                                   | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [effectiveRowHeight](#getter-effectiverowheight)                         | Getters    | MultiSampleVariantBaseModel                           | Resolved per-row height. `rowHeight === 0` means auto-fit (computed from availableHeight / nrow); any positive value is a user-pinned height. `resizeHeight` scales pinned values proportionally so manual + display-resize stay in sync without snap-back fuzziness. Every consumer reads this, never the raw `rowHeight` property.                                                                                                                                                                                                                                                                                                    |
+| [hierarchy](#getter-hierarchy)                                           | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [spatialIndex](#getter-spatialindex)                                     | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [hoveredTooltipSource](#getter-hoveredtooltipsource)                     | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [canDisplayLabels](#getter-candisplaylabels)                             | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [totalHeight](#getter-totalheight)                                       | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [hasOverflow](#getter-hasoverflow)                                       | Getters    | MultiSampleVariantBaseModel                           | Whether the rows are taller than the viewport, i.e. the display scrolls. Drives native-scroll gating in displays that scroll their rows in a native overflow container (the plain display); auto-fit mode keeps this false since `rowHeight` derives from `availableHeight`.                                                                                                                                                                                                                                                                                                                                                            |
+| [scrollableHeight](#getter-scrollableheight)                             | Getters    | MultiSampleVariantBaseModel                           | Max valid `scrollTop`: how far the rows can scroll before the bottom row reaches the viewport floor. Zero when the rows fit.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [featuresReady](#getter-featuresready)                                   | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [rpcProps](#method-rpcprops)                                             | Methods    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [showSubmenuItems](#method-showsubmenuitems)                             | Methods    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [trackMenuItems](#method-trackmenuitems)                                 | Methods    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [contextMenuItems](#method-contextmenuitems)                             | Methods    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [getPortableSettings](#method-getportablesettings)                       | Methods    | MultiSampleVariantBaseModel                           | Called by BaseTrackModel.replaceDisplay when switching between the regular and matrix variant displays. The config-slot settings (colorBy, renderingMode, etc.) now live on each display's own config-schema node rather than a display-instance override map, so porting them means writing directly into the _target_ display's config (via setSlot) rather than spreading them into the new display's instance snapshot — hence the `newDisplayId` param. Only genuine display-instance state (not config-backed) is returned for the instance-snapshot spread.                                                                      |
+| [legendSections](#method-legendsections)                                 | Methods    | MultiSampleVariantBaseModel                           | Legend split into independently-closable sections: the genotype/cell coloring and (when colorBy is set) the sample-grouping coloring shown on the sidebar row labels. Dismissed sections are filtered out.                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [setCellData](#action-setcelldata)                                       | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setContextMenuFeature](#action-setcontextmenufeature)                   | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setLoadedBpPerPx](#action-setloadedbpperpx)                             | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [fetchMetadataDescriptions](#action-fetchmetadatadescriptions)           | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setJexlFilters](#action-setjexlfilters)                                 | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setShowLegend](#action-setshowlegend)                                   | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [dismissLegendSection](#action-dismisslegendsection)                     | Actions    | MultiSampleVariantBaseModel                           | Close a single legend section (leaving the others visible).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [selectFeature](#action-selectfeature)                                   | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setRowHeight](#action-setrowheight)                                     | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setHoveredGenotype](#action-sethoveredgenotype)                         | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setSources](#action-setsources)                                         | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setColorBy](#action-setcolorby)                                         | Actions    | MultiSampleVariantBaseModel                           | Recolor sample rows by a metadata attribute (e.g. 'population'), or pass '' to clear the grouping. Persists the colored arrangement as the layout and records the choice in the `colorBy` config slot so it survives a data refetch and serializes into the session.                                                                                                                                                                                                                                                                                                                                                                    |
+| [clearLayout](#action-clearlayout)                                       | Actions    | MultiSampleVariantBaseModel                           | Restore the configured default arrangement — empties the layout and clears the cluster tree, then re-applies the `colorBy` palette if one is configured. Overrides the mixin's `clearLayout` so the user gets the same starting state they had on initial load.                                                                                                                                                                                                                                                                                                                                                                         |
+| [setMafFilter](#action-setmaffilter)                                     | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setMaxMissingnessFilter](#action-setmaxmissingnessfilter)               | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setShowSidebarLabels](#action-setshowsidebarlabels)                     | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setShowTree](#action-setshowtree)                                       | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setShowBranchLength](#action-setshowbranchlength)                       | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setLayoutAndPendingClusterTree](#action-setlayoutandpendingclustertree) | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setRunClustering](#action-setrunclustering)                             | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setPhasedMode](#action-setphasedmode)                                   | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setFitToHeight](#action-setfittoheight)                                 | Actions    | MultiSampleVariantBaseModel                           | Enable fit-to-display-height mode: `rowHeight = 0` makes `effectiveRowHeight` divide `availableHeight` across the rows.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [resizeHeight](#action-resizeheight)                                     | Actions    | MultiSampleVariantBaseModel                           | Override resizeHeight to scale a pinned row height proportionally when the display is vertically resized. Rows live in `availableHeight` (`height - lineZoneHeight`), not the full height, so scale by the available-height ratio — otherwise the visible fraction of rows drifts on resize whenever `lineZoneHeight` is non-zero (the matrix display).                                                                                                                                                                                                                                                                                 |
+| [setReferenceDrawingMode](#action-setreferencedrawingmode)               | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setFeatureColor](#action-setfeaturecolor)                               | Actions    | MultiSampleVariantBaseModel                           | Set the per-variant cell color override (jexl string or CSS color), or '' to restore default genotype coloring. A fetch input — recomputes cells in the worker.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [sortByGenotype](#action-sortbygenotype)                                 | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setScrollTop](#action-setscrolltop)                                     | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [clearDisplaySpecificData](#action-cleardisplayspecificdata)             | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [isCacheValid](#action-iscachevalid)                                     | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [getByteEstimateConfig](#action-getbyteestimateconfig)                   | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [fetchNeeded](#action-fetchneeded)                                       | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [reload](#action-reload)                                                 | Actions    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [id](#property-id)                                                       | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [rpcDriverName](#property-rpcdrivername)                                 | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [error](#volatile-error)                                                 | Volatiles  | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [statusMessage](#volatile-statusmessage)                                 | Volatiles  | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [statusProgress](#volatile-statusprogress)                               | Volatiles  | [BaseDisplay](../basedisplay)                         | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [parentTrack](#getter-parenttrack)                                       | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [parentDisplay](#getter-parentdisplay)                                   | Getters    | [BaseDisplay](../basedisplay)                         | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [RenderingComponent](#getter-renderingcomponent)                         | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [DisplayBlurb](#getter-displayblurb)                                     | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [adapterConfig](#getter-adapterconfig)                                   | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [isMinimized](#getter-isminimized)                                       | Getters    | [BaseDisplay](../basedisplay)                         | Returns true if the parent track is minimized. Used to skip expensive operations like autoruns when track is not visible.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [effectiveRpcDriverName](#getter-effectiverpcdrivername)                 | Getters    | [BaseDisplay](../basedisplay)                         | Returns the effective RPC driver name with hierarchical fallback: 1. This display's explicit rpcDriverName 2. Parent display's effectiveRpcDriverName (for nested displays) 3. Track config's rpcDriverName                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [DisplayMessageComponent](#getter-displaymessagecomponent)               | Getters    | [BaseDisplay](../basedisplay)                         | if a display-level message should be displayed instead, make this return a react component                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [renderingProps](#method-renderingprops)                                 | Methods    | [BaseDisplay](../basedisplay)                         | props passed to the renderer's React "Rendering" component. these are client-side only and never sent to the worker. includes displayModel and callbacks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [regionCannotBeRendered](#method-regioncannotberendered)                 | Methods    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setStatusMessage](#action-setstatusmessage)                             | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setError](#action-seterror)                                             | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setRpcDriverName](#action-setrpcdrivername)                             | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [scrollTop](#volatile-scrolltop)                                         | Volatiles  | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [height](#getter-height)                                                 | Getters    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setHeight](#action-setheight)                                           | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [loadedRegions](#volatile-loadedregions)                                 | Volatiles  | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [isReady](#getter-isready)                                               | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once the canvas has painted and no fetch is in flight                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [viewportWithinLoadedData](#getter-viewportwithinloadeddata)             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan. Drives the loading overlay through the pre-refetch debounce. Spatial only; see CLAUDE.md for why this is exact and for the resolution-staleness gap.                                                                                                                                                                                                                                                                                                             |
+| [svgReady](#getter-svgready)                                             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once an off-screen (SVG) export can safely read this display's data: every visible region has loaded, or the fetch reached a terminal error / too-large state. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of inlining the condition. Regions stream in one at a time, so gating on `viewportWithinLoadedData` (not the first datum) is what keeps multi-region/whole-genome exports complete; `loadedRegions.size` guards the vacuously-true empty-viewport case.                                                                                                                                          |
+| [svgReadyExtraTerminal](#getter-svgreadyextraterminal)                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data. Sequence sets it when zoomed past base resolution — it renders a static "zoom in" message and fetches nothing, so `svgReady` would otherwise never resolve.                                                                                                                                                                                                                                                                                                                          |
+| [renderBlocks](#getter-renderblocks)                                     | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Shared cached view for every LGV-based GPU display. A single displayedRegion may produce multiple render blocks (shared GPU buffer, different scissor clips on screen). Plugins that want to suppress rendering in certain states (e.g. no domain yet) can override this getter to return [] — the autorun lifecycle will then issue an empty-blocks render that clears the canvas.                                                                                                                                                                                                                                                     |
+| [displayPhase](#getter-displayphase)                                     | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The display's mutually-exclusive visual state, precedence single-sourced in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data (viewport past loaded) is still on screen through the pre-refetch debounce.                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [setLoadedRegion](#action-setloadedregion)                               | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Action wrapper so callers after async boundaries stay in MST strict mode.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [clearAllRpcData](#action-clearallrpcdata)                               | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | full reset: cancels fetch, clears error, regionTooLarge, loadedRegions, display-specific data, and the canvas-drawn flag                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [invalidateLoadedRegions](#action-invalidateloadedregions)               | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | lighter reset: cancels fetch and clears loadedRegions, leaving error and regionTooLarge intact                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [fetchRegions](#action-fetchregions)                                     | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Run a per-region fetch with byte-estimate gating. Marks regions as loaded only AFTER the work callback has populated display-specific data (rpcDataMap, cellData, etc) so the GPU upload autorun sees committed data when it observes loadedRegions.                                                                                                                                                                                                                                                                                                                                                                                    |
+| [afterAttach](#action-afterattach)                                       | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | installs the four fetch-lifecycle autoruns (DisplayedRegionsChange, FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [userByteSizeLimit](#property-userbytesizelimit)                         | Properties | [RegionTooLargeMixin](../regiontoolargemixin)         | user-confirmed byte limit after a force-load, disabling the gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [regionTooLargeState](#volatile-regiontoolargestate)                     | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [regionTooLargeReasonState](#volatile-regiontoolargereasonstate)         | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [featureDensityStats](#volatile-featuredensitystats)                     | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [regionTooLarge](#getter-regiontoolarge)                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [regionTooLargeReason](#getter-regiontoolargereason)                     | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [regionCannotBeRenderedText](#method-regioncannotberenderedtext)         | Methods    | [RegionTooLargeMixin](../regiontoolargemixin)         | Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the display chrome via `TooLargeMessage`, not the model.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [setRegionTooLarge](#action-setregiontoolarge)                           | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setFeatureDensityStats](#action-setfeaturedensitystats)                 | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit)       | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | force-load: raise the byte limit past the current request and clear the too-large banner                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [forceLoad](#action-forceload)                                           | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Raises the byte limit past the current density stats and triggers a reload. The display chrome calls this via TooLargeMessage's force-load button; concrete display models override reload() to do the actual refetch.                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [canvasDrawn](#volatile-canvasdrawn)                                     | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [currentRenderingBackend](#volatile-currentrenderingbackend)             | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | current backend reference, updated on context-loss recovery. Typed `unknown` (not generic `B`) on purpose: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast.                                                                                                                                                                                                                                                                                   |
+| [renderTick](#volatile-rendertick)                                       | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | counter the render autorun observes; bumped to force a re-render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [autorunsInstalled](#volatile-autorunsinstalled)                         | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [renderError](#volatile-rendererror)                                     | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined. Single source of truth for the render-error terminal state: `useRenderingBackend` writes it from the canvas-init mechanism so the model — not React-local hook state — owns every terminal state. Read by `displayPhase` (whose `renderError` term outranks `loading`, suppressing the scrim) and by `DisplayChrome` (shows the retry overlay).                                                                                                                                                                                                             |
+| [markCanvasDrawn](#action-markcanvasdrawn)                               | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [resetCanvasDrawn](#action-resetcanvasdrawn)                             | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [stopRenderingBackend](#action-stoprenderingbackend)                     | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [renderNow](#action-rendernow)                                           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setRenderError](#action-setrendererror)                                 | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       | set/clear the render-backend error. Called by `useRenderingBackend`: with the error when the canvas factory rejects (or context-loss re-init fails), and with `undefined` on successful (re)init and on retry.                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [attachRenderingBackend](#action-attachrenderingbackend)                 | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [activeStopToken](#volatile-activestoptoken)                             | Volatiles  | [FetchMixin](../fetchmixin)                           | stop token of the in-flight fetch, or undefined when idle                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [fetchGeneration](#volatile-fetchgeneration)                             | Volatiles  | [FetchMixin](../fetchmixin)                           | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [fetchCanceled](#volatile-fetchcanceled)                                 | Volatiles  | [FetchMixin](../fetchmixin)                           | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`, it does not retrigger the fetch autoruns — so the load stays stopped until the user retries (`reload`) or the viewport changes. Any new fetch clears it (`runFetch` resets it at the start).                                                                                                                                                                                                                                                                               |
+| [regionStatuses](#volatile-regionstatuses)                               | Volatiles  | [FetchMixin](../fetchmixin)                           | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex). Plain bookkeeping — not read reactively; setRegionStatus derives the observable statusMessage/statusProgress from it on every update so N parallel region fetches aggregate into one bar instead of clobbering.                                                                                                                                                                                                                                                                                          |
+| [lastStatusMs](#volatile-laststatusms)                                   | Volatiles  | [FetchMixin](../fetchmixin)                           | Date.now() of the last applied status write; the status callbacks gate on it to throttle a high-frequency progress stream.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [isLoading](#getter-isloading)                                           | Getters    | [FetchMixin](../fetchmixin)                           | true while a fetch is active                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [makeStatusCallback](#method-makestatuscallback)                         | Methods    | [FetchMixin](../fetchmixin)                           | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op. Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard at every call site.                                                                                                                                                                                                                                                                                         |
+| [makeRegionStatusCallback](#method-makeregionstatuscallback)             | Methods    | [FetchMixin](../fetchmixin)                           | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other. Same `isAlive` guard.                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [throttleStatus](#action-throttlestatus)                                 | Actions    | [FetchMixin](../fetchmixin)                           | Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last status write. A leading-edge throttle: sparse updates pass straight through, dense progress bursts are thinned so the loading overlay stops re-rendering faster than the view animates. The final status doesn't need a trailing flush — fetch completion clears it via `resetStatus`.                                                                                                                                                                                                                                                                      |
+| [resetStatus](#action-resetstatus)                                       | Actions    | [FetchMixin](../fetchmixin)                           | Drop the active stop token and clear all status bookkeeping. Shared by both cancel paths and runFetch's cleanup.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [stopActiveFetch](#action-stopactivefetch)                               | Actions    | [FetchMixin](../fetchmixin)                           | Abort the in-flight fetch (if any) and clear its status. The shared preamble of both cancel paths; the difference between them is only what they do to `fetchCanceled` / `fetchGeneration` afterward.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [setRegionStatus](#action-setregionstatus)                               | Actions    | [FetchMixin](../fetchmixin)                           | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys. Pass undefined to drop a key. Used by displays that fan a single fetch out into parallel per-region RPCs.                                                                                                                                                                                                                                                                                                                                                                     |
+| [cancelFetch](#action-cancelfetch)                                       | Actions    | [FetchMixin](../fetchmixin)                           | cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight). This is the _internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any user-cancel flag so the retrigger actually re-fetches.                                                                                                                                                                                                                                                                                                                                        |
+| [cancelFetchByUser](#action-cancelfetchbyuser)                           | Actions    | [FetchMixin](../fetchmixin)                           | User-initiated cancel from the loading overlay. Stops the in-flight fetch and lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump fetchGeneration — so the fetch autoruns don't immediately restart the load. The user retries via `reload` (the overlay's retry button), or it clears on the next viewport change.                                                                                                                                                                                                                                                                                        |
+| [runFetch](#action-runfetch)                                             | Actions    | [FetchMixin](../fetchmixin)                           | Run a cancel-safe fetch (cancels any prior). The work callback gets a FetchContext with a stopToken to forward to the RPC and an isStale() check to short-circuit commits once the user has moved on. Abort errors are swallowed; others are stored in `error` if not stale.                                                                                                                                                                                                                                                                                                                                                            |
+| [layout](#property-layout)                                               | Properties | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [clusterTree](#property-clustertree)                                     | Properties | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [treeAreaWidth](#property-treeareawidth)                                 | Properties | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [subtreeFilter](#property-subtreefilter)                                 | Properties | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [hoveredTreeNode](#volatile-hoveredtreenode)                             | Volatiles  | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [treeCanvas](#volatile-treecanvas)                                       | Volatiles  | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [mouseoverCanvas](#volatile-mouseovercanvas)                             | Volatiles  | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [parsedTree](#getter-parsedtree)                                         | Getters    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [root](#getter-root)                                                     | Getters    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [treeHasBranchLengths](#getter-treehasbranchlengths)                     | Getters    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [willClearTree](#method-willcleartree)                                   | Methods    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setLayout](#action-setlayout)                                           | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setClusterTree](#action-setclustertree)                                 | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setLayoutAndClusterTree](#action-setlayoutandclustertree)               | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setTreeAreaWidth](#action-settreeareawidth)                             | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setSubtreeFilter](#action-setsubtreefilter)                             | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setHoveredTreeNode](#action-sethoveredtreenode)                         | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setTreeCanvasRef](#action-settreecanvasref)                             | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setMouseoverCanvasRef](#action-setmouseovercanvasref)                   | Actions    | [TreeSidebarMixin](../treesidebarmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 <details>
 <summary>MultiSampleVariantBaseModel - Properties</summary>
@@ -1076,6 +1007,926 @@ type fetchNeeded = (
 
 ```ts
 type reload = () => void
+```
+
+</details>
+
+## Inherited members
+
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
+
+<details>
+<summary>Derived from BaseDisplay</summary>
+
+[BaseDisplay →](../basedisplay)
+
+**Properties**
+
+#### property: id
+
+```ts
+// type signature
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
+```
+
+#### property: rpcDriverName
+
+```ts
+// type signature
+type rpcDriverName = IMaybe<ISimpleType<string>>
+// code
+rpcDriverName: types.maybe(types.string)
+```
+
+**Volatiles**
+
+#### volatile: error
+
+```ts
+// type signature
+type error = unknown
+// code
+error: undefined as unknown
+```
+
+#### volatile: statusMessage
+
+```ts
+// type signature
+type statusMessage = string | undefined
+// code
+statusMessage: undefined as string | undefined
+```
+
+#### volatile: statusProgress
+
+determinate progress fraction [0,1] for the current status, or undefined when
+the in-flight phase is indeterminate. Set alongside `statusMessage` by
+`setStatusMessage`; a display that never shows a bar simply leaves it undefined.
+
+```ts
+// type signature
+type statusProgress = number | undefined
+// code
+statusProgress: undefined as number | undefined
+```
+
+**Getters**
+
+#### getter: parentTrack
+
+```ts
+type parentTrack = AbstractTrackModel
+```
+
+#### getter: parentDisplay
+
+Returns the parent display if this display is nested within another display
+(e.g., PileupDisplay inside LinearAlignmentsDisplay)
+
+```ts
+type parentDisplay =
+  | { type?: string | undefined; effectiveRpcDriverName?: string | undefined }
+  | undefined
+```
+
+#### getter: RenderingComponent
+
+```ts
+type RenderingComponent = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; onHorizontalScroll?: ((distance: number) => void) | undefined; blockState?: Record<...> | undefined; }>
+```
+
+#### getter: DisplayBlurb
+
+```ts
+type DisplayBlurb = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; }> | null
+```
+
+#### getter: adapterConfig
+
+```ts
+type adapterConfig = any
+```
+
+#### getter: isMinimized
+
+Returns true if the parent track is minimized. Used to skip expensive operations
+like autoruns when track is not visible.
+
+```ts
+type isMinimized = boolean
+```
+
+#### getter: effectiveRpcDriverName
+
+Returns the effective RPC driver name with hierarchical fallback:
+
+1. This display's explicit rpcDriverName
+2. Parent display's effectiveRpcDriverName (for nested displays)
+3. Track config's rpcDriverName
+
+```ts
+type effectiveRpcDriverName = any
+```
+
+#### getter: DisplayMessageComponent
+
+if a display-level message should be displayed instead, make this return a react
+component
+
+```ts
+type DisplayMessageComponent = FC<any> | undefined
+```
+
+**Methods**
+
+#### method: renderingProps
+
+props passed to the renderer's React "Rendering" component. these are
+client-side only and never sent to the worker. includes displayModel and
+callbacks
+
+```ts
+type renderingProps = () => { displayModel: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
+```
+
+#### method: regionCannotBeRendered
+
+```ts
+type regionCannotBeRendered = () => null
+```
+
+**Actions**
+
+#### action: setStatusMessage
+
+```ts
+type setStatusMessage = (status?: RpcStatus | undefined) => void
+```
+
+#### action: setError
+
+```ts
+type setError = (error?: unknown) => void
+```
+
+#### action: setRpcDriverName
+
+```ts
+type setRpcDriverName = (rpcDriverName: string) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from TrackHeightMixin</summary>
+
+[TrackHeightMixin →](../trackheightmixin)
+
+**Volatiles**
+
+#### volatile: scrollTop
+
+```ts
+// type signature
+type scrollTop = number
+// code
+scrollTop: 0
+```
+
+**Getters**
+
+#### getter: height
+
+```ts
+type height = number
+```
+
+**Actions**
+
+#### action: setHeight
+
+```ts
+type setHeight = (displayHeight: number) => number
+```
+
+</details>
+
+<details>
+<summary>Derived from MultiRegionDisplayMixin</summary>
+
+[MultiRegionDisplayMixin →](../multiregiondisplaymixin)
+
+**Volatiles**
+
+#### volatile: loadedRegions
+
+regions whose data has been fetched and committed, keyed by
+displayedRegionIndex; populated only after the fetch work callback returns
+
+```ts
+// type signature
+type loadedRegions = ObservableMap<number, Region>
+// code
+loadedRegions: observable.map<number, Region>()
+```
+
+**Getters**
+
+#### getter: isReady
+
+true once the canvas has painted and no fetch is in flight
+
+```ts
+type isReady = boolean
+```
+
+#### getter: viewportWithinLoadedData
+
+true when every visible block lies within an already-fetched region — i.e. the
+viewport shows data we actually loaded, not the stale fringe left after a
+zoom-out/pan. Drives the loading overlay through the pre-refetch debounce.
+Spatial only; see CLAUDE.md for why this is exact and for the
+resolution-staleness gap.
+
+```ts
+type viewportWithinLoadedData = boolean
+```
+
+#### getter: svgReady
+
+true once an off-screen (SVG) export can safely read this display's data: every
+visible region has loaded, or the fetch reached a terminal error / too-large
+state. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of
+inlining the condition. Regions stream in one at a time, so gating on
+`viewportWithinLoadedData` (not the first datum) is what keeps
+multi-region/whole-genome exports complete; `loadedRegions.size` guards the
+vacuously-true empty-viewport case.
+
+```ts
+type svgReady = boolean
+```
+
+#### getter: svgReadyExtraTerminal
+
+Overridable hook (default false): a subclass returns true to mark an extra
+terminal state where off-screen export can proceed with no loaded data. Sequence
+sets it when zoomed past base resolution — it renders a static "zoom in" message
+and fetches nothing, so `svgReady` would otherwise never resolve.
+
+```ts
+type svgReadyExtraTerminal = boolean
+```
+
+#### getter: renderBlocks
+
+Shared cached view for every LGV-based GPU display. A single displayedRegion may
+produce multiple render blocks (shared GPU buffer, different scissor clips on
+screen). Plugins that want to suppress rendering in certain states (e.g. no
+domain yet) can override this getter to return [] — the autorun lifecycle will
+then issue an empty-blocks render that clears the canvas.
+
+```ts
+type renderBlocks = RenderBlock[]
+```
+
+#### getter: displayPhase
+
+The display's mutually-exclusive visual state, precedence single-sourced in
+`computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data
+(viewport past loaded) is still on screen through the pre-refetch debounce.
+
+```ts
+type displayPhase = DisplayPhase
+```
+
+**Actions**
+
+#### action: setLoadedRegion
+
+Action wrapper so callers after async boundaries stay in MST strict mode.
+
+```ts
+type setLoadedRegion = (displayedRegionIndex: number, region: Region) => void
+```
+
+#### action: clearAllRpcData
+
+full reset: cancels fetch, clears error, regionTooLarge, loadedRegions,
+display-specific data, and the canvas-drawn flag
+
+```ts
+type clearAllRpcData = () => void
+```
+
+#### action: invalidateLoadedRegions
+
+lighter reset: cancels fetch and clears loadedRegions, leaving error and
+regionTooLarge intact
+
+```ts
+type invalidateLoadedRegions = () => void
+```
+
+#### action: fetchRegions
+
+Run a per-region fetch with byte-estimate gating. Marks regions as loaded only
+AFTER the work callback has populated display-specific data (rpcDataMap,
+cellData, etc) so the GPU upload autorun sees committed data when it observes
+loadedRegions.
+
+```ts
+type fetchRegions = (
+  needed: { region: Region; displayedRegionIndex: number }[],
+  work: (ctx: FetchContext) => Promise<void>,
+) => Promise<void>
+```
+
+#### action: afterAttach
+
+installs the four fetch-lifecycle autoruns (DisplayedRegionsChange,
+FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange)
+
+```ts
+type afterAttach = () => void
+```
+
+</details>
+
+<details>
+<summary>Derived from RegionTooLargeMixin</summary>
+
+[RegionTooLargeMixin →](../regiontoolargemixin)
+
+**Properties**
+
+#### property: userByteSizeLimit
+
+user-confirmed byte limit after a force-load, disabling the gate
+
+```ts
+// type signature
+type userByteSizeLimit = IMaybe<ISimpleType<number>>
+// code
+userByteSizeLimit: types.maybe(types.number)
+```
+
+**Volatiles**
+
+#### volatile: regionTooLargeState
+
+```ts
+// type signature
+type regionTooLargeState = false
+// code
+regionTooLargeState: false
+```
+
+#### volatile: regionTooLargeReasonState
+
+```ts
+// type signature
+type regionTooLargeReasonState = string
+// code
+regionTooLargeReasonState: ''
+```
+
+#### volatile: featureDensityStats
+
+```ts
+// type signature
+type featureDensityStats = FeatureDensityStats | undefined
+// code
+featureDensityStats: undefined as FeatureDensityStats | undefined
+```
+
+**Getters**
+
+#### getter: regionTooLarge
+
+```ts
+type regionTooLarge = boolean
+```
+
+#### getter: regionTooLargeReason
+
+```ts
+type regionTooLargeReason = string
+```
+
+**Methods**
+
+#### method: regionCannotBeRenderedText
+
+Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the
+display chrome via `TooLargeMessage`, not the model.
+
+```ts
+type regionCannotBeRenderedText = () => '' | 'Force load to see features'
+```
+
+**Actions**
+
+#### action: setRegionTooLarge
+
+```ts
+type setRegionTooLarge = (val: boolean, reason?: string | undefined) => void
+```
+
+#### action: setFeatureDensityStats
+
+```ts
+type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
+```
+
+#### action: setFeatureDensityStatsLimit
+
+force-load: raise the byte limit past the current request and clear the
+too-large banner
+
+```ts
+type setFeatureDensityStatsLimit = (
+  stats?: FeatureDensityStats | undefined,
+) => void
+```
+
+#### action: forceLoad
+
+Raises the byte limit past the current density stats and triggers a reload. The
+display chrome calls this via TooLargeMessage's force-load button; concrete
+display models override reload() to do the actual refetch.
+
+```ts
+type forceLoad = () => void
+```
+
+</details>
+
+<details>
+<summary>Derived from RenderLifecycleMixin</summary>
+
+[RenderLifecycleMixin →](../renderlifecyclemixin)
+
+**Volatiles**
+
+#### volatile: canvasDrawn
+
+flips true on first paint; read by test selectors to detect render
+
+```ts
+// type signature
+type canvasDrawn = false
+// code
+canvasDrawn: false
+```
+
+#### volatile: currentRenderingBackend
+
+current backend reference, updated on context-loss recovery. Typed `unknown`
+(not generic `B`) on purpose: this mixin is composed by every display via a
+non-generic factory, so the per-display backend type `B` isn't known here — it's
+supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the
+autoruns. Don't "fix" the cast.
+
+```ts
+// type signature
+type currentRenderingBackend = undefined
+// code
+currentRenderingBackend: undefined
+```
+
+#### volatile: renderTick
+
+counter the render autorun observes; bumped to force a re-render
+
+```ts
+// type signature
+type renderTick = number
+// code
+renderTick: 0
+```
+
+#### volatile: autorunsInstalled
+
+guards attachRenderingBackend so the autorun pair spawns once per instance
+
+```ts
+// type signature
+type autorunsInstalled = false
+// code
+autorunsInstalled: false
+```
+
+#### volatile: renderError
+
+the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.
+Single source of truth for the render-error terminal state:
+`useRenderingBackend` writes it from the canvas-init mechanism so the model —
+not React-local hook state — owns every terminal state. Read by `displayPhase`
+(whose `renderError` term outranks `loading`, suppressing the scrim) and by
+`DisplayChrome` (shows the retry overlay).
+
+```ts
+// type signature
+type renderError = undefined
+// code
+renderError: undefined
+```
+
+**Actions**
+
+#### action: markCanvasDrawn
+
+```ts
+type markCanvasDrawn = () => void
+```
+
+#### action: resetCanvasDrawn
+
+```ts
+type resetCanvasDrawn = () => void
+```
+
+#### action: stopRenderingBackend
+
+```ts
+type stopRenderingBackend = () => void
+```
+
+#### action: renderNow
+
+```ts
+type renderNow = () => void
+```
+
+#### action: setRenderError
+
+set/clear the render-backend error. Called by `useRenderingBackend`: with the
+error when the canvas factory rejects (or context-loss re-init fails), and with
+`undefined` on successful (re)init and on retry.
+
+```ts
+type setRenderError = (error: unknown) => void
+```
+
+#### action: attachRenderingBackend
+
+attach a GPU/Canvas2D backend and install the upload + render autorun pair
+(idempotent — re-calling only swaps the backend)
+
+```ts
+type attachRenderingBackend = <B>(
+  backend: B,
+  cbs: RenderingBackendCallbacks<B>,
+) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from FetchMixin</summary>
+
+[FetchMixin →](../fetchmixin)
+
+**Volatiles**
+
+#### volatile: activeStopToken
+
+stop token of the in-flight fetch, or undefined when idle
+
+```ts
+// type signature
+type activeStopToken = StopToken | undefined
+// code
+activeStopToken: undefined as StopToken | undefined
+```
+
+#### volatile: fetchGeneration
+
+bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the
+staleness epoch inside runFetch
+
+```ts
+// type signature
+type fetchGeneration = number
+// code
+fetchGeneration: 0
+```
+
+#### volatile: fetchCanceled
+
+true after the user explicitly cancels a load (the loading overlay's cancel
+button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`,
+it does not retrigger the fetch autoruns — so the load stays stopped until the
+user retries (`reload`) or the viewport changes. Any new fetch clears it
+(`runFetch` resets it at the start).
+
+```ts
+// type signature
+type fetchCanceled = false
+// code
+fetchCanceled: false
+```
+
+#### volatile: regionStatuses
+
+latest status of each concurrent in-flight operation, keyed by an arbitrary id
+(the canvas display uses displayedRegionIndex). Plain bookkeeping — not read
+reactively; setRegionStatus derives the observable statusMessage/statusProgress
+from it on every update so N parallel region fetches aggregate into one bar
+instead of clobbering.
+
+```ts
+// type signature
+type regionStatuses = Map<number, RpcStatus>
+// code
+regionStatuses: new Map<number, RpcStatus>()
+```
+
+#### volatile: lastStatusMs
+
+Date.now() of the last applied status write; the status callbacks gate on it to
+throttle a high-frequency progress stream.
+
+```ts
+// type signature
+type lastStatusMs = number
+// code
+lastStatusMs: 0
+```
+
+**Getters**
+
+#### getter: isLoading
+
+true while a fetch is active
+
+```ts
+type isLoading = boolean
+```
+
+**Methods**
+
+#### method: makeStatusCallback
+
+An RPC `statusCallback` bound to this display: forwards progress to the shared
+`statusMessage`, guarded by `isAlive` so a callback that fires after the node is
+torn down (RPCs resolve their status stream asynchronously) is a safe no-op.
+Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard
+at every call site.
+
+```ts
+type makeStatusCallback = () => (status: RpcStatus) => void
+```
+
+#### method: makeRegionStatusCallback
+
+Per-region variant of `makeStatusCallback`: routes progress through
+`setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one
+status bar instead of clobbering each other. Same `isAlive` guard.
+
+```ts
+type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
+```
+
+**Actions**
+
+#### action: throttleStatus
+
+Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last
+status write. A leading-edge throttle: sparse updates pass straight through,
+dense progress bursts are thinned so the loading overlay stops re-rendering
+faster than the view animates. The final status doesn't need a trailing flush —
+fetch completion clears it via `resetStatus`.
+
+```ts
+type throttleStatus = (apply: () => void) => void
+```
+
+#### action: resetStatus
+
+Drop the active stop token and clear all status bookkeeping. Shared by both
+cancel paths and runFetch's cleanup.
+
+```ts
+type resetStatus = () => void
+```
+
+#### action: stopActiveFetch
+
+Abort the in-flight fetch (if any) and clear its status. The shared preamble of
+both cancel paths; the difference between them is only what they do to
+`fetchCanceled` / `fetchGeneration` afterward.
+
+```ts
+type stopActiveFetch = () => void
+```
+
+#### action: setRegionStatus
+
+Record one concurrent operation's latest status (keyed) and recompute the shared
+statusMessage/statusProgress as the aggregate across all in-flight keys. Pass
+undefined to drop a key. Used by displays that fan a single fetch out into
+parallel per-region RPCs.
+
+```ts
+type setRegionStatus = (key: number, status?: RpcStatus | undefined) => void
+```
+
+#### action: cancelFetch
+
+cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers
+can retrigger fetch autoruns even when nothing was in flight). This is the
+_internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any
+user-cancel flag so the retrigger actually re-fetches.
+
+```ts
+type cancelFetch = () => void
+```
+
+#### action: cancelFetchByUser
+
+User-initiated cancel from the loading overlay. Stops the in-flight fetch and
+lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump
+fetchGeneration — so the fetch autoruns don't immediately restart the load. The
+user retries via `reload` (the overlay's retry button), or it clears on the next
+viewport change.
+
+```ts
+type cancelFetchByUser = () => void
+```
+
+#### action: runFetch
+
+Run a cancel-safe fetch (cancels any prior). The work callback gets a
+FetchContext with a stopToken to forward to the RPC and an isStale() check to
+short-circuit commits once the user has moved on. Abort errors are swallowed;
+others are stored in `error` if not stale.
+
+```ts
+type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
+```
+
+</details>
+
+<details>
+<summary>Derived from TreeSidebarMixin</summary>
+
+[TreeSidebarMixin →](../treesidebarmixin)
+
+**Properties**
+
+#### property: layout
+
+```ts
+// type signature
+type layout = IOptionalIType<IType<S[], S[], S[]>, [undefined]>
+// code
+layout: types.stripDefault(types.frozen<S[]>(), [])
+```
+
+#### property: clusterTree
+
+```ts
+// type signature
+type clusterTree = IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>
+// code
+clusterTree: types.stripDefault(types.maybe(types.string), undefined)
+```
+
+#### property: treeAreaWidth
+
+```ts
+// type signature
+type treeAreaWidth = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+treeAreaWidth: types.stripDefault(types.number, 80)
+```
+
+#### property: subtreeFilter
+
+```ts
+// type signature
+type subtreeFilter = IOptionalIType<
+  IMaybe<IArrayType<ISimpleType<string>>>,
+  [undefined]
+>
+// code
+subtreeFilter: types.stripDefault(
+  types.maybe(types.array(types.string)),
+  undefined,
+)
+```
+
+**Volatiles**
+
+#### volatile: hoveredTreeNode
+
+```ts
+// type signature
+type hoveredTreeNode = HoveredTreeNode | undefined
+// code
+hoveredTreeNode: undefined as HoveredTreeNode | undefined
+```
+
+#### volatile: treeCanvas
+
+```ts
+// type signature
+type treeCanvas = HTMLCanvasElement | null
+// code
+treeCanvas: null as HTMLCanvasElement | null
+```
+
+#### volatile: mouseoverCanvas
+
+```ts
+// type signature
+type mouseoverCanvas = HTMLCanvasElement | null
+// code
+mouseoverCanvas: null as HTMLCanvasElement | null
+```
+
+**Getters**
+
+#### getter: parsedTree
+
+```ts
+type parsedTree = HierarchyNode<NewickNode> | undefined
+```
+
+#### getter: root
+
+```ts
+type root = HierarchyNode<NewickNode> | undefined
+```
+
+#### getter: treeHasBranchLengths
+
+```ts
+type treeHasBranchLengths = boolean
+```
+
+**Methods**
+
+#### method: willClearTree
+
+```ts
+type willClearTree = (next: S[]) => boolean
+```
+
+**Actions**
+
+#### action: setLayout
+
+```ts
+type setLayout = (layout: S[]) => void
+```
+
+#### action: setClusterTree
+
+```ts
+type setClusterTree = (tree?: string | undefined) => void
+```
+
+#### action: setLayoutAndClusterTree
+
+```ts
+type setLayoutAndClusterTree = (layout: S[], tree?: string | undefined) => void
+```
+
+#### action: setTreeAreaWidth
+
+```ts
+type setTreeAreaWidth = (width: number) => void
+```
+
+#### action: setSubtreeFilter
+
+```ts
+type setSubtreeFilter = (names?: string[] | undefined) => void
+```
+
+#### action: setHoveredTreeNode
+
+```ts
+type setHoveredTreeNode = (node?: HoveredTreeNode | undefined) => void
+```
+
+#### action: setTreeCanvasRef
+
+```ts
+type setTreeCanvasRef = (ref: HTMLCanvasElement | null) => void
+```
+
+#### action: setMouseoverCanvasRef
+
+```ts
+type setMouseoverCanvasRef = (ref: HTMLCanvasElement | null) => void
 ```
 
 </details>

@@ -20,10 +20,10 @@ without re-implementing the two delegations per display type.
 
 ## Members
 
-| Member                                                 | Kind    | Description                                                                                                                                                                                                    |
-| ------------------------------------------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [sessionDefaultChanges](#method-sessiondefaultchanges) | Methods | Effective config differences an un-pinned track inherits from session-wide defaults (distinct from per-track config edits / trackConfigDeltas). Drives the "affected by a session default" badge.              |
-| [clearSessionDefaults](#action-clearsessiondefaults)   | Actions | Clear the session-wide defaults reported by `sessionDefaultChanges` so this display (and its siblings of the same type) revert to their config values. Backs the "clear default" action on the selector badge. |
+| Member                                                 | Kind    | Defined by              | Description                                                                                                                                                                                                    |
+| ------------------------------------------------------ | ------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [sessionDefaultChanges](#method-sessiondefaultchanges) | Methods | PromotableDefaultsMixin | Effective config differences an un-pinned track inherits from session-wide defaults (distinct from per-track config edits / trackConfigDeltas). Drives the "affected by a session default" badge.              |
+| [clearSessionDefaults](#action-clearsessiondefaults)   | Actions | PromotableDefaultsMixin | Clear the session-wide defaults reported by `sessionDefaultChanges` so this display (and its siblings of the same type) revert to their config values. Backs the "clear default" action on the selector badge. |
 
 <details>
 <summary>PromotableDefaultsMixin - Methods</summary>

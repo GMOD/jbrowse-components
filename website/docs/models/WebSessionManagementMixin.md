@@ -17,13 +17,13 @@ react-app omits it (its root has no session database).
 
 ## Members
 
-| Member                                                     | Kind    | Description |
-| ---------------------------------------------------------- | ------- | ----------- |
-| [savedSessionMetadata](#getter-savedsessionmetadata)       | Getters |             |
-| [deleteSavedSession](#action-deletesavedsession)           | Actions |             |
-| [setSavedSessionFavorite](#action-setsavedsessionfavorite) | Actions |             |
-| [renameSavedSession](#action-renamesavedsession)           | Actions |             |
-| [activateSession](#action-activatesession)                 | Actions |             |
+| Member                                                     | Kind    | Defined by                | Description |
+| ---------------------------------------------------------- | ------- | ------------------------- | ----------- |
+| [savedSessionMetadata](#getter-savedsessionmetadata)       | Getters | WebSessionManagementMixin |             |
+| [deleteSavedSession](#action-deletesavedsession)           | Actions | WebSessionManagementMixin |             |
+| [setSavedSessionFavorite](#action-setsavedsessionfavorite) | Actions | WebSessionManagementMixin |             |
+| [renameSavedSession](#action-renamesavedsession)           | Actions | WebSessionManagementMixin |             |
+| [activateSession](#action-activatesession)                 | Actions | WebSessionManagementMixin |             |
 
 <details>
 <summary>WebSessionManagementMixin - Getters</summary>

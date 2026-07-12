@@ -20,13 +20,13 @@ unset.
 
 ## Members
 
-| Member                               | Kind      | Description |
-| ------------------------------------ | --------- | ----------- |
-| [scrollTop](#volatile-scrolltop)     | Volatiles |             |
-| [height](#getter-height)             | Getters   |             |
-| [setScrollTop](#action-setscrolltop) | Actions   |             |
-| [setHeight](#action-setheight)       | Actions   |             |
-| [resizeHeight](#action-resizeheight) | Actions   |             |
+| Member                               | Kind      | Defined by       | Description |
+| ------------------------------------ | --------- | ---------------- | ----------- |
+| [scrollTop](#volatile-scrolltop)     | Volatiles | TrackHeightMixin |             |
+| [height](#getter-height)             | Getters   | TrackHeightMixin |             |
+| [setScrollTop](#action-setscrolltop) | Actions   | TrackHeightMixin |             |
+| [setHeight](#action-setheight)       | Actions   | TrackHeightMixin |             |
+| [resizeHeight](#action-resizeheight) | Actions   | TrackHeightMixin |             |
 
 <details>
 <summary>TrackHeightMixin - Volatiles</summary>

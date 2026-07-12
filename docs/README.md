@@ -87,17 +87,25 @@ Then, in statemodels
 #method - a view that takes function params or is called as a function
 ```
 
-Each `#stateModel` page renders a flattened "Inherited members" overview listing
-every member reachable through composition, grouped by the model that defines
-it. The composition graph is **derived from code**, not authored — the generator
-resolves the models passed to the factory's `types.compose(...)` call, and the
-base of a `return BaseFactory(args).views(...)` extension chain, through the
-TypeScript checker (alias-followed, and following `const X = factory()`
-exports), so no `extends`/`composed of` comment needs to be written or kept in
-sync. The only requirement is that the `#stateModel` JSDoc sit on the model's
-factory (or its `types.compose`), not an unrelated preceding declaration. Any
-leftover hand-authored `extends`/`composed of` block is stripped from the
-rendered prose so it cannot drift from the derived list.
+Each `#stateModel` page renders a flattened "Inherited members" section
+reproducing every member reachable through composition in full, grouped by the
+model that defines it (with a "Derived from" link back to that model's own
+page), so the page is self-contained — a reader sees the whole API surface
+without chasing links. A member redeclared by a more specific model is shown
+once, at its most-specific definition. The "Members" index table at the top
+covers the same whole surface — own members first, then each ancestor's — with a
+"Defined by" column naming the source (a link to the ancestor's page for
+inherited members), so scanning the table finds any member on the page. Both the
+table and the inherited section render from one deduped computation, so they
+cannot disagree. The composition graph is **derived from code**, not authored —
+the generator resolves the models passed to the factory's `types.compose(...)`
+call, and the base of a `return BaseFactory(args).views(...)` extension chain,
+through the TypeScript checker (alias-followed, and following
+`const X = factory()` exports), so no `extends`/`composed of` comment needs to
+be written or kept in sync. The only requirement is that the `#stateModel` JSDoc
+sit on the model's factory (or its `types.compose`), not an unrelated preceding
+declaration. Any leftover hand-authored `extends`/`composed of` block is
+stripped from the rendered prose so it cannot drift from the derived list.
 
 This mirrors how `#baseConfiguration` derives config inheritance (below).
 

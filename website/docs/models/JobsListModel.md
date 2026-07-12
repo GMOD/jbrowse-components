@@ -13,24 +13,24 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Members
 
-| Member                                                   | Kind       | Description |
-| -------------------------------------------------------- | ---------- | ----------- |
-| [id](#property-id)                                       | Properties |             |
-| [type](#property-type)                                   | Properties |             |
-| [jobs](#property-jobs)                                   | Properties |             |
-| [finished](#property-finished)                           | Properties |             |
-| [queued](#property-queued)                               | Properties |             |
-| [aborted](#property-aborted)                             | Properties |             |
-| [addJob](#action-addjob)                                 | Actions    |             |
-| [removeJob](#action-removejob)                           | Actions    |             |
-| [addFinishedJob](#action-addfinishedjob)                 | Actions    |             |
-| [addQueuedJob](#action-addqueuedjob)                     | Actions    |             |
-| [addAbortedJob](#action-addabortedjob)                   | Actions    |             |
-| [removeQueuedJob](#action-removequeuedjob)               | Actions    |             |
-| [clearFinished](#action-clearfinished)                   | Actions    |             |
-| [clearAborted](#action-clearaborted)                     | Actions    |             |
-| [updateJobStatusMessage](#action-updatejobstatusmessage) | Actions    |             |
-| [updateJobProgressPct](#action-updatejobprogresspct)     | Actions    |             |
+| Member                                                   | Kind       | Defined by    | Description |
+| -------------------------------------------------------- | ---------- | ------------- | ----------- |
+| [id](#property-id)                                       | Properties | JobsListModel |             |
+| [type](#property-type)                                   | Properties | JobsListModel |             |
+| [jobs](#property-jobs)                                   | Properties | JobsListModel |             |
+| [finished](#property-finished)                           | Properties | JobsListModel |             |
+| [queued](#property-queued)                               | Properties | JobsListModel |             |
+| [aborted](#property-aborted)                             | Properties | JobsListModel |             |
+| [addJob](#action-addjob)                                 | Actions    | JobsListModel |             |
+| [removeJob](#action-removejob)                           | Actions    | JobsListModel |             |
+| [addFinishedJob](#action-addfinishedjob)                 | Actions    | JobsListModel |             |
+| [addQueuedJob](#action-addqueuedjob)                     | Actions    | JobsListModel |             |
+| [addAbortedJob](#action-addabortedjob)                   | Actions    | JobsListModel |             |
+| [removeQueuedJob](#action-removequeuedjob)               | Actions    | JobsListModel |             |
+| [clearFinished](#action-clearfinished)                   | Actions    | JobsListModel |             |
+| [clearAborted](#action-clearaborted)                     | Actions    | JobsListModel |             |
+| [updateJobStatusMessage](#action-updatejobstatusmessage) | Actions    | JobsListModel |             |
+| [updateJobProgressPct](#action-updatejobprogresspct)     | Actions    | JobsListModel |             |
 
 <details>
 <summary>JobsListModel - Properties</summary>

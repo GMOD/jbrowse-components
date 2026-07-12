@@ -17,28 +17,28 @@ used while drawing the tree.
 
 ## Members
 
-| Member                                                     | Kind       | Description |
-| ---------------------------------------------------------- | ---------- | ----------- |
-| [layout](#property-layout)                                 | Properties |             |
-| [clusterTree](#property-clustertree)                       | Properties |             |
-| [treeAreaWidth](#property-treeareawidth)                   | Properties |             |
-| [subtreeFilter](#property-subtreefilter)                   | Properties |             |
-| [hoveredTreeNode](#volatile-hoveredtreenode)               | Volatiles  |             |
-| [treeCanvas](#volatile-treecanvas)                         | Volatiles  |             |
-| [mouseoverCanvas](#volatile-mouseovercanvas)               | Volatiles  |             |
-| [parsedTree](#getter-parsedtree)                           | Getters    |             |
-| [root](#getter-root)                                       | Getters    |             |
-| [treeHasBranchLengths](#getter-treehasbranchlengths)       | Getters    |             |
-| [willClearTree](#method-willcleartree)                     | Methods    |             |
-| [setLayout](#action-setlayout)                             | Actions    |             |
-| [clearLayout](#action-clearlayout)                         | Actions    |             |
-| [setClusterTree](#action-setclustertree)                   | Actions    |             |
-| [setLayoutAndClusterTree](#action-setlayoutandclustertree) | Actions    |             |
-| [setTreeAreaWidth](#action-settreeareawidth)               | Actions    |             |
-| [setSubtreeFilter](#action-setsubtreefilter)               | Actions    |             |
-| [setHoveredTreeNode](#action-sethoveredtreenode)           | Actions    |             |
-| [setTreeCanvasRef](#action-settreecanvasref)               | Actions    |             |
-| [setMouseoverCanvasRef](#action-setmouseovercanvasref)     | Actions    |             |
+| Member                                                     | Kind       | Defined by       | Description |
+| ---------------------------------------------------------- | ---------- | ---------------- | ----------- |
+| [layout](#property-layout)                                 | Properties | TreeSidebarMixin |             |
+| [clusterTree](#property-clustertree)                       | Properties | TreeSidebarMixin |             |
+| [treeAreaWidth](#property-treeareawidth)                   | Properties | TreeSidebarMixin |             |
+| [subtreeFilter](#property-subtreefilter)                   | Properties | TreeSidebarMixin |             |
+| [hoveredTreeNode](#volatile-hoveredtreenode)               | Volatiles  | TreeSidebarMixin |             |
+| [treeCanvas](#volatile-treecanvas)                         | Volatiles  | TreeSidebarMixin |             |
+| [mouseoverCanvas](#volatile-mouseovercanvas)               | Volatiles  | TreeSidebarMixin |             |
+| [parsedTree](#getter-parsedtree)                           | Getters    | TreeSidebarMixin |             |
+| [root](#getter-root)                                       | Getters    | TreeSidebarMixin |             |
+| [treeHasBranchLengths](#getter-treehasbranchlengths)       | Getters    | TreeSidebarMixin |             |
+| [willClearTree](#method-willcleartree)                     | Methods    | TreeSidebarMixin |             |
+| [setLayout](#action-setlayout)                             | Actions    | TreeSidebarMixin |             |
+| [clearLayout](#action-clearlayout)                         | Actions    | TreeSidebarMixin |             |
+| [setClusterTree](#action-setclustertree)                   | Actions    | TreeSidebarMixin |             |
+| [setLayoutAndClusterTree](#action-setlayoutandclustertree) | Actions    | TreeSidebarMixin |             |
+| [setTreeAreaWidth](#action-settreeareawidth)               | Actions    | TreeSidebarMixin |             |
+| [setSubtreeFilter](#action-setsubtreefilter)               | Actions    | TreeSidebarMixin |             |
+| [setHoveredTreeNode](#action-sethoveredtreenode)           | Actions    | TreeSidebarMixin |             |
+| [setTreeCanvasRef](#action-settreecanvasref)               | Actions    | TreeSidebarMixin |             |
+| [setMouseoverCanvasRef](#action-setmouseovercanvasref)     | Actions    | TreeSidebarMixin |             |
 
 <details>
 <summary>TreeSidebarMixin - Properties</summary>

@@ -16,18 +16,18 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 
 ## Members
 
-| Member                                                     | Kind       | Description                                                                                                                                      |
-| ---------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [sessionAssemblies](#property-sessionassemblies)           | Properties |                                                                                                                                                  |
-| [temporaryAssemblies](#property-temporaryassemblies)       | Properties |                                                                                                                                                  |
-| [assemblies](#getter-assemblies)                           | Getters    | sessionAssemblies plus jbrowse config assemblies. Does not include temporaryAssemblies; this is the list shown in the AssemblySelector dropdown. |
-| [assemblyNames](#getter-assemblynames)                     | Getters    | names of the assemblies returned by the `assemblies` getter                                                                                      |
-| [addSessionAssembly](#action-addsessionassembly)           | Actions    |                                                                                                                                                  |
-| [addAssembly](#action-addassembly)                         | Actions    |                                                                                                                                                  |
-| [removeAssembly](#action-removeassembly)                   | Actions    |                                                                                                                                                  |
-| [removeSessionAssembly](#action-removesessionassembly)     | Actions    |                                                                                                                                                  |
-| [addTemporaryAssembly](#action-addtemporaryassembly)       | Actions    | used for read vs ref type assemblies.                                                                                                            |
-| [removeTemporaryAssembly](#action-removetemporaryassembly) | Actions    |                                                                                                                                                  |
+| Member                                                     | Kind       | Defined by      | Description                                                                                                                                      |
+| ---------------------------------------------------------- | ---------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [sessionAssemblies](#property-sessionassemblies)           | Properties | AssembliesMixin |                                                                                                                                                  |
+| [temporaryAssemblies](#property-temporaryassemblies)       | Properties | AssembliesMixin |                                                                                                                                                  |
+| [assemblies](#getter-assemblies)                           | Getters    | AssembliesMixin | sessionAssemblies plus jbrowse config assemblies. Does not include temporaryAssemblies; this is the list shown in the AssemblySelector dropdown. |
+| [assemblyNames](#getter-assemblynames)                     | Getters    | AssembliesMixin | names of the assemblies returned by the `assemblies` getter                                                                                      |
+| [addSessionAssembly](#action-addsessionassembly)           | Actions    | AssembliesMixin |                                                                                                                                                  |
+| [addAssembly](#action-addassembly)                         | Actions    | AssembliesMixin |                                                                                                                                                  |
+| [removeAssembly](#action-removeassembly)                   | Actions    | AssembliesMixin |                                                                                                                                                  |
+| [removeSessionAssembly](#action-removesessionassembly)     | Actions    | AssembliesMixin |                                                                                                                                                  |
+| [addTemporaryAssembly](#action-addtemporaryassembly)       | Actions    | AssembliesMixin | used for read vs ref type assemblies.                                                                                                            |
+| [removeTemporaryAssembly](#action-removetemporaryassembly) | Actions    | AssembliesMixin |                                                                                                                                                  |
 
 <details>
 <summary>AssembliesMixin - Properties</summary>

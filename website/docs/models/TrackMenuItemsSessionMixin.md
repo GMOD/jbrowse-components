@@ -18,10 +18,10 @@ which each session supplies (web gates on edit rights; desktop adds indexing).
 
 ## Members
 
-| Member                                                     | Kind    | Description                                                           |
-| ---------------------------------------------------------- | ------- | --------------------------------------------------------------------- |
-| [getTrackListMenuItems](#method-gettracklistmenuitems)     | Methods | flattened menu items for use in hierarchical track selector           |
-| [getTrackActionMenuItems](#method-gettrackactionmenuitems) | Methods | track menu with About + "Track actions" submenu for the in-view label |
+| Member                                                     | Kind    | Defined by                 | Description                                                           |
+| ---------------------------------------------------------- | ------- | -------------------------- | --------------------------------------------------------------------- |
+| [getTrackListMenuItems](#method-gettracklistmenuitems)     | Methods | TrackMenuItemsSessionMixin | flattened menu items for use in hierarchical track selector           |
+| [getTrackActionMenuItems](#method-gettrackactionmenuitems) | Methods | TrackMenuItemsSessionMixin | track menu with About + "Track actions" submenu for the in-view label |
 
 <details>
 <summary>TrackMenuItemsSessionMixin - Methods</summary>

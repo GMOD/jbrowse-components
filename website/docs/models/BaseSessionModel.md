@@ -16,61 +16,51 @@ everything will use it.
 
 ## Members
 
-| Member                                                       | Kind       | Description                                                                                                                                                                                                                                                                                                                                                    |
-| ------------------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [id](#property-id)                                           | Properties |                                                                                                                                                                                                                                                                                                                                                                |
-| [name](#property-name)                                       | Properties |                                                                                                                                                                                                                                                                                                                                                                |
-| [margin](#property-margin)                                   | Properties |                                                                                                                                                                                                                                                                                                                                                                |
-| [focusedViewId](#property-focusedviewid)                     | Properties | used to keep track of which view is in focus                                                                                                                                                                                                                                                                                                                   |
-| [highlightsVisible](#property-highlightsvisible)             | Properties | one session-wide toggle for all region highlight bands (URL/view highlights and bookmark overlays)                                                                                                                                                                                                                                                             |
-| [selection](#volatile-selection)                             | Volatiles  | this is the globally "selected" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.                                                                                                                                                                                                                  |
-| [hovered](#volatile-hovered)                                 | Volatiles  | this is the globally "hovered" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.                                                                                                                                                                                                                   |
-| [queueOfDialogs](#volatile-queueofdialogs)                   | Volatiles  |                                                                                                                                                                                                                                                                                                                                                                |
-| [preferencesOverrides](#volatile-preferencesoverrides)       | Volatiles  | runtime user-preference overrides keyed by preference id, resolved by `getPreference` against the `configuration.preferences` admin defaults. Empty here (config-only); products that let users edit preferences load and persist these via localStorage. A runtime override map layered over config defaults, kept off the snapshot since prefs are local UI. |
-| [root](#getter-root)                                         | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
-| [jbrowse](#getter-jbrowse)                                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
-| [rpcManager](#getter-rpcmanager)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
-| [configuration](#getter-configuration)                       | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
-| [adminMode](#getter-adminmode)                               | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
-| [textSearchManager](#getter-textsearchmanager)               | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
-| [assemblies](#getter-assemblies)                             | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
-| [DialogComponent](#getter-dialogcomponent)                   | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
-| [DialogProps](#getter-dialogprops)                           | Getters    |                                                                                                                                                                                                                                                                                                                                                                |
-| [animationMode](#getter-animationmode)                       | Getters    | resolved feature-layout animation mode (never undefined)                                                                                                                                                                                                                                                                                                       |
-| [scrollZoom](#getter-scrollzoom)                             | Getters    | resolved scroll-to-zoom preference. Global and personal (never shared in a session snapshot); every wheel-zoom view reads this single value.                                                                                                                                                                                                                   |
-| [getPreference](#method-getpreference)                       | Methods    | resolved value of a user preference: a runtime override if the user set one, otherwise the admin/embedder `configuration.preferences` default. The override map is empty unless the product loads it (web/desktop).                                                                                                                                            |
-| [getDisplayTypeDefault](#method-getdisplaytypedefault)       | Methods    | resolved value of a per-display-type slot default the user promoted (see `setDisplayTypeDefault`); undefined when nothing was promoted.                                                                                                                                                                                                                        |
-| [setSelection](#action-setselection)                         | Actions    | set the global selection, i.e. the globally-selected object. can be a feature, a view, just about anything                                                                                                                                                                                                                                                     |
-| [clearSelection](#action-clearselection)                     | Actions    | clears the global selection                                                                                                                                                                                                                                                                                                                                    |
-| [setHovered](#action-sethovered)                             | Actions    |                                                                                                                                                                                                                                                                                                                                                                |
-| [setHighlightsVisible](#action-sethighlightsvisible)         | Actions    | toggle all region highlight bands across every view                                                                                                                                                                                                                                                                                                            |
-| [setPreferenceOverride](#action-setpreferenceoverride)       | Actions    | set a runtime user-preference override (see `getPreference`). Mutates volatile state; products persist these to localStorage.                                                                                                                                                                                                                                  |
-| [clearPreferenceOverrides](#action-clearpreferenceoverrides) | Actions    | clear every runtime preference override at once — scrollZoom, animationMode, and every promoted per-display-type default (see `setDisplayTypeDefault`) — so each falls back to its config/admin default. Backs the Preferences dialog "Reset to defaults" button.                                                                                              |
-| [setScrollZoom](#action-setscrollzoom)                       | Actions    | set the global scroll-to-zoom preference (see the `scrollZoom` getter)                                                                                                                                                                                                                                                                                         |
-| [setDisplayTypeDefault](#action-setdisplaytypedefault)       | Actions    | promote (or, with `value` undefined, clear) a per-display-type slot default. Stored under `preferencesOverrides.displayTypeDefaults` so the PreferencesSessionMixin persists it to localStorage like other prefs.                                                                                                                                              |
-| [setName](#action-setname)                                   | Actions    |                                                                                                                                                                                                                                                                                                                                                                |
-| [setFocusedViewId](#action-setfocusedviewid)                 | Actions    |                                                                                                                                                                                                                                                                                                                                                                |
-| [removeActiveDialog](#action-removeactivedialog)             | Actions    |                                                                                                                                                                                                                                                                                                                                                                |
-| [queueDialog](#action-queuedialog)                           | Actions    |                                                                                                                                                                                                                                                                                                                                                                |
-
-## Inherited members
-
-Available on this model via composition. Follow each link for full signatures
-and docs.
-
-### Available via [SnackbarModel](../snackbarmodel)
-
-**Volatiles:** [snackbarMessages](../snackbarmodel#volatile-snackbarmessages),
-[errorDialog](../snackbarmodel#volatile-errordialog)
-
-**Getters:** [snackbarMessageSet](../snackbarmodel#getter-snackbarmessageset)
-
-**Actions:** [notify](../snackbarmodel#action-notify),
-[notifyError](../snackbarmodel#action-notifyerror),
-[setErrorDialog](../snackbarmodel#action-seterrordialog),
-[pushSnackbarMessage](../snackbarmodel#action-pushsnackbarmessage),
-[popSnackbarMessage](../snackbarmodel#action-popsnackbarmessage),
-[removeSnackbarMessage](../snackbarmodel#action-removesnackbarmessage)
+| Member                                                       | Kind       | Defined by                        | Description                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------ | ---------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                           | Properties | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [name](#property-name)                                       | Properties | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [margin](#property-margin)                                   | Properties | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [focusedViewId](#property-focusedviewid)                     | Properties | BaseSessionModel                  | used to keep track of which view is in focus                                                                                                                                                                                                                                                                                                                   |
+| [highlightsVisible](#property-highlightsvisible)             | Properties | BaseSessionModel                  | one session-wide toggle for all region highlight bands (URL/view highlights and bookmark overlays)                                                                                                                                                                                                                                                             |
+| [selection](#volatile-selection)                             | Volatiles  | BaseSessionModel                  | this is the globally "selected" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.                                                                                                                                                                                                                  |
+| [hovered](#volatile-hovered)                                 | Volatiles  | BaseSessionModel                  | this is the globally "hovered" object. can be anything. code that wants to deal with this should examine it to see what kind of thing it is.                                                                                                                                                                                                                   |
+| [queueOfDialogs](#volatile-queueofdialogs)                   | Volatiles  | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [preferencesOverrides](#volatile-preferencesoverrides)       | Volatiles  | BaseSessionModel                  | runtime user-preference overrides keyed by preference id, resolved by `getPreference` against the `configuration.preferences` admin defaults. Empty here (config-only); products that let users edit preferences load and persist these via localStorage. A runtime override map layered over config defaults, kept off the snapshot since prefs are local UI. |
+| [root](#getter-root)                                         | Getters    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [jbrowse](#getter-jbrowse)                                   | Getters    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [rpcManager](#getter-rpcmanager)                             | Getters    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [configuration](#getter-configuration)                       | Getters    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [adminMode](#getter-adminmode)                               | Getters    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [textSearchManager](#getter-textsearchmanager)               | Getters    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [assemblies](#getter-assemblies)                             | Getters    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [DialogComponent](#getter-dialogcomponent)                   | Getters    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [DialogProps](#getter-dialogprops)                           | Getters    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [animationMode](#getter-animationmode)                       | Getters    | BaseSessionModel                  | resolved feature-layout animation mode (never undefined)                                                                                                                                                                                                                                                                                                       |
+| [scrollZoom](#getter-scrollzoom)                             | Getters    | BaseSessionModel                  | resolved scroll-to-zoom preference. Global and personal (never shared in a session snapshot); every wheel-zoom view reads this single value.                                                                                                                                                                                                                   |
+| [getPreference](#method-getpreference)                       | Methods    | BaseSessionModel                  | resolved value of a user preference: a runtime override if the user set one, otherwise the admin/embedder `configuration.preferences` default. The override map is empty unless the product loads it (web/desktop).                                                                                                                                            |
+| [getDisplayTypeDefault](#method-getdisplaytypedefault)       | Methods    | BaseSessionModel                  | resolved value of a per-display-type slot default the user promoted (see `setDisplayTypeDefault`); undefined when nothing was promoted.                                                                                                                                                                                                                        |
+| [setSelection](#action-setselection)                         | Actions    | BaseSessionModel                  | set the global selection, i.e. the globally-selected object. can be a feature, a view, just about anything                                                                                                                                                                                                                                                     |
+| [clearSelection](#action-clearselection)                     | Actions    | BaseSessionModel                  | clears the global selection                                                                                                                                                                                                                                                                                                                                    |
+| [setHovered](#action-sethovered)                             | Actions    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [setHighlightsVisible](#action-sethighlightsvisible)         | Actions    | BaseSessionModel                  | toggle all region highlight bands across every view                                                                                                                                                                                                                                                                                                            |
+| [setPreferenceOverride](#action-setpreferenceoverride)       | Actions    | BaseSessionModel                  | set a runtime user-preference override (see `getPreference`). Mutates volatile state; products persist these to localStorage.                                                                                                                                                                                                                                  |
+| [clearPreferenceOverrides](#action-clearpreferenceoverrides) | Actions    | BaseSessionModel                  | clear every runtime preference override at once — scrollZoom, animationMode, and every promoted per-display-type default (see `setDisplayTypeDefault`) — so each falls back to its config/admin default. Backs the Preferences dialog "Reset to defaults" button.                                                                                              |
+| [setScrollZoom](#action-setscrollzoom)                       | Actions    | BaseSessionModel                  | set the global scroll-to-zoom preference (see the `scrollZoom` getter)                                                                                                                                                                                                                                                                                         |
+| [setDisplayTypeDefault](#action-setdisplaytypedefault)       | Actions    | BaseSessionModel                  | promote (or, with `value` undefined, clear) a per-display-type slot default. Stored under `preferencesOverrides.displayTypeDefaults` so the PreferencesSessionMixin persists it to localStorage like other prefs.                                                                                                                                              |
+| [setName](#action-setname)                                   | Actions    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [setFocusedViewId](#action-setfocusedviewid)                 | Actions    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [removeActiveDialog](#action-removeactivedialog)             | Actions    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [queueDialog](#action-queuedialog)                           | Actions    | BaseSessionModel                  |                                                                                                                                                                                                                                                                                                                                                                |
+| [snackbarMessages](#volatile-snackbarmessages)               | Volatiles  | [SnackbarModel](../snackbarmodel) |                                                                                                                                                                                                                                                                                                                                                                |
+| [errorDialog](#volatile-errordialog)                         | Volatiles  | [SnackbarModel](../snackbarmodel) | the error currently shown in the stack-trace dialog. Kept off the dialog queue so it can stack on top of an already-open dialog (e.g. the one whose action raised the error) instead of waiting behind it                                                                                                                                                      |
+| [snackbarMessageSet](#getter-snackbarmessageset)             | Getters    | [SnackbarModel](../snackbarmodel) |                                                                                                                                                                                                                                                                                                                                                                |
+| [notify](#action-notify)                                     | Actions    | [SnackbarModel](../snackbarmodel) |                                                                                                                                                                                                                                                                                                                                                                |
+| [notifyError](#action-notifyerror)                           | Actions    | [SnackbarModel](../snackbarmodel) |                                                                                                                                                                                                                                                                                                                                                                |
+| [setErrorDialog](#action-seterrordialog)                     | Actions    | [SnackbarModel](../snackbarmodel) |                                                                                                                                                                                                                                                                                                                                                                |
+| [pushSnackbarMessage](#action-pushsnackbarmessage)           | Actions    | [SnackbarModel](../snackbarmodel) |                                                                                                                                                                                                                                                                                                                                                                |
+| [popSnackbarMessage](#action-popsnackbarmessage)             | Actions    | [SnackbarModel](../snackbarmodel) |                                                                                                                                                                                                                                                                                                                                                                |
+| [removeSnackbarMessage](#action-removesnackbarmessage)       | Actions    | [SnackbarModel](../snackbarmodel) |                                                                                                                                                                                                                                                                                                                                                                |
 
 <details>
 <summary>BaseSessionModel - Properties</summary>
@@ -398,6 +388,102 @@ type removeActiveDialog = () => void
 
 ```ts
 type queueDialog = (doneCallback: DoneCallback) => void
+```
+
+</details>
+
+## Inherited members
+
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
+
+<details>
+<summary>Derived from SnackbarModel</summary>
+
+[SnackbarModel →](../snackbarmodel)
+
+**Volatiles**
+
+#### volatile: snackbarMessages
+
+```ts
+// type signature
+type snackbarMessages = IObservableArray<SnackbarMessage>
+// code
+snackbarMessages: observable.array<SnackbarMessage>()
+```
+
+#### volatile: errorDialog
+
+the error currently shown in the stack-trace dialog. Kept off the dialog queue
+so it can stack on top of an already-open dialog (e.g. the one whose action
+raised the error) instead of waiting behind it
+
+```ts
+// type signature
+type errorDialog = ErrorDialogState | undefined
+// code
+errorDialog: undefined as ErrorDialogState | undefined
+```
+
+**Getters**
+
+#### getter: snackbarMessageSet
+
+```ts
+type snackbarMessageSet = Map<string, SnackbarMessage>
+```
+
+**Actions**
+
+#### action: notify
+
+```ts
+type notify = (
+  message: string,
+  level?: NotificationLevel | undefined,
+  action?: SnackAction | SnackAction[] | undefined,
+) => void
+```
+
+#### action: notifyError
+
+```ts
+type notifyError = (
+  errorMessage: string,
+  error?: unknown,
+  extra?: unknown,
+  action?: SnackAction | undefined,
+) => void
+```
+
+#### action: setErrorDialog
+
+```ts
+type setErrorDialog = (state: ErrorDialogState | undefined) => void
+```
+
+#### action: pushSnackbarMessage
+
+```ts
+type pushSnackbarMessage = (
+  message: string,
+  level?: NotificationLevel | undefined,
+  actions?: SnackAction[] | undefined,
+) => void
+```
+
+#### action: popSnackbarMessage
+
+```ts
+type popSnackbarMessage = () => SnackbarMessage | undefined
+```
+
+#### action: removeSnackbarMessage
+
+```ts
+type removeSnackbarMessage = (message: string) => void
 ```
 
 </details>

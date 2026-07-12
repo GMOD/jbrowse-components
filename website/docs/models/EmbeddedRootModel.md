@@ -20,36 +20,25 @@ come from the same product-core mixin the web/desktop root models use, so config
 
 ## Members
 
-| Member                                               | Kind       | Description |
-| ---------------------------------------------------- | ---------- | ----------- |
-| [config](#property-config)                           | Properties |             |
-| [session](#property-session)                         | Properties |             |
-| [assemblyManager](#property-assemblymanager)         | Properties |             |
-| [error](#volatile-error)                             | Volatiles  |             |
-| [adminMode](#volatile-adminmode)                     | Volatiles  |             |
-| [version](#volatile-version)                         | Volatiles  |             |
-| [rpcManager](#volatile-rpcmanager)                   | Volatiles  |             |
-| [textSearchManager](#volatile-textsearchmanager)     | Volatiles  |             |
-| [jbrowse](#getter-jbrowse)                           | Getters    |             |
-| [pluginManager](#getter-pluginmanager)               | Getters    |             |
-| [setSession](#action-setsession)                     | Actions    |             |
-| [renameCurrentSession](#action-renamecurrentsession) | Actions    |             |
-| [setError](#action-seterror)                         | Actions    |             |
-
-## Inherited members
-
-Available on this model via composition. Follow each link for full signatures
-and docs.
-
-### Available via [InternetAccountsMixin](../internetaccountsmixin)
-
-**Properties:**
-[internetAccounts](../internetaccountsmixin#property-internetaccounts)
-
-**Actions:**
-[initializeInternetAccount](../internetaccountsmixin#action-initializeinternetaccount),
-[createEphemeralInternetAccount](../internetaccountsmixin#action-createephemeralinternetaccount),
-[findAppropriateInternetAccount](../internetaccountsmixin#action-findappropriateinternetaccount)
+| Member                                                                   | Kind       | Defined by                                        | Description |
+| ------------------------------------------------------------------------ | ---------- | ------------------------------------------------- | ----------- |
+| [config](#property-config)                                               | Properties | EmbeddedRootModel                                 |             |
+| [session](#property-session)                                             | Properties | EmbeddedRootModel                                 |             |
+| [assemblyManager](#property-assemblymanager)                             | Properties | EmbeddedRootModel                                 |             |
+| [error](#volatile-error)                                                 | Volatiles  | EmbeddedRootModel                                 |             |
+| [adminMode](#volatile-adminmode)                                         | Volatiles  | EmbeddedRootModel                                 |             |
+| [version](#volatile-version)                                             | Volatiles  | EmbeddedRootModel                                 |             |
+| [rpcManager](#volatile-rpcmanager)                                       | Volatiles  | EmbeddedRootModel                                 |             |
+| [textSearchManager](#volatile-textsearchmanager)                         | Volatiles  | EmbeddedRootModel                                 |             |
+| [jbrowse](#getter-jbrowse)                                               | Getters    | EmbeddedRootModel                                 |             |
+| [pluginManager](#getter-pluginmanager)                                   | Getters    | EmbeddedRootModel                                 |             |
+| [setSession](#action-setsession)                                         | Actions    | EmbeddedRootModel                                 |             |
+| [renameCurrentSession](#action-renamecurrentsession)                     | Actions    | EmbeddedRootModel                                 |             |
+| [setError](#action-seterror)                                             | Actions    | EmbeddedRootModel                                 |             |
+| [internetAccounts](#property-internetaccounts)                           | Properties | [InternetAccountsMixin](../internetaccountsmixin) |             |
+| [initializeInternetAccount](#action-initializeinternetaccount)           | Actions    | [InternetAccountsMixin](../internetaccountsmixin) |             |
+| [createEphemeralInternetAccount](#action-createephemeralinternetaccount) | Actions    | [InternetAccountsMixin](../internetaccountsmixin) |             |
+| [findAppropriateInternetAccount](#action-findappropriateinternetaccount) | Actions    | [InternetAccountsMixin](../internetaccountsmixin) |             |
 
 <details>
 <summary>EmbeddedRootModel - Properties</summary>
@@ -178,6 +167,56 @@ type renameCurrentSession = (sessionName: string) => void
 
 ```ts
 type setError = (error: unknown) => void
+```
+
+</details>
+
+## Inherited members
+
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
+
+<details>
+<summary>Derived from InternetAccountsMixin</summary>
+
+[InternetAccountsMixin →](../internetaccountsmixin)
+
+**Properties**
+
+#### property: internetAccounts
+
+```ts
+// type signature
+type internetAccounts = IArrayType<IAnyType>
+// code
+internetAccounts: types.array(
+  pluginManager.pluggableMstType('internet account', 'stateModel'),
+)
+```
+
+**Actions**
+
+#### action: initializeInternetAccount
+
+```ts
+type initializeInternetAccount = (internetAccountConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any
+```
+
+#### action: createEphemeralInternetAccount
+
+```ts
+type createEphemeralInternetAccount = (
+  internetAccountId: string,
+  initialSnapshot: Record<string, unknown>,
+  url: string,
+) => any
+```
+
+#### action: findAppropriateInternetAccount
+
+```ts
+type findAppropriateInternetAccount = (location: UriLocation) => any
 ```
 
 </details>

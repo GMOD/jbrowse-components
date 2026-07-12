@@ -17,22 +17,22 @@ to build on one. Generally found on a property named rootModel.jbrowse
 
 ## Members
 
-| Member                                                         | Kind    | Description                                                                                             |
-| -------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| [assemblyNames](#getter-assemblynames)                         | Getters |                                                                                                         |
-| [rpcManager](#getter-rpcmanager)                               | Getters |                                                                                                         |
-| [addAssemblyConf](#action-addassemblyconf)                     | Actions |                                                                                                         |
-| [removeAssemblyConf](#action-removeassemblyconf)               | Actions |                                                                                                         |
-| [addTrackConf](#action-addtrackconf)                           | Actions |                                                                                                         |
-| [addConnectionConf](#action-addconnectionconf)                 | Actions |                                                                                                         |
-| [deleteConnectionConf](#action-deleteconnectionconf)           | Actions |                                                                                                         |
-| [deleteTrackConf](#action-deletetrackconf)                     | Actions |                                                                                                         |
-| [updateTrackConf](#action-updatetrackconf)                     | Actions | Updates an existing track configuration. Used to sync editable configs back to the frozen tracks array. |
-| [addPlugin](#action-addplugin)                                 | Actions |                                                                                                         |
-| [removePlugin](#action-removeplugin)                           | Actions |                                                                                                         |
-| [setDefaultSessionConf](#action-setdefaultsessionconf)         | Actions |                                                                                                         |
-| [addInternetAccountConf](#action-addinternetaccountconf)       | Actions |                                                                                                         |
-| [deleteInternetAccountConf](#action-deleteinternetaccountconf) | Actions |                                                                                                         |
+| Member                                                         | Kind    | Defined by          | Description                                                                                             |
+| -------------------------------------------------------------- | ------- | ------------------- | ------------------------------------------------------------------------------------------------------- |
+| [assemblyNames](#getter-assemblynames)                         | Getters | AppCoreJBrowseModel |                                                                                                         |
+| [rpcManager](#getter-rpcmanager)                               | Getters | AppCoreJBrowseModel |                                                                                                         |
+| [addAssemblyConf](#action-addassemblyconf)                     | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [removeAssemblyConf](#action-removeassemblyconf)               | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [addTrackConf](#action-addtrackconf)                           | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [addConnectionConf](#action-addconnectionconf)                 | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [deleteConnectionConf](#action-deleteconnectionconf)           | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [deleteTrackConf](#action-deletetrackconf)                     | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [updateTrackConf](#action-updatetrackconf)                     | Actions | AppCoreJBrowseModel | Updates an existing track configuration. Used to sync editable configs back to the frozen tracks array. |
+| [addPlugin](#action-addplugin)                                 | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [removePlugin](#action-removeplugin)                           | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [setDefaultSessionConf](#action-setdefaultsessionconf)         | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [addInternetAccountConf](#action-addinternetaccountconf)       | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [deleteInternetAccountConf](#action-deleteinternetaccountconf) | Actions | AppCoreJBrowseModel |                                                                                                         |
 
 <details>
 <summary>AppCoreJBrowseModel - Getters</summary>

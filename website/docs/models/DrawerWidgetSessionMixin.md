@@ -13,24 +13,24 @@ JBrowse core.
 
 ## Members
 
-| Member                                               | Kind       | Description                                                                                               |
-| ---------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------- |
-| [drawerPosition](#property-drawerposition)           | Properties |                                                                                                           |
-| [drawerWidth](#property-drawerwidth)                 | Properties |                                                                                                           |
-| [widgets](#property-widgets)                         | Properties |                                                                                                           |
-| [activeWidgets](#property-activewidgets)             | Properties |                                                                                                           |
-| [minimized](#property-minimized)                     | Properties |                                                                                                           |
-| [visibleWidget](#getter-visiblewidget)               | Getters    |                                                                                                           |
-| [setDrawerPosition](#action-setdrawerposition)       | Actions    |                                                                                                           |
-| [updateDrawerWidth](#action-updatedrawerwidth)       | Actions    |                                                                                                           |
-| [resizeDrawer](#action-resizedrawer)                 | Actions    |                                                                                                           |
-| [addWidget](#action-addwidget)                       | Actions    |                                                                                                           |
-| [showWidget](#action-showwidget)                     | Actions    |                                                                                                           |
-| [hideWidget](#action-hidewidget)                     | Actions    |                                                                                                           |
-| [minimizeWidgetDrawer](#action-minimizewidgetdrawer) | Actions    |                                                                                                           |
-| [showWidgetDrawer](#action-showwidgetdrawer)         | Actions    |                                                                                                           |
-| [hideAllWidgets](#action-hideallwidgets)             | Actions    |                                                                                                           |
-| [editConfiguration](#action-editconfiguration)       | Actions    | opens a configuration editor to configure the given thing, and sets the current task to be configuring it |
+| Member                                               | Kind       | Defined by               | Description                                                                                               |
+| ---------------------------------------------------- | ---------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| [drawerPosition](#property-drawerposition)           | Properties | DrawerWidgetSessionMixin |                                                                                                           |
+| [drawerWidth](#property-drawerwidth)                 | Properties | DrawerWidgetSessionMixin |                                                                                                           |
+| [widgets](#property-widgets)                         | Properties | DrawerWidgetSessionMixin |                                                                                                           |
+| [activeWidgets](#property-activewidgets)             | Properties | DrawerWidgetSessionMixin |                                                                                                           |
+| [minimized](#property-minimized)                     | Properties | DrawerWidgetSessionMixin |                                                                                                           |
+| [visibleWidget](#getter-visiblewidget)               | Getters    | DrawerWidgetSessionMixin |                                                                                                           |
+| [setDrawerPosition](#action-setdrawerposition)       | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [updateDrawerWidth](#action-updatedrawerwidth)       | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [resizeDrawer](#action-resizedrawer)                 | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [addWidget](#action-addwidget)                       | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [showWidget](#action-showwidget)                     | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [hideWidget](#action-hidewidget)                     | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [minimizeWidgetDrawer](#action-minimizewidgetdrawer) | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [showWidgetDrawer](#action-showwidgetdrawer)         | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [hideAllWidgets](#action-hideallwidgets)             | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
+| [editConfiguration](#action-editconfiguration)       | Actions    | DrawerWidgetSessionMixin | opens a configuration editor to configure the given thing, and sets the current task to be configuring it |
 
 <details>
 <summary>DrawerWidgetSessionMixin - Properties</summary>

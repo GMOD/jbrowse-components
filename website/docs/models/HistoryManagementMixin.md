@@ -13,9 +13,9 @@ JBrowse core.
 
 ## Members
 
-| Member                       | Kind       | Description        |
-| ---------------------------- | ---------- | ------------------ |
-| [history](#property-history) | Properties | used for undo/redo |
+| Member                       | Kind       | Defined by             | Description        |
+| ---------------------------- | ---------- | ---------------------- | ------------------ |
+| [history](#property-history) | Properties | HistoryManagementMixin | used for undo/redo |
 
 <details>
 <summary>HistoryManagementMixin - Properties</summary>

@@ -13,33 +13,33 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Members
 
-| Member                                                           | Kind       | Description                                                                                                           |
-| ---------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------- |
-| [id](#property-id)                                               | Properties |                                                                                                                       |
-| [type](#property-type)                                           | Properties |                                                                                                                       |
-| [view](#property-view)                                           | Properties |                                                                                                                       |
-| [trackAdapter](#getter-trackadapter)                             | Getters    |                                                                                                                       |
-| [trackName](#getter-trackname)                                   | Getters    |                                                                                                                       |
-| [uris](#getter-uris)                                             | Getters    |                                                                                                                       |
-| [isFtp](#getter-isftp)                                           | Getters    |                                                                                                                       |
-| [isRelativeUrl](#getter-isrelativeurl)                           | Getters    |                                                                                                                       |
-| [wrongProtocol](#getter-wrongprotocol)                           | Getters    |                                                                                                                       |
-| [adapterHintNotConfigurable](#getter-adapterhintnotconfigurable) | Getters    | Returns true if the user selected an adapter from the dropdown but the extension point couldn't build a config for it |
-| [assembly](#getter-assembly)                                     | Getters    |                                                                                                                       |
-| [trackAdapterType](#getter-trackadaptertype)                     | Getters    |                                                                                                                       |
-| [trackType](#getter-tracktype)                                   | Getters    |                                                                                                                       |
-| [warningMessage](#getter-warningmessage)                         | Getters    |                                                                                                                       |
-| [getTrackConfig](#method-gettrackconfig)                         | Methods    |                                                                                                                       |
-| [setMixinData](#action-setmixindata)                             | Actions    |                                                                                                                       |
-| [setAdapterHint](#action-setadapterhint)                         | Actions    |                                                                                                                       |
-| [setTextIndexingConf](#action-settextindexingconf)               | Actions    |                                                                                                                       |
-| [setTextIndexTrack](#action-settextindextrack)                   | Actions    |                                                                                                                       |
-| [setTrackData](#action-settrackdata)                             | Actions    |                                                                                                                       |
-| [setIndexTrackData](#action-setindextrackdata)                   | Actions    |                                                                                                                       |
-| [setAssembly](#action-setassembly)                               | Actions    |                                                                                                                       |
-| [setTrackName](#action-settrackname)                             | Actions    |                                                                                                                       |
-| [setTrackType](#action-settracktype)                             | Actions    |                                                                                                                       |
-| [clearData](#action-cleardata)                                   | Actions    |                                                                                                                       |
+| Member                                                           | Kind       | Defined by    | Description                                                                                                           |
+| ---------------------------------------------------------------- | ---------- | ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                               | Properties | AddTrackModel |                                                                                                                       |
+| [type](#property-type)                                           | Properties | AddTrackModel |                                                                                                                       |
+| [view](#property-view)                                           | Properties | AddTrackModel |                                                                                                                       |
+| [trackAdapter](#getter-trackadapter)                             | Getters    | AddTrackModel |                                                                                                                       |
+| [trackName](#getter-trackname)                                   | Getters    | AddTrackModel |                                                                                                                       |
+| [uris](#getter-uris)                                             | Getters    | AddTrackModel |                                                                                                                       |
+| [isFtp](#getter-isftp)                                           | Getters    | AddTrackModel |                                                                                                                       |
+| [isRelativeUrl](#getter-isrelativeurl)                           | Getters    | AddTrackModel |                                                                                                                       |
+| [wrongProtocol](#getter-wrongprotocol)                           | Getters    | AddTrackModel |                                                                                                                       |
+| [adapterHintNotConfigurable](#getter-adapterhintnotconfigurable) | Getters    | AddTrackModel | Returns true if the user selected an adapter from the dropdown but the extension point couldn't build a config for it |
+| [assembly](#getter-assembly)                                     | Getters    | AddTrackModel |                                                                                                                       |
+| [trackAdapterType](#getter-trackadaptertype)                     | Getters    | AddTrackModel |                                                                                                                       |
+| [trackType](#getter-tracktype)                                   | Getters    | AddTrackModel |                                                                                                                       |
+| [warningMessage](#getter-warningmessage)                         | Getters    | AddTrackModel |                                                                                                                       |
+| [getTrackConfig](#method-gettrackconfig)                         | Methods    | AddTrackModel |                                                                                                                       |
+| [setMixinData](#action-setmixindata)                             | Actions    | AddTrackModel |                                                                                                                       |
+| [setAdapterHint](#action-setadapterhint)                         | Actions    | AddTrackModel |                                                                                                                       |
+| [setTextIndexingConf](#action-settextindexingconf)               | Actions    | AddTrackModel |                                                                                                                       |
+| [setTextIndexTrack](#action-settextindextrack)                   | Actions    | AddTrackModel |                                                                                                                       |
+| [setTrackData](#action-settrackdata)                             | Actions    | AddTrackModel |                                                                                                                       |
+| [setIndexTrackData](#action-setindextrackdata)                   | Actions    | AddTrackModel |                                                                                                                       |
+| [setAssembly](#action-setassembly)                               | Actions    | AddTrackModel |                                                                                                                       |
+| [setTrackName](#action-settrackname)                             | Actions    | AddTrackModel |                                                                                                                       |
+| [setTrackType](#action-settracktype)                             | Actions    | AddTrackModel |                                                                                                                       |
+| [clearData](#action-cleardata)                                   | Actions    | AddTrackModel |                                                                                                                       |
 
 <details>
 <summary>AddTrackModel - Properties</summary>

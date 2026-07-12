@@ -19,13 +19,13 @@ ExternalTokenInternetAccount.
 
 ## Members
 
-| Member                                       | Kind       | Description                                                                                                                   |
-| -------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                       | Properties |                                                                                                                               |
-| [configuration](#property-configuration)     | Properties |                                                                                                                               |
-| [validateWithHEAD](#getter-validatewithhead) | Getters    | validate the token with a HEAD request before it is used                                                                      |
-| [getTokenFromUser](#action-gettokenfromuser) | Actions    | Prompt the user for a token via the account's dialog form, resolving with the entered token or rejecting if the user cancels. |
-| [validateToken](#action-validatetoken)       | Actions    | Optionally validate the token with a HEAD request before use, per the `validateWithHEAD` config slot.                         |
+| Member                                       | Kind       | Defined by                | Description                                                                                                                   |
+| -------------------------------------------- | ---------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                       | Properties | TokenEntryInternetAccount |                                                                                                                               |
+| [configuration](#property-configuration)     | Properties | TokenEntryInternetAccount |                                                                                                                               |
+| [validateWithHEAD](#getter-validatewithhead) | Getters    | TokenEntryInternetAccount | validate the token with a HEAD request before it is used                                                                      |
+| [getTokenFromUser](#action-gettokenfromuser) | Actions    | TokenEntryInternetAccount | Prompt the user for a token via the account's dialog form, resolving with the entered token or rejecting if the user cancels. |
+| [validateToken](#action-validatetoken)       | Actions    | TokenEntryInternetAccount | Optionally validate the token with a HEAD request before use, per the `validateWithHEAD` config slot.                         |
 
 <details>
 <summary>TokenEntryInternetAccount - Properties</summary>

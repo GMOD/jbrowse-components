@@ -35,53 +35,38 @@ does not extend, but is a combination of a
 
 ## Members
 
-| Member                                                                                             | Kind       | Description                                            |
-| -------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------ |
-| [id](#property-id)                                                                                 | Properties |                                                        |
-| [type](#property-type)                                                                             | Properties |                                                        |
-| [height](#property-height)                                                                         | Properties |                                                        |
-| [onlyDisplayRelevantRegionsInCircularView](#property-onlydisplayrelevantregionsincircularview)     | Properties |                                                        |
-| [spreadsheetView](#property-spreadsheetview)                                                       | Properties |                                                        |
-| [circularView](#property-circularview)                                                             | Properties |                                                        |
-| [init](#property-init)                                                                             | Properties | used for initializing the view from a session snapshot |
-| [width](#volatile-width)                                                                           | Volatiles  |                                                        |
-| [SpreadsheetViewReactComponent](#volatile-spreadsheetviewreactcomponent)                           | Volatiles  |                                                        |
-| [CircularViewReactComponent](#volatile-circularviewreactcomponent)                                 | Volatiles  |                                                        |
-| [circularViewOptionsBarHeight](#volatile-circularviewoptionsbarheight)                             | Volatiles  |                                                        |
-| [assemblyName](#getter-assemblyname)                                                               | Getters    |                                                        |
-| [showCircularView](#getter-showcircularview)                                                       | Getters    |                                                        |
-| [features](#getter-features)                                                                       | Getters    |                                                        |
-| [featuresAdapterConfigSnapshot](#getter-featuresadapterconfigsnapshot)                             | Getters    |                                                        |
-| [featureRefNames](#getter-featurerefnames)                                                         | Getters    |                                                        |
-| [currentAssembly](#getter-currentassembly)                                                         | Getters    |                                                        |
-| [canonicalFeatureRefNameSet](#getter-canonicalfeaturerefnameset)                                   | Getters    |                                                        |
-| [variantTrackId](#getter-varianttrackid)                                                           | Getters    |                                                        |
-| [featuresCircularTrackConfiguration](#getter-featurescirculartrackconfiguration)                   | Getters    |                                                        |
-| [menuItems](#method-menuitems)                                                                     | Methods    |                                                        |
-| [setWidth](#action-setwidth)                                                                       | Actions    |                                                        |
-| [setHeight](#action-setheight)                                                                     | Actions    |                                                        |
-| [setOnlyDisplayRelevantRegionsInCircularView](#action-setonlydisplayrelevantregionsincircularview) | Actions    |                                                        |
-| [setInit](#action-setinit)                                                                         | Actions    |                                                        |
-| [resizeHeight](#action-resizeheight)                                                               | Actions    |                                                        |
-
-## Inherited members
-
-Available on this model via composition. Follow each link for full signatures
-and docs.
-
-### Available via [BaseViewModel](../baseviewmodel)
-
-**Properties:** [id](../baseviewmodel#property-id),
-[displayName](../baseviewmodel#property-displayname),
-[minimized](../baseviewmodel#property-minimized)
-
-**Volatiles:** [width](../baseviewmodel#volatile-width)
-
-**Methods:** [menuItems](../baseviewmodel#method-menuitems)
-
-**Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
-[setWidth](../baseviewmodel#action-setwidth),
-[setMinimized](../baseviewmodel#action-setminimized)
+| Member                                                                                             | Kind       | Defined by                        | Description                                                                                           |
+| -------------------------------------------------------------------------------------------------- | ---------- | --------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                                                                 | Properties | SvInspectorView                   |                                                                                                       |
+| [type](#property-type)                                                                             | Properties | SvInspectorView                   |                                                                                                       |
+| [height](#property-height)                                                                         | Properties | SvInspectorView                   |                                                                                                       |
+| [onlyDisplayRelevantRegionsInCircularView](#property-onlydisplayrelevantregionsincircularview)     | Properties | SvInspectorView                   |                                                                                                       |
+| [spreadsheetView](#property-spreadsheetview)                                                       | Properties | SvInspectorView                   |                                                                                                       |
+| [circularView](#property-circularview)                                                             | Properties | SvInspectorView                   |                                                                                                       |
+| [init](#property-init)                                                                             | Properties | SvInspectorView                   | used for initializing the view from a session snapshot                                                |
+| [width](#volatile-width)                                                                           | Volatiles  | SvInspectorView                   |                                                                                                       |
+| [SpreadsheetViewReactComponent](#volatile-spreadsheetviewreactcomponent)                           | Volatiles  | SvInspectorView                   |                                                                                                       |
+| [CircularViewReactComponent](#volatile-circularviewreactcomponent)                                 | Volatiles  | SvInspectorView                   |                                                                                                       |
+| [circularViewOptionsBarHeight](#volatile-circularviewoptionsbarheight)                             | Volatiles  | SvInspectorView                   |                                                                                                       |
+| [assemblyName](#getter-assemblyname)                                                               | Getters    | SvInspectorView                   |                                                                                                       |
+| [showCircularView](#getter-showcircularview)                                                       | Getters    | SvInspectorView                   |                                                                                                       |
+| [features](#getter-features)                                                                       | Getters    | SvInspectorView                   |                                                                                                       |
+| [featuresAdapterConfigSnapshot](#getter-featuresadapterconfigsnapshot)                             | Getters    | SvInspectorView                   |                                                                                                       |
+| [featureRefNames](#getter-featurerefnames)                                                         | Getters    | SvInspectorView                   |                                                                                                       |
+| [currentAssembly](#getter-currentassembly)                                                         | Getters    | SvInspectorView                   |                                                                                                       |
+| [canonicalFeatureRefNameSet](#getter-canonicalfeaturerefnameset)                                   | Getters    | SvInspectorView                   |                                                                                                       |
+| [variantTrackId](#getter-varianttrackid)                                                           | Getters    | SvInspectorView                   |                                                                                                       |
+| [featuresCircularTrackConfiguration](#getter-featurescirculartrackconfiguration)                   | Getters    | SvInspectorView                   |                                                                                                       |
+| [menuItems](#method-menuitems)                                                                     | Methods    | SvInspectorView                   |                                                                                                       |
+| [setWidth](#action-setwidth)                                                                       | Actions    | SvInspectorView                   |                                                                                                       |
+| [setHeight](#action-setheight)                                                                     | Actions    | SvInspectorView                   |                                                                                                       |
+| [setOnlyDisplayRelevantRegionsInCircularView](#action-setonlydisplayrelevantregionsincircularview) | Actions    | SvInspectorView                   |                                                                                                       |
+| [setInit](#action-setinit)                                                                         | Actions    | SvInspectorView                   |                                                                                                       |
+| [resizeHeight](#action-resizeheight)                                                               | Actions    | SvInspectorView                   |                                                                                                       |
+| [displayName](#property-displayname)                                                               | Properties | [BaseViewModel](../baseviewmodel) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
+| [minimized](#property-minimized)                                                                   | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                       |
+| [setDisplayName](#action-setdisplayname)                                                           | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                       |
+| [setMinimized](#action-setminimized)                                                               | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                       |
 
 <details>
 <summary>SvInspectorView - Properties</summary>
@@ -329,6 +314,56 @@ type setInit = (init?: SvInspectorViewInit | undefined) => void
 
 ```ts
 type resizeHeight = (distance: number) => number
+```
+
+</details>
+
+## Inherited members
+
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
+
+<details>
+<summary>Derived from BaseViewModel</summary>
+
+[BaseViewModel →](../baseviewmodel)
+
+**Properties**
+
+#### property: displayName
+
+displayName is displayed in the header of the view, or assembly names being used
+if none is specified
+
+```ts
+// type signature
+type displayName = IMaybe<ISimpleType<string>>
+// code
+displayName: types.maybe(types.string)
+```
+
+#### property: minimized
+
+```ts
+// type signature
+type minimized = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+minimized: types.stripDefault(types.boolean, false)
+```
+
+**Actions**
+
+#### action: setDisplayName
+
+```ts
+type setDisplayName = (name: string) => void
+```
+
+#### action: setMinimized
+
+```ts
+type setMinimized = (flag: boolean) => void
 ```
 
 </details>

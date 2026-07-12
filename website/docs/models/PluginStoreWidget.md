@@ -16,13 +16,13 @@ installable plugin list and the view it was opened from.
 
 ## Members
 
-| Member                                 | Kind       | Description |
-| -------------------------------------- | ---------- | ----------- |
-| [id](#property-id)                     | Properties |             |
-| [type](#property-type)                 | Properties |             |
-| [filterText](#property-filtertext)     | Properties |             |
-| [view](#property-view)                 | Properties |             |
-| [setFilterText](#action-setfiltertext) | Actions    |             |
+| Member                                 | Kind       | Defined by        | Description |
+| -------------------------------------- | ---------- | ----------------- | ----------- |
+| [id](#property-id)                     | Properties | PluginStoreWidget |             |
+| [type](#property-type)                 | Properties | PluginStoreWidget |             |
+| [filterText](#property-filtertext)     | Properties | PluginStoreWidget |             |
+| [view](#property-view)                 | Properties | PluginStoreWidget |             |
+| [setFilterText](#action-setfiltertext) | Actions    | PluginStoreWidget |             |
 
 <details>
 <summary>PluginStoreWidget - Properties</summary>

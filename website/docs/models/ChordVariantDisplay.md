@@ -39,63 +39,50 @@ controls how far the chords bow toward the center:
 
 ## Members
 
-| Member                                           | Kind       | Description                                                                                                                                                                                                                                                                                                            |
-| ------------------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [type](#property-type)                           | Properties |                                                                                                                                                                                                                                                                                                                        |
-| [bezierRadiusRatio](#property-bezierradiusratio) | Properties |                                                                                                                                                                                                                                                                                                                        |
-| [configuration](#property-configuration)         | Properties |                                                                                                                                                                                                                                                                                                                        |
-| [features](#volatile-features)                   | Volatiles  |                                                                                                                                                                                                                                                                                                                        |
-| [refNameMap](#volatile-refnamemap)               | Volatiles  |                                                                                                                                                                                                                                                                                                                        |
-| [view](#getter-view)                             | Getters    |                                                                                                                                                                                                                                                                                                                        |
-| [ready](#getter-ready)                           | Getters    |                                                                                                                                                                                                                                                                                                                        |
-| [svgReady](#getter-svgready)                     | Getters    | Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady"). Chord displays are non-rectangular (radial), so they keep a bespoke `<DisplayError>` error UI instead of `SvgChrome`, but still expose `svgReady` + await it via the shared `awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state. |
-| [radiusPx](#getter-radiuspx)                     | Getters    |                                                                                                                                                                                                                                                                                                                        |
-| [bezierRadius](#getter-bezierradius)             | Getters    | how far chords bow toward the center                                                                                                                                                                                                                                                                                   |
-| [blocksForRefs](#getter-blocksforrefs)           | Getters    |                                                                                                                                                                                                                                                                                                                        |
-| [selectedFeatureId](#getter-selectedfeatureid)   | Getters    |                                                                                                                                                                                                                                                                                                                        |
-| [renderSvg](#method-rendersvg)                   | Methods    |                                                                                                                                                                                                                                                                                                                        |
-| [onChordClick](#action-onchordclick)             | Actions    |                                                                                                                                                                                                                                                                                                                        |
-| [openErrorDialog](#action-openerrordialog)       | Actions    |                                                                                                                                                                                                                                                                                                                        |
-| [setFeatures](#action-setfeatures)               | Actions    |                                                                                                                                                                                                                                                                                                                        |
-| [setRefNameMap](#action-setrefnamemap)           | Actions    |                                                                                                                                                                                                                                                                                                                        |
+| Member                                                     | Kind       | Defined by                    | Description                                                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------------- | ---------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                     | Properties | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [bezierRadiusRatio](#property-bezierradiusratio)           | Properties | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [configuration](#property-configuration)                   | Properties | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [features](#volatile-features)                             | Volatiles  | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [refNameMap](#volatile-refnamemap)                         | Volatiles  | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [view](#getter-view)                                       | Getters    | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [ready](#getter-ready)                                     | Getters    | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [svgReady](#getter-svgready)                               | Getters    | ChordVariantDisplay           | Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady"). Chord displays are non-rectangular (radial), so they keep a bespoke `<DisplayError>` error UI instead of `SvgChrome`, but still expose `svgReady` + await it via the shared `awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state. |
+| [radiusPx](#getter-radiuspx)                               | Getters    | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [bezierRadius](#getter-bezierradius)                       | Getters    | ChordVariantDisplay           | how far chords bow toward the center                                                                                                                                                                                                                                                                                   |
+| [blocksForRefs](#getter-blocksforrefs)                     | Getters    | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [selectedFeatureId](#getter-selectedfeatureid)             | Getters    | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [renderSvg](#method-rendersvg)                             | Methods    | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [onChordClick](#action-onchordclick)                       | Actions    | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [openErrorDialog](#action-openerrordialog)                 | Actions    | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [setFeatures](#action-setfeatures)                         | Actions    | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [setRefNameMap](#action-setrefnamemap)                     | Actions    | ChordVariantDisplay           |                                                                                                                                                                                                                                                                                                                        |
+| [id](#property-id)                                         | Properties | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [rpcDriverName](#property-rpcdrivername)                   | Properties | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [error](#volatile-error)                                   | Volatiles  | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [statusMessage](#volatile-statusmessage)                   | Volatiles  | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [statusProgress](#volatile-statusprogress)                 | Volatiles  | [BaseDisplay](../basedisplay) | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.                                                                                  |
+| [parentTrack](#getter-parenttrack)                         | Getters    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [parentDisplay](#getter-parentdisplay)                     | Getters    | [BaseDisplay](../basedisplay) | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                                                                                                                                       |
+| [RenderingComponent](#getter-renderingcomponent)           | Getters    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [DisplayBlurb](#getter-displayblurb)                       | Getters    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [adapterConfig](#getter-adapterconfig)                     | Getters    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [isMinimized](#getter-isminimized)                         | Getters    | [BaseDisplay](../basedisplay) | Returns true if the parent track is minimized. Used to skip expensive operations like autoruns when track is not visible.                                                                                                                                                                                              |
+| [effectiveRpcDriverName](#getter-effectiverpcdrivername)   | Getters    | [BaseDisplay](../basedisplay) | Returns the effective RPC driver name with hierarchical fallback: 1. This display's explicit rpcDriverName 2. Parent display's effectiveRpcDriverName (for nested displays) 3. Track config's rpcDriverName                                                                                                            |
+| [DisplayMessageComponent](#getter-displaymessagecomponent) | Getters    | [BaseDisplay](../basedisplay) | if a display-level message should be displayed instead, make this return a react component                                                                                                                                                                                                                             |
+| [renderingProps](#method-renderingprops)                   | Methods    | [BaseDisplay](../basedisplay) | props passed to the renderer's React "Rendering" component. these are client-side only and never sent to the worker. includes displayModel and callbacks                                                                                                                                                               |
+| [trackMenuItems](#method-trackmenuitems)                   | Methods    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [regionCannotBeRendered](#method-regioncannotberendered)   | Methods    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [setStatusMessage](#action-setstatusmessage)               | Actions    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [setError](#action-seterror)                               | Actions    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [setRpcDriverName](#action-setrpcdrivername)               | Actions    | [BaseDisplay](../basedisplay) |                                                                                                                                                                                                                                                                                                                        |
+| [reload](#action-reload)                                   | Actions    | [BaseDisplay](../basedisplay) | base display reload does nothing, see specialized displays for details                                                                                                                                                                                                                                                 |
 
 ### ChordVariantDisplay - Configuration
 
 The configuration slots for this model are documented on its
 [config schema page](../../config/chordvariantdisplay).
-
-## Inherited members
-
-Available on this model via composition. Follow each link for full signatures
-and docs.
-
-### Available via [BaseDisplay](../basedisplay)
-
-**Properties:** [id](../basedisplay#property-id),
-[type](../basedisplay#property-type),
-[rpcDriverName](../basedisplay#property-rpcdrivername)
-
-**Volatiles:** [error](../basedisplay#volatile-error),
-[statusMessage](../basedisplay#volatile-statusmessage),
-[statusProgress](../basedisplay#volatile-statusprogress)
-
-**Getters:** [parentTrack](../basedisplay#getter-parenttrack),
-[parentDisplay](../basedisplay#getter-parentdisplay),
-[RenderingComponent](../basedisplay#getter-renderingcomponent),
-[DisplayBlurb](../basedisplay#getter-displayblurb),
-[adapterConfig](../basedisplay#getter-adapterconfig),
-[isMinimized](../basedisplay#getter-isminimized),
-[effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent)
-
-**Methods:** [renderingProps](../basedisplay#method-renderingprops),
-[trackMenuItems](../basedisplay#method-trackmenuitems),
-[regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
-
-**Actions:** [setStatusMessage](../basedisplay#action-setstatusmessage),
-[setError](../basedisplay#action-seterror),
-[setRpcDriverName](../basedisplay#action-setrpcdrivername),
-[reload](../basedisplay#action-reload)
 
 <details>
 <summary>ChordVariantDisplay - Properties</summary>
@@ -249,6 +236,191 @@ type setFeatures = (features: Feature[] | undefined) => void
 
 ```ts
 type setRefNameMap = (refNameMap: Record<string, string>) => void
+```
+
+</details>
+
+## Inherited members
+
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
+
+<details>
+<summary>Derived from BaseDisplay</summary>
+
+[BaseDisplay →](../basedisplay)
+
+**Properties**
+
+#### property: id
+
+```ts
+// type signature
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
+```
+
+#### property: rpcDriverName
+
+```ts
+// type signature
+type rpcDriverName = IMaybe<ISimpleType<string>>
+// code
+rpcDriverName: types.maybe(types.string)
+```
+
+**Volatiles**
+
+#### volatile: error
+
+```ts
+// type signature
+type error = unknown
+// code
+error: undefined as unknown
+```
+
+#### volatile: statusMessage
+
+```ts
+// type signature
+type statusMessage = string | undefined
+// code
+statusMessage: undefined as string | undefined
+```
+
+#### volatile: statusProgress
+
+determinate progress fraction [0,1] for the current status, or undefined when
+the in-flight phase is indeterminate. Set alongside `statusMessage` by
+`setStatusMessage`; a display that never shows a bar simply leaves it undefined.
+
+```ts
+// type signature
+type statusProgress = number | undefined
+// code
+statusProgress: undefined as number | undefined
+```
+
+**Getters**
+
+#### getter: parentTrack
+
+```ts
+type parentTrack = AbstractTrackModel
+```
+
+#### getter: parentDisplay
+
+Returns the parent display if this display is nested within another display
+(e.g., PileupDisplay inside LinearAlignmentsDisplay)
+
+```ts
+type parentDisplay =
+  | { type?: string | undefined; effectiveRpcDriverName?: string | undefined }
+  | undefined
+```
+
+#### getter: RenderingComponent
+
+```ts
+type RenderingComponent = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; onHorizontalScroll?: ((distance: number) => void) | undefined; blockState?: Record<...> | undefined; }>
+```
+
+#### getter: DisplayBlurb
+
+```ts
+type DisplayBlurb = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; }> | null
+```
+
+#### getter: adapterConfig
+
+```ts
+type adapterConfig = any
+```
+
+#### getter: isMinimized
+
+Returns true if the parent track is minimized. Used to skip expensive operations
+like autoruns when track is not visible.
+
+```ts
+type isMinimized = boolean
+```
+
+#### getter: effectiveRpcDriverName
+
+Returns the effective RPC driver name with hierarchical fallback:
+
+1. This display's explicit rpcDriverName
+2. Parent display's effectiveRpcDriverName (for nested displays)
+3. Track config's rpcDriverName
+
+```ts
+type effectiveRpcDriverName = any
+```
+
+#### getter: DisplayMessageComponent
+
+if a display-level message should be displayed instead, make this return a react
+component
+
+```ts
+type DisplayMessageComponent = FC<any> | undefined
+```
+
+**Methods**
+
+#### method: renderingProps
+
+props passed to the renderer's React "Rendering" component. these are
+client-side only and never sent to the worker. includes displayModel and
+callbacks
+
+```ts
+type renderingProps = () => { displayModel: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
+```
+
+#### method: trackMenuItems
+
+```ts
+type trackMenuItems = () => MenuItem[]
+```
+
+#### method: regionCannotBeRendered
+
+```ts
+type regionCannotBeRendered = () => null
+```
+
+**Actions**
+
+#### action: setStatusMessage
+
+```ts
+type setStatusMessage = (status?: RpcStatus | undefined) => void
+```
+
+#### action: setError
+
+```ts
+type setError = (error?: unknown) => void
+```
+
+#### action: setRpcDriverName
+
+```ts
+type setRpcDriverName = (rpcDriverName: string) => void
+```
+
+#### action: reload
+
+base display reload does nothing, see specialized displays for details
+
+```ts
+type reload = () => void
 ```
 
 </details>

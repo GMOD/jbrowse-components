@@ -16,14 +16,14 @@ configuration and debounce-saves edits back to the session.
 
 ## Members
 
-| Member                                               | Kind       | Description |
-| ---------------------------------------------------- | ---------- | ----------- |
-| [id](#property-id)                                   | Properties |             |
-| [type](#property-type)                               | Properties |             |
-| [target](#volatile-target)                           | Volatiles  |             |
-| [expandedDisplayId](#volatile-expandeddisplayid)     | Volatiles  |             |
-| [setTarget](#action-settarget)                       | Actions    |             |
-| [setExpandedDisplayId](#action-setexpandeddisplayid) | Actions    |             |
+| Member                                               | Kind       | Defined by                | Description |
+| ---------------------------------------------------- | ---------- | ------------------------- | ----------- |
+| [id](#property-id)                                   | Properties | ConfigurationEditorWidget |             |
+| [type](#property-type)                               | Properties | ConfigurationEditorWidget |             |
+| [target](#volatile-target)                           | Volatiles  | ConfigurationEditorWidget |             |
+| [expandedDisplayId](#volatile-expandeddisplayid)     | Volatiles  | ConfigurationEditorWidget |             |
+| [setTarget](#action-settarget)                       | Actions    | ConfigurationEditorWidget |             |
+| [setExpandedDisplayId](#action-setexpandeddisplayid) | Actions    | ConfigurationEditorWidget |             |
 
 <details>
 <summary>ConfigurationEditorWidget - Properties</summary>

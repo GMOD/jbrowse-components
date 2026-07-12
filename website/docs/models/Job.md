@@ -13,14 +13,14 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Members
 
-| Member                                         | Kind       | Description |
-| ---------------------------------------------- | ---------- | ----------- |
-| [name](#property-name)                         | Properties |             |
-| [statusMessage](#volatile-statusmessage)       | Volatiles  |             |
-| [progressPct](#volatile-progresspct)           | Volatiles  |             |
-| [setCancelCallback](#action-setcancelcallback) | Actions    |             |
-| [setStatusMessage](#action-setstatusmessage)   | Actions    |             |
-| [setProgressPct](#action-setprogresspct)       | Actions    |             |
+| Member                                         | Kind       | Defined by | Description |
+| ---------------------------------------------- | ---------- | ---------- | ----------- |
+| [name](#property-name)                         | Properties | Job        |             |
+| [statusMessage](#volatile-statusmessage)       | Volatiles  | Job        |             |
+| [progressPct](#volatile-progresspct)           | Volatiles  | Job        |             |
+| [setCancelCallback](#action-setcancelcallback) | Actions    | Job        |             |
+| [setStatusMessage](#action-setstatusmessage)   | Actions    | Job        |             |
+| [setProgressPct](#action-setprogresspct)       | Actions    | Job        |             |
 
 <details>
 <summary>Job - Properties</summary>

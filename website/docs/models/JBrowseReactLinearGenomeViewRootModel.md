@@ -15,10 +15,10 @@ Composes the shared with a LinearGenomeView session plus the LGV-only
 
 ## Members
 
-| Member                                         | Kind       | Description |
-| ---------------------------------------------- | ---------- | ----------- |
-| [disableAddTracks](#property-disableaddtracks) | Properties |             |
-| [drawerViewHeight](#property-drawerviewheight) | Properties |             |
+| Member                                         | Kind       | Defined by                            | Description |
+| ---------------------------------------------- | ---------- | ------------------------------------- | ----------- |
+| [disableAddTracks](#property-disableaddtracks) | Properties | JBrowseReactLinearGenomeViewRootModel |             |
+| [drawerViewHeight](#property-drawerviewheight) | Properties | JBrowseReactLinearGenomeViewRootModel |             |
 
 <details>
 <summary>JBrowseReactLinearGenomeViewRootModel - Properties</summary>

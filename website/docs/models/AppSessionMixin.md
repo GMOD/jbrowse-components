@@ -19,15 +19,15 @@ must satisfy .
 
 ## Members
 
-| Member                                               | Kind    | Description |
-| ---------------------------------------------------- | ------- | ----------- |
-| [root](#getter-root)                                 | Getters |             |
-| [version](#getter-version)                           | Getters |             |
-| [gitCommit](#getter-gitcommit)                       | Getters |             |
-| [history](#getter-history)                           | Getters |             |
-| [assemblyManager](#getter-assemblymanager)           | Getters |             |
-| [menus](#method-menus)                               | Methods |             |
-| [renameCurrentSession](#action-renamecurrentsession) | Actions |             |
+| Member                                               | Kind    | Defined by      | Description |
+| ---------------------------------------------------- | ------- | --------------- | ----------- |
+| [root](#getter-root)                                 | Getters | AppSessionMixin |             |
+| [version](#getter-version)                           | Getters | AppSessionMixin |             |
+| [gitCommit](#getter-gitcommit)                       | Getters | AppSessionMixin |             |
+| [history](#getter-history)                           | Getters | AppSessionMixin |             |
+| [assemblyManager](#getter-assemblymanager)           | Getters | AppSessionMixin |             |
+| [menus](#method-menus)                               | Methods | AppSessionMixin |             |
+| [renameCurrentSession](#action-renamecurrentsession) | Actions | AppSessionMixin |             |
 
 <details>
 <summary>AppSessionMixin - Getters</summary>
