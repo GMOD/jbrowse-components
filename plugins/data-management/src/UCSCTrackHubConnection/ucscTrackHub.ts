@@ -1,7 +1,7 @@
 import { objectHash } from '@jbrowse/core/util'
 import { generateUnknownTrackConf } from '@jbrowse/core/util/tracks'
 
-import { htmlLink, makeLoc } from './util.ts'
+import { htmlLink, hubBaseUrl, makeLoc } from './util.ts'
 
 import type { HubLocation } from './util.ts'
 import type { RaStanza, TrackDbFile } from '@gmod/ucsc-hub'
@@ -40,13 +40,14 @@ export function generateTracks({
   trackDb,
   trackDbLoc,
   assemblyName,
-  baseUrl,
 }: {
   trackDb: TrackDbFile
   trackDbLoc: HubLocation
   assemblyName: string
-  baseUrl: string
 }) {
+  // a track's `html` description page, like its `bigDataUrl`, is relative to the
+  // trackDb file, so both resolve against the same base
+  const trackDbBaseUrl = hubBaseUrl(trackDbLoc)
   return Object.entries(trackDb.data)
     .filter(
       ([, track]) => !Object.keys(track.data).some(k => parentTrackKeys.has(k)),
@@ -55,7 +56,7 @@ export function generateTracks({
       metadata: {
         ...track.data,
         ...(track.data.html
-          ? { html: htmlLink(track.data.html, baseUrl) }
+          ? { html: htmlLink(track.data.html, trackDbBaseUrl) }
           : {}),
       },
       // folder path: the leaf's UCSC track `group` (broadest), then each

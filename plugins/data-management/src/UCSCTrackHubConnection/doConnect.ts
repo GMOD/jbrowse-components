@@ -27,12 +27,10 @@ async function loadGenomeTracks({
   genome,
   genomeName,
   genomesBaseUri,
-  hubUri,
 }: {
   genome: RaStanza
   genomeName: string
   genomesBaseUri: string
-  hubUri: string
 }) {
   const db = genome.data.trackDb
   if (!db) {
@@ -44,7 +42,6 @@ async function loadGenomeTracks({
     trackDb,
     trackDbLoc: loc,
     assemblyName: genomeName,
-    baseUrl: hubUri,
   })
 }
 
@@ -96,7 +93,6 @@ export async function doConnect(self: ConnectionDoConnectArg) {
         trackDb: tracks,
         trackDbLoc: hubFileLocation,
         assemblyName: genomeName,
-        baseUrl: hubUri,
       }),
     )
     if (!self.silent) {
@@ -133,7 +129,6 @@ export async function doConnect(self: ConnectionDoConnectArg) {
         genome,
         genomeName,
         genomesBaseUri,
-        hubUri,
       })
       self.addTrackConfs(tracks)
       trackCounts[genomeName] = tracks.length

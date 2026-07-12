@@ -25,7 +25,6 @@ test('generateTracks resolves bigDataUrl + index against a local trackDb', () =>
     trackDb,
     trackDbLoc: local('/home/u/volvox/trackDb.txt'),
     assemblyName: 'volvox',
-    baseUrl: 'file:///home/u/hub.txt',
   })
   expect(tracks[0]).toMatchObject({
     adapter: {
@@ -63,7 +62,6 @@ bigDataUrl tiny.bam
     trackDb: compositeDb,
     trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
     assemblyName: 'volvox',
-    baseUrl: 'https://x.org/hub.txt',
   })
   // the container stanza itself is not emitted as a track
   expect(tracks).toHaveLength(1)
@@ -90,7 +88,6 @@ bigDataUrl child1.bb
     trackDb: compositeDb,
     trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
     assemblyName: 'volvox',
-    baseUrl: 'https://x.org/hub.txt',
   })
   expect(tracks).toHaveLength(1)
   expect(tracks[0]).toMatchObject({
@@ -130,7 +127,6 @@ bigDataUrl child1.bw
     trackDb: multiViewDb,
     trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
     assemblyName: 'volvox',
-    baseUrl: 'https://x.org/hub.txt',
   })
   expect(tracks).toHaveLength(1)
   expect(tracks[0]).toMatchObject({
@@ -145,7 +141,6 @@ test('generateTracks keeps remote locations remote', () => {
     trackDb,
     trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
     assemblyName: 'volvox',
-    baseUrl: 'https://x.org/hub.txt',
   })
   expect(tracks[0]).toMatchObject({
     adapter: {
@@ -155,6 +150,26 @@ test('generateTracks keeps remote locations remote', () => {
       },
     },
   })
+})
+
+test('generateTracks resolves a track html page against the trackDb subdir', () => {
+  // `html` is relative to the trackDb file, which in a multi-genome hub sits in
+  // a subdirectory, not next to hub.txt
+  const htmlDb = new TrackDbFile(`track volvoxBam
+type bam
+shortLabel BAM
+longLabel BAM alignments
+bigDataUrl tiny.bam
+html doc/volvoxBam.html
+`)
+  const tracks = generateTracks({
+    trackDb: htmlDb,
+    trackDbLoc: uri('https://x.org/volvox/trackDb.txt'),
+    assemblyName: 'volvox',
+  })
+  expect(tracks[0]!.metadata.html).toContain(
+    'https://x.org/volvox/doc/volvoxBam.html',
+  )
 })
 
 const genome = new GenomesFile(`genome volvox
