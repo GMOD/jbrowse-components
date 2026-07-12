@@ -60,10 +60,10 @@ zoomed far out.
 The conservation band plots per-reference-base **percent identity**: at each
 position, the fraction of aligned species (excluding the reference) whose base
 matches the reference. Zoomed out, each pixel shows the mean identity of the
-bases beneath it: a sliding-window conservation profile that makes conserved
-versus divergent regions stand out without having to read individual bases. It
-is computed from the alignment itself, so it appears at the zoom levels where
-the per-species rows are loaded. Toggle it from the track menu.
+bases beneath it, a sliding-window conservation profile of conserved versus
+divergent regions. It is computed from the alignment itself, so it appears at
+the zoom levels where the per-species rows are loaded. Toggle it from the track
+menu.
 
 This is a true identity metric and is distinct from the score shaded into the
 zoomed-out summary bars, which comes from the UCSC `bigMafSummary`, a normalized
@@ -138,11 +138,10 @@ from a different source chromosome takes a contrasting accent. So a species
 whose blocks across the window come from more than one source chromosome
 **changes color along its row** (an immediate flag for a translocation or
 rearrangement) while the rest of the track stays a single calm color. Ranking
-per row (rather than assigning a global color per chromosome name) is
-deliberate: every species has its own scaffold-naming scheme, so a global
-palette would be an unreadable rainbow, whereas the per-row scheme makes the
-_switch_ (the thing that matters) the only thing that stands out. No extra data
-is fetched. The source chromosome is already carried per block.
+per row rather than by a global chromosome name is deliberate: every species has
+its own scaffold-naming scheme, so a global palette would be an unreadable
+rainbow, while the per-row scheme makes only the _switch_ stand out. No extra
+data is fetched, since the source chromosome is already carried per block.
 
 This needs no `annotationAdapter` and works on any MAF track. It is shown in the
 detailed (per-base) view rather than the zoomed-out summary.
