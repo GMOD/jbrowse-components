@@ -141,7 +141,7 @@ export default function GenomesTable({
               ) : null}
               {columns.map(col => (
                 <td key={col.id}>
-                  {col.cell ? col.cell(row) : `${row[col.id] ?? ''}`}
+                  {col.cell ? col.cell(row) : (col.value?.(row) ?? '')}
                 </td>
               ))}
             </tr>

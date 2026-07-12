@@ -72,8 +72,8 @@ export function useGenomesData({
   favorites: Fav[]
   url?: string
   cladeTaxonIds?: Set<number>
-}): { data: RawEntry[]; error: unknown } {
-  const { data, error } = useFetch<RawData>(url, (u: string) =>
+}): { data: RawEntry[]; error: unknown; isLoading: boolean } {
+  const { data, error, isLoading } = useFetch<RawData>(url, (u: string) =>
     fetchJson<RawData>(u),
   )
 
@@ -95,5 +95,5 @@ export function useGenomesData({
     ? cladeFilteredRows?.filter(row => favSet.has(row.id))
     : cladeFilteredRows
 
-  return { data: result ?? [], error }
+  return { data: result ?? [], error, isLoading }
 }

@@ -1,6 +1,8 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MenuItem, TextField } from '@mui/material'
 
+import type { Categories } from './useCategories.ts'
+
 const useStyles = makeStyles()({
   root: {
     margin: 0,
@@ -8,21 +10,19 @@ const useStyles = makeStyles()({
   },
 })
 
-interface CategorySelectorProps {
-  categories?: { categories: { key: string; title: string; url: string }[] }
-  typeOption: string
-  categoriesLoading: boolean
-  categoriesError?: unknown
-  onChange: (value: string) => void
-}
-
 export default function CategorySelector({
   categories,
   typeOption,
   categoriesLoading,
   categoriesError,
   onChange,
-}: CategorySelectorProps) {
+}: {
+  categories?: Categories
+  typeOption: string
+  categoriesLoading: boolean
+  categoriesError?: unknown
+  onChange: (value: string) => void
+}) {
   const { classes } = useStyles()
 
   return categories ? (

@@ -40,14 +40,14 @@ const useStyles = makeStyles()({
   },
 })
 
+// numeric:true so columns containing numbers (e.g. taxonomy IDs, accessions)
+// order naturally (2 before 10) rather than lexically (10 before 2)
 function defaultSort(a: Entry, b: Entry, col: GenomeColumn) {
-  const aVal = `${a[col.id] ?? ''}`
-  const bVal = `${b[col.id] ?? ''}`
-  // numeric:true so columns containing numbers (e.g. taxonomy IDs, accessions)
-  // order naturally (2 before 10) rather than lexically (10 before 2)
   return col.sortFn
     ? col.sortFn(a, b)
-    : aVal.localeCompare(bVal, undefined, { numeric: true })
+    : (col.value?.(a) ?? '').localeCompare(col.value?.(b) ?? '', undefined, {
+        numeric: true,
+      })
 }
 
 function rowToFav(row: Entry): Fav {
@@ -138,7 +138,11 @@ export default function GenomesDataTable({
     }
   }
 
-  const { data, error } = useGenomesData({
+  const {
+    data,
+    error,
+    isLoading: genomesLoading,
+  } = useGenomesData({
     searchQuery,
     filterOption,
     showOnlyFavs,
@@ -265,7 +269,7 @@ export default function GenomesDataTable({
 
       {loadError ? <NetworkErrorMessage error={loadError} /> : null}
 
-      {loadError ? null : categoriesLoading || (data.length === 0 && !url) ? (
+      {loadError ? null : categoriesLoading || genomesLoading || !url ? (
         <SkeletonLoader />
       ) : (
         <div ref={tableRef}>
