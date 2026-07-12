@@ -9,6 +9,12 @@
  *   LinearReadArcsDisplay → LinearAlignmentsDisplay
  *   LinearReadCloudDisplay → LinearAlignmentsDisplay
  *   LinearFeatureDisplay → LinearBasicDisplay
+ *
+ * Also lifts per-instance color/filter settings off the pre-4.x nested
+ * `LinearAlignmentsDisplay` container (which held `PileupDisplay` /
+ * `SNPCoverageDisplay` sub-nodes carrying `colorBy` / `filterBy`) into the
+ * config where those settings now live as slots — see
+ * `extractNestedAlignmentsSettings`.
  */
 
 const displayTypeMap: Record<string, string> = {
@@ -19,20 +25,95 @@ const displayTypeMap: Record<string, string> = {
   LinearFeatureDisplay: 'LinearBasicDisplay',
 }
 
-function migrateDisplaySnapshot(display: Record<string, unknown>) {
-  const oldType = display.type as string
-  const newType = displayTypeMap[oldType]
-  if (!newType) {
-    return display
-  }
-  return { ...display, type: newType }
+// The pre-4.x LinearAlignmentsDisplay was a container whose per-instance
+// track-menu settings lived on nested `PileupDisplay` / `SNPCoverageDisplay`
+// sub-nodes. Those settings are now config slots on the flat
+// LinearAlignmentsDisplay, so the sub-nodes are dead on load — MST drops them
+// and `colorBy`/`filterBy` silently revert to their config default (e.g. a
+// modifications/methylation session opens colored `normal`). We pull them off
+// the instance here and route them into the config.
+const NESTED_ALIGNMENTS_SUBNODES = ['PileupDisplay', 'SNPCoverageDisplay']
+const MIGRATED_INSTANCE_SLOTS = ['colorBy', 'filterBy']
+
+// A per-instance setting lifted off an old nested alignments display, tagged
+// with the track + display config it must land on.
+interface ExtractedDisplaySettings {
+  trackConfigId: string
+  displayId: string
+  settings: Record<string, unknown>
 }
 
-function migrateDisplaysArray(displays: unknown[]) {
+function isObject(v: unknown): v is Record<string, unknown> {
+  return !!v && typeof v === 'object' && !Array.isArray(v)
+}
+
+function migrateDisplayType(display: Record<string, unknown>) {
+  const oldType = display.type as string
+  const newType = displayTypeMap[oldType]
+  return newType ? { ...display, type: newType } : display
+}
+
+/**
+ * Detect a pre-4.x nested LinearAlignmentsDisplay instance, pull `colorBy` /
+ * `filterBy` off its `PileupDisplay` (or `SNPCoverageDisplay`) sub-node into
+ * `collected`, and return the display with the dead sub-nodes stripped. The
+ * caller routes `collected` into the config (see `applyExtractedSettings`); the
+ * settings can't stay on the instance because they're config slots now.
+ */
+function extractNestedAlignmentsSettings(
+  display: Record<string, unknown>,
+  trackConfigId: string | undefined,
+  collected: ExtractedDisplaySettings[],
+): Record<string, unknown> {
+  const hasNested = NESTED_ALIGNMENTS_SUBNODES.some(k => isObject(display[k]))
+  if (display.type !== 'LinearAlignmentsDisplay' || !hasNested) {
+    return display
+  }
+  const source = NESTED_ALIGNMENTS_SUBNODES.map(k => display[k]).find(isObject)
+  const settings: Record<string, unknown> = {}
+  if (source) {
+    for (const slot of MIGRATED_INSTANCE_SLOTS) {
+      if (source[slot] !== undefined) {
+        settings[slot] = source[slot]
+      }
+    }
+  }
+  // The instance's `configuration` string is the display config id the settings
+  // must merge onto (`${trackId}-LinearAlignmentsDisplay`). Skip routing if it's
+  // inline or the track id is unknown — nothing to key the merge on.
+  const displayId = display.configuration
+  if (
+    trackConfigId &&
+    typeof displayId === 'string' &&
+    Object.keys(settings).length > 0
+  ) {
+    collected.push({ trackConfigId, displayId, settings })
+  }
+  const { PileupDisplay, SNPCoverageDisplay, ...rest } = display
+  return rest
+}
+
+function migrateDisplaySnapshot(
+  display: Record<string, unknown>,
+  trackConfigId: string | undefined,
+  collected: ExtractedDisplaySettings[],
+) {
+  return extractNestedAlignmentsSettings(
+    migrateDisplayType(display),
+    trackConfigId,
+    collected,
+  )
+}
+
+function migrateDisplaysArray(
+  displays: unknown[],
+  trackConfigId: string | undefined,
+  collected: ExtractedDisplaySettings[],
+) {
   let changed = false
   const result = displays.map(d => {
-    if (d && typeof d === 'object' && 'type' in d) {
-      const migrated = migrateDisplaySnapshot(d)
+    if (isObject(d) && 'type' in d) {
+      const migrated = migrateDisplaySnapshot(d, trackConfigId, collected)
       if (migrated !== d) {
         changed = true
       }
@@ -44,17 +125,21 @@ function migrateDisplaysArray(displays: unknown[]) {
   return changed ? result : displays
 }
 
-function migrateTrackSnapshot(track: unknown): unknown {
-  if (!track || typeof track !== 'object') {
+function migrateTrackSnapshot(
+  track: unknown,
+  collected: ExtractedDisplaySettings[],
+): unknown {
+  if (!isObject(track)) {
     return track
   }
-  const t = track as Record<string, unknown>
   let changed = false
-  const result = { ...t }
+  const result = { ...track }
 
-  const displays = t.displays as unknown[] | undefined
+  const displays = track.displays as unknown[] | undefined
   if (Array.isArray(displays)) {
-    const newDisplays = migrateDisplaysArray(displays)
+    const trackConfigId =
+      typeof track.configuration === 'string' ? track.configuration : undefined
+    const newDisplays = migrateDisplaysArray(displays, trackConfigId, collected)
     if (newDisplays !== displays) {
       changed = true
       result.displays = newDisplays
@@ -66,13 +151,14 @@ function migrateTrackSnapshot(track: unknown): unknown {
 
 function migrateViewSnapshot(
   view: Record<string, unknown>,
+  collected: ExtractedDisplaySettings[],
 ): Record<string, unknown> {
   let changed = false
   const result = { ...view }
 
   const tracks = view.tracks as unknown[] | undefined
   if (Array.isArray(tracks)) {
-    const newTracks = tracks.map(t => migrateTrackSnapshot(t))
+    const newTracks = tracks.map(t => migrateTrackSnapshot(t, collected))
     if (newTracks.some((t, i) => t !== tracks[i])) {
       changed = true
       result.tracks = newTracks
@@ -82,12 +168,9 @@ function migrateViewSnapshot(
   // Handle nested views (e.g. LinearSyntenyView has sub-views)
   const subViews = view.views as unknown[] | undefined
   if (Array.isArray(subViews)) {
-    const newSubViews = subViews.map(sv => {
-      if (sv && typeof sv === 'object') {
-        return migrateViewSnapshot(sv as Record<string, unknown>)
-      }
-      return sv
-    })
+    const newSubViews = subViews.map(sv =>
+      isObject(sv) ? migrateViewSnapshot(sv, collected) : sv,
+    )
     if (newSubViews.some((v, i) => v !== subViews[i])) {
       changed = true
       result.views = newSubViews
@@ -95,6 +178,80 @@ function migrateViewSnapshot(
   }
 
   return changed ? result : view
+}
+
+// Merge `settings` onto the display config carrying `displayId` inside `track`
+// (an in-session track config). Returns a new track if it changed. The config
+// slots win over whatever the old config held.
+function mergeSettingsIntoTrackConfig(
+  track: Record<string, unknown>,
+  displayId: string,
+  settings: Record<string, unknown>,
+): Record<string, unknown> {
+  const displays = track.displays
+  const list = Array.isArray(displays) ? displays : []
+  const hasMatch = list.some(d => isObject(d) && d.displayId === displayId)
+  const newDisplays = hasMatch
+    ? list.map(d =>
+        isObject(d) && d.displayId === displayId ? { ...d, ...settings } : d,
+      )
+    : [...list, { type: 'LinearAlignmentsDisplay', displayId, ...settings }]
+  return { ...track, displays: newDisplays }
+}
+
+/**
+ * Route each setting lifted off a nested alignments instance into the config it
+ * now lives in: a user-added `sessionTracks` entry is edited in place (the
+ * config is embedded there), while an admin config track — whose base lives in
+ * the reloaded config file, out of reach here — gets a `trackConfigDeltas`
+ * entry keyed by trackId (see product-core/src/Session/CLAUDE.md).
+ */
+function applyExtractedSettings(
+  snapshot: Record<string, unknown>,
+  collected: ExtractedDisplaySettings[],
+): Record<string, unknown> {
+  if (collected.length === 0) {
+    return snapshot
+  }
+  const sessionTracks = Array.isArray(snapshot.sessionTracks)
+    ? [...snapshot.sessionTracks]
+    : []
+  const sessionTrackIndex = new Map(
+    sessionTracks.map((t, i) => [isObject(t) ? t.trackId : undefined, i]),
+  )
+  const deltas: Record<string, unknown> = isObject(snapshot.trackConfigDeltas)
+    ? { ...snapshot.trackConfigDeltas }
+    : {}
+  let sessionTracksChanged = false
+  let deltasChanged = false
+
+  for (const { trackConfigId, displayId, settings } of collected) {
+    const idx = sessionTrackIndex.get(trackConfigId)
+    if (idx !== undefined && isObject(sessionTracks[idx])) {
+      sessionTracks[idx] = mergeSettingsIntoTrackConfig(
+        sessionTracks[idx],
+        displayId,
+        settings,
+      )
+      sessionTracksChanged = true
+    } else {
+      const existing = isObject(deltas[trackConfigId])
+        ? (deltas[trackConfigId])
+        : { trackId: trackConfigId }
+      deltas[trackConfigId] = mergeSettingsIntoTrackConfig(
+        existing,
+        displayId,
+        settings,
+      )
+      deltasChanged = true
+    }
+  }
+
+  return {
+    ...snapshot,
+    ...(sessionTracksChanged ? { sessionTracks } : {}),
+    ...(deltasChanged ? { trackConfigDeltas: deltas } : {}),
+  }
 }
 
 /**
@@ -106,15 +263,15 @@ export function migrateSessionSnapshot(
 ): Record<string, unknown> {
   let changed = false
   const result = { ...snapshot }
+  // Per-instance alignments settings lifted off old nested displays in views,
+  // routed into the config after the walk (they can't stay on the instance).
+  const collected: ExtractedDisplaySettings[] = []
 
   const views = snapshot.views as unknown[] | undefined
   if (Array.isArray(views)) {
-    const newViews = views.map(view => {
-      if (!view || typeof view !== 'object') {
-        return view
-      }
-      return migrateViewSnapshot(view as Record<string, unknown>)
-    })
+    const newViews = views.map(view =>
+      isObject(view) ? migrateViewSnapshot(view, collected) : view,
+    )
     if (newViews.some((v, i) => v !== views[i])) {
       changed = true
       result.views = newViews
@@ -123,7 +280,7 @@ export function migrateSessionSnapshot(
 
   const sessionTracks = snapshot.sessionTracks as unknown[] | undefined
   if (Array.isArray(sessionTracks)) {
-    const newTracks = sessionTracks.map(t => migrateTrackSnapshot(t))
+    const newTracks = sessionTracks.map(t => migrateTrackSnapshot(t, collected))
     if (newTracks.some((t, i) => t !== sessionTracks[i])) {
       changed = true
       result.sessionTracks = newTracks
@@ -135,12 +292,13 @@ export function migrateSessionSnapshot(
   // each through the same track migrator; migrateTrackSnapshot is a no-op for a
   // delta that carries no stale display type.
   const deltas = snapshot.trackConfigDeltas as
-    Record<string, unknown> | undefined
+    | Record<string, unknown>
+    | undefined
   if (deltas && typeof deltas === 'object') {
     let deltasChanged = false
     const newDeltas: Record<string, unknown> = {}
     for (const [trackId, delta] of Object.entries(deltas)) {
-      const migrated = migrateTrackSnapshot(delta)
+      const migrated = migrateTrackSnapshot(delta, collected)
       if (migrated !== delta) {
         deltasChanged = true
       }
@@ -152,7 +310,9 @@ export function migrateSessionSnapshot(
     }
   }
 
-  return changed ? result : snapshot
+  // applyExtractedSettings returns its input by identity when nothing was
+  // collected, so this preserves the unchanged-by-identity contract.
+  return applyExtractedSettings(changed ? result : snapshot, collected)
 }
 
 /**
@@ -166,7 +326,7 @@ export function migrateConfigSnapshot(
   if (!Array.isArray(tracks)) {
     return snapshot
   }
-  const newTracks = tracks.map(t => migrateTrackSnapshot(t))
+  const newTracks = tracks.map(t => migrateTrackSnapshot(t, []))
   if (newTracks.every((t, i) => t === tracks[i])) {
     return snapshot
   }

@@ -236,6 +236,123 @@ describe('migrateSessionSnapshot', () => {
     }
     expect(migrateSessionSnapshot(snap)).toBe(snap)
   })
+
+  // Pre-4.x nested LinearAlignmentsDisplay container: colorBy/filterBy lived on
+  // nested PileupDisplay/SNPCoverageDisplay sub-nodes, now config slots.
+  const nestedAlignmentsView = (trackConfigId: string) => ({
+    type: 'LinearGenomeView',
+    tracks: [
+      {
+        type: 'AlignmentsTrack',
+        configuration: trackConfigId,
+        displays: [
+          {
+            type: 'LinearAlignmentsDisplay',
+            configuration: `${trackConfigId}-LinearAlignmentsDisplay`,
+            height: 250,
+            PileupDisplay: {
+              type: 'LinearPileupDisplay',
+              colorBy: { type: 'modifications' },
+              filterBy: { flagInclude: 0, flagExclude: 1536 },
+            },
+            SNPCoverageDisplay: {
+              type: 'LinearSNPCoverageDisplay',
+              colorBy: { type: 'modifications' },
+            },
+          },
+        ],
+      },
+    ],
+  })
+
+  test('routes nested colorBy on an admin base track into trackConfigDeltas', () => {
+    const snap = {
+      name: 'test',
+      views: [nestedAlignmentsView('track1')],
+    }
+    const result = migrateSessionSnapshot(snap)
+    const display = (result.views as any)[0].tracks[0].displays[0]
+    // dead sub-nodes stripped off the instance
+    expect(display.PileupDisplay).toBeUndefined()
+    expect(display.SNPCoverageDisplay).toBeUndefined()
+    expect(display.height).toBe(250)
+    // settings landed as a delta keyed by trackId, merged by displayId
+    const delta = (result.trackConfigDeltas as any).track1
+    expect(delta.trackId).toBe('track1')
+    const deltaDisplay = delta.displays[0]
+    expect(deltaDisplay.displayId).toBe('track1-LinearAlignmentsDisplay')
+    expect(deltaDisplay.colorBy).toEqual({ type: 'modifications' })
+    expect(deltaDisplay.filterBy).toEqual({ flagInclude: 0, flagExclude: 1536 })
+  })
+
+  test('routes nested colorBy on a sessionTrack into its display config in place', () => {
+    const snap = {
+      name: 'test',
+      views: [nestedAlignmentsView('session-track-1')],
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'session-track-1',
+          displays: [
+            {
+              type: 'LinearAlignmentsDisplay',
+              displayId: 'session-track-1-LinearAlignmentsDisplay',
+            },
+          ],
+        },
+      ],
+    }
+    const result = migrateSessionSnapshot(snap)
+    // no delta for a user-added track — edited in place
+    expect(result.trackConfigDeltas).toBeUndefined()
+    const display = (result.sessionTracks as any)[0].displays[0]
+    expect(display.colorBy).toEqual({ type: 'modifications' })
+    expect(display.filterBy).toEqual({ flagInclude: 0, flagExclude: 1536 })
+  })
+
+  test('merges nested colorBy into an existing trackConfigDeltas entry', () => {
+    const snap = {
+      name: 'test',
+      views: [nestedAlignmentsView('track1')],
+      trackConfigDeltas: {
+        track1: {
+          trackId: 'track1',
+          displays: [
+            { displayId: 'track1-LinearAlignmentsDisplay', height: 321 },
+          ],
+        },
+      },
+    }
+    const result = migrateSessionSnapshot(snap)
+    const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
+    expect(deltaDisplay.height).toBe(321)
+    expect(deltaDisplay.colorBy).toEqual({ type: 'modifications' })
+  })
+
+  test('leaves a flat LinearAlignmentsDisplay (no nested sub-nodes) untouched', () => {
+    const snap = {
+      name: 'test',
+      views: [
+        {
+          type: 'LinearGenomeView',
+          tracks: [
+            {
+              type: 'AlignmentsTrack',
+              configuration: 'track1',
+              displays: [
+                {
+                  type: 'LinearAlignmentsDisplay',
+                  configuration: 'track1-LinearAlignmentsDisplay',
+                  colorBy: { type: 'methylation' },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+    expect(migrateSessionSnapshot(snap)).toBe(snap)
+  })
 })
 
 describe('migrateConfigSnapshot', () => {
