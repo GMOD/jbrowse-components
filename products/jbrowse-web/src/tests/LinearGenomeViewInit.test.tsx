@@ -1,3 +1,4 @@
+import { getSession } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
@@ -55,6 +56,31 @@ test('LinearGenomeView initializes with gene name search', async () => {
   expect(view.displayedRegions[0]!.start).toBeLessThan(1050)
   expect(view.displayedRegions[0]!.end).toBeGreaterThan(9000)
   expect(view.init).toBeUndefined()
+}, 40000)
+
+test('init.highlight (the &highlight= URL param) is parsed onto the list and governed by the session-wide flag', async () => {
+  const { view } = await createLinearGenomeViewWithInit({
+    loc: 'ctgA:1-1000',
+    assembly: 'volvox',
+    highlight: ['ctgA:100-200'],
+  })
+
+  // the URL highlight resolves onto the view's highlight list once init runs
+  await waitFor(
+    () => {
+      expect(view.highlight.length).toBe(1)
+    },
+    { timeout: 30000 },
+  )
+  expect(view.highlight[0]!.refName).toBe('ctgA')
+
+  // rendering gates on getSession(view).highlightsVisible (the same expression
+  // used by the main-view, scalebar, overview and SVG-export components), so a
+  // single session-wide flag now hides URL highlights and bookmark overlays alike
+  const session = getSession(view)
+  expect(session.highlightsVisible).toBe(true)
+  session.setHighlightsVisible(false)
+  expect(session.highlightsVisible).toBe(false)
 }, 40000)
 
 test('LinearGenomeView initializes with init property and location', async () => {
