@@ -1,4 +1,9 @@
-import type { FilterStats, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
+import type {
+  FilterStats,
+  LDMethod,
+  LDMetric,
+  LDSnp,
+} from '../VariantRPC/getLDMatrix.ts'
 
 export const PRECOMPUTED_LD_ADAPTERS = [
   'PlinkLDAdapter',
@@ -26,6 +31,8 @@ export interface LDDataResult {
   // Whether D' is selectable — false only for a pre-computed file with no DP
   // column, so the display can disable the D' metric option.
   hasDprime: boolean
+  // How the values were derived, so the status bar can label precision.
+  method: LDMethod
   signedLD: boolean
   snps: LDSnp[]
   filterStats?: FilterStats

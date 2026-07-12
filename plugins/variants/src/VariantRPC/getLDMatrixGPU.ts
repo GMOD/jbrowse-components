@@ -6,6 +6,7 @@ import { ldComputeShader } from './ldComputeShader.ts'
 import { ldPhasedComputeShader } from './ldPhasedComputeShader.ts'
 
 import type { LDMetric } from './getLDMatrix.ts'
+import type { PackedHaplotypes } from '@jbrowse/ld-core'
 
 const WORKGROUP_SIZE = 64
 const MIN_WORK = 500_000
@@ -14,14 +15,6 @@ interface ComputeState {
   device: GPUDevice
   pipeline: GPUComputePipeline
   bindGroupLayout: GPUBindGroupLayout
-}
-
-interface PackedHaplotypes {
-  altH1: Uint32Array
-  validH1: Uint32Array
-  altH2: Uint32Array
-  validH2: Uint32Array
-  words: number
 }
 
 let computeState: ComputeState | null = null

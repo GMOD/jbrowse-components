@@ -10,7 +10,7 @@ const LDStatusBar = observer(function LDStatusBar({
 }: {
   model: SharedLDModel
 }) {
-  const { filterStats, isPrecomputedLD } = model
+  const { filterStats, isPrecomputedLD, ldMethod } = model
   if (isPrecomputedLD || !filterStats) {
     return null
   }
@@ -22,6 +22,14 @@ const LDStatusBar = observer(function LDStatusBar({
     ['call rate', filterStats.filteredByCallRate],
     ['length', filterStats.filteredByLength],
   ].filter(([, n]) => (n as number) > 0)
+  // Name the estimator so an approximate (composite) matrix isn't mistaken for
+  // exact haplotypic LD.
+  const methodLabel =
+    ldMethod === 'phased'
+      ? 'phased (exact)'
+      : ldMethod === 'composite'
+        ? 'composite (unphased)'
+        : ''
 
   return (
     <div
@@ -41,6 +49,7 @@ const LDStatusBar = observer(function LDStatusBar({
       {dropped.length > 0
         ? ` (${dropped.map(([label, n]) => `${n} ${label}`).join(', ')})`
         : ''}
+      {methodLabel ? ` · LD: ${methodLabel}` : ''}
     </div>
   )
 })

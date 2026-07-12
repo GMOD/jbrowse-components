@@ -164,6 +164,7 @@ export async function getLDMatrixFromPlink({
     ldValues,
     metric,
     hasDprime,
+    method: 'precomputed',
     filterStats,
     recombination: buildRecombination(snps, adjacentR2),
   }

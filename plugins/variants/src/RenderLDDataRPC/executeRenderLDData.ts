@@ -6,7 +6,7 @@ import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
 
 import type { RenderLDDataArgs } from './RenderLDData.ts'
 import type { LDDataResult } from './types.ts'
-import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
+import type { LDMethod, LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { StatusCallback } from '@jbrowse/core/util'
 
@@ -14,7 +14,11 @@ type ExecuteArgs = RenderLDDataArgs & {
   statusCallback?: StatusCallback
 }
 
-function emptyResult(signedLD: boolean, metric: LDMetric): LDDataResult {
+function emptyResult(
+  signedLD: boolean,
+  metric: LDMetric,
+  method: LDMethod,
+): LDDataResult {
   return {
     ldValues: new Float32Array(0),
     boundaries: new Float32Array(0),
@@ -22,6 +26,7 @@ function emptyResult(signedLD: boolean, metric: LDMetric): LDDataResult {
     uniformW: 0,
     metric,
     hasDprime: true,
+    method,
     signedLD,
     snps: [],
   }
@@ -86,7 +91,7 @@ export async function executeRenderLDData({
 
   if (ldData.snps.length === 0) {
     return {
-      ...emptyResult(signedLD, ldMetric),
+      ...emptyResult(signedLD, ldMetric, ldData.method),
       filterStats: ldData.filterStats,
     }
   }
@@ -95,7 +100,7 @@ export async function executeRenderLDData({
   const n = snps.length
   const region = regions[0]
   if (!region) {
-    return emptyResult(signedLD, ldMetric)
+    return emptyResult(signedLD, ldMetric, ldData.method)
   }
 
   const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
@@ -161,6 +166,7 @@ export async function executeRenderLDData({
     uniformW,
     metric: ldData.metric,
     hasDprime: ldData.hasDprime,
+    method: ldData.method,
     signedLD,
     snps: ldData.snps,
     filterStats: ldData.filterStats,

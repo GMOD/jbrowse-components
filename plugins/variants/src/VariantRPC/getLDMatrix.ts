@@ -5,29 +5,28 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import { calculateDprime, calculateLDStats } from '@jbrowse/ld-core'
+import {
+  calculateLDStats,
+  calculateLDStatsPhasedBits,
+  packHaplotypesWithCounts,
+} from '@jbrowse/ld-core'
 
 import {
   computeLDMatrixGPU,
   computeLDMatrixGPUPhased,
 } from './getLDMatrixGPU.ts'
 import { GENOTYPE_SPLITTER as SPLITTER } from '../shared/constants.ts'
+import { phaseSignal } from '../shared/detectPhased.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken, StopTokenChecker } from '@jbrowse/core/util/stopToken'
+import type { PackedHaplotypes } from '@jbrowse/ld-core'
 const SLASH_CODE = 47 // '/'
 const PIPE_CODE = 124 // '|'
 const ZERO_CODE = 48 // '0'
 const DOT_CODE = 46 // '.'
-
-function isPhased(genotypes: Record<string, string>): boolean {
-  for (const k in genotypes) {
-    return genotypes[k]!.includes('|')
-  }
-  return false
-}
 
 // Acklam's inverse standard normal CDF (accurate to ~1e-9).
 function normalInverseCDF(p: number): number {
@@ -188,182 +187,14 @@ function fillEncoded(
   return { nHomRef, nHet, nHomAlt, nValid }
 }
 
-function popcount32(v: number) {
-  v = v | 0
-  v -= (v >>> 1) & 0x55555555
-  v = (v & 0x33333333) + ((v >>> 2) & 0x33333333)
-  v = (v + (v >>> 4)) & 0x0f0f0f0f
-  return Math.imul(v, 0x01010101) >>> 24
-}
-
-interface PackedHaplotypes {
-  altH1: Uint32Array
-  validH1: Uint32Array
-  altH2: Uint32Array
-  validH2: Uint32Array
-  words: number
-}
-
-function packHaplotypesWithCounts(
-  genotypes: Record<string, string>,
-  samples: string[],
-): PackedHaplotypes & {
-  nHomRef: number
-  nHet: number
-  nHomAlt: number
-  nValid: number
-} {
-  const numSamples = samples.length
-  const words = Math.ceil(numSamples / 32)
-  const altH1 = new Uint32Array(words)
-  const validH1 = new Uint32Array(words)
-  const altH2 = new Uint32Array(words)
-  const validH2 = new Uint32Array(words)
-  let nHomRef = 0
-  let nHet = 0
-  let nHomAlt = 0
-  let nValid = 0
-  for (let s = 0; s < numSamples; s++) {
-    const val = genotypes[samples[s]!]!
-    const len = val.length
-
-    if (len === 3 && val.charCodeAt(1) === PIPE_CODE) {
-      // Fast path: 3-char phased "X|Y" — avoids indexOf/slice allocation
-      const c0 = val.charCodeAt(0)
-      const c1 = val.charCodeAt(2)
-      const w = s >>> 5
-      const bit = 1 << (s & 31)
-      const v0 = c0 !== DOT_CODE
-      const v1 = c1 !== DOT_CODE
-      if (v0) {
-        validH1[w] = validH1[w]! | bit
-        if (c0 !== ZERO_CODE) {
-          altH1[w] = altH1[w]! | bit
-        }
-      }
-      if (v1) {
-        validH2[w] = validH2[w]! | bit
-        if (c1 !== ZERO_CODE) {
-          altH2[w] = altH2[w]! | bit
-        }
-      }
-      if (v0 && v1) {
-        nValid++
-        const isAlt0 = c0 !== ZERO_CODE
-        const isAlt1 = c1 !== ZERO_CODE
-        if (!isAlt0 && !isAlt1) {
-          nHomRef++
-        } else if (isAlt0 && isAlt1) {
-          nHomAlt++
-        } else {
-          nHet++
-        }
-      }
-      continue
-    }
-
-    // General path: multi-digit alleles or non-standard ploidy
-    const pipe = val.indexOf('|')
-    if (pipe === -1) {
-      continue
-    }
-    const a0 = val.slice(0, pipe)
-    const a1 = val.slice(pipe + 1)
-    const w = s >>> 5
-    const bit = 1 << (s & 31)
-    const v0 = a0 !== '.'
-    const v1 = a1 !== '.'
-    if (v0) {
-      validH1[w] = validH1[w]! | bit
-      if (a0 !== '0') {
-        altH1[w] = altH1[w]! | bit
-      }
-    }
-    if (v1) {
-      validH2[w] = validH2[w]! | bit
-      if (a1 !== '0') {
-        altH2[w] = altH2[w]! | bit
-      }
-    }
-    if (v0 && v1) {
-      nValid++
-      const isAlt0 = a0 !== '0'
-      const isAlt1 = a1 !== '0'
-      if (!isAlt0 && !isAlt1) {
-        nHomRef++
-      } else if (isAlt0 && isAlt1) {
-        nHomAlt++
-      } else {
-        nHet++
-      }
-    }
-  }
-  return {
-    altH1,
-    validH1,
-    altH2,
-    validH2,
-    words,
-    nHomRef,
-    nHet,
-    nHomAlt,
-    nValid,
-  }
-}
-
-// Phased haplotypes encode alleles as strictly {-1, 0, 1} (encodePhasedHaplotypes
-// maps ref→0, missing→-1, any alt→1), so bit-packing is valid.
-// Each 32-bit word covers 32 samples; popcount replaces the per-sample loop.
-function calculateLDStatsPhasedBits(
-  a: PackedHaplotypes,
-  b: PackedHaplotypes,
-  signedLD = false,
-): { r2: number; dprime: number } {
-  let n01 = 0
-  let n10 = 0
-  let n11 = 0
-  let total = 0
-  const words = a.words
-  for (let w = 0; w < words; w++) {
-    const ai1 = a.altH1[w]!
-    const vi1 = a.validH1[w]!
-    const aj1 = b.altH1[w]!
-    const vj1 = b.validH1[w]!
-    n11 += popcount32(ai1 & aj1)
-    n10 += popcount32(ai1 & ~aj1 & vj1)
-    n01 += popcount32(vi1 & ~ai1 & aj1)
-    total += popcount32(vi1 & vj1)
-    const ai2 = a.altH2[w]!
-    const vi2 = a.validH2[w]!
-    const aj2 = b.altH2[w]!
-    const vj2 = b.validH2[w]!
-    n11 += popcount32(ai2 & aj2)
-    n10 += popcount32(ai2 & ~aj2 & vj2)
-    n01 += popcount32(vi2 & ~ai2 & aj2)
-    total += popcount32(vi2 & vj2)
-  }
-  if (total < 4) {
-    return { r2: 0, dprime: 0 }
-  }
-  const p01 = n01 / total
-  const p10 = n10 / total
-  const p11 = n11 / total
-  const pA = p10 + p11
-  const pB = p01 + p11
-  const qA = 1 - pA
-  const qB = 1 - pB
-  if (pA <= 0 || pA >= 1 || pB <= 0 || pB >= 1) {
-    return { r2: 0, dprime: 0 }
-  }
-  const D = p11 - pA * pB
-  const denom = pA * qA * pB * qB
-  const r = denom > 0 ? D / Math.sqrt(denom) : 0
-  const r2 = Math.min(1, Math.max(0, r * r))
-  const dprime = calculateDprime(D, pA, pB, signedLD)
-  return { r2: signedLD ? r : r2, dprime }
-}
-
 export type LDMetric = 'r2' | 'dprime'
+
+/**
+ * How the displayed LD values were derived, so the UI can be honest about
+ * precision: 'phased' is exact haplotypic LD, 'composite' is the Weir composite
+ * estimate from unphased genotype dosages, 'precomputed' is read from a file.
+ */
+export type LDMethod = 'phased' | 'composite' | 'precomputed'
 
 export interface FilterStats {
   totalVariants: number
@@ -403,16 +234,20 @@ export interface LDMatrixResult {
   // Whether D' is available. Always true for genotype-computed LD; false for a
   // pre-computed PLINK file with no DP column, so the display can disable D'.
   hasDprime: boolean
+  // How these values were derived ('phased' | 'composite' | 'precomputed'), so
+  // the UI can label the precision honestly.
+  method: LDMethod
   filterStats: FilterStats
   recombination: RecombinationData
 }
 
-function emptyLDResult(metric: LDMetric): LDMatrixResult {
+function emptyLDResult(metric: LDMetric, method: LDMethod): LDMatrixResult {
   return {
     snps: [],
     ldValues: new Float32Array(0),
     metric,
     hasDprime: true,
+    method,
     filterStats: {
       totalVariants: 0,
       passedVariants: 0,
@@ -576,7 +411,7 @@ export async function getLDMatrix({
   const samples = sources.map(s => s.name)
 
   if (samples.length === 0) {
-    return emptyLDResult(ldMetric)
+    return emptyLDResult(ldMetric, 'composite')
   }
 
   const splitCache: Record<string, string[]> = {}
@@ -608,13 +443,18 @@ export async function getLDMatrix({
         })
       : null
 
+  // Scan features until one yields a definitive phased/unphased signal. Reading
+  // only the first variant's first sample misclassifies a phased file whose
+  // leading variants are all no-calls (`./.` carries no phase information).
   let dataIsPhased = false
-  if (rawFeatures.length > 0) {
-    const firstGenotypes = rawFeatures[0]!.get('genotypes') as Record<
-      string,
-      string
-    >
-    dataIsPhased = isPhased(firstGenotypes)
+  for (const feature of rawFeatures) {
+    const signal = phaseSignal(
+      feature.get('genotypes') as Record<string, string>,
+    )
+    if (signal !== 'unknown') {
+      dataIsPhased = signal === 'phased'
+      break
+    }
   }
 
   const nSamples = samples.length
@@ -756,6 +596,7 @@ export async function getLDMatrix({
     ldValues,
     metric: ldMetric,
     hasDprime: true,
+    method: dataIsPhased ? 'phased' : 'composite',
     filterStats,
     recombination,
   }

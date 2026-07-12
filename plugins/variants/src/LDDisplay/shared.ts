@@ -27,7 +27,12 @@ import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
-import type { FilterStats, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
+import type {
+  FilterStats,
+  LDMethod,
+  LDMetric,
+  LDSnp,
+} from '../VariantRPC/getLDMatrix.ts'
 import type { LDRenderingBackend } from './components/ldRenderingBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -254,6 +259,15 @@ export default function sharedModelFactory(
        */
       get dprimeAvailable(): boolean {
         return self.rpcData?.hasDprime ?? true
+      },
+      /**
+       * #getter
+       * How the loaded LD values were derived: 'phased' (exact haplotypic),
+       * 'composite' (Weir estimate from unphased genotypes), or 'precomputed'
+       * (read from a PLINK/ldmat file). Undefined until data loads.
+       */
+      get ldMethod(): LDMethod | undefined {
+        return self.rpcData?.method
       },
       /**
        * #getter
@@ -522,6 +536,17 @@ export default function sharedModelFactory(
          * #method
          */
         trackMenuItems() {
+          // One shared sentence describing how the loaded values were derived,
+          // reused across the R²/D' help so precision is stated honestly.
+          const computeNote =
+            self.ldMethod === 'phased'
+              ? 'Computed from phased genotypes as exact haplotypic LD.'
+              : self.ldMethod === 'precomputed'
+                ? 'Read directly from the pre-computed LD file.'
+                : 'Estimated from unphased genotypes with the composite (Weir) method.'
+          const plinkNote = self.isPrecomputedLD
+            ? ''
+            : ' For authoritative published LD, load PLINK-computed .ld files via the PLINK adapter.'
           return [
             ...superTrackMenuItems(),
             ...(self.focalSnpIndex >= 0
@@ -542,6 +567,7 @@ export default function sharedModelFactory(
                   label: 'R² (squared correlation)',
                   type: 'radio',
                   checked: self.effectiveLdMetric === 'r2',
+                  helpText: `Squared correlation between the two variants (0-1). ${computeNote}${plinkNote}`,
                   onClick: () => {
                     self.setLDMetric('r2')
                   },
@@ -552,7 +578,11 @@ export default function sharedModelFactory(
                   checked: self.effectiveLdMetric === 'dprime',
                   disabled: !self.dprimeAvailable,
                   helpText: self.dprimeAvailable
-                    ? undefined
+                    ? `Lewontin's normalized D (0-1). ${computeNote}${
+                        self.isPrecomputedLD
+                          ? ''
+                          : ' The composite estimate from unphased data can differ slightly from EM-based tools like Haploview.'
+                      }${plinkNote}`
                     : "This LD file has no D' (DP) column",
                   onClick: () => {
                     self.setLDMetric('dprime')
