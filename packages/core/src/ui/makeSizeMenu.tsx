@@ -58,13 +58,7 @@ const SizeSliderRow = observer(function SizeSliderRow({
           </span>
         </Tooltip>
         {sessionDefault ? (
-          <DefaultForAllAdornment
-            label={title}
-            isDefault={sessionDefault.active}
-            onToggleDefault={() => {
-              sessionDefault.toggle()
-            }}
-          />
+          <DefaultForAllAdornment label={title} control={sessionDefault} />
         ) : null}
       </div>
       <SingleSlider

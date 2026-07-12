@@ -1,69 +1,67 @@
-import PushPinIcon from '@mui/icons-material/PushPin'
-import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined'
-import { ToggleButton, Tooltip } from '@mui/material'
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
+import { IconButton, Tooltip } from '@mui/material'
 
+import { openPromotableDefaultDialog } from './openPromotableDefaultDialog.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 
+import type { SessionDefaultControl } from '../configuration/promotableDefaults.ts'
+
 const useStyles = makeStyles()(theme => ({
-  // compact enough to sit inline with the value check: drop the default
-  // ToggleButton border/padding so it's ~icon-sized, but keep the selected
-  // background tint (an unmistakable on/off signal, unlike a hollow-vs-filled
-  // icon alone)
+  // subtle at rest so it doesn't compete with the row's value control: a muted,
+  // icon-sized button. Reveals emphasis on hover; tints to the accent color only
+  // when this value IS the type-wide default, so that state still reads at a
+  // glance without a heavy always-on icon.
   button: {
-    border: 0,
     padding: theme.spacing(0.25),
+    color: theme.palette.text.disabled,
+    '&:hover': {
+      color: theme.palette.text.secondary,
+    },
+  },
+  active: {
+    color: theme.palette.primary.main,
   },
 }))
 
-// Trailing "default for all tracks of this type" control for a promotable
-// setting, rendered as a menu item's `endAdornment` to the right of the value
-// check. A real MUI ToggleButton (native button a11y + a clear selected
-// background) with a pin — distinct from the value checkbox — reads as "pinned
-// as the default": unselected = outline pin, selected = filled pin on an
-// accent-tinted button. Always shown so the capability is discoverable.
-// stopPropagation keeps the click from toggling the row value or dismissing the
-// menu. The wording says "of this type" because a promoted default is scoped to
-// the display type (e.g. every LinearAlignmentsDisplay), not literally all
-// tracks.
+// Trailing control for a promotable setting, rendered as a menu item's
+// `endAdornment`. Opens the manage-default dialog (apply to future / currently
+// open tracks) rather than toggling inline — one deliberate click, with the
+// destructive "apply to open tracks" gated behind a submit. `stopPropagation`
+// keeps the click off the row value / menu dismissal. Wording says "of this type"
+// because a promoted default is scoped to the display type (e.g. every
+// LinearAlignmentsDisplay), not literally all tracks.
 export function DefaultForAllAdornment({
-  isDefault,
-  onToggleDefault,
+  control,
   label,
 }: {
-  isDefault: boolean
-  onToggleDefault: () => void
-  // the setting this pin promotes (e.g. a preset name); names the pin in its
-  // tooltip/aria-label so screen readers and tests can tell sibling pins apart
+  control: SessionDefaultControl
+  // the setting this control manages (e.g. a preset name); names it in the
+  // tooltip/aria-label so screen readers and tests can tell sibling controls apart
   label?: string
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const what = label ?? 'this'
+  const isDefault = control.active
   return (
     <Tooltip
       title={
         isDefault
-          ? `${what} is the default for all tracks of this type (click to clear)`
-          : `Make ${what} the default for all tracks of this type`
+          ? `${what} is the default for all tracks of this type (click to manage)`
+          : `Set defaults for all tracks of this type`
       }
     >
-      <ToggleButton
-        className={classes.button}
-        value="default"
-        selected={isDefault}
-        color="primary"
+      <IconButton
+        className={cx(classes.button, isDefault && classes.active)}
         size="small"
-        aria-label={`make ${what} the default for all tracks`}
-        onChange={e => {
+        aria-label={`manage default for ${what}`}
+        aria-haspopup="dialog"
+        onClick={e => {
           e.stopPropagation()
-          onToggleDefault()
+          openPromotableDefaultDialog(control, label ?? what)
         }}
       >
-        {isDefault ? (
-          <PushPinIcon fontSize="small" />
-        ) : (
-          <PushPinOutlinedIcon fontSize="small" />
-        )}
-      </ToggleButton>
+        <MoreHorizIcon fontSize="small" />
+      </IconButton>
     </Tooltip>
   )
 }

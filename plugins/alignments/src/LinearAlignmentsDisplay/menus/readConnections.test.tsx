@@ -1,20 +1,19 @@
 import { isValidElement } from 'react'
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { ThemeProvider } from '@mui/material'
-import { fireEvent, render } from '@testing-library/react'
-
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
-const theme = createJBrowseTheme()
+import type { SessionDefaultControl } from '@jbrowse/core/configuration'
 
-// stateful stand-in for a SessionDefaultControl bundle ({ active, toggle })
-function control() {
+// stateful stand-in for a SessionDefaultControl; self/entries are placeholders
+// (the menu builder and the promote path only touch active/toggle)
+function control(): SessionDefaultControl {
   return {
     active: false,
     toggle() {
       this.active = !this.active
     },
+    entries: [],
+    self: undefined as unknown as SessionDefaultControl['self'],
   }
 }
 
@@ -87,8 +86,10 @@ function endAdornment(model: ReturnType<typeof makeModel>, label: string) {
   return item && 'endAdornment' in item ? item.endAdornment : undefined
 }
 
-// Mount the endAdornment and click its pin button to exercise the promote wiring.
-function clickDefaultForAll(
+// Read the promotable control off a row's "default for all" endAdornment and
+// promote it (what the manage-default dialog does on submit), exercising the
+// menu's promote wiring without opening the dialog.
+function promoteDefaultForAll(
   model: ReturnType<typeof makeModel>,
   label: string,
 ) {
@@ -96,10 +97,8 @@ function clickDefaultForAll(
   if (!isValidElement(adornment)) {
     throw new Error(`no default-for-all control on ${label}`)
   }
-  const { getByRole } = render(
-    <ThemeProvider theme={theme}>{adornment}</ThemeProvider>,
-  )
-  fireEvent.click(getByRole('button'))
+  const { control } = adornment.props as { control: { toggle: () => void } }
+  control.toggle()
 }
 
 describe('read connections menu', () => {
@@ -179,20 +178,20 @@ describe('promote-as-default (default for all) pin', () => {
 
   test('the pin toggles the view-as-pairs session default', () => {
     const model = makeModel()
-    clickDefaultForAll(model, pairs)
+    promoteDefaultForAll(model, pairs)
     expect(model.pairsSessionDefault.active).toBe(true)
   })
 
   test('arcs and read cloud pins toggle independent session defaults', () => {
     const model = makeModel()
-    clickDefaultForAll(model, 'Show read arcs')
+    promoteDefaultForAll(model, 'Show read arcs')
     expect(model.arcsSessionDefault.active).toBe(true)
     expect(model.readCloudSessionDefault.active).toBe(false)
   })
 
   test('"Draw arcs below coverage band" also carries a pin, even while disabled', () => {
     const model = makeModel()
-    clickDefaultForAll(model, 'Draw arcs below coverage band')
+    promoteDefaultForAll(model, 'Draw arcs below coverage band')
     expect(model.readConnectionsDownSessionDefault.active).toBe(true)
   })
 })

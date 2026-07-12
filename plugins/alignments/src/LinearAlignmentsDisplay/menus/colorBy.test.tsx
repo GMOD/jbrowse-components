@@ -1,15 +1,10 @@
 import { isValidElement } from 'react'
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { ThemeProvider } from '@mui/material'
-import { fireEvent, render } from '@testing-library/react'
-
 import { getColorByMenuItem } from './colorBy.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
+import type { SessionDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-const theme = createJBrowseTheme()
 
 // Minimal model: enough for schemeRadios + the Paired end submenu (modModel is
 // "defined" whenever modificationsReady is set, even to false). `pinned` records
@@ -34,7 +29,7 @@ type Model = ReturnType<typeof makeModel>
 // colorBy value — mirrors makeSlotsValueSessionDefaultControl over the colorBy
 // slot.
 function sessionDefault(model: Model) {
-  return (colorBy: ColorBy) => {
+  return (colorBy: ColorBy): SessionDefaultControl => {
     const key = JSON.stringify(colorBy)
     return {
       active: model.pinned.has(key),
@@ -45,6 +40,8 @@ function sessionDefault(model: Model) {
           model.pinned.add(key)
         }
       },
+      entries: [{ slot: 'colorBy', value: colorBy }],
+      self: undefined as unknown as SessionDefaultControl['self'],
     }
   }
 }
@@ -98,7 +95,7 @@ describe('color by menu', () => {
     expect(labels.some(l => /Make .* the default/.test(String(l)))).toBe(false)
   })
 
-  test('clicking a scheme pin promotes that exact scheme value', () => {
+  test('a scheme pin promotes that exact scheme value', () => {
     const model = makeModel()
     const item = byLabel(model, 'Strand', {
       sessionDefault: sessionDefault(model),
@@ -108,10 +105,8 @@ describe('color by menu', () => {
     if (!isValidElement(adornment)) {
       throw new Error('no pin on Strand radio')
     }
-    const { getByRole } = render(
-      <ThemeProvider theme={theme}>{adornment}</ThemeProvider>,
-    )
-    fireEvent.click(getByRole('button'))
+    const { control } = adornment.props as { control: { toggle: () => void } }
+    control.toggle()
     expect(model.pinned.has(JSON.stringify({ type: 'strand' }))).toBe(true)
   })
 

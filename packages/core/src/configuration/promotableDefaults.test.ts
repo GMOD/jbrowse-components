@@ -3,13 +3,16 @@ import { types } from '@jbrowse/mobx-state-tree'
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import {
+  applyPromotableDefault,
   areSlotsAtSessionDefault,
   clearPinsToInherit,
   getConfResolved,
+  isPromotableDefault,
   isSlotPinned,
   makeCurrentValueSessionDefaultControl,
   resolvePromotableConfigSnapshot,
   setSlotsSessionDefault,
+  tracksDifferingFrom,
 } from './promotableDefaults.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -150,12 +153,7 @@ describe('apply a promoted default to open tracks', () => {
   })
 
   // Session shaped as the real one is (isViewContainer + tracks-with-displays),
-  // so a pin toggle exercises the full wired path across EVERY open view. notify
-  // records the snackbar action so a test can "click" the opt-in Apply button.
-  interface SnackAction {
-    name: string
-    onClick: () => void
-  }
+  // so the dialog helpers exercise the full path across EVERY open view.
   function createViews(displayConfigsPerView: Record<string, unknown>[][]) {
     const Display = types.model('TestDisplay', {
       type: types.literal('TestDisplay'),
@@ -171,7 +169,6 @@ describe('apply a promoted default to open tracks', () => {
           types.frozen<Record<string, Record<string, unknown>>>({}),
         views: types.array(View),
       })
-      .volatile(() => ({ lastSnackAction: undefined as SnackAction | undefined }))
       .views(self => ({
         getDisplayTypeDefault(displayType: string, slot: string): unknown {
           return self.displayTypeDefaults[displayType]?.[slot]
@@ -189,9 +186,6 @@ describe('apply a promoted default to open tracks', () => {
             ...self.displayTypeDefaults,
             [displayType]: forType,
           }
-        },
-        notify(_message: string, _level?: string, action?: SnackAction) {
-          self.lastSnackAction = action
         },
         // no-ops that just make the session shape match isViewContainer
         removeView() {},
@@ -212,40 +206,69 @@ describe('apply a promoted default to open tracks', () => {
     return { session, displayOf }
   }
 
-  test('a pin sets the default without overwriting a customized track', () => {
-    // view 0 holds the track being pinned (value 10); view 1 holds a track the
-    // user customized to a different value (20)
-    const { session, displayOf } = createViews([
+  test('setting the default is non-destructive: a customized track keeps its value', () => {
+    // view 0 holds the track whose value becomes the default (10); view 1 holds a
+    // track the user customized to a different value (20)
+    const { displayOf } = createViews([
       [{ customHeight: 10 }],
       [{ customHeight: 20 }],
     ])
     const self = displayOf(0, 0)
     const otherView = displayOf(1, 0)
 
-    // toggle the "make current value the default" pin on view 0's track
     makeCurrentValueSessionDefaultControl(self, ['customHeight']).toggle()
 
-    // NON-destructive: the customized track in the other view keeps its own value
+    // setting the default doesn't touch the customized track in the other view
     expect(isSlotPinned(otherView, 'customHeight')).toBe(true)
     expect(getConfResolved(otherView, 'customHeight')).toBe(20)
+  })
 
-    // the snackbar offered a one-per-not-following-track opt-in; "clicking" it
-    // sweeps that track onto the promoted default, across views
-    expect(session.lastSnackAction!.name).toBe('Apply to 1 open track')
-    session.lastSnackAction!.onClick()
+  test('tracksDifferingFrom lists open tracks across views that do not match', () => {
+    const { displayOf } = createViews([
+      [{ customHeight: 10 }],
+      [{ customHeight: 20 }],
+    ])
+    const self = displayOf(0, 0)
+    const otherView = displayOf(1, 0)
+
+    const differing = tracksDifferingFrom(self, [
+      { slot: 'customHeight', value: 10 },
+    ])
+    expect(differing).toHaveLength(1)
+    expect(differing[0]).toBe(otherView)
+  })
+
+  test('applyPromotableDefault (future+open) sets the default and un-pins differing tracks', () => {
+    const { displayOf } = createViews([
+      [{ customHeight: 10 }],
+      [{ customHeight: 20 }],
+    ])
+    const self = displayOf(0, 0)
+    const otherView = displayOf(1, 0)
+    const entries = [{ slot: 'customHeight', value: 10 }]
+
+    applyPromotableDefault(self, entries, { future: true, openTracks: true })
+
+    expect(isPromotableDefault(self, entries)).toBe(true)
+    // the customized track in the other view is un-pinned and inherits the default
     expect(isSlotPinned(otherView, 'customHeight')).toBe(false)
     expect(getConfResolved(otherView, 'customHeight')).toBe(10)
   })
 
-  test('no Apply action when every open track already follows the default', () => {
-    const { session, displayOf } = createViews([
+  test('applyPromotableDefault (open only) writes the value without a persistent default', () => {
+    const { displayOf } = createViews([
       [{ customHeight: 10 }],
-      [{}], // un-pinned -> already inherits, nothing to apply
+      [{ customHeight: 20 }],
     ])
-    makeCurrentValueSessionDefaultControl(displayOf(0, 0), [
-      'customHeight',
-    ]).toggle()
-    expect(session.lastSnackAction).toBeUndefined()
+    const self = displayOf(0, 0)
+    const otherView = displayOf(1, 0)
+    const entries = [{ slot: 'customHeight', value: 10 }]
+
+    applyPromotableDefault(self, entries, { future: false, openTracks: true })
+
+    // no session default set, but open tracks were written to the value directly
+    expect(isPromotableDefault(self, entries)).toBe(false)
+    expect(getConfResolved(otherView, 'customHeight')).toBe(10)
   })
 })
 

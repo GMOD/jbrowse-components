@@ -258,16 +258,26 @@ export function setSlotValueSessionDefault(
   )
 }
 
+/** one slot value a promotable-default control promotes */
+export interface PromotableEntry {
+  slot: string
+  value: unknown
+}
+
 /**
  * #api core/configuration
- * The state + action for one "make this the default for all tracks of this type"
- * menu control, bundled so a row consumes it as a single prop instead of a
- * separate is-default getter and toggle action. `active` = the promotion is
- * currently in effect; `toggle` promotes it, or clears it when already active.
+ * A promotable "default for all tracks of this type" control, bundled so a menu
+ * row consumes it as a single prop. `active` = this value is currently the
+ * session default; `toggle` sets it as the default or clears it (non-destructive
+ * — no open track is overwritten). `self`/`entries` let the trailing adornment
+ * open the manage-default dialog, whose "apply to open tracks" is the only path
+ * that overwrites tracks pinned to a different value.
  */
 export interface SessionDefaultControl {
   active: boolean
   toggle: () => void
+  self: PromotableDisplay
+  entries: PromotableEntry[]
 }
 
 // A view whose open tracks we can enumerate. The generic view interface doesn't
@@ -281,7 +291,7 @@ function hasOpenTracks<T extends object>(
 }
 
 // Every open track showing this display type, across all open views — the full
-// set "apply to all open tracks" reaches (session-wide, matching the promoted
+// set "apply to open tracks" reaches (session-wide, matching the promoted
 // default's own reach). Views that don't show tracks (e.g. dotplot) drop out via
 // the structural guard. In practice a track has one display (`replaceDisplay`
 // swaps in place, `activeDisplay` is `displays[0]`), so the inner flatMap just
@@ -300,8 +310,7 @@ function openDisplaysOfType(self: PromotableDisplay): PromotableDisplay[] {
  * Clear each display's own value on `slots` back to the slot default, so it
  * un-pins and inherits the session-wide promoted default instead of baking in a
  * value that wouldn't track a later default change. Displays already at the
- * default are skipped. Takes the display set explicitly so it's unit-testable;
- * exported for promotableDefaults.test.ts (like isSlotPinned).
+ * default are skipped. Takes the display set explicitly so it's unit-testable.
  */
 export function clearPinsToInherit(
   displays: PromotableDisplay[],
@@ -317,53 +326,99 @@ export function clearPinsToInherit(
   }
 }
 
-// Open tracks of this type whose resolved value differs from the just-promoted
-// default — the ones that pinned their own value and so don't follow it. The
-// clicked track resolves to the promoted value, so it's excluded. Backs the
-// snackbar's opt-in "apply to open tracks" action.
-function tracksNotFollowingDefault(
+/**
+ * #api core/configuration
+ * Whether every value in `entries` is the current session default for its slot.
+ * The live state the manage-default dialog's checkbox reflects.
+ */
+export function isPromotableDefault(
   self: PromotableDisplay,
-  slots: string[],
-): PromotableDisplay[] {
-  const session = getSession(self)
-  return openDisplaysOfType(self).filter(display =>
-    slots.some(slot => {
-      const promoted = session.getDisplayTypeDefault?.(self.type, slot)
-      return (
-        promoted !== undefined &&
-        !deepEqual(resolveSlot(display, slot).value, promoted)
-      )
-    }),
+  entries: PromotableEntry[],
+): boolean {
+  return entries.every(({ slot, value }) =>
+    isSlotValueSessionDefault(self, slot, value),
   )
 }
 
-// Promoting a default is non-destructive: future tracks and any open track that
-// hasn't pinned its own value inherit it immediately (via getConfResolved). Open
-// tracks that DID pin a different value keep it — but the snackbar offers a
-// one-click "apply to open tracks" that clears those pins so they inherit too,
-// opt-in rather than silently overwriting the user's per-track choices. Clearing
-// the default just un-forces it, so only the promote direction offers the sweep.
-function applyDefaultToggle(
+/**
+ * #api core/configuration
+ * Set (`on`) or clear (`!on`) this value combination as the session default for
+ * the display type. Non-destructive: un-pinned open tracks inherit it via
+ * `getConfResolved`; tracks pinned to their own value keep it.
+ */
+export function setPromotableDefault(
   self: PromotableDisplay,
-  promoted: boolean,
-  slots: string[],
+  entries: PromotableEntry[],
+  on: boolean,
 ): void {
-  const session = getSession(self)
-  if (promoted) {
-    const notFollowing = tracksNotFollowingDefault(self, slots)
-    const n = notFollowing.length
-    if (n > 0) {
-      session.notify('Set as the default for tracks of this type', 'info', {
-        name: `Apply to ${n} open track${n === 1 ? '' : 's'}`,
-        onClick: () => {
-          clearPinsToInherit(notFollowing, slots)
-        },
-      })
+  for (const { slot, value } of entries) {
+    setSlotValueSessionDefault(self, slot, value, on)
+  }
+}
+
+/**
+ * #api core/configuration
+ * Open tracks (across all views) whose resolved value differs from `entries` —
+ * exactly the tracks "apply to open tracks" would visibly change. Drives the
+ * dialog's preview list and count.
+ */
+export function tracksDifferingFrom(
+  self: PromotableDisplay,
+  entries: PromotableEntry[],
+): PromotableDisplay[] {
+  return openDisplaysOfType(self).filter(display =>
+    entries.some(
+      ({ slot, value }) => !deepEqual(resolveSlot(display, slot).value, value),
+    ),
+  )
+}
+
+/**
+ * #api core/configuration
+ * Apply a promotable value along either or both axes — the manage-default
+ * dialog's submit. `future` sets (or clears) the session default so new + un-pinned
+ * tracks inherit it. `openTracks` also updates the currently-open tracks that
+ * differ: when the default now holds these values (`future`), un-pin them so they
+ * inherit it (and track later changes); otherwise write the values onto them
+ * directly, so "open tracks" works even without a persistent default.
+ */
+export function applyPromotableDefault(
+  self: PromotableDisplay,
+  entries: PromotableEntry[],
+  opts: { future: boolean; openTracks: boolean },
+): void {
+  setPromotableDefault(self, entries, opts.future)
+  if (opts.openTracks) {
+    const differing = tracksDifferingFrom(self, entries)
+    if (opts.future) {
+      clearPinsToInherit(
+        differing,
+        entries.map(e => e.slot),
+      )
     } else {
-      session.notify('Set as the default for all tracks of this type', 'info')
+      for (const display of differing) {
+        for (const { slot, value } of entries) {
+          display.configuration.setSlot(slot, value)
+        }
+      }
     }
-  } else {
-    session.notify('Cleared the default for all tracks of this type', 'info')
+  }
+}
+
+// Shared control builder: `active` reflects whether this exact value combination
+// is the current default; `toggle` flips it (set/clear, non-destructive).
+function makePromotableControl(
+  self: PromotableDisplay,
+  entries: PromotableEntry[],
+): SessionDefaultControl {
+  const active = isPromotableDefault(self, entries)
+  return {
+    active,
+    self,
+    entries,
+    toggle: () => {
+      setPromotableDefault(self, entries, !active)
+    },
   }
 }
 
@@ -379,14 +434,7 @@ export function makeSessionDefaultControl(
   slot: string,
   onValue: unknown,
 ): SessionDefaultControl {
-  const active = isSlotValueSessionDefault(self, slot, onValue)
-  return {
-    active,
-    toggle: () => {
-      setSlotValueSessionDefault(self, slot, onValue, !active)
-      applyDefaultToggle(self, !active, [slot])
-    },
-  }
+  return makePromotableControl(self, [{ slot, value: onValue }])
 }
 
 /**
@@ -400,14 +448,10 @@ export function makeCurrentValueSessionDefaultControl(
   self: PromotableDisplay,
   slots: string[],
 ): SessionDefaultControl {
-  const active = areSlotsAtSessionDefault(self, slots)
-  return {
-    active,
-    toggle: () => {
-      setSlotsSessionDefault(self, slots, !active)
-      applyDefaultToggle(self, !active, slots)
-    },
-  }
+  return makePromotableControl(
+    self,
+    slots.map(slot => ({ slot, value: getConfResolved(self, slot) })),
+  )
 }
 
 /**
@@ -415,25 +459,14 @@ export function makeCurrentValueSessionDefaultControl(
  * Per-value control over a *group* of slots: "make this exact combination of
  * slot values the session default". Like `makeSessionDefaultControl` but for a
  * multi-slot value (e.g. a feature-height preset = height + spacing + mode), so
- * each row of a preset radio group gets its own independent pin whose `active`
- * reflects that specific combination being the current default.
+ * each row of a preset radio group gets its own independent control whose
+ * `active` reflects that specific combination being the current default.
  */
 export function makeSlotsValueSessionDefaultControl(
   self: PromotableDisplay,
-  entries: { slot: string; value: unknown }[],
+  entries: PromotableEntry[],
 ): SessionDefaultControl {
-  const active = entries.every(({ slot, value }) =>
-    isSlotValueSessionDefault(self, slot, value),
-  )
-  return {
-    active,
-    toggle: () => {
-      for (const { slot, value } of entries) {
-        setSlotValueSessionDefault(self, slot, value, !active)
-      }
-      applyDefaultToggle(self, !active, entries.map(e => e.slot))
-    },
-  }
+  return makePromotableControl(self, entries)
 }
 
 /**

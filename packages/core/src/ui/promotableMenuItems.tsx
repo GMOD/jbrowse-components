@@ -4,9 +4,9 @@ import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 import type { SessionDefaultControl } from '../configuration/promotableDefaults.ts'
 
 // A promotable setting as one native checkbox menu row: the value toggles the
-// track (inheriting native hover/sizing/keyboard), and a trailing pin
-// (endAdornment) promotes the setting as the session-wide default for this
-// display type. The pin is always shown so the capability is discoverable.
+// track (inheriting native hover/sizing/keyboard), and a trailing control
+// (endAdornment) opens the manage-default dialog for this display type. Always
+// shown so the capability is discoverable.
 export function promotableToggleItem({
   label,
   helpText,
@@ -28,21 +28,13 @@ export function promotableToggleItem({
     onClick: () => {
       onToggle()
     },
-    endAdornment: (
-      <DefaultForAllAdornment
-        label={label}
-        isDefault={sessionDefault.active}
-        onToggleDefault={() => {
-          sessionDefault.toggle()
-        }}
-      />
-    ),
+    endAdornment: <DefaultForAllAdornment label={label} control={sessionDefault} />,
   }
 }
 
 // A radio row in a promotable-value group (e.g. one option of a multi-value enum
 // slot). `sessionDefault` is omitted for the base/un-pinned value (e.g. the
-// `up`/`normal` base of a mode enum) — only the non-base values are pinnable.
+// `up`/`normal` base of a mode enum) — only the non-base values are promotable.
 export function promotableRadioItem({
   label,
   subLabel,
@@ -67,19 +59,7 @@ export function promotableRadioItem({
     onClick,
     ...(sessionDefault && {
       endAdornment: (
-        <DefaultForAllAdornment
-          label={label}
-          isDefault={sessionDefault.active}
-          onToggleDefault={() => {
-            // pinning a value also selects it for this track, so the radio and
-            // the pin light up together (clearing the pin leaves the current
-            // selection alone)
-            if (!sessionDefault.active) {
-              onClick()
-            }
-            sessionDefault.toggle()
-          }}
-        />
+        <DefaultForAllAdornment label={label} control={sessionDefault} />
       ),
     }),
   }

@@ -157,8 +157,8 @@ function heightModePinProps(
   const adornment = row && 'endAdornment' in row ? row.endAdornment : undefined
   return isValidElement(adornment)
     ? (adornment.props as {
-        isDefault: boolean
-        onToggleDefault: () => void
+        control: { active: boolean; toggle: () => void }
+        label?: string
       })
     : undefined
 }
@@ -424,8 +424,8 @@ describe('feature-height menu per-preset pins', () => {
       row && 'endAdornment' in row ? row.endAdornment : undefined
     return isValidElement(adornment)
       ? (adornment.props as {
-          isDefault: boolean
-          onToggleDefault: () => void
+          control: { active: boolean; toggle: () => void }
+          label?: string
         })
       : undefined
   }
@@ -460,22 +460,22 @@ describe('feature-height menu per-preset pins', () => {
   it("only the promoted preset's pin reads as active", () => {
     const { session, display } = createDisplay()
     setCompact(session)
-    expect(pinProps(display, 'Compact')?.isDefault).toBe(true)
-    expect(pinProps(display, 'Normal')?.isDefault).toBe(false)
-    expect(pinProps(display, 'Super-compact')?.isDefault).toBe(false)
+    expect(pinProps(display, 'Compact')?.control.active).toBe(true)
+    expect(pinProps(display, 'Normal')?.control.active).toBe(false)
+    expect(pinProps(display, 'Super-compact')?.control.active).toBe(false)
     expect(
       heightModePinProps(display, 'Compressed — squeeze all reads into view')
-        ?.isDefault,
+        ?.control.active,
     ).toBe(false)
     expect(
       heightModePinProps(display, 'Auto height — grow to fit all reads')
-        ?.isDefault,
+        ?.control.active,
     ).toBe(false)
   })
 
   it("clicking a preset's pin promotes that exact preset", () => {
     const { session, display } = createDisplay()
-    pinProps(display, 'Compact')?.onToggleDefault()
+    pinProps(display, 'Compact')?.control.toggle()
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight'),
     ).toBe(3)
@@ -485,7 +485,7 @@ describe('feature-height menu per-preset pins', () => {
         'featureSpacing',
       ),
     ).toBe(0)
-    expect(pinProps(display, 'Compact')?.isDefault).toBe(true)
+    expect(pinProps(display, 'Compact')?.control.active).toBe(true)
   })
 
   it("the fit pin promotes heightMode='fit'", () => {
@@ -493,7 +493,7 @@ describe('feature-height menu per-preset pins', () => {
     heightModePinProps(
       display,
       'Compressed — squeeze all reads into view',
-    )?.onToggleDefault()
+    )?.control.toggle()
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
     ).toBe('fit')
@@ -705,7 +705,7 @@ describe('alignments grow (auto-height) mode', () => {
     heightModePinProps(
       display,
       'Auto height — grow to fit all reads',
-    )?.onToggleDefault()
+    )?.control.toggle()
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
     ).toBe('grow')

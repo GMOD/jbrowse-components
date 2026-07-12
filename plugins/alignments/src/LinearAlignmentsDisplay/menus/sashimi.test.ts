@@ -1,15 +1,19 @@
 import { getSashimiMenuItem } from './sashimi.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
+import type { SessionDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// stateful stand-in for a SessionDefaultControl bundle ({ active, toggle })
-function control() {
+// stateful stand-in for a SessionDefaultControl; self/entries are placeholders
+// (the menu builder only touches active/toggle)
+function control(): SessionDefaultControl {
   return {
     active: false,
     toggle() {
       this.active = !this.active
     },
+    entries: [],
+    self: undefined as unknown as SessionDefaultControl['self'],
   }
 }
 

@@ -2,58 +2,63 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
+import { openPromotableDefaultDialog } from './openPromotableDefaultDialog.ts'
 import { createJBrowseTheme } from './theme.ts'
+
+import type { SessionDefaultControl } from '../configuration/promotableDefaults.ts'
+
+jest.mock('./openPromotableDefaultDialog.ts', () => ({
+  openPromotableDefaultDialog: jest.fn(),
+}))
 
 const theme = createJBrowseTheme()
 
-function renderAdornment(isDefault: boolean) {
-  const onToggleDefault = jest.fn()
-  const utils = render(
+// test double: the adornment reads `active` and forwards the control to the
+// (mocked) dialog opener, so self/entries/toggle are never exercised here
+function fakeControl(active: boolean): SessionDefaultControl {
+  return {
+    active,
+    toggle: () => {},
+    entries: [],
+    self: undefined,
+  } as unknown as SessionDefaultControl
+}
+
+function renderAdornment(active: boolean, label?: string) {
+  return render(
     <ThemeProvider theme={theme}>
-      <DefaultForAllAdornment
-        isDefault={isDefault}
-        onToggleDefault={onToggleDefault}
-      />
+      <DefaultForAllAdornment control={fakeControl(active)} label={label} />
     </ThemeProvider>,
   )
-  return { ...utils, onToggleDefault }
 }
 
 describe('DefaultForAllAdornment', () => {
-  it('renders a labeled toggle button', () => {
+  beforeEach(() => {
+    jest.mocked(openPromotableDefaultDialog).mockClear()
+  })
+
+  it('renders a labeled dialog-opening button', () => {
     const { getByRole } = renderAdornment(false)
+    const button = getByRole('button', { name: 'manage default for this' })
+    expect(button.getAttribute('aria-haspopup')).toBe('dialog')
+  })
+
+  it('names the control after its setting so siblings are distinguishable', () => {
+    const { getByRole } = renderAdornment(false, 'Compact')
     expect(
-      getByRole('button', { name: 'make this the default for all tracks' }),
+      getByRole('button', { name: 'manage default for Compact' }),
     ).toBeTruthy()
   })
 
-  it('names the pin after its setting so sibling pins are distinguishable', () => {
+  it('clicking opens the manage-default dialog for its control', () => {
+    const control = fakeControl(false)
     const { getByRole } = render(
       <ThemeProvider theme={theme}>
-        <DefaultForAllAdornment
-          label="Compact"
-          isDefault={false}
-          onToggleDefault={() => {}}
-        />
+        <DefaultForAllAdornment control={control} label="Compact" />
       </ThemeProvider>,
     )
-    expect(
-      getByRole('button', { name: 'make Compact the default for all tracks' }),
-    ).toBeTruthy()
-  })
-
-  it('reflects the promoted state via aria-pressed', () => {
-    const on = renderAdornment(true)
-    expect(on.getByRole('button').getAttribute('aria-pressed')).toBe('true')
-    on.unmount()
-    const off = renderAdornment(false)
-    expect(off.getByRole('button').getAttribute('aria-pressed')).toBe('false')
-  })
-
-  it('toggling calls onToggleDefault', () => {
-    const { getByRole, onToggleDefault } = renderAdornment(false)
     fireEvent.click(getByRole('button'))
-    expect(onToggleDefault).toHaveBeenCalledTimes(1)
+    expect(openPromotableDefaultDialog).toHaveBeenCalledWith(control, 'Compact')
   })
 
   it('stops click propagation so the row value is not toggled', () => {
@@ -65,10 +70,7 @@ describe('DefaultForAllAdornment', () => {
             rowClick()
           }}
         >
-          <DefaultForAllAdornment
-            isDefault={false}
-            onToggleDefault={() => {}}
-          />
+          <DefaultForAllAdornment control={fakeControl(false)} />
         </div>
       </ThemeProvider>,
     )
