@@ -897,6 +897,26 @@ describe('alignments colorBy session default', () => {
     expect(display.colorBy).toEqual({ type: 'normal' })
     expect(display.sessionDefaultChanges()).toEqual([])
   })
+
+  // Leaving pairs mode discards the now-meaningless pairing scheme by un-pinning
+  // colorBy to the `inherit` sentinel — NOT by pinning `{type:'normal'}`, which
+  // (under the sentinel slot) would override a session-wide default. Proven by
+  // an active default: after the round-trip the track must FOLLOW it, not sit on
+  // a pinned normal. A no-default variant would resolve to normal either way and
+  // so wouldn't guard the distinction.
+  it('leaving pairs un-pins colorBy so it follows a session default, not pinned normal', () => {
+    const { session, display } = createDisplay()
+    display.setLinkedReads('normal')
+    expect(display.colorBy.type).toBe('insertSizeAndOrientation')
+
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'colorBy',
+      methylation,
+    )
+    display.setLinkedReads('off')
+    expect(display.colorBy).toEqual(methylation)
+  })
 })
 
 // linkedReads (view-as-pairs) is a sentinel promotable slot: 'inherit' is the
