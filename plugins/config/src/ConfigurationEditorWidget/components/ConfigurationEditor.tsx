@@ -147,7 +147,11 @@ const Member = observer(function Member(props: {
     ? ''
     : filter
   if (isConfigurationSchemaType(slotSchema)) {
-    if (slot.length) {
+    // an array-typed sub-schema (e.g. `displays`) renders one Member per entry;
+    // a single sub-schema (not an array) falls through to the accordion below.
+    // keyed on Array.isArray, not `.length` truthiness, so an empty array maps
+    // to nothing instead of being mis-handled as a single schema
+    if (Array.isArray(slot)) {
       return slot.map((subslot: AnyConfigurationModel, slotIndex: number) => {
         const key = subslot.type
           ? `${singular(slotName)} ${subslot.type}`

@@ -121,6 +121,41 @@ test('typing into a slot field writes through to the target config node', () => 
   expect(readConfObject(target, 'myName')).toBe('edited')
 })
 
+test('a maybeBoolean slot starts unchecked (undefined) and pins true on click', () => {
+  const TestSchema = ConfigurationSchema('TestThing', {
+    maybeBoolTest: {
+      name: 'maybeBoolTest',
+      description: 'maybeBoolTest',
+      type: 'maybeBoolean',
+      defaultValue: undefined,
+    },
+  })
+  const target = TestSchema.create(undefined, { pluginManager })
+
+  // React warns via console.error when an input flips uncontrolled ->
+  // controlled, which is what checked={undefined} -> checked={true} did before
+  // the checkbox coerced with !!slot.value
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+  const { getByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor model={{ target }} />
+    </ThemeProvider>,
+  )
+
+  const checkbox = getByLabelText('maybeBoolTest') as HTMLInputElement
+  expect(checkbox.checked).toBe(false)
+
+  // clicking transitions the underlying value undefined -> true
+  fireEvent.click(checkbox)
+  expect(readConfObject(target, 'maybeBoolTest')).toBe(true)
+
+  // no React/MUI uncontrolled->controlled warning fired during that transition
+  const warnings = errorSpy.mock.calls.map(args => String(args[0]))
+  expect(warnings.some(msg => msg.includes('uncontrolled'))).toBe(false)
+  errorSpy.mockRestore()
+})
+
 test('filters slots by name', () => {
   const TestSchema = ConfigurationSchema('TestThing', {
     fooColor: {
