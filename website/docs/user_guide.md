@@ -45,6 +45,7 @@ sidebar_label: Overview
 - [Bisulfite / EM-seq methylation](/docs/tutorials/bisulfite) - A full Arabidopsis WGBS pipeline — SRA reads through bisulfite alignment to per-read CpG/CHG/CHH methylation coloring in JBrowse 2
 - [QTL mapping in the BXD family](/docs/tutorials/bxd_qtl) - Systems genetics with real GeneNetwork BXD data — a chromosome-painting multi-row track and a QTL Manhattan plot from the same mouse recombinant-inbred panel
 - [ChromHMM chromatin states](/docs/tutorials/chromhmm) - Painting many-cell-type ChromHMM segmentations in one track with the multi-row feature display
+- [Building a config with the CLI for Desktop](/docs/tutorials/cli_desktop) - Use the jbrowse CLI to assemble a config.json plus local data files, then open it directly in JBrowse Desktop — the same config also serves on the web
 - [Display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
 - [DNA methylation](/docs/tutorials/methylation) - Per-read, aggregate, allele-specific, and chromatin-accessibility (6mA) methylation from ONT/PacBio long reads and modkit
