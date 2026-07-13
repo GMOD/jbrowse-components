@@ -1,7 +1,9 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
 import { observer } from 'mobx-react'
 
 import { getLegendCssGradient } from './colorRamp.ts'
@@ -58,9 +60,10 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// A single dropdown (juicebox-style) instead of a stepper: much less to parse.
-// "Auto" tracks the zoom-derived binsize; picking a specific binsize locks to
-// it via the model's bias offset.
+// A juicebox-style binsize dropdown. The list is pure binsizes (no "Auto"
+// entry, which read as just another size); auto is simply the default, and a
+// reset-to-auto button surfaces only once the user has locked to a size — so
+// the common case is a plain "Resolution: 25 kbp" with nothing extra to parse.
 const ResolutionRow = observer(function ResolutionRow({
   model,
 }: {
@@ -68,34 +71,35 @@ const ResolutionRow = observer(function ResolutionRow({
 }) {
   const { classes } = useStyles()
   const { resolutionBias, effectiveResolution, availableResolutions } = model
-  const value = resolutionBias === 0 ? 'auto' : String(effectiveResolution)
   return (
     <div className={classes.row}>
       <span>Resolution:</span>
       <select
         className={classes.select}
-        value={value}
+        value={effectiveResolution ?? ''}
         onChange={event => {
-          const v = event.target.value
-          if (v === 'auto') {
-            model.resetResolutionBias()
-          } else {
-            model.setResolution(Number(v))
-          }
+          model.setResolution(Number(event.target.value))
         }}
       >
-        <option value="auto">
-          Auto
-          {effectiveResolution !== undefined
-            ? ` (${getBpDisplayStr(effectiveResolution)})`
-            : ''}
-        </option>
         {availableResolutions?.map(bin => (
           <option key={bin} value={bin}>
             {getBpDisplayStr(bin)}
           </option>
         ))}
       </select>
+      {resolutionBias === 0 ? null : (
+        <Tooltip title="Back to auto (tracks zoom)">
+          <IconButton
+            className={classes.iconBtn}
+            size="small"
+            onClick={() => {
+              model.resetResolutionBias()
+            }}
+          >
+            <RestartAltIcon className={classes.icon} />
+          </IconButton>
+        </Tooltip>
+      )}
     </div>
   )
 })
