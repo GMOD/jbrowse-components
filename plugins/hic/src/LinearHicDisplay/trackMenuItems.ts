@@ -1,45 +1,23 @@
-import { getBpDisplayStr } from '@jbrowse/core/util'
-import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core'
-import GridOnIcon from '@mui/icons-material/GridOn'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The stepper's centered value, e.g. "25kbp (auto)" or "25kbp (+1)" (the "Resolution"
-// prefix is redundant under the submenu of that name); the signed bias suffix
-// reflects how far the user has stepped off the zoom-derived binsize.
-function formatResolutionLabel(
-  effectiveResolution: number | undefined,
-  bias: number,
-) {
-  const value =
-    effectiveResolution !== undefined
-      ? getBpDisplayStr(effectiveResolution)
-      : '…'
-  const suffix =
-    bias === 0 ? ' (auto)' : ` (${bias > 0 ? '+' : '−'}${Math.abs(bias)})`
-  return `${value}${suffix}`
-}
-
 interface HicMenuSelf {
   useLogScale: boolean
   useColorPercentile: boolean
   showLegend: boolean
+  showResolutionControls: boolean
   fitToHeight: boolean
   colorScheme: HicColorScheme
   availableResolutions: number[] | undefined
   availableNormalizations: string[] | undefined
   activeNormalization: string
-  resolutionBias: number
-  effectiveResolution: number | undefined
-  nextResolution: (dir: -1 | 1) => number | undefined
-  stepResolution: (dir: -1 | 1) => void
-  resetResolutionBias: () => void
   setUseLogScale: (f: boolean) => void
   setUseColorPercentile: (f: boolean) => void
   setShowLegend: (f: boolean) => void
+  setShowResolutionControls: (f: boolean) => void
   setFitToHeight: (f: boolean) => void
   setColorScheme: (s?: HicColorScheme) => void
   setActiveNormalization: (s: string) => void
@@ -60,6 +38,18 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
             self.setShowLegend(!self.showLegend)
           },
         },
+        ...(self.availableResolutions
+          ? [
+              {
+                label: 'Show resolution controls',
+                type: 'checkbox' as const,
+                checked: self.showResolutionControls,
+                onClick: () => {
+                  self.setShowResolutionControls(!self.showResolutionControls)
+                },
+              },
+            ]
+          : []),
         {
           label: 'Fit to display height',
           type: 'checkbox',
@@ -86,32 +76,6 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
         },
       ],
     },
-    ...(self.availableResolutions
-      ? [
-          makeResolutionSubMenuItem({
-            icon: GridOnIcon,
-            resetTitle: 'Reset to auto (tracks zoom)',
-            getState: () => ({
-              label: formatResolutionLabel(
-                self.effectiveResolution,
-                self.resolutionBias,
-              ),
-              finerDisabled: self.nextResolution(-1) === undefined,
-              coarserDisabled: self.nextResolution(1) === undefined,
-              resetDisabled: self.resolutionBias === 0,
-            }),
-            onFiner: () => {
-              self.stepResolution(-1)
-            },
-            onCoarser: () => {
-              self.stepResolution(1)
-            },
-            onReset: () => {
-              self.resetResolutionBias()
-            },
-          }),
-        ]
-      : []),
     {
       label: 'Color scheme',
       icon: PaletteIcon,

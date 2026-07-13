@@ -128,6 +128,12 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       */
+      get showResolutionControls(): boolean {
+        return getConf(self, 'showResolutionControls')
+      },
+      /**
+       * #getter
        * The user's persisted normalization choice. May name a scheme the current
        * `.hic` file doesn't actually offer — `activeNormalization` resolves that.
        */
@@ -408,6 +414,12 @@ export default function stateModelFactory(
        */
       setUseColorPercentile(f: boolean) {
         self.configuration.setSlot('useColorPercentile', f)
+      },
+      /**
+       * #action
+       */
+      setShowResolutionControls(f: boolean) {
+        self.configuration.setSlot('showResolutionControls', f)
       },
       /**
        * #action

@@ -103,6 +103,14 @@ const HicTrackConfigFactory = () => {
       },
       /**
        * #slot
+       */
+      showResolutionControls: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'show the on-figure resolution stepper in the overlay',
+      },
+      /**
+       * #slot
        * The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC,
        * NONE). Resolved at runtime against what the `.hic` file actually
        * provides — see the model's `activeNormalization` getter.
