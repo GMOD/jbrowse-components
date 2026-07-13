@@ -62,8 +62,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
           ...openFeatureHeightSubmenu(),
           {
             type: 'hover',
-            selector:
-              '[aria-label="make Compact the default for all tracks"]',
+            selector: '[aria-label="make Compact the default for all tracks"]',
           },
           { type: 'delay', ms: 300 },
         ],
@@ -93,8 +92,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
         actions: [
           {
             type: 'click',
-            selector:
-              '[aria-label="make Compact the default for all tracks"]',
+            selector: '[aria-label="make Compact the default for all tracks"]',
           },
           { type: 'waitForText', text: 'Apply to 2 open tracks' },
           { type: 'delay', ms: 400 },
