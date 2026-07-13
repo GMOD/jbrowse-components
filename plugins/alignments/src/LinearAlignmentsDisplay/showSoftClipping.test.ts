@@ -150,7 +150,7 @@ function heightModePinProps(
   display: ReturnType<typeof createDisplay>['display'],
   label: string,
 ) {
-  const trackSizing = getTrackSizingMenuItem(display, 'reads')
+  const trackSizing = getTrackSizingMenuItem(display, 'read')
   const sub = 'subMenu' in trackSizing ? trackSizing.subMenu : []
   const row = sub.find(i => 'label' in i && i.label === label)
   const adornment = row && 'endAdornment' in row ? row.endAdornment : undefined
@@ -463,11 +463,14 @@ describe('feature-height menu per-preset pins', () => {
     expect(pinProps(display, 'Normal')?.control.active).toBe(false)
     expect(pinProps(display, 'Super-compact')?.control.active).toBe(false)
     expect(
-      heightModePinProps(display, 'Squeeze all reads into view')?.control
+      heightModePinProps(display, 'Fit read height to display')?.control
         .active,
     ).toBe(false)
     expect(
-      heightModePinProps(display, 'Expand to fit all reads')?.control.active,
+      heightModePinProps(
+        display,
+        'Fixed read height + autogrow track height',
+      )?.control.active,
     ).toBe(false)
   })
 
@@ -504,9 +507,38 @@ describe('feature-height menu per-preset pins', () => {
     expect(display.autoHeight).toBe(false)
   })
 
+  function presetRow(
+    display: ReturnType<typeof createDisplay>['display'],
+    label: string,
+  ) {
+    const row = getFeatureHeightMenuItem(display).subMenu.find(
+      i => i.label === label,
+    )
+    return row as { checked?: boolean; onClick?: () => void } | undefined
+  }
+
+  it('clicking Normal overrides a Compact session default (#regression)', () => {
+    // Normal's values (7,1) equal the schema defaults; when featureHeight was a
+    // plain number slot, clicking Normal stripped to default and re-inherited
+    // the Compact default, so Normal could never be selected. The sentinel
+    // maybeNumber slot lets a real value 7/1 win over the session default.
+    const { session, display } = createDisplay()
+    setCompact(session)
+    expect(display.featureHeight).toBe(3)
+    expect(presetRow(display, 'Compact')?.checked).toBe(true)
+    expect(presetRow(display, 'Normal')?.checked).toBe(false)
+
+    presetRow(display, 'Normal')?.onClick?.()
+
+    expect(display.featureHeight).toBe(7)
+    expect(display.featureSpacing).toBe(1)
+    expect(presetRow(display, 'Normal')?.checked).toBe(true)
+    expect(presetRow(display, 'Compact')?.checked).toBe(false)
+  })
+
   it("the fit pin promotes heightMode='fit'", () => {
     const { session, display } = createDisplay()
-    heightModePinProps(display, 'Squeeze all reads into view')?.control.toggle()
+    heightModePinProps(display, 'Fit read height to display')?.control.toggle()
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
     ).toBe('fit')
@@ -732,7 +764,10 @@ describe('alignments grow (auto-height) mode', () => {
 
   it("the grow pin promotes heightMode='grow'", () => {
     const { session, display } = createDisplay()
-    heightModePinProps(display, 'Expand to fit all reads')?.control.toggle()
+    heightModePinProps(
+      display,
+      'Fixed read height + autogrow track height',
+    )?.control.toggle()
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
     ).toBe('grow')

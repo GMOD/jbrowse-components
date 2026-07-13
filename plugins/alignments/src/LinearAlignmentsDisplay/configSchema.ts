@@ -76,18 +76,27 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       featureHeight: {
-        type: 'number',
-        defaultValue: 7,
+        type: 'maybeNumber',
         description: 'Height of each feature (read) in pixels',
+        // Sentinel promotable slot (like heightMode): `undefined` is the inherit
+        // state, `promotedBase` (7) is what it resolves to when nothing is
+        // promoted. A plain `number` slot would spend its default value (7 =
+        // Normal) as the inherit signal, so a track could not pin Normal back
+        // over a session-wide Compact default — clicking Normal would strip to
+        // default and re-inherit Compact. See promotableDefaults.ts.
+        defaultValue: undefined,
+        promotedBase: 7,
         promotable: true,
       },
       /**
        * #slot
        */
       featureSpacing: {
-        type: 'number',
-        defaultValue: 1,
+        type: 'maybeNumber',
         description: 'Spacing between features in pixels',
+        // Sentinel promotable slot; see featureHeight above (promotedBase = 1).
+        defaultValue: undefined,
+        promotedBase: 1,
         promotable: true,
       },
       /**

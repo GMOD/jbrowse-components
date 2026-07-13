@@ -91,27 +91,28 @@ describe('Feature height submenu', () => {
     // exactly the three track-sizing modes, each a radio carrying its own pin
     const labels = sizing.flatMap(i => ('label' in i ? [i.label] : []))
     expect(labels).toEqual([
-      'Scroll to see all features',
-      'Expand to fit all features',
-      'Squeeze all features into view',
+      'Fixed feature height',
+      'Fixed feature height + autogrow track height',
+      'Fit feature height to display',
     ])
     expect(sizing.some(i => i.type === 'checkbox')).toBe(false)
-    expect(radio(sizing, 'Scroll to see all features').checked).toBe(true)
+    expect(radio(sizing, 'Fixed feature height').checked).toBe(true)
     // each mode carries a "make default" pin, like the size presets
+    expect(radio(sizing, 'Fixed feature height').endAdornment).toBeDefined()
     expect(
-      radio(sizing, 'Scroll to see all features').endAdornment,
+      radio(sizing, 'Fixed feature height + autogrow track height')
+        .endAdornment,
     ).toBeDefined()
     expect(
-      radio(sizing, 'Expand to fit all features').endAdornment,
-    ).toBeDefined()
-    expect(
-      radio(sizing, 'Squeeze all features into view').endAdornment,
+      radio(sizing, 'Fit feature height to display').endAdornment,
     ).toBeDefined()
 
     display.setHeightMode('grow')
     const sizing2 = trackSizingSubMenu(display)
-    expect(radio(sizing2, 'Expand to fit all features').checked).toBe(true)
-    expect(radio(sizing2, 'Scroll to see all features').checked).toBe(false)
+    expect(
+      radio(sizing2, 'Fixed feature height + autogrow track height').checked,
+    ).toBe(true)
+    expect(radio(sizing2, 'Fixed feature height').checked).toBe(false)
     // density is orthogonal — still Compact while the track grows
     // (verified via the model getter; the size radios live in a sibling menu)
     expect(display.displayMode).toBe('compact')
