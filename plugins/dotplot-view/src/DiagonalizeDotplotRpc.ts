@@ -15,7 +15,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     DiagonalizeDotplot: {
       args: DiagonalizeDotplotArgs
-      return: DiagonalizationResult
+      // null when there are no alignments to reorder (mirrors DiagonalizeSynteny)
+      return: DiagonalizationResult | null
     }
   }
 }
@@ -79,8 +80,11 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     // back to canonical to line up with the canonical currentRegions.
     const alignments = extractAlignmentData(feats, { queryRefNameMap })
 
+    // return null rather than throw (like DiagonalizeSynteny) so an empty pair
+    // reads as "no regions to reorder", and an init-time auto-diagonalize still
+    // resolves and releases the `settled` gate instead of stalling capture.
     if (alignments.length === 0) {
-      throw new Error('No alignments found to diagonalize')
+      return null
     }
 
     statusCallback?.(

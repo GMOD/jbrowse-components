@@ -15,8 +15,6 @@ export interface AlignmentData {
 export interface DiagonalizationResult {
   newRegions: Region[]
   stats: {
-    totalAlignments: number
-    regionsProcessed: number
     regionsReordered: number
     regionsReversed: number
   }
@@ -180,8 +178,6 @@ export async function diagonalizeRegions(
   return {
     newRegions: [...newQueryRegions, ...regionsWithoutAlignments],
     stats: {
-      totalAlignments: alignments.length,
-      regionsProcessed: queryOrdering.length,
       regionsReordered,
       regionsReversed,
     },

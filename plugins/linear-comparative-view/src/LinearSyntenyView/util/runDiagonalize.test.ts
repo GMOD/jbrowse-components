@@ -61,8 +61,6 @@ function setupRpc() {
       return {
         newRegions: [...args.currentRegions].reverse(),
         stats: {
-          totalAlignments: 0,
-          regionsProcessed: args.currentRegions.length,
           regionsReordered: args.currentRegions.length,
           regionsReversed: 0,
         },
