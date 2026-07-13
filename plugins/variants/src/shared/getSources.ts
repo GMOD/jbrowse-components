@@ -1,11 +1,20 @@
 import type { ProcessedSource, SampleInfo, Source } from './types.ts'
 
+// A source's bare VCF sample identity: `sampleName` when present (set once a
+// source is processed/HP-expanded), else the raw `name`. Single source of truth
+// for the fallback so every genotype-map lookup keys by the same string — see
+// the "genotype maps cross the RPC boundary keyed by sampleName" note in
+// plugins/variants/src/CLAUDE.md.
+export function resolveSampleName(source: Source) {
+  return source.sampleName ?? source.name
+}
+
 export function makeHaplotypeSources(
   source: Source,
   ploidy: number,
 ): ProcessedSource[] {
   const results: ProcessedSource[] = []
-  const sampleName = source.sampleName ?? source.name
+  const sampleName = resolveSampleName(source)
   for (let i = 0; i < ploidy; i++) {
     results.push({
       ...source,
@@ -31,7 +40,7 @@ export function expandSourcesToHaplotypes({
   sampleInfo: Record<string, SampleInfo>
 }): ProcessedSource[] {
   return sources.flatMap(source => {
-    const sampleName = source.sampleName ?? source.name
+    const sampleName = resolveSampleName(source)
     if (source.HP !== undefined) {
       return [{ ...source, sampleName }]
     }
@@ -53,7 +62,7 @@ export function getSources({
   const sourceMap = Object.fromEntries(sources.map(s => [s.name, s]))
 
   return layout.flatMap(row => {
-    const sampleName = row.sampleName ?? row.name
+    const sampleName = resolveSampleName(row)
     const baseSource = sourceMap[sampleName]
 
     if (!baseSource) {

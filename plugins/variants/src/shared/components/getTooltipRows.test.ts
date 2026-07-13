@@ -18,7 +18,7 @@ test('variant fields render first in fixed order with friendly labels', () => {
   ])
 })
 
-test('metadata attributes follow, titleCased, internal keys hidden', () => {
+test('metadata attributes follow, capitalized, internal keys hidden', () => {
   const rows = getTooltipRows({
     name: 'HG001',
     sampleName: 'HG001',

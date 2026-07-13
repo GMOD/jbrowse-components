@@ -13,7 +13,7 @@ import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { titleCase } from './constants.ts'
+import { capitalizeFirst } from './constants.ts'
 import {
   createMAFFilterMenuItem,
   createMissingnessFilterMenuItem,
@@ -249,7 +249,7 @@ export function variantTrackMenuItems(
                 },
               },
               ...self.colorByAttributes.map(attr => ({
-                label: titleCase(attr),
+                label: capitalizeFirst(attr),
                 type: 'radio' as const,
                 checked: self.colorBy === attr,
                 onClick: () => {

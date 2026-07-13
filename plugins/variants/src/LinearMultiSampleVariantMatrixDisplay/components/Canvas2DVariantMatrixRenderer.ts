@@ -33,6 +33,10 @@ export function drawVariantMatrixBlocks(
   // Draw at float coordinates with a small overdraw (f2) so sub-pixel columns
   // antialias and blend, matching the smoother canvas2d-only rendering. Do NOT
   // pixel-snap or force a 1px minimum here (that decimates sub-pixel columns).
+  // Cells are bucketed ref-then-nonref, so consecutive cells frequently share a
+  // color — cache the last fillStyle to skip the abgr→css conversion (mirrors
+  // the regular Canvas2DVariantRenderer).
+  let prevColor = -1
   for (let i = 0; i < data.numCells; i++) {
     const y = data.cellRowIndices[i]! * rowHeight - scrollTop
     if (y + rowHeight < 0 || y > canvasHeight) {
@@ -44,7 +48,11 @@ export function drawVariantMatrixBlocks(
       flipped,
     )
     const x = col * cellWidth
-    ctx.fillStyle = abgrToCssRgba(data.cellColors[i]!)
+    const color = data.cellColors[i]!
+    if (color !== prevColor) {
+      ctx.fillStyle = abgrToCssRgba(color)
+      prevColor = color
+    }
     ctx.fillRect(x - f2, y - f2, cellWidth + f2, rowHeight + f2)
   }
 }

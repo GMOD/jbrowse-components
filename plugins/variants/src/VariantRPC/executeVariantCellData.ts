@@ -243,14 +243,18 @@ export async function executeVariantCellData({
 
   const featureColorFn = makeFeatureColor(featureColor, pluginManager.jexl)
 
-  const regionLookup = displayedRegionIndices
-    ? regions.map((r, i) => ({
-        refName: r.refName,
-        start: r.start,
-        end: r.end,
-        displayedRegionIndex: displayedRegionIndices[i]!,
-      }))
-    : undefined
+  // Only regular mode consumes per-region grouping (it ships one cell blob per
+  // displayed region); matrix mode flattens back to a single `mafs` list, so
+  // skip the grouping + per-region filtering entirely for it.
+  const regionLookup =
+    mode === 'regular' && displayedRegionIndices
+      ? regions.map((r, i) => ({
+          refName: r.refName,
+          start: r.start,
+          end: r.end,
+          displayedRegionIndex: displayedRegionIndices[i]!,
+        }))
+      : undefined
 
   const adapter = await getFeatureAdapterOrThrow({
     pluginManager,

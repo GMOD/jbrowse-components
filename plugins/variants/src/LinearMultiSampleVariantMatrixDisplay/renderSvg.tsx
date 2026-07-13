@@ -5,6 +5,7 @@ import { SvgChrome, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawVariantMatrixBlocks } from './components/Canvas2DVariantMatrixRenderer.ts'
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
+import { REFERENCE_COLOR } from '../shared/constants.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 import type { MatrixCellData } from './components/computeVariantMatrixCells.ts'
@@ -17,6 +18,7 @@ type LGV = LinearGenomeViewModel
 
 interface MatrixRenderSvgModel extends RenderSvgBaseModel {
   flipped: boolean
+  referenceDrawingMode: string
 }
 
 export async function renderSvg(
@@ -85,6 +87,13 @@ function VariantMatrixSvgBody({
           height={availableHeight}
           opts={opts}
           paint={ctx => {
+            // Matrix always draws ref cells; "skip" mode is realized by a grey
+            // background (matching the live canvas in VariantMatrixComponent),
+            // so no-call cells read the same grey as ref instead of white.
+            if (model.referenceDrawingMode === 'skip') {
+              ctx.fillStyle = REFERENCE_COLOR
+              ctx.fillRect(0, 0, canvasWidth, availableHeight)
+            }
             drawVariantMatrixBlocks(ctx, cellData, {
               canvasWidth,
               canvasHeight: availableHeight,

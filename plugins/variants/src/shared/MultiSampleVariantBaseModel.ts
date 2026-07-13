@@ -902,9 +902,15 @@ export default function MultiSampleVariantBaseModelF(
          * height. `resizeHeight` scales pinned values proportionally so manual +
          * display-resize stay in sync without snap-back fuzziness. Every consumer
          * reads this, never the raw `rowHeight` property.
+         *
+         * Floored at 1px: `availableHeight` can go <= 0 when `lineZoneHeight`
+         * (independently settable up to 1000) exceeds a shrunk display height,
+         * which would make the auto-fit height 0/negative and propagate
+         * NaN/Infinity into the `/ rowHeight` in applyRowResizeWheel and the
+         * renderers. A resolved getter must never hand back a degenerate value.
          */
         get effectiveRowHeight() {
-          return self.rowHeight === 0 ? this.autoRowHeight : self.rowHeight
+          return Math.max(1, self.rowHeight === 0 ? this.autoRowHeight : self.rowHeight)
         },
         /**
          * #getter

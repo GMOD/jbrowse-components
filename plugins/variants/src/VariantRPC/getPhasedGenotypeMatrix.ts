@@ -1,6 +1,7 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 
+import { resolveSampleName } from '../shared/getSources.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 
 import type { SampleInfo, Source } from '../shared/types.ts'
@@ -56,7 +57,7 @@ export async function getPhasedGenotypeMatrix({
   // mafs.length once mafs is fetched.
   const resolved = sources.map(s => ({
     name: s.name,
-    key: s.sampleName ?? s.name,
+    key: resolveSampleName(s),
     maxPloidy: sampleInfo[s.name]?.maxPloidy ?? 2,
   }))
 

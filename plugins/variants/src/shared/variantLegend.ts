@@ -6,8 +6,8 @@ import {
   OTHER_ALT_COLOR,
   REFERENCE_COLOR,
   UNPHASED_COLOR,
+  capitalizeFirst,
   getAltColorForDosage,
-  titleCase,
 } from './constants.ts'
 import { CONSEQUENCE_IMPACT_JEXL, IMPACT_TIERS } from './variantConsequence.ts'
 
@@ -102,7 +102,10 @@ export function getSampleGroupLegendItems(
       colorByValue.set(value, color)
     }
   }
-  if (counts.size <= 1 && counts.has('')) {
+  // A single group (whether unset '' or one shared real value) distinguishes
+  // nothing, so the group legend is omitted — matches getVariantLegendSections'
+  // "omitted when colorBy is unset or carries a single value".
+  if (counts.size <= 1) {
     return []
   }
   return [...counts.entries()]
@@ -160,7 +163,7 @@ export function getVariantLegendSections({
       ? [
           {
             id: 'group',
-            title: titleCase(colorBy) || 'Samples',
+            title: capitalizeFirst(colorBy) || 'Samples',
             items: groupItems,
           },
         ]

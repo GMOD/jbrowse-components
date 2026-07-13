@@ -51,7 +51,9 @@ export const INTERNAL_SOURCE_KEYS = new Set([
   'id',
 ])
 
-// "population" -> "Population" for metadata-attribute menu/legend labels.
-export function titleCase(s: string) {
+// "population" -> "Population" for metadata-attribute menu/legend labels. Only
+// the first character is uppercased (single-word attribute keys), so it is not
+// a general title-caser.
+export function capitalizeFirst(s: string) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
 }

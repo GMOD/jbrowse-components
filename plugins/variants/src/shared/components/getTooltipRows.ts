@@ -1,8 +1,8 @@
-import { INTERNAL_SOURCE_KEYS, titleCase } from '../constants.ts'
+import { INTERNAL_SOURCE_KEYS, capitalizeFirst } from '../constants.ts'
 
 // Friendly labels + display order for the variant fields that buildVariantHit
 // produces (VariantTooltipFields). Metadata attributes carried by the source
-// (from samplesTsv) render after these, titleCased to match the "Color samples
+// (from samplesTsv) render after these, capitalized to match the "Color samples
 // by" menu and legend labels.
 const VARIANT_FIELD_LABELS: Record<string, string> = {
   featureName: 'Name',
@@ -20,7 +20,7 @@ export interface TooltipRow {
 
 // Turn a hovered {...source, ...hoveredGenotype} record into ordered,
 // human-labeled rows: variant identity first (fixed order), then sample
-// metadata attributes (titleCased). Skips internal plumbing keys and
+// metadata attributes (capitalized). Skips internal plumbing keys and
 // empty/undefined values so the table stays free of blank rows.
 export function getTooltipRows(source: Record<string, unknown>): TooltipRow[] {
   const rows: TooltipRow[] = []
@@ -40,7 +40,7 @@ export function getTooltipRows(source: Record<string, unknown>): TooltipRow[] {
     if (!shown.has(key) && !INTERNAL_SOURCE_KEYS.has(key)) {
       const value = source[key]
       if (value !== undefined && value !== '') {
-        rows.push({ key, label: titleCase(key), value: String(value) })
+        rows.push({ key, label: capitalizeFirst(key), value: String(value) })
       }
     }
   }

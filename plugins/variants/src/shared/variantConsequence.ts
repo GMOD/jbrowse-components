@@ -96,6 +96,12 @@ export function getVariantImpact(feature: Feature) {
  * SO consequence term (e.g. missense_variant) of the most severe SnpEff/VEP
  * annotation on the variant, or '' when unannotated. When an annotation lists
  * several `&`-joined consequences the first is returned.
+ *
+ * Unlike the impact tier (scanned via its fixed HIGH/MODERATE/LOW/MODIFIER
+ * vocabulary), SO terms are an open vocabulary with no scannable token set, so
+ * this indexes field 1 — the consequence column in SnpEff ANN (spec-fixed) and
+ * in the *default* VEP CSQ order. A non-default `--fields` CSQ layout would need
+ * the header's Format definition to locate the column; not parsed here.
  */
 export function getVariantConsequence(feature: Feature) {
   return mostSevereAnnotation(feature)?.[1]?.split('&')[0]?.trim() ?? ''
