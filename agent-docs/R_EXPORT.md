@@ -48,6 +48,7 @@ is moot since we're not pixel-perfect).
 | alignments BAM/CRAM | `LinearAlignmentsDisplay` | coverage `geom_area` panel + strand-colored `geom_rect` pileup panel; rows from `IRanges::disjointBins` (not JBrowse's `placeRect`) |
 | genes GFF3/BED | `LinearBasicDisplay` | `geom_segment` bodies + `geom_rect` leaf exons/CDS; `gene_layout` groups by top-level parent then `disjointBins` |
 | variants VCF | `LinearVariantDisplay` | `read_vcf` = Rsamtools `scanTabix` (NO VariantAnnotation) → classify SNV/INS/DEL/MNV/SV; `geom_segment` span + `geom_point` lollipop head colored by type; `vcf_layout` `disjointBins` row-pack |
+| multi-sample variant matrix | `LinearMultiSampleVariantMatrixDisplay` | `read_vcf_gt` = Rsamtools `scanTabix` genotype reader (header sample names + FORMAT GT locator, NO VariantAnnotation) → per-cell ref/het/hom/other/nocall by dosage of the site's most-frequent ALT; `geom_tile` heatmap, columns by site index, samples ordered by `hclust`; hand-rolled `dendro_segments` dendrogram as a left `patchwork` panel; MAF/missingness floors emitted as editable vars |
 | Hi-C `.hic` | `LinearHicDisplay` | `read_hic` = `strawr::straw` → upper triangle mirrored across diagonal; square `geom_raster` heatmap, `coord_fixed()`, log `scale_fill_viridis_c`; `binsize`/`norm` emitted as editable script vars (default = display's `effectiveResolution`/`activeNormalization`) |
 
 Every panel ends with `coord_cartesian(xlim = c(start, end))` so stacked tracks
@@ -94,9 +95,10 @@ A small gallery of rendered example figures (one per track type + a combined
 multi-panel) lives in `website/static/img/rexport/` with a `README.md` index;
 regenerate with the scripts noted there.
 
-**Advanced / multi-dimensional displays** (multi-sample variant matrix, Hi-C
-contact maps, and other 2-D/heatmap track types) are a separate, larger effort —
-see `agent-docs/R_EXPORT_ADVANCED.md` for the design handoff.
+**Advanced / multi-dimensional displays** — the 2-D/heatmap track types (Hi-C
+contact maps, multi-sample variant matrix) are now shipped; see
+`agent-docs/R_EXPORT_ADVANCED.md` for the design record and what remains (the
+regular per-sample `LinearMultiSampleVariantDisplay`, phased HP split).
 
 ## Next
 
@@ -104,6 +106,12 @@ see `agent-docs/R_EXPORT_ADVANCED.md` for the design handoff.
   reference FASTA/2bit).
 - Pileup mismatch coloring + `colorBy` fidelity (currently strand only).
 - Gene label de-clutter (avoid a ggrepel dep; maybe only label top-level).
+- Regular multi-sample variant display (`LinearMultiSampleVariantDisplay`): one
+  genotype row per sample drawn at honest genomic POS (shares the
+  `coord_cartesian(xlim=)` contract, unlike the matrix's site-index columns).
+  Can reuse `read_vcf_gt` + the ref/het/hom cell classing; skip the dendrogram
+  (rows stay in sample order). Phased HP split (`"<sample> HP0/HP1"` rows) is
+  deferred for both.
 - Multi-wiggle: the per-source color uses `source.color ?? posColor`; the
   pos/neg bicolor split (row-mode neg keeps the shared `negColor`, see
   `buildSourceRenderData` ADR-016) is not reproduced — signed data colors by

@@ -149,6 +149,82 @@ read_hic <- function(uri, chrom, start, end, binsize, norm) {
   off <- m$x != m$y
   rbind(m, data.frame(x = m$y[off], y = m$x[off], counts = m$counts[off]))
 }`,
+  read_vcf_gt: `# Read per-sample genotypes of a VCF region via the tabix index (Rsamtools - no
+# VariantAnnotation) into a sample-by-site genotype matrix. Sample names come
+# from the '#CHROM' header line; the GT subfield is located in each record's
+# FORMAT column. Each variant's "most frequent ALT" allele is found across all
+# samples (matching JBrowse's allele-count coloring), then every cell is classed
+# ref / het / hom (dosage of that ALT) / other (a secondary ALT) / nocall. Also
+# returns per-site minor-allele-frequency and no-call missingness (no-calls
+# excluded from the MAF denominator, as in JBrowse) so sites can be filtered.
+read_vcf_gt <- function(uri, chrom, start, end) {
+  tf <- TabixFile(uri)
+  hdr <- headerTabix(tf)$header
+  header_cols <- strsplit(sub("^#", "", hdr[length(hdr)]), "\\t", fixed = TRUE)[[1]]
+  samples <- header_cols[-(1:9)]
+  ns <- length(samples)
+  lines <- unlist(scanTabix(tf, param = GRanges(chrom, IRanges(start + 1, end))))
+  if (!length(lines)) {
+    return(list(cls = matrix(character(), 0, ns), dose = matrix(numeric(), 0, ns),
+                maf = numeric(), missingness = numeric(), has_alt = logical(),
+                pos = integer(), samples = samples))
+  }
+  m <- do.call(rbind, strsplit(lines, "\\t", fixed = TRUE))
+  pos <- as.integer(m[, 2])
+  gt_field <- vapply(strsplit(m[, 9], ":", fixed = TRUE),
+                     function(f) match("GT", f), integer(1))
+  nv <- nrow(m)
+  cls <- matrix("nocall", nv, ns)
+  dose <- matrix(NA_real_, nv, ns)
+  maf <- numeric(nv); missingness <- numeric(nv); has_alt <- logical(nv)
+  for (i in seq_len(nv)) {
+    raw <- m[i, 10:(9 + ns)]
+    gi <- gt_field[i]
+    gts <- if (is.na(gi)) raw else
+      vapply(strsplit(raw, ":", fixed = TRUE), function(x) x[gi], character(1))
+    toks <- strsplit(gts, "[/|]")
+    all_alleles <- unlist(toks)
+    called <- all_alleles[all_alleles != "."]
+    alt_tab <- table(called[called != "0"])
+    mfa <- if (length(alt_tab)) names(alt_tab)[which.max(alt_tab)] else NA_character_
+    has_alt[i] <- !is.na(mfa)
+    counts <- sort(as.integer(table(called)), decreasing = TRUE)
+    maf[i] <- if (length(counts) >= 2) counts[2] / length(called) else 0
+    missingness[i] <- sum(all_alleles == ".") / length(all_alleles)
+    for (j in seq_len(ns)) {
+      a <- toks[[j]]
+      if (all(a == ".")) next
+      d <- if (is.na(mfa)) 0L else sum(a == mfa)
+      other <- if (is.na(mfa)) 0L else sum(a != "0" & a != "." & a != mfa)
+      dose[i, j] <- d
+      cls[i, j] <- if (other > 0) "other" else if (d == 0) "ref" else if (d == 1) "het" else "hom"
+    }
+  }
+  rownames(cls) <- seq_len(nv); colnames(cls) <- samples
+  list(cls = cls, dose = dose, maf = maf, missingness = missingness,
+       has_alt = has_alt, pos = pos, samples = samples)
+}`,
+  dendro_segments: `# Convert an hclust tree into geom_segment rows (rectangular elbows) for a
+# left-hand dendrogram panel. x = merge height (0 at leaves), y = leaf position
+# in hc$order, so the leaves line up 1:1 with a sample-by-site matrix whose rows
+# are ordered by the same hclust. Hand-rolled from hc$merge/height (base stats,
+# no ggdendro dependency), same spirit as the inline gene_layout helper.
+dendro_segments <- function(hc) {
+  merge <- hc$merge; height <- hc$height
+  n <- nrow(merge) + 1
+  leaf_y <- integer(n); leaf_y[hc$order] <- seq_len(n)
+  node_x <- numeric(nrow(merge)); node_y <- numeric(nrow(merge))
+  loc <- function(e) if (e < 0) c(0, leaf_y[-e]) else c(node_x[e], node_y[e])
+  segs <- vector("list", nrow(merge))
+  for (k in seq_len(nrow(merge))) {
+    l <- loc(merge[k, 1]); r <- loc(merge[k, 2]); h <- height[k]
+    node_x[k] <- h; node_y[k] <- (l[2] + r[2]) / 2
+    segs[[k]] <- data.frame(
+      x = c(l[1], r[1], h), y = c(l[2], r[2], l[2]),
+      xend = c(h, h, h), yend = c(l[2], r[2], r[2]))
+  }
+  do.call(rbind, segs)
+}`,
 }
 
 /** Collapse the view's coarse blocks down to a single span to seed the call. */

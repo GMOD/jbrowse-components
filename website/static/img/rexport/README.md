@@ -52,6 +52,18 @@ on type (SNV / INS / DEL / MNV / SV subtype), rows from `vcf_layout()`.
 
 ![variants](./variants.png)
 
+## Multi-sample variant matrix — `LinearMultiSampleVariantMatrixDisplay`
+
+Per-sample genotypes read with `read_vcf_gt()` (Rsamtools `scanTabix`, no
+VariantAnnotation), each cell classed ref / het / hom / other / no-call by
+dosage of the site's most-frequent ALT. Samples (rows) are ordered by `hclust`
+and a hand-rolled dendrogram (`dendro_segments()`) is composed as a left
+patchwork panel; columns are laid out by site index (matching JBrowse's matrix,
+not genomic position). MAF and missingness floors are emitted as editable script
+variables. Shown on the 1094-sample volvox 1000G simulation.
+
+![variant matrix](./variant_matrix.png)
+
 ## Hi-C — `LinearHicDisplay`
 
 Contact matrix read with `read_hic()` (`strawr::straw`, the reader from the

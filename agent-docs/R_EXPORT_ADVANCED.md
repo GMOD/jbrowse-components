@@ -73,7 +73,24 @@ one test file.
   (`requireNamespace("strawr")` → FALSE); `install.packages("strawr")` (CRAN) to
   test, and gate the run test on it exactly like wiggle gates on `rtracklayer`.
 
-## Multi-sample variant matrix — `LinearMultiSampleVariantMatrixDisplay`
+## Multi-sample variant matrix — `LinearMultiSampleVariantMatrixDisplay` — SHIPPED
+
+Done (`plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/exportRCode.ts`
++ `exportR{Code,Run}.test.ts`; `read_vcf_gt` + `dendro_segments` helpers in
+`exportR.ts`; gallery `website/static/img/rexport/variant_matrix.png`). Resolved
+open decisions: **zero-dep `read_vcf_gt`** (extends the `scanTabix` path — reads
+sample names from the `#CHROM` header, locates GT within FORMAT, no
+VariantAnnotation); **even site-index columns** (`x = factor(site)`, matching
+JBrowse's matrix, not genomic POS — so this panel does NOT share the
+`coord_cartesian(xlim=)` contract); **hclust order + hand-rolled dendrogram**
+(left `patchwork` panel via `dendro_segments()`, no `ggdendro` dep). Cells are
+classed ref/het/hom/other/nocall by dosage of the site's most-frequent ALT
+(`scale_fill_manual`, an idiomatic discrete approximation of JBrowse's
+alpha-blended dosage — not pixel-perfect, by design). MAF (`minMaf`) and
+missingness (`maxMissing`) floors default to the display's config slots and are
+emitted as editable script vars. Verified through `Rscript` on the 1094-sample
+`volvox.test.vcf.gz` (FORMAT `GT:AP`) and the 50-sample haploid
+`volvox.variants.vcf.gz`. The notes below are retained as the design record.
 
 Samples (rows) × variants (columns), each cell a genotype. Bigger job:
 genotypes + optional clustering + MAF/missingness filters. See
@@ -138,16 +155,19 @@ the wiring spot is obvious. Add `exportRCode.test.ts` (codegen) +
 
 ## Open decisions
 
-Hi-C is shipped; its decisions are resolved (square glyph, editable `binsize`,
-`heightWeight` + `coord_fixed()` — see the SHIPPED note above). Remaining for the
-variant matrix, confirm with the user before building:
+Hi-C and the variant matrix are both shipped; their decisions are resolved (see
+the two SHIPPED notes above). Remaining for a future pass:
 
-- **Matrix columns:** even feature-index columns (match JBrowse) vs genomic-POS
-  columns (honest spacing)?
-- **Sample clustering:** include the hand-rolled dendrogram panel, or ship a
-  fixed/`hclust`-ordered matrix first and add the tree later?
-- **Genotype reader:** extend zero-dep `read_vcf` scanTabix (recommend) vs pull
-  in `VariantAnnotation` for `geno()$GT`?
+- **Regular per-sample display** (`LinearMultiSampleVariantDisplay`, non-matrix):
+  one genotype row per sample at honest genomic POS (keeps the shared
+  `coord_cartesian(xlim=)` contract). Reuses `read_vcf_gt` + the ref/het/hom cell
+  classing, no dendrogram (rows in sample order).
+- **Phased HP split:** `"<sample> HP0/HP1"` rows (`expandSourcesToHaplotypes`) —
+  deferred for both displays; default is one collapsed row per sample.
+- **Cell fidelity:** the matrix uses a 5-level discrete `scale_fill_manual`; a
+  continuous dosage gradient or `scale_fill_identity` mirroring
+  `getColorAlleleCount`'s exact alpha blend is possible if closer parity is
+  wanted (currently not pixel-perfect, by design).
 
 Relates to `R_EXPORT.md`, the variants `plugins/variants/src/CLAUDE.md`
 (matrix-mode / clustering / filters), and the memory
