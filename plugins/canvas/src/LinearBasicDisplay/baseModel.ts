@@ -238,9 +238,11 @@ const FIT_MAX_ROOM_FACTOR = 8
 const FIT_SOLVE_ITERS = 8
 
 // The vertical scale that resizes a laid-out feature body of `bodyPx` to exactly
-// `targetPx` — the shared basis for the fit squeeze floor (target MIN_FIT_BOX_PX)
-// and the grow ceiling (target normal featureHeight). 1 when there is no body to
-// size, so a bound built on it collapses to a no-op scale.
+// `targetPx` — the basis for the fit squeeze floor (target the absolute
+// MIN_FIT_BOX_PX). 1 when there is no body to size, so a bound built on it
+// collapses to a no-op scale. (The grow ceiling doesn't use this: its target is
+// the normal featureHeight, so the ratio reduces to 1 / display-mode multiplier
+// with featureHeight cancelling out — see fitMaxScale.)
 function bodyScaleTo(bodyPx: number, targetPx: number) {
   return bodyPx > 0 ? targetPx / bodyPx : 1
 }
@@ -1189,12 +1191,14 @@ export default function baseStateModelFactory(
          * normal display mode fitBodyPx already is the normal height, pinning the
          * scale at 1 (no grow, surplus stays whitespace); a compact mode (fitBodyPx
          * below normal) may grow back up to — but not past — the normal height.
+         *
+         * This is exactly `1 / multiplier`: the grow target is the normal
+         * `featureHeight` and the laid-out body is `featureHeight * multiplier`, so
+         * `featureHeight` cancels and the ceiling is purely the display mode's
+         * compact ratio (1 in normal mode → no grow).
          */
         get fitMaxScale() {
-          return Math.max(
-            1,
-            bodyScaleTo(this.fitBodyPx, getConf(self, 'featureHeight')),
-          )
+          return Math.max(1, 1 / HEIGHT_MULTIPLIERS[self.displayMode])
         },
       }))
       .views(self => ({
