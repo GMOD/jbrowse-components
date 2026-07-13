@@ -32,7 +32,10 @@ import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import { getMultiRowSortAutorun } from './getMultiRowSortAutorun.ts'
 import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import { MULTIROW_DEFAULT_COLOR } from '../MultiRowGetFeaturesRPC/multiRowColors.ts'
-import { buildColorLegend } from './rendering/colorLegend.ts'
+import {
+  buildColorLegend,
+  resolveConfiguredLegend,
+} from './rendering/colorLegend.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
 import { resolveLocalRowIndices } from './rendering/resolveLocalRowIndices.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
@@ -379,18 +382,25 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Categorical color key derived from the loaded data: distinct
-       * `(featureName -> per-feature color)` pairs among per-feature-colored
-       * rows. Empty in per-row palette / sampleColorMap mode (where the sidebar
-       * labels are the key) and for non-categorical (unnamed / all-distinct)
-       * data. See buildColorLegend.
+       * Categorical color key. The explicit `legend` config slot wins when set
+       * (for color-encoded categories with no feature attribute to key on, e.g.
+       * an itemRgb ancestry painting); otherwise it's auto-derived from the
+       * loaded data as distinct `(featureName -> per-feature color)` pairs among
+       * per-feature-colored rows. Empty in per-row palette / sampleColorMap mode
+       * (where the sidebar labels are the key) and for non-categorical (unnamed /
+       * all-distinct) data. See resolveConfiguredLegend / buildColorLegend.
        */
       get colorLegend() {
-        return buildColorLegend(
-          self.rpcDataMap.values(),
-          self.rowIndexByValue,
-          self.rowColorsByIndex,
+        const configured = resolveConfiguredLegend(
+          readConfObject(self.conf, 'legend'),
         )
+        return configured.length
+          ? configured
+          : buildColorLegend(
+              self.rpcDataMap.values(),
+              self.rowIndexByValue,
+              self.rowColorsByIndex,
+            )
       },
       /**
        * #method

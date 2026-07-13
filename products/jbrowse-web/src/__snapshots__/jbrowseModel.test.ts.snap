@@ -474,6 +474,20 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
           "displayId": "volvox_mouse_inheritance_painting-LinearMultiRowFeatureDisplay",
+          "legend": [
+            {
+              "color": "rgb(227,26,28)",
+              "label": "Maternal",
+            },
+            {
+              "color": "rgb(31,120,180)",
+              "label": "Paternal",
+            },
+            {
+              "color": "rgb(170,170,170)",
+              "label": "Unknown",
+            },
+          ],
           "partitionField": "sample",
           "rowHeight": 18,
           "type": "LinearMultiRowFeatureDisplay",

@@ -138,16 +138,40 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * Show the categorical color key (swatch + feature name per distinct
-       * per-feature color). Only appears in per-feature color mode with named,
-       * categorical features (e.g. chromHMM states); in per-row palette /
+       * Show the categorical color key (swatch + label per distinct per-feature
+       * color). Only appears in per-feature color mode; in per-row palette /
        * sampleColorMap mode the sidebar labels are already the key, so nothing
-       * shows regardless.
+       * shows regardless. The entries come from `legend` when set, else are
+       * auto-derived from named, categorical features (e.g. chromHMM states).
        */
       showLegend: {
         type: 'boolean',
         defaultValue: true,
         description: 'show the categorical color key for per-feature coloring',
+      },
+      /**
+       * #slot
+       * Explicit color key: an array of `{ label, color }`. Use this when the
+       * category is encoded only in the block color (e.g. an `itemRgb` ancestry
+       * painting) so there's no feature attribute to auto-derive a legend from —
+       * the mapping is a semantic the data doesn't carry, so the config declares
+       * it. `color` is any CSS color and should match what `color` paints.
+       * Overrides the auto-derived legend when non-empty.
+       *
+       * #example
+       * ```js
+       * legend: [
+       *   { label: 'Maternal', color: 'rgb(227,26,28)' },
+       *   { label: 'Paternal', color: 'rgb(31,120,180)' },
+       *   { label: 'Unknown', color: 'rgb(170,170,170)' },
+       * ]
+       * ```
+       */
+      legend: {
+        type: 'frozen',
+        defaultValue: [],
+        description:
+          'explicit {label,color} color key for color-encoded categories; overrides the auto-derived legend',
       },
       /**
        * #slot

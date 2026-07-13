@@ -1,3 +1,5 @@
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+
 import { resolveLocalRowIndices } from './resolveLocalRowIndices.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
@@ -6,6 +8,24 @@ export interface LegendEntry {
   label: string
   // ABGR-packed per-feature color
   color: number
+}
+
+// An admin-declared legend entry from the `legend` config slot: a CSS color.
+export interface ConfiguredLegendEntry {
+  label: string
+  color: string
+}
+
+// Convert the admin-declared `{label, color}` legend (CSS colors) to the ABGR
+// LegendEntry the renderer uses, dropping malformed entries. Used when the
+// category is encoded only in the block color, so there's no feature attribute
+// to auto-derive from (see buildColorLegend).
+export function resolveConfiguredLegend(
+  entries: ConfiguredLegendEntry[],
+): LegendEntry[] {
+  return (Array.isArray(entries) ? entries : [])
+    .filter(e => typeof e.label === 'string' && typeof e.color === 'string')
+    .map(e => ({ label: e.label, color: cssColorToABGR(e.color) }))
 }
 
 // A key with more distinct labels than this isn't a categorical vocabulary

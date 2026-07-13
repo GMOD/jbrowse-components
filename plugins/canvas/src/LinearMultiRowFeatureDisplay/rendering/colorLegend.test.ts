@@ -1,4 +1,7 @@
-import { buildColorLegend } from './colorLegend.ts'
+import {
+  buildColorLegend,
+  resolveConfiguredLegend,
+} from './colorLegend.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 
@@ -38,6 +41,18 @@ test('rows with a per-row color override contribute nothing', () => {
 test('unnamed features produce no legend', () => {
   const unnamed = { ...region, featureNames: ['', '', '', ''] }
   expect(buildColorLegend([unnamed], rowIndexByValue, [undefined, undefined])).toEqual([])
+})
+
+test('configured legend converts CSS colors to ABGR, drops malformed', () => {
+  expect(
+    resolveConfiguredLegend([
+      { label: 'Maternal', color: 'rgb(227,26,28)' },
+      { label: 'Paternal', color: 'rgb(31,120,180)' },
+    ]),
+  ).toEqual([
+    { label: 'Maternal', color: 0xff1c1ae3 },
+    { label: 'Paternal', color: 0xffb4781f },
+  ])
 })
 
 test('too many distinct labels is treated as non-categorical', () => {
