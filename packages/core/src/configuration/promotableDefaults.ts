@@ -216,9 +216,10 @@ export interface PromotableEntry {
  * A promotable "default for all tracks of this type" control, bundled so a menu
  * row's trailing pin consumes it as a single prop. `active` = this value is
  * currently the session default (a filled pin); `toggle` sets it as the default
- * or clears it. On set, `toggle` raises a snackbar with an "Apply to N open
- * tracks" action for any open tracks not already showing this value (see
- * `applyDefaultToggle`).
+ * or clears it. On set, `toggle` immediately applies the value to the display
+ * the pin was clicked from (so the active track updates with one click) and
+ * raises a snackbar with an "Apply to N open tracks" action for the remaining
+ * open tracks not already showing this value (see `applyDefaultToggle`).
  */
 export interface DisplayTypeDefaultControl {
   active: boolean
@@ -323,9 +324,11 @@ export function tracksDifferingFrom(
 /**
  * Set (or clear) a value combination as the display type's default. Tracks that
  * follow the default pick it up immediately via `getConfResolved`; tracks with
- * their own value keep it. When setting, if any open track isn't already showing
- * this value, the snackbar offers an "Apply to N open tracks" action that makes
- * them follow the new default too. Clearing just notifies.
+ * their own value keep it. When setting, the display the pin was clicked from is
+ * reset to inherit right away so it shows the new default at once, and if any
+ * *other* open track isn't already showing this value, the snackbar offers an
+ * "Apply to N open tracks" action that makes them follow the new default too.
+ * Clearing just notifies.
  */
 function applyDefaultToggle(
   self: PromotableDisplay,
@@ -333,8 +336,15 @@ function applyDefaultToggle(
   on: boolean,
 ): void {
   const session = getSession(self)
+  const slots = entries.map(e => e.slot)
   setPromotableDefault(self, entries, on)
   if (on) {
+    // Apply to the track the pin was clicked from right away, so the active
+    // display reflects the new default with a single click (resetting it to
+    // inherit, the same non-destructive move the snackbar runs on the rest).
+    // This also drops it out of `tracksDifferingFrom` below, so the snackbar
+    // only counts the *other* open tracks still to convert.
+    resetSlotsToInherit([self], slots)
     // open tracks not already showing this value — those the "apply to open
     // tracks" action would visibly change by making them follow the new default
     const tracks = tracksDifferingFrom(self, entries)
@@ -343,10 +353,7 @@ function applyDefaultToggle(
       session.notify('Set as the default', 'info', {
         name: `Apply to ${n} open track${n === 1 ? '' : 's'}`,
         onClick: () => {
-          resetSlotsToInherit(
-            tracks,
-            entries.map(e => e.slot),
-          )
+          resetSlotsToInherit(tracks, slots)
         },
       })
     } else {

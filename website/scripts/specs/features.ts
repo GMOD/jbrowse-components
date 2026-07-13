@@ -21,11 +21,12 @@ export const featuresSpecs: ScreenshotSpec[] = [
     // value → session default → schema default). Each height row in the "Read
     // height" submenu carries a trailing pin (DefaultForAllAdornment, aria-label
     // "make <preset> the default for all tracks") that toggles that preset as
-    // the session default on click. Two stages mirror the how-to: stage 1 opens
-    // the submenu with the Compact row's pin circled; stage 2 clicks it and boxes
-    // the snackbar's "Apply to N open tracks" action, so the figure shows both the
-    // one-click promotion and the follow-up affordance that reaches the two
-    // already-open tracks.
+    // the session default on click — and, applied to the track the pin was
+    // clicked from, turns it compact in place at once. Two stages mirror the
+    // how-to: stage 1 opens the submenu with the Compact row's pin circled;
+    // stage 2 clicks it (the active track goes compact) and boxes the snackbar's
+    // "Apply to N open tracks" action that reaches the remaining open track,
+    // which the stage then makes compact too so the frame shows the end state.
     mode: 'url',
     name: 'feature_height_default',
     url: lgvSession(VOLVOX, {
@@ -86,26 +87,39 @@ export const featuresSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // bottom frame: clicking the pin immediately sets Compact as the
-        // default for future alignments tracks; the resulting snackbar's
-        // action (boxed, not clicked, so it stays on screen) applies it to the
-        // two already-open tracks that differ. Dismiss the menu afterward
-        // (reviewer: menu shouldn't linger) — a neutral title-bar click, not
-        // Escape, which would pop the snackbar. The snackbar ignores clickaway,
-        // so it survives the dismiss clicks.
+        // bottom frame: clicking the pin sets Compact as the default AND
+        // applies it to the clicked track at once (it turns compact in place);
+        // the resulting snackbar's action (boxed, not clicked, so it stays on
+        // screen) reaches the one *other* open track that still differs. To show
+        // the end state — both tracks compact — the second track is then made
+        // compact through its own "Read height" > Compact row (not the snackbar,
+        // which would dismiss). Each menu is dismissed with a neutral title-bar
+        // click, not Escape, which would pop the snackbar. The snackbar ignores
+        // clickaway and no longer auto-hides (actionable ones persist, see
+        // SnackbarModel), so the click chain can't race a 5s timeout.
         actions: [
           {
             type: 'click',
             selector: '[aria-label="make Compact the default for all tracks"]',
           },
-          { type: 'waitForText', text: 'Apply to 2 open tracks' },
+          { type: 'waitForText', text: 'Apply to 1 open track' },
           { type: 'delay', ms: 400 },
           ...dismissMenus(),
+          // make the OTHER open track compact through its own Read-height menu
+          // (not the snackbar action, which would dismiss the snackbar the
+          // reviewer wants left visible) so the frame ends with both tracks
+          // compact and the "Apply to 1 open track" affordance still on screen
+          trackMenuIcon('volvox_cram_alignments_ctga'),
+          ...openFeatureHeightSubmenu(),
+          { type: 'click', text: 'Compact' },
+          { type: 'delay', ms: 400 },
+          ...dismissMenus(),
+          { type: 'delay', ms: 2000 },
         ],
         annotations: [
           {
             type: 'box',
-            anchor: { text: 'Apply to 2 open tracks' },
+            anchor: { text: 'Apply to 1 open track' },
             strokeWidth: 3,
           },
           {
@@ -114,7 +128,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
             y: 34,
             maxWidth: 560,
             fontSize: 15,
-            text: 'Clicking the pin sets Compact as the default for future alignments tracks. The snackbar then offers to apply it to the two tracks already open.',
+            text: 'Clicking the pin sets Compact as the default and makes the active track compact at once. The snackbar then offers to apply it to the other open track.',
           },
         ],
       },

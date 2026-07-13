@@ -283,6 +283,28 @@ describe('apply a promoted default to open tracks', () => {
     expect(getConfResolved(otherView, 'customHeight')).toBe(10)
   })
 
+  test('toggling on applies the value to the clicked track immediately and excludes it from the snackbar', () => {
+    // both open tracks are customized to a different value than the one promoted;
+    // the pin was clicked from `self`, so `self` converts on the click and only
+    // the *other* track is left for the snackbar
+    const { session, displayOf } = createViews([
+      [{ customHeight: 20 }],
+      [{ customHeight: 20 }],
+    ])
+    const self = displayOf(0, 0)
+    const otherView = displayOf(1, 0)
+    const entries = [{ slot: 'customHeight', value: 10 }]
+
+    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
+
+    // the clicked track now follows the new default with no further action
+    expect(isSlotCustomized(self, 'customHeight')).toBe(false)
+    expect(getConfResolved(self, 'customHeight')).toBe(10)
+    // ...and the snackbar counts only the one remaining track
+    expect(session.lastNotify?.action?.name).toBe('Apply to 1 open track')
+    expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
+  })
+
   test('a following track in another view picks up the new default automatically', () => {
     // view 1's track has no own value, so setting the default moves it with no
     // "apply to open tracks" click needed — that action only targets tracks that

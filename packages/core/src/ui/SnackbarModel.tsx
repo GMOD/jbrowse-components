@@ -57,7 +57,10 @@ export default function SnackbarModel() {
             : [action]
           : undefined
         this.pushSnackbarMessage(message, level, actions)
-        if (level === 'info' || level === 'success') {
+        // A plain info/success toast auto-hides; an actionable one persists
+        // until acted on or dismissed (5s is too short to read and click the
+        // action, and warning/error already persist).
+        if ((level === 'info' || level === 'success') && !actions?.length) {
           setTimeout(() => {
             this.removeSnackbarMessage(message)
           }, 5000)
