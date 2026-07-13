@@ -1,6 +1,7 @@
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { exportRCode } from './exportRCode.ts'
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
 import type { VariantMatrixRenderingBackend } from './components/variantMatrixRenderingBackendTypes.ts'
@@ -9,6 +10,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
+  RTrackFragment,
 } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -83,6 +85,11 @@ export default function stateModelFactory(
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts)
+        },
+        // explicit return type breaks the self-referential MST model-type cycle
+        // (same trick as renderSvg); builds the R panel for this track
+        exportRCode(): RTrackFragment {
+          return exportRCode(self as LinearMultiSampleVariantMatrixDisplayModel)
         },
       }))
       .actions(self => ({
