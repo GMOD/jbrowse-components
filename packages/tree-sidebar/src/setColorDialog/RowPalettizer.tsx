@@ -13,6 +13,7 @@ import type { ButtonProps } from '@mui/material'
 const ALWAYS_EXCLUDED = new Set<string>([
   ...IDENTITY_FIELDS,
   'color',
+  'labelColor',
   'label',
   'id',
 ])

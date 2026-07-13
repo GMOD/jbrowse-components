@@ -18,6 +18,7 @@ interface ScaleModel {
     name: string
     label?: string
     color?: string
+    labelColor?: string
     group?: string
   }[]
   isOverlay: boolean

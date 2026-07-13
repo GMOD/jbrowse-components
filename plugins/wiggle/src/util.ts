@@ -78,6 +78,10 @@ export interface Source {
   name: string
   source: string
   color?: string
+  // Tint for this source's row-label box in the sidebar (multirow modes). Kept
+  // independent of `color` so density tracks can be color-coded by identity
+  // without changing the score→color ramp.
+  labelColor?: string
   group?: string
 }
 

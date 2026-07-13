@@ -41,9 +41,11 @@ export interface SetColorDialogProps<
 > {
   model: TreeLayoutModel<S>
   handleClose: () => void
-  // PopoverPicker columns. Each renders both a bulk header button and a
-  // PopoverPicker column. Defaults to a single `color` column.
+  // PopoverPicker columns. Defaults to a single `color` column. With more than
+  // one, a header toggle switches which single column the grid edits.
   colorColumns?: ColorColumn<S>[]
+  // Which color column starts active; defaults to the first.
+  defaultColorField?: keyof S & string
   title?: string
   enableBulkEdit?: boolean
   enableRowPalettizer?: boolean
@@ -59,6 +61,7 @@ export default function SetColorDialog<
   model,
   handleClose,
   colorColumns = [{ field: 'color', headerName: 'Color' }],
+  defaultColorField,
   title = 'Color/arrangement editor',
   enableBulkEdit = false,
   enableRowPalettizer = false,
@@ -129,6 +132,7 @@ export default function SetColorDialog<
               rows={currLayout}
               onChange={setCurrLayout}
               colorColumns={colorColumns}
+              defaultColorField={defaultColorField}
               reservedExtra={reservedFields}
             />
           </DialogContent>

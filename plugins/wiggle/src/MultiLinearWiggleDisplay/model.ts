@@ -281,9 +281,10 @@ export default function stateModelFactory(
           self.rpcDataMap.set(displayedRegionIndex, data)
           if (self.sourcesVolatile.length === 0 && data.sources.length > 0) {
             self.sourcesVolatile = data.sources.map(
-              ({ name, color, label, group, baseUri }) => ({
+              ({ name, color, labelColor, label, group, baseUri }) => ({
                 name,
                 color,
+                labelColor,
                 label,
                 group,
                 baseUri,

@@ -23,7 +23,7 @@ export function SvgTreeSidebar({
 }: {
   showTree: boolean
   hierarchy: ClusterHierarchyNode | undefined
-  sources: { name: string; label?: string }[]
+  sources: { name: string; label?: string; labelColor?: string }[]
   rowHeight: number
   treeAreaWidth: number
   // Caller-specific label gate (e.g. hidden below a zoom threshold, or for a

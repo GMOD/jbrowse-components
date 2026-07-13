@@ -8,7 +8,7 @@ export function SvgRowLabels({
   scrollTop = 0,
   availableHeight,
 }: {
-  sources: { name: string; label?: string }[]
+  sources: { name: string; label?: string; labelColor?: string }[]
   rowHeight: number
   labelOffset: number
   scrollTop?: number
@@ -28,7 +28,7 @@ export function SvgRowLabels({
     10,
   )
 
-  const background = alpha(theme.palette.background.paper, 0.8)
+  const defaultBackground = alpha(theme.palette.background.paper, 0.8)
   return (
     <g transform={`translate(${labelOffset} 0)`}>
       {sources.map((source, idx) => {
@@ -39,6 +39,12 @@ export function SvgRowLabels({
         ) {
           return null
         }
+        // Per-source labelColor tints the label box (identity coding for
+        // multirow/density tracks); text auto-contrasts against it.
+        const lc = source.labelColor
+        const fg = lc
+          ? theme.palette.getContrastText(lc)
+          : theme.palette.text.primary
         return (
           <g key={source.name}>
             <rect
@@ -46,14 +52,14 @@ export function SvgRowLabels({
               y={y}
               width={boxWidth}
               height={boxHeight}
-              {...getFillProps(background)}
+              {...getFillProps(lc ?? defaultBackground)}
             />
             <text
               x={4}
               y={y + boxHeight / 2}
               fontSize={fontSize}
               dominantBaseline="central"
-              {...getFillProps(theme.palette.text.primary)}
+              {...getFillProps(fg)}
             >
               {source.label ?? source.name}
             </text>

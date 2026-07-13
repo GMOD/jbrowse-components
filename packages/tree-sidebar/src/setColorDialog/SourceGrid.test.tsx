@@ -6,6 +6,7 @@ import SourceGrid from './SourceGrid.tsx'
 interface Src {
   name: string
   color?: string
+  labelColor?: string
 }
 
 // These tests deliberately drive the @mui/x-data-grid interaction surface
@@ -49,6 +50,39 @@ test('checkbox selection feeds the move-to-bottom action (arg.ids wiring)', () =
     { name: 'c' },
     { name: 'a' },
   ])
+})
+
+test('two color columns: header toggle switches the active swatch column', () => {
+  const onChange = jest.fn()
+  const rows: Src[] = [{ name: 'a' }, { name: 'b' }]
+  render(
+    <SourceGrid
+      rows={rows}
+      onChange={onChange}
+      colorColumns={[
+        { field: 'color', headerName: 'Track color' },
+        { field: 'labelColor', headerName: 'Label color' },
+      ]}
+      defaultColorField="labelColor"
+    />,
+  )
+
+  // defaultColorField makes label color the active (visible) swatch column
+  expect(
+    screen.getByRole('columnheader', { name: 'Label color' }),
+  ).toBeInTheDocument()
+  expect(
+    screen.queryByRole('columnheader', { name: 'Track color' }),
+  ).not.toBeInTheDocument()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Track color' }))
+
+  expect(
+    screen.getByRole('columnheader', { name: 'Track color' }),
+  ).toBeInTheDocument()
+  expect(
+    screen.queryByRole('columnheader', { name: 'Label color' }),
+  ).not.toBeInTheDocument()
 })
 
 test('clicking the Name header sorts rows through onSortModelChange', () => {
