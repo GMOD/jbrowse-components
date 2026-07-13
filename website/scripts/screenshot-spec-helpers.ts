@@ -267,17 +267,17 @@ export const trackMenuIcon = (trackId: string): ScreenshotAction => ({
   selector: `[data-testid="track_menu_icon"][data-trackid="${trackId}"]`,
 })
 
-// Open the alignments "Set feature height..." submenu and leave it open.
+// Open the alignments "Read height" submenu and leave it open.
 // CascadingSubmenu opens on click as well as hover (onClick -> onOpen), and a
 // click is deterministic where a hover is timing-sensitive (the pileup keeps
 // re-laying-out while reads stream, so the hovered row can move out from under
 // the cursor). Target the submenu row by its data-testid prefix.
 export const openFeatureHeightSubmenu = (): ScreenshotAction[] => [
-  { type: 'waitForText', text: 'Set feature height' },
+  { type: 'waitForText', text: 'Read height' },
   { type: 'delay', ms: 300 },
   {
     type: 'click',
-    selector: '[data-testid^="cascading-submenu-set_feature_height"]',
+    selector: '[data-testid^="cascading-submenu-read_height"]',
   },
   { type: 'waitForText', text: 'Super-compact' },
   { type: 'delay', ms: 500 },
@@ -293,7 +293,7 @@ export const dismissMenus = (): ScreenshotAction[] => [
   { type: 'click', from: { x: 550, y: 58 } },
   { type: 'delay', ms: 300 },
   { type: 'click', from: { x: 550, y: 58 } },
-  { type: 'waitForText', text: 'Set feature height', hidden: true },
+  { type: 'waitForText', text: 'Read height', hidden: true },
   { type: 'delay', ms: 300 },
 ]
 

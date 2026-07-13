@@ -267,7 +267,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     settleMs: 5000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Plot type', 'Multi-row XY plot']),
+      ...menuCascade(['Plot type', 'Multi-row', 'XY plot']),
     ],
     annotations: [{ type: 'box', anchor: { text: 'Plot type' } }],
   },

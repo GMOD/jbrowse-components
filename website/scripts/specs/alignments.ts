@@ -694,7 +694,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // Compact read drawing on real human data: HG002 Illumina hs37d5 2x250 (high
   // coverage, so the difference compact mode makes is obvious). The display is
   // preset to the compact preset (featureHeight 3 / spacing 0) so the pileup is
-  // already drawn compact; the track menu is opened to the "Set feature height..."
+  // already drawn compact; the track menu is opened to the "Read height"
   // submenu with the now-active Compact option boxed — i.e. the toggled state and
   // the menu path that sets it, in one figure. Remote DEMO_CONFIG data.
   {
@@ -717,7 +717,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Set feature height...', 'Compact'], 800),
+      ...menuCascade(['Read height', 'Compact'], 800),
     ],
     annotations: [{ type: 'box', anchor: { text: 'Compact' } }],
   },
