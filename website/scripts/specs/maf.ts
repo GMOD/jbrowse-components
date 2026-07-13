@@ -80,13 +80,19 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ce11_ncbi_refseq',
               type: 'LinearBasicDisplay',
-              displayMode: 'compact',
+              // grow mode: the gene lane expands to show every transcript row
+              // rather than scrolling, so the full dnj-28 / nduf-5 structure
+              // sits above the alignment
+              heightMode: 'grow',
             },
             {
               trackId: 'ce11.26way',
-              // fit-to-display-height is the default; rows fill heightOverride
+              // Compact preset (rowHeight 8, rowProportion 0.9): a fixed small
+              // per-row height so all 26 species fit without scrolling and the
+              // conservation banding reads as one texture
               type: 'LinearMafDisplay',
-              heightOverride: 360,
+              rowHeight: 8,
+              rowProportion: 0.9,
             },
           ],
         },
@@ -170,13 +176,20 @@ export const mafSpecs: ScreenshotSpec[] = [
           loc: 'chrI:2,995,000-3,003,000',
           trackLabels: 'offset',
           tracks: [
-            // gene context: the source-chromosome recoloring spans these ce11
-            // genes (supr-1 / dnj-28 / nduf-5)
-            'ce11_ncbi_refseq',
+            {
+              // gene context: the source-chromosome recoloring spans these ce11
+              // genes (supr-1 / dnj-28 / nduf-5); grow mode expands the lane to
+              // show every transcript row
+              trackId: 'ce11_ncbi_refseq',
+              type: 'LinearBasicDisplay',
+              heightMode: 'grow',
+            },
             {
               trackId: 'ce11.26way',
+              // Compact preset so all 26 species fit without scrolling
               type: 'LinearMafDisplay',
-              heightOverride: 400,
+              rowHeight: 8,
+              rowProportion: 0.9,
               colorByChromosome: true,
             },
           ],
@@ -186,7 +199,8 @@ export const mafSpecs: ScreenshotSpec[] = [
     readyText: 'chrI',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 560,
+    // taller frame so all 26 compact rows + the grow-mode gene lane sit inside
+    viewportHeight: 620,
     settleMs: 12000,
     hideTooltip: true,
     actions: [

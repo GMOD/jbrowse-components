@@ -19,6 +19,8 @@ species list or a Newick guide tree) live in the
 [MAF track configuration guide](/docs/config_guides/maf_track); this page covers
 what you can do once the track is on screen.
 
+<Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way multiz alignment (C. elegans and related nematodes), with the ce11 NCBI RefSeq gene lane on top for context: the coverage band, then one row per species ordered by the guide tree in the left sidebar, with positions where a species differs from the reference drawn as colored marks. The conserved alignment blocks line up with the coding exons above."/>
+
 Zoomed out, each pixel summarizes the alignment beneath it; zoom in and the
 per-species rows resolve into individual bases, with positions where a species
 differs from the reference drawn as colored marks. Most of the features below
@@ -38,6 +40,12 @@ red→grey→blue ramp, red divergent, blue conserved) and **X-Y plot** (a
 per-species identity wiggle), plus **Off**. By default it swaps in only when you
 zoom out past base level, where individual bases are no longer legible; uncheck
 **Auto-switch by zoom** to pin it on at every zoom level.
+
+This works on large alignments: with all ~470 species of the UCSC hg38 470-way
+shown at once, the heatmap gives a per-base conservation view across the full
+set of species.
+
+<Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus. Fit-to-display-height mode squeezes all ~470 species into a 600px-tall display, so every row goes near-1px and the whole alignment reads as a texture with the guide tree (dendrogram) down the left. The per-row identity heatmap colors each base by whether it matches the reference row: blue where conserved, red where divergent (see the top-right legend). Conserved coding columns run blue top-to-bottom across the entire phylogeny, while gaps and less-conserved regions break up as red/white streaks."/>
 
 ## Color by source chromosome
 
@@ -79,6 +87,12 @@ the reference: nonsynonymous changes stand out, synonymous (silent) changes get
 a faint tint, stop codons are flagged, and conserved codons stay clean. The
 residue is drawn on each codon once you zoom in far enough to read it.
 
+On a large alignment, narrowing to a focused set of species first (see
+[Selecting a subtree](#selecting-a-subtree)) keeps the per-codon columns
+legible.
+
+<Figure src="/img/maf_470way_codon.png" caption="The hg38 470-way narrowed to ~30 representative mammals (one per major clade, plus opossum and platypus outgroups) in codon view at a conserved GAPDH exon: each species' coding sequence is translated in the human reading frame, so the conserved residues line up and the few amino-acid changes in the more distant lineages stand out. The left sidebar is the pruned ~30-leaf guide tree, not the full 470-species tree."/>
+
 ## Tooltips
 
 Hovering any cell reads out the alignment at that position: the species, its
@@ -95,13 +109,17 @@ reference's and labels the change synonymous or nonsynonymous.
 
 The sidebar at the left shows the species labels, drawn as a dendrogram when the
 track is configured with a Newick guide tree. **Show sidebar with tree and
-labels** toggles it, and you can show branch lengths or filter to a subtree by
-clicking an internal node. Filtering also prunes the guide tree to just the kept
-species, so even a scattered, hand-picked selection (via **Edit row
-arrangement...**) draws a tree that matches the visible rows rather than the
-full species tree. **Edit row arrangement...** also lets you reorder rows, and
-the **Row height** submenu offers squeeze-to-fit, normal, compact, and custom
-row heights.
+labels** toggles it, and you can show branch lengths from the track menu.
+**Edit row arrangement...** lets you reorder or hand-pick rows, and the **Row
+height** submenu offers squeeze-to-fit, normal, compact, and custom row heights.
+
+### Selecting a subtree
+
+Click an internal node of the guide tree to filter the track to that clade, or
+pick a set of species from **Edit row arrangement...**. The guide tree then
+redraws as the pruned dendrogram of the kept species, so it matches the visible
+rows rather than the full species tree, including for a selection that is not a
+single clade. **Clear subtree filter** restores all species.
 
 ## See also
 

@@ -9,8 +9,9 @@ guide_category: Track types
 A MAF track shows a multiple alignment of several species against a reference
 genome: one row per aligned species, with a coverage summary on top. JBrowse
 reads three formats, all configured as a `MafTrack` with a `LinearMafDisplay`.
-
-<Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way multiz alignment (C. elegans and related nematodes), with the ce11 NCBI RefSeq gene lane on top for context: the coverage band, then one row per species ordered by the guide tree in the left sidebar, with positions where a species differs from the reference drawn as colored marks. The conserved alignment blocks line up with the coding exons above."/>
+This page covers the data formats and configuration; for what the track looks
+like and does once loaded, see the
+[MAF track user guide](/docs/user_guides/maf_track).
 
 ## Adapters
 
@@ -52,113 +53,32 @@ phylogenetic tree):
 ```
 
 The BigMaf form swaps the adapter for a single `bigBedLocation`, and may also
-carry a `summaryAdapter` (a UCSC `bigMafSummary`) used for cheap rendering when
-zoomed far out.
+carry the two optional sub-adapters below.
 
-## Conservation (percent identity) band
+## Sub-adapters: summary and CDS frames
 
-The conservation band plots per-reference-base **percent identity**: at each
-position, the fraction of aligned species (excluding the reference) whose base
-matches the reference. Zoomed out, each pixel shows the mean identity of the
-bases beneath it, a sliding-window conservation profile of conserved versus
-divergent regions. It is computed from the alignment itself, so it appears at
-the zoom levels where the per-species rows are loaded. Toggle it from the track
-menu.
+Two optional sub-adapters hang off the MAF **adapter**, alongside the main
+location:
 
-This is a true identity metric and is distinct from the score shaded into the
-zoomed-out summary bars, which comes from the UCSC `bigMafSummary`, a normalized
-alignment score rather than a percent identity.
+- **`summaryAdapter`** — a UCSC `bigMafSummary` (a `BigBedAdapter` over
+  `bigMafSummary.bb`) used for cheap rendering when zoomed far out. Its bars are
+  shaded by the summary's normalized alignment score, which is a different metric
+  from the per-base percent identity the conservation band computes from the
+  alignment itself (that needs no file).
+- **`annotationAdapter`** — a UCSC `mafFrames` file (a `BigBedAdapter` over
+  `multiz<N>wayFrames.bb`) carrying each gene's CDS reading frame projected
+  through the alignment, one record per (species, region), keyed by `src`
+  species. It enables the **Show CDS frames** overlay and the **Codon view**
+  (amino-acid changes) in the track menu, both off by default. When the file
+  carries a record for the reference `src`, the reference row shows its own gene
+  structure too.
 
-## Per-row identity
+## Display options
 
-Where the conservation band summarizes all species into one profile, the per-row
-identity rendering breaks the signal out **per species** so you can see _which_
-genomes diverge in a region. Like the UCSC multiz per-species pairwise display,
-it replaces the per-base coloring **once you zoom out past base level** (where
-individual bases are no longer legible anyway) and the actual bases come back
-when you zoom in. It is computed from the alignment (no extra files) and set
-from the track menu, with two styles:
-
-- **Heatmap** shades each row band by its local identity on a red→gray→blue ramp
-  (red = divergent, blue = conserved).
-- **X-Y plot** draws a per-species identity wiggle: a bar per pixel whose height
-  is that position's identity to the reference, like one conservation band per
-  row.
-
-The zoom-driven swap is the default. Uncheck **Auto-switch by zoom** in the same
-menu to pin the identity plot on at every zoom level instead.
-
-## Per-species CDS frames (gene structure)
-
-A MAF track can overlay coding structure on every aligned species by reading a
-UCSC `mafFrames` file: the CDS reading frame of a gene projected through the
-alignment, one record per (species, region). Configure it as an
-`annotationAdapter` sub-adapter on the MAF **adapter** (a sibling of
-`summaryAdapter`, a feature adapter, typically a `BigBedAdapter` over
-`multiz<N>wayFrames.bb`). Each `mafFrames` row is keyed by its `src` species and
-drawn as a thin strip at the bottom of that species' row, colored by reading
-frame, so the gene's exon/CDS structure reads across the whole alignment without
-hiding the per-base coloring. It is **off by default** even when an
-`annotationAdapter` is configured. The frame-number coloring is an expert cue,
-so turn it on from the track menu (**Show CDS frames**). Hover any species row
-to read the gene name at that position.
-
-The reference species' own gene structure appears on the reference (top) row
-when the `mafFrames` file carries a record for the reference `src`, so this
-doubles as a reference annotation overlay.
-
-### Codon view (amino-acid changes)
-
-With the same `annotationAdapter`, **Codon view (amino-acid changes)** in the
-track menu switches the per-sample rows from per-base SNP coloring to a
-per-**codon** view: every species is translated in the reference reading frame
-(UCSC `wigMaf` "show codons"), and each codon cell is colored by how its amino
-acid compares to the reference: **nonsynonymous** changes (the amino acid
-changed) stand out, **synonymous** changes (a silent substitution) get a faint
-tint, **stop** codons are flagged, and conserved codons stay clean. The amino
-acid itself is drawn on each codon once you zoom in far enough to read it.
-Unlike the per-base view, this answers "did the protein change here?" directly,
-across every aligned species at once.
-
-Hovering a codon reads out the exact change: the species' codon and amino acid
-alongside the reference's, plus the synonymous/nonsynonymous classification, so
-a specific substitution is identifiable directly rather than inferred from the
-cell color.
-
-<Figure src="/img/maf_codon_tooltip.png" caption="The codon-view hover tooltip on the ce11 26-way alignment: over a codon cell it shows the species' codon and amino acid next to the reference's (here GAA → GCC, E → A) and labels the change nonsynonymous, alongside the alignment location and the CDS frame/gene the reading frame came from."/>
-
-## Color by source chromosome
-
-**Color by source chromosome** in the track menu replaces the per-base SNP
-coloring with a structural view: within each species row, its source chromosomes
-(the chromosome/scaffold each aligned block comes from in that species' own
-genome) are ranked by how much of the row they cover, and colored by that
-**per-row rank**. The row's main chromosome gets the primary color, and a block
-from a different source chromosome takes a contrasting accent. So a species
-whose blocks across the window come from more than one source chromosome
-**changes color along its row** (an immediate flag for a translocation or
-rearrangement) while the rest of the track stays a single calm color. Ranking
-per row rather than by a global chromosome name is deliberate: every species has
-its own scaffold-naming scheme, so a global palette would be an unreadable
-rainbow, while the per-row scheme makes only the _switch_ stand out. No extra
-data is fetched, since the source chromosome is already carried per block.
-
-This needs no `annotationAdapter` and works on any MAF track. It is shown in the
-detailed (per-base) view rather than the zoomed-out summary.
-
-<Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species row is colored by its per-row source-chromosome rank, so every row's main chromosome is the same primary color and only the blocks that come from a different source chromosome pick up an accent. The color switches (top-right: 2nd/3rd source) mark rearrangements directly, without a per-scaffold rainbow."/>
-
-## Inversions (strand flips)
-
-**Show inversions (strand flips)** in the track menu overlays a diagonal hatch
-on any block that aligns **inverted** relative to its own source chromosome's
-consensus orientation. An aligned segment can map to the reference on either
-strand. Comparing each block to the consensus orientation of its scaffold
-(rather than flagging every `−`-strand block) means an arbitrarily-oriented
-scaffold isn't mistaken for an inversion. Only a genuine intra-scaffold strand
-flip is marked. It is an overlay, so it composes on top of the base, codon, or
-per-row identity rendering without replacing them, and needs no extra files
-(strand is already carried per block).
+The conservation band, per-row identity (heatmap / X-Y plot), color by source
+chromosome, and inversion (strand-flip) overlays are all derived from the
+alignment with no extra configuration — toggle them from the track menu. The
+[user guide](/docs/user_guides/maf_track) covers what each one shows.
 
 ## A larger example: the human 470-way
 
@@ -197,19 +117,9 @@ fragmented scaffold-level alignment.
 }
 ```
 
-With all ~470 species drawn at once, the per-row identity heatmap turns the
-whole phylogeny into a conservation picture: coding exons light up as conserved
-bands top-to-bottom while the introns stay divergent.
-
-<Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus. Fit-to-display-height mode squeezes all ~470 species into a 600px-tall display, so every row goes near-1px and the whole alignment reads as a texture with the guide tree (dendrogram) down the left. The per-row identity heatmap colors each base by whether it matches the reference row: blue where conserved, red where divergent (see the top-right legend). Conserved coding columns run blue top-to-bottom across the entire phylogeny, while gaps and less-conserved regions break up as red/white streaks."/>
-
-To read a region in detail, narrow the hundreds of species to a focused set. The
-track menu's **Edit row arrangement** dialog (or clicking an internal node of
-the guide tree) sets a subtree filter. The guide tree then redraws as the pruned
-dendrogram of just the kept species, so the tree always matches the visible
-rows, even for a hand-picked set that isn't a single clade.
-
-<Figure src="/img/maf_470way_codon.png" caption="The hg38 470-way narrowed to ~30 representative mammals (one per major clade, plus opossum and platypus outgroups) in codon view at a conserved GAPDH exon: each species' coding sequence is translated in the human reading frame, so the conserved residues line up and the few amino-acid changes in the more distant lineages stand out. The left sidebar is the pruned ~30-leaf guide tree, not the full 470-species tree."/>
+A subtree filter (from the track menu) narrows the hundreds of species to a
+focused set for detailed reading; see the
+[user guide](/docs/user_guides/maf_track) for how the large alignment renders.
 
 ## See also
 
