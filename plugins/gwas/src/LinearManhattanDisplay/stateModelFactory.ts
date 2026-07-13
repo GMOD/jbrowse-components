@@ -36,6 +36,7 @@ import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import { autorun, observable } from 'mobx'
 
 import TooltipComponent from './components/TooltipComponent.tsx'
+import { exportRCode } from './exportRCode.ts'
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
 import type { ManhattanHit } from './findManhattanHit.ts'
@@ -52,6 +53,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
+  RTrackFragment,
 } from '@jbrowse/plugin-linear-genome-view'
 
 const LinearManhattanDisplayComponent = lazy(
@@ -596,6 +598,16 @@ export function stateModelFactory(
         },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       * Build the R ggplot fragment for this track, used by the view's "Export
+       * R script" to regenerate the Manhattan panel from source in ggplot2.
+       */
+      exportRCode(): RTrackFragment {
+        return exportRCode(self as LinearManhattanDisplayModel)
+      },
+    }))
 }
 
 export type LinearManhattanDisplayStateModel = ReturnType<

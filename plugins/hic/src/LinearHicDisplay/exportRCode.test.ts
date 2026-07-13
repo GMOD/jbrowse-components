@@ -9,12 +9,13 @@ const params = {
   useLogScale: true,
 }
 
-test('emits a strawr-backed square heatmap fragment', () => {
+test('emits a strawr-backed rotated triangular contact map fragment', () => {
   const f = hicFragment(params)
   expect(f.packages).toContain('strawr')
-  expect(f.helpers).toEqual(['read_hic', 'bp_axis'])
-  expect(f.plotExpr).toContain('geom_raster')
-  expect(f.plotExpr).toContain('coord_fixed(xlim = c(start, end), ylim = c(start, end))')
+  expect(f.helpers).toEqual(['hic_triangle', 'bp_axis'])
+  expect(f.plotExpr).toContain('geom_polygon')
+  expect(f.plotExpr).toContain('hic_triangle')
+  expect(f.plotExpr).toContain('coord_cartesian(xlim = c(start, end))')
   // binsize + norm are visible, editable script variables (not inlined literals)
   expect(f.setup).toContain('hic_track_binsize <- 100000')
   expect(f.setup).toContain('hic_track_norm <- "KR"')

@@ -27,15 +27,23 @@ starting with `heightWeight` only and revisiting if figures look wrong.
 ## Hi-C — `LinearHicDisplay` / `HicAdapter` — SHIPPED
 
 Done (`plugins/hic/src/LinearHicDisplay/exportRCode.ts` +
-`exportR{Code,Run}.test.ts`, `read_hic` helper in `exportR.ts`). Built exactly
-as recommended below: square `geom_raster` map, upper triangle mirrored across
-the diagonal, `coord_fixed()`, log `scale_fill_viridis_c`, `binsize`/`norm` as
-editable script vars defaulting to the display's `effectiveResolution` /
-`activeNormalization`. Resolved open decisions: **square** glyph (not the rotated
-triangle), **editable `binsize` var** (not auto-pick-only), sizing via
-`heightWeight: 5` + `coord_fixed()` (no `RTrackFragment` schema change). `strawr`
-installed in this env; gallery figure `website/static/img/rexport/hic.png`. The
-notes below are retained as the design record.
+`exportR{Code,Run}.test.ts`, `hic_triangle` helper in `exportR.ts`). Now built as
+the **rotated 45° triangle** (superseding the original square `geom_raster`): the
+`hic_triangle` helper maps each bin-bin contact's square to a diamond at genomic
+midpoint `(x+y)/2` (x) and interaction distance `(y-x)/2` (y), drawn with
+`geom_polygon` over a genomic x-axis with `coord_cartesian(xlim = c(start, end))`
+— so the map shares its x-range with the other stacked tracks (e.g. a gene
+track), which the old square + `coord_fixed()` could not. Still log
+`scale_fill_viridis_c`, `binsize`/`norm` as editable script vars defaulting to
+the display's `effectiveResolution` / `activeNormalization`; `heightWeight: 3`
+(the y-axis is now interaction distance, not a second genomic axis). The square
+map is no longer emitted (the triangle is the idiomatic browser view and the
+whole point of stacking with `patchwork` is a shared genomic x). Resolved open
+decisions: **rotated triangle** glyph, **editable `binsize` var** (not
+auto-pick-only), sizing via `heightWeight` (no `RTrackFragment` schema change,
+no `coord_fixed`). `strawr` installed in this env; gallery figures
+`website/static/img/rexport/hic.png` (standalone) and `hic_genes.png` (over a
+gene track). The notes below are retained as the design record.
 
 Smaller and cleaner than the variant matrix: a single heatmap, one R dependency,
 one test file.
@@ -155,13 +163,15 @@ the wiring spot is obvious. Add `exportRCode.test.ts` (codegen) +
 
 ## Open decisions
 
-Hi-C and the variant matrix are both shipped; their decisions are resolved (see
-the two SHIPPED notes above). Remaining for a future pass:
+Hi-C, the variant matrix, and the regular per-sample display are all shipped;
+their decisions are resolved (see the SHIPPED notes above). The regular
+`LinearMultiSampleVariantDisplay` reuses `read_vcf_gt` (extended to also return
+each site's genomic `start`/`end`) + the ref/het/hom classing, drawing one
+`geom_rect` row per sample at honest genomic POS (keeps the shared
+`coord_cartesian(xlim=)` contract, so it aligns with 1-D tracks), samples in VCF
+order (no dendrogram). Gallery figure `variant_rows_genes.png`. Remaining for a
+future pass:
 
-- **Regular per-sample display** (`LinearMultiSampleVariantDisplay`, non-matrix):
-  one genotype row per sample at honest genomic POS (keeps the shared
-  `coord_cartesian(xlim=)` contract). Reuses `read_vcf_gt` + the ref/het/hom cell
-  classing, no dendrogram (rows in sample order).
 - **Phased HP split:** `"<sample> HP0/HP1"` rows (`expandSourcesToHaplotypes`) —
   deferred for both displays; default is one collapsed row per sample.
 - **Cell fidelity:** the matrix uses a 5-level discrete `scale_fill_manual`; a

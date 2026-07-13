@@ -1,5 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
-import { getContainingTrack } from '@jbrowse/core/util'
+import { firstUri, getTrackRMeta, rStr, safeVarName } from '@jbrowse/plugin-linear-genome-view'
 
 import type { LinearHicDisplayModel } from './model.ts'
 import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
@@ -7,14 +6,6 @@ import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
 interface AdapterConf {
   hicLocation?: { uri?: string }
   uri?: string
-}
-
-function safeVarName(str: string) {
-  return str.replaceAll(/[^a-zA-Z0-9]/g, '_').replace(/^(\d)/, '_$1')
-}
-
-function rStr(s: string) {
-  return `"${s.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`
 }
 
 export interface HicRParams {
@@ -32,12 +23,14 @@ export interface HicRParams {
 
 /**
  * Pure builder for the R panel of a Hi-C track. Reads the contact matrix over
- * the region with the inline `read_hic()` helper (`strawr::straw`, the reader
- * from the .hic authors), mirrors straw's upper triangle across the diagonal,
- * and draws a square `geom_raster` heatmap with `coord_fixed()`. `binsize` and
- * `norm` are emitted as visible script variables the user can edit. Pure
- * ggplot2 + inline helper, no bespoke package. Reads `chrom`, `start`, `end`
- * from the enclosing plot_region() so it redraws for any locus.
+ * the region with the inline `hic_triangle()` helper (`strawr::straw`, the
+ * reader from the .hic authors), rotates straw's upper triangle 45 degrees into
+ * diamond polygons, and draws it as `geom_polygon` over a genomic x-axis — the
+ * same triangular Hi-C view JBrowse shows, so the map shares its x-range with
+ * the other stacked tracks (e.g. a gene track). `binsize` and `norm` are emitted
+ * as visible script variables the user can edit. Pure ggplot2 + inline helper,
+ * no bespoke package. Reads `chrom`, `start`, `end` from the enclosing
+ * plot_region() so it redraws for any locus.
  */
 export function hicFragment(p: HicRParams): RTrackFragment {
   const pathVar = safeVarName(p.trackId)
@@ -49,21 +42,21 @@ export function hicFragment(p: HicRParams): RTrackFragment {
     trackId: p.trackId,
     trackName: p.trackName,
     packages: ['strawr', 'ggplot2'],
-    helpers: ['read_hic', 'bp_axis'],
+    helpers: ['hic_triangle', 'bp_axis'],
     setup: `${pathVar} <- ${rStr(p.uri)}
 ${binsizeVar} <- ${p.binsize} # bin size in bp; use strawr::readHicBpResolutions(${pathVar}) for options
 ${normVar} <- ${rStr(p.norm)} # normalization; use strawr::readHicNormTypes(${pathVar}) for options`,
     plotVariable: `p_${pathVar}`,
-    // a square contact map wants generous vertical space (coord_fixed letterboxes
-    // it within the panel), so weight it well above a 1-D track
-    heightWeight: 5,
-    plotExpr: `ggplot(read_hic(${pathVar}, chrom, start, end, ${binsizeVar}, ${normVar})) +
-  geom_raster(aes(x = x, y = y, fill = counts)) +
+    // the rotated triangle rises to (region width)/2 at its apex; give it a few
+    // track-heights of vertical room (the y-axis is interaction distance)
+    heightWeight: 3,
+    plotExpr: `ggplot(hic_triangle(${pathVar}, chrom, start, end, ${binsizeVar}, ${normVar})) +
+  geom_polygon(aes(x = gx, y = gy, fill = counts, group = group)) +
   scale_fill_viridis_c(trans = ${rStr(trans)}, name = "Contacts", na.value = "white") +
   bp_axis() +
-  scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_si("b")), expand = expansion(mult = 0.01)) +
-  coord_fixed(xlim = c(start, end), ylim = c(start, end)) +
-  labs(title = ${rStr(p.trackName)}, x = NULL, y = NULL) +
+  scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_si("b")), expand = expansion(mult = c(0, 0.02))) +
+  coord_cartesian(xlim = c(start, end)) +
+  labs(title = ${rStr(p.trackName)}, x = NULL, y = "Distance") +
   theme_minimal()`,
   }
 }
@@ -78,14 +71,12 @@ export function exportRCode(
   if (binsize === undefined) {
     return undefined
   }
-  const track = getContainingTrack(self)
-  const trackId: string = track.configuration.trackId
-  const adapter: AdapterConf = getConf(track, 'adapter')
-  const uri = adapter.hicLocation?.uri ?? adapter.uri
+  const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
+  const uri = firstUri(adapter.hicLocation?.uri, adapter.uri)
   return uri
     ? hicFragment({
         trackId,
-        trackName: getConf(track, 'name') || trackId,
+        trackName,
         uri,
         binsize,
         norm: self.activeNormalization,

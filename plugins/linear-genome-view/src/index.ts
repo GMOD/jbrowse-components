@@ -182,6 +182,14 @@ export {
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
 export { assembleRScript } from './LinearGenomeView/exportR.ts'
+export {
+  firstUri,
+  getTrackRMeta,
+  rName,
+  rStr,
+  safeVarName,
+} from './LinearGenomeView/rexportShared.ts'
+export type { RTrackMeta } from './LinearGenomeView/rexportShared.ts'
 export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'
 export { default as ConnectedHoverHighlight } from './LinearGenomeView/components/ConnectedHoverHighlight.tsx'
