@@ -64,14 +64,20 @@ function isConcordantOrientation(f: Feature) {
 }
 
 // A chain counts as a proper pair only when every read carries the proper-pair
-// flag and has a concordant orientation.
+// flag and has a concordant orientation. A chain containing any supplementary
+// (chimeric) segment is split-read SV evidence — aligners like BWA-MEM
+// propagate the 0x2 proper-pair flag onto supplementary records since 0x2
+// describes the pair, not the segment — so it must never be filtered as a plain
+// proper pair (mirrors PRIMARY_PROPER_PAIR_MASK in computePairedInsertSizeStats).
 function isProperPairChain(chain: Feature[]) {
-  return chain.every(
-    (f: Feature) =>
-      !!(
-        ((f.get('flags') as number | undefined) ?? 0) & SAM_FLAG_PROPER_PAIR
-      ) && isConcordantOrientation(f),
-  )
+  return chain.every((f: Feature) => {
+    const flags = (f.get('flags') as number | undefined) ?? 0
+    return (
+      !!(flags & SAM_FLAG_PROPER_PAIR) &&
+      !(flags & SAM_FLAG_SUPPLEMENTARY) &&
+      isConcordantOrientation(f)
+    )
+  })
 }
 
 // Guard against the same physical record being emitted twice — rare, only when

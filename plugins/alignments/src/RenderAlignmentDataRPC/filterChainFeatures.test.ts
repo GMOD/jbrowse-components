@@ -3,6 +3,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { filterChainFeatures } from './executeRenderAlignmentData.ts'
 
 const PROPER_PAIR = 0x2
+const SUPPLEMENTARY = 0x800
 
 // A two-read chain sharing one QNAME with the given orientation/flags.
 function pair(name: string, orientation: string, flags: number) {
@@ -57,6 +58,24 @@ describe('filterChainFeatures drawProperPairs=false', () => {
     expect(names(filterChainFeatures(features, true, false))).toEqual([
       'noflag',
     ])
+  })
+
+  test('keeps proper pairs carrying a supplementary (chimeric) segment', () => {
+    // BWA-MEM propagates the 0x2 flag onto supplementary records, so a proper
+    // FR pair with a split segment is genuine SV evidence that must stay visible
+    const chain = [
+      ...pair('chimeric', 'F1R2', PROPER_PAIR),
+      new SimpleFeature({
+        uniqueId: 'chimeric-supp',
+        refName: 'ctgA',
+        start: 5000,
+        end: 5100,
+        name: 'chimeric',
+        flags: PROPER_PAIR | SUPPLEMENTARY,
+        pair_orientation: 'F1R2',
+      }),
+    ]
+    expect(names(filterChainFeatures(chain, true, false))).toEqual(['chimeric'])
   })
 
   test('keeps everything when drawProperPairs is true', () => {
