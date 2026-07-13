@@ -220,7 +220,7 @@ const STRAND_COLOR_JEXL =
 const FEATURE_COLOR_DEFAULT = 'goldenrod'
 
 // Floor for the auto-fit height so a sparse/empty track doesn't collapse to a
-// sliver. Capped by the maxHeight config in fitHeight.
+// sliver. Capped by the maxHeight config in naturalContentHeight.
 const MIN_FIT_HEIGHT = 50
 
 // Smallest feature-body height (px) the fit squeeze may leave. Once bodies would
@@ -1414,21 +1414,21 @@ export default function baseStateModelFactory(
         // destination height so it doesn't bounce during a zoom morph) clamped to
         // MIN_FIT_HEIGHT (so a sparse track doesn't collapse) and the maxHeight
         // cap. Feeds `grownHeight`, the grow-mode target (a tighter cap).
-        get fitHeight() {
+        get naturalContentHeight() {
           return clamp(this.settledMaxY, MIN_FIT_HEIGHT, self.maxHeight)
         },
 
         /**
          * #getter
          */
-        // Target track height for the persistent `grow` mode: `fitHeight` capped
-        // at GROW_MAX_HEIGHT so a dense track doesn't grow to thousands of px
+        // Target track height for the persistent `grow` mode: `naturalContentHeight`
+        // capped at GROW_MAX_HEIGHT so a dense track doesn't grow to thousands of px
         // (content past the cap scrolls). Shared cap + `grownHeight` getter name
-        // with the alignments display. Height-independent (fitHeight reads the
-        // config-slot `fitTargetHeight`, not the reactive `height` getter), so the
+        // with the alignments display. Height-independent (naturalContentHeight reads
+        // the config-slot `fitTargetHeight`, not the reactive `height` getter), so the
         // `height` getter below can return it in grow mode without cycling.
         get grownHeight() {
-          return Math.min(this.fitHeight, GROW_MAX_HEIGHT)
+          return Math.min(this.naturalContentHeight, GROW_MAX_HEIGHT)
         },
 
         /**

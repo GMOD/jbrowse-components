@@ -576,7 +576,6 @@ function packRef(
   // does not affect memory here — rows hold per-feature intervals (no per-pixel
   // bitmap) and row count is capped by maxHeight, both independent of zoom width.
   const layout = new GranularRectLayout({
-    displayMode: 'normal',
     pitchX: 1,
     pitchY: Math.max(1, Math.round(10 * heightMultiplier)),
   })

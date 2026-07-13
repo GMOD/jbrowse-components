@@ -24,7 +24,6 @@ export interface BaseLayout<T> {
     data?: unknown,
     serializableData?: unknown,
   ): number | null
-  collides(rect: Rectangle<T>, top: number): boolean
   addRectToBitmap(rect: Rectangle<T>): void
   getRectangles(): Map<string, RectTuple>
   getDataByID(id: string): T | undefined

@@ -70,10 +70,6 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
     return this.totalHeight
   }
 
-  collides(_rect: Rectangle<T>, _top: number): boolean {
-    throw new Error('Method not implemented.')
-  }
-
   getByCoord(x: number, y: number) {
     if (!this.index) {
       return undefined

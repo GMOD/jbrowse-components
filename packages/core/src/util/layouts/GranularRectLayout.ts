@@ -173,8 +173,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private maxHeight: number
 
-  private displayMode: string
-
   private pTotalHeight: number
 
   /**
@@ -187,25 +185,16 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     pitchY = 10,
     maxHeight = 10000,
     hardRowLimit = 10000,
-    displayMode = 'normal',
   }: {
     pitchX?: number
     pitchY?: number
     maxHeight?: number
-    displayMode?: string
     hardRowLimit?: number
   } = {}) {
     this.pitchX = pitchX
     this.pitchY = pitchY
     this.hardRowLimit = hardRowLimit
     this.maxHeightReached = false
-    this.displayMode = displayMode
-
-    // reduce the pitchY to try and pack the features tighter
-    if (this.displayMode === 'compact') {
-      this.pitchY = Math.round(this.pitchY / 4) || 1
-      this.pitchX = Math.round(this.pitchX / 4) || 1
-    }
 
     this.bitmap = []
     this.rectangles = new Map()
@@ -271,77 +260,75 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const maxTop = this.maxHeight
     let top = 0
 
-    if (this.displayMode !== 'collapse') {
-      // OPTIMIZATION: Inline collision checking for hot path
-      // Eliminates function call overhead which is critical at 100k+ features
-      const bitmap = this.bitmap
+    // OPTIMIZATION: Inline collision checking for hot path
+    // Eliminates function call overhead which is critical at 100k+ features
+    const bitmap = this.bitmap
 
-      outer: for (; top <= maxTop; top += 1) {
-        // Check all rows that this rectangle would occupy
-        const maxY = top + pHeight
-        for (let y = top; y < maxY; y += 1) {
-          const row = bitmap[y]
+    outer: for (; top <= maxTop; top += 1) {
+      // Check all rows that this rectangle would occupy
+      const maxY = top + pHeight
+      for (let y = top; y < maxY; y += 1) {
+        const row = bitmap[y]
 
-          // Fast path: no row created yet
-          if (!row) {
-            continue
-          }
+        // Fast path: no row created yet
+        if (!row) {
+          continue
+        }
 
-          // Fast path: row is all filled
-          if (row.allFilled) {
-            continue outer
-          }
+        // Fast path: row is all filled
+        if (row.allFilled) {
+          continue outer
+        }
 
-          // Fully inlined isRangeClear for maximum performance
-          const intervals = row.getIntervals()
-          const len = intervals.length
+        // Fully inlined isRangeClear for maximum performance
+        const intervals = row.getIntervals()
+        const len = intervals.length
 
-          if (len > 0) {
-            if (len < 40) {
-              // Linear scan for small arrays
-              for (let i = 0; i < len; i += 2) {
-                const start = intervals[i]!
-                const end = intervals[i + 1]!
-                if (end > pLeft && start < pRight) {
-                  continue outer
-                }
+        if (len > 0) {
+          if (len < 40) {
+            // Linear scan for small arrays
+            for (let i = 0; i < len; i += 2) {
+              const start = intervals[i]!
+              const end = intervals[i + 1]!
+              if (end > pLeft && start < pRight) {
+                continue outer
               }
-            } else {
-              // Binary search for larger arrays
-              let low = 0
-              let high = len >> 1
+            }
+          } else {
+            // Binary search for larger arrays
+            let low = 0
+            let high = len >> 1
 
-              while (low < high) {
-                const mid = (low + high) >>> 1
-                const midIdx = mid << 1
-                if (intervals[midIdx + 1]! <= pLeft) {
-                  low = mid + 1
-                } else {
-                  high = mid
-                }
+            while (low < high) {
+              const mid = (low + high) >>> 1
+              const midIdx = mid << 1
+              if (intervals[midIdx + 1]! <= pLeft) {
+                low = mid + 1
+              } else {
+                high = mid
               }
+            }
 
-              const idx = low << 1
-              if (idx < len) {
-                const start = intervals[idx]!
-                if (start < pRight) {
-                  continue outer
-                }
+            const idx = low << 1
+            if (idx < len) {
+              const start = intervals[idx]!
+              if (start < pRight) {
+                continue outer
               }
             }
           }
         }
-
-        // No collision found in any row
-        break
       }
 
-      if (top > maxTop) {
-        rectangle.top = null
-        this.rectangles.set(id, rectangle)
-        this.maxHeightReached = true
-        return null
-      }
+      // No collision found in any row
+      break
+    }
+
+    if (top > maxTop) {
+      rectangle.top = null
+      this.rectangles.set(id, rectangle)
+      this.maxHeightReached = true
+      return null
     }
 
     rectangle.top = top
@@ -349,17 +336,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.rectangles.set(id, rectangle)
     this.pTotalHeight = Math.max(this.pTotalHeight, top + pHeight)
     return top * pitchY
-  }
-
-  collides(rect: Rectangle<T>, top: number) {
-    const maxY = top + rect.h
-    for (let y = top; y < maxY; y += 1) {
-      const row = this.bitmap[y]
-      if (row !== undefined && !row.isRangeClear(rect.l, rect.r)) {
-        return true
-      }
-    }
-    return false
   }
 
   private getOrCreateRow(y: number): LayoutRow {
@@ -416,10 +392,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
   }
 
-  hasSeen(id: string) {
-    return this.rectangles.has(id)
-  }
-
   getByCoord(x: number, y: number) {
     const pY = Math.trunc(y / this.pitchY)
     const row = this.bitmap[pY]
@@ -450,16 +422,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return this.rectangles.get(id)?.data
   }
 
-  getSerializableDataByID(id: string) {
-    return this.rectangles.get(id)?.serializableData
-  }
-
   getTotalHeight() {
     return this.pTotalHeight * this.pitchY
-  }
-
-  get totalHeight() {
-    return this.getTotalHeight()
   }
 
   getRectangles(): Map<string, RectTuple> {

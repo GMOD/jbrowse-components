@@ -265,13 +265,13 @@ describe('canvas display fit-to-display-height', () => {
     expect(display.scrollableHeight).toBe(0)
   })
 
-  // fitHeight (the grow-mode target / sparse-track floor) resolves to
+  // naturalContentHeight (the grow-mode target / sparse-track floor) resolves to
   // MIN_FIT_HEIGHT when there's no content, rather than collapsing to a sliver.
-  it('fitHeight floors at MIN_FIT_HEIGHT with no content', () => {
+  it('naturalContentHeight floors at MIN_FIT_HEIGHT with no content', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     expect(display.maxY).toBe(0)
-    expect(display.fitHeight).toBe(50)
+    expect(display.naturalContentHeight).toBe(50)
   })
 
   // Grow drives `height` from the laid-out content reactively — via the `height`
@@ -372,9 +372,9 @@ describe('canvas display fit-to-display-height', () => {
 
   // A Y morph holds `maxY` at the taller of the old/new layout so rows animating
   // up from a deeper row aren't clipped — that inflation belongs to the scroll
-  // extent, NOT to the grow-mode target height. `fitHeight`/`grownHeight` read
-  // the settled height so the track doesn't bounce to the old (taller) height for
-  // the morph's duration and then collapse.
+  // extent, NOT to the grow-mode target height. `naturalContentHeight`/`grownHeight`
+  // read the settled height so the track doesn't bounce to the old (taller) height
+  // for the morph's duration and then collapse.
   it('grow height ignores the morph hold that maxY applies', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
@@ -382,7 +382,7 @@ describe('canvas display fit-to-display-height', () => {
     display.setHeight(400)
 
     const settled = display.settledMaxY
-    const fitHeightBefore = display.fitHeight
+    const fitHeightBefore = display.naturalContentHeight
     expect(settled).toBeGreaterThan(0)
 
     // Simulate a morph animating up from a much deeper prior layout.
@@ -393,7 +393,7 @@ describe('canvas display fit-to-display-height', () => {
     expect(display.scrollableHeight).toBeGreaterThan(0)
     // ...but the settled height and the grow target are unmoved.
     expect(display.settledMaxY).toBe(settled)
-    expect(display.fitHeight).toBe(fitHeightBefore)
+    expect(display.naturalContentHeight).toBe(fitHeightBefore)
   })
 })
 
