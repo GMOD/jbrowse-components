@@ -63,22 +63,26 @@ Three schemes surface per-read or per-base signal directly on the pileup:
 
 ### Modifications and methylation
 
-If a BAM/CRAM carries MM-tag modification calls (common in nanopore and PacBio
-data), **Color by → Base modifications** paints them. There are two modes:
+If a BAM/CRAM carries MM/ML modification calls (common in nanopore and PacBio
+data), **Color by → Color by modifications** paints them. It offers two modes:
 
-- Modification type draws a mark _only_ where the MM tag reports a modified
-  base, so an unmethylated region looks empty. Choose "All modification types"
-  or a single type such as 5mC.
-- Methylation draws every CpG, methylated red and unmethylated blue. The blue
-  positions aren't in the MM tag; JBrowse infers them from the reference CpG
-  context. That's why a hypomethylated island fills with solid blue here but
-  looks nearly empty in modification-type mode.
+- Color by type draws a mark _only_ where the MM tag reports a modified base,
+  each type in its own color, so an unmethylated region looks empty. Use
+  **Advanced settings…** to raise the probability threshold or restrict to a
+  single type such as 5mC.
+- Color by probability (red / blue) colors each position by its modification
+  probability — methylated red, unmethylated blue. For methylation (cytosine)
+  data it fills every CpG in context, including the ones the basecaller left
+  implicit (drawn blue). Those blue positions aren't in the MM tag; JBrowse
+  infers them from the reference CpG context. That's why a hypomethylated island
+  fills with solid blue here but looks nearly empty in the by-type mode. The
+  cytosine context (CpG/CHG/CHH) also lives under **Advanced settings…**.
 
 See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.
 
 <Figure caption="COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a CpG island on chr20." src="/img/alignments/modifications1.png" />
-<Figure caption="The same track in modification-type mode (top) and methylation mode (bottom) over a hypomethylated CpG island. Modification-type mode draws only the positive 5mC calls, so the region looks empty; methylation mode scans each read for CpG dinucleotides and paints every one — red where the MM tag calls it methylated, blue for the CpGs it leaves unmodified — filling the hypomethylated island blue." src="/img/alignments/modifications2.png" />
+<Figure caption="The same track colored by type (top) and by probability (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls, so the region looks empty; by-probability mode scans each read for CpG dinucleotides and paints every one — red where the MM tag calls it methylated, blue for the CpGs it leaves unmodified — filling the hypomethylated island blue." src="/img/alignments/modifications2.png" />
 
 ### Pair orientation and insert size
 

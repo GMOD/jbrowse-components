@@ -48,7 +48,7 @@ the full set of slots. Useful in-tree references:
 - Drawing chrome over the rendered content (e.g. the Y-scale axis in wiggle
   tracks, soft-clip indicators in alignments)
 - Adding track-menu items that toggle display-only state (e.g. "Show soft
-  clipping", "Color by methylation")
+  clipping", "Color by modifications")
 - Wiring a [custom widget](/docs/developer_guides/creating_widget) into feature
   clicks (e.g. `VariantFeatureWidget`)
 - Bundling a specific adapter + renderer pair so users get the right combination
