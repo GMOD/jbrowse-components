@@ -267,6 +267,75 @@ cat(top$refpos, as.character(top$base), top$read_index, "\\n")
   expect(Number(count)).toBeGreaterThanOrEqual(15)
 }, 90000)
 
+// CIGAR indels: the generated pileup must run, and bam_indels must recover the
+// deletion cluster (multiple reads sharing a 1D op at the same reference column,
+// the deletion signal) that read_bam's aligned span otherwise swallows
+maybe('indel pileup script runs and bam_indels finds the deletion column', () => {
+  const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+  const fragments = alignmentsFragments({
+    ...baseParams,
+    trackId: 'aln',
+    trackName: 'Volvox reads',
+    uri: bam,
+    showCoverage: false,
+    showPileup: true,
+    colorBy: 'normal',
+  })
+  const script = assembleRScript({ refName: 'ctgA', start: 3700, end: 3900 }, fragments)
+  const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-indel-'))
+  writeFileSync(join(dir, 'view.R'), script)
+  execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+  const helpers = script.split('# Data sources')[0]!
+  const probe = `${helpers}
+d <- bam_indels(${JSON.stringify(bam)}, "ctgA", 3700, 3900)
+dd <- d[d$type == "D", ]
+cat(nrow(dd), as.integer(names(which.max(table(dd$refpos)))), "\\n")
+`
+  writeFileSync(join(dir, 'probe.R'), probe)
+  const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+    cwd: dir,
+    encoding: 'utf8',
+  }).trim()
+  const [count, modalRefpos] = out.split(/\s+/).map(Number)
+  // several reads carry the deletion, all at the same 0-based reference column
+  expect(count!).toBeGreaterThan(5)
+  expect(modalRefpos).toBe(3858)
+}, 90000)
+
+// spliced (RNA-seq) reads: bam_indels must recover the shared intron (N op),
+// which the pileup erases from the read body + draws a thin teal connector over
+maybe('bam_indels finds the spliced-read intron (N op)', () => {
+  const bam = resolve(process.cwd(), 'test_data/volvox/spliced.bam')
+  const [fragment] = alignmentsFragments({
+    ...baseParams,
+    trackId: 'aln',
+    trackName: 'Volvox spliced',
+    uri: bam,
+    showCoverage: false,
+    showPileup: true,
+    colorBy: 'normal',
+  })
+  const helpers = assembleRScript({ refName: 'ctgA', start: 0, end: 1 }, [
+    fragment!,
+  ]).split('# Data sources')[0]!
+  const probe = `${helpers}
+s <- bam_indels(${JSON.stringify(bam)}, "ctgA", 400, 1000)
+ss <- s[s$type == "N", ]
+cat(nrow(ss), as.integer(names(which.max(table(ss$length)))), "\\n")
+`
+  const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-skip-'))
+  writeFileSync(join(dir, 'probe.R'), probe)
+  const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+    cwd: dir,
+    encoding: 'utf8',
+  }).trim()
+  const [count, modalLen] = out.split(/\s+/).map(Number)
+  expect(count!).toBeGreaterThan(3)
+  expect(modalLen).toBe(347)
+}, 90000)
+
 // soft/hard clip bars: the generated pileup must run, and bam_clips must recover
 // the clips clustered at an SV breakpoint (the diagnostic value of clip display)
 maybe('clip pileup script runs and bam_clips finds soft/hard clips', () => {

@@ -143,6 +143,31 @@ test('pileup draws soft/hard clip indicator bars at read ends', () => {
   ).toContain('bam_clips(aln, chrom, start, end)')
 })
 
+test('pileup marks CIGAR deletions/skips/insertions', () => {
+  const [, pileup] = alignmentsFragments(base)
+  expect(pileup!.helpers).toEqual(
+    expect.arrayContaining(['bam_indels', 'gap_colors']),
+  )
+  expect(pileup!.plotExpr).toContain('bam_indels(aln, chrom, start, end)')
+  // indels joined to their read row by read_index, like the mismatch/clip overlays
+  expect(pileup!.plotExpr).toContain('indels$row <- reads$row[indels$read_index]')
+  // deletions = grey full-height rect; skips = erased body + thin teal line;
+  // insertions = thin purple tick (all via fixed colors, not the identity scale)
+  expect(pileup!.plotExpr).toContain('dels <- indels[indels$type == "D", ]')
+  expect(pileup!.plotExpr).toContain('gap_colors[["D"]]')
+  expect(pileup!.plotExpr).toContain('skips <- indels[indels$type == "N", ]')
+  expect(pileup!.plotExpr).toContain('gap_colors[["N"]]')
+  expect(pileup!.plotExpr).toContain('gap_colors[["I"]]')
+  // gaps paint before the mismatch ticks (which sit on aligned columns)
+  expect(pileup!.plotExpr.indexOf('bam_indels')).toBeLessThan(
+    pileup!.plotExpr.indexOf('bam_mismatches(aln'),
+  )
+  // orthogonal to color scheme — drawn under modifications too
+  expect(
+    alignmentsFragments({ ...base, colorBy: 'modifications' })[1]!.plotExpr,
+  ).toContain('bam_indels(aln, chrom, start, end)')
+})
+
 test('SNP coverage thresholds low-frequency mismatches by default', () => {
   const [cov] = alignmentsFragments(base)
   expect(cov!.helpers).toContain('snp_freq_threshold')
