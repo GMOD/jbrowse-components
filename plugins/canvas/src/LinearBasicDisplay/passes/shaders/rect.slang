@@ -21,7 +21,13 @@ static const float MIN_RECT_WIDTH_PX = 2.0;
 // lets the standard src-alpha blend accumulate where features overlap, so
 // density reads as opacity/texture instead of a flat fill. Non-collapsed
 // features stay fully opaque.
-static const float MIN_DENSITY_ALPHA = 0.5;
+//
+// Kept low so the accumulated opacity 1-(1-a)^count stays proportional to the
+// number of variants stacked at a pixel over a useful range (a=0.3: 1→.30,
+// 3→.66, 5→.83, 10→.97) instead of saturating to a solid block after two or
+// three overlaps. This is the knob that makes a dense variant pileup read as a
+// density gradient; the src-alpha blend does the per-pixel counting.
+static const float MIN_DENSITY_ALPHA = 0.3;
 
 struct RectInstance {
   uint2 startEnd : ATTR0;

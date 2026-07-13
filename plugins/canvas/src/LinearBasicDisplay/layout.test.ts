@@ -1144,6 +1144,33 @@ test('a sub-pixel fade box overlapping a visible feature stacks, not overprints'
   expect(top('fakeSNP')).toBeGreaterThan(0)
 })
 
+test('thousands of sub-pixel variants collapse onto one row, not thousands', () => {
+  // A dense variant track (dbSNP/gnomAD at whole-chromosome zoom): every variant
+  // is a 1bp densityFade Box glyph, far narrower than the 2px clamp. Without the
+  // collapse, first-fit under pixel-precise pitchX:1 packing would stack them
+  // into thousands of rows (overflowing maxHeight into OFFSCREEN_Y); collapsing
+  // pins them all to row 0 so the pileup renders as one density-textured row.
+  const N = 5000
+  const data = makeFeatureData({
+    features: Array.from({ length: N }, (_, i) => ({
+      featureId: `v${i}`,
+      startBp: 1000 + i * 3,
+      endBp: 1000 + i * 3 + 1,
+      height: 10,
+      densityFade: true,
+    })),
+  })
+  // bpPerPx=100: each 1bp variant is 0.01px, and neighbors are 0.03px apart, so
+  // every mark is deeply sub-pixel and heavily overlaps its neighbors once the
+  // renderer widens it to the 2px min-width clamp.
+  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 100, false)
+  const items = out.get(0)!.flatbushItems
+  expect(items).toHaveLength(N)
+  expect(items.every(it => it.topPx === 0)).toBe(true)
+  // total content height is a single feature's row, not N stacked rows
+  expect(maxBottom(out)).toBe(items[0]!.bottomPx)
+})
+
 test('compact mode scales aminoAcidOverlay height alongside its top', () => {
   // The codon rect height is scaled via rectHeights in compact mode; the
   // overlay item that annotates it (font size + vertical centering + hit box)

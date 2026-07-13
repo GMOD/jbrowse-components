@@ -7,7 +7,7 @@ export const VERTS_PER_INSTANCE = 6
 
 export const MIN_RECT_WIDTH_PX = 2
 
-export const MIN_DENSITY_ALPHA = 0.5
+export const MIN_DENSITY_ALPHA = 0.3
 
 export const UNIFORMS_SIZE_BYTES = 48
 
