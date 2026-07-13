@@ -24,7 +24,18 @@ early (see open decisions) whether to (a) just lean on `heightWeight`, or
 (b) add an optional aspect/`coord_fixed` hint to `RTrackFragment`. Recommend
 starting with `heightWeight` only and revisiting if figures look wrong.
 
-## Hi-C — `LinearHicDisplay` / `HicAdapter` (do this one first)
+## Hi-C — `LinearHicDisplay` / `HicAdapter` — SHIPPED
+
+Done (`plugins/hic/src/LinearHicDisplay/exportRCode.ts` +
+`exportR{Code,Run}.test.ts`, `read_hic` helper in `exportR.ts`). Built exactly
+as recommended below: square `geom_raster` map, upper triangle mirrored across
+the diagonal, `coord_fixed()`, log `scale_fill_viridis_c`, `binsize`/`norm` as
+editable script vars defaulting to the display's `effectiveResolution` /
+`activeNormalization`. Resolved open decisions: **square** glyph (not the rotated
+triangle), **editable `binsize` var** (not auto-pick-only), sizing via
+`heightWeight: 5` + `coord_fixed()` (no `RTrackFragment` schema change). `strawr`
+installed in this env; gallery figure `website/static/img/rexport/hic.png`. The
+notes below are retained as the design record.
 
 Smaller and cleaner than the variant matrix: a single heatmap, one R dependency,
 one test file.
@@ -125,17 +136,16 @@ an **explicit return type** (breaks the MST self-type cycle). Both
 the wiring spot is obvious. Add `exportRCode.test.ts` (codegen) +
 `exportRRun.test.ts` (real `Rscript`, `test.skip` when the R dep is absent).
 
-## Open decisions — confirm with the user before building
+## Open decisions
 
-- **Build order:** recommend **Hi-C first** (one heatmap, one dep, one test
-  file), then the variant matrix.
+Hi-C is shipped; its decisions are resolved (square glyph, editable `binsize`,
+`heightWeight` + `coord_fixed()` — see the SHIPPED note above). Remaining for the
+variant matrix, confirm with the user before building:
+
 - **Matrix columns:** even feature-index columns (match JBrowse) vs genomic-POS
   columns (honest spacing)?
 - **Sample clustering:** include the hand-rolled dendrogram panel, or ship a
   fixed/`hclust`-ordered matrix first and add the tree later?
-- **Hi-C glyph:** square heatmap (recommend) vs JBrowse's rotated triangle?
-- **Aspect ratio:** lean on `heightWeight` + `coord_fixed()`, or add an aspect
-  hint to `RTrackFragment`?
 - **Genotype reader:** extend zero-dep `read_vcf` scanTabix (recommend) vs pull
   in `VariantAnnotation` for `geno()$GT`?
 

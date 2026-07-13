@@ -136,6 +136,19 @@ vcf_layout <- function(v) {
   v$row <- if (nrow(v)) disjointBins(IRanges(v$start + 1L, pmax(v$end, v$start + 1L))) else integer()
   v
 }`,
+  read_hic: `# Read a Hi-C contact matrix region into data.frame(x, y, counts) of genomic
+# bin-start coordinates (strawr - the reader from the .hic authors). straw
+# returns only the upper triangle; the matrix is symmetric, so mirror the
+# off-diagonal cells across the diagonal to fill the square. 'binsize' must be a
+# resolution the file offers (strawr::readHicBpResolutions(uri)) and 'norm' a
+# normalization it offers (strawr::readHicNormTypes(uri)) - both are visible
+# script variables below that you can edit (larger binsize = coarser/faster).
+read_hic <- function(uri, chrom, start, end, binsize, norm) {
+  loc <- sprintf("%s:%d:%d", chrom, start, end)
+  m <- strawr::straw(norm, uri, loc, loc, unit = "BP", binsize = binsize)
+  off <- m$x != m$y
+  rbind(m, data.frame(x = m$y[off], y = m$x[off], counts = m$counts[off]))
+}`,
 }
 
 /** Collapse the view's coarse blocks down to a single span to seed the call. */
