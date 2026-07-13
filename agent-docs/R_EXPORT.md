@@ -48,6 +48,7 @@ is moot since we're not pixel-perfect).
 | alignments BAM/CRAM | `LinearAlignmentsDisplay` | coverage `geom_area` panel + strand-colored `geom_rect` pileup panel; rows from `IRanges::disjointBins` (not JBrowse's `placeRect`) |
 | genes GFF3/BED | `LinearBasicDisplay` | `geom_segment` bodies + `geom_rect` leaf exons/CDS; `gene_layout` groups by top-level parent then `disjointBins` |
 | variants VCF | `LinearVariantDisplay` | `read_vcf` = Rsamtools `scanTabix` (NO VariantAnnotation) → classify SNV/INS/DEL/MNV/SV; `geom_segment` span + `geom_point` lollipop head colored by type; `vcf_layout` `disjointBins` row-pack |
+| Hi-C `.hic` | `LinearHicDisplay` | `read_hic` = `strawr::straw` → upper triangle mirrored across diagonal; square `geom_raster` heatmap, `coord_fixed()`, log `scale_fill_viridis_c`; `binsize`/`norm` emitted as editable script vars (default = display's `effectiveResolution`/`activeNormalization`) |
 
 Every panel ends with `coord_cartesian(xlim = c(start, end))` so stacked tracks
 share one x-range (features/reads overhang the fetch region; without this the
@@ -69,7 +70,7 @@ panels don't vertically align).
 ## Verifying (the real accuracy technique)
 
 `Rscript` **is installed in this environment** with ggplot2, patchwork,
-rtracklayer, GenomicRanges, GenomicAlignments, Rsamtools. The
+rtracklayer, GenomicRanges, GenomicAlignments, Rsamtools, strawr. The
 `exportRRun.test.ts` files execute the actual generated script against
 `test_data/volvox/*`; run them locally. This is what catches real bugs
 (execution, not just codegen string checks) — e.g. it caught `g[[nm]]` failing

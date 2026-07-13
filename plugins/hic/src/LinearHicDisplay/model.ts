@@ -20,6 +20,7 @@ import {
 
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
+import { exportRCode } from './exportRCode.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
@@ -33,6 +34,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
+  RTrackFragment,
 } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -506,6 +508,17 @@ export default function stateModelFactory(
         ): Promise<React.ReactNode> {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self as LinearHicDisplayModel, opts)
+        },
+
+        /**
+         * #method
+         * Build the R ggplot fragment for this track, used by the view's
+         * "Export R script" to regenerate the Hi-C contact-map panel from
+         * source with strawr + ggplot2. Undefined until the .hic resolutions
+         * have loaded (the panel needs a bin size).
+         */
+        exportRCode(): RTrackFragment | undefined {
+          return exportRCode(self as LinearHicDisplayModel)
         },
       }
     })

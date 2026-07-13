@@ -4,7 +4,8 @@ Figures produced by **View menu → "Export R script"**, which downloads a
 self-contained `.R` that redraws the current view from source in pure
 `rtracklayer` + `ggplot2` (no bespoke package — see `agent-docs/R_EXPORT.md`).
 Every image below was rendered by running the *actual* generated script through
-`Rscript` against `test_data/volvox`.
+`Rscript` (against `test_data/volvox`, except Hi-C which uses the hg19
+`extra_test_data/test.hic`).
 
 ## Wiggle — `LinearWiggleDisplay`
 
@@ -50,6 +51,16 @@ VariantAnnotation dependency), each record a colored span + lollipop head keyed
 on type (SNV / INS / DEL / MNV / SV subtype), rows from `vcf_layout()`.
 
 ![variants](./variants.png)
+
+## Hi-C — `LinearHicDisplay`
+
+Contact matrix read with `read_hic()` (`strawr::straw`, the reader from the
+`.hic` authors), straw's upper triangle mirrored across the diagonal, drawn as a
+square `geom_raster` heatmap with `coord_fixed()` and a log-scaled
+`scale_fill_viridis_c()`. Bin size and normalization are emitted as visible
+script variables you can edit.
+
+![hi-c](./hic.png)
 
 ## Combined figure
 
