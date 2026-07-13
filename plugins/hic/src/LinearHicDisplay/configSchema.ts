@@ -69,7 +69,7 @@ const HicTrackConfigFactory = () => {
        */
       showLegend: {
         type: 'boolean',
-        defaultValue: false,
+        defaultValue: true,
         description: 'show the color scale legend',
       },
       /**
@@ -100,14 +100,6 @@ const HicTrackConfigFactory = () => {
         type: 'boolean',
         defaultValue: false,
         description: 'saturate color at the 95th percentile of counts',
-      },
-      /**
-       * #slot
-       */
-      showResolutionControls: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'show the on-canvas resolution stepper overlay',
       },
       /**
        * #slot

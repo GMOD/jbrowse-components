@@ -1,5 +1,8 @@
+import GridOnIcon from '@mui/icons-material/GridOn'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+
+import HicResolutionMenuRow from './components/HicResolutionMenuRow.tsx'
 
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -10,12 +13,16 @@ interface HicMenuSelf {
   showLegend: boolean
   fitToHeight: boolean
   colorScheme: HicColorScheme
-  showResolutionControls: boolean
+  availableResolutions: number[] | undefined
   availableNormalizations: string[] | undefined
   activeNormalization: string
+  resolutionBias: number
+  effectiveResolution: number | undefined
+  nextResolution: (dir: -1 | 1) => number | undefined
+  stepResolution: (dir: -1 | 1) => void
+  resetResolutionBias: () => void
   setUseLogScale: (f: boolean) => void
   setUseColorPercentile: (f: boolean) => void
-  setShowResolutionControls: (f: boolean) => void
   setShowLegend: (f: boolean) => void
   setFitToHeight: (f: boolean) => void
   setColorScheme: (s?: HicColorScheme) => void
@@ -35,14 +42,6 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
           checked: self.showLegend,
           onClick: () => {
             self.setShowLegend(!self.showLegend)
-          },
-        },
-        {
-          label: 'Show resolution controls',
-          type: 'checkbox',
-          checked: self.showResolutionControls,
-          onClick: () => {
-            self.setShowResolutionControls(!self.showResolutionControls)
           },
         },
         {
@@ -71,6 +70,16 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
         },
       ],
     },
+    ...(self.availableResolutions
+      ? [
+          {
+            label: 'Resolution',
+            icon: GridOnIcon,
+            type: 'custom' as const,
+            render: () => <HicResolutionMenuRow model={self} />,
+          },
+        ]
+      : []),
     {
       label: 'Color scheme',
       icon: PaletteIcon,

@@ -27,6 +27,7 @@ export default function SvgGradientLegend({
   gradientId,
   stops,
   labels,
+  title,
   x = 0,
   y = 0,
   width = GRADIENT_LEGEND_WIDTH,
@@ -40,6 +41,9 @@ export default function SvgGradientLegend({
   gradientId: string
   stops: GradientStop[]
   labels: GradientLabel[]
+  // optional caption drawn above the bar (e.g. "Contacts"); grows the box so
+  // titleless callers (LD) keep their original geometry
+  title?: string
   x?: number
   y?: number
   width?: number
@@ -49,7 +53,9 @@ export default function SvgGradientLegend({
   padding?: number
   fontSize?: number
 }) {
-  const labelY = padding + barHeight + fontSize + 2
+  const titleGap = title ? fontSize + 4 : 0
+  const barY = padding + titleGap
+  const labelY = barY + barHeight + fontSize + 2
   return (
     <g transform={`translate(${x}, ${y})`}>
       <defs>
@@ -67,15 +73,25 @@ export default function SvgGradientLegend({
         x={0}
         y={0}
         width={width}
-        height={height}
+        height={height + titleGap}
         fill="rgba(255,255,255,0.9)"
         stroke="#ccc"
         strokeWidth={1}
         rx={4}
       />
+      {title ? (
+        <text
+          x={padding}
+          y={padding + fontSize}
+          fontSize={fontSize}
+          fill="black"
+        >
+          {title}
+        </text>
+      ) : null}
       <rect
         x={padding}
-        y={padding}
+        y={barY}
         width={barWidth}
         height={barHeight}
         fill={`url(#${gradientId})`}

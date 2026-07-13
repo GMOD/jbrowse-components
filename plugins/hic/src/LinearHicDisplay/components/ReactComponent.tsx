@@ -81,7 +81,9 @@ function Crosshairs({
         pointerEvents: 'none',
       }}
     >
-      <g stroke="#000" strokeWidth="1" fill="none">
+      {/* currentColor matches the shared core Crosshairs component, so the
+          guide tracks the UI theme's text color rather than a fixed black */}
+      <g stroke="currentColor" strokeWidth="1" fill="none">
         <path d={`M ${x - dx} 0 L ${x} ${y} L ${x + dx} 0`} />
       </g>
     </svg>

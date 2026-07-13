@@ -28,11 +28,12 @@ Three cues carry most Hi-C reads:
 ## Adjusting resolution and color scale
 
 JBrowse picks a resolution to fit the view width. Zoom in for finer bins, out
-for larger-scale structure. For manual control, enable **Show resolution
-controls** from the track menu: finer/coarser buttons overlay the track and step
-through the binning levels stored in the file, disabling themselves at the
-finest and coarsest levels available. Stepping applies a persistent offset from
-the auto-selected level, so resolution still tracks your zoom, just shifted.
+for larger-scale structure. For manual control, open the **Resolution** item in
+the track menu: the Finer/Coarser buttons step through the binning levels stored
+in the file, disabling themselves at the finest and coarsest levels available,
+and the menu stays open so you can step repeatedly. Stepping applies a
+persistent offset from the auto-selected level, so resolution still tracks your
+zoom, just shifted; **Reset** returns to auto.
 
 Pick the color ramp from the track menu: `juicebox`, `fall`, or `viridis`. See
 the [Hi-C track config guide](/docs/config_guides/hic_track/) for the color,

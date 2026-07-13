@@ -31,6 +31,7 @@ export default function HicSVGColorLegend({
       // idSuffix (the display id) keeps the gradient def unique when two Hi-C
       // tracks export into one SVG document.
       gradientId={`hic-gradient-${resolvedScheme}-${idSuffix}`}
+      title="Contacts"
       stops={getLegendSvgStops(resolvedScheme)}
       labels={[
         { text: minLabel, position: 'start' },

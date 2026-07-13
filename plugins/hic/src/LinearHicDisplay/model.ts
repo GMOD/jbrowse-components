@@ -20,7 +20,7 @@ import {
 
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
-import { buildHicTrackMenuItems } from './trackMenuItems.ts'
+import { buildHicTrackMenuItems } from './trackMenuItems.tsx'
 
 import type {
   HicContactItem,
@@ -125,12 +125,6 @@ export default function stateModelFactory(
       // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
       get useColorPercentile(): boolean {
         return getConf(self, 'useColorPercentile')
-      },
-      /**
-       * #getter
-       */
-      get showResolutionControls(): boolean {
-        return getConf(self, 'showResolutionControls')
       },
       /**
        * #getter
@@ -414,12 +408,6 @@ export default function stateModelFactory(
        */
       setUseColorPercentile(f: boolean) {
         self.configuration.setSlot('useColorPercentile', f)
-      },
-      /**
-       * #action
-       */
-      setShowResolutionControls(f: boolean) {
-        self.configuration.setSlot('showResolutionControls', f)
       },
       /**
        * #action
