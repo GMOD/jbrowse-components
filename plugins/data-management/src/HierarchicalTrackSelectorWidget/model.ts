@@ -297,7 +297,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       removeFromFavorites(trackId: string) {
-        self.favorites = self.favorites.filter(f => f !== trackId)
+        if (self.favoritesSet.has(trackId)) {
+          self.favoritesCounter = Math.max(0, self.favoritesCounter - 1)
+          self.favorites = self.favorites.filter(f => f !== trackId)
+        }
       },
       /**
        * #action
