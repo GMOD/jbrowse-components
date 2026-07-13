@@ -106,6 +106,13 @@ A small gallery of rendered example figures (one per track type + a combined
 multi-panel) lives in `website/static/img/rexport/` with a `README.md` index;
 regenerate with the scripts noted there.
 
+> **Gallery drift (alignments):** `colorBy` is now read from `self.colorBy.type`,
+> whose default is `normal` = **grey** reads. The committed `alignments.png` and
+> its README caption predate this and show/say "strand-colored". The export is
+> correct (it mirrors the model); to keep a colorful figure, set `colorBy:
+> strand` on the demo track (honest — the figure then shows a strand-colored
+> track) rather than reverting the default. Update the caption either way.
+
 **Advanced / multi-dimensional displays** — the 2-D/heatmap track types (Hi-C
 contact maps, multi-sample variant matrix) plus the regular per-sample
 `LinearMultiSampleVariantDisplay` are now shipped; see
@@ -114,8 +121,10 @@ HP split).
 
 ## Next
 
-- CRAM reference resolution (emits the same `read_bam`; untested — needs the
-  reference FASTA/2bit).
+- CRAM: emits the same `read_bam`/`bam_mismatches`; untested. Mismatches are
+  reference-free (MD tag), so they need no FASTA — but Rsamtools CRAM *decoding*
+  itself needs the reference, resolved out-of-band via the CRAM `UR` header /
+  `REF_CACHE`/`REF_PATH`, not by anything the export emits.
 - Pileup/coverage **mismatch (SNP) coloring is done** — MD-tag `bam_mismatches`
   drives per-read ticks and the stacked SNP-coverage bars, reference-free; the
   SNP-coverage panel now applies JBrowse's depth-dependent `snp_freq_threshold`
