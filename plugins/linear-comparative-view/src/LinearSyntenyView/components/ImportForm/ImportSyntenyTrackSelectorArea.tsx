@@ -6,6 +6,7 @@ import {
   ImportFormSyntenyChoiceRadioGroup,
   useImportFormSyntenyChoice,
 } from '@jbrowse/synteny-core'
+import { CircularProgress } from '@mui/material'
 
 import ImportSyntenyTrackSelector from './ImportSyntenyPreConfigured.tsx'
 
@@ -87,7 +88,7 @@ export default function ImportSyntenyTrackSelectorArea({
         />
       ) : null}
       {selectedCustomOption ? (
-        <Suspense fallback={null}>
+        <Suspense fallback={<CircularProgress size={20} />}>
           <selectedCustomOption.ReactComponent
             model={model}
             assembly1={assembly1}

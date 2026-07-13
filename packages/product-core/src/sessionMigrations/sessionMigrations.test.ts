@@ -329,6 +329,155 @@ describe('migrateSessionSnapshot', () => {
     expect(deltaDisplay.colorBy).toEqual({ type: 'modifications' })
   })
 
+  test('routes legacy heightPreConfig onto the height slot as a trackConfigDelta', () => {
+    const snap = {
+      name: 'test',
+      views: [
+        {
+          type: 'LinearGenomeView',
+          tracks: [
+            {
+              type: 'AlignmentsTrack',
+              configuration: 'track1',
+              displays: [
+                {
+                  type: 'LinearAlignmentsDisplay',
+                  configuration: 'track1-LinearAlignmentsDisplay',
+                  heightPreConfig: 88,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+    const result = migrateSessionSnapshot(snap)
+    const display = (result.views as any)[0].tracks[0].displays[0]
+    // dead prop stripped off the instance
+    expect(display.heightPreConfig).toBeUndefined()
+    const deltaDisplay = (result.trackConfigDeltas as any).track1.displays[0]
+    expect(deltaDisplay.displayId).toBe('track1-LinearAlignmentsDisplay')
+    expect(deltaDisplay.type).toBe('LinearAlignmentsDisplay')
+    expect(deltaDisplay.height).toBe(88)
+  })
+
+  test('routes heightPreConfig preserving a non-alignments display type', () => {
+    const snap = {
+      name: 'test',
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: [],
+          views: [
+            {
+              type: 'LinearGenomeView',
+              tracks: [
+                {
+                  type: 'SyntenyTrack',
+                  configuration: 'synteny1',
+                  displays: [
+                    {
+                      type: 'LGVSyntenyDisplay',
+                      configuration: 'synteny1-LGVSyntenyDisplay',
+                      heightPreConfig: 52,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+    const result = migrateSessionSnapshot(snap)
+    const deltaDisplay = (result.trackConfigDeltas as any).synteny1.displays[0]
+    // synthesized delta display carries the real type, not a hardcoded default
+    expect(deltaDisplay.type).toBe('LGVSyntenyDisplay')
+    expect(deltaDisplay.height).toBe(52)
+  })
+
+  test('last panel wins when a shared display config appears in two synteny panels', () => {
+    const syntenyDisplay = (h: number) => ({
+      type: 'LGVSyntenyDisplay',
+      configuration: 'synteny1-LGVSyntenyDisplay',
+      heightPreConfig: h,
+    })
+    const snap = {
+      name: 'test',
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: [],
+          views: [
+            {
+              type: 'LinearGenomeView',
+              tracks: [
+                {
+                  type: 'SyntenyTrack',
+                  configuration: 'synteny1',
+                  displays: [syntenyDisplay(28)],
+                },
+              ],
+            },
+            {
+              type: 'LinearGenomeView',
+              tracks: [
+                {
+                  type: 'SyntenyTrack',
+                  configuration: 'synteny1',
+                  displays: [syntenyDisplay(52)],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+    const result = migrateSessionSnapshot(snap)
+    const deltaDisplay = (result.trackConfigDeltas as any).synteny1.displays[0]
+    expect(deltaDisplay.height).toBe(52)
+  })
+
+  test('routes heightPreConfig on a sessionTrack display in place', () => {
+    const snap = {
+      name: 'test',
+      views: [
+        {
+          type: 'LinearGenomeView',
+          tracks: [
+            {
+              type: 'AlignmentsTrack',
+              configuration: 'session-track-1',
+              displays: [
+                {
+                  type: 'LinearAlignmentsDisplay',
+                  configuration: 'session-track-1-LinearAlignmentsDisplay',
+                  heightPreConfig: 120,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'session-track-1',
+          displays: [
+            {
+              type: 'LinearAlignmentsDisplay',
+              displayId: 'session-track-1-LinearAlignmentsDisplay',
+            },
+          ],
+        },
+      ],
+    }
+    const result = migrateSessionSnapshot(snap)
+    expect(result.trackConfigDeltas).toBeUndefined()
+    const display = (result.sessionTracks as any)[0].displays[0]
+    expect(display.height).toBe(120)
+  })
+
   test('leaves a flat LinearAlignmentsDisplay (no nested sub-nodes) untouched', () => {
     const snap = {
       name: 'test',

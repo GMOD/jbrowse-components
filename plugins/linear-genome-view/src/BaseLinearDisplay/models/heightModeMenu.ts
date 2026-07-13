@@ -21,7 +21,7 @@ export type HeightModeMenuModel = PromotableDisplay & {
 // this track, its pin promotes that mode as the session-wide default. Sharing
 // the whole builder — not just the labels — makes the canvas and alignments
 // menus identical by construction rather than by two call sites that happen to
-// agree. `noun` names what the track holds ('features', 'reads').
+// agree. `noun` is the singular of what the track holds ('feature', 'read').
 export function heightModeMenuItems(
   model: HeightModeMenuModel,
   noun: string,
@@ -46,8 +46,8 @@ export function heightModeMenuItems(
 // menus render an identical item (label, icon, radios) by construction. It sits
 // as a SIBLING of the per-feature "Read height" / "Feature height" size menu —
 // the two halves of the diametric split: this entry is how the TRACK responds
-// to more content than fits (scroll / expand / squeeze), the size menu is how
-// tall each feature is drawn.
+// to more content than fits (fixed / autogrow / fit-to-display), the size menu
+// is how tall each feature is drawn.
 export function getTrackSizingMenuItem(
   model: HeightModeMenuModel,
   noun: string,

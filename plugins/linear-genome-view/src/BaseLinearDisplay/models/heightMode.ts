@@ -21,19 +21,22 @@ export const GROW_MAX_HEIGHT = 800
 
 // Single source for the "Track sizing" radio options, shared by every display
 // that exposes the `heightMode` slot (canvas feature display, alignments
-// display). The labels are verbs for what the track DOES with overflowing
-// content — scroll / expand / squeeze — deliberately free of the word "height":
-// that word belongs to the separate per-feature size axis ("Read height" /
-// "Feature height"), so the two questions ("how big is each feature?" vs "how
-// does the track handle more features than fit?") never blur together. `noun`
-// names what the track holds ('features', 'reads'); everything else stays
-// identical across plugins.
+// display). Each label names the two axes it touches — the per-feature height
+// and the track height — so the three modes read as one coherent choice:
+// `fixed` keeps the feature height and scrolls; `grow` keeps the same feature
+// height but autogrows the track to hold it; `fit` derives the feature height
+// to fill the display. The shared "Fixed <noun> height" prefix on the first two
+// makes explicit that `grow` differs from `fixed` only in the track axis, and
+// naming "height" is honest here — `fit` genuinely drives the per-feature size,
+// so the two axes aren't fully orthogonal. `noun` is the SINGULAR of what the
+// track holds ('feature', 'read'); everything else stays identical across
+// plugins.
 export function getHeightModeOptions(
   noun: string,
 ): { value: HeightMode; label: string }[] {
   return [
-    { value: 'fixed', label: `Scroll to see all ${noun}` },
-    { value: 'grow', label: `Expand to fit all ${noun}` },
-    { value: 'fit', label: `Squeeze all ${noun} into view` },
+    { value: 'fixed', label: `Fixed ${noun} height` },
+    { value: 'grow', label: `Fixed ${noun} height + autogrow track height` },
+    { value: 'fit', label: `Fit ${noun} height to display` },
   ]
 }

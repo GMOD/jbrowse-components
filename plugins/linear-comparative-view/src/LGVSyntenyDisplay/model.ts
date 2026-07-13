@@ -171,7 +171,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           const groupedByMate = self.groupBy?.type === 'mateAssembly'
           return [
             getFeatureHeightMenuItem(self),
-            getTrackSizingMenuItem(self, 'features'),
+            getTrackSizingMenuItem(self, 'feature'),
             getColorByMenuItem(self, {
               colorOptions: pickColorOptions(
                 'normal',

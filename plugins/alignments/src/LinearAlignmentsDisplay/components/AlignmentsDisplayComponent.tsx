@@ -126,7 +126,7 @@ const AlignmentsDisplayComponent = observer(
                 heightMode={model.heightMode}
                 hasOverflow={model.scrollableHeight > 0}
                 scrollZoom={view.scrollZoom}
-                noun="reads"
+                noun="read"
                 onSetHeightMode={mode => {
                   model.setHeightMode(mode)
                 }}
@@ -151,7 +151,10 @@ const AlignmentsDisplayComponent = observer(
                 anchorReference="anchorPosition"
                 anchorPosition={{
                   top: contextMenuCoord[1],
-                  left: contextMenuCoord[0],
+                  // nudge right of the click so the menu doesn't cover the
+                  // mismatch column that was right-clicked (mirrors the
+                  // rubberband menu's menuOffsetX convention)
+                  left: contextMenuCoord[0] + 12,
                 }}
                 menuItems={items}
               />

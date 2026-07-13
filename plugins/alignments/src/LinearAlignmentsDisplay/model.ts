@@ -92,7 +92,11 @@ import {
   enumerateBezierPairs,
   isBezierArcPair,
 } from '../features/linkedReads/computeOverlay.ts'
-import { COLOR_SCHEMES, isModificationScheme } from '../shared/colorSchemes.ts'
+import {
+  COLOR_SCHEMES,
+  isModificationScheme,
+  normalizeColorBy,
+} from '../shared/colorSchemes.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import {
   DEFAULT_MODIFICATION_THRESHOLD,
@@ -126,6 +130,7 @@ import type {
   FilterBy,
   GroupBy,
   ModificationTypeWithColor,
+  PersistedColorBy,
   SortedBy,
 } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -273,7 +278,7 @@ const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>([
  *     {
  *       type: 'LinearAlignmentsDisplay',
  *       displayId: 'methylation-LinearAlignmentsDisplay',
- *       colorBy: { type: 'methylation' },
+ *       colorBy: { type: 'modifications', modifications: { fillUnmarked: true } },
  *     },
  *   ],
  * }
@@ -752,7 +757,9 @@ export default function stateModelFactory(
         // scheme — `normal` included — pins this track over that default.
         // getConfResolved walks the cascade and never surfaces `inherit`.
         get colorBy(): ColorBy {
-          return getConfResolved<ColorBy>(self, 'colorBy')
+          return normalizeColorBy(
+            getConfResolved<PersistedColorBy>(self, 'colorBy'),
+          )
         },
 
         /**
@@ -2964,7 +2971,7 @@ export default function stateModelFactory(
               disabled: !self.showPileup,
               disabledHelpText: 'Turn on "Show pileup" to change read height',
             }),
-            getTrackSizingMenuItem(self, 'reads', {
+            getTrackSizingMenuItem(self, 'read', {
               disabled: !self.showPileup,
               disabledHelpText: 'Turn on "Show pileup" to change track sizing',
             }),

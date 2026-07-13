@@ -129,7 +129,10 @@ describe('extractModifications', () => {
         ML: [230, 10, 20, 200, 10, 10, 220, 5],
       },
     })
-    const colorBy: ColorBy = { type: 'methylation', modifications: {} }
+    const colorBy: ColorBy = {
+      type: 'modifications',
+      modifications: { fillUnmarked: true },
+    }
     const out: ModificationEntry[] = []
     const region = { refName: 'ctgA', start: 100, end: 108 } as Region
     const modData = extractModifications(

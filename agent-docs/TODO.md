@@ -112,3 +112,5 @@ The peptide canvas uses contentHeigfeature canvas element and checkwhether its h
   Searched for 1 pattern, read 1 file
 
 The main GPU canvas in the canvas display also uses model.height (capped) with virtual scroll. So the cap is already effective for GPht layout-stacking default and readthe passing cap test to be certain the 800 cap engages.
+
+## unable to click normal when 'compact' pinned alignments

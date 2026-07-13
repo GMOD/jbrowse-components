@@ -31,7 +31,7 @@ const useStyles = makeStyles()(theme => ({
     marginRight: theme.spacing(1),
   },
   actionsContainer: {
-    marginTop: theme.spacing(10),
+    marginTop: theme.spacing(3),
     marginBottom: theme.spacing(2),
   },
 }))
@@ -99,7 +99,14 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
       >
         {steps.map(({ label, content, isComplete }) => (
           <Step key={label}>
-            <StepLabel>{label}</StepLabel>
+            {/* hide the numbered step badge — with the second step collapsed the
+                lone "1" reads as an orphaned label rather than a real sequence */}
+            <StepLabel
+              slotProps={{ stepIcon: { sx: { display: 'none' } } }}
+              sx={{ '& .MuiStepLabel-iconContainer': { display: 'none' } }}
+            >
+              {label}
+            </StepLabel>
             <StepContent>
               {content(model)}
               <div className={classes.actionsContainer}>

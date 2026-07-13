@@ -14,7 +14,9 @@
  * `LinearAlignmentsDisplay` container (which held `PileupDisplay` /
  * `SNPCoverageDisplay` sub-nodes carrying `colorBy` / `filterBy`) into the
  * config where those settings now live as slots — see
- * `extractNestedAlignmentsSettings`.
+ * `extractNestedAlignmentsSettings` — and routes the legacy per-instance
+ * `heightPreConfig` display-height prop onto the `height` config slot — see
+ * `extractInstanceHeight`.
  */
 
 const displayTypeMap: Record<string, string> = {
@@ -35,16 +37,44 @@ const displayTypeMap: Record<string, string> = {
 const NESTED_ALIGNMENTS_SUBNODES = ['PileupDisplay', 'SNPCoverageDisplay']
 const MIGRATED_INSTANCE_SLOTS = ['colorBy', 'filterBy']
 
-// A per-instance setting lifted off an old nested alignments display, tagged
-// with the track + display config it must land on.
+// A per-instance setting lifted off an old display, tagged with the track +
+// display config it must land on. `displayType` is used only when the target
+// config has no display with this id yet and one must be synthesized (so it's
+// typed correctly — not every source is a LinearAlignmentsDisplay).
 interface ExtractedDisplaySettings {
   trackConfigId: string
   displayId: string
+  displayType?: string
   settings: Record<string, unknown>
 }
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object' && !Array.isArray(v)
+}
+
+// The standalone `methylation` colorBy scheme was removed; it is now the
+// `modifications` scheme with `fillUnmarked` set (see plugins/alignments
+// ModificationColorBy — "fill in unmarked cytosines"). Rewrite any persisted
+// colorBy so no snapshot carries the dead type; the alignments model no longer
+// normalizes at read time. Returns the input by identity when unaffected.
+function migrateColorBy(value: unknown): unknown {
+  if (isObject(value) && value.type === 'methylation') {
+    const modifications = isObject(value.modifications)
+      ? value.modifications
+      : {}
+    return {
+      type: 'modifications',
+      modifications: { ...modifications, fillUnmarked: true },
+    }
+  }
+  return value
+}
+
+function migrateDisplayColorBy(
+  display: Record<string, unknown>,
+): Record<string, unknown> {
+  const colorBy = migrateColorBy(display.colorBy)
+  return colorBy === display.colorBy ? display : { ...display, colorBy }
 }
 
 function migrateDisplayType(display: Record<string, unknown>) {
@@ -87,9 +117,44 @@ function extractNestedAlignmentsSettings(
     typeof displayId === 'string' &&
     Object.keys(settings).length > 0
   ) {
-    collected.push({ trackConfigId, displayId, settings })
+    collected.push({
+      trackConfigId,
+      displayId,
+      displayType: 'LinearAlignmentsDisplay',
+      settings,
+    })
   }
   const { PileupDisplay, SNPCoverageDisplay, ...rest } = display
+  return rest
+}
+
+// Pre-webgl-poc the display height lived in a per-instance `heightPreConfig` MST
+// prop (`height = heightPreConfig ?? config-height`); the drag-resize handle
+// wrote it. That prop is gone — the height is now the `height` config slot only
+// — so an old session's `heightPreConfig` is silently dropped on load and the
+// track snaps to the config default (e.g. the alignments 250px). Route it onto
+// the display's `height` slot so saved/shared sessions keep their heights, and
+// strip the dead prop. When a track shows in two panels (a synteny view's two
+// LGVs share one display config), the last panel's value wins — both then render
+// at one height, which is the config-slot model's intent.
+function extractInstanceHeight(
+  display: Record<string, unknown>,
+  trackConfigId: string | undefined,
+  collected: ExtractedDisplaySettings[],
+): Record<string, unknown> {
+  if (typeof display.heightPreConfig !== 'number') {
+    return display
+  }
+  const displayId = display.configuration
+  if (trackConfigId && typeof displayId === 'string') {
+    collected.push({
+      trackConfigId,
+      displayId,
+      displayType: typeof display.type === 'string' ? display.type : undefined,
+      settings: { height: display.heightPreConfig },
+    })
+  }
+  const { heightPreConfig, ...rest } = display
   return rest
 }
 
@@ -98,8 +163,12 @@ function migrateDisplaySnapshot(
   trackConfigId: string | undefined,
   collected: ExtractedDisplaySettings[],
 ) {
-  return extractNestedAlignmentsSettings(
-    migrateDisplayType(display),
+  return extractInstanceHeight(
+    extractNestedAlignmentsSettings(
+      migrateDisplayType(display),
+      trackConfigId,
+      collected,
+    ),
     trackConfigId,
     collected,
   )
@@ -186,6 +255,7 @@ function migrateViewSnapshot(
 function mergeSettingsIntoTrackConfig(
   track: Record<string, unknown>,
   displayId: string,
+  displayType: string | undefined,
   settings: Record<string, unknown>,
 ): Record<string, unknown> {
   const displays = track.displays
@@ -195,7 +265,14 @@ function mergeSettingsIntoTrackConfig(
     ? list.map(d =>
         isObject(d) && d.displayId === displayId ? { ...d, ...settings } : d,
       )
-    : [...list, { type: 'LinearAlignmentsDisplay', displayId, ...settings }]
+    : [
+        ...list,
+        {
+          type: displayType ?? 'LinearAlignmentsDisplay',
+          displayId,
+          ...settings,
+        },
+      ]
   return { ...track, displays: newDisplays }
 }
 
@@ -225,12 +302,13 @@ function applyExtractedSettings(
   let sessionTracksChanged = false
   let deltasChanged = false
 
-  for (const { trackConfigId, displayId, settings } of collected) {
+  for (const { trackConfigId, displayId, displayType, settings } of collected) {
     const idx = sessionTrackIndex.get(trackConfigId)
     if (idx !== undefined && isObject(sessionTracks[idx])) {
       sessionTracks[idx] = mergeSettingsIntoTrackConfig(
         sessionTracks[idx],
         displayId,
+        displayType,
         settings,
       )
       sessionTracksChanged = true
@@ -241,6 +319,7 @@ function applyExtractedSettings(
       deltas[trackConfigId] = mergeSettingsIntoTrackConfig(
         existing,
         displayId,
+        displayType,
         settings,
       )
       deltasChanged = true

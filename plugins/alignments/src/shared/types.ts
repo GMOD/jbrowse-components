@@ -35,9 +35,17 @@ export interface ModificationColorBy {
   // hiddenModifications default (show every detected type).
   shownModifications?: string[]
   threshold?: number
-  // cytosine context for the methylation view; absent means CpG. CHG/CHH support
-  // plant methylation. Only consumed in methylation mode (getMethBins).
+  // cytosine context for the fill-unmarked view; absent means CpG. CHG/CHH
+  // support plant methylation. Only consumed when filling (getMethBins) or in
+  // bisulfite mode.
   cytosineContext?: CytosineContext
+  // Paint every cytosine in the chosen context — including implicitly
+  // unmodified ones — as methylated/unmethylated, merging 5mC/5hmC to the
+  // most-likely state and ignoring the probability threshold. This is the former
+  // standalone 'methylation' scheme expressed as a sub-mode of modifications, so
+  // a user only has to think about "color by modifications". General-ready: the
+  // fill currently covers cytosine mods (getMethBins) only.
+  fillUnmarked?: boolean
 }
 
 // Single source for "is this modification type visible?" given a colorBy.
@@ -94,13 +102,32 @@ export type ColorSchemeType =
   | 'perBaseLetter'
   | 'tag'
   | 'modifications'
-  | 'methylation'
   | 'bisulfite'
 
 export interface ColorBy {
   type: ColorSchemeType
   tag?: string
   modifications?: ModificationColorBy
+}
+
+// On-disk shape of a persisted `colorBy`: the live ColorBy plus the deprecated
+// standalone `methylation` scheme, now expressed as modifications+fillUnmarked.
+// `normalizeColorBy` (colorSchemes.ts) upgrades it at the read boundary so no
+// live code ever sees `type: 'methylation'`.
+export interface LegacyMethylationColorBy {
+  type: 'methylation'
+  modifications?: ModificationColorBy
+}
+export type PersistedColorBy = ColorBy | LegacyMethylationColorBy
+
+// True when modification coloring should fill in unmarked canonical bases (the
+// implicit-unmethylated cytosine walk) — the modifications+fillUnmarked sub-mode
+// that subsumes the former standalone 'methylation' scheme. Reads only reach
+// this after normalizeColorBy, so the legacy type is never seen here.
+export function isFillUnmarkedMode(colorBy: ColorBy | undefined) {
+  return (
+    colorBy?.type === 'modifications' && !!colorBy.modifications?.fillUnmarked
+  )
 }
 
 export interface TagFilter {

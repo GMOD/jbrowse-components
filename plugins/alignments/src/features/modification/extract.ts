@@ -99,7 +99,13 @@ export function extractModifications(
     }
   }
 
-  if (colorBy?.type === 'modifications') {
+  // fillUnmarked hands cytosine painting to extractMethylation (the getMethBins
+  // context walk paints every cytosine, called or not), so skip the MM-tag paint
+  // here to avoid double marks — matching the old standalone methylation scheme.
+  if (
+    colorBy?.type === 'modifications' &&
+    !colorBy.modifications?.fillUnmarked
+  ) {
     const modStrand = strand === -1 ? -1 : 1
     const modThreshold = (colorBy.modifications?.threshold ?? 10) / 100
     const twoColor = colorBy.modifications?.twoColor ?? false

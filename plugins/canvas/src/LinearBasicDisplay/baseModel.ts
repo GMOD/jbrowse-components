@@ -2846,7 +2846,7 @@ export default function baseStateModelFactory(
                   }),
                 ),
             },
-            getTrackSizingMenuItem(self, 'features'),
+            getTrackSizingMenuItem(self, 'feature'),
           ]
         },
       }))

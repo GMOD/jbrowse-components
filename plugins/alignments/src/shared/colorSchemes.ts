@@ -1,4 +1,9 @@
-import type { ColorSchemeType, ShaderScheme } from './types.ts'
+import type {
+  ColorBy,
+  ColorSchemeType,
+  PersistedColorBy,
+  ShaderScheme,
+} from './types.ts'
 
 export type ColorGroup = 'basic' | 'pairedEnd'
 
@@ -105,11 +110,6 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     shaderScheme: 'modifications',
     menu: { kind: 'special', label: 'Modification type' },
   },
-  methylation: {
-    type: 'methylation',
-    shaderScheme: 'modifications',
-    menu: { kind: 'special', label: 'Methylation' },
-  },
   bisulfite: {
     type: 'bisulfite',
     shaderScheme: 'modifications',
@@ -137,21 +137,37 @@ export function isModificationScheme(type: ColorSchemeType) {
   return COLOR_SCHEMES[type].shaderScheme === 'modifications'
 }
 
+// Upgrade a persisted colorBy to canonical form: the deprecated standalone
+// `methylation` scheme becomes `modifications` with `fillUnmarked` set (its
+// cytosine context preserved). Applied in the model's `colorBy` getter so no
+// live code — extraction, menu, legend, shader dispatch — ever sees the removed
+// type. Idempotent on already-canonical values.
+export function normalizeColorBy(colorBy: PersistedColorBy): ColorBy {
+  return colorBy.type === 'methylation'
+    ? {
+        type: 'modifications',
+        modifications: { ...colorBy.modifications, fillUnmarked: true },
+      }
+    : colorBy
+}
+
 // A persisted `colorBy` value is only usable once its `.type` still names a
 // registered scheme: the lookups above (colorSchemeLabel, isModificationScheme,
 // the model's colorSchemeIndexFor) are total over ColorSchemeType by design and
 // throw on anything else, so a stale/renamed name from a saved session or
-// session-wide default must be rejected before it reaches them. Wired as the
-// `colorBy` slot's promotable `validate` hook (see promotableDefaults.ts).
+// session-wide default must be rejected before it reaches them. The deprecated
+// `methylation` scheme is accepted here (normalizeColorBy upgrades it at read
+// time) so legacy sessions keep resolving. Wired as the `colorBy` slot's
+// promotable `validate` hook (see promotableDefaults.ts).
 export function isRegisteredColorScheme(
   value: unknown,
-): value is { type: ColorSchemeType } {
+): value is PersistedColorBy {
   return (
     typeof value === 'object' &&
     value !== null &&
     'type' in value &&
     typeof value.type === 'string' &&
-    value.type in COLOR_SCHEMES
+    (value.type in COLOR_SCHEMES || value.type === 'methylation')
   )
 }
 

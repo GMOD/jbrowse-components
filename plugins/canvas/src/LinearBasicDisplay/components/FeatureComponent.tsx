@@ -582,7 +582,7 @@ const FeatureBody = observer(function FeatureBody({
           heightMode={model.heightMode}
           hasOverflow={model.hasOverflow}
           scrollZoom={view.scrollZoom}
-          noun="features"
+          noun="feature"
           onSetHeightMode={mode => {
             model.setHeightMode(mode)
           }}

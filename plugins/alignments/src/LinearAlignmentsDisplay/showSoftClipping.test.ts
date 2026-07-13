@@ -448,9 +448,9 @@ describe('feature-height menu per-preset pins', () => {
   it('gives every track-height mode its own pin', () => {
     const { display } = createDisplay()
     for (const label of [
-      'Scroll to see all reads',
-      'Expand to fit all reads',
-      'Squeeze all reads into view',
+      'Fixed read height',
+      'Fixed read height + autogrow track height',
+      'Fit read height to display',
     ]) {
       expect(heightModePinProps(display, label)).toBeDefined()
     }
@@ -484,6 +484,24 @@ describe('feature-height menu per-preset pins', () => {
       ),
     ).toBe(0)
     expect(pinProps(display, 'Compact')?.control.active).toBe(true)
+  })
+
+  it("clicking a preset's pin applies it to the clicked track at once", () => {
+    // a track customized to a taller height: clicking Compact's pin makes it
+    // Compact immediately, without the user having to also click the snackbar
+    const { display } = createDisplay({ featureHeight: 12, featureSpacing: 4 })
+    expect(display.featureHeight).toBe(12)
+
+    pinProps(display, 'Compact')?.control.toggle()
+
+    // the clicked track now resolves to the promoted Compact preset, in fixed
+    // (not fit/grow) mode — so it renders shorter, not taller
+    expect(display.configuredFeatureHeight).toBe(3)
+    expect(display.configuredFeatureSpacing).toBe(0)
+    expect(display.featureHeight).toBe(3)
+    expect(display.heightMode).toBe('fixed')
+    expect(display.fitHeightToDisplay).toBe(false)
+    expect(display.autoHeight).toBe(false)
   })
 
   it("the fit pin promotes heightMode='fit'", () => {
@@ -789,7 +807,7 @@ describe('alignments fit-to-display-height split', () => {
 // every real scheme — `normal` included — is customizable over it. Exercises the
 // structural (not identity) comparison in promotableDefaults.
 describe('alignments colorBy session default', () => {
-  const methylation = { type: 'methylation' }
+  const mappingQuality = { type: 'mappingQuality' }
 
   it('resolves to normal by default with no config and no session default', () => {
     const { display } = createDisplay()
@@ -801,11 +819,11 @@ describe('alignments colorBy session default', () => {
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
       'colorBy',
-      methylation,
+      mappingQuality,
     )
-    expect(display.colorBy).toEqual(methylation)
+    expect(display.colorBy).toEqual(mappingQuality)
     expect(display.displayTypeDefaultChanges()).toEqual([
-      { path: ['colorBy'], from: { type: 'normal' }, to: methylation },
+      { path: ['colorBy'], from: { type: 'normal' }, to: mappingQuality },
     ])
   })
 
@@ -814,10 +832,10 @@ describe('alignments colorBy session default', () => {
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
       'colorBy',
-      methylation,
+      mappingQuality,
     )
     // sentinel slot: `{type:'normal'}` differs from the `{type:'inherit'}`
-    // default, so it customizes the track — normal is forced over the methylation
+    // default, so it customizes the track — normal is forced over the mappingQuality
     // default (impossible with the old plain-default slot). Not an inherited
     // change, so displayTypeDefaultChanges is empty.
     expect(display.colorBy).toEqual({ type: 'normal' })
@@ -829,9 +847,9 @@ describe('alignments colorBy session default', () => {
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
       'colorBy',
-      methylation,
+      mappingQuality,
     )
-    expect(display.colorBy).toEqual(methylation)
+    expect(display.colorBy).toEqual(mappingQuality)
     display.setColorScheme({ type: 'normal' })
     expect(display.colorBy).toEqual({ type: 'normal' })
   })
@@ -841,7 +859,7 @@ describe('alignments colorBy session default', () => {
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
       'colorBy',
-      methylation,
+      mappingQuality,
     )
     expect(display.colorBy).toEqual({ type: 'strand' })
     expect(display.displayTypeDefaultChanges()).toEqual([])
@@ -853,9 +871,9 @@ describe('alignments colorBy session default', () => {
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
       'colorBy',
-      methylation,
+      mappingQuality,
     )
-    expect(display.colorBy).toEqual(methylation)
+    expect(display.colorBy).toEqual(mappingQuality)
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
       'colorBy',
@@ -871,7 +889,7 @@ describe('alignments colorBy session default', () => {
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
       'colorBy',
-      'methylation',
+      'mappingQuality',
     )
     expect(display.colorBy).toEqual({ type: 'normal' })
   })
@@ -904,10 +922,10 @@ describe('alignments colorBy session default', () => {
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
       'colorBy',
-      methylation,
+      mappingQuality,
     )
     display.setLinkedReads('off')
-    expect(display.colorBy).toEqual(methylation)
+    expect(display.colorBy).toEqual(mappingQuality)
   })
 })
 

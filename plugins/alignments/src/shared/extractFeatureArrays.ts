@@ -6,6 +6,7 @@ import {
   isMismatchFeature,
 } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
+import { isFillUnmarkedMode } from './types.ts'
 import {
   extractBisulfite,
   extractMethylation,
@@ -140,7 +141,7 @@ export function extractFeatureArrays<T extends FeatureData>(
       modifications,
     )
 
-    if (colorBy?.type === 'methylation' && modData) {
+    if (isFillUnmarkedMode(colorBy) && modData) {
       extractMethylation(
         readIndex,
         featureStart,
@@ -148,7 +149,7 @@ export function extractFeatureArrays<T extends FeatureData>(
         region,
         modData,
         modifications,
-        colorBy.modifications?.cytosineContext ?? 'CG',
+        colorBy?.modifications?.cytosineContext ?? 'CG',
       )
     }
 

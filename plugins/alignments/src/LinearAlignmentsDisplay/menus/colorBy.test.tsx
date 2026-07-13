@@ -118,3 +118,112 @@ describe('color by menu', () => {
     ).toBeFalsy()
   })
 })
+
+// A ready display carrying the given modification types, so the "Color by
+// modifications" submenu is built rather than the loading placeholder.
+function makeModModel(types = ['m', 'h']) {
+  const model = makeModel()
+  model.modificationsReady = true
+  model.visibleModificationTypes = types
+  model.modificationThreshold = 10
+  return model
+}
+
+function clickRadio(model: Model, label: string) {
+  const item = byLabel(model, label)
+  if (!item || !('onClick' in item)) {
+    throw new Error(`no clickable "${label}"`)
+  }
+  item.onClick({})
+}
+
+describe('color by modifications menu', () => {
+  const controls = [
+    'Color by type',
+    'Color by probability (red / blue)',
+    'Advanced settings…',
+  ]
+
+  test.each([
+    ['by type', { type: 'modifications' }],
+    [
+      'probability',
+      { type: 'modifications', modifications: { twoColor: true } },
+    ],
+    ['fill', { type: 'modifications', modifications: { fillUnmarked: true } }],
+  ] as [string, ColorBy][])(
+    'shows the same controls regardless of the active view (%s)',
+    (_name, colorBy) => {
+      const model = makeModModel()
+      model.colorBy = colorBy
+      for (const label of controls) {
+        expect(byLabel(model, label)).toBeTruthy()
+      }
+    },
+  )
+
+  test('Color by probability fills unmarked cytosines for methylation data', () => {
+    const model = makeModModel(['m', 'h'])
+    model.colorBy = { type: 'modifications' }
+    clickRadio(model, 'Color by probability (red / blue)')
+    expect(model.colorBy).toEqual({
+      type: 'modifications',
+      modifications: { fillUnmarked: true },
+    })
+  })
+
+  test('Color by probability is plain two-color for non-cytosine modifications', () => {
+    const model = makeModModel(['a'])
+    model.colorBy = { type: 'modifications' }
+    clickRadio(model, 'Color by probability (red / blue)')
+    expect(model.colorBy).toEqual({
+      type: 'modifications',
+      modifications: { twoColor: true },
+    })
+  })
+
+  test('the fill view reads as "Color by probability", not a separate row', () => {
+    const model = makeModModel()
+    model.colorBy = {
+      type: 'modifications',
+      modifications: { fillUnmarked: true },
+    }
+    const prob = byLabel(model, 'Color by probability (red / blue)')
+    expect(prob && 'checked' in prob && prob.checked).toBe(true)
+  })
+
+  test('switching views preserves Advanced refinements (cytosine context)', () => {
+    const model = makeModModel()
+    model.colorBy = {
+      type: 'modifications',
+      modifications: { fillUnmarked: true, cytosineContext: 'CHH' },
+    }
+    clickRadio(model, 'Color by type')
+    expect(model.colorBy).toEqual({
+      type: 'modifications',
+      modifications: { cytosineContext: 'CHH' },
+    })
+  })
+
+  test('the probability pin promotes the methylation view for cytosine data', () => {
+    const model = makeModModel(['m', 'h'])
+    const item = byLabel(model, 'Color by probability (red / blue)', {
+      displayTypeDefault: displayTypeDefault(model),
+    })
+    const adornment =
+      item && 'endAdornment' in item ? item.endAdornment : undefined
+    if (!isValidElement(adornment)) {
+      throw new Error('no pin on probability radio')
+    }
+    const { control } = adornment.props as { control: { toggle: () => void } }
+    control.toggle()
+    expect(
+      model.pinned.has(
+        JSON.stringify({
+          type: 'modifications',
+          modifications: { fillUnmarked: true },
+        }),
+      ),
+    ).toBe(true)
+  })
+})

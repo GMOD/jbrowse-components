@@ -43,7 +43,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   name: 'Methylation',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
- *   displayDefaults: { colorBy: { type: 'methylation' } },
+ *   displayDefaults: {
+ *     colorBy: { type: 'modifications', modifications: { fillUnmarked: true } },
+ *   },
  * }
  * ```
  *

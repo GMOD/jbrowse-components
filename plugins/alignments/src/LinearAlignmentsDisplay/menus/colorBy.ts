@@ -5,10 +5,8 @@ import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
 import { checkboxItem, radioItems, radioModeMenuItem } from './menuHelpers.ts'
-import { makeModificationThresholdItem } from './modificationThresholdMenu.tsx'
 import { radioColorOptions } from '../../shared/colorSchemes.ts'
-import { modificationData } from '../../shared/modificationData.ts'
-import { modificationThresholdField } from '../../shared/types.ts'
+import { cytosineContextOptions } from '../../shared/modificationData.ts'
 
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
@@ -17,6 +15,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
+const ModificationColorSettingsDialog = lazy(
+  () => import('../dialogs/ModificationColorSettingsDialog.tsx'),
+)
 
 interface ColorByModel {
   colorBy: ColorBy
@@ -105,182 +106,137 @@ const arcColorOptions: {
   },
 ]
 
-const cytosineContextOptions: { value: CytosineContext; label: string }[] = [
-  { value: 'CG', label: 'CpG' },
-  { value: 'CHG', label: 'CHG' },
-  { value: 'CHH', label: 'CHH' },
-  { value: 'all', label: 'All cytosines' },
-]
-
 const DIVIDER: MenuItem = { type: 'divider' }
 
-// --- scheme setters: one place that writes each colorBy shape ---------------
+// --- modification coloring: one consistent menu ------------------------------
+// The view is chosen by two orthogonal controls — color by type vs by
+// probability, and whether to fill unmarked cytosines. Every fine-grained
+// refinement lives in the Advanced dialog. Setters rewrite the whole colorBy
+// through setColorScheme but read the current value first, so switching the view
+// keeps the refinements (threshold / context / per-type filter) intact.
 
-function setByType(
-  model: ModificationsModel,
-  twoColor: boolean,
-  onlyKey?: string,
-) {
-  model.setColorScheme({
+function currentMods(model: ModificationsModel) {
+  return model.colorBy.type === 'modifications'
+    ? (model.colorBy.modifications ?? {})
+    : {}
+}
+
+function hasCytosineMeth(model: ModificationsModel) {
+  return model.visibleModificationTypes.some(k => k === 'm' || k === 'h')
+}
+
+// The colorBy each radio writes and promotes. "Color by probability" fills
+// unmarked cytosines when the data supports it — that is the methylation view
+// and the useful default (in the common MM "." mode the unlisted cytosines are
+// confident unmodified calls, so hiding them under-paints the data). getMethBins
+// is cytosine-only, so other modifications (6mA…) fall back to plain two-color.
+// Refinements (threshold / context / per-type filter) are layered on in the
+// Advanced dialog and deliberately NOT baked into the promoted default.
+function byTypeColorBy(): ColorBy {
+  return { type: 'modifications' }
+}
+function probabilityColorBy(model: ModificationsModel): ColorBy {
+  return {
     type: 'modifications',
-    modifications: {
-      ...(twoColor ? { twoColor: true } : {}),
-      // isolating one type writes an allow-list (shownModifications), not a
-      // deny-list of every other type — so "only 6mA" stays 6mA-only even if a
-      // new modification type is later detected in the reads.
-      ...(onlyKey ? { shownModifications: [onlyKey] } : {}),
-      ...modificationThresholdField(model.modificationThreshold),
-    },
+    modifications: hasCytosineMeth(model)
+      ? { fillUnmarked: true }
+      : { twoColor: true },
+  }
+}
+
+// Switch the view, preserving the Advanced-dialog refinements. Drops only the
+// view flags (twoColor / fillUnmarked) so the rest of the current colorBy rides
+// along.
+function setView(model: ModificationsModel, colorBy: ColorBy) {
+  const { twoColor: _t, fillUnmarked: _f, ...refinements } = currentMods(model)
+  model.setColorScheme({
+    ...colorBy,
+    modifications: { ...refinements, ...colorBy.modifications },
   })
 }
 
-// methylation/bisulfite share the cytosine-context field; both omit the CpG
-// default so CpG sessions don't carry it.
-function setContextScheme(
+// Bisulfite/EM-seq is its own reference-based scheme (no MM/ML tags); it carries
+// only the cytosine context, omitting the CpG default.
+function setBisulfiteContext(
   model: ModificationsModel,
-  type: 'methylation' | 'bisulfite',
   context: CytosineContext,
 ) {
   model.setColorScheme({
-    type,
-    modifications: {
-      ...(type === 'methylation'
-        ? modificationThresholdField(model.modificationThreshold)
-        : {}),
-      ...(context === 'CG' ? {} : { cytosineContext: context }),
-    },
+    type: 'bisulfite',
+    modifications: context === 'CG' ? {} : { cytosineContext: context },
   })
 }
 
-// --- "Color by methylation": red/blue methylated-vs-unmethylated summary -----
+// --- "Color by modifications": one consistent menu ---------------------------
+// Two radios (color by type vs by probability) plus the Advanced dialog — the
+// same rows regardless of the active view or the detected mod types. There is no
+// separate "methylation" or "fill" mode: the red/blue view just fills unmarked
+// cytosines when the data is methylation, which is the whole methylation view in
+// one click. The fiddly knobs live in the Advanced dialog, not a deep submenu.
+function buildModificationsMenu(
+  model: ModificationsModel,
+  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
+): MenuItem {
+  const mods = currentMods(model)
+  const isMod = model.colorBy.type === 'modifications'
+  const isByType = isMod && !mods.twoColor && !mods.fillUnmarked
+  const isProbability = isMod && (!!mods.twoColor || !!mods.fillUnmarked)
+  const probability = probabilityColorBy(model)
 
-// Shown only when a cytosine methylation type (5mC/5hmC) is present — getMethBins
-// summarizes those, so a plain 6mA or RNA-mod track falls through to by-type.
-// The context picker is always visible (no activate-first reveal), and the
-// probability threshold does not apply (each site shows its most-likely state).
-function buildMethylationItem(model: ModificationsModel): MenuItem[] {
-  const isMeth = model.colorBy.type === 'methylation'
-  const context = model.colorBy.modifications?.cytosineContext ?? 'CG'
-  const hasCytosineMeth = model.visibleModificationTypes.some(
-    k => k === 'm' || k === 'h',
-  )
-  return hasCytosineMeth
-    ? [
-        {
-          label: 'Color by methylation',
-          subLabel: 'methylated vs. unmethylated (red / blue)',
-          helpText:
-            'Pick this to see methylation patterns — CpG islands, hypomethylated regions. Colors every cytosine in the chosen context, including ones the basecaller left implicit (so hypomethylation shows as blue), and merges 5mC/5hmC into one call per site. Each site shows its most-likely state (≈50% split), so the probability threshold does not apply here.',
-          subMenu: radioItems<CytosineContext>(
-            cytosineContextOptions,
-            isMeth ? context : undefined,
-            next => {
-              setContextScheme(model, 'methylation', next)
-            },
-          ),
-        },
-      ]
-    : []
-}
-
-// --- "Color by modification type": raw per-call view, any modification -------
-
-function buildByTypeItem(model: ModificationsModel): MenuItem {
-  const { visibleModificationTypes: types, modificationThreshold } = model
-  const mods = model.colorBy.modifications
-  const hidden = mods?.hiddenModifications ?? []
-  const shown = mods?.shownModifications
-  const activeTwoColor = !!mods?.twoColor
-  const isModType = model.colorBy.type === 'modifications'
-  const modName = (k: string) => modificationData[k]?.name ?? k
-  // exactly one type shown, vs all shown. The allow-list (shownModifications)
-  // wins when present; legacy sessions with a deny-list (hiddenModifications)
-  // still resolve correctly.
-  const onlyKey = (k: string) =>
-    shown?.length
-      ? shown.length === 1 && shown[0] === k
-      : types.every(t => t === k || hidden.includes(t))
-  const allVisible = !shown?.length && !hidden.some(k => types.includes(k))
-  // multiple types → per-type radios (filter in one click); single type → the
-  // all/only distinction is meaningless, so just one radio per mode.
-  const multiType = types.length > 1
-
-  const byTypeHelpText = `Colors each modification call by its type. Only calls at or above the probability threshold (${modificationThreshold}%) are shown.`
-  const twoColorHelpText =
-    'Shades each called base by probability: at least 50% in the modification color, below 50% in blue. Only positions the caller listed are drawn.'
-
-  // One radio for a (mode, scope) cell. scope `undefined` = "all types"; a key =
-  // "only that type". The checked test is the single source for both modes.
-  const radio = (
-    label: string,
-    twoColor: boolean,
-    onlyK: string | undefined,
-    helpText?: string,
-  ): MenuItem => ({
-    label,
-    type: 'radio',
-    helpText,
-    checked:
-      isModType &&
-      activeTwoColor === twoColor &&
-      (onlyK === undefined ? !multiType || allVisible : onlyKey(onlyK)),
-    onClick: () => {
-      setByType(model, twoColor, onlyK)
-    },
-  })
-
-  // "all" (or the single-type radio) followed by a per-type radio for each type
-  // when there's more than one.
-  const modeRadios = (twoColor: boolean, help: string): MenuItem[] => [
-    radio(
-      multiType
-        ? twoColor
-          ? 'Two-color (all)'
-          : 'All modification types'
-        : twoColor
-          ? 'Two-color'
-          : 'By modification type',
-      twoColor,
-      undefined,
-      help,
-    ),
-    ...(multiType
-      ? types.map(k =>
-          radio(
-            twoColor ? `Two-color: ${modName(k)}` : modName(k),
-            twoColor,
-            k,
-          ),
-        )
-      : []),
-  ]
-
-  // Threshold gates only the by-type radios above (see extractModifications:
-  // `prob >= modThreshold`); two-color ignores it (fixed 50% cutoff) and
-  // methylation ignores it (most-likely state). So it lives here, not at the
-  // modifications top level where it would imply it affects every mode. Inline
-  // slider (commits on release — it's a tier-1 refetch) rather than a dialog.
   return {
-    label: 'Color by modification type',
-    subLabel: 'each modification its own color (5mC, 5hmC, 6mA…)',
+    label: 'Color by modifications',
+    subLabel: 'MM/ML base modification calls (5mC, 5hmC, 6mA…)',
     helpText:
-      'Pick this to inspect the raw per-call data or non-methylation modifications. Colors each call by its modification type; only positions the caller listed are drawn. Two-color instead shades each listed call red/blue by probability.',
+      'Color the ONT/PacBio modification calls in these reads: by modification type, or red/blue by probability (methylated red, unmethylated blue). Probability threshold, cytosine context and per-type filtering are under Advanced settings.',
     subMenu: [
-      ...modeRadios(false, byTypeHelpText),
-      ...(multiType ? [DIVIDER] : []),
-      ...modeRadios(true, twoColorHelpText),
+      promotableRadioItem({
+        label: 'Color by type',
+        subLabel: 'each modification its own color (5mC, 5hmC, 6mA…)',
+        helpText: `Colors each call by its modification type. Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn.`,
+        checked: isByType,
+        onClick: () => {
+          setView(model, byTypeColorBy())
+        },
+        displayTypeDefault: displayTypeDefault?.(byTypeColorBy()),
+      }),
+      promotableRadioItem({
+        label: 'Color by probability (red / blue)',
+        subLabel: 'methylated red, unmethylated blue',
+        helpText:
+          'Colors each position red/blue by modification probability. For methylation data this is the methylation view: every cytosine in context is colored, including the ones the basecaller left implicit (shown blue). For other modifications only the called positions are drawn.',
+        checked: isProbability,
+        onClick: () => {
+          setView(model, probability)
+        },
+        displayTypeDefault: displayTypeDefault?.(probability),
+      }),
       DIVIDER,
-      makeModificationThresholdItem(model),
+      {
+        label: 'Advanced settings…',
+        helpText:
+          'Probability threshold, cytosine context (CpG/CHG/CHH) and per-type filtering.',
+        onClick: () => {
+          getSession(model).queueDialog((onClose: () => void) => [
+            ModificationColorSettingsDialog,
+            { model, handleClose: onClose },
+          ])
+        },
+      },
     ],
   }
 }
 
-// MM/ML coloring promoted to the top of "Color by...": the methylation summary
-// (when present) plus the per-call view, no longer nested under a "Base
-// modifications (MM tag)" parent — both already carry self-describing labels.
-function buildModificationsItems(model: ModificationsModel): MenuItem[] {
+// MM/ML coloring promoted to the top of "Color by...": a single "Color by
+// modifications" entry whose two radios (by type / by probability) and Fill
+// checkbox each carry a session-default pin, so any view — methylation
+// (probability + fill) included — can be made the display type's default, just
+// like the top-level scheme radios.
+function buildModificationsItems(
+  model: ModificationsModel,
+  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
+): MenuItem[] {
   return model.modificationsReady
-    ? [...buildMethylationItem(model), buildByTypeItem(model)]
+    ? [buildModificationsMenu(model, displayTypeDefault)]
     : [{ label: 'Loading modifications...', disabled: true, onClick() {} }]
 }
 
@@ -295,27 +251,23 @@ function showModificationItems(model: ModificationsModel): boolean {
 }
 
 // Bisulfite / EM-seq is reference-based (read-vs-reference C→T), so it needs no
-// MM/ML tags and applies to any alignments display — but it's only meaningful
-// for bisulfite libraries, so it's tucked under "Advanced".
-function buildAdvancedItem(model: ModificationsModel): MenuItem {
+// MM/ML tags and applies to any alignments display (even one with no MM mods, so
+// it sits beside "Color by modifications" rather than inside it). Picking a
+// cytosine context activates it; the CpG default is omitted from the scheme.
+function buildBisulfiteItem(model: ModificationsModel): MenuItem {
   const isBis = model.colorBy.type === 'bisulfite'
   const context = model.colorBy.modifications?.cytosineContext ?? 'CG'
   return {
-    label: 'Advanced',
-    subMenu: [
-      {
-        label: 'Bisulfite / EM-seq (no MM/ML tags)',
-        helpText:
-          'Reference-based methylation read from C→T conversion; needs no MM/ML tags. Methylated red, unmethylated blue, by cytosine context.',
-        subMenu: radioItems<CytosineContext>(
-          cytosineContextOptions,
-          isBis ? context : undefined,
-          next => {
-            setContextScheme(model, 'bisulfite', next)
-          },
-        ),
+    label: 'Bisulfite / EM-seq (no MM/ML tags)',
+    helpText:
+      'Reference-based methylation read from C→T conversion; needs no MM/ML tags. Methylated red, unmethylated blue, by cytosine context.',
+    subMenu: radioItems<CytosineContext>(
+      cytosineContextOptions,
+      isBis ? context : undefined,
+      next => {
+        setBisulfiteContext(model, next)
       },
-    ],
+    ),
   }
 }
 
@@ -384,16 +336,18 @@ function pairedEndSection(
 }
 
 // MM/ML modes only when the data actually carries modifications (still shown
-// while loading — see showModificationItems). Bisulfite (Advanced) is
-// reference-based so it applies to any alignments display regardless of MM/ML
-// tags.
+// while loading — see showModificationItems). Bisulfite is reference-based so it
+// applies to any alignments display regardless of MM/ML tags.
 function modificationsSection(
   model: ModificationsModel | undefined,
+  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem[] {
   return model
     ? [
-        ...(showModificationItems(model) ? buildModificationsItems(model) : []),
-        buildAdvancedItem(model),
+        ...(showModificationItems(model)
+          ? buildModificationsItems(model, displayTypeDefault)
+          : []),
+        buildBisulfiteItem(model),
       ]
     : []
 }
@@ -453,7 +407,7 @@ export function getColorByMenuItem(
       schemeRadios(model, options.colorOptions, options.displayTypeDefault),
       tagSection(model, options.includeTagOption ?? false),
       pairedEndSection(mods, options.displayTypeDefault),
-      modificationsSection(mods),
+      modificationsSection(mods, options.displayTypeDefault),
       arcColorSection(options.arcColor),
       supplementarySection(options.supplementaryColoring),
     ].flat(),
