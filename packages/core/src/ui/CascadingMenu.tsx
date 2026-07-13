@@ -12,14 +12,13 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import CascadingMenuHelpIconButton, {
-  CascadingMenuHelpIconSpacer,
-} from './CascadingMenuHelpIconButton.tsx'
 import HoverMenu from './HoverMenu.tsx'
-import { MenuItemEndDecoration } from './MenuItems.tsx'
+import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 
 import type {
   BaseMenuItem,
+  ClickableMenuItem,
+  CustomMenuItem,
   MenuItem as JBMenuItem,
   MenuItemsGetter,
 } from './MenuTypes.ts'
@@ -43,6 +42,57 @@ function makeTestId(kind: string, label: React.ReactNode) {
   return typeof label === 'string'
     ? `cascading-${kind}-${label.toLowerCase().replaceAll(/\s+/g, '_')}`
     : undefined
+}
+
+// Leading icon slot shared by submenu rows and clickable rows; renders nothing
+// when the item has no icon (the row insets instead to stay column-aligned).
+function MenuItemLeadingIcon({ Icon }: { Icon: React.ElementType | undefined }) {
+  return Icon ? (
+    <ListItemIcon>
+      <Icon />
+    </ListItemIcon>
+  ) : null
+}
+
+// Which trailing/leading decoration columns the menu needs, computed menu-wide
+// (true if ANY row needs it) so every row reserves matching slots and the
+// decorations stack into aligned columns down the menu.
+function getMenuColumnFlags(menuItems: JBMenuItem[]) {
+  return {
+    hasIcon: menuItems.some(m => 'icon' in m && m.icon),
+    hasCheckboxOrRadioWithHelp: menuItems.some(
+      m => (m.type === 'checkbox' || m.type === 'radio') && m.helpText,
+    ),
+    hasEndAdornment: menuItems.some(m => 'endAdornment' in m && m.endAdornment),
+  }
+}
+
+// Renders arbitrary React content (e.g. a slider) as a plain list row, not a
+// MenuItem: no click-to-close. Pointer/key events are kept local: the menu is
+// portaled in the DOM but is still a React descendant of the view, so without
+// this a slider drag bubbles (via React's synthetic-event tree) into the LGV's
+// click-drag side-scroll, and arrow-key nudging gets stolen by the menu's own
+// arrow navigation.
+function CustomMenuRow({
+  item,
+  onCloseRoot,
+}: {
+  item: CustomMenuItem
+  onCloseRoot: () => void
+}) {
+  return (
+    <li
+      style={{ padding: '4px 16px' }}
+      onMouseDown={e => {
+        e.stopPropagation()
+      }}
+      onKeyDown={e => {
+        e.stopPropagation()
+      }}
+    >
+      {item.render(onCloseRoot)}
+    </li>
+  )
 }
 
 // A disabled MenuItem has pointer-events:none, so a Tooltip placed directly on
@@ -116,11 +166,7 @@ function CascadingSubmenu({
             }
           }}
         >
-          {Icon ? (
-            <ListItemIcon>
-              <Icon />
-            </ListItemIcon>
-          ) : null}
+          <MenuItemLeadingIcon Icon={Icon} />
           <ListItemText primary={title} inset={inset} />
           <ChevronRight />
         </MenuItem>
@@ -147,6 +193,73 @@ function CascadingSubmenu({
   )
 }
 
+// One clickable menu row: label (with optional leading icon) plus its trailing
+// value/help/adornment decorations. The menu-wide `has*` flags let every row
+// reserve matching decoration slots so the columns line up down the menu.
+function CascadingMenuItem({
+  item,
+  hasIcon,
+  hasCheckboxOrRadioWithHelp,
+  hasEndAdornment,
+  closeAfterItemClick,
+  onMenuItemClick,
+  onCloseRoot,
+  onNavigateBack,
+  onMouseOver,
+}: {
+  item: ClickableMenuItem
+  hasIcon: boolean
+  hasCheckboxOrRadioWithHelp: boolean
+  hasEndAdornment: boolean
+  closeAfterItemClick: boolean
+  onMenuItemClick: (callback: () => void) => void
+  onCloseRoot: () => void
+  onNavigateBack?: () => void
+  onMouseOver: () => void
+}) {
+  return (
+    // a disabled row can't open the help popover (pointer-events:none), so
+    // disabledHelpText is surfaced as a hover tooltip instead of the icon button
+    <DisabledTooltip item={item}>
+      <MenuItem
+        data-testid={makeTestId('menuitem', item.label)}
+        disabled={item.disabled}
+        onClick={() => {
+          // onCloseRoot runs before the callback, so item.onClick must NOT read
+          // model state that closing clears (e.g. a right-click menu's ephemeral
+          // hit/context fields): capture that state when the menu items are
+          // built, not live inside onClick.
+          if (closeAfterItemClick) {
+            onCloseRoot()
+          }
+          onMenuItemClick(item.onClick)
+        }}
+        onMouseOver={() => {
+          onMouseOver()
+        }}
+        onKeyDown={e => {
+          if (e.key === 'ArrowLeft') {
+            e.stopPropagation()
+            onNavigateBack?.()
+          }
+        }}
+      >
+        <MenuItemLeadingIcon Icon={item.icon} />
+        <ListItemText
+          primary={item.label}
+          secondary={item.subLabel}
+          inset={hasIcon && !item.icon}
+        />
+        <MenuItemTrailing
+          item={item}
+          hasCheckboxOrRadioWithHelp={hasCheckboxOrRadioWithHelp}
+          hasEndAdornment={hasEndAdornment}
+        />
+      </MenuItem>
+    </DisabledTooltip>
+  )
+}
+
 function CascadingMenuList({
   onMenuItemClick,
   closeAfterItemClick,
@@ -159,16 +272,8 @@ function CascadingMenuList({
     setOpenSubmenuIdx(undefined)
   }
 
-  const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
-  const hasCheckboxOrRadioWithHelp = menuItems.some(
-    m => (m.type === 'checkbox' || m.type === 'radio') && m.helpText,
-  )
-  // When any row carries a trailing endAdornment, reserve a fixed-width slot on
-  // every row so the checkbox/radio decorations stay column-aligned and the
-  // adornments right-align in their own rightmost column.
-  const hasEndAdornment = menuItems.some(
-    m => 'endAdornment' in m && m.endAdornment,
-  )
+  const { hasIcon, hasCheckboxOrRadioWithHelp, hasEndAdornment } =
+    getMenuColumnFlags(menuItems)
 
   const sortedItems = menuItems.toSorted(
     (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
@@ -215,95 +320,30 @@ function CascadingMenuList({
           )
         }
         if (item.type === 'custom') {
-          // Rendered as a plain list row, not a MenuItem: no click-to-close.
-          // Pointer/key events are kept local: the menu is portaled in the DOM
-          // but is still a React descendant of the view, so without this a
-          // slider drag bubbles (via React's synthetic-event tree) into the
-          // LGV's click-drag side-scroll, and arrow-key nudging gets stolen by
-          // the menu's own arrow navigation.
           return (
-            <li
+            <CustomMenuRow
               key={`custom-${item.label}`}
-              style={{ padding: '4px 16px' }}
-              onMouseDown={e => {
-                e.stopPropagation()
-              }}
-              onKeyDown={e => {
-                e.stopPropagation()
-              }}
-            >
-              {item.render(onCloseRoot)}
-            </li>
+              item={item}
+              onCloseRoot={onCloseRoot}
+            />
           )
         }
 
-        const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
-        // a disabled row can't open the help popover (pointer-events:none), so
-        // disabledHelpText is surfaced as a hover tooltip instead of the icon button
         return (
-          <DisabledTooltip key={`menuitem-${item.label}`} item={item}>
-            <MenuItem
-              data-testid={makeTestId('menuitem', item.label)}
-              disabled={item.disabled}
-              onClick={() => {
-                // onCloseRoot runs before the callback, so item.onClick must
-                // NOT read model state that closing clears (e.g. a right-click
-                // menu's ephemeral hit/context fields): capture that state when
-                // the menu items are built, not live inside onClick.
-                if (closeAfterItemClick) {
-                  onCloseRoot()
-                }
-                onMenuItemClick(item.onClick)
-              }}
-              onMouseOver={() => {
-                closeSubmenu()
-              }}
-              onKeyDown={e => {
-                if (e.key === 'ArrowLeft') {
-                  e.stopPropagation()
-                  onNavigateBack?.()
-                }
-              }}
-            >
-              {item.icon ? (
-                <ListItemIcon>
-                  <item.icon />
-                </ListItemIcon>
-              ) : null}
-              <ListItemText
-                primary={item.label}
-                secondary={item.subLabel}
-                inset={hasIcon && !item.icon}
-              />
-              <div style={{ flexGrow: 1, minWidth: 10 }} />
-              {isCheckOrRadio ? (
-                <MenuItemEndDecoration
-                  type={item.type}
-                  checked={item.checked}
-                />
-              ) : null}
-              {item.helpText && !item.disabled ? (
-                <CascadingMenuHelpIconButton
-                  helpText={item.helpText}
-                  label={item.label}
-                />
-              ) : isCheckOrRadio && hasCheckboxOrRadioWithHelp ? (
-                <CascadingMenuHelpIconSpacer />
-              ) : null}
-              {hasEndAdornment ? (
-                <div
-                  style={{
-                    width: 28,
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                  }}
-                >
-                  {item.endAdornment}
-                </div>
-              ) : null}
-            </MenuItem>
-          </DisabledTooltip>
+          <CascadingMenuItem
+            key={`menuitem-${item.label}`}
+            item={item}
+            hasIcon={hasIcon}
+            hasCheckboxOrRadioWithHelp={hasCheckboxOrRadioWithHelp}
+            hasEndAdornment={hasEndAdornment}
+            closeAfterItemClick={closeAfterItemClick}
+            onMenuItemClick={onMenuItemClick}
+            onCloseRoot={onCloseRoot}
+            onNavigateBack={onNavigateBack}
+            onMouseOver={() => {
+              closeSubmenu()
+            }}
+          />
         )
       })}
     </>
