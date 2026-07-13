@@ -64,6 +64,15 @@ variables. Shown on the 1094-sample volvox 1000G simulation.
 
 ![variant matrix](./variant_matrix.png)
 
+The matrix stacks with ordinary 1-D genomic tracks in one `plot_region()` call —
+here the `plugins/canvas` gene track (`LinearBasicDisplay`, `read_gff()` +
+`gene_layout()`) over the 20-sample `volvox.sv.vcf.gz` structural-variant matrix
+on `ctgA:1,000-24,000`. The gene panel is drawn in genomic-position space while
+the matrix columns are site indices, so the two x-axes deliberately don't line
+up (the matrix is compact, not to genomic scale).
+
+![variant matrix over a gene track](./variant_matrix_genes.png)
+
 ## Hi-C — `LinearHicDisplay`
 
 Contact matrix read with `read_hic()` (`strawr::straw`, the reader from the
