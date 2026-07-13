@@ -64,13 +64,13 @@ Three schemes surface per-read or per-base signal directly on the pileup:
 ### Modifications and methylation
 
 If a BAM/CRAM carries MM/ML modification calls (common in nanopore and PacBio
-data), **Color by → Color by modifications** paints them. It offers two modes:
+data), **Color by → Modifications (MM/ML tag)** paints them. It offers two
+modes:
 
-- Color by type draws a mark _only_ where the MM tag reports a modified base,
-  each type in its own color, so an unmethylated region looks empty. Use
-  **Advanced settings…** to raise the probability threshold or restrict to a
-  single type such as 5mC.
-- Color by probability (red / blue) colors each position by its modification
+- Type draws a mark _only_ where the MM tag reports a modified base, each type in
+  its own color, so an unmethylated region looks empty. Use **Advanced settings…**
+  to raise the probability threshold or restrict to a single type such as 5mC.
+- Probability (red / blue) colors each position by its modification
   probability — methylated red, unmethylated blue. For methylation (cytosine)
   data it fills every CpG in context, including the ones the basecaller left
   implicit (drawn blue). Those blue positions aren't in the MM tag; JBrowse

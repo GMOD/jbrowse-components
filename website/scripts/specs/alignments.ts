@@ -520,19 +520,19 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         selector:
           '[data-testid="track_menu_icon"][data-trackid="human_chr20_mod_call_5mC_5hmC_CG_cram_modifications"]',
       },
-      // open "Color by... → Color by modifications" and leave the submenu up
+      // open "Color by... → Modifications (MM/ML tag)" and leave the submenu up
       // (wait on its two radios rather than clicking anything). The former
       // top-level "Color by methylation" / "Color by modification type" items are
-      // now the two radios "Color by type" and "Color by probability (red /
-      // blue)" inside this submenu.
-      ...menuCascade(['Color by...', 'Color by modifications']),
+      // now the two radios "Type" and "Probability (red / blue)" inside this
+      // submenu.
+      ...menuCascade(['Color by...', 'Modifications (MM/ML tag)']),
     ],
     annotations: [
       // box the two colour modes in the open submenu; each row is labeled with
       // its mode name, so the boxed item maps to its row by name (no arrows —
       // they crossed and floated off the menu items, reviewer)
-      { type: 'box', anchor: { text: 'Color by probability (red / blue)' } },
-      { type: 'box', anchor: { text: 'Color by type' } },
+      { type: 'box', anchor: { text: 'Probability (red / blue)' } },
+      { type: 'box', anchor: { text: 'Type' } },
       {
         type: 'text',
         anchor: {
@@ -543,7 +543,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -60,
         maxWidth: 260,
         fontSize: 16,
-        text: 'Color by type: only bases flagged modified (MM/ML tags).',
+        text: 'Type mode: only bases flagged modified (MM/ML tags).',
       },
       {
         type: 'text',
@@ -555,7 +555,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -60,
         maxWidth: 260,
         fontSize: 16,
-        text: 'Color by probability: fills every CpG — red = methylated, blue = CpGs the MM tag left unmodified.',
+        text: 'Probability mode: fills every CpG — red = methylated, blue = CpGs the MM tag left unmodified.',
       },
     ],
   },
@@ -779,7 +779,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a
   // UCSC CpG island on chr20 (use COLO829_tumor.ht at a CpG island + add
   // a CpG island track). Declarative `colorBy: {type:'modifications'}` — the same
-  // state the track menu's Color by → Color by modifications → Color by type
+  // state the track menu's Color by → Modifications (MM/ML tag) → Type
   // applies — because driving that 3-level hover menu live is unreliable over the
   // COLO829 GPU display (its mod-data load keeps repainting the canvas, which
   // closes the MUI menu mid-cascade). userByteSizeLimit auto-loads the reads.
@@ -806,11 +806,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     settleMs: 35000,
     // colorBy:modifications is set declaratively so the mod data is already
     // loaded and painted by the time the menu opens. Then drive the live Color
-    // by → Color by modifications → Color by type path so the figure shows the
-    // menu route, not just the result (reviewer asked to actually open the
-    // menu). The MM/ML modes now live in a "Color by modifications" submenu with
-    // two radios ("Color by type" / "Color by probability"); per-type filtering
-    // moved into its "Advanced settings…" dialog. The selector is scoped by
+    // by → Modifications (MM/ML tag) → Type path so the figure shows the menu
+    // route, not just the result (reviewer asked to actually open the menu). The
+    // MM/ML modes now live in a "Modifications (MM/ML tag)" submenu with two
+    // radios ("Type" / "Probability"); per-type filtering moved into its
+    // "Advanced settings…" dialog. The selector is scoped by
     // data-trackid to the COLO829 alignments track — the bare track_menu_icon
     // matched the CpG-island feature track first, whose Color by menu has no
     // modifications options.
@@ -821,14 +821,14 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           '[data-testid="track_menu_icon"][data-trackid="COLO829_tumor.ht"]',
       },
       ...menuCascade(
-        ['Color by...', 'Color by modifications', 'Color by type'],
+        ['Color by...', 'Modifications (MM/ML tag)', 'Type'],
         800,
       ),
     ],
     annotations: cascadeBoxes([
       'Color by...',
-      'Color by modifications',
-      'Color by type',
+      'Modifications (MM/ML tag)',
+      'Type',
     ]),
   },
 

@@ -1,11 +1,22 @@
+import {
+  methylated5hmC,
+  methylated5mC,
+  unmethylated5mC,
+} from '@jbrowse/core/ui/theme'
+
 import { isModificationScheme } from './colorSchemes.ts'
-import { isModificationTypeVisible } from './types.ts'
+import { getModificationName } from './modificationData.ts'
+import { isFillUnmarkedMode, isModificationTypeVisible } from './types.ts'
 import {
   categorySwatchColor,
   rgb255,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 
-import type { ColorBy, ModificationTypeWithColor } from './types.ts'
+import type {
+  ColorBy,
+  ModificationColorBy,
+  ModificationTypeWithColor,
+} from './types.ts'
 import type {
   ReadColorCategory,
   SwatchCategory,
@@ -62,6 +73,31 @@ const BASE_LEGEND: { key: keyof ColorPalette; label: string }[] = [
 // paints these from the fixed strand colors (not colorTagMap), so their legend
 // is the strand key, not a per-value list.
 const STRAND_TAGS = new Set(['XS', 'TS', 'ts'])
+
+// The methylation (fill-unmarked) view keys exactly what extractMethylation
+// paints: 5mC red, 5hmC pink, and every implicitly-unmodified cytosine — the
+// color that floods a hypomethylated region — blue. The by-type MM palette (a
+// magenta 5hmC, no "unmethylated" swatch at all) would mismatch the reads.
+function fillUnmarkedLegend(
+  modifications: ModificationColorBy | undefined,
+  visibleModifications: ReadonlyMap<string, ModificationTypeWithColor>,
+): LegendItem[] {
+  const items: LegendItem[] = []
+  if (
+    visibleModifications.has('m') &&
+    isModificationTypeVisible(modifications, 'm')
+  ) {
+    items.push({ color: methylated5mC, label: '5mC methylated' })
+  }
+  if (
+    visibleModifications.has('h') &&
+    isModificationTypeVisible(modifications, 'h')
+  ) {
+    items.push({ color: methylated5hmC, label: '5hmC methylated' })
+  }
+  items.push({ color: unmethylated5mC, label: 'Unmethylated' })
+  return items
+}
 
 /**
  * Legend items for the alignments display. `presentCategories` is the set of
@@ -120,12 +156,19 @@ export function getReadDisplayLegendItems(
     }))
   }
   if (colorType && isModificationScheme(colorType) && visibleModifications) {
-    const items: LegendItem[] = []
-    for (const [type, mod] of visibleModifications.entries()) {
-      if (isModificationTypeVisible(colorBy.modifications, type)) {
-        items.push({ color: mod.color, label: type })
-      }
-    }
+    // The methylation (fill-unmarked) view paints the three states
+    // extractMethylation produces, not the per-type MM palette; every other
+    // modification view keys each detected type in the color the reads use.
+    const items = isFillUnmarkedMode(colorBy)
+      ? fillUnmarkedLegend(colorBy.modifications, visibleModifications)
+      : [...visibleModifications]
+          .filter(([type]) =>
+            isModificationTypeVisible(colorBy.modifications, type),
+          )
+          .map(([type, mod]) => ({
+            color: mod.color,
+            label: getModificationName(type),
+          }))
     if (presentCategories.has('supplementary')) {
       items.push({
         color: categorySwatchColor('supplementary', palette),

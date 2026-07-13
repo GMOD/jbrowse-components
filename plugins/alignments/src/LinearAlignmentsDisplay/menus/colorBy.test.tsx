@@ -138,11 +138,7 @@ function clickRadio(model: Model, label: string) {
 }
 
 describe('color by modifications menu', () => {
-  const controls = [
-    'Color by type',
-    'Color by probability (red / blue)',
-    'Advanced settings…',
-  ]
+  const controls = ['Type', 'Probability (red / blue)', 'Advanced settings…']
 
   test.each([
     ['by type', { type: 'modifications' }],
@@ -162,33 +158,33 @@ describe('color by modifications menu', () => {
     },
   )
 
-  test('Color by probability fills unmarked cytosines for methylation data', () => {
+  test('the Probability view fills unmarked cytosines for methylation data', () => {
     const model = makeModModel(['m', 'h'])
     model.colorBy = { type: 'modifications' }
-    clickRadio(model, 'Color by probability (red / blue)')
+    clickRadio(model, 'Probability (red / blue)')
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { fillUnmarked: true },
     })
   })
 
-  test('Color by probability is plain two-color for non-cytosine modifications', () => {
+  test('the Probability view is plain two-color for non-cytosine modifications', () => {
     const model = makeModModel(['a'])
     model.colorBy = { type: 'modifications' }
-    clickRadio(model, 'Color by probability (red / blue)')
+    clickRadio(model, 'Probability (red / blue)')
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { twoColor: true },
     })
   })
 
-  test('the fill view reads as "Color by probability", not a separate row', () => {
+  test('the fill view reads as the "Probability" radio, not a separate row', () => {
     const model = makeModModel()
     model.colorBy = {
       type: 'modifications',
       modifications: { fillUnmarked: true },
     }
-    const prob = byLabel(model, 'Color by probability (red / blue)')
+    const prob = byLabel(model, 'Probability (red / blue)')
     expect(prob && 'checked' in prob && prob.checked).toBe(true)
   })
 
@@ -198,7 +194,7 @@ describe('color by modifications menu', () => {
       type: 'modifications',
       modifications: { fillUnmarked: true, cytosineContext: 'CHH' },
     }
-    clickRadio(model, 'Color by type')
+    clickRadio(model, 'Type')
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { cytosineContext: 'CHH' },
@@ -207,7 +203,7 @@ describe('color by modifications menu', () => {
 
   test('the probability pin promotes the methylation view for cytosine data', () => {
     const model = makeModModel(['m', 'h'])
-    const item = byLabel(model, 'Color by probability (red / blue)', {
+    const item = byLabel(model, 'Probability (red / blue)', {
       displayTypeDefault: displayTypeDefault(model),
     })
     const adornment =

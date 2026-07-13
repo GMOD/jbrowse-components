@@ -26,7 +26,7 @@ test('color by tag', async () => {
   await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Color by...'))
-  await user.click(await screen.findByText('Color by tag...'))
+  await user.click(await screen.findByText('Tag...'))
   await user.type(await screen.findByLabelText('Tag name', ...opts), 'HP')
   await user.click(await screen.findByText('Submit'))
   const display = await screen.findByTestId('pileup-display-done', ...opts)

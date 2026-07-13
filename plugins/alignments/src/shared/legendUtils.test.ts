@@ -128,15 +128,15 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('modifications list visible mod types, gating supplementary on presence', () => {
+  test('modifications list visible mod types by friendly name, gating supplementary on presence', () => {
     const mods = new Map([
       ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
       ['h', { color: 'blue', type: 'h', base: 'C', strand: '+' }],
     ])
-    expect(labels('modifications', [], mods)).toEqual(['m', 'h'])
+    expect(labels('modifications', [], mods)).toEqual(['5mC', '5hmC'])
     expect(labels('modifications', ['supplementary'], mods)).toEqual([
-      'm',
-      'h',
+      '5mC',
+      '5hmC',
       'Supplementary/split',
     ])
   })
@@ -157,7 +157,7 @@ describe('getReadDisplayLegendItems', () => {
         makeTestPalette(),
         mods,
       ).map(i => i.label),
-    ).toEqual(['a'])
+    ).toEqual(['6mA'])
   })
 
   test('shownModifications allow-list keeps only the listed swatch', () => {
@@ -176,7 +176,39 @@ describe('getReadDisplayLegendItems', () => {
         makeTestPalette(),
         mods,
       ).map(i => i.label),
-    ).toEqual(['a'])
+    ).toEqual(['6mA'])
+  })
+
+  test('fill-unmarked (methylation) view keys the states it paints, incl. the blue unmethylated swatch', () => {
+    const mods = new Map([
+      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
+      ['h', { color: 'magenta', type: 'h', base: 'C', strand: '+' }],
+    ])
+    const items = getReadDisplayLegendItems(
+      { type: 'modifications', modifications: { fillUnmarked: true } },
+      new Set(),
+      makeTestPalette(),
+      mods,
+    )
+    expect(items).toEqual([
+      { color: '#ff0000', label: '5mC methylated' },
+      { color: '#ffc0cb', label: '5hmC methylated' },
+      { color: '#0000ff', label: 'Unmethylated' },
+    ])
+  })
+
+  test('fill-unmarked view omits the 5hmC swatch when only 5mC was detected', () => {
+    const mods = new Map([
+      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
+    ])
+    expect(
+      getReadDisplayLegendItems(
+        { type: 'modifications', modifications: { fillUnmarked: true } },
+        new Set(),
+        makeTestPalette(),
+        mods,
+      ).map(i => i.label),
+    ).toEqual(['5mC methylated', 'Unmethylated'])
   })
 
   test('swatch colors come from the live palette when provided', () => {

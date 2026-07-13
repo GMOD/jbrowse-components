@@ -125,7 +125,7 @@ function hasCytosineMeth(model: ModificationsModel) {
   return model.visibleModificationTypes.some(k => k === 'm' || k === 'h')
 }
 
-// The colorBy each radio writes and promotes. "Color by probability" fills
+// The colorBy each radio writes and promotes. The "Probability" radio fills
 // unmarked cytosines when the data supports it — that is the methylation view
 // and the useful default (in the common MM "." mode the unlisted cytosines are
 // confident unmodified calls, so hiding them under-paints the data). getMethBins
@@ -167,8 +167,8 @@ function setBisulfiteContext(
   })
 }
 
-// --- "Color by modifications": one consistent menu ---------------------------
-// Two radios (color by type vs by probability) plus the Advanced dialog — the
+// --- "Modifications (MM/ML tag)": one consistent menu ------------------------
+// Two radios (by type vs by probability) plus the Advanced dialog — the
 // same rows regardless of the active view or the detected mod types. There is no
 // separate "methylation" or "fill" mode: the red/blue view just fills unmarked
 // cytosines when the data is methylation, which is the whole methylation view in
@@ -184,13 +184,13 @@ function buildModificationsMenu(
   const probability = probabilityColorBy(model)
 
   return {
-    label: 'Color by modifications',
-    subLabel: 'MM/ML base modification calls (5mC, 5hmC, 6mA…)',
+    label: 'Modifications (MM/ML tag)',
+    subLabel: 'base modification calls (5mC, 5hmC, 6mA…)',
     helpText:
       'Color the ONT/PacBio modification calls in these reads: by modification type, or red/blue by probability (methylated red, unmethylated blue). Probability threshold, cytosine context and per-type filtering are under Advanced settings.',
     subMenu: [
       promotableRadioItem({
-        label: 'Color by type',
+        label: 'Type',
         subLabel: 'each modification its own color (5mC, 5hmC, 6mA…)',
         helpText: `Colors each call by its modification type. Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn.`,
         checked: isByType,
@@ -200,7 +200,7 @@ function buildModificationsMenu(
         displayTypeDefault: displayTypeDefault?.(byTypeColorBy()),
       }),
       promotableRadioItem({
-        label: 'Color by probability (red / blue)',
+        label: 'Probability (red / blue)',
         subLabel: 'methylated red, unmethylated blue',
         helpText:
           'Colors each position red/blue by modification probability. For methylation data this is the methylation view: every cytosine in context is colored, including the ones the basecaller left implicit (shown blue). For other modifications only the called positions are drawn.',
@@ -226,11 +226,11 @@ function buildModificationsMenu(
   }
 }
 
-// MM/ML coloring promoted to the top of "Color by...": a single "Color by
-// modifications" entry whose two radios (by type / by probability) and Fill
-// checkbox each carry a session-default pin, so any view — methylation
-// (probability + fill) included — can be made the display type's default, just
-// like the top-level scheme radios.
+// MM/ML coloring promoted to the top of "Color by...": a single "Modifications
+// (MM/ML tag)" entry whose two radios (by type / by probability) each carry a
+// session-default pin, so any view — the methylation (probability + fill) view
+// included — can be made the display type's default, just like the top-level
+// scheme radios.
 function buildModificationsItems(
   model: ModificationsModel,
   displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
@@ -252,7 +252,7 @@ function showModificationItems(model: ModificationsModel): boolean {
 
 // Bisulfite / EM-seq is reference-based (read-vs-reference C→T), so it needs no
 // MM/ML tags and applies to any alignments display (even one with no MM mods, so
-// it sits beside "Color by modifications" rather than inside it). Picking a
+// it sits beside "Modifications (MM/ML tag)" rather than inside it). Picking a
 // cytosine context activates it; the CpG default is omitted from the scheme.
 function buildBisulfiteItem(model: ModificationsModel): MenuItem {
   const isBis = model.colorBy.type === 'bisulfite'
@@ -305,7 +305,7 @@ function tagSection(model: AnyColorByModel, include: boolean): MenuItem[] {
   return include
     ? [
         {
-          label: 'Color by tag...',
+          label: 'Tag...',
           type: 'radio',
           checked: model.colorBy.type === 'tag',
           onClick: () => {
