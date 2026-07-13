@@ -59,6 +59,22 @@ at their 5′ ends, hence the blue bars):
 
 ![human modifications](./modifications_human.png)
 
+### CIGAR indels (deletion / spliced intron / insertion)
+
+`read_bam()`'s reference-based `start..end` swallows the reference-consuming
+CIGAR ops, so a read spanning a deletion or intron would otherwise look like
+continuous sequence. `bam_indels()` walks each read's CIGAR and the pileup draws
+them like JBrowse: a short **deletion** as a grey `#808080` rect over the read
+body, a spliced **intron** (`N`) as an erased body with a thin teal `#009a8a`
+connector line between the flanking exons, and an **insertion** as a thin purple
+`#800080` tick. Each joins its pileup row by `read_index`, exactly like the
+mismatch and clip overlays.
+
+Volvox spliced RNA-seq (`spliced.bam`, `ctgA:401-1,100`) — reads split across a
+shared intron, the coverage histogram dropping to zero over the gap:
+
+![spliced](./spliced.png)
+
 ## Genes — `LinearBasicDisplay`
 
 GFF3 gene models: `geom_segment` bodies + `geom_rect` exon/CDS boxes, rows from

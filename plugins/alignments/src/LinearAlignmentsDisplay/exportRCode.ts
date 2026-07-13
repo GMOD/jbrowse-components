@@ -201,6 +201,42 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
       aes(x = xstart, xend = xend, y = row + 0.4, yend = row + 0.4),
       color = "#999999", linewidth = 0.3) +`
       : ''
+    // CIGAR indels that read_bam's start..end swallow. Deletions (short) paint a
+    // grey full-height rect over the read body (JBrowse's deletion rect). Skips
+    // (N, spliced introns, long) instead erase the body and leave a thin teal
+    // connector line between the flanking exons (JBrowse's spliced-read look) --
+    // a full-height fill there would read as a colored read segment, not a gap.
+    // Insertions (thin purple ticks) mark inserted sequence absent from the
+    // reference. Drawn after the read body but before the mismatch ticks (which
+    // sit on aligned columns, never inside a gap), independent of the color scheme.
+    const indelOverlay = `  # CIGAR indels: deletion (grey rect) / spliced intron (teal line) / insertion (purple tick)
+  indels <- bam_indels(${bamVar}, chrom, start, end)
+  if (!is.null(indels) && nrow(indels)) {
+    indels$row <- reads$row[indels$read_index]
+    dels <- indels[indels$type == "D", ]
+    skips <- indels[indels$type == "N", ]
+    ins <- indels[indels$type == "I", ]
+    if (nrow(dels)) {
+      p <- p + geom_rect(data = dels,
+        aes(xmin = refpos, xmax = refpos + length, ymin = row, ymax = row + 0.8),
+        fill = gap_colors[["D"]])
+    }
+    if (nrow(skips)) {
+      # erase the read body across the intron, then draw the thin connector line
+      p <- p +
+        geom_rect(data = skips,
+          aes(xmin = refpos, xmax = refpos + length, ymin = row, ymax = row + 0.8),
+          fill = "white") +
+        geom_segment(data = skips,
+          aes(x = refpos, xend = refpos + length, y = row + 0.4, yend = row + 0.4),
+          color = gap_colors[["N"]], linewidth = 0.3)
+    }
+    if (nrow(ins)) {
+      p <- p + geom_segment(data = ins,
+        aes(x = refpos, xend = refpos, y = row, yend = row + 0.8),
+        color = gap_colors[["I"]], linewidth = 0.8)
+    }
+  }`
     // soft-clip (blue) / hard-clip (red) indicator bars at read ends: a
     // fixed-width vertical mark where a read carries unaligned sequence, the
     // same breakpoint signal JBrowse's clip indicators show. Independent of the
@@ -228,6 +264,8 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
         ...(isMods
           ? ['bam_modifications', 'mod_colors']
           : ['bam_mismatches', 'base_colors']),
+        'bam_indels',
+        'gap_colors',
         'bam_clips',
         'clip_colors',
         'bp_axis',
@@ -248,6 +286,7 @@ ${cramPrelude}${layout}
     labs(title = ${rStr(p.trackName)}, x = NULL, y = NULL) +
     theme_minimal() +
     theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+${indelOverlay}
 ${overlay}
 ${clipOverlay}
   p
