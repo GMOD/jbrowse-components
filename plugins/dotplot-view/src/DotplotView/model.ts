@@ -2,6 +2,7 @@ import type React from 'react'
 import { lazy } from 'react'
 
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import HighlightsMixin from '@jbrowse/core/pluggableElementTypes/models/HighlightsMixin'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   getSession,
@@ -45,7 +46,6 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
@@ -128,6 +128,7 @@ export default function stateModelFactory(pm: PluginManager) {
         'DotplotView',
         BaseViewModel,
         RenderLifecycleMixin(),
+        HighlightsMixin(),
         types.model({
           /**
            * #property
@@ -207,21 +208,6 @@ export default function stateModelFactory(pm: PluginManager) {
            * used for initializing the view from a session snapshot
            */
           init: types.frozen<DotplotViewInit | undefined>(),
-          /**
-           * #property
-           * translucent highlight bands drawn per-axis: vertical when the
-           * region's assembly matches hview, horizontal when it matches vview
-           */
-          highlight: types.stripDefault(
-            types.array(types.frozen<HighlightType>()),
-            [],
-          ),
-          /**
-           * #property
-           * controls whether the interactive highlight chip (link icon +
-           * context menu) is drawn on each highlight band; off by default
-           */
-          showHighlightChips: types.stripDefault(types.boolean, false),
           /**
            * #property
            * Show the floating color-by legend in the top-right of the plot.
@@ -624,30 +610,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setLineWidth(value: number) {
           self.lineWidth = value
-        },
-        /**
-         * #action
-         */
-        addToHighlights(highlight: HighlightType) {
-          self.highlight.push(highlight)
-        },
-        /**
-         * #action
-         */
-        setHighlight(highlight?: HighlightType[]) {
-          self.highlight = cast(highlight)
-        },
-        /**
-         * #action
-         */
-        removeHighlight(highlight: HighlightType) {
-          self.highlight.remove(highlight)
-        },
-        /**
-         * #action
-         */
-        setShowHighlightChips(arg: boolean) {
-          self.showHighlightChips = arg
         },
         /**
          * #action

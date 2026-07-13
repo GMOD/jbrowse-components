@@ -2,7 +2,10 @@ import type React from 'react'
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import {
+  BaseViewModel,
+  HighlightsMixin,
+} from '@jbrowse/core/pluggableElementTypes/models'
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import {
   assembleLocString,
@@ -266,6 +269,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .compose(
       'LinearGenomeView',
       BaseViewModel,
+      HighlightsMixin(),
       types.model({
         /**
          * #property
@@ -368,22 +372,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "gridlines" in the track area
          */
         showGridlines: types.stripDefault(types.boolean, true),
-
-        /**
-         * #property
-         * highlights on the LGV from the URL parameters
-         */
-        highlight: types.stripDefault(
-          types.array(types.frozen<HighlightType>()),
-          [],
-        ),
-
-        /**
-         * #property
-         * controls whether the interactive highlight chip (link icon + context
-         * menu) is drawn on each highlight band; off by default
-         */
-        showHighlightChips: types.stripDefault(types.boolean, false),
 
         /**
          * #property
@@ -1003,39 +991,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setShowGridlines(b: boolean) {
         self.showGridlines = b
-      },
-      /**
-       * #action
-       */
-      addToHighlights(highlight: HighlightType) {
-        self.highlight.push(highlight)
-      },
-      /**
-       * #action
-       */
-      setHighlight(highlight?: HighlightType[]) {
-        self.highlight = cast(highlight)
-      },
-      /**
-       * #action
-       */
-      removeHighlight(highlight: HighlightType) {
-        self.highlight.remove(highlight)
-      },
-      /**
-       * #action
-       */
-      updateHighlight(old: HighlightType, updates: Partial<HighlightType>) {
-        const idx = self.highlight.indexOf(old)
-        if (idx !== -1) {
-          self.highlight[idx] = { ...old, ...updates }
-        }
-      },
-      /**
-       * #action
-       */
-      setShowHighlightChips(arg: boolean) {
-        self.showHighlightChips = arg
       },
       /**
        * #action

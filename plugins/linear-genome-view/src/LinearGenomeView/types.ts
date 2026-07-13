@@ -1,3 +1,5 @@
+import type { HighlightType } from '@jbrowse/core/util/highlights'
+
 export interface BpOffset {
   refName?: string
   index: number
@@ -26,19 +28,9 @@ export interface ExportSvgOptions {
   createCanvas?: (width: number, height: number) => HTMLCanvasElement
 }
 
-export interface HighlightType {
-  start: number
-  end: number
-  // optional because view.highlight is persisted via types.frozen and
-  // session JSON authored by hand may legitimately omit the assemblyName
-  assemblyName?: string
-  refName: string
-  // overrides the theme's highlight color; user-supplied color is used as-is
-  // so explicit alpha is preserved
-  color?: string
-  // shown in the chip tooltip; otherwise a generic label is used
-  label?: string
-}
+// canonical definition lives in core so the shared HighlightsMixin and dotplot
+// can reference it without depending on this plugin
+export type { HighlightType }
 
 export interface NavLocation {
   refName: string

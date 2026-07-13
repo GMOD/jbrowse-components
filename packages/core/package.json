@@ -59,6 +59,7 @@
     "./pluggableElementTypes/WidgetType": "./src/pluggableElementTypes/WidgetType.ts",
     "./pluggableElementTypes/models": "./src/pluggableElementTypes/models/index.ts",
     "./pluggableElementTypes/models/BaseViewModel": "./src/pluggableElementTypes/models/BaseViewModel.ts",
+    "./pluggableElementTypes/models/HighlightsMixin": "./src/pluggableElementTypes/models/HighlightsMixin.ts",
     "./pluggableElementTypes/models/baseConnectionConfig": "./src/pluggableElementTypes/models/baseConnectionConfig.ts",
     "./pluggableElementTypes/renderers/RendererType": "./src/pluggableElementTypes/renderers/RendererType.tsx",
     "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
@@ -172,7 +173,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/serialize": "^1.3.3",
     "@emotion/utils": "^1.4.2",
-    "@floating-ui/react": "^0.27.19",
+    "@floating-ui/react": "^0.27.20",
     "@gmod/bgzf-filehandle": "^6.2.0",
     "@jbrowse/jexl": "^3.0.2",
     "@jbrowse/mobx-state-tree": "^5.12.0",
@@ -186,7 +187,7 @@
     "canvas-sequencer-ts": "^3.1.3",
     "compare-versions": "^6.1.1",
     "deepmerge": "^4.3.1",
-    "dompurify": "^3.4.11",
+    "dompurify": "^3.4.12",
     "fast-deep-equal": "^3.1.3",
     "generic-filehandle2": "^2.2.0",
     "idb": "^8.0.3",
@@ -360,6 +361,10 @@
       "./pluggableElementTypes/models/BaseViewModel": {
         "types": "./esm/pluggableElementTypes/models/BaseViewModel.d.ts",
         "import": "./esm/pluggableElementTypes/models/BaseViewModel.js"
+      },
+      "./pluggableElementTypes/models/HighlightsMixin": {
+        "types": "./esm/pluggableElementTypes/models/HighlightsMixin.d.ts",
+        "import": "./esm/pluggableElementTypes/models/HighlightsMixin.js"
       },
       "./pluggableElementTypes/models/baseConnectionConfig": {
         "types": "./esm/pluggableElementTypes/models/baseConnectionConfig.d.ts",
@@ -860,6 +865,9 @@
         ],
         "pluggableElementTypes/models/BaseViewModel": [
           "esm/pluggableElementTypes/models/BaseViewModel.d.ts"
+        ],
+        "pluggableElementTypes/models/HighlightsMixin": [
+          "esm/pluggableElementTypes/models/HighlightsMixin.d.ts"
         ],
         "pluggableElementTypes/models/baseConnectionConfig": [
           "esm/pluggableElementTypes/models/baseConnectionConfig.d.ts"

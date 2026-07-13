@@ -2,6 +2,7 @@ export { default as baseConnectionConfig } from './baseConnectionConfig.ts'
 export { default as BaseConnectionModelFactory } from './BaseConnectionModelFactory.ts'
 export { default as BaseViewModel } from './BaseViewModel.ts'
 export type { IBaseViewModel } from './BaseViewModel.ts'
+export { default as HighlightsMixin } from './HighlightsMixin.ts'
 export { BaseDisplay } from './BaseDisplayModel.tsx'
 export type {
   BaseDisplayModel,

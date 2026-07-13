@@ -2,6 +2,23 @@ import { colord } from './colord.ts'
 
 import type { Theme } from '@mui/material'
 
+// A translucent band drawn over a genomic region. Shared by the LGV and dotplot
+// `view.highlight` arrays and the grid-bookmark overlays (which key/colorize
+// bookmarks with the same helpers below).
+export interface HighlightType {
+  start: number
+  end: number
+  // optional because view.highlight is persisted via types.frozen and session
+  // JSON authored by hand may legitimately omit the assemblyName
+  assemblyName?: string
+  refName: string
+  // overrides the theme's highlight color; user-supplied color is used as-is so
+  // explicit alpha is preserved
+  color?: string
+  // shown in the chip tooltip; otherwise a generic label is used
+  label?: string
+}
+
 // Highlight regions have no id and can duplicate, so the trailing index only
 // breaks ties between otherwise-identical regions. Wrapping the array index in
 // this helper also keeps it out of the `no-array-index-key` lint's view.
