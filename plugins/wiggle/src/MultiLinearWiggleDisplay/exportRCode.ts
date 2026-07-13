@@ -1,5 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
-import { getContainingTrack } from '@jbrowse/core/util'
+import { getTrackRMeta, rName, rStr, safeVarName } from '@jbrowse/plugin-linear-genome-view'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
@@ -15,20 +14,6 @@ interface SubadapterConf {
 interface MultiAdapterConf {
   subadapters?: SubadapterConf[]
   bigWigs?: string[]
-}
-
-function safeVarName(str: string) {
-  return str.replaceAll(/[^a-zA-Z0-9]/g, '_').replace(/^(\d)/, '_$1')
-}
-
-function rStr(s: string) {
-  return `"${s.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`
-}
-
-// R named-vector name in backticks (any string is a valid name when backtick
-// quoted); strip stray backticks so the quoting can't be broken.
-function rName(s: string) {
-  return `\`${s.replaceAll('`', '')}\``
 }
 
 // Basename without extension, matching MultiWiggleAdapter's filename-derived
@@ -163,9 +148,7 @@ ${namesVar} <- c(${p.sources.map(s => rStr(s.name)).join(', ')})`,
 export function exportRCode(
   self: MultiLinearWiggleDisplayModel,
 ): RTrackFragment | undefined {
-  const track = getContainingTrack(self)
-  const trackId: string = track.configuration.trackId
-  const adapter: MultiAdapterConf = getConf(track, 'adapter')
+  const { trackId, trackName, adapter } = getTrackRMeta<MultiAdapterConf>(self)
   const uriByName = buildSourceUriMap(adapter)
   const sources = self.sources.flatMap(s => {
     const uri = uriByName.get(s.name)
@@ -174,7 +157,7 @@ export function exportRCode(
   return sources.length > 0
     ? multiWiggleFragment({
         trackId,
-        trackName: getConf(track, 'name') || trackId,
+        trackName,
         sources,
         renderingType: self.renderingType,
         isOverlay: self.isOverlay,

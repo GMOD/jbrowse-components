@@ -1,5 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
-import { getContainingTrack } from '@jbrowse/core/util'
+import { firstUri, getTrackRMeta, rStr, safeVarName } from '@jbrowse/plugin-linear-genome-view'
 
 import type { LinearMultiSampleVariantMatrixDisplayModel } from './model.ts'
 import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
@@ -7,14 +6,6 @@ import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
 interface AdapterConf {
   vcfGzLocation?: { uri?: string }
   uri?: string
-}
-
-function safeVarName(str: string) {
-  return str.replaceAll(/[^a-zA-Z0-9]/g, '_').replace(/^(\d)/, '_$1')
-}
-
-function rStr(s: string) {
-  return `"${s.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`
 }
 
 export interface VariantMatrixRParams {
@@ -91,13 +82,11 @@ ${v}_max_missing <- ${p.maxMissing}    # drop sites with more than this no-call 
 export function exportRCode(
   self: LinearMultiSampleVariantMatrixDisplayModel,
 ): RTrackFragment {
-  const track = getContainingTrack(self)
-  const trackId: string = track.configuration.trackId
-  const adapter: AdapterConf = getConf(track, 'adapter')
+  const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
   return variantMatrixFragment({
     trackId,
-    trackName: getConf(track, 'name') || trackId,
-    uri: adapter.vcfGzLocation?.uri ?? adapter.uri ?? '',
+    trackName,
+    uri: firstUri(adapter.vcfGzLocation?.uri, adapter.uri),
     minMaf: self.minorAlleleFrequencyFilter,
     maxMissing: self.maxMissingnessFilter,
   })

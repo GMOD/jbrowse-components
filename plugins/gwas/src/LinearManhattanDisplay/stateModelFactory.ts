@@ -31,6 +31,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import { autorun, observable } from 'mobx'
 
+import { exportRCode } from './exportRCode.ts'
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -45,7 +46,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  RTrackFragment,
+} from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearManhattanDisplay
@@ -606,6 +610,17 @@ export function stateModelFactory(
           },
         }
       })
+      .views(self => ({
+        /**
+         * #method
+         * Build the R ggplot fragment for this track, used by the view's
+         * "Export R script" to regenerate the Manhattan panel from source in
+         * ggplot2.
+         */
+        exportRCode(): RTrackFragment {
+          return exportRCode(self as LinearManhattanDisplayModel)
+        },
+      }))
   )
 }
 

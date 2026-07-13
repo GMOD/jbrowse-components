@@ -208,6 +208,14 @@ export { default as SVGTracks } from './LinearGenomeView/svgcomponents/SVGTracks
 export { default as SVGView } from './LinearGenomeView/svgcomponents/SVGView.tsx'
 export { default as SVGRowHeader } from './LinearGenomeView/svgcomponents/SVGRowHeader.tsx'
 export { assembleRScript } from './LinearGenomeView/exportR.ts'
+export {
+  firstUri,
+  getTrackRMeta,
+  rName,
+  rStr,
+  safeVarName,
+} from './LinearGenomeView/rexportShared.ts'
+export type { RTrackMeta } from './LinearGenomeView/rexportShared.ts'
 export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
 export { default as SVGHighlightsOverlay } from './LinearGenomeView/svgcomponents/SVGHighlightsOverlay.tsx'
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'

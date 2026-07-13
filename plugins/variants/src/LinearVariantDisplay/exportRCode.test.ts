@@ -22,16 +22,15 @@ test('reads the VCF with read_vcf and emits no bespoke package', () => {
   expect(f.plotExpr).not.toMatch(/jb_features|geom_variant|scale_x_genomic/)
 })
 
-test('draws a colored span with a lollipop head, keyed on variant type', () => {
+test('draws plain boxes like a gene track, no per-type color or lollipop', () => {
   const f = variantFragment(base)
-  expect(f.plotExpr).toContain(
-    'geom_segment(aes(x = start, xend = end, y = row, yend = row, color = type)',
-  )
-  expect(f.plotExpr).toContain(
-    'geom_point(aes(x = (start + end) / 2, y = row, color = type)',
-  )
+  expect(f.plotExpr).toContain('geom_rect(aes(xmin = start')
+  expect(f.plotExpr).toContain('fill = "#7570b3"')
   expect(f.plotExpr).toContain('scale_y_reverse()')
-  expect(f.plotExpr).toContain('color = "Type"')
+  // no per-type coloring, no lollipop head
+  expect(f.plotExpr).not.toContain('color = type')
+  expect(f.plotExpr).not.toContain('geom_point')
+  expect(f.plotExpr).not.toContain('color = "Type"')
 })
 
 test('non-identifier track ids become safe R variable names', () => {

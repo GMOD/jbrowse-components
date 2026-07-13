@@ -1,5 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
-import { getContainingTrack } from '@jbrowse/core/util'
+import { firstUri, getTrackRMeta, rStr, safeVarName } from '@jbrowse/plugin-linear-genome-view'
 
 import type { LinearBasicDisplayModel } from './model.ts'
 import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
@@ -10,14 +9,6 @@ interface AdapterConf {
   bedGzLocation?: { uri?: string }
   bedLocation?: { uri?: string }
   uri?: string
-}
-
-function safeVarName(str: string) {
-  return str.replaceAll(/[^a-zA-Z0-9]/g, '_').replace(/^(\d)/, '_$1')
-}
-
-function rStr(s: string) {
-  return `"${s.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`
 }
 
 export interface GeneRParams {
@@ -65,18 +56,16 @@ export function geneFragment(p: GeneRParams): RTrackFragment {
 
 /** Read the feature track's source uri into an R gene-model panel. */
 export function exportRCode(self: LinearBasicDisplayModel): RTrackFragment {
-  const track = getContainingTrack(self)
-  const trackId: string = track.configuration.trackId
-  const adapter: AdapterConf = getConf(track, 'adapter')
+  const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
   return geneFragment({
     trackId,
-    trackName: getConf(track, 'name') || trackId,
-    uri:
-      adapter.gffGzLocation?.uri ??
-      adapter.gffLocation?.uri ??
-      adapter.bedGzLocation?.uri ??
-      adapter.bedLocation?.uri ??
-      adapter.uri ??
-      '',
+    trackName,
+    uri: firstUri(
+      adapter.gffGzLocation?.uri,
+      adapter.gffLocation?.uri,
+      adapter.bedGzLocation?.uri,
+      adapter.bedLocation?.uri,
+      adapter.uri,
+    ),
   })
 }

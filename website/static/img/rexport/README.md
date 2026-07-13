@@ -5,7 +5,8 @@ self-contained `.R` that redraws the current view from source in pure
 `rtracklayer` + `ggplot2` (no bespoke package — see `agent-docs/R_EXPORT.md`).
 Every image below was rendered by running the *actual* generated script through
 `Rscript` (against `test_data/volvox`, except Hi-C which uses the hg19
-`extra_test_data/test.hic`).
+`extra_test_data/test.hic` and GWAS which uses the hg19
+`test_data/gwas/SLE_gwas.bed.gz`).
 
 ## Wiggle — `LinearWiggleDisplay`
 
@@ -47,8 +48,8 @@ GFF3 gene models: `geom_segment` bodies + `geom_rect` exon/CDS boxes, rows from
 ## Variants — `LinearVariantDisplay`
 
 VCF read over the tabix index with `read_vcf()` (Rsamtools `scanTabix`, no
-VariantAnnotation dependency), each record a colored span + lollipop head keyed
-on type (SNV / INS / DEL / MNV / SV subtype), rows from `vcf_layout()`.
+VariantAnnotation dependency), each record a plain `geom_rect` box like a
+feature/gene track, rows from `vcf_layout()`.
 
 ![variants](./variants.png)
 
@@ -73,6 +74,19 @@ up (the matrix is compact, not to genomic scale).
 
 ![variant matrix over a gene track](./variant_matrix_genes.png)
 
+## Multi-sample variant rows — `LinearMultiSampleVariantDisplay`
+
+The non-matrix multi-sample display: one genotype row per sample, each variant a
+`geom_rect` drawn at its honest genomic position (single-base sites floored to a
+minimum width; symbolic SVs use their INFO `END` span). It reuses the same
+`read_vcf_gt()` reader and ref / het / hom / other / no-call classing as the
+matrix, but keeps samples in VCF order (no clustering) and — because x is genomic
+— shares the `coord_cartesian(xlim=)` contract, so it **lines up** with the
+`plugins/canvas` gene track above. Shown on the 20-sample `volvox.sv.vcf.gz` over
+`ctgA:1,000-24,000`.
+
+![variant rows over a gene track](./variant_rows_genes.png)
+
 ## Hi-C — `LinearHicDisplay`
 
 Contact matrix read with `read_hic()` (`strawr::straw`, the reader from the
@@ -82,6 +96,16 @@ square `geom_raster` heatmap with `coord_fixed()` and a log-scaled
 script variables you can edit.
 
 ![hi-c](./hic.png)
+
+## GWAS — `LinearManhattanDisplay`
+
+GWAS summary statistics read from a tabix'd BED with `read_gwas()` (Rsamtools
+`scanTabix`; the score column is found by name in the header, the position
+column from the tabix index), drawn as a `geom_point` scatter of -log10(p)
+against genomic position with the 5e-8 genome-wide significance line as a dashed
+`geom_hline`. Shown over the SLE association peak on hg19 chr2.
+
+![gwas](./gwas.png)
 
 ## Combined figure
 

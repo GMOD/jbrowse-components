@@ -4,6 +4,7 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 
+import { exportRCode } from './exportRCode.ts'
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
 import { markersForBlock } from './components/drawVariantInsertionGlyphs.ts'
@@ -17,7 +18,10 @@ import type {
 } from './components/variantRenderingBackendTypes.ts'
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  RTrackFragment,
+} from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearMultiSampleVariantDisplay
@@ -223,6 +227,11 @@ export function stateModelFactory(
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self, opts)
+        },
+        // explicit return type breaks the self-referential MST model-type cycle
+        // (same trick as renderSvg); builds the R panel for this track
+        exportRCode(): RTrackFragment {
+          return exportRCode(self as LinearMultiSampleVariantDisplayModel)
         },
       }))
       .actions(self => ({
