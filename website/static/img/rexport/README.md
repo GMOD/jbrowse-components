@@ -4,9 +4,9 @@ Figures produced by **View menu → "Export R script"**, which downloads a
 self-contained `.R` that redraws the current view from source in pure
 `rtracklayer` + `ggplot2` (no bespoke package — see `agent-docs/R_EXPORT.md`).
 Every image below was rendered by running the *actual* generated script through
-`Rscript` (against `test_data/volvox`, except Hi-C which uses the hg19
-`extra_test_data/test.hic` and GWAS which uses the hg19
-`test_data/gwas/SLE_gwas.bed.gz`).
+`Rscript` (against `test_data/volvox`, except Hi-C which uses the published hg19
+GM12878/HMEC contact maps from `config_demo.json` plus an Ensembl GRCh37 gene GFF,
+and GWAS which uses the hg19 `test_data/gwas/SLE_gwas.bed.gz`).
 
 ## Wiggle — `LinearWiggleDisplay`
 
@@ -89,13 +89,25 @@ matrix, but keeps samples in VCF order (no clustering) and — because x is geno
 
 ## Hi-C — `LinearHicDisplay`
 
-Contact matrix read with `read_hic()` (`strawr::straw`, the reader from the
-`.hic` authors), straw's upper triangle mirrored across the diagonal, drawn as a
-square `geom_raster` heatmap with `coord_fixed()` and a log-scaled
-`scale_fill_viridis_c()`. Bin size and normalization are emitted as visible
-script variables you can edit.
+Contact matrix read with `hic_triangle()` (`strawr::straw`, the reader from the
+`.hic` authors), which rotates straw's upper triangle 45° into diamond
+`geom_polygon`s — JBrowse's triangular Hi-C view. The diagonal sits on the
+genomic x-axis (interaction distance up the y-axis), so the map stacks with
+ordinary 1-D tracks on a shared x-range. Log-scaled `scale_fill_viridis_c()`;
+bin size and normalization are emitted as visible script variables you can edit.
+Shown on the published HMEC contact map (Rao et al. 2014, GSE63525; KR-normalized,
+10 kb bins) over `1:1,000,000-2,000,000` — near-diagonal contact decay with a
+domain boundary around 1.5 Mb.
 
 ![hi-c](./hic.png)
+
+Because the triangle shares the genomic x-axis it lines up under a gene track in
+one `plot_region()` call. This figure is genuine `assembleRScript` output: the
+same HMEC map over Ensembl GRCh37 genes on `1:1,550,000-2,000,000`, both keyed to
+chromosome `"1"` so one `plot_region("1", …)` drives both panels. The gene-dense
+MIB2/CDK11B/SLC35E2 cluster sits under the bright on-diagonal contact domain.
+
+![hi-c over a gene track](./hic_genes.png)
 
 ## GWAS — `LinearManhattanDisplay`
 
