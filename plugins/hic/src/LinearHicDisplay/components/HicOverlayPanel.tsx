@@ -1,5 +1,6 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { TrackOverlayPortal } from '@jbrowse/plugin-linear-genome-view'
 import CloseIcon from '@mui/icons-material/Close'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import IconButton from '@mui/material/IconButton'
@@ -25,6 +26,9 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     flexDirection: 'column',
     gap: 3,
+    // portaled into the pointer-events:none overlay node; re-enable events so
+    // the resolution dropdown / close / reset controls stay interactive
+    pointerEvents: 'auto',
   },
   row: {
     display: 'flex',
@@ -129,9 +133,12 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
   }
 
   const { minLabel, maxLabel } = getHicScaleLabels(colorMaxScore, useLogScale)
+  // portal above the inter-region padding masks so the panel isn't buried at
+  // whole-genome / multi-region scale (see TrackOverlayPortal)
   return (
-    <div className={classes.panel}>
-      {showResArea ? <ResolutionRow model={model} /> : null}
+    <TrackOverlayPortal>
+      <div className={classes.panel}>
+        {showResArea ? <ResolutionRow model={model} /> : null}
       {showLegendArea ? (
         <>
           <div className={classes.row}>
@@ -158,15 +165,16 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
           </div>
         </>
       ) : null}
-      {availableNormalizations && availableNormalizations.length > 1 ? (
-        <div
-          className={classes.normLabel}
-          title="Normalization (change in track menu)"
-        >
-          norm: {activeNormalization}
-        </div>
-      ) : null}
-    </div>
+        {availableNormalizations && availableNormalizations.length > 1 ? (
+          <div
+            className={classes.normLabel}
+            title="Normalization (change in track menu)"
+          >
+            norm: {activeNormalization}
+          </div>
+        ) : null}
+      </div>
+    </TrackOverlayPortal>
   )
 })
 

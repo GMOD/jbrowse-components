@@ -6,6 +6,8 @@ import IconButton from '@mui/material/IconButton'
 import Link from '@mui/material/Link'
 import { observer } from 'mobx-react'
 
+import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
+
 const useStyles = makeStyles()(theme => ({
   legend: {
     position: 'absolute',
@@ -16,6 +18,11 @@ const useStyles = makeStyles()(theme => ({
     fontSize: 10,
     zIndex: 100,
     maxWidth: 200,
+    // portaled into the TrackContainer's above-the-masks overlay node, which is
+    // pointer-events:none so it doesn't eat canvas events; re-enable events on
+    // the legend itself so its close buttons/links stay clickable (harmless when
+    // rendered inline, where events already pass through)
+    pointerEvents: 'auto',
   },
   closeButton: {
     position: 'absolute',
@@ -162,8 +169,11 @@ const FloatingLegend = observer(function FloatingLegend({
   }
 
   const multiSection = nonEmpty.length > 1
+  // portal above the inter-region padding masks so the key isn't buried at
+  // whole-genome / multi-region scale (see TrackOverlayPortal)
   return (
-    <div className={cx(classes.legend, onDismiss && classes.withClose)}>
+    <TrackOverlayPortal>
+      <div className={cx(classes.legend, onDismiss && classes.withClose)}>
       {onDismiss ? (
         <IconButton
           className={classes.closeButton}
@@ -199,7 +209,8 @@ const FloatingLegend = observer(function FloatingLegend({
           <LegendItemList items={section.items} maxItems={maxItems} />
         </div>
       ))}
-    </div>
+      </div>
+    </TrackOverlayPortal>
   )
 })
 

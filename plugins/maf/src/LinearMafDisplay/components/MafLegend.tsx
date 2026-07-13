@@ -1,4 +1,5 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { TrackOverlayPortal } from '@jbrowse/plugin-linear-genome-view'
 
 export interface LegendEntry {
   label: string
@@ -12,7 +13,10 @@ const useStyles = makeStyles()(theme => ({
     top: 2,
     right: 2,
     zIndex: 3,
-    pointerEvents: 'none',
+    // portaled into the pointer-events:none track overlay; re-enable events on
+    // the legend box so hovering it doesn't fall through to feature tooltips /
+    // click actions on the canvas below
+    pointerEvents: 'auto',
     display: 'flex',
     // stack entries vertically so each swatch+label sits on its own line
     // (reviewer: color boxes were all crammed onto one row)
@@ -51,16 +55,20 @@ export default function MafLegend({ entries }: { entries: LegendEntry[] }) {
   if (entries.length === 0) {
     return null
   }
+  // portal above the inter-region padding masks so the corner legend isn't
+  // buried at whole-genome / multi-region scale (see TrackOverlayPortal)
   return (
-    <div className={classes.legend}>
-      {entries.map(({ label, color }) => (
-        <div key={label} className={classes.item}>
-          {color ? (
-            <span className={classes.swatch} style={{ background: color }} />
-          ) : null}
-          {label}
-        </div>
-      ))}
-    </div>
+    <TrackOverlayPortal>
+      <div className={classes.legend}>
+        {entries.map(({ label, color }) => (
+          <div key={label} className={classes.item}>
+            {color ? (
+              <span className={classes.swatch} style={{ background: color }} />
+            ) : null}
+            {label}
+          </div>
+        ))}
+      </div>
+    </TrackOverlayPortal>
   )
 }
