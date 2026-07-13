@@ -28,7 +28,8 @@ duplications load but don't produce an informative chord.
 
 - **Hover** a chord to highlight it and see the variant it represents
 - **Click** a chord to open that variant's feature details
-- From the feature-detail panel, use **Launch breakend split view** to open a
+- From the feature-detail panel's **Breakends** section, use **Open in
+  breakpoint split view** to open a
   [breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view)
   centered on the event's two breakpoints
 
